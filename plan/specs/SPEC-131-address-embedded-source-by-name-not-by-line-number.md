@@ -196,6 +196,7 @@ the resolution in the shared reader rather than in either pipeline.
 |---|---|
 | `symbol` | Named declaration. Builds an anchor regex from the keyword table. |
 | `match` | Raw regex anchor. The general form; `symbol` is sugar over it. |
+| `occurrence` | Which match to take when the anchor is ambiguous, 1-based. Default 1. An escape hatch, not a naming form — D17. |
 | `until` | Regex ending the extent, **exclusive** — the matching line is not included. Overrides `extent`. |
 | `through` | As `until`, but **inclusive** of the matching line. D12. |
 | `extent` | `auto` (delimiter balance, default), `dedent` (indentation), `section` (next sibling at the anchor's own level), or `paired` (matching close token). D11. |
@@ -598,8 +599,11 @@ Taking the first match is the right behaviour — refusing would make the common
 case worse for no safety gain, since the first match is usually correct. But
 taking it *silently* turns an ambiguity the resolver can see into one the
 author cannot. Emit a warning naming each matching line, and keep rendering.
-Cheap, and it converts a silent ambiguity into a visible one. An `occurrence=`
-selector is the fuller answer and is deferred until something needs it.
+Cheap, and it converts a silent ambiguity into a visible one.
+
+**`occurrence=` is that fuller answer, and something now needs it — D17.** The
+enumeration this warning requires is the same list the selector indexes into,
+so the two are one mechanism rather than two.
 
 **D15 — The language table is data, and is built to be merged into.** The
 split between what is declarative here and what is not falls in a useful
@@ -670,6 +674,45 @@ produces a **byte-identical slice**. That comparison must run before
 `reindent`, or every nested target fails verification for a difference the
 codemod itself introduced.
 
+**D17 — `occurrence=` selects among matches, and belongs to the escape hatches
+rather than to the naming forms.** D14 deferred this "until something needs
+it". D11's `paired` is what needs it: making Markdoc, HTML and Svelte
+addressable is precisely what produces files with many structurally identical
+anchors, and the repository's own front page is the example.
+`site/content/index.md` carries one `{% hero %}`, **four `{% feature %}`** and
+two `{% sandbox %}`. Quoting the second feature is a reasonable thing to want,
+and without a selector the only route is back to `lines=`.
+
+**It is nearly free.** D14 already requires enumerating every match in order to
+name each matching line in its warning. The selector is an index into a list
+the resolver has already built; there is no second traversal and no new
+concept in the engine.
+
+**Be honest about what it is.** `occurrence=3` is counting, and this spec
+exists to replace counting with naming. It is a *better* count than a line
+number — inserting unrelated content above does not move it, only inserting
+another match does — but it is ordinal addressing, and it drifts the moment
+someone adds a fifth feature above the fourth.
+
+So it is classified with `lines=`, `until=` and `through=` under D4, not with
+`symbol=` under D9, and three consequences follow:
+
+- **The ambiguity warning still fires.** `occurrence=` selects a match; it does
+  not assert the author disambiguated correctly. Suppressing the warning would
+  turn the one visible signal into silence, which is D14's whole subject.
+- **An out-of-range selector refuses**, naming how many matches were found and
+  where — never silently clamping to the last, and never falling back to the
+  first. A clamp is the plausible-wrong render this spec exists to prevent.
+- **The docs steer to a distinguishing regex first.** `match="^\{% feature
+  align=\"right\""` names what the author meant; `occurrence=2` counts to it.
+  Prefer the former wherever the anchors differ at all, and reach for
+  `occurrence=` only when they are genuinely identical.
+
+D15's named anchors are the better long-term answer for a repeated structure
+worth quoting often, since they give the pattern a name in one config entry
+rather than an ordinal in twenty pages. That surface is still deferred; this
+selector does not prejudge its shape.
+
 ## Non-goals
 
 - **Cross-file resolution.** `symbol="SiteConfig"` searches the file named by
@@ -715,6 +758,10 @@ codemod itself introduced.
 - [ ] Anchors match against raw source; a match landing inside a masked region is skipped, covered by tests for `match='"scripts"'` on `package.json` (must resolve) and an anchor mentioned only in a comment (must be skipped)
 - [ ] An `auto` extent reaching EOF without terminating refuses and names `extent="dedent"`; an `until` / `through` that never matches refuses the same way
 - [ ] An anchor matching more than once takes the first and warns, naming every matching line
+- [ ] `occurrence` selects the Nth match, 1-based, defaulting to 1, and reads from the same enumeration the ambiguity warning names
+- [ ] `occurrence` does not suppress the ambiguity warning
+- [ ] An `occurrence` beyond the number of matches refuses, naming how many were found and where — never clamping to the last or falling back to the first
+- [ ] The docs present `occurrence` as an escape hatch beside `lines` / `until` / `through`, and steer authors at a distinguishing regex first
 - [ ] `dedent` expands tabs at a width taken from the language table
 - [ ] `paired` handles asymmetric, symmetric, and self-closing token shapes; a self-closing anchor returns one line rather than scanning to EOF
 - [ ] `linenumbers` and numeric `highlight` stay in file coordinates under an anchor; `highlight-match` highlights by regex within the resolved slice

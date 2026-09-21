@@ -71,6 +71,10 @@ refusal, 0.07% silent-wrong, 0% false alarm.
 - [ ] An `auto` extent reaching EOF without terminating refuses and names `extent="dedent"`
 - [ ] Under `extent="auto"`, an extracted slice that is not delimiter-balanced is refused, never rendered
 - [ ] An anchor matching more than once takes the first and warns, naming every matching line
+- [ ] `occurrence` selects the Nth match, 1-based, defaulting to 1, reading from the same enumeration the warning names
+- [ ] `occurrence` does not suppress the ambiguity warning
+- [ ] An `occurrence` beyond the number of matches refuses, naming how many were found and where — never clamping to the last or falling back to the first
+- [ ] `occurrence` is documented beside `lines` / `until` / `through` as an escape hatch, not beside `symbol` as a naming form
 - [ ] Annotations (`@Component`, `#[derive]`, `@dataclass`) attach to the symbol always, independent of `doc`
 - [ ] `doc` is tri-state: unset defaults to on for `symbol` and off for `match`; `doc=true` and `doc=false` force the choice
 - [ ] A test covers the abutting-comment limit (D9) so the behaviour is pinned rather than accidental, including the file-header variant
@@ -92,6 +96,12 @@ reproducible with it in place.
 symbol name containing `.` or `(` spliced raw into a regex is injection from
 content.
 
+**Enumerate matches once and let both features read it.** D14's warning has to
+name every matching line, so the full match list exists already; `occurrence=`
+(D17) is an index into it. Written as two passes — first-match-and-warn, then a
+separate scan for the Nth — they drift apart, and the warning stops agreeing
+with the selection.
+
 ## Blocked by
 
 - {% ref "WORK-586" /%} — the masker and the table this reads
@@ -107,9 +117,22 @@ gates a build. {% ref "WORK-573" /%} owns that question.
 Non-goals worth restating so they do not creep in: no cross-file resolution, no
 type-aware resolution, no rename tracking, and `lines=` is not being replaced.
 
+**`occurrence=` is ordinal addressing and must be documented as such.** It is a
+better coordinate than a line number — inserting unrelated content above does
+not move it — but it still drifts when another match is inserted above the one
+being addressed. D17 classifies it with D4's escape hatches deliberately;
+presenting it as an equal of `symbol=` would undersell that. The docs steer at
+a distinguishing regex first, and reach for the ordinal only when the anchors
+are genuinely identical.
+
+The case that motivated it: `site/content/index.md` carries four
+`{% feature %}` blocks, and {% ref "WORK-588" /%}'s `paired` is what makes them
+quotable at all — so the item that unlocks quoting rune blocks is the one that
+creates the ambiguity.
+
 ## References
 
-- {% ref "SPEC-131" /%} — steps 2–3 and 7–8, D1 (regex not parser), D2 (self-check scoped to `auto`), D3 (`match` is the contract), D4 (never a dead end), D6 (the error-fence path), D9 (`doc` defaults and the abutting-comment limit), D14 (ambiguous anchors warn)
+- {% ref "SPEC-131" /%} — steps 2–3 and 7–8, D1 (regex not parser), D2 (self-check scoped to `auto`), D3 (`match` is the contract), D4 (never a dead end), D6 (the error-fence path), D9 (`doc` defaults and the abutting-comment limit), D14 (ambiguous anchors warn), D17 (`occurrence=`, and why it is an escape hatch)
 - {% ref "WORK-586" /%} — the masker and language table
 - {% ref "WORK-588" /%} — the extents that make non-brace formats addressable
 - `packages/runes/src/lib/read-file.ts` — `readSnippetFile`, where resolution lands
