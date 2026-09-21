@@ -20,6 +20,9 @@ This project ships `@refrakt-md/mcp`, a Model Context Protocol server that wraps
 | `npx refrakt inspect <rune>` | `mcp__refrakt__refrakt.inspect` |
 | `npx refrakt contracts ...` | `mcp__refrakt__refrakt.contracts` |
 | `npx refrakt plugins list` | `mcp__refrakt__refrakt.plugins_list` |
+| `npx refrakt validate` | `mcp__refrakt__refrakt.validate` |
+
+`refrakt.validate` returns structured findings — file, line, severity, error id, message — rather than a rendered report, so you can filter and act on individual ones. Its default tier is per-page (parse and validate); pass `deep: true` to add the cross-page checks, which costs a full pipeline run. Config resolution runs first, because an unresolvable plugin makes every rune it contributes look like an undefined tag.
 
 **Read project state via MCP resources** when you need to inspect plan content without invoking a tool:
 

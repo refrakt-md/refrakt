@@ -26,6 +26,10 @@
     "./lib/levenshtein.js": {
       "types": "./dist/lib/levenshtein.d.ts",
       "default": "./dist/lib/levenshtein.js"
+    },
+    "./validate.js": {
+      "types": "./dist/commands/validate-core.d.ts",
+      "default": "./dist/commands/validate-core.js"
     }
   },
   "files": [
