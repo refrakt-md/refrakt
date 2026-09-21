@@ -13,10 +13,17 @@ import { normalizeRefraktConfig, resolveSite, loadPresets } from '@refrakt-md/tr
 import type { ThemeTokensConfig } from '@refrakt-md/types';
 import { compileXrefPatterns, type CompiledXrefPattern } from '@refrakt-md/runes';
 import { mergeFileRoots, resolveUserFileRoots, type FileRoots } from './file-roots.js';
-import { createSiteLoader, createVirtualSiteLoader, type SiteLoader } from './loader.js';
+import {
+	createSiteLoader,
+	createVirtualSiteLoader,
+	type SiteLoader,
+	type SiteLoaderOptions,
+	type VirtualSiteLoaderOptions,
+} from './loader.js';
 import type { ContentTree } from './content-tree.js';
 import type { Site, VirtualReader } from './site.js';
 import type { PipelineReporter } from './format.js';
+import type { ContentFinding } from './validate-content.js';
 
 export interface RefraktLoaderOptions {
 	/** Path to refrakt.config.json. Default: './refrakt.config.json' */
@@ -47,6 +54,20 @@ export interface RefraktLoader {
 	getTransform(): Promise<(tree: any) => any>;
 	/** Returns the syntax highlight transform. */
 	getHighlightTransform(): Promise<{ (tree: any): any; css: string }>;
+	/** Validate this site's content, returning structured findings.
+	 *
+	 *  SPEC-135 D3 — the default tier parses and validates without building:
+	 *  no layouts, no git timestamps, no identity transform, no cross-page
+	 *  pipeline. `deep: true` runs the full pipeline instead and keeps the
+	 *  findings it produced, which is a build without rendering.
+	 *
+	 *  Lives on the loader rather than beside it so the fast tier is handed the
+	 *  *same* assembled tag set, icons, file roots and validation settings the
+	 *  build would use — D5a, at the config-assembly level. A caller that
+	 *  reassembled them could silently disagree with the build about which
+	 *  runes exist, which is the failure the agreement guarantee exists to
+	 *  prevent. */
+	validateSite(opts?: { deep?: boolean }): Promise<ContentFinding[]>;
 	/** Clears the cached site so the next getSite() re-reads from disk. */
 	invalidateSite(): void;
 }
@@ -231,6 +252,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 	let _initPromise: Promise<void> | null = null;
 	let _transform: ((tree: any) => any) | null = null;
 	let _loader: SiteLoader | null = null;
+	let _siteLoaderOptions: SiteLoaderOptions | null = null;
 	let _hl: { (tree: any): any; css: string } | null = null;
 
 	async function init(): Promise<void> {
@@ -269,7 +291,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 				process.stderr.write(`refrakt: ${warning}\n`);
 			}
 
-			_loader = createSiteLoader({
+			_siteLoaderOptions = {
 				dirPath: contentDir,
 				basePath: '/',
 				icons: ctx.icons,
@@ -285,7 +307,8 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 				siteConfig: site,
 				dev: options?.dev ?? false,
 				reporter: options?.reporter,
-			});
+			};
+			_loader = createSiteLoader(_siteLoaderOptions);
 		})();
 		return _initPromise;
 	}
@@ -306,6 +329,48 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 			const { createHighlightTransform } = await import('@refrakt-md/highlight');
 			_hl = await createHighlightTransform(buildHighlightOptions(site));
 			return _hl;
+		},
+
+		async validateSite(opts?: { deep?: boolean }): Promise<ContentFinding[]> {
+			await init();
+			const o = _siteLoaderOptions!;
+
+			// `--deep` is literally a build without rendering: run the full
+			// four-phase pipeline and keep the validation findings it produced.
+			// SPEC-135 D3 — the cross-page tier is opt-in because it costs a
+			// build, which is the thing the default tier exists to avoid.
+			if (opts?.deep) {
+				const site = await _loader!.load();
+				return site.pipelineWarnings
+					.filter((w) => w.phase === 'validate')
+					.map((w) => ({
+						file: '',
+						url: w.url ?? '',
+						severity: w.severity,
+						message: w.message,
+					}));
+			}
+
+			// The fast tier, handed the *same* options `createSiteLoader` got.
+			// That is what makes SPEC-135 D5a hold at this level too: the tag
+			// set, icons, file roots and validation settings are not rebuilt
+			// here, they are the ones the build would have used.
+			const { validateContent } = await import('./validate-content.js');
+			return validateContent(o.dirPath, {
+				basePath: o.basePath,
+				icons: o.icons,
+				additionalTags: o.additionalTags,
+				plugins: o.plugins,
+				variables: o.variables,
+				securityPolicy: o.securityPolicy,
+				projectRoot: o.projectRoot,
+				xrefPatterns: o.xrefPatterns,
+				repoUrl: o.repoUrl,
+				repoBranch: o.repoBranch,
+				fileRoots: o.fileRoots,
+				sandboxExamplesDir: o.sandboxExamplesDir,
+				siteConfig: o.siteConfig,
+			});
 		},
 
 		invalidateSite(): void {
@@ -384,6 +449,7 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 	let _initPromise: Promise<void> | null = null;
 	let _transform: ((tree: any) => any) | null = null;
 	let _loader: SiteLoader | null = null;
+	let _virtualOptions: VirtualSiteLoaderOptions | null = null;
 	let _hl: { (tree: any): any; css: string } | null = null;
 
 	async function init(): Promise<void> {
@@ -419,7 +485,7 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 				process.stderr.write(`refrakt: ${warning}\n`);
 			}
 
-			_loader = createVirtualSiteLoader({
+			_virtualOptions = {
 				tree,
 				basePath: basePath ?? '/',
 				icons: ctx.icons,
@@ -435,7 +501,8 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 				fileRoots: Object.keys(fileRoots).length > 0 ? fileRoots : undefined,
 				siteConfig: site,
 				dev: dev ?? false,
-			});
+			};
+			_loader = createVirtualSiteLoader(_virtualOptions);
 		})();
 		return _initPromise;
 	}
@@ -449,6 +516,39 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 		async getTransform(): Promise<(tree: any) => any> {
 			await init();
 			return _transform!;
+		},
+
+		async validateSite(opts?: { deep?: boolean }): Promise<ContentFinding[]> {
+			await init();
+			const o = _virtualOptions!;
+			if (opts?.deep) {
+				const site = await _loader!.load();
+				return site.pipelineWarnings
+					.filter((w) => w.phase === 'validate')
+					.map((w) => ({
+						file: '',
+						url: w.url ?? '',
+						severity: w.severity,
+						message: w.message,
+					}));
+			}
+			// Same options the virtual site loader got — see the FS loader's
+			// `validateSite` for why this is handed over rather than rebuilt.
+			const { validateContent } = await import('./validate-content.js');
+			return validateContent(o.tree, {
+				basePath: o.basePath,
+				icons: o.icons,
+				additionalTags: o.additionalTags,
+				plugins: o.plugins,
+				variables: o.variables,
+				securityPolicy: o.securityPolicy,
+				projectRoot: o.projectRoot,
+				xrefPatterns: o.xrefPatterns,
+				repoUrl: o.repoUrl,
+				repoBranch: o.repoBranch,
+				fileRoots: o.fileRoots,
+				siteConfig: o.siteConfig,
+			});
 		},
 
 		async getHighlightTransform(): Promise<{ (tree: any): any; css: string }> {

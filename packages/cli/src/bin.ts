@@ -110,12 +110,16 @@ Scaffold-CSS Options:
   --force                  Overwrite existing files
 
 Validate Options:
-  --config <path>          Path to theme config module (default: auto-detect)
-  --manifest <path>        Path to manifest.json (default: auto-detect)
+  --site <name>            Restrict to one site from refrakt.config.json
+  --only <content|config>  Narrow to one layer (both run when absent)
+  --deep                   Add cross-page checks (costs a full pipeline run)
+  --format <text|json>     Output format (default: text)
+  --config-path <path>     Path to refrakt.config.json (default: ./refrakt.config.json)
 
 Theme Subcommands:
   theme install <source>   Install a theme (directory, .tgz, or npm package)
   theme info               Show current theme details
+  theme validate           Validate a ThemeConfig and/or theme manifest
 
 Examples:
   refrakt inspect hint --type=warning
@@ -893,6 +897,10 @@ function runScaffoldCss(scaffoldArgs: string[]): void {
 
 function runValidate(validateArgs: string[]): void {
 	let site: string | undefined;
+	let only: 'content' | 'config' | undefined;
+	let deep = false;
+	let format: 'text' | 'json' | undefined;
+	let configPath: string | undefined;
 
 	for (let i = 0; i < validateArgs.length; i++) {
 		const arg = validateArgs[i];
@@ -914,28 +922,78 @@ function runValidate(validateArgs: string[]): void {
 				console.error('Error: --site requires a site name');
 				process.exit(1);
 			}
+		} else if (arg === '--only') {
+			const value = validateArgs[++i];
+			if (value !== 'content' && value !== 'config') {
+				console.error('Error: --only must be "content" or "config"');
+				process.exit(1);
+			}
+			only = value;
+		} else if (arg === '--deep') {
+			deep = true;
+		} else if (arg === '--format') {
+			const value = validateArgs[++i];
+			if (value !== 'text' && value !== 'json') {
+				console.error('Error: --format must be "text" or "json"');
+				process.exit(1);
+			}
+			format = value;
+		} else if (arg === '--config-path') {
+			configPath = validateArgs[++i];
+			if (!configPath) {
+				console.error('Error: --config-path requires a file path');
+				process.exit(1);
+			}
+		} else if (arg === '--strict') {
+			// SPEC-135 D3 — deliberately absent. `site/` carries 35 warnings, and
+			// a gate that goes red on day one is a gate someone turns off. The
+			// severity levels already say which findings are worth stopping for.
+			console.error('Error: `--strict` does not exist. Warnings never affect the exit code.\n');
+			console.error('Severity already says which findings stop a build: errors fail, warnings');
+			console.error('do not. See SPEC-135 D3.');
+			process.exit(1);
 		} else if (arg === '--help' || arg === '-h') {
-			printUsage();
+			printValidateUsage();
 			process.exit(0);
 		} else if (arg.startsWith('-')) {
 			console.error(`Error: Unknown flag "${arg}"\n`);
-			printUsage();
+			printValidateUsage();
 			process.exit(1);
 		} else {
 			console.error(`Error: Unexpected argument "${arg}"\n`);
-			printUsage();
+			printValidateUsage();
 			process.exit(1);
 		}
 	}
 
 	import('./commands/validate.js')
-		.then(({ validateCommand }) => {
-			validateCommand({ site });
-		})
+		.then(({ validateCommand }) => validateCommand({ site, only, deep, format, configPath }))
 		.catch((err) => {
 			console.error(`\nError: ${(err as Error).message}`);
 			process.exit(1);
 		});
+}
+
+function printValidateUsage(): void {
+	console.log(`
+Usage: refrakt validate [options]
+
+Validate this project's sites: config resolution, then content, for every site
+in refrakt.config.json.
+
+Options:
+  --site <name>        Restrict to one site
+  --only <what>        "content" or "config" (both run when absent)
+  --deep               Add cross-page checks (broken refs, missing entities).
+                       Costs a full pipeline run; off by default.
+  --format <fmt>       "text" (default) or "json"
+  --config-path <p>    Path to refrakt.config.json (default: ./refrakt.config.json)
+
+Exit code is non-zero when any finding is at error severity, zero otherwise.
+Warnings never affect it.
+
+For theme-authoring artifacts, use \`refrakt theme validate\`.
+`);
 }
 
 /** `refrakt theme validate` — the theme-authoring checks, moved off the bare

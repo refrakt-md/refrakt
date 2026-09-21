@@ -122,30 +122,81 @@ Runes that share a block name (e.g., Tier and FeaturedTier both use `tier`) are 
 
 ## refrakt validate
 
-Validates theme configuration and manifest files for correctness. Reports errors and warnings, and exits with code 1 if validation fails.
+Validates **your project's sites** — config resolution first, then content — for every site in `refrakt.config.json`. Exits non-zero when any finding is at error severity.
+
+{% hint type="warning" %}
+**This changed in v0.36.0.** `refrakt validate` used to validate refrakt's own built-in theme config and print a checkmark — a self-test of the library, reported as though it were a check of your work. The theme-authoring checks moved to [`refrakt theme validate`](#refrakt-theme-validate), and `--config` / `--manifest` moved with them.
+{% /hint %}
 
 ```shell
-# Validate the base config (sanity check)
+# Every site: config resolution, then content
 refrakt validate
 
-# Validate a custom theme config
-refrakt validate --config ./my-theme/config.json
+# One site
+refrakt validate --site main
 
-# Validate a theme manifest
-refrakt validate --manifest ./my-theme/manifest.json
+# Narrow to one layer
+refrakt validate --only content
+refrakt validate --only config
 
-# Validate both
-refrakt validate --config ./config.json --manifest ./manifest.json
+# Add the cross-page tier (broken refs, missing entities)
+refrakt validate --deep
+
+# Machine-readable findings
+refrakt validate --format json
 ```
 
-Without options, validates the base theme config as a sanity check. Currently supports JSON config files via CLI; TypeScript configs require the module to be built first.
+### Two layers, in order
+
+**Config resolution runs first, because its failures cause content findings.** A plugin that fails to resolve takes its runes with it, and every use of them would then be reported as an undefined tag — dozens of errors against content that is perfectly correct, when the cause is one line of config. When that happens, `validate` reports the config failure and *skips* the content layer rather than listing both as peers:
+
+```
+main
+  ✗ error   sites.main.plugins[0]: plugin "@acme/runes" cannot be resolved …
+  content: skipped: 1 unresolved dependency would report every affected rune
+           as an undefined tag. Fix the config findings above first.
+```
+
+The config layer checks **resolution, not shape**. Shape is the published JSON Schema's job, and your editor already enforces it. What nothing else covers is whether the names resolve: `theme`, every entry in `plugins[]`, and `entityRoutes` types.
+
+### Two tiers
+
+The default tier parses and validates each page. It does not resolve layouts, read git history, run the identity transform, or run the cross-page pipeline — which is what makes it fast enough to run on every save.
+
+`--deep` adds the cross-page phases (broken `{% ref %}` targets, missing entities, nav slug resolution). That is a full pipeline run, so it costs about what a build costs.
+
+### Warnings never fail
+
+Only error-severity findings affect the exit code, and there is no `--strict`. A gate that goes red on day one is a gate someone turns off; severity already says which findings are worth stopping for.
+
+One exception, by design: `critical` findings — a document that could not be understood, such as an undefined tag — are always reported at error severity. No `validation` setting silences them.
 
 ### Options
 
 | Flag | Description |
 |------|-------------|
-| `--config <path>` | Path to theme config (JSON) |
-| `--manifest <path>` | Path to manifest.json |
+| `--site <name>` | Restrict to one site from `refrakt.config.json` |
+| `--only <content\|config>` | Narrow to one layer (both run when absent) |
+| `--deep` | Add the cross-page tier (costs a full pipeline run) |
+| `--format <text\|json>` | Output format (default: `text`) |
+| `--config-path <path>` | Path to `refrakt.config.json` (default: `./refrakt.config.json`) |
+
+### refrakt theme validate
+
+The theme-authoring checks, for people writing a theme rather than a site.
+
+```shell
+refrakt theme validate --config ./my-theme/config.json
+refrakt theme validate --manifest ./my-theme/manifest.json
+refrakt theme validate --config ./config.json --manifest ./manifest.json
+```
+
+Currently supports JSON config files via CLI; TypeScript configs require the module to be built first.
+
+| Flag | Description |
+|------|-------------|
+| `--config <path>` | Path to a `ThemeConfig` (JSON) |
+| `--manifest <path>` | Path to `manifest.json` |
 
 ## refrakt theme
 
