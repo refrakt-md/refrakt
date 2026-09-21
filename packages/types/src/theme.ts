@@ -59,8 +59,10 @@ export interface ThemeManifest {
 	/** @deprecated Target framework hint (e.g. "svelte"). Documentation-only —
 	 *  adapters do not gate on it (ADR-024). A framework-agnostic theme omits it. */
 	target?: string;
-	/** Relative path to CSS custom properties file */
-	designTokens: string;
+	/** Relative path to CSS custom properties file. Optional — no runtime code
+	 *  reads it, and requiring it rejected both the reference theme and every
+	 *  scaffolded one (BUG-022). */
+	designTokens?: string;
 	/** Layout definitions keyed by name */
 	layouts: Record<string, LayoutDefinition>;
 	/** Route-to-layout mapping rules, evaluated in order (first match wins).
@@ -84,8 +86,11 @@ export interface ThemeManifest {
 }
 
 export interface LayoutDefinition {
-	/** Relative path to layout component file */
-	component: string;
+	/** Relative path to a framework layout component. Optional — a
+	 *  framework-agnostic theme (ADR-024) declares regions only, and the
+	 *  LayoutConfig lives in the theme's module. Present on a
+	 *  `--target <framework>` theme. */
+	component?: string;
 	/** All region names this layout supports */
 	regions: string[];
 	/** Regions that must be provided for this layout to render correctly */
