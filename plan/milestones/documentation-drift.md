@@ -11,10 +11,10 @@ about the very features that would have caught them.
 
 Three failures, each one level up from the last:
 
-**The wrong region is quoted.** `snippet`, `file-ref` and `expand` address files
-by line range only — a coordinate into a file nobody promised to hold still. 23
-of 37 `snippet` invocations in `site/content` are line-addressed, and each has a
-100% silent-wrong exposure to any edit above its range.
+**The wrong region is quoted.** `snippet` and `file-ref` address files by line
+range only — a coordinate into a file nobody promised to hold still. 23 of 37
+`snippet` invocations in `site/content` are line-addressed, and each has a 100%
+silent-wrong exposure to any edit above its range.
 
 {% ref "BUG-020" /%} is the live instance: three pages carry a `file-ref`
 labelled `SiteConfig` pointing at `packages/types/src/theme.ts` lines 74–125.
@@ -117,6 +117,13 @@ Do not let it slip. It is placed last because an impact lookup that knows about
 `snippet` invocations but not about the guides misses the pages most worth
 updating — not because it is a tail.
 
+Its only hard dependency is {% ref "WORK-595" /%}, deliberately.
+{% ref "WORK-591" /%}'s marker is a *soft* one: hard-blocking on it would put
+the payoff behind the entire {% ref "SPEC-131" /%} chain, which is the longest
+path here. Marker awareness lands behind a capability check whenever
+{% ref "WORK-591" /%} does, and {% ref "WORK-596" /%} ships without it if
+{% ref "SPEC-134" /%} slips.
+
 ## A stale prerequisite, now cleared
 
 {% ref "SPEC-134" /%}'s Approach says the feature would "ship as a no-op with a
@@ -154,6 +161,32 @@ dependency in either direction.** The spec text should be corrected when
 - **Making a build fail.** {% ref "WORK-573" /%}, per above.
 - **Partial or field-level review markers.** `review-match=` hashing only
   signature lines. Deferred until an author hits the need.
+
+## Minor, and additive — but a large surface
+
+Following v0.36.0's habit of saying this plainly in the milestone rather than
+discovering it at release time. Nothing here is breaking, but the public
+surface this adds is the widest of any recent milestone:
+
+| Surface | Added |
+|---|---|
+| `snippet` / `file-ref` attributes | `symbol`, `match`, `occurrence`, `extent`, `until`, `through`, `doc`, `reindent`, `highlight-match`, `reviewed` |
+| CLI | `refrakt snippet review` (+ `--check`, `--update`, `--interactive`), `refrakt stale` |
+| MCP | `refrakt_stale` |
+| Frontmatter | `documents` |
+
+Two defaults are worth naming in the changeset because they are the only places
+existing content could notice anything:
+
+- **`reindent` defaults on for anchors and off for `lines=`** ({% ref "SPEC-131" /%}
+  D16), specifically so none of the 23 existing invocations change how they
+  render. If that default is ever made uniform, it is a visual change to every
+  one of them.
+- **`doc` defaults on for `symbol` and off for `match`** (D9). Only reachable
+  through new attributes, so nothing existing moves.
+
+{% ref "WORK-590" /%} rewrites 23 invocations in our own `site/content`. That is
+our content, not a consumer migration — no upgrade note is owed.
 
 ## Two things that must not be traded away
 

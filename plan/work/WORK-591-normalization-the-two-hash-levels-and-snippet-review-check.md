@@ -66,7 +66,8 @@ paragraph *might* be stale is a straightforward regression for every reader.
 
 ## Acceptance Criteria
 
-- [ ] `reviewed` is accepted on `snippet`, `file-ref` and `expand`, and its absence leaves behaviour unchanged
+- [ ] `reviewed` is accepted on `snippet` and `file-ref`, and its absence leaves behaviour unchanged
+- [ ] `expand` does not accept `reviewed` — it resolves no slice, so there is nothing of the right shape to hash
 - [ ] The hashed form applies `reindent` first, then normalizes line endings, per-line trailing whitespace, and the trailing newline
 - [ ] Comments are included in the hashed form, covered by a test where only a doc comment changes and the marker fires
 - [ ] A nesting-only change (a function moved into a class, content otherwise identical) does not fire the marker

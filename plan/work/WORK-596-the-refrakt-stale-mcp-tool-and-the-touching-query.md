@@ -56,8 +56,9 @@ rot that has already happened.
 - [ ] `touching` returns every match, unbounded by `--top`
 - [ ] `refrakt_stale { since: <ref> }` resolves the changed paths from that ref and answers as `touching` would
 - [ ] The ranking, `touching` and `since` queries all read the same shared index, with no query owning it
-- [ ] An invocation carrying a matching {% ref "SPEC-134" /%} `reviewed` marker scores zero regardless of commit count
 - [ ] CLAUDE.md documents the `touching` call as a step in the per-task workflow
+- [ ] Marker awareness is additive and gated on {% ref "WORK-591" /%}: where the `reviewed` attribute exists, an invocation carrying a matching marker scores zero regardless of commit count, and `touching` rows report whether one is attached
+- [ ] With {% ref "WORK-591" /%} not yet landed, every other criterion above still passes and the marker column is absent rather than blocking
 
 ## Approach
 
@@ -72,7 +73,15 @@ count stands.
 ## Blocked by
 
 - {% ref "WORK-595" /%} — an impact lookup without the guides misses the pages most worth updating
-- {% ref "WORK-591" /%} — the `reviewed` marker the zero-score rule and the `touching` rows read
+
+{% ref "WORK-591" /%} is a **soft** dependency and deliberately not listed
+above. The marker-aware criteria need it; nothing else here does, and hard-
+blocking on it would put this item behind the entire
+{% ref "SPEC-131" /%} chain ({% ref "WORK-586" /%} → {% ref "WORK-587" /%} →
+{% ref "WORK-589" /%} → {% ref "WORK-591" /%}) — the longest path in the
+milestone, and the wrong thing to put in front of the one item that makes the
+feature preventive rather than retrospective. Build the marker column behind a
+capability check and land it whenever {% ref "WORK-591" /%} does.
 
 ## Notes
 

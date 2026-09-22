@@ -2,15 +2,22 @@
 
 # Address embedded source by name, not by line number
 
-`snippet`, `file-ref`, and `expand` address the files they embed by **line
-range only**. A line range is a coordinate into a file that nobody promised to
-hold still, so editing anything above the range silently repoints it — the page
-renders the wrong code, with no warning, looking entirely authoritative.
+`snippet` and `file-ref` address the files they embed by **line range only**. A
+line range is a coordinate into a file that nobody promised to hold still, so
+editing anything above the range silently repoints it — the page renders the
+wrong code, with no warning, looking entirely authoritative.
 
-This spec adds a second addressing mode to the resolver all three already
-share: a **regex anchor plus a delimiter-balanced extent**. The anchor names
-what the author meant (`symbol="SiteConfig"`), so a rename or deletion becomes a
-loud, named failure instead of a wrong render.
+This spec adds a second addressing mode to the resolver both share: a **regex
+anchor plus a delimiter-balanced extent**. The anchor names what the author
+meant (`symbol="SiteConfig"`), so a rename or deletion becomes a loud, named
+failure instead of a wrong render.
+
+> **`expand` is not a third consumer, despite appearances.** It sits in the
+> same module but on `readWholeSandboxedFile`, which returns raw text for
+> `Markdoc.parse` with no slicing and no `[start, end]`. `expand` embeds a
+> *document*, not a region — it has no `lines=`, so it has none of the exposure
+> above and nothing to migrate. Extending it to address regions would be a
+> different feature (a partial include), and this spec does not propose one.
 
 Deliberately *not* a language parser. Measurements below put an ~120-line
 implementation at 95.37% exact spans against the TypeScript compiler with a
@@ -749,7 +756,8 @@ selector does not prejudge its shape.
 
 ## Acceptance Criteria
 
-- [ ] `readSnippetFile` resolves `symbol` and `match` anchors in addition to `lines`, and `snippet`, `file-ref`, and `expand` all gain the capability from that one change
+- [ ] `readSnippetFile` resolves `symbol` and `match` anchors in addition to `lines`, and both `snippet` and `file-ref` gain the capability from that one change
+- [ ] `expand` is unchanged — it reads whole files through `readWholeSandboxedFile` and gains no anchor attributes
 - [ ] `symbol` builds its anchor from a documented keyword table; `match` accepts a raw regex; the two are mutually exclusive with each other and with `lines`
 - [ ] `extent` accepts `auto` (default), `dedent`, `section`, and `paired`; `until` / `through` override all four
 - [ ] `until` excludes its matching line and `through` includes it; neither is inferred from the file or the strategy
@@ -853,7 +861,7 @@ than reading them off this spec.
 
 - {% ref "SPEC-078" /%} — `file-ref`; listed symbol resolution as a non-goal and named line-range staleness as the tax this spec repays
 - {% ref "SPEC-062" /%} — `snippet`; the origin of the `lines=` addressing model and the error-fence path D6 reuses
-- {% ref "SPEC-066" /%} — `expand`; the third consumer of the shared reader
+- {% ref "SPEC-066" /%} — `expand`; in the same module but on `readWholeSandboxedFile`, and out of scope: it embeds documents, not regions
 - {% ref "SPEC-113" /%} — the `ProjectFiles` seam that owns containment, unchanged by this spec
 - {% ref "SPEC-129" /%} — the pre-transform `include` rune. A fourth path-addressed rune: if it lands, it should take the same addressing layer rather than growing its own `lines=`
 - {% ref "SPEC-126" /%} — rejected line-addressed embedding for the config reference and proposed the one-off assertion this spec generalises

@@ -31,6 +31,18 @@ of `ThemeManifest`, the whole of `LayoutDefinition`, and the start of
 On the documentation page for the rune whose addressing model is the subject of
 the spec.
 
+**This item is the bug's fix (2), not its only fix.** {% ref "BUG-020" /%}
+proposes two, and argues for the first *immediately* rather than waiting on
+this milestone — repoint the three drawers at `packages/types/src/config.ts`
+with a corrected range, because the pages are live and the `file-ref` doc page
+is teaching the broken pattern by example. That correction leaves the exposure
+in place and does not need the resolver.
+
+So do not treat the bug as parked behind this item. If fix (1) has landed by
+the time the codemod runs, these three invocations are ordinary migrations like
+the other twenty; if it has not, this item is where both happen at once. Either
+way the bug closes here at the latest.
+
 ## Why a codemod rather than a hand migration (D7)
 
 Converting 23 invocations by hand is tedious and exactly the kind of change

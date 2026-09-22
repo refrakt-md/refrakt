@@ -1,15 +1,23 @@
-{% work id="WORK-587" status="ready" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, expand, resolver, anchors, drift" milestone="v0.37.0" %}
+{% work id="WORK-587" status="ready" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, anchors, drift" milestone="v0.37.0" %}
 
 # Anchor resolution, the auto extent, and the corpus test
 
-The core of {% ref "SPEC-131" /%} phase 1. After this item, `snippet`,
-`file-ref` and `expand` can address a region by name instead of by coordinate,
-and a symbol that moves fails loudly instead of rendering plausible wrong code.
+The core of {% ref "SPEC-131" /%} phase 1. After this item, `snippet` and
+`file-ref` can address a region by name instead of by coordinate, and a symbol
+that moves fails loudly instead of rendering plausible wrong code.
 
-One change, three consumers: resolution lands in `read-file.ts` behind the
+One change, two consumers: resolution lands in `read-file.ts` behind the
 existing `ReadFileOptions` shape, and both call sites
-(`snippet-pipeline.ts`, `file-ref-resolve.ts`) gain the capability by passing
-the new fields through.
+(`snippet-pipeline.ts:174`, `file-ref-resolve.ts:209`) gain the capability by
+passing the new fields through.
+
+**Two, not three — `expand` is not a consumer of this.** The spec's own
+Proposal says so and its acceptance criteria said otherwise; the criteria were
+wrong. `expand-pipeline.ts:347` calls `readWholeSandboxedFile`, a different
+function that returns raw text straight into `Markdoc.parse` with no slicing
+and no `[start, end]`. `expand` embeds a document rather than a region, has no
+`lines=` and therefore none of the exposure this item removes. Do not wire it
+up; extending it to partial includes is a separate feature.
 
 ## The three termination rules are not guessable
 
@@ -61,7 +69,8 @@ refusal, 0.07% silent-wrong, 0% false alarm.
 
 ## Acceptance Criteria
 
-- [ ] `readSnippetFile` resolves `symbol` and `match` anchors in addition to `lines`, and `snippet`, `file-ref`, and `expand` all gain the capability from that one change
+- [ ] `readSnippetFile` resolves `symbol` and `match` anchors in addition to `lines`, and both `snippet` and `file-ref` gain the capability from that one change
+- [ ] `expand` is unchanged and gains no anchor attributes
 - [ ] `symbol` builds its anchor from the keyword table; `match` accepts a raw regex; the two are mutually exclusive with each other and with `lines`
 - [ ] Anchors match against raw source; a match landing inside a masked region is skipped, covered by tests for `match='"scripts"'` on `package.json` (must resolve) and an anchor mentioned only in a comment (must be skipped)
 - [ ] The extent terminates only on a `;` at anchor depth or a `}` closing a brace block opened at anchor depth; parens and brackets nest without terminating
