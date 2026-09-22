@@ -65,8 +65,9 @@ correct only for as long as nobody edits the fourteen lines above it.
 ### It has already happened, to this spec's own example
 
 The `SiteConfig` scenario above was written as a hypothetical. It is not one.
-Three live pages — `runes/drawer.md:155`, `runes/file-ref.md:51`, and
-`runes/file-ref.md:75` — carry:
+Three published references — `runes/file-ref.md:51`, which renders, plus
+`runes/drawer.md:155` and `runes/file-ref.md:75`, which sit inside fences and
+so teach the pattern rather than executing it — carry:
 
 ```markdoc
 {% file-ref path="packages/types/src/theme.ts" lines="74-125" label="SiteConfig" preview="drawer" /%}
@@ -82,7 +83,16 @@ Three live pages — `runes/drawer.md:155`, `runes/file-ref.md:51`, and
 A drawer captioned "SiteConfig" opens onto the back half of one interface and
 the whole of two others, on the documentation page for the rune whose
 addressing model is the subject of this spec. Tracked as
-{% ref "BUG-020" /%}.
+{% ref "BUG-020" /%}, whose ranges have since been corrected
+(refrakt-md/refrakt#639) while leaving the addressing exposure this spec
+removes.
+
+A fourth reference, found later and recorded on the bug, is the more
+instructive one: `runes/file-ref.md:40` pointed at `theme.ts` 42–58 labelled
+`SiteThemeConfig` — right file, right symbol, and a range that had simply slid
+(the interface is 19–49). No move, no rename, nothing a careful author would
+have done differently. That is the ordinary case this spec exists for; the
+`SiteConfig` headline above is the rarer one.
 
 This is worse than the failure the spec predicted. The prediction was *drift* —
 a range sliding out of alignment with a symbol that is still there. What

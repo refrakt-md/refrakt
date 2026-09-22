@@ -20,28 +20,37 @@ comment block.
 
 ## {% ref "BUG-020" /%} is resolved here
 
-Three live pages — `runes/drawer.md:155`, `runes/file-ref.md:51`, and
-`runes/file-ref.md:75` — carry a `file-ref` labelled `SiteConfig` pointing at
+Three published references — `runes/file-ref.md:51`, `runes/drawer.md:155` and
+`runes/file-ref.md:75` — carried a `file-ref` labelled `SiteConfig` pointing at
 `packages/types/src/theme.ts` lines 74–125. `SiteConfig` is not in that file (it
-is at `packages/types/src/config.ts:42`), and `theme.ts` is 104 lines long, so
-21 of the 52 requested lines do not exist. The drawer opens onto the back half
-of `ThemeManifest`, the whole of `LayoutDefinition`, and the start of
+is at `packages/types/src/config.ts:42-148`), and `theme.ts` is 104 lines long,
+so 21 of the 52 requested lines did not exist. The drawer opened onto the back
+half of `ThemeManifest`, the whole of `LayoutDefinition`, and the start of
 `ComponentDefinition`.
 
 On the documentation page for the rune whose addressing model is the subject of
 the spec.
 
-**This item is the bug's fix (2), not its only fix.** {% ref "BUG-020" /%}
-proposes two, and argues for the first *immediately* rather than waiting on
-this milestone — repoint the three drawers at `packages/types/src/config.ts`
-with a corrected range, because the pages are live and the `file-ref` doc page
-is teaching the broken pattern by example. That correction leaves the exposure
-in place and does not need the resolver.
+**This item is the bug's fix (2). Fix (1) has already landed**
+(refrakt-md/refrakt#639) — the ranges were corrected on their own branch rather
+than waiting on this milestone, because the `file-ref` doc page was teaching
+the broken pattern by example. That correction restored accuracy and left the
+addressing exposure exactly where it was.
 
-So do not treat the bug as parked behind this item. If fix (1) has landed by
-the time the codemod runs, these three invocations are ordinary migrations like
-the other twenty; if it has not, this item is where both happen at once. Either
-way the bug closes here at the latest.
+So by the time the codemod runs these are **ordinary migrations**, pointing at
+the right files with the right ranges, and they convert like the other
+nineteen. The bug closes here, on the anchoring rather than on the ranges.
+
+Two corrections to the bug's original account, both recorded on it:
+
+- **Of the three invocations it names, only `file-ref.md:51` renders.** The
+  other two sit inside ` ```markdoc ` fences, so they were wrong *examples*
+  rather than wrong drawers. For the codemod this matters: a fenced invocation
+  is not a resolvable target, so it cannot be verified byte-identically and
+  must be rewritten by hand to match whatever the live ones become.
+- **There is a fourth**, `file-ref.md:40`, labelled `SiteThemeConfig` and
+  therefore missed by a `SiteConfig` grep. It anchors to `theme.ts`, not
+  `config.ts`.
 
 ## Why a codemod rather than a hand migration (D7)
 
@@ -78,7 +87,7 @@ it. Do not do it speculatively.
 - [ ] The codemod's byte-identical check compares the slice before `reindent` is applied
 - [ ] An invocation carrying `highlight=` or `linenumbers=` is either preserved with its coordinates or rewritten to `highlight-match=`, with its own verification separate from the slice check
 - [ ] The 23 line-addressed snippets in `site/content` are migrated, or individually justified as intentionally line-addressed
-- [ ] {% ref "BUG-020" /%}'s three `file-ref` drawers resolve to `SiteConfig` in `packages/types/src/config.ts`, and {% ref "BUG-020" /%} is closed
+- [ ] {% ref "BUG-020" /%}'s four references are anchored — `symbol="SiteConfig"` on the three in `config.ts`, `symbol="SiteThemeConfig"` on the one in `theme.ts` — and {% ref "BUG-020" /%} is closed
 - [ ] The codemod does **not** stamp {% ref "SPEC-134" /%} `reviewed` markers on anything it migrates
 - [ ] Which languages and formats the migration actually reached is recorded, as the input to D15's deferred config-surface decision
 
