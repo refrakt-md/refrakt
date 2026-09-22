@@ -6,7 +6,55 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.35.0
+## v0.36.0
+
+- Pipeline diagnostics now print in the adapter dev server.
+- Previously a dev session showed **no pipeline diagnostics of any severity** — the data was there (`loadContent` runs in dev via `createRefraktLoader` and populates `site.pipelineWarnings`), but nothing read it. Content validation findings, including error-severity ones, were computed on every edit and discarded. They now appear on first load and again on each HMR reload, so a mistyped rune name or an undefined attribute surfaces while you are editing rather than at build time.
+- `PipelineReporter` — a `(stats, warnings) => void` sink.
+- `stderrReporter` — the default, writing `formatPipelineSummary` to stderr.
+- A `reporter` option on `loadContent`, `loadContentFromTree`, `createSiteLoader`, `createVirtualSiteLoader` and `createRefraktLoader`.
+- An options-bag overload for `loadContent`, beside its existing positional form. **The positional form is unchanged and still exported** — no consumer needs to migrate.
+- Reporting happens once per _actual_ content load: a cached site returned without re-loading does not re-report, so dev prints per reload rather than per request. `loadContent` itself stays silent unless given a reporter; the stderr default lives on the loaders, so calling the library directly prints nothing it did not print before.
+- Adapters no longer format their own summary — sveltekit, eleventy, astro, nuxt, next and the HTML scaffold template all route through the reporter. Build output is byte-identical.
+- **`refrakt validate` now validates your project.**
+- With no arguments it used to validate `baseConfig` — refrakt's own built-in theme config — and print a checkmark. In a user's project that is a self-test of the library, reported as though it were a check of their work. It now validates every site in `refrakt.config.json`: config resolution first, then content.
+- Exits non-zero when any finding is at error severity, zero otherwise. Warnings never affect the exit code and there is no `--strict`: a gate that goes red on day one is a gate someone turns off.
+- **Config resolution runs first, because its failures cause content findings.** A plugin that fails to resolve takes its runes with it, and every use of them would be reported as an undefined tag — dozens of errors against correct content, caused by one line of config. When that happens the command reports the config failure and skips the content layer rather than listing both as peers.
+- The config layer checks resolution, not shape: whether `theme`, every entry in `plugins[]`, and `entityRoutes` types actually resolve. Shape is the published JSON Schema's job.
+- `@refrakt-md/content` gains `RefraktLoader.validateSite({ deep })`, which returns structured findings for a site using the loader's own assembled tag set — so the fast tier cannot disagree with the build about which runes exist.
+- Add `refrakt config validate` — the config-resolution layer on its own.
+- Checks that `refrakt.config.json`'s names resolve — the theme package and every entry in `plugins[]` — which is the half the published JSON Schema cannot cover, since it validates shape rather than resolution.
+- It sits beside the `refrakt config migrate` that already exists, and runs the same layer `refrakt validate` runs first, narrowed to that layer rather than reimplemented. A test pins the two commands to identical findings for the same project.
+- This completes WORK-579: the theme-authoring checks moved to `refrakt theme validate`, and the config layer now has its own entry point.
+- Add a `refrakt.validate` MCP tool.
+- The MCP surface had `plan_validate` and no content equivalent — exactly the gap an agent falls into: it could check the plan graph it just edited, and not the content.
+- Findings are structured — file, line, severity, error id, message — not a rendered report, so a caller can filter and act on individual ones rather than parsing text. Per-site counts come with them, and the content list is capped (default 200) with a `contentTruncated` count, because a site mid-migration can produce thousands.
+- It calls the same function `refrakt validate` calls. `@refrakt-md/cli` now exports that run as `@refrakt-md/cli/validate.js` (`runValidation`, `hasErrors`), with the CLI command reduced to formatting and an exit code — no second implementation, and no shelling out to parse output back into data.
+- **Breaking (pre-1.0):** `refrakt validate`'s `--config` and `--manifest` flags have moved to `refrakt theme validate`.
+- They validate **theme-authoring** artifacts — a `ThemeConfig` and a theme manifest — under a name that reads like a **site-authoring** one. `theme` already holds `install`, `info` and `list`, so they slot in beside them:
+- Passing `--config` or `--manifest` to the bare command now errors and names where the flag went. They are retired rather than aliased through a deprecation window: pre-1.0, and the behaviour they hung off was close to a no-op.
+- **`refrakt validate` no longer validates `baseConfig`.** With no arguments it used to validate refrakt's own built-in theme config and print a checkmark — in a user's project, a self-test of the library reported as though it were a check of their work. It now reports that it validated nothing and exits non-zero. Site validation — config resolution, then content, for every site in `refrakt.config.json` — lands in the next release of this milestone.
+- `refrakt theme validate` with no arguments does the same rather than falling back to `baseConfig`: a validation command must never report success on nothing.
+- Fix `npx refrakt` not working from a fresh clone.
+- npm skips creating a workspace bin symlink when its target does not exist at install time, and every bin in this repo points into `dist/` — which `npm ci` runs before. So `node_modules/.bin/refrakt` was never created, and every documented `npx refrakt …` command failed with "could not determine executable to run".
+- The root `build` script now ends with `npm rebuild --workspaces` (~3s), which relinks `refrakt`, `create-refrakt` and `refrakt-mcp` once their `dist/` exists.
+- This only ever affected working in this repository; consumers install the CLI from npm, where the bin is linked normally.
+- Add `validateContent` — validate a content tree without building it.
+- `loadContent` validates as a side effect of building a `Site`: it resolves routes and layouts, shells out to git for timestamps, runs the identity transform, then runs three cross-page phases over every page. `validateContent` runs only what validation needs — parse, preprocess, `Markdoc.validate` — and returns findings rather than a `Site`. On refrakt's own 235-page site that is **8x faster** (460ms vs 3.8s).
+- Findings are structured, so a caller can filter by error id or open a file at a line without parsing text:
+- The two paths validate against a config built by the _same_ function, so they cannot disagree about which tags and attributes exist — and a test asserts they produce identical findings over the real site corpus, including under `disableIds`, a narrowed `ids` allow-list, and `enabled: false`.
+- Also exported: `validatePageDetailed` and `DetailedFinding`, which carry the Markdoc error id and source line alongside the `PipelineWarning` that `validatePage` already returns. `validatePage` is unchanged.
+- Fix the top-level `validation` config shorthand, which was declared everywhere but read nowhere.
+- `validation` (SPEC-132) was declared on `RefraktConfig` as a deprecated shorthand, described in the JSON Schema, and documented in the generated configuration reference — but it was missing from `SITE_FIELDS`, the list that actually makes a shorthand work. A project that configured validation the documented way got editor autocomplete, schema shape-checking, no warning, and no effect.
+- Adding it to `SITE_FIELDS` restores both directions the list drives: the shorthand now folds into the site config at load, and `refrakt config migrate` moves it into `site` along with the other flat-shape fields.
+- Note that the shorthands are the _flat shape_ — they apply to a config with no `site`/`sites` key, and are ignored wholesale beside one. That is true of `sandbox`, `baseUrl` and every other entry, and is unchanged here.
+- Prevent duplicate plan IDs before the merge that creates them, and renumber them when it can be proved what every reference meant.
+- `plan validate` already reported duplicates at error severity. It could only do so once **both** claimants were reachable — after the merge, when every `{% ref %}` to that ID had already become ambiguous. `--against <ref>` fires one step earlier, on the branch, comparing the IDs you claim against those the base ref spends. A ref that cannot be resolved fails loudly rather than reporting a clean run.
+- `plan migrate ids` joins the `filenames` / `pr-attrs` / `dependencies` family — dry-run by default, `--apply` writes, `--git` stages. It renumbers an entity's `id`, its filename and its self-references, and rewrites `{% ref %}`, `{% xref %}`, `source=` and `supersedes=`.
+- **It refuses when anything outside the moved entity references the colliding ID**, naming each blocking reference with file and line. Once two files share an ID there is no way to establish which one a reference meant, and repointing one at the wrong entity is silent and permanent.
+- The duplicate-ID finding now names `plan migrate ids` as its fix, matching how the filename findings name theirs.
+
+## v0.35.0 - September 17, 2026
 
 - Declare a rune's schema.org mapping as a table (SPEC-130, WORK-561/563/565/566)
 - A rune's structured data used to be built by hand inside its `transform()`: `schemaOrgType: 'Product'` here, a `schema: { name: someLocalTag }` there, a `<span typeof="Person">` assembled from filtered children somewhere else. No tool could see any of it, because it only existed as JavaScript that had already run — and JSON-LD is the one output nobody looks at, since a page renders identically whether its structured data is right or ruined.

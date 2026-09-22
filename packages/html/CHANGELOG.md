@@ -1,5 +1,18 @@
 # @refrakt-md/html
 
+## 0.36.0
+
+### Patch Changes
+
+- Updated dependencies [c050169]
+- Updated dependencies [481415f]
+- Updated dependencies [a911cc4]
+- Updated dependencies [0348f37]
+  - @refrakt-md/content@0.36.0
+  - @refrakt-md/transform@0.36.0
+  - @refrakt-md/behaviors@0.36.0
+  - @refrakt-md/types@0.36.0
+
 ## 0.35.0
 
 ### Patch Changes

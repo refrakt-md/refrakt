@@ -34,13 +34,13 @@ for the shape.
 
 ## Anchoring to a line range
 
-`lines` accepts a single line (`"42"`) or a range (`"42-58"`). Drives both the GitHub `#L42-L58` anchor and the snippet slice when previewing.
+`lines` accepts a single line (`"19"`) or a range (`"19-49"`). Drives both the GitHub `#L19-L49` anchor and the snippet slice when previewing.
 
 ```markdoc
-{% file-ref path="packages/types/src/theme.ts" lines="42-58" label="SiteThemeConfig" /%}
+{% file-ref path="packages/types/src/theme.ts" lines="19-49" label="SiteThemeConfig" /%}
 ```
 
-The href becomes `https://github.com/{owner}/{repo}/blob/{repoBranch}/packages/types/src/theme.ts#L42-L58` — clicking jumps straight to the highlighted range on GitHub.
+The href becomes `https://github.com/{owner}/{repo}/blob/{repoBranch}/packages/types/src/theme.ts#L19-L49` — clicking jumps straight to the highlighted range on GitHub.
 
 ## Preview drawer
 
@@ -48,7 +48,7 @@ The href becomes `https://github.com/{owner}/{repo}/blob/{repoBranch}/packages/t
 
 {% preview source=true %}
 
-See {% file-ref path="packages/types/src/theme.ts" lines="74-125" label="SiteConfig" preview="drawer" /%} for the full shape.
+See {% file-ref path="packages/types/src/config.ts" lines="42-148" label="SiteConfig" preview="drawer" /%} for the full shape.
 
 {% /preview %}
 
@@ -72,7 +72,7 @@ The filename default (e.g. `theme.ts`) is conservative — when the file-ref ref
 {% file-ref path="package.json" /%}
 
 {# Refers to a symbol in the file: pass a label #}
-{% file-ref path="packages/types/src/theme.ts" lines="74-125" label="SiteConfig" /%}
+{% file-ref path="packages/types/src/config.ts" lines="42-148" label="SiteConfig" /%}
 ```
 
 ## Attributes

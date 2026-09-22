@@ -197,6 +197,90 @@ export const detectTool: McpTool = {
 };
 
 // ----------------------------------------------------------------------------
+// refrakt.validate — validate the project's sites (SPEC-135 D6 / WORK-581)
+// ----------------------------------------------------------------------------
+
+export const validateTool: McpTool = {
+	name: 'refrakt.validate',
+	description:
+		"Validate this project's sites: config resolution first, then content, for every site in refrakt.config.json. " +
+		'Returns structured findings (file, line, severity, error id, message) rather than a rendered report, so a caller can filter and act on individual findings. ' +
+		'The default tier is per-page — parse and validate, no layouts, no git, no transform, no cross-page pipeline. ' +
+		'Set `deep` to add the cross-page checks (broken refs, missing entities, nav slug resolution); that costs a full pipeline run, roughly what a build costs. ' +
+		'Config resolution runs first because its failures cause content findings: an unresolvable plugin makes every rune it contributes look like an undefined tag, so when that happens the content layer is skipped and says so.',
+	inputSchema: {
+		type: 'object',
+		properties: {
+			site: { type: 'string', description: 'Restrict to one site. Omitted means every site.' },
+			only: {
+				type: 'string',
+				enum: ['content', 'config'],
+				description: 'Narrow to one layer. Both run when absent.',
+			},
+			deep: {
+				type: 'boolean',
+				description: 'Run the cross-page tier as well. Costs a full pipeline run. Default: false.',
+			},
+			configPath: {
+				type: 'string',
+				description: 'Path to refrakt.config.json. Default: ./refrakt.config.json.',
+			},
+			limit: {
+				type: 'number',
+				description:
+					'Cap the findings returned per site. Default: 200. A site mid-migration can produce thousands, and an unbounded list is not useful to a caller.',
+			},
+		},
+		additionalProperties: false,
+	},
+	async handler(input, ctx) {
+		const o = input as {
+			site?: string;
+			only?: 'content' | 'config';
+			deep?: boolean;
+			configPath?: string;
+			limit?: number;
+		};
+		// Calls the same function the CLI calls — no second implementation, and
+		// no shelling out to parse text back into data (SPEC-135 D6).
+		const { runValidation, hasErrors } = await import('@refrakt-md/cli/validate.js');
+		const result = await runValidation({
+			site: o.site,
+			only: o.only,
+			deep: o.deep,
+			configPath: o.configPath,
+			cwd: ctx.cwd,
+		});
+
+		if (result.error) {
+			return { ok: false, error: result.error, sites: [] };
+		}
+
+		const limit = o.limit ?? 200;
+		return {
+			ok: !hasErrors(result),
+			configPath: result.configPath,
+			sites: result.sites.map((s) => ({
+				site: s.site,
+				config: s.config,
+				contentSuppressed: s.contentSuppressed,
+				content: s.content.slice(0, limit),
+				contentTruncated: s.content.length > limit ? s.content.length - limit : undefined,
+				counts: {
+					errors:
+						s.config.filter((f) => f.severity === 'error').length +
+						s.content.filter((f) => f.severity === 'error').length,
+					warnings:
+						s.config.filter((f) => f.severity === 'warning').length +
+						s.content.filter((f) => f.severity === 'warning').length,
+					info: s.content.filter((f) => f.severity === 'info').length,
+				},
+			})),
+		};
+	},
+};
+
+// ----------------------------------------------------------------------------
 // Aggregate set
 // ----------------------------------------------------------------------------
 
@@ -208,6 +292,7 @@ export const CORE_TOOLS: McpTool[] = [
 	i18nExtractTool,
 	inspectTool,
 	inspectListTool,
+	validateTool,
 ];
 
 // ----------------------------------------------------------------------------

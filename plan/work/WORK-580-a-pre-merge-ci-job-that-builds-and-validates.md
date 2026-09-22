@@ -1,4 +1,4 @@
-{% work id="WORK-580" status="ready" priority="high" complexity="simple" milestone="v0.36.0" source="SPEC-135" tags="ci, validation, dx" %}
+{% work id="WORK-580" status="done" priority="high" complexity="simple" milestone="v0.36.0" source="SPEC-135" tags="ci, validation, dx" pr="refrakt-md/refrakt#619,refrakt-md/refrakt#628" %}
 
 # A pre-merge CI job that builds and validates
 
@@ -33,13 +33,13 @@ shape the command's design.
 
 ## Acceptance Criteria
 
-- [ ] A workflow runs on `pull_request:` and on push to `main`, mirroring `format.yml`'s triggers and concurrency group
-- [ ] It runs `npm ci` → `npm run build` → `refrakt validate --format json`
-- [ ] It also runs `refrakt plan validate`, so the repository's own workflow documents the pairing {% ref "SPEC-135" /%} D11 declines to build into the CLI
-- [ ] A PR with an error-severity content finding fails the job
-- [ ] A PR with only warnings passes
-- [ ] `npm ci` uses `setup-node`'s cache; build output caching is added only if the job turns out slow enough to warrant it
-- [ ] No `paths:` filter — a rune schema change can invalidate content anywhere, so the filter would have to include `packages/**`
+- [x] A workflow runs on `pull_request:` and on push to `main`, mirroring `format.yml`'s triggers and concurrency group
+- [x] It runs `npm ci` → `npm run build` → `refrakt validate --format json`
+- [x] It also runs `refrakt plan validate`, so the repository's own workflow documents the pairing {% ref "SPEC-135" /%} D11 declines to build into the CLI
+- [x] A PR with an error-severity content finding fails the job
+- [x] A PR with only warnings passes
+- [x] `npm ci` uses `setup-node`'s cache; build output caching is added only if the job turns out slow enough to warrant it
+- [x] No `paths:` filter — a rune schema change can invalidate content anywhere, so the filter would have to include `packages/**`
 
 ## Approach
 
@@ -66,5 +66,60 @@ is still unambiguous, which is only useful if something runs it pre-merge.
 - {% ref "SPEC-135" /%} — D13 (this job, and why the build closes a second gap), D4 (the CLI as the gate), D11 (running both commands)
 - `.github/workflows/format.yml` — the shape to copy
 - `.github/workflows/release.yml` — the `npm ci` → build → test ordering
+
+## Resolution
+
+Completed: 2026-09-21
+
+Branch: `claude/work-580a-pre-merge-ci-job`, `claude/work-580b-ci-validate`
+
+Landed in two parts, ahead of its stated position in SPEC-135's phases.
+
+### Part A — the job (PR #619)
+
+`.github/workflows/validate.yml`: `pull_request:` + push to `main`, mirroring
+`format.yml`'s triggers and concurrency. `npm ci` → `npm run build` →
+`npm test` → `refrakt plan validate`.
+
+**Landed ahead of WORK-578 rather than behind it.** The item is sequenced after
+WORK-578 on the grounds that the job needs "a command worth running", but it
+already had three. Waiting would have held back the part that closes a hole
+existing regardless — which this item itself calls most of its justification:
+nothing built the monorepo or ran the suite on a PR, so a type error merged
+clean and broke the release.
+
+It is also the actual fix for the three ID collisions SPEC-135 cites.
+`checkDuplicateIds` has reported duplicates at error severity since 2026-07-09;
+they got through because nothing ran it. This job is that missing caller.
+
+### Part B — the content gate (PR #627)
+
+Added `refrakt validate` once WORK-578 landed. One step, replacing the TODO
+Part A left.
+
+### Verified
+
+| Case | Exit |
+|---|---|
+| clean repo (2 sites, 0 errors, 0 warnings) | 0 |
+| planted undefined tag | 1, naming file and line |
+| two files claiming one plan ID | 1, naming both files |
+| 48 plan warnings, 0 errors | 0 |
+
+### Notes
+
+- **`npm test` is a small widening of the stated scope** (`npm ci` → build →
+  validate). Nothing ran the suite on a PR either, it is the same class of gap,
+  and the job was already paying for the build. `release.yml` sets the same
+  ci → build → test ordering.
+- **Text output, not `--format json`.** The AC names the JSON form; the exit
+  code is what gates (D4), and a human reading a failed job wants the readable
+  form. The JSON shape exists for callers that parse findings — WORK-581's MCP
+  tool, and anything that later turns these into PR annotations.
+- **The job invokes `node packages/cli/dist/bin.js`, not `npx refrakt`.**
+  `npx refrakt` does not work in this repo from a fresh clone: the workspace is
+  symlinked into `node_modules/@refrakt-md/cli` but npm does not link its
+  `refrakt` bin into `node_modules/.bin`. CLAUDE.md documents the `npx` form
+  throughout. Worth its own item; this job must not depend on it being fixed.
 
 {% /work %}

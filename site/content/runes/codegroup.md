@@ -113,7 +113,7 @@ The label resolution chain (first match wins):
 
 1. **Group-level `labels=`** — positional override (`labels="A, B, C"`).
 2. **Per-fence `label` annotation** — `` ```ts {% label="SiteConfig" %} ``.
-3. **Derived from `source`** — basename of the path, with `:lines` suffix when `lines=` is also set (e.g. `theme.ts:74-125`).
+3. **Derived from `source`** — basename of the path, with `:lines` suffix when `lines=` is also set (e.g. `config.ts:42-148`).
 4. **Prettified language name** — today's default (`JavaScript`, `Python`, etc.).
 
 Same composition story snippet has elsewhere, just propagated through the fence-annotation surface.

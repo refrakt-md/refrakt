@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/cli",
   "description": "CLI tools for refrakt.md",
-  "version": "0.35.0",
+  "version": "0.36.0",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -26,6 +26,10 @@
     "./lib/levenshtein.js": {
       "types": "./dist/lib/levenshtein.d.ts",
       "default": "./dist/lib/levenshtein.js"
+    },
+    "./validate.js": {
+      "types": "./dist/commands/validate-core.d.ts",
+      "default": "./dist/commands/validate-core.js"
     }
   },
   "files": [
@@ -36,11 +40,11 @@
   },
   "dependencies": {
     "@markdoc/markdoc": "0.4.0",
-    "@refrakt-md/ai": "0.35.0",
-    "@refrakt-md/editor": "0.35.0",
-    "@refrakt-md/html": "0.35.0",
-    "@refrakt-md/runes": "0.35.0",
-    "@refrakt-md/transform": "0.35.0",
+    "@refrakt-md/ai": "0.36.0",
+    "@refrakt-md/editor": "0.36.0",
+    "@refrakt-md/html": "0.36.0",
+    "@refrakt-md/runes": "0.36.0",
+    "@refrakt-md/transform": "0.36.0",
     "esbuild": "^0.27.5",
     "postcss": "^8.4.0"
   }

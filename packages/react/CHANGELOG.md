@@ -1,5 +1,13 @@
 # @refrakt-md/react
 
+## 0.36.0
+
+### Patch Changes
+
+- Updated dependencies [0348f37]
+  - @refrakt-md/transform@0.36.0
+  - @refrakt-md/types@0.36.0
+
 ## 0.35.0
 
 ### Patch Changes

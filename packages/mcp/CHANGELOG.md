@@ -1,5 +1,44 @@
 # @refrakt-md/mcp
 
+## 0.36.0
+
+### Minor Changes
+
+- cb240a2: Add a `refrakt.validate` MCP tool.
+
+  The MCP surface had `plan_validate` and no content equivalent — exactly the gap
+  an agent falls into: it could check the plan graph it just edited, and not the
+  content.
+
+  ```
+  refrakt.validate({ site?, only?, deep?, configPath?, limit? })
+  → { ok, configPath, sites: [{ site, config, content, counts, … }] }
+  ```
+
+  Findings are structured — file, line, severity, error id, message — not a
+  rendered report, so a caller can filter and act on individual ones rather than
+  parsing text. Per-site counts come with them, and the content list is capped
+  (default 200) with a `contentTruncated` count, because a site mid-migration can
+  produce thousands.
+
+  It calls the same function `refrakt validate` calls. `@refrakt-md/cli` now
+  exports that run as `@refrakt-md/cli/validate.js` (`runValidation`,
+  `hasErrors`), with the CLI command reduced to formatting and an exit code — no
+  second implementation, and no shelling out to parse output back into data.
+
+### Patch Changes
+
+- Updated dependencies [c050169]
+- Updated dependencies [c30dcf2]
+- Updated dependencies [09150ab]
+- Updated dependencies [cb240a2]
+- Updated dependencies [770c064]
+- Updated dependencies [0348f37]
+  - @refrakt-md/cli@0.36.0
+  - @refrakt-md/transform@0.36.0
+  - @refrakt-md/runes@0.36.0
+  - @refrakt-md/types@0.36.0
+
 ## 0.35.0
 
 ### Patch Changes

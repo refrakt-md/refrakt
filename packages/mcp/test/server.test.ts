@@ -41,6 +41,7 @@ describe('CORE_TOOLS', () => {
 			'refrakt.i18n_extract',
 			'refrakt.inspect',
 			'refrakt.inspect_list',
+			'refrakt.validate',
 		]);
 	});
 

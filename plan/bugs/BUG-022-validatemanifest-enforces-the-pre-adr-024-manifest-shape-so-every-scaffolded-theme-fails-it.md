@@ -1,4 +1,4 @@
-{% bug id="BUG-022" status="confirmed" severity="major" source="ADR-024" milestone="v0.36.0" tags="themes, validation, cli, dx" %}
+{% bug id="BUG-022" status="fixed" severity="major" source="ADR-024" milestone="v0.36.0" tags="themes, validation, cli, dx" pr="refrakt-md/refrakt#634" %}
 
 # validateManifest enforces the pre-ADR-024 manifest shape, so every scaffolded theme fails it
 
@@ -147,5 +147,50 @@ a theme-validation step.
 - `packages/types/src/theme.ts` — `ThemeManifest`, where `target` is already optional and deprecated
 - `packages/create-refrakt/src/scaffold.ts` — the manifest the project emits, at `:838`
 - `packages/lumina/manifest.json` — the reference theme that fails
+
+## Resolution
+
+Completed: 2026-09-21
+
+Branch: `claude/bug-022-fix-validate-manifest`
+
+### What was done
+
+- `packages/transform/src/validate.ts` — `validateManifest` requires only `name`
+  and `version`. `target`, `designTokens`, `refrakt` and `description` are
+  type-checked when present and never demanded; `layouts.*.component` likewise.
+  `layouts.*.regions` stays required.
+- `packages/types/src/theme.ts` — `ThemeManifest.designTokens` and
+  `LayoutDefinition.component` are now optional, matching.
+- `packages/transform/test/validate.test.ts` — the fixture is now the manifest
+  `create-refrakt` emits, plus Lumina's own manifest as a case, plus tests that
+  each newly-optional field is still rejected when malformed.
+
+### The scope note was the real work
+
+The bug warned that fixing the validator turns theme-manifest findings on for
+real for the first time, so Lumina and the scaffold both had to pass before
+closing. Verified:
+
+| Manifest | Before | After |
+|---|---|---|
+| `packages/lumina/manifest.json` | FAIL (5 errors) | **OK** |
+| `create-refrakt` output | FAIL (4 errors) | **OK** |
+| a genuinely broken manifest | — | FAIL (7 errors) + 1 warning |
+
+The last row matters as much as the first two: the check is still strict about
+`name`, `version`, layout `regions`, `routeRules[].pattern`,
+`components.*.component`, and about the *type* of every optional field that is
+present. It was loosened where it had drifted, not weakened generally.
+
+### Notes
+
+- Chose "make it optional" over "Lumina should declare it" for `designTokens`,
+  per the bug's own guidance: nothing reads it, and a field nothing reads is
+  ritual rather than a requirement. No consumer turned up when re-checked.
+- The fixture was the mechanism of the drift — a pre-ADR-024 Svelte theme, with
+  a test asserting `target` was required. Replacing it is what stops this
+  recurring, more than the validator change itself.
+- 4,677 tests pass.
 
 {% /bug %}

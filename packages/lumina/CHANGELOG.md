@@ -1,5 +1,15 @@
 # @refrakt-md/lumina
 
+## 0.36.0
+
+### Patch Changes
+
+- Updated dependencies [0348f37]
+  - @refrakt-md/transform@0.36.0
+  - @refrakt-md/runes@0.36.0
+  - @refrakt-md/skeleton@0.36.0
+  - @refrakt-md/types@0.36.0
+
 ## 0.35.0
 
 ### Minor Changes
