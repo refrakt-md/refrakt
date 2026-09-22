@@ -102,7 +102,7 @@ addressable at all.
 ## References
 
 - {% ref "SPEC-131" /%} — steps 4–6, D4 (never a dead end), D5 (look up facts, never strategy), D11 (four families, and why both additions are earned), D12 (`until` vs `through`)
-- {% ref "WORK-586" /%} — the table these strategies read their shapes from
+- {% ref "WORK-597" /%} — the table these strategies read their shapes from
 - `site/content/runes/tabs.md` — the inline-code-span case the Markdown masker must survive
 
 {% /work %}

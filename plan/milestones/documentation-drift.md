@@ -62,9 +62,12 @@ Measured at 95.37% exact spans against the TypeScript compiler over 1,360
 symbols, with a **0.07% silent-wrong rate and zero false alarms** — against line
 numbers, which are 100% exposed.
 
-- {% ref "WORK-586" /%} — the masker and the language table. The lexical layer,
+- {% ref "WORK-597" /%} — the masker and the language table. The lexical layer,
   split out because D10 makes the table a correctness boundary rather than a
-  convenience.
+  convenience. **Numbered out of sequence deliberately**: it was filed as
+  WORK-586, which v0.36.0's close claimed first, so it was renumbered rather
+  than shifting the ten items behind it. Order of work is the list here, not
+  the IDs.
 - {% ref "WORK-587" /%} — anchor resolution, the `auto` extent, and the corpus
   test. The three termination rules each cost an iteration of the prototype to
   find and are not re-derivable; the corpus test ships here, not after.
@@ -98,7 +101,7 @@ The milestone reads as a ladder and is not sequenced as one.
 {% ref "SPEC-136" /%} phase 1 extracts edges from `path=` attributes that exist
 today; it needs {% ref "SPEC-131" /%}'s resolver only for `--precise`, which is
 out of scope here. So {% ref "WORK-594" /%} starts on day one alongside
-{% ref "WORK-586" /%}, and the two tracks meet only at
+{% ref "WORK-597" /%}, and the two tracks meet only at
 {% ref "WORK-596" /%}, which reads {% ref "WORK-591" /%}'s marker.
 
 ## The payoff is prevention, and it is the last item

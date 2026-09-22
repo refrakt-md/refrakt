@@ -113,7 +113,7 @@ with the selection.
 
 ## Blocked by
 
-- {% ref "WORK-586" /%} — the masker and the table this reads
+- {% ref "WORK-597" /%} — the masker and the table this reads
 
 ## Notes
 
@@ -142,7 +142,7 @@ creates the ambiguity.
 ## References
 
 - {% ref "SPEC-131" /%} — steps 2–3 and 7–8, D1 (regex not parser), D2 (self-check scoped to `auto`), D3 (`match` is the contract), D4 (never a dead end), D6 (the error-fence path), D9 (`doc` defaults and the abutting-comment limit), D14 (ambiguous anchors warn), D17 (`occurrence=`, and why it is an escape hatch)
-- {% ref "WORK-586" /%} — the masker and language table
+- {% ref "WORK-597" /%} — the masker and language table
 - {% ref "WORK-588" /%} — the extents that make non-brace formats addressable
 - `packages/runes/src/lib/read-file.ts` — `readSnippetFile`, where resolution lands
 - `packages/runes/src/tags/snippet-pipeline.ts`, `packages/runes/src/tags/file-ref-resolve.ts` — the two call sites

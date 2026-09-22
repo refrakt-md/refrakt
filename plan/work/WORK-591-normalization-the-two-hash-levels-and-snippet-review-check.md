@@ -31,7 +31,7 @@ and a marker that cries wolf gets deleted. In order:
 3. **Stop. Comments stay in** — D2.
 
 Excluding comments would make markers quieter and the masker from
-{% ref "WORK-586" /%} could do it for free. It is still wrong: a doc comment is
+{% ref "WORK-597" /%} could do it for free. It is still wrong: a doc comment is
 very often the exact text the surrounding prose paraphrases. If `@param
 timeout`'s description changes meaning and the marker stays green, the feature
 has failed at the only job it has.

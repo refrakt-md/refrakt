@@ -76,7 +76,7 @@ The diff stays reviewable; the verification is what makes it trustworthy.
 
 ## Regex-literal lexing lands here if needed
 
-D8 defers `/…/` lexing from {% ref "WORK-586" /%} — perhaps 15 more lines,
+D8 defers `/…/` lexing from {% ref "WORK-597" /%} — perhaps 15 more lines,
 causing the single silent-wrong case and most of the 62 refusals in the
 measurement. Pick it up **only if** the migration surfaces refusals that need
 it. Do not do it speculatively.

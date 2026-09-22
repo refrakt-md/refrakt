@@ -23,7 +23,7 @@ Worth stating because the milestone otherwise reads as one long chain. Phase 1
 extracts edges from `path=` attributes, which exist today. `symbol=` → resolved
 line range is only needed for `--precise`, which is **not in this milestone**.
 So this item can start on day one, in parallel with
-{% ref "WORK-586" /%}.
+{% ref "WORK-597" /%}.
 
 ## Build the index so the MCP tool does not have to rewrite it
 

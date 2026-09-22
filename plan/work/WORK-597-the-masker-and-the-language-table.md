@@ -1,4 +1,4 @@
-{% work id="WORK-586" status="ready" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, lexing, language-table, drift" milestone="v0.37.0" %}
+{% work id="WORK-597" status="ready" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, lexing, language-table, drift" milestone="v0.37.0" %}
 
 # The masker and the language table
 

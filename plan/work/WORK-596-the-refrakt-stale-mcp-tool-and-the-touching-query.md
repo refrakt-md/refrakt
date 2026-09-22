@@ -77,7 +77,7 @@ count stands.
 {% ref "WORK-591" /%} is a **soft** dependency and deliberately not listed
 above. The marker-aware criteria need it; nothing else here does, and hard-
 blocking on it would put this item behind the entire
-{% ref "SPEC-131" /%} chain ({% ref "WORK-586" /%} → {% ref "WORK-587" /%} →
+{% ref "SPEC-131" /%} chain ({% ref "WORK-597" /%} → {% ref "WORK-587" /%} →
 {% ref "WORK-589" /%} → {% ref "WORK-591" /%}) — the longest path in the
 milestone, and the wrong thing to put in front of the one item that makes the
 feature preventive rather than retrospective. Build the marker column behind a
