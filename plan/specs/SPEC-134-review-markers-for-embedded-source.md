@@ -1,4 +1,4 @@
-{% spec id="SPEC-134" status="draft" tags="snippet, file-ref, drift, docs, tooling, dx" %}
+{% spec id="SPEC-134" status="accepted" tags="snippet, file-ref, drift, docs, tooling, dx" %}
 
 # Review markers for embedded source
 
@@ -271,12 +271,17 @@ fire. The tool should say so rather than stamping a marker that means nothing.
   hits the need.
 - **Automatic re-stamping in CI.** A bot that re-stamps on green defeats the
   feature completely. `--update` is a human command.
-- **Extending markers beyond `snippet` / `file-ref` / `expand`.** They attach to
-  a resolved slice, so they follow the shared reader and nothing else.
+- **Extending markers beyond `snippet` / `file-ref`.** A marker attaches to a
+  *resolved slice*, so it reaches exactly what {% ref "SPEC-131" /%}'s resolver
+  reaches and nothing else. That excludes `expand`, which despite sitting in the
+  same module reads whole files through `readWholeSandboxedFile` and produces no
+  slice. Hashing an entire embedded document would fire on every edit to it —
+  a marker with D3's noise problem and none of its precision.
 
 ## Acceptance Criteria
 
-- [ ] `reviewed` is accepted on `snippet`, `file-ref` and `expand`, and its absence leaves behaviour unchanged
+- [ ] `reviewed` is accepted on `snippet` and `file-ref`, and its absence leaves behaviour unchanged
+- [ ] `expand` does not accept `reviewed` — it resolves no slice, so there is nothing of the right shape to hash
 - [ ] The hashed form applies `reindent` first, then normalizes line endings, per-line trailing whitespace, and the trailing newline
 - [ ] Comments are included in the hashed form, covered by a test where only a doc comment changes and the marker fires
 - [ ] A nesting-only change (a function moved into a class, content otherwise identical) does not fire the marker
