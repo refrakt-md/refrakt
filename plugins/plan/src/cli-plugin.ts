@@ -12,6 +12,9 @@ import {
 	runMigrateDependencies,
 	EXIT_INVALID_ARGS as MIGRATE_INVALID_ARGS,
 } from './commands/migrate.js';
+import { runMigrateIds } from './commands/migrate-ids.js';
+import { readRefIds, collisionsFrom } from './commands/against.js';
+import { scanPlanFiles } from './scanner.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
 import { resolvePlanDir, scaffoldRefraktConfigForPlan } from './plan-config.js';
 import {
@@ -413,6 +416,7 @@ function handleValidate(args: string[]): void {
 	let dir = resolvePlanDir().dir;
 	let formatJson = false;
 	let strict = false;
+	let against: string | undefined;
 
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i];
@@ -423,11 +427,22 @@ function handleValidate(args: string[]): void {
 			i++;
 		} else if (arg === '--strict') {
 			strict = true;
+		} else if (arg === '--against') {
+			against = args[++i];
+			if (!against) {
+				console.error('Error: --against requires a git ref');
+				process.exit(VALIDATE_INVALID_ARGS);
+			}
 		} else {
 			console.error(`Error: Unexpected argument "${arg}"`);
-			console.error('Usage: refrakt plan validate [--strict] [--format json]');
+			console.error('Usage: refrakt plan validate [--strict] [--against <ref>] [--format json]');
 			process.exit(VALIDATE_INVALID_ARGS);
 		}
+	}
+
+	if (against) {
+		handleAgainst(dir, against, formatJson);
+		return;
 	}
 
 	const result = runValidate({ dir, strict, formatJson });
@@ -622,13 +637,63 @@ function handleHistory(args: string[]): void {
 	runHistory({ dir, id, limit, since, type, author, status, all, formatJson });
 }
 
+/**
+ * `plan validate --against <ref>` (SPEC-135 D8 / WORK-582).
+ *
+ * Reported separately from the entity-graph checks because it answers a
+ * different question: not "is this plan directory internally consistent" but
+ * "would merging this branch create a collision". It is the tier that fires
+ * while resolution is still free.
+ */
+function handleAgainst(dir: string, ref: string, formatJson: boolean): void {
+	const cwd = process.cwd();
+	const index = readRefIds(dir, ref, cwd);
+
+	// A ref that cannot be read must not render like a clean run. "No
+	// collisions" and "I could not look" are different answers.
+	if (index.error) {
+		if (formatJson) {
+			console.log(JSON.stringify({ ref, error: index.error, collisions: [] }, null, 2));
+		} else {
+			console.error(index.error);
+		}
+		process.exit(VALIDATE_INVALID_ARGS);
+	}
+
+	const entities = scanPlanFiles(dir, { cache: false });
+	const collisions = collisionsFrom(index.refIds, entities, dir);
+
+	if (formatJson) {
+		console.log(JSON.stringify({ ref, collisions }, null, 2));
+		process.exit(collisions.length > 0 ? 1 : 0);
+	}
+
+	if (collisions.length === 0) {
+		console.log(`No ID collisions with ${ref} (${index.refIds.size} ids compared).`);
+		process.exit(0);
+	}
+
+	console.log(`ID collisions with ${ref}:\n`);
+	for (const c of collisions) {
+		console.log(`  ✗ ${c.id}`);
+		console.log(`      here: ${c.file}`);
+		console.log(`      ${ref}: ${c.refFile}`);
+	}
+	console.log(
+		`\n${collisions.length} collision(s). Merging would leave two entities claiming the same ID,` +
+			'\nand every reference to it ambiguous. Renumber now, while this branch still makes' +
+			'\nresolution unambiguous: `refrakt plan migrate ids --apply --git`.',
+	);
+	process.exit(1);
+}
+
 function handleMigrate(args: string[]): void {
 	const sub = args[0];
-	if (sub !== 'filenames' && sub !== 'pr-attrs' && sub !== 'dependencies') {
+	if (sub !== 'filenames' && sub !== 'pr-attrs' && sub !== 'dependencies' && sub !== 'ids') {
 		console.error(
-			'Usage: refrakt plan migrate <filenames|pr-attrs|dependencies> [--dir <path>] [--dry-run] [--apply] [--git] [--format json]',
+			'Usage: refrakt plan migrate <filenames|pr-attrs|dependencies|ids> [--dir <path>] [--dry-run] [--apply] [--git] [--format json]',
 		);
-		console.error('Subcommands: filenames, pr-attrs, dependencies');
+		console.error('Subcommands: filenames, pr-attrs, dependencies, ids');
 		process.exit(MIGRATE_INVALID_ARGS);
 	}
 
@@ -660,6 +725,51 @@ function handleMigrate(args: string[]): void {
 	if (apply && dryRun) {
 		console.error('Error: --apply and --dry-run are mutually exclusive');
 		process.exit(MIGRATE_INVALID_ARGS);
+	}
+
+	if (sub === 'ids') {
+		const result = runMigrateIds({ dir, apply, useGit });
+		if (formatJson) {
+			console.log(JSON.stringify(result, null, 2));
+			process.exit(result.exitCode);
+			return;
+		}
+		console.log(`Scanned ${result.scanned} plan files in ${dir}/`);
+		const rows = apply ? result.applied : result.planned;
+		if (rows.length === 0 && result.refused.length === 0) {
+			console.log('  No duplicate IDs.');
+			process.exit(result.exitCode);
+			return;
+		}
+		if (rows.length > 0) {
+			console.log(`  ${apply ? 'Renumbered' : 'Would renumber'} ${rows.length} entit(y/ies):`);
+			for (const r of rows) {
+				console.log(`    ${r.from} → ${r.to}   ${r.file}`);
+				console.log(`      collides with ${r.collidesWith.join(', ')}`);
+				console.log(`      file → ${r.toFile}`);
+			}
+		}
+		// The refusals are the point, not an error path. A tool that guessed
+		// here would repoint a reference at the wrong entity, silently.
+		if (result.refused.length > 0) {
+			console.log(`\n  Refused ${result.refused.length}:`);
+			for (const r of result.refused) {
+				console.log(`    ${r.id}  ${r.file}`);
+				console.log(`      ${r.reason}`);
+				for (const ref of r.ambiguousRefs.slice(0, 10)) {
+					console.log(`        ${ref.file}:${ref.line}  ${ref.text}`);
+				}
+				if (r.ambiguousRefs.length > 10) {
+					console.log(`        … and ${r.ambiguousRefs.length - 10} more`);
+				}
+			}
+		}
+		if (!apply && rows.length > 0) {
+			const gitHint = useGit ? '' : ' (add --git to stage the edits)';
+			console.log(`\nDry run. Re-run with --apply to renumber${gitHint}.`);
+		}
+		process.exit(result.exitCode);
+		return;
 	}
 
 	if (sub === 'pr-attrs') {

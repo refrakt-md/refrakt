@@ -475,10 +475,28 @@ export function validateManifest(manifest: unknown): ValidationResult {
 
 	const obj = manifest as Record<string, unknown>;
 
-	// Required string fields
-	for (const field of ['name', 'version', 'target', 'designTokens'] as const) {
+	// Required string fields.
+	//
+	// BUG-022 — `target` and `designTokens` used to be required here, which made
+	// this reject the manifest `create-refrakt` generates and the one Lumina
+	// ships. ADR-024 made themes framework-agnostic: `ThemeManifest.target` is
+	// optional and deprecated ("adapters do not gate on it"), and a
+	// framework-agnostic theme declares no framework layout components.
+	// `designTokens` went the same way — it is read by no runtime code, so
+	// requiring it was ritual rather than a contract.
+	//
+	// What remains required is what actually identifies a theme.
+	for (const field of ['name', 'version'] as const) {
 		if (typeof obj[field] !== 'string' || !obj[field]) {
 			errors.push({ path: field, message: 'Required and must be a non-empty string' });
+		}
+	}
+
+	// Optional strings — still type-checked when present, so a typo is caught
+	// without the field being mandatory.
+	for (const field of ['target', 'designTokens', 'refrakt', 'description'] as const) {
+		if (obj[field] !== undefined && (typeof obj[field] !== 'string' || !obj[field])) {
+			errors.push({ path: field, message: 'Must be a non-empty string when present' });
 		}
 	}
 
@@ -495,10 +513,15 @@ export function validateManifest(manifest: unknown): ValidationResult {
 					errors.push({ path: `layouts.${name}`, message: 'Must be an object' });
 				} else {
 					const l = layout as Record<string, unknown>;
-					if (typeof l.component !== 'string' || !l.component) {
+					// BUG-022 / ADR-024 — a framework-agnostic theme's layouts
+					// declare regions only; the LayoutConfig lives in the theme's
+					// own module and is consumed by every adapter. A `component`
+					// path is what a `--target <framework>` theme adds, so it is
+					// checked when present and never demanded.
+					if (l.component !== undefined && (typeof l.component !== 'string' || !l.component)) {
 						errors.push({
 							path: `layouts.${name}.component`,
-							message: 'Required and must be a non-empty string',
+							message: 'Must be a non-empty string when present',
 						});
 					}
 					if (!Array.isArray(l.regions)) {

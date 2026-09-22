@@ -195,28 +195,59 @@ describe('validateThemeConfig', () => {
 });
 
 describe('validateManifest', () => {
+	// BUG-022 — this fixture used to be a pre-ADR-024 Svelte theme (`target`,
+	// `layouts.*.component` pointing at .svelte files). That is what let the
+	// validator drift: the suite stayed green while the check rejected both the
+	// reference theme and every theme `create-refrakt` scaffolds.
+	//
+	// It is now the manifest `create-refrakt` actually emits
+	// (`packages/create-refrakt/src/scaffold.ts`), so the check is measured
+	// against the shape the project produces.
 	const validManifest = {
 		name: 'my-theme',
 		version: '0.1.0',
-		target: 'svelte',
+		refrakt: '^0.36.0',
 		designTokens: './tokens/base.css',
 		layouts: {
-			default: { component: './layouts/Default.svelte', regions: ['content'] },
-			docs: { component: './layouts/Docs.svelte', regions: ['content', 'sidebar'] },
+			default: { regions: ['header', 'footer'] },
+			docs: { regions: ['header', 'nav', 'sidebar', 'footer'] },
 		},
-		routeRules: [
-			{ pattern: 'docs/**', layout: 'docs' },
-			{ pattern: '**', layout: 'default' },
-		],
-		components: {
-			Chart: { component: './components/Chart.svelte' },
-		},
+		components: {},
+		unsupportedRuneBehavior: 'passthrough',
 	};
 
-	it('passes for a valid manifest', () => {
+	it('passes for the manifest create-refrakt generates', () => {
 		const result = validateManifest(validManifest);
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
+	});
+
+	// The reference theme must pass its own project's validator. That it did not
+	// is how BUG-022 was found.
+	it("passes for Lumina's shipped manifest", async () => {
+		const { readFileSync } = await import('node:fs');
+		const { resolve } = await import('node:path');
+		const manifest = JSON.parse(
+			readFileSync(resolve(import.meta.dirname, '../../lumina/manifest.json'), 'utf-8'),
+		);
+		const result = validateManifest(manifest);
+		expect(result.errors).toEqual([]);
+		expect(result.valid).toBe(true);
+	});
+
+	// A framework theme still validates — ADR-024 made the framework layer
+	// optional, not forbidden.
+	it('passes for a framework theme that does declare target and components', () => {
+		const result = validateManifest({
+			...validManifest,
+			target: 'svelte',
+			layouts: {
+				default: { component: './layouts/Default.svelte', regions: ['content'] },
+			},
+			components: { Chart: { component: './components/Chart.svelte' } },
+			routeRules: [{ pattern: '**', layout: 'default' }],
+		});
+		expect(result.valid).toBe(true);
 	});
 
 	it('fails for non-object input', () => {
@@ -224,28 +255,59 @@ describe('validateManifest', () => {
 		expect(result.valid).toBe(false);
 	});
 
-	it('fails when required string fields are missing', () => {
+	it('fails when the identifying fields are missing', () => {
 		const result = validateManifest({});
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((e) => e.path === 'name')).toBe(true);
 		expect(result.errors.some((e) => e.path === 'version')).toBe(true);
-		expect(result.errors.some((e) => e.path === 'target')).toBe(true);
-		expect(result.errors.some((e) => e.path === 'designTokens')).toBe(true);
 	});
 
-	it('validates layout entries have component and regions', () => {
+	// ADR-024 deprecated `target`; `designTokens` and `layouts.*.component` are
+	// read by no runtime code. None of the three is a requirement.
+	it.each(['target', 'designTokens'])('does not require %s', (field) => {
+		const result = validateManifest({ name: 'x', version: '1.0.0' });
+		expect(result.errors.some((e) => e.path === field)).toBe(false);
+	});
+
+	it('does not require layouts.*.component', () => {
+		const result = validateManifest({
+			name: 'x',
+			version: '1.0.0',
+			layouts: { docs: { regions: ['content'] } },
+		});
+		expect(result.valid).toBe(true);
+	});
+
+	// Optional does not mean unchecked — a typo in a field that IS present is
+	// still an error.
+	it.each([
+		['target', ''],
+		['designTokens', 42],
+	])('still rejects a malformed %s when present', (field, value) => {
+		const result = validateManifest({ name: 'x', version: '1.0.0', [field]: value });
+		expect(result.errors.some((e) => e.path === field)).toBe(true);
+	});
+
+	it('still rejects a malformed layouts.*.component when present', () => {
+		const result = validateManifest({
+			name: 'x',
+			version: '1.0.0',
+			layouts: { bad: { component: 42, regions: ['content'] } },
+		});
+		expect(result.errors.some((e) => e.path === 'layouts.bad.component')).toBe(true);
+	});
+
+	it('still requires layout regions', () => {
 		const result = validateManifest({
 			...validManifest,
 			layouts: { bad: { regions: 'not-array' } },
 		});
 		expect(result.valid).toBe(false);
-		expect(result.errors.some((e) => e.path === 'layouts.bad.component')).toBe(true);
 		expect(result.errors.some((e) => e.path === 'layouts.bad.regions')).toBe(true);
 	});
 
 	it('passes for a manifest without routeRules (now optional)', () => {
-		const { routeRules, ...manifestWithoutRules } = validManifest;
-		const result = validateManifest(manifestWithoutRules);
+		const result = validateManifest(validManifest);
 		expect(result.valid).toBe(true);
 		expect(result.errors).toHaveLength(0);
 	});

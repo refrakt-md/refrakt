@@ -181,6 +181,18 @@ One exception, by design: `critical` findings — a document that could not be u
 | `--format <text\|json>` | Output format (default: `text`) |
 | `--config-path <path>` | Path to `refrakt.config.json` (default: `./refrakt.config.json`) |
 
+### refrakt config validate
+
+The config layer on its own, beside the `config migrate` that already exists. Useful when you want the cheap check without paying for content.
+
+```shell
+refrakt config validate
+refrakt config validate --site main
+refrakt config validate --format json
+```
+
+It is the same layer `refrakt validate` runs first — narrowed, not reimplemented — so the two always agree.
+
 ### refrakt theme validate
 
 The theme-authoring checks, for people writing a theme rather than a site.

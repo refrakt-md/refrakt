@@ -1,8 +1,9 @@
 /**
  * `refrakt config <subcommand>` — utilities for managing refrakt.config.json.
  *
- * Initially supports `migrate` for moving between the three valid input shapes
- * (flat / singular `site` / plural `sites`) defined in ADR-010.
+ * Supports `migrate` for moving between the three valid input shapes
+ * (flat / singular `site` / plural `sites`) defined in ADR-010, and `validate`
+ * for the config-resolution layer (SPEC-135 D12 / WORK-579 Part B).
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -23,9 +24,115 @@ export async function runConfigCommand(args: string[]): Promise<void> {
 		return;
 	}
 
+	if (sub === 'validate') {
+		await runConfigValidate(args.slice(1));
+		return;
+	}
+
 	console.error(`Error: Unknown config subcommand "${sub}"\n`);
 	printConfigUsage();
 	process.exit(1);
+}
+
+/**
+ * `refrakt config validate` — the config-resolution layer, alone.
+ *
+ * SPEC-135 D12 gives the layer a focused entry point beside the `config
+ * migrate` that already exists. It is **the same function `refrakt validate`
+ * calls**, narrowed with `only: 'config'` — not a second implementation, which
+ * is what WORK-579's criterion forbids. A second copy would be free to drift,
+ * and the whole point of the layer is that it agrees with what a build does.
+ *
+ * Checks resolution, not shape: whether `theme` and every entry in `plugins[]`
+ * actually resolve. Shape is the published JSON Schema's job.
+ */
+async function runConfigValidate(args: string[]): Promise<void> {
+	let site: string | undefined;
+	let format: 'text' | 'json' = 'text';
+	let configPath: string | undefined;
+
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		if (arg === '--site') {
+			site = args[++i];
+			if (!site) {
+				console.error('Error: --site requires a site name');
+				process.exit(1);
+			}
+		} else if (arg === '--format') {
+			const value = args[++i];
+			if (value !== 'text' && value !== 'json') {
+				console.error('Error: --format must be "text" or "json"');
+				process.exit(1);
+			}
+			format = value;
+		} else if (arg === '--config-path') {
+			configPath = args[++i];
+			if (!configPath) {
+				console.error('Error: --config-path requires a file path');
+				process.exit(1);
+			}
+		} else if (arg === '--help' || arg === '-h') {
+			console.log(`
+Usage: refrakt config validate [options]
+
+Check that refrakt.config.json's names resolve — the theme package and every
+entry in plugins[]. Shape is the published JSON Schema's job; this is the half
+nothing else covers.
+
+The same layer \`refrakt validate\` runs first, on its own. Use that command for
+content as well.
+
+Options:
+  --site <name>        Restrict to one site
+  --format <fmt>       "text" (default) or "json"
+  --config-path <p>    Path to refrakt.config.json (default: ./refrakt.config.json)
+`);
+			process.exit(0);
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"\n`);
+			process.exit(1);
+		}
+	}
+
+	const { runValidation, hasErrors } = await import('./validate-core.js');
+	const result = await runValidation({ site, configPath, only: 'config' });
+
+	if (format === 'json') {
+		process.stdout.write(
+			`${JSON.stringify(result.error ? { error: result.error, sites: [] } : { sites: result.sites }, null, 2)}\n`,
+		);
+		process.exit(hasErrors(result) ? 1 : 0);
+	}
+
+	if (result.error) {
+		console.error(result.error);
+		process.exit(1);
+	}
+
+	let errors = 0;
+	for (const r of result.sites) {
+		process.stdout.write(`\n${r.site}\n`);
+		if (r.config.length === 0) {
+			process.stdout.write('  config: OK\n');
+		} else {
+			for (const f of r.config) {
+				const mark =
+					f.severity === 'error'
+						? '✗ error  '
+						: f.severity === 'warning'
+							? '⚠ warn   '
+							: 'ℹ info   ';
+				process.stdout.write(`  ${mark} ${f.path}: ${f.message}\n`);
+				if (f.severity === 'error') errors++;
+			}
+		}
+	}
+
+	process.stdout.write(
+		`\n  ${errors > 0 ? '✗' : '✓'}  ${errors} error${errors === 1 ? '' : 's'}\n\n`,
+	);
+	process.exit(errors > 0 ? 1 : 0);
 }
 
 interface MigrateOptions {
@@ -244,6 +351,12 @@ Usage: refrakt config <subcommand> [options]
 
 Subcommands:
   migrate              Rewrite refrakt.config.json to a different shape
+  validate             Check that the config's names resolve (theme, plugins)
+
+Validate Options:
+  --site <name>        Restrict to one site
+  --format <fmt>       "text" (default) or "json"
+  --config-path <p>    Path to refrakt.config.json (default: ./refrakt.config.json)
 
 Migrate Options:
   --to <shape>         "nested" (flat → singular site) or "multi-site" (singular → sites)
@@ -253,6 +366,8 @@ Migrate Options:
   --config <path>      Path to refrakt.config.json (default: ./refrakt.config.json)
 
 Examples:
+  refrakt config validate                               # Check every site's names resolve
+  refrakt config validate --site main
   refrakt config migrate                                # Preview flat → singular
   refrakt config migrate --apply                        # Write the migration
   refrakt config migrate --to multi-site --name main --apply

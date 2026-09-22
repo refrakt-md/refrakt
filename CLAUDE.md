@@ -20,6 +20,9 @@ This project ships `@refrakt-md/mcp`, a Model Context Protocol server that wraps
 | `npx refrakt inspect <rune>` | `mcp__refrakt__refrakt.inspect` |
 | `npx refrakt contracts ...` | `mcp__refrakt__refrakt.contracts` |
 | `npx refrakt plugins list` | `mcp__refrakt__refrakt.plugins_list` |
+| `npx refrakt validate` | `mcp__refrakt__refrakt.validate` |
+
+`refrakt.validate` returns structured findings — file, line, severity, error id, message — rather than a rendered report, so you can filter and act on individual ones. Its default tier is per-page (parse and validate); pass `deep: true` to add the cross-page checks, which costs a full pipeline run. Config resolution runs first, because an unresolvable plugin makes every rune it contributes look like an undefined tag.
 
 **Read project state via MCP resources** when you need to inspect plan content without invoking a tool:
 
@@ -55,6 +58,8 @@ npx vitest run packages/runes/test/diff.test.ts
 # Run site dev server
 cd site && npm run dev
 ```
+
+`npm run build` ends with `npm rebuild --workspaces` (the root `postbuild`). That is what puts `refrakt`, `create-refrakt` and `refrakt-mcp` on `PATH`: npm skips a workspace bin symlink when its target does not exist at install time, and every one of them points into `dist/`, which `npm ci` runs before. **Without it `npx refrakt` does not work from a fresh clone** — build once and the documented commands below work.
 
 Build order (see the `build` script in the root `package.json` for the canonical sequence): types + transform + behaviors → runes → 8 plugins (marketing, docs, storytelling, places, business, design, learning, media) → lumina + highlight → content → sveltekit + html + astro + nuxt + next + react + vue → ai → eleventy + plan plugin → create-refrakt + editor → cli → mcp. Getting this wrong causes missing type errors.
 
@@ -312,6 +317,24 @@ Plan files use `{ID}-{slug}.md` (e.g. `WORK-051-plan-validate-command.md`, `SPEC
 - `{% bug id="BUG-001" status="confirmed" severity="major" source="SPEC-001" %}` — bug report
 - `{% decision id="ADR-001" status="accepted" source="SPEC-001" %}` — architecture decision record (`source` links to spec it informs)
 - `{% milestone name="v0.5.0" status="active" %}` — release target
+
+### Duplicate IDs
+
+`plan validate` reports a duplicate ID at **error** severity, naming both files. Two more tiers sit beside it:
+
+```bash
+# Catch a collision BEFORE the merge that creates it
+refrakt plan validate --against origin/main
+
+# Renumber a colliding entity, when it can be proved what every reference meant
+refrakt plan migrate ids --apply --git
+```
+
+**`--against` is the one that changes outcomes.** Plain detection can only fire once both claimants are reachable — after the merge, when every `{% ref %}` to that ID has already become ambiguous. `--against` fires on the branch, where the base ref still makes resolution free. The PR job runs it.
+
+`migrate ids` renumbers only when **nothing outside the moved entity references the colliding ID**. Otherwise it refuses and names the references that blocked it, with file and line. It will not guess which entity a reference meant — repointing one at the wrong entity is silent and permanent.
+
+A ref that cannot be resolved fails loudly rather than reporting a clean run: "no collisions" and "I could not look" are different answers.
 
 ### Declaring dependencies (`Blocked by` / `Blocks`)
 
