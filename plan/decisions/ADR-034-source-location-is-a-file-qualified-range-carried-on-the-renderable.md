@@ -1,4 +1,4 @@
-{% decision id="ADR-029" status="proposed" date="2026-09-18" tags="transform, runes, architecture, diagnostics, agents, markdoc" %}
+{% decision id="ADR-034" status="proposed" date="2026-09-18" tags="transform, runes, architecture, diagnostics, agents, markdoc" %}
 
 # Source location is a file-qualified range carried on the renderable
 
