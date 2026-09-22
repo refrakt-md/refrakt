@@ -42,7 +42,7 @@ wrongly:
 file start, indistinguishable from anchor-relative for the top-level symbols it
 was measured on. `packages/lumina/styles/runes/hint.css` is the proof: the whole
 file is wrapped in `@layer skin {`, so `.rf-hint` sits at depth 1 and absolute
-counting returns all 67 lines instead of 4.
+counting returns the entire file instead of the rule's own four lines.
 
 **Anchors match raw source; the mask only rejects.** Matching against masked
 text blanks every string literal, so `match='"scripts"'` against `package.json`
@@ -145,7 +145,7 @@ creates the ambiguity.
 - {% ref "WORK-597" /%} — the masker and language table
 - {% ref "WORK-588" /%} — the extents that make non-brace formats addressable
 - `packages/runes/src/lib/read-file.ts` — `readSnippetFile`, where resolution lands
-- `packages/runes/src/tags/snippet-pipeline.ts`, `packages/runes/src/tags/file-ref-resolve.ts` — the two call sites
+- `packages/runes/src/snippet-pipeline.ts`, `packages/runes/src/file-ref-resolve.ts` — the two call sites
 - `packages/lumina/styles/runes/hint.css` — the anchor-relative depth proof
 
 {% /work %}

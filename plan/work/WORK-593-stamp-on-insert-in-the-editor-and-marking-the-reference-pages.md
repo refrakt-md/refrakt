@@ -10,7 +10,9 @@ Two pieces, both small:
 - **The block editor stamps on insert**, so anything authored through `refrakt
   edit` starts marked. A snippet inserted by a human who just looked at the code
   is the one moment when a marker is unambiguously honest — it costs nothing and
-  it is the only stamping that needs no review step.
+  it is the only stamping that needs no review step. `snippet` and `file-ref`
+  only: {% ref "WORK-591" /%} does not accept `reviewed` on `expand`, so there
+  is nothing for the editor to stamp there.
 - **Mark the reference pages whose prose makes specific claims.** Deliberately
   not all of them.
 
@@ -38,7 +40,8 @@ improvement on that, not a prerequisite for it.
 
 ## Acceptance Criteria
 
-- [ ] The block editor stamps `reviewed` when inserting a snippet, `file-ref` or `expand`
+- [ ] The block editor stamps `reviewed` when inserting a `snippet` or a `file-ref`
+- [ ] The editor does **not** stamp `expand` — {% ref "WORK-591" /%} does not accept `reviewed` there, because `expand` resolves no slice to hash
 - [ ] A snippet inserted through the editor whose target has not changed does not immediately report stale
 - [ ] The reference pages whose prose makes specific claims about a quoted slice are marked, with the selection recorded rather than exhaustive
 - [ ] Marking is a separate commit from {% ref "WORK-590" /%}'s migration

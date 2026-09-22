@@ -87,6 +87,6 @@ duplicated.
 
 - {% ref "SPEC-131" /%} — step 1 (the masker), D8 (regex literals, deferred), D10 (table not union regex), D15 (what is data and what is engine, and the merge seam)
 - `packages/runes/src/lib/read-file.ts` — the shared reader this sits beside
-- `packages/runes/src/lib/lang-map.ts` — existing extension → language identification, to reuse
+- `packages/runes/src/lang-map.ts` — existing extension → language identification, to reuse
 
 {% /work %}
