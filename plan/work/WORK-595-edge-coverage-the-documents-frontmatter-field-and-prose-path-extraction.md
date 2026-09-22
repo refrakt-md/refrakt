@@ -7,11 +7,12 @@ extraction is already trustworthy, and finds almost nothing — because embedded
 source reaches 28 of this repository's 237 content pages. **A page can be
 entirely about a subsystem without ever naming a file in it.**
 
-This item is the two classes that between them reach the pages that matter.
+This item is the three classes that between them reach the pages that matter.
 
 | Class | Extracted from | Precision |
 |---|---|---|
 | **Declared** | `documents:` in frontmatter | Highest — the author stated it |
+| **Described link** | An internal link with an adjacent description | Medium — 39% base rate |
 | **Prose path mention** | Backticked repo-relative path in body text | Low — file-granular, and the paragraph may not be about the file |
 
 ## The frontmatter half lands first
@@ -38,6 +39,31 @@ its reference entry automatically.
 (D14). The author stated this edge; a typo in it is a mistake, not a
 low-precision signal to skip.
 
+## Described links (D16)
+
+The only class whose target is another content page. An overview listing its
+children with one-line summaries is *duplicating* the target's content, and the
+duplicate is what rots — the link merely says which target is being summarised.
+
+Two structural shapes, and nothing else counts:
+
+```markdoc
+| [validate](/docs/cli/theme-tools#refrakt-validate) | Validate theme config and manifest |
+- [xref](/runes/xref) — id-based sibling. Same `preview="drawer"` attribute.
+```
+
+A link in a table cell whose adjacent cell is prose, or a list item whose link
+is followed by a dash and prose. **Not** a link in a paragraph, a bare list
+item, or a nav entry — `site/content` has 748 internal links and only 169 carry
+a description.
+
+Measured: 169 edges, **0 unresolved targets**, **39% non-zero** — the same band
+as the prose class, with a head to the distribution (4, 3, 2, 2, 2, 2, 2)
+dominated by index → child edges.
+
+The row above it in the spec's table was a non-goal until D16; the extraction
+is what changed, not the verdict on bare links.
+
 ## The prose half is a judgement call, and its acceptance test is human
 
 The spec is blunt about this: *"The first run over `site/content` is the real
@@ -61,6 +87,12 @@ is the point: one is a declaration, the other is a guess.
 - [ ] A `documents` entry that resolves to no existing file is reported as an error, naming the page and the entry
 - [ ] A `documents` entry set in a `_layout.md` does not cascade to pages beneath it
 - [ ] The frontmatter reference documents `documents`, generated from the schema
+- [ ] Described-link edges are extracted from internal links carrying an adjacent description — a table cell whose neighbouring cell is prose, or a list item whose link is followed by a dash and prose
+- [ ] A link with no adjacent description produces no edge, covered by a test over a nav list and an inline paragraph mention
+- [ ] Described-link targets resolve through both `<path>.md` and `<path>/index.md`, with any `#anchor` stripped first
+- [ ] A described link whose target does not resolve to a content page is skipped, not reported
+- [ ] `{% ref %}` / `{% xref %}` entity links produce no described-link edges — extraction reads Markdoc source, not resolved hrefs
+- [ ] A fixture reproduces the motivating case: an overview row whose description contradicts its target after the target changed
 - [ ] Prose path mentions are extracted from backticked repo-relative paths that resolve to an existing file
 - [ ] A backticked path that does not resolve to an existing file is skipped, not reported
 - [ ] A first run over `site/content` is reviewed by a maintainer, and the top ten are agreed to be worth reading before the item is closed
@@ -68,8 +100,13 @@ is the point: one is a declaration, the other is a guess.
 
 ## Approach
 
-Ship `documents` and its error path as the first commit, then iterate on the
-prose rule with the report in hand.
+Ship `documents` and its error path as the first commit, described links
+second, then iterate on the prose rule with the report in hand.
+
+Described links go second because they are the one class already measured to a
+conclusion — the shapes are structural, the extraction resolved 169 of 169
+targets, and the base rate is known. There is no rule to tune, so they add
+coverage while the prose rule is still being argued about.
 
 **Budget the extraction rule, not the arithmetic.** The counting is a map lookup
 and a subtraction. What decides whether anyone runs this a second time is
@@ -101,7 +138,8 @@ claimed in bulk without lying.
 
 ## References
 
-- {% ref "SPEC-136" /%} — D7 (prose extraction), D13 (`documents`), D14 (a declared path that does not resolve is an error), D2 (why bulk is legitimate here and not in SPEC-134)
+- {% ref "SPEC-136" /%} — D7 (prose extraction), D13 (`documents`), D14 (a declared path that does not resolve is an error), D16 (described links, the measurements, and why bare links stay rejected), D2 (why bulk is legitimate here and not in SPEC-134)
+- `site/content/docs/cli/cli-overview.md` — the motivating instance: a row summarising a command {% ref "WORK-578" /%} redefined
 - {% ref "WORK-594" /%} — the index and the report
 - {% ref "SPEC-126" /%} — the generator that turns a declared field into its reference entry
 - `packages/content/src/frontmatter.ts` — the `Frontmatter` interface; `created` / `modified` are the precedent

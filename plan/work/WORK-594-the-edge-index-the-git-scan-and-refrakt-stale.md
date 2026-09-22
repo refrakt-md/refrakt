@@ -61,6 +61,8 @@ actually reached.
 
 - [ ] `refrakt stale` reports a ranked list of edges, ordered by commits to the target since the referrer last changed
 - [ ] The git scan is a single `git log --name-only` pass over the repository, not one `git log` invocation per edge
+- [ ] The scan runs with `--full-history` and no pathspec, so history simplification cannot drop commits from a file's history
+- [ ] A test pins a file whose simplified and full histories differ, asserting the scan reports the full one
 - [ ] Embedded-source edges are extracted from `snippet`, `file-ref` and `expand` `path=` attributes
 - [ ] An edge whose referrer is newer than every change to its target scores zero and is omitted
 - [ ] Output is bounded by `--top`, defaulting to 10, and each entry lists commit subjects for the target's changes
@@ -78,6 +80,28 @@ actually reached.
 
 Adapt `timestamps.ts`'s scan rather than rewriting it; the shallow-clone and
 git-root handling there are the parts most easily got wrong.
+
+**Pass `--full-history`, and do not take the existing call shape on trust.**
+Found while measuring {% ref "SPEC-136" /%} D16's base rate, and it is the
+single easiest way to ship this item with quietly wrong numbers:
+
+```
+git log --name-only -- site/content/docs/cli/cli-overview.md
+  → one commit, 2026-07-24
+
+git log --full-history --name-only          (no pathspec)
+  → five commits, most recent 2026-09-10
+```
+
+A pathspec makes git apply history simplification. Both outputs are correct
+git answering different questions, but this command does *arithmetic* on those
+timestamps — the referrer's last-changed time is one half of every score — so a
+simplified history inflates every edge out of that file, and deflates every
+edge into it.
+
+The failure is invisible: the report still renders, still ranks, still looks
+plausible. It is the spec's own subject turned on the spec's own instrument,
+which is why it gets a pinned test rather than a comment.
 
 The commit subjects are the report's whole value. *"11 commits"* is a number;
 *"generate breadcrumb and timeline positions from a declared index"* is a person

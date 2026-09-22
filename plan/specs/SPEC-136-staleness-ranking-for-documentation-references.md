@@ -210,7 +210,30 @@ derivation or by hand.
 | Advisory-severity finding category | {% ref "SPEC-135" /%} D10 |
 
 Nothing here is new machinery. The git scan is a near-copy of one that already
-ships, and two of the three edge extractors already exist for other reasons.
+ships, and two of the four edge extractors already exist for other reasons.
+
+**One thing to change while copying the scan: it must pass `--full-history`.**
+Measuring D16's base rate surfaced this. A pathspec makes git apply history
+simplification, which silently drops commits:
+
+```
+git log --name-only -- site/content/docs/cli/cli-overview.md
+  → one commit, 2026-07-24
+
+git log --full-history --name-only          (no pathspec)
+  → five commits, most recent 2026-09-10
+```
+
+Both are "correct" git; they answer different questions. For this measure the
+difference is not academic — the referrer's last-changed time is one half of
+every score, so a simplified history inflates every edge out of that file. The
+same applies at the target end, in the other direction.
+
+`timestamps.ts` may be unaffected in practice (it scans a directory for
+file mtimes, where a stale-but-present timestamp is tolerable), but the scan
+this spec copies is doing arithmetic on those numbers, so the flag is
+load-bearing here in a way it is not there. Check rather than assume when
+adapting it.
 
 ## Proposal
 
@@ -234,9 +257,10 @@ marker is present — D3.
 | **Declared** | `documents:` in frontmatter | Highest — the author stated it | **New** — D13 |
 | **Embedded source** | `snippet` / `file-ref` / `expand` `path=` (+ `symbol=`/`lines=`) | High — exact path, and exact region under {% ref "SPEC-131" /%} | Extractor exists |
 | **Prose path mention** | Backticked repo-relative path in body text | Low — file-granular, and the paragraph may not be about the file | **New** — D7 |
+| **Described link** | An internal link with an adjacent description — page → page | Medium — 39% base rate, same band as prose | **New** — D16 |
 | Plan source | `source=` on a `done` work item | None — 99% base rate | **Rejected** — D10 |
 | Derived rune page | `plugin:` + slug → conventional schema path | None — 96% base rate | **Rejected** — D15 |
-| Entity `ref` / `xref` | Page → page | Too low to be worth it | Non-goal |
+| Bare link | Page → page with no description | Too low — a link is not a claim | **Rejected** — D16 |
 
 ### Declared edges
 
@@ -617,6 +641,76 @@ export a bare `Schema` and declare no rune name at all. Any future attempt here
 should start from the path convention, which is exact, rather than from the
 catalog, which cannot answer the question.
 
+**D16 — A link with a description is an edge; a bare link is not.** The
+original table dismissed page → page as a non-goal on one line, and that was
+right about links and wrong about what sits beside them.
+
+A link says *go here*. It asserts nothing, and `site/content` carries **748**
+internal links, the overwhelming majority of which are navigation, "see also",
+or an inline mention. Ranking those would produce the flat, headless
+distribution D10 and D15 reject.
+
+But an **overview page listing its children with one-line summaries is
+duplicating the target's content**, and the duplicate is what rots. The link
+only identifies which target is being summarised; the description is the claim.
+Two shapes carry it, and both are structural rather than heuristic:
+
+```markdoc
+| [validate](/docs/cli/theme-tools#refrakt-validate) | Validate theme config and manifest |
+- [xref](/runes/xref) — id-based sibling. Same `preview="drawer"` attribute.
+```
+
+A link in a table cell whose adjacent cell is prose, or a list item whose link
+is followed by a dash and prose. Nothing else counts — not a link in a
+paragraph, not a bare list item, not a nav entry.
+
+**Measured over `site/content`:**
+
+| | |
+|---|---|
+| Described-link edges | **169** — 23% of the 748 internal links |
+| Targets that failed to resolve | **0** |
+| Non-zero (target changed since referrer) | **67 = 39%** |
+
+39% sits with the prose class this spec accepts (37%), and nowhere near the two
+it rejects (96%, 99%). The distribution has a head — 4, 3, 2, 2, 2, 2, 2 — and
+it is dominated by index → child edges, which is exactly where duplicated
+summaries live. That is the class behaving as intended rather than as a
+corpus-wide alarm.
+
+**The instance that produced this decision is the best one in the spec**, because
+nobody was careless. v0.36.0 redefined `refrakt validate` from theme-authoring
+to site-authoring ({% ref "WORK-578" /%}). The target page was updated
+thoroughly — `docs/cli/theme-tools.md` even carries a prominent *"This changed
+in v0.36.0"* migration hint — and {% ref "WORK-579" /%}'s criterion *"Help text
+and docs describe `theme validate` as theme-authoring and `refrakt validate` as
+site-authoring"* is **checked off**.
+
+`docs/cli/cli-overview.md` still said *"Validate theme config and manifest."*
+
+The link resolves. The anchor exists. The target is correct. Nothing was
+skipped, and no reviewer could have seen it — the stale text is on a different
+page from the change, and the only thing connecting them is a link that still
+works. The edge scores 1, from exactly the commit that invalidated it.
+
+This is also the sharpest available argument for D12's `touching`. Asking
+`refrakt_stale { touching: ["site/content/docs/cli/theme-tools.md"] }` while
+doing {% ref "WORK-578" /%} would have named the overview page before the
+divergence existed — where the ranked report would only have surfaced it later,
+if someone ran it.
+
+**Targets are content files, so nothing new is needed.** Git tracks a `.md` the
+same way it tracks a `.ts`, and the measure is unchanged. The one difference
+worth stating: a described-link edge points *within* the corpus, so editing the
+target moves that file's own referrer timestamp too. That is correct — a page
+whose summary was updated alongside its target scores zero, which is the
+behaviour wanted.
+
+**Deliberately not derived from the rendered link graph.** The extraction reads
+Markdoc source, not resolved hrefs, so `{% ref %}` / `{% xref %}` entity links
+stay out. They resolve through the registry rather than carrying an authored
+description, and the row above keeps them a non-goal on their own merits.
+
 ## Non-goals
 
 - **Verifying that documentation is correct.** Same impossibility as
@@ -651,9 +745,16 @@ catalog, which cannot answer the question.
 
 - [ ] `refrakt stale` reports a ranked list of edges, ordered by commits to the target since the referrer last changed
 - [ ] The git scan is a single `git log --name-only` pass over the repository, not one `git log` invocation per edge
+- [ ] The scan runs with `--full-history` and no pathspec, so history simplification cannot drop commits from a file's history
+- [ ] A test pins a file whose simplified and full histories differ, asserting the scan reports the full one
 - [ ] Embedded-source edges are extracted from `snippet`, `file-ref` and `expand` `path=` attributes
 - [ ] Prose path mentions are extracted from backticked repo-relative paths that resolve to an existing file
 - [ ] A backticked path that does not resolve to an existing file is skipped, not reported
+- [ ] Described-link edges are extracted from internal links carrying an adjacent description — a table cell whose neighbouring cell is prose, or a list item whose link is followed by a dash and prose
+- [ ] A link with no adjacent description produces no edge, covered by a test over a nav list and an inline paragraph mention
+- [ ] A described link whose target does not resolve to a content page is skipped, not reported
+- [ ] Described-link targets resolve through both `<path>.md` and `<path>/index.md`, with any `#anchor` stripped first
+- [ ] `{% ref %}` / `{% xref %}` entity links produce no described-link edges — extraction reads Markdoc source, not resolved hrefs
 - [ ] `documents` is a declared member of the `Frontmatter` interface, not read through its index signature
 - [ ] Each `documents` entry produces an edge that ranks and answers `touching` identically to an extracted one
 - [ ] `documents` entries resolve through `ProjectFiles`, rejecting absolute paths and traversal escapes as `snippet path=` does
