@@ -74,6 +74,22 @@ plugins/plan/src/tags/backlog.ts:91
 `tags` is named explicitly in the attribute description, so this is not an
 author straying outside the contract — it is the documented path.
 
+## Steps to Reproduce
+
+1. On any page with the plan plugin loaded, render
+   `{% backlog show="work" group="tags" /%}` — or the core equivalent,
+   `{% collection type="work" group="tags" /%}`.
+2. Observe the group headings: each is a full tag list (`"runes, data, csv"`),
+   not a tag.
+3. Count them. Against this repo's `plan/`, that is 659 headings for 742
+   entities, 614 of which have one item under them.
+
+`spike/query-engines` reproduces it without rendering:
+
+```bash
+cd spike/query-engines && npm install && node extract.mjs && node unwind.mjs
+```
+
 ## Expected
 
 Grouping fans a multi-value field out: an entity tagged `runes, data, csv`
