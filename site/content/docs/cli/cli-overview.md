@@ -23,8 +23,8 @@ This makes the `refrakt` command available in your project scripts and via `npx 
 | [extract](/runes/docs/cli) | Generate API reference docs from TypeScript or Python source (via `@refrakt-md/docs` plugin) |
 | [contracts](/docs/cli/theme-tools#refrakt-contracts) | Generate and validate structure contracts |
 | [scaffold-css](/docs/cli/theme-tools#refrakt-scaffold-css) | Generate CSS stub files for a new theme |
-| [validate](/docs/cli/theme-tools#refrakt-validate) | Validate theme config and manifest |
-| [theme](/docs/cli/theme-tools#refrakt-theme) | Install themes and show theme info |
+| [validate](/docs/cli/theme-tools#refrakt-validate) | Validate your project's sites — config resolution, then content |
+| [theme](/docs/cli/theme-tools#refrakt-theme) | Install themes, show theme info, and validate theme config and manifest |
 | edit | Launch the browser-based content editor |
 | plugins list | List installed plugins and their commands |
 | plugins validate | Validate a plugin before publishing |
@@ -67,6 +67,6 @@ Plugins can extend the CLI with additional subcommands. These are available when
 | Plugin | Command | Purpose |
 |--------|---------|---------|
 | [`@refrakt-md/docs`](/runes/docs) | [`refrakt docs extract`](/runes/docs/cli) | Generate API reference docs from TypeScript or Python source |
-| [`@refrakt-md/plan`](/runes/plan) | [`refrakt plan`](/runes/plan/cli) | Project planning — status, next item, update, create, validate, serve, build |
+| [`@refrakt-md/plan`](/runes/plan) | [`refrakt plan`](/runes/plan/cli) | Project planning — status, next item, update, create, next-id, validate, init, history, migrate |
 
 Run `refrakt --help` to see all available commands and options.

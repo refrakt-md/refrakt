@@ -112,7 +112,7 @@ The fence on each side annotates the diff header with `src/server.js`. Explicit 
 `linenumbers=true` on each panel's fence shifts that side's gutter to start at the fence's `lines` offset rather than `1` — so a diff between two slices of the same file shows the actual file line numbers per side.
 
 {% diff mode="split" %}
-```ts {% source="theme.ts" lines="74-78" linenumbers=true %}
+```ts {% source="config.ts" lines="44-48" linenumbers=true %}
 contentDir: string;
 theme: string | SiteThemeConfig;
 target?: string;
@@ -120,7 +120,7 @@ overrides?: Record<string, string>;
 routeRules?: RouteRule[];
 ```
 
-```ts {% source="theme.ts" lines="74-79" linenumbers=true %}
+```ts {% source="config.ts" lines="44-49" linenumbers=true %}
 contentDir: string;
 theme: string | SiteThemeConfig;
 target?: string;
@@ -130,7 +130,7 @@ entityRoutes?: EntityRoute[];
 ```
 {% /diff %}
 
-Both gutter columns start at 74 (matching the file's real coordinates), the header reads `theme.ts`, and the added line shows in the right column with `entityRoutes` highlighted as the new value.
+Both gutter columns start at 44 (matching the file's real coordinates), the header reads `config.ts`, and the added line shows in the right column with `entityRoutes` highlighted as the new value.
 
 {% hint type="note" %}
 `highlight=` on a fence inside `{% diff %}` is **silently ignored**. Diff's add/remove channel is the primary line-level signal; a separate highlight layer on top would muddy the +/- semantics. Use a standalone `{% snippet highlight="..." /%}` instead when you want emphasis.
