@@ -1,4 +1,4 @@
-{% spec id="SPEC-137" status="draft" tags="versioning, sites, routing, registry, content, config, docs" %}
+{% spec id="SPEC-139" status="draft" tags="versioning, sites, routing, registry, content, config, docs" %}
 
 # A version is a site
 
