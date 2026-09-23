@@ -1,0 +1,18 @@
+{
+  "name": "@refrakt-spike/query-engines",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Throwaway spike: liqe vs mingo vs JSONata as a query engine for the SPEC-070 grammar's call sites. Not part of the workspace build.",
+  "scripts": {
+    "extract": "node extract.mjs",
+    "probe": "node probe.mjs",
+    "compare": "node extract.mjs && node compare.mjs",
+    "unwind": "node extract.mjs && node unwind.mjs"
+  },
+  "dependencies": {
+    "jsonata": "^2.2.2",
+    "liqe": "^3.8.7",
+    "mingo": "^7.2.4"
+  }
+}

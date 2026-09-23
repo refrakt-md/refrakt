@@ -1,16 +1,23 @@
-{% spec id="SPEC-131" status="draft" tags="snippet, file-ref, docs, drift, tooling, runes" %}
+{% spec id="SPEC-131" status="accepted" tags="snippet, file-ref, docs, drift, tooling, runes" %}
 
 # Address embedded source by name, not by line number
 
-`snippet`, `file-ref`, and `expand` address the files they embed by **line
-range only**. A line range is a coordinate into a file that nobody promised to
-hold still, so editing anything above the range silently repoints it — the page
-renders the wrong code, with no warning, looking entirely authoritative.
+`snippet` and `file-ref` address the files they embed by **line range only**. A
+line range is a coordinate into a file that nobody promised to hold still, so
+editing anything above the range silently repoints it — the page renders the
+wrong code, with no warning, looking entirely authoritative.
 
-This spec adds a second addressing mode to the resolver all three already
-share: a **regex anchor plus a delimiter-balanced extent**. The anchor names
-what the author meant (`symbol="SiteConfig"`), so a rename or deletion becomes a
-loud, named failure instead of a wrong render.
+This spec adds a second addressing mode to the resolver both share: a **regex
+anchor plus a delimiter-balanced extent**. The anchor names what the author
+meant (`symbol="SiteConfig"`), so a rename or deletion becomes a loud, named
+failure instead of a wrong render.
+
+> **`expand` is not a third consumer, despite appearances.** It sits in the
+> same module but on `readWholeSandboxedFile`, which returns raw text for
+> `Markdoc.parse` with no slicing and no `[start, end]`. `expand` embeds a
+> *document*, not a region — it has no `lines=`, so it has none of the exposure
+> above and nothing to migrate. Extending it to address regions would be a
+> different feature (a partial include), and this spec does not propose one.
 
 Deliberately *not* a language parser. Measurements below put an ~120-line
 implementation at 95.37% exact spans against the TypeScript compiler with a
@@ -58,8 +65,9 @@ correct only for as long as nobody edits the fourteen lines above it.
 ### It has already happened, to this spec's own example
 
 The `SiteConfig` scenario above was written as a hypothetical. It is not one.
-Three live pages — `runes/drawer.md:155`, `runes/file-ref.md:51`, and
-`runes/file-ref.md:75` — carry:
+Three published references — `runes/file-ref.md:51`, which renders, plus
+`runes/drawer.md:155` and `runes/file-ref.md:75`, which sit inside fences and
+so teach the pattern rather than executing it — carry:
 
 ```markdoc
 {% file-ref path="packages/types/src/theme.ts" lines="74-125" label="SiteConfig" preview="drawer" /%}
@@ -75,7 +83,16 @@ Three live pages — `runes/drawer.md:155`, `runes/file-ref.md:51`, and
 A drawer captioned "SiteConfig" opens onto the back half of one interface and
 the whole of two others, on the documentation page for the rune whose
 addressing model is the subject of this spec. Tracked as
-{% ref "BUG-020" /%}.
+{% ref "BUG-020" /%}, whose ranges have since been corrected
+(refrakt-md/refrakt#639) while leaving the addressing exposure this spec
+removes.
+
+A fourth reference, found later and recorded on the bug, is the more
+instructive one: `runes/file-ref.md:40` pointed at `theme.ts` 42–58 labelled
+`SiteThemeConfig` — right file, right symbol, and a range that had simply slid
+(the interface is 19–49). No move, no rename, nothing a careful author would
+have done differently. That is the ordinary case this spec exists for; the
+`SiteConfig` headline above is the rarer one.
 
 This is worse than the failure the spec predicted. The prediction was *drift* —
 a range sliding out of alignment with a symbol that is still there. What
@@ -196,6 +213,7 @@ the resolution in the shared reader rather than in either pipeline.
 |---|---|
 | `symbol` | Named declaration. Builds an anchor regex from the keyword table. |
 | `match` | Raw regex anchor. The general form; `symbol` is sugar over it. |
+| `occurrence` | Which match to take when the anchor is ambiguous, 1-based. Default 1. An escape hatch, not a naming form — D17. |
 | `until` | Regex ending the extent, **exclusive** — the matching line is not included. Overrides `extent`. |
 | `through` | As `until`, but **inclusive** of the matching line. D12. |
 | `extent` | `auto` (delimiter balance, default), `dedent` (indentation), `section` (next sibling at the anchor's own level), or `paired` (matching close token). D11. |
@@ -598,8 +616,11 @@ Taking the first match is the right behaviour — refusing would make the common
 case worse for no safety gain, since the first match is usually correct. But
 taking it *silently* turns an ambiguity the resolver can see into one the
 author cannot. Emit a warning naming each matching line, and keep rendering.
-Cheap, and it converts a silent ambiguity into a visible one. An `occurrence=`
-selector is the fuller answer and is deferred until something needs it.
+Cheap, and it converts a silent ambiguity into a visible one.
+
+**`occurrence=` is that fuller answer, and something now needs it — D17.** The
+enumeration this warning requires is the same list the selector indexes into,
+so the two are one mechanism rather than two.
 
 **D15 — The language table is data, and is built to be merged into.** The
 split between what is declarative here and what is not falls in a useful
@@ -670,6 +691,45 @@ produces a **byte-identical slice**. That comparison must run before
 `reindent`, or every nested target fails verification for a difference the
 codemod itself introduced.
 
+**D17 — `occurrence=` selects among matches, and belongs to the escape hatches
+rather than to the naming forms.** D14 deferred this "until something needs
+it". D11's `paired` is what needs it: making Markdoc, HTML and Svelte
+addressable is precisely what produces files with many structurally identical
+anchors, and the repository's own front page is the example.
+`site/content/index.md` carries one `{% hero %}`, **four `{% feature %}`** and
+two `{% sandbox %}`. Quoting the second feature is a reasonable thing to want,
+and without a selector the only route is back to `lines=`.
+
+**It is nearly free.** D14 already requires enumerating every match in order to
+name each matching line in its warning. The selector is an index into a list
+the resolver has already built; there is no second traversal and no new
+concept in the engine.
+
+**Be honest about what it is.** `occurrence=3` is counting, and this spec
+exists to replace counting with naming. It is a *better* count than a line
+number — inserting unrelated content above does not move it, only inserting
+another match does — but it is ordinal addressing, and it drifts the moment
+someone adds a fifth feature above the fourth.
+
+So it is classified with `lines=`, `until=` and `through=` under D4, not with
+`symbol=` under D9, and three consequences follow:
+
+- **The ambiguity warning still fires.** `occurrence=` selects a match; it does
+  not assert the author disambiguated correctly. Suppressing the warning would
+  turn the one visible signal into silence, which is D14's whole subject.
+- **An out-of-range selector refuses**, naming how many matches were found and
+  where — never silently clamping to the last, and never falling back to the
+  first. A clamp is the plausible-wrong render this spec exists to prevent.
+- **The docs steer to a distinguishing regex first.** `match="^\{% feature
+  align=\"right\""` names what the author meant; `occurrence=2` counts to it.
+  Prefer the former wherever the anchors differ at all, and reach for
+  `occurrence=` only when they are genuinely identical.
+
+D15's named anchors are the better long-term answer for a repeated structure
+worth quoting often, since they give the pattern a name in one config entry
+rather than an ordinal in twenty pages. That surface is still deferred; this
+selector does not prejudge its shape.
+
 ## Non-goals
 
 - **Cross-file resolution.** `symbol="SiteConfig"` searches the file named by
@@ -706,7 +766,8 @@ codemod itself introduced.
 
 ## Acceptance Criteria
 
-- [ ] `readSnippetFile` resolves `symbol` and `match` anchors in addition to `lines`, and `snippet`, `file-ref`, and `expand` all gain the capability from that one change
+- [ ] `readSnippetFile` resolves `symbol` and `match` anchors in addition to `lines`, and both `snippet` and `file-ref` gain the capability from that one change
+- [ ] `expand` is unchanged — it reads whole files through `readWholeSandboxedFile` and gains no anchor attributes
 - [ ] `symbol` builds its anchor from a documented keyword table; `match` accepts a raw regex; the two are mutually exclusive with each other and with `lines`
 - [ ] `extent` accepts `auto` (default), `dedent`, `section`, and `paired`; `until` / `through` override all four
 - [ ] `until` excludes its matching line and `through` includes it; neither is inferred from the file or the strategy
@@ -715,6 +776,10 @@ codemod itself introduced.
 - [ ] Anchors match against raw source; a match landing inside a masked region is skipped, covered by tests for `match='"scripts"'` on `package.json` (must resolve) and an anchor mentioned only in a comment (must be skipped)
 - [ ] An `auto` extent reaching EOF without terminating refuses and names `extent="dedent"`; an `until` / `through` that never matches refuses the same way
 - [ ] An anchor matching more than once takes the first and warns, naming every matching line
+- [ ] `occurrence` selects the Nth match, 1-based, defaulting to 1, and reads from the same enumeration the ambiguity warning names
+- [ ] `occurrence` does not suppress the ambiguity warning
+- [ ] An `occurrence` beyond the number of matches refuses, naming how many were found and where — never clamping to the last or falling back to the first
+- [ ] The docs present `occurrence` as an escape hatch beside `lines` / `until` / `through`, and steer authors at a distinguishing regex first
 - [ ] `dedent` expands tabs at a width taken from the language table
 - [ ] `paired` handles asymmetric, symmetric, and self-closing token shapes; a self-closing anchor returns one line rather than scanning to EOF
 - [ ] `linenumbers` and numeric `highlight` stay in file coordinates under an anchor; `highlight-match` highlights by regex within the resolved slice
@@ -806,7 +871,7 @@ than reading them off this spec.
 
 - {% ref "SPEC-078" /%} — `file-ref`; listed symbol resolution as a non-goal and named line-range staleness as the tax this spec repays
 - {% ref "SPEC-062" /%} — `snippet`; the origin of the `lines=` addressing model and the error-fence path D6 reuses
-- {% ref "SPEC-066" /%} — `expand`; the third consumer of the shared reader
+- {% ref "SPEC-066" /%} — `expand`; in the same module but on `readWholeSandboxedFile`, and out of scope: it embeds documents, not regions
 - {% ref "SPEC-113" /%} — the `ProjectFiles` seam that owns containment, unchanged by this spec
 - {% ref "SPEC-129" /%} — the pre-transform `include` rune. A fourth path-addressed rune: if it lands, it should take the same addressing layer rather than growing its own `lines=`
 - {% ref "SPEC-126" /%} — rejected line-addressed embedding for the config reference and proposed the one-off assertion this spec generalises
