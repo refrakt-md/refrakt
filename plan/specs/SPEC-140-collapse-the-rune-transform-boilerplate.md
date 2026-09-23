@@ -1,4 +1,4 @@
-{% spec id="SPEC-138" status="draft" tags="runes, transform, architecture, dx" %}
+{% spec id="SPEC-140" status="draft" tags="runes, transform, architecture, dx" %}
 
 # Collapse the rune transform boilerplate
 
