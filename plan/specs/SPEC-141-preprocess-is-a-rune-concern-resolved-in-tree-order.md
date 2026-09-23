@@ -264,7 +264,7 @@ declaration is the contract.
 - {% ref "BUG-027" /%} — the composition gap tree order closes; the motivating case
 - {% ref "BUG-028" /%} — `figure` drops non-media children, which is why "compose with figure" does not work yet
 - {% ref "BUG-030" /%} — a mixed `list|tag:x` field with `emitTag` drops the authored tags; surfaced by D8's question
-- {% ref "BUG-031" /%} — the reference never renders `emitTag`, so the declaration's second fact is already invisible
+- {% ref "BUG-031" /%} — the reference drops `emitTag` and the item grammar, so D8's "the declaration is the contract" does not yet reach a reader
 - {% ref "SPEC-062" /%} — the snippet rune, its preprocess design and the figure wrapper this removes
 - {% ref "SPEC-129" /%} — the include rune and the load-bearing order this replaces
 - {% ref "SPEC-127" /%} — per-row templates; what made `data` a producer

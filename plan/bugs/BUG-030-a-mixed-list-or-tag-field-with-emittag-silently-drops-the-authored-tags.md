@@ -101,7 +101,7 @@ Its own content model records the cost:
 
 - {% ref "SPEC-003" /%} — the declarative content model this belongs to
 - {% ref "BUG-028" /%} — `figure` dropping non-media children; the same silent-content-loss class
-- {% ref "BUG-031" /%} — the reference does not document `emitTag` either, so neither half of the dual-syntax contract is visible
+- {% ref "BUG-031" /%} — the reference drops `emitTag`, `template` and the whole `itemModel` grammar, so neither half of the dual-syntax contract is visible
 - {% ref "SPEC-141" /%} — where the question that exposed this came from
 
 {% /bug %}
