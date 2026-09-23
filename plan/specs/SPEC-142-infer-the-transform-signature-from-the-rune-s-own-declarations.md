@@ -109,14 +109,37 @@ derives keys from a runtime pattern. Both keep today's loose type. That is not a
 regression, and template-literal gymnastics for `headingExtract` would not pay
 for themselves.
 
-### D6 — consider removing `KnownSectionDefinition.model`
+### D6 — `KnownSectionDefinition.model` is decided separately: use it or lose it
 
-It is the only case where the inferred type is unpleasant rather than merely
+`model` lets a known section resolve its body against a different content model
+than its siblings (`resolver.ts:518`). **No rune declares one**, and it was not
+among the three purposes {% ref "WORK-024" /%} added `knownSections` for —
+validation, aliases and editor templates. It arrived with the type.
+
+It is also the only place the inferred type is unpleasant rather than merely
 verbose: the error inlines the whole model, truncated, and neither a named
 `SectionEntry<M>` alias nor hoisting the model to a named const improves it
-(both tried in the spike). **No rune declares one.** Deleting an unused feature
-is cheaper than carrying its debugging cost. Not required by this spec — the
-type is correct either way — but the two should be decided together.
+(both tried in the spike).
+
+But there is a real latent use, so this spec does **not** propose removing it.
+`work`'s Acceptance Criteria is semantically a checklist, and the plan pipeline
+currently counts it by regex over rendered text:
+
+```ts
+// plugins/plan/src/pipeline.ts
+const unchecked = (text.match(/\[ \]/g) || []).length;
+const checked = (text.match(/\[x\]/gi) || []).length;
+```
+
+A literal `[x]` anywhere in a work item inflates that count. A per-section
+`model` resolving `criteria` as a structured list is the right fix, and it is
+exactly what this field is for.
+
+So the decision is **use it or lose it**, and it belongs to the plan runes, not
+to this spec. What it must not do is stay unused *and* impose the worst error
+messages in the scheme. Either outcome is compatible with the types here: the
+union is correct when a `model` exists and collapses to a single shape when none
+does.
 
 ### D7 — the benchmark is re-run against the real tree before the last plugin lands
 
