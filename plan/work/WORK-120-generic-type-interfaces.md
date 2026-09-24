@@ -46,3 +46,5 @@ Branch: `claude/adr-008-implementation-nBN9K`
 - Used Approach B from ADR-008 (generic interface with renderable type parameter)
 - Common base types reduce duplication across interfaces
 - Example usage documented in themes/components.md
+
+{% /work %}

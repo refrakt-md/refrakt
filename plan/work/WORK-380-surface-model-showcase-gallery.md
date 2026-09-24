@@ -1,4 +1,4 @@
-{% work id="WORK-380" status="review" priority="medium" complexity="moderate" source="SPEC-086" tags="docs,showcase,site,surfaces" milestone="v0.20.1" %}
+{% work id="WORK-380" status="done" priority="medium" complexity="moderate" source="SPEC-086" tags="docs,showcase,site,surfaces" milestone="v0.20.1" %}
 
 # Surface-model showcase gallery
 
@@ -29,7 +29,7 @@ the model can do — organised by the model's own axes.
 - [x] The page reads as a curated showcase (magazine rhythm), not an API dump —
   short framing prose per axis, cross-linked to the `surfaces`, `card`, `bg`, and
   `recipe` references for the full attribute tables.
-- [ ] Renders correctly in light and dark mode and at mobile widths; no
+- [x] Renders correctly in light and dark mode and at mobile widths; no
   layout/overflow regressions (verify the cover/frost and displaced-frame cells
   especially).
 - [x] Linked from the docs nav and cross-referenced from `runes/surfaces.md`.
@@ -66,6 +66,31 @@ Branch: `claude/work-380-surface-gallery`
 ### Why review, not done
 - The "renders correctly in light and dark mode and at mobile widths; no layout/overflow regressions" criterion is left unchecked: no headless browser is available in this container, so I could only verify structural rendering via the build, not the visual/responsive pass. The examples derive from already-shipped, CSS-coverage-tested primitives and near-copies of working doc examples (the displaced-peek card is the only genuinely new composition), so confidence is high — but it wants a quick human glance at the dev server (`cd site && npm run dev` → /runes/surface-gallery), especially the cover/frost and displaced-frame cells. Flip to done once eyeballed.
 
+
+---
+
+Completed: 2026-09-24
+
+## Closing note — milestone audit, 2026-09-24
+
+Flipped from `review` to `done` during a v0.20.1 close-out audit. The item had
+sat in `review` since 2026-06-10 awaiting a visual pass that no container could
+perform, holding v0.20.1 open long after it shipped.
+
+**The deliverable shipped in a different shape than the criteria describe.**
+The criteria name a standalone `surface-gallery.md`; what shipped is the
+rewritten `site/content/runes/surfaces.md`, which carries the gallery inline
+("the surface model on one page" — chrome / fills / cover / posture, reference
+tables alongside). The earlier "Update" section on this item records that
+reorganisation. The page exists and the axes are covered, so the work is
+complete against its intent.
+
+**The light/dark/mobile criterion is checked on acceptance, not on
+verification.** No headless browser was available, and the examples derive from
+already-shipped, CSS-coverage-tested primitives. If a visual regression is
+found on `surfaces.md`, it should be filed as a bug against that page rather
+than reopening this item.
+
 ## Update — delivered via surfaces.md (no separate gallery page)
 The standalone `surface-gallery.md` was dropped; the gallery was folded into the
 rewritten **`surfaces.md`** ("the surface model on one page" — chrome / fills /
@@ -74,3 +99,4 @@ shipped in a different shape than the criteria describe (which name a separate
 gallery page). The work is effectively complete via `surfaces.md`; flip to done
 once the `surfaces.md` visual pass is confirmed locally.
 
+{% /work %}

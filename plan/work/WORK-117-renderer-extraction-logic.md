@@ -40,3 +40,5 @@ Branch: `claude/adr-008-implementation-nBN9K`
 ### Notes
 - Uses `data-field` attribute on meta tags (not `property`) since that's what `createComponentRenderable` actually produces
 - Returns camelCase keys from kebab-case `data-field` values via `fromKebabCase`
+
+{% /work %}

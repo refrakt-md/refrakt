@@ -46,3 +46,5 @@ Branch: `claude/adr-008-implementation-nBN9K`
 - Snippets render static HTML via createRawSnippet (sufficient for identity-transformed content)
 - Element overrides unchanged (extraction only applies to Component dispatch path)
 - VOID_ELEMENTS set added to Renderer for proper void element handling in HTML output
+
+{% /work %}

@@ -1,4 +1,4 @@
-{% bug id="BUG-013" status="confirmed" severity="minor" tags="runes,media,schema-org,seo" milestone="v0.35.0" %}
+{% bug id="BUG-013" status="confirmed" severity="minor" tags="runes,media,schema-org,seo" %}
 
 # A podcast playlist is published as a music playlist
 

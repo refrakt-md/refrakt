@@ -45,3 +45,5 @@ Branch: `claude/adr-008-implementation-nBN9K`
 ### Notes
 - Documentation follows existing style and structure of each file
 - Recipe component used as primary example since it has rich properties and refs
+
+{% /work %}
