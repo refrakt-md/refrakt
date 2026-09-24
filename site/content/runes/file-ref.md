@@ -28,7 +28,7 @@ See {% file-ref path="package.json" /%} for the project metadata.
 Pass an explicit `label` when you're referring to a symbol inside the file rather than the file itself — that's the usual case:
 
 ```markdoc
-See {% file-ref path="packages/types/src/theme.ts" label="SiteThemeConfig" /%}
+See {% file-ref path="packages/types/src/theme.ts" symbol="SiteThemeConfig" label="SiteThemeConfig" /%}
 for the shape.
 ```
 
@@ -37,10 +37,12 @@ for the shape.
 `lines` accepts a single line (`"19"`) or a range (`"19-49"`). Drives both the GitHub `#L19-L49` anchor and the snippet slice when previewing.
 
 ```markdoc
-{% file-ref path="packages/types/src/theme.ts" lines="19-49" label="SiteThemeConfig" /%}
+{% file-ref path="CHANGELOG.md" lines="1-20" label="the latest release notes" /%}
 ```
 
-The href becomes `https://github.com/{owner}/{repo}/blob/{repoBranch}/packages/types/src/theme.ts#L19-L49` — clicking jumps straight to the highlighted range on GitHub.
+The href becomes `https://github.com/{owner}/{repo}/blob/{repoBranch}/CHANGELOG.md#L1-L20` — clicking jumps straight to the highlighted range on GitHub.
+
+The example deliberately points at a file with **no symbols in it**, because that is when a line range is the right tool. When the target *is* a declaration, [anchor by name](#anchoring-by-name) instead: a line range into a source file is a coordinate that drifts, and a `file-ref` labelled with a symbol is the case where that hurts most — the label keeps claiming one thing while the drawer shows whatever now occupies those lines.
 
 ## Anchoring by name
 
@@ -62,7 +64,7 @@ The drawer body is resolved from the current file, so it follows the symbol as i
 
 {% preview source=true %}
 
-See {% file-ref path="packages/types/src/config.ts" lines="42-148" label="SiteConfig" preview="drawer" /%} for the full shape.
+See {% file-ref path="packages/types/src/config.ts" symbol="SiteConfig" label="SiteConfig" preview="drawer" /%} for the full shape.
 
 {% /preview %}
 
@@ -79,14 +81,14 @@ The inline `href="#drawer-{slug}"` is a real in-page anchor that scrolls to the 
 
 ## Label conventions
 
-The filename default (e.g. `theme.ts`) is conservative — when the file-ref refers to a symbol inside the file, pass an explicit `label`. Until a future `symbol="…"` attribute lands ({% ref "SPEC-078" preview="drawer" /%} future extensions), `label` is the only knob:
+The filename default (e.g. `theme.ts`) is conservative — when the file-ref refers to a symbol inside the file, name the symbol with `symbol=` and pass a matching `label`. The two do different jobs: `symbol` decides *what is quoted*, `label` decides *what the link reads as*.
 
 ```markdoc
 {# Refers to the file: filename is fine #}
 {% file-ref path="package.json" /%}
 
-{# Refers to a symbol in the file: pass a label #}
-{% file-ref path="packages/types/src/config.ts" lines="42-148" label="SiteConfig" /%}
+{# Refers to a symbol in the file: name it, and pass a label #}
+{% file-ref path="packages/types/src/config.ts" symbol="SiteConfig" label="SiteConfig" /%}
 ```
 
 ## Attributes

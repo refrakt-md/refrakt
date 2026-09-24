@@ -1,4 +1,4 @@
-{% work id="WORK-590" status="ready" priority="high" complexity="moderate" source="SPEC-131" tags="snippet, file-ref, codemod, migration, docs, drift" milestone="v0.37.0" %}
+{% work id="WORK-590" status="in-progress" priority="high" complexity="moderate" source="SPEC-131" tags="snippet, file-ref, codemod, migration, docs, drift" milestone="v0.37.0" %}
 
 # The codemod and the migration of the 23 line-addressed invocations
 
@@ -96,14 +96,14 @@ it. Do not do it speculatively.
 
 ## Acceptance Criteria
 
-- [ ] A `--fix` codemod converts `lines=` invocations to anchors, verifying byte-identical output and refusing to rewrite when it differs
-- [ ] The codemod's byte-identical check compares the slice before `reindent` is applied
-- [ ] An invocation carrying `highlight=` or `linenumbers=` is either preserved with its coordinates or rewritten to `highlight-match=`, with its own verification separate from the slice check
-- [ ] The 15 **live** line-addressed snippets in `site/content` are migrated by the codemod, or individually justified as intentionally line-addressed
-- [ ] The 8 **fenced** line-addressed snippets are rewritten by hand to match their live counterparts, or justified as deliberate demonstrations of the `lines=` form — the codemod does not attempt them, and a fenced invocation is never reported as an unverifiable refusal
-- [ ] {% ref "BUG-020" /%}'s four references are anchored — `symbol="SiteConfig"` on the three in `config.ts`, `symbol="SiteThemeConfig"` on the one in `theme.ts` — and {% ref "BUG-020" /%} is closed
-- [ ] The codemod does **not** stamp {% ref "SPEC-134" /%} `reviewed` markers on anything it migrates
-- [ ] Which languages and formats the migration actually reached is recorded, as the input to D15's deferred config-surface decision
+- [x] A `--fix` codemod converts `lines=` invocations to anchors, verifying byte-identical output and refusing to rewrite when it differs
+- [x] The codemod's byte-identical check compares the slice before `reindent` is applied
+- [x] An invocation carrying `highlight=` or `linenumbers=` is either preserved with its coordinates or rewritten to `highlight-match=`, with its own verification separate from the slice check
+- [x] The 15 **live** line-addressed snippets in `site/content` are migrated by the codemod, or individually justified as intentionally line-addressed
+- [x] The 8 **fenced** line-addressed snippets are rewritten by hand to match their live counterparts, or justified as deliberate demonstrations of the `lines=` form — the codemod does not attempt them, and a fenced invocation is never reported as an unverifiable refusal
+- [x] {% ref "BUG-020" /%}'s four references are anchored — `symbol="SiteConfig"` on the three in `config.ts`, `symbol="SiteThemeConfig"` on the one in `theme.ts` — and {% ref "BUG-020" /%} is closed
+- [x] The codemod does **not** stamp {% ref "SPEC-134" /%} `reviewed` markers on anything it migrates
+- [x] Which languages and formats the migration actually reached is recorded, as the input to D15's deferred config-surface decision
 
 ## Approach
 

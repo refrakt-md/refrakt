@@ -20,6 +20,10 @@ if (!command || command === '--help' || command === '-h') {
 	runScaffoldCss(args.slice(1));
 } else if (command === 'validate') {
 	runValidate(args.slice(1));
+} else if (command === 'stale') {
+	runStale(args.slice(1));
+} else if (command === 'migrate' && args[1] === 'snippets') {
+	runMigrateSnippets(args.slice(2));
 } else if (command === 'theme') {
 	runTheme(args.slice(1));
 } else if (command === 'template') {
@@ -61,6 +65,7 @@ Commands:
   i18n <subcommand>    i18n tooling (extract translation keys, check coverage)
   scaffold-css         Generate CSS stub files for all runes
   validate             Validate this project's sites (config + content)
+  stale                Rank documentation references by how far their target has moved
   theme <subcommand>   Manage themes (install, info)
   edit                 Launch the browser-based content editor
   reference <subcommand>  Emit rune syntax reference for authors and AI agents
@@ -1619,4 +1624,165 @@ async function buildReferenceContext(
 	}
 
 	return { runes: allRunes, fixtures, source };
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// `refrakt stale` — SPEC-136 / WORK-594
+// ─────────────────────────────────────────────────────────────────────
+
+function runStale(staleArgs: string[]): void {
+	let top: number | undefined;
+	let edgeClass: string | undefined;
+	let min: number | undefined;
+	let format: 'text' | 'json' = 'text';
+
+	for (let i = 0; i < staleArgs.length; i++) {
+		const arg = staleArgs[i];
+		if (arg === '--top') {
+			top = Number(staleArgs[++i]);
+			if (!Number.isInteger(top) || top < 1) {
+				console.error('Error: --top requires a positive integer');
+				process.exit(1);
+			}
+		} else if (arg === '--class') {
+			edgeClass = staleArgs[++i];
+			const known = ['declared', 'embedded', 'described-link', 'prose'];
+			if (!edgeClass || !known.includes(edgeClass)) {
+				console.error(`Error: --class must be one of ${known.join(', ')}`);
+				process.exit(1);
+			}
+		} else if (arg === '--min') {
+			min = Number(staleArgs[++i]);
+			if (!Number.isInteger(min) || min < 1) {
+				console.error('Error: --min requires a positive integer');
+				process.exit(1);
+			}
+		} else if (arg === '--format') {
+			const value = staleArgs[++i];
+			if (value !== 'text' && value !== 'json') {
+				console.error('Error: --format must be "text" or "json"');
+				process.exit(1);
+			}
+			format = value;
+		} else if (arg === '--help' || arg === '-h') {
+			printStaleUsage();
+			process.exit(0);
+		} else {
+			console.error(`Error: Unknown argument "${arg}"\n`);
+			printStaleUsage();
+			process.exit(1);
+		}
+	}
+
+	import('./commands/stale.js')
+		.then(({ staleCommand }) => staleCommand({ top, class: edgeClass, min, format }))
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
+}
+
+function printStaleUsage(): void {
+	console.log(`
+Usage: refrakt stale [options]
+
+Rank documentation references by how far their target has moved since the page
+last changed:
+
+  staleness = commits touching the target since the referrer last changed
+
+This ranks; it never fails. Findings do not affect the exit code, deliberately:
+the cheapest way to turn an edge green is to edit the referring page, so a gate
+would train people to make trivial documentation edits to clear it, destroying
+the signal it measures.
+
+A refusal is different and does exit non-zero. A shallow clone or a non-git tree
+means the tool could not measure at all, which must not look like a clean
+corpus.
+
+Options:
+  --top <n>        Bound the output (default 10)
+  --class <name>   Narrow to one edge class: declared, embedded,
+                   described-link, prose
+  --min <n>        Floor on the commit count
+  --format <fmt>   text (default) or json
+  -h, --help       Show this help
+
+Note: a zero score is the absence of evidence of staleness, not evidence of
+freshness. The referrer side resets on any edit to the page.
+`);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// `refrakt migrate snippets` — SPEC-131 D7 / WORK-590
+// ─────────────────────────────────────────────────────────────────────
+
+function runMigrateSnippets(migrateArgs: string[]): void {
+	let fix = false;
+	let format: 'text' | 'json' = 'text';
+
+	for (const arg of migrateArgs) {
+		if (arg === '--fix') fix = true;
+		else if (arg === '--format=json') format = 'json';
+		else if (arg === '--help' || arg === '-h') {
+			console.log(`
+Usage: refrakt migrate snippets [--fix]
+
+Convert \`lines=\` snippet and file-ref invocations to anchors, verifying that
+the anchored slice is byte-identical to the line-addressed one and refusing to
+rewrite when it is not.
+
+A refusal is information rather than an obstacle: it means the anchor engine
+could not reproduce the slice, which is exactly the case where a human should
+look at what that snippet was pointing at.
+
+Fenced invocations are skipped — they are examples of the syntax, not
+resolvable targets, so they cannot be verified and are rewritten by hand.
+
+This never stamps \`reviewed\` markers (SPEC-134 D8).
+
+Options:
+  --fix            Write the rewrites (default is a dry run)
+  --format=json    Machine-readable output
+`);
+			process.exit(0);
+		} else {
+			console.error(`Error: Unknown argument "${arg}"`);
+			process.exit(1);
+		}
+	}
+
+	import('./commands/migrate-snippets.js')
+		.then(({ migrateSnippets }) => {
+			const result = migrateSnippets({ fix, format });
+			if (format === 'json') {
+				console.log(JSON.stringify(result, null, 2));
+				return;
+			}
+			for (const r of result.rewrites) {
+				console.log(`${r.page}:${r.line}`);
+				console.log(`  - ${r.before}`);
+				console.log(`  + ${r.after}`);
+				console.log('');
+			}
+			for (const r of result.refusals) {
+				console.log(`REFUSED ${r.page}:${r.line}`);
+				console.log(`  ${r.invocation}`);
+				console.log(`  ${r.reason}`);
+				console.log('');
+			}
+			const langs = Object.entries(result.languages)
+				.map(([k, v]) => `${k} ${v}`)
+				.join(', ');
+			console.log(
+				`${result.rewrites.length} rewritable, ${result.refusals.length} refused, ` +
+					`${result.skippedFenced} fenced (skipped).`,
+			);
+			if (langs) console.log(`Languages reached: ${langs}.`);
+			if (!fix && result.rewrites.length > 0) console.log('Dry run — pass --fix to write.');
+		})
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
 }

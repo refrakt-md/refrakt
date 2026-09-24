@@ -1,4 +1,4 @@
-{% work id="WORK-594" status="ready" priority="high" complexity="complex" source="SPEC-136" tags="cli, git, staleness, edge-index, drift, docs" milestone="v0.37.0" %}
+{% work id="WORK-594" status="in-progress" priority="high" complexity="complex" source="SPEC-136" tags="cli, git, staleness, edge-index, drift, docs" milestone="v0.37.0" %}
 
 # The edge index, the git scan, and refrakt stale
 
@@ -59,24 +59,24 @@ actually reached.
 
 ## Acceptance Criteria
 
-- [ ] A `stale` command is registered in `packages/cli/src/commands/` — no such command exists today
-- [ ] `refrakt stale` reports a ranked list of edges, ordered by commits to the target since the referrer last changed
-- [ ] The git scan is a single `git log --name-only` pass over the repository, not one `git log` invocation per edge
-- [ ] The scan runs with `--full-history` and no pathspec, so history simplification cannot drop commits from a file's history
-- [ ] A test pins a file whose simplified and full histories differ, asserting the scan reports the full one
-- [ ] Embedded-source edges are extracted from `snippet`, `file-ref` and `expand` `path=` attributes
-- [ ] An edge whose referrer is newer than every change to its target scores zero and is omitted
-- [ ] Output is bounded by `--top`, defaulting to 10, and each entry lists commit subjects for the target's changes
-- [ ] `--class`, `--min` and `--format json` behave as specified
-- [ ] `refrakt stale` exits zero whatever it finds, including when every edge in the corpus is stale
-- [ ] A refusal (shallow clone, non-git tree) exits non-zero, distinguishing "could not measure" from "measured, nothing wrong"
-- [ ] A shallow clone is detected and refused with a message naming `fetch-depth: 0`
-- [ ] A non-git working tree is refused with its own message, not treated as a clean corpus
-- [ ] The report footer states each class's base rate — how many edges of that class were non-zero out of how many scanned
-- [ ] The edge index is a shared module, with ranking as one reader of it and no query owning it
-- [ ] A test fixture reproduces the measured case: a page referencing a file that has since taken N commits ranks above one referencing an unchanged file
-- [ ] Docs state that a zero score is the absence of evidence of staleness, not evidence of freshness
-- [ ] `site/content/docs/cli/cli-overview.md` gains a row for `stale` — the page {% ref "WORK-595" /%} cites as its motivating instance of a stale command table
+- [x] A `stale` command is registered in `packages/cli/src/commands/` — no such command exists today
+- [x] `refrakt stale` reports a ranked list of edges, ordered by commits to the target since the referrer last changed
+- [x] The git scan is a single `git log --name-only` pass over the repository, not one `git log` invocation per edge
+- [x] The scan runs with `--full-history` and no pathspec, so history simplification cannot drop commits from a file's history
+- [x] A test pins a file whose simplified and full histories differ, asserting the scan reports the full one
+- [x] Embedded-source edges are extracted from `snippet`, `file-ref` and `expand` `path=` attributes
+- [x] An edge whose referrer is newer than every change to its target scores zero and is omitted
+- [x] Output is bounded by `--top`, defaulting to 10, and each entry lists commit subjects for the target's changes
+- [x] `--class`, `--min` and `--format json` behave as specified
+- [x] `refrakt stale` exits zero whatever it finds, including when every edge in the corpus is stale
+- [x] A refusal (shallow clone, non-git tree) exits non-zero, distinguishing "could not measure" from "measured, nothing wrong"
+- [x] A shallow clone is detected and refused with a message naming `fetch-depth: 0`
+- [x] A non-git working tree is refused with its own message, not treated as a clean corpus
+- [x] The report footer states each class's base rate — how many edges of that class were non-zero out of how many scanned
+- [x] The edge index is a shared module, with ranking as one reader of it and no query owning it
+- [x] A test fixture reproduces the measured case: a page referencing a file that has since taken N commits ranks above one referencing an unchanged file
+- [x] Docs state that a zero score is the absence of evidence of staleness, not evidence of freshness
+- [x] `site/content/docs/cli/cli-overview.md` gains a row for `stale` — the page {% ref "WORK-595" /%} cites as its motivating instance of a stale command table
 
 ## Approach
 

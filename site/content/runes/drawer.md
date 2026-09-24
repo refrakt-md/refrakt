@@ -152,7 +152,7 @@ In dialog mode, the drawer becomes a **flex column** — header (when present) a
 [`xref`](/runes/xref) and [`file-ref`](/runes/file-ref) each accept `preview="drawer"` which **hoists** a drawer for the referenced target. The inline link stays in prose; the drawer is emitted at the page root and opens on click:
 
 ```markdoc
-See {% file-ref path="packages/types/src/config.ts" lines="42-148" label="SiteConfig" preview="drawer" /%}
+See {% file-ref path="packages/types/src/config.ts" symbol="SiteConfig" label="SiteConfig" preview="drawer" /%}
 for the shape.
 ```
 

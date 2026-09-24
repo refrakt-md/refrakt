@@ -236,8 +236,18 @@ export type {
 	TokenPair,
 	HeadingShape,
 } from './lib/languages.js';
+export { resolveAnchor, AnchorResolutionError } from './lib/anchor.js';
+export type { AnchorOptions, AnchorResolution, ExtentStrategy } from './lib/anchor.js';
+export {
+	reindent,
+	shouldReindent,
+	highlightMatchLines,
+	parseHighlightMatch,
+	formatHighlight,
+} from './lib/present.js';
 export {
 	maskSource,
+	maskComments,
 	isMasked,
 	isRangeMasked,
 	docHeadStart,

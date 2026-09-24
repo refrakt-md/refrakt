@@ -26,9 +26,7 @@ export interface ThemeInfoOptions {
 	site?: string;
 }
 
-export interface ThemeListOptions {
-	// no options yet
-}
+export type ThemeListOptions = {};
 
 /** Read a theme's declared `refrakt` compatibility range from its installed
  *  manifest.json (ThemeManifest) or package.json (ADR-023). */
