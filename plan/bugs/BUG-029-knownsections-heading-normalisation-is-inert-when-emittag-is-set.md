@@ -79,6 +79,8 @@ child runes with two different names and two different slugs.
   {% ref "SPEC-142" /%}. The type has to discriminate on `emitTag` anyway, which
   is what made the asymmetry visible.
 
+- Deliberately not scheduled for v0.38.0: latent (no rune combines the two), minor, and its two fixes are materially different work — making the aliases apply under `emitTag` adds a resolver capability, while rejecting the combination adds a schema-construction error. Not worth spending that decision to round out a milestone count.
+
 ## References
 
 - {% ref "WORK-024" /%} — added `knownSections` for validation, aliases and templates
