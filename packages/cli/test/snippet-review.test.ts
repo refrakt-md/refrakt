@@ -46,7 +46,7 @@ describe('stamping unmarked invocations', () => {
 	it('stamps in place', () => {
 		const result = run();
 		expect(result.stamped).toBe(1);
-		expect(read('content/page.md')).toMatch(/reviewed="[0-9a-f]{8}:[0-9a-f]{8}"/);
+		expect(read('content/page.md')).toMatch(/reviewed="[0-9a-f]{12}:[0-9a-f]{12}"/);
 	});
 
 	it('produces a marker that immediately reads as current', () => {

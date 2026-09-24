@@ -25,13 +25,15 @@
  * do here", which is the opposite of the intended response.
  */
 
-import { createHash } from 'node:crypto';
 import { reindent } from './present.js';
 
-/** How much of the digest is stored inline. D4: change detection against one
- *  known expected value, not a lookup table, so the birthday bound does not
- *  apply. `packages/editor` already uses 8-character truncated hashes. */
-const HASH_LENGTH = 8;
+/**
+ * Digest length, in hex characters. D4 specifies 8–12.
+ *
+ * 12 rather than 8 because the hash below is not SHA-256: the extra nibbles
+ * cost nothing inline and buy back the headroom.
+ */
+const HASH_LENGTH = 12;
 
 export interface HashPair {
 	/** The stored hash — reindent, line endings, trailing whitespace. */
@@ -90,8 +92,42 @@ export function normalizeLoose(content: string): string {
 		.join('\n');
 }
 
+/**
+ * A non-cryptographic 53-bit digest, in pure JavaScript.
+ *
+ * **Why not `node:crypto`.** `@refrakt-md/runes` is bundled for the browser —
+ * the block editor's Vite build pulls it in, and `read-file.ts` already carries
+ * the same constraint for `node:fs`. A static `node:crypto` import breaks that
+ * build outright, which is how this was caught. Web Crypto is the other
+ * cross-runtime option and is asynchronous, which would make `hashSlice` async
+ * and infect the whole synchronous transform path for no benefit.
+ *
+ * **Why a cryptographic hash was never required.** D4's reasoning: this is
+ * change detection against **one known expected value**, not a lookup table, so
+ * the birthday bound does not apply. Nothing here is a security boundary — a
+ * marker is a note that a human read something, and the worst case for a
+ * collision is one missed review prompt, not a forged claim. Two independent
+ * 32-bit lanes with different seeds, mixed and rendered as 12 hex characters.
+ *
+ * Adapted from the widely used cyrb53 construction.
+ */
 function digest(input: string): string {
-	return createHash('sha256').update(input, 'utf8').digest('hex').slice(0, HASH_LENGTH);
+	let h1 = 0xdeadbeef;
+	let h2 = 0x41c6ce57;
+
+	for (let i = 0; i < input.length; i++) {
+		const ch = input.charCodeAt(i);
+		h1 = Math.imul(h1 ^ ch, 2654435761);
+		h2 = Math.imul(h2 ^ ch, 1597334677);
+	}
+
+	h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+	h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+	h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+	h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+
+	const value = 4294967296 * (2097151 & h2) + (h1 >>> 0);
+	return value.toString(16).padStart(HASH_LENGTH, '0').slice(-HASH_LENGTH);
 }
 
 /** Both hash levels for a resolved slice. */

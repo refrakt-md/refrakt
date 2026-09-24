@@ -100,10 +100,10 @@ describe('D3 — the two levels, so a reformat is not a review', () => {
 });
 
 describe('D4 — inline and truncated', () => {
-	it('truncates to 8 hex characters per level', () => {
+	it('truncates to 12 hex characters per level', () => {
 		const pair = hashSlice('export const a = 1;');
-		expect(pair.strict).toMatch(/^[0-9a-f]{8}$/);
-		expect(pair.loose).toMatch(/^[0-9a-f]{8}$/);
+		expect(pair.strict).toMatch(/^[0-9a-f]{12}$/);
+		expect(pair.loose).toMatch(/^[0-9a-f]{12}$/);
 	});
 
 	it('round-trips through the stored attribute form', () => {

@@ -31,7 +31,7 @@ describe('stampOnInsert', () => {
 
 	it('stamps a snippet whose slice resolves', () => {
 		const out = stampOnInsert('{% snippet path="src/a.ts" symbol="timeout" /%}', root);
-		expect(out).toMatch(/reviewed="[0-9a-f]{8}:[0-9a-f]{8}"/);
+		expect(out).toMatch(/reviewed="[0-9a-f]{12}:[0-9a-f]{12}"/);
 	});
 
 	it('stamps a file-ref', () => {
