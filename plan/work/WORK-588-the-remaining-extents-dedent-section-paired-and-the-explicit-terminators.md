@@ -1,4 +1,4 @@
-{% work id="WORK-588" status="in-progress" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, extents, markdown, drift" milestone="v0.37.0" %}
+{% work id="WORK-588" status="done" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, extents, markdown, drift" milestone="v0.37.0" pr="refrakt-md/refrakt#647" %}
 
 # The remaining extents — dedent, section, paired, and the explicit terminators
 
@@ -104,5 +104,49 @@ addressable at all.
 - {% ref "SPEC-131" /%} — steps 4–6, D4 (never a dead end), D5 (look up facts, never strategy), D11 (four families, and why both additions are earned), D12 (`until` vs `through`)
 - {% ref "WORK-597" /%} — the table these strategies read their shapes from
 - `site/content/runes/tabs.md` — the inline-code-span case the Markdown masker must survive
+
+## Resolution
+
+Completed: 2026-09-24
+
+Branch: `claude/v0-37-0-review-vqpl41`
+PR: refrakt-md/refrakt#647 (batched with WORK-587 and WORK-589)
+
+### What was done
+
+- **`dedent`, `section`, `paired`** and the explicit `until` / `through`
+  terminators, in `lib/anchor.ts`.
+- **The Markdown masker** in `lib/mask.ts` — its own pass, selected by a
+  language declaring `fences` / `inlineCode` rather than by name.
+- **`delimited`** added to the language table.
+- Doc prose on `site/content/runes/snippet.md` and `file-ref.md`.
+
+### Notes
+
+- **`delimited` is the mechanism behind two separate criteria.** It is a
+  lexical fact — "does a `;` or a matching `}` end a construct here" — not
+  a strategy, so D5 holds: the engine still never guesses which extent to
+  use. It lets `auto` refuse in Python and YAML instead of terminating on
+  the next line, and it is what makes `auto` against a tag-paired file
+  refuse rather than render a brace-terminated span from tag-structured
+  source.
+- **Fence markers stay visible; only the interior is masked.** Blanking the
+  markers would break both anchoring on a fence and the symmetric `paired`
+  close. Worth preserving if this code is ever revisited.
+- **`section` and `paired` read the masked lines, not the raw ones.** That
+  is the whole point of the Markdown pass — reading raw was the bug.
+- **I checked this item's Markdown criterion off before it was true.**
+  Writing the test the criterion actually demands (`## ` inside a fence,
+  `{% %}` inside an inline span) failed immediately. Unchecked,
+  implemented, re-checked. WORK-597's test asserting the masker *ignores*
+  Markdown was updated rather than deleted, since it was correct when
+  written.
+- `paired` self-checks on its own token stack: an unbalanced scan returns
+  undefined and refuses. There is no separate delimiter balance for it,
+  which is correct — D2 scopes that to `auto`.
+
+### Verification
+
+4820 tests pass, 0 failures. Site content validates clean.
 
 {% /work %}

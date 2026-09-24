@@ -1,4 +1,4 @@
-{% work id="WORK-587" status="in-progress" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, anchors, drift" milestone="v0.37.0" %}
+{% work id="WORK-587" status="done" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, anchors, drift" milestone="v0.37.0" pr="refrakt-md/refrakt#647" %}
 
 # Anchor resolution, the auto extent, and the corpus test
 
@@ -147,5 +147,58 @@ creates the ambiguity.
 - `packages/runes/src/lib/read-file.ts` — `readSnippetFile`, where resolution lands
 - `packages/runes/src/snippet-pipeline.ts`, `packages/runes/src/file-ref-resolve.ts` — the two call sites
 - `packages/lumina/styles/runes/hint.css` — the anchor-relative depth proof
+
+## Resolution
+
+Completed: 2026-09-24
+
+Branch: `claude/v0-37-0-review-vqpl41`
+PR: refrakt-md/refrakt#647 (batched with WORK-588 and WORK-589)
+
+### What was done
+
+- **`packages/runes/src/lib/anchor.ts`** (new) — `resolveAnchor()`. Anchor
+  enumeration, the three termination rules, anchor-relative depth, the
+  self-check, the head, and every refusal message.
+- **`packages/runes/src/lib/read-file.ts`** — `readSnippetFile` takes an
+  `anchor` option and returns `start`/`end`/`anchored`. One change, both
+  call sites.
+- **`packages/runes/src/tags/snippet.ts`, `tags/file-ref.ts`** — the
+  attribute surface.
+- **`packages/runes/src/lang-map.ts`** — added `.py`, `.rs`, `.go`,
+  `.mts`, `.cts`.
+- Tests: `anchor.test.ts` (70), `anchor-corpus.test.ts` (4),
+  `snippet-anchor-pipeline.test.ts` (13).
+
+### Notes
+
+- **Batched with WORK-588 deliberately.** This item's criteria require
+  every refusal to name `until=` / `through=`, which WORK-588 implements.
+  Split, this would ship error messages pointing at attributes that do not
+  exist, which D4 calls worse than no fallback at all.
+- **Two masks, and this was not in the plan.** The spec says an anchor
+  inside "a masked region" is a false positive. Implemented literally that
+  makes `match='"scripts"'` unresolvable, because in JSON every key is a
+  string — and that exact case is one of this item's criteria. The
+  resolution: the depth counter reads the full mask, the anchor step reads
+  a **comment-only** mask (`maskComments`). Commentary is what must be
+  rejected; literals are legitimate things to name.
+- **`.py` was missing from LANG_MAP**, so Python's table entry was
+  unreachable by path and a `symbol=` anchor refused with "declares no
+  keywords" — the wrong reason. The unit tests missed it because they pass
+  table entries directly; the end-to-end test caught it. There is now a
+  guard asserting every table language is reachable by extension.
+- **The corpus numbers are not comparable to the spec's.** 99.23% exact
+  here vs 95.37% in SPEC-131, because this oracle only checks the start and
+  the balance where the spec used the TypeScript compiler. Higher and
+  weaker. The assertion that matters is `silentWrong === 0`; raising that
+  number is a decision about the spec's central guarantee, not a test fix.
+- A JSON key with a **scalar** value has nothing for `auto` to balance and
+  refuses. Pinned by a test, with `until=` shown as the way through.
+
+### Verification
+
+4820 tests pass, 0 failures. Typecheck, `format:check`, `biome lint` clean.
+Contracts up to date; `refrakt validate --site main` 0 errors, 0 warnings.
 
 {% /work %}
