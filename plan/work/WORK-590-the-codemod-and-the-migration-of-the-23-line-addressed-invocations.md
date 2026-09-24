@@ -1,4 +1,4 @@
-{% work id="WORK-590" status="in-progress" priority="high" complexity="moderate" source="SPEC-131" tags="snippet, file-ref, codemod, migration, docs, drift" milestone="v0.37.0" %}
+{% work id="WORK-590" status="done" priority="high" complexity="moderate" source="SPEC-131" tags="snippet, file-ref, codemod, migration, docs, drift" milestone="v0.37.0" pr="refrakt-md/refrakt#648" %}
 
 # The codemod and the migration of the 23 line-addressed invocations
 
@@ -138,5 +138,52 @@ because that is what decides the shape of the config surface if one ever ships.
 - {% ref "BUG-020" /%} — the live instance this closes
 - {% ref "SPEC-134" /%} — D8, the no-bulk-stamping rule this item must respect
 - `site/content/runes/drawer.md`, `site/content/runes/file-ref.md` — the three affected drawers
+
+## Resolution
+
+Completed: 2026-09-24
+
+Branch: `claude/v0-37-0-review-vqpl41`
+PR: refrakt-md/refrakt#648 (batched with WORK-594)
+
+### What was done
+
+- **`packages/cli/src/commands/migrate-snippets.ts`** (new) — `refrakt migrate
+  snippets [--fix]`. Anchor inference, byte-identical verification, refusal
+  reporting, and the per-language tally.
+- **`packages/cli/test/migrate-snippets.test.ts`** — 17 tests, most of them
+  about refusing rather than rewriting.
+- Migration applied to `site/content`; BUG-020's four references anchored.
+
+### Notes
+
+- **The migration surface is far smaller than 23, and that is correct.** 11 of
+  the 23 are fenced examples; 11 of the 13 live refusals are on `snippet.md`
+  itself, the page that documents `lines=`. One invocation was rewritable, and
+  it was BUG-020's. This item's own Approach predicted it — do not read the
+  count as a shortfall.
+- **BUG-020's fourth reference was nearly mishandled.** The `theme.ts` /
+  `SiteThemeConfig` one sat inside the `lines=` documentation example, so
+  anchoring it would have left that section without an example. I first left it
+  and was going to check the criterion off regardless. The right fix was to
+  repoint the *example* at `CHANGELOG.md` — a file with no symbols, which is
+  when a line range is actually the right tool — freeing the real reference to
+  be anchored. Both criteria met properly rather than one waived.
+- **Two pieces of live drift found on the `file-ref` page**, both fixed here:
+  prose claiming `symbol=` had not landed, and the `lines=` example pointing at
+  a source declaration — teaching the exact pattern this bug is about.
+- **The byte-identical check runs before `reindent`**, pinned by a test on a
+  nested target. Get it backwards and every nested target fails verification
+  for a difference the codemod introduced.
+- **Regex-literal lexing (D8) was not needed.** No refusal in this migration
+  traced to an unlexed `/…/`. It stays deferred, per the item's instruction not
+  to do it speculatively.
+- **Languages reached: TypeScript only.** That is the input to D15's deferred
+  config-surface decision, and it argues for deferring further — one language
+  is not evidence of a shape.
+
+### Verification
+
+4858 tests pass. `refrakt validate --site main`: 0 errors, 0 warnings.
 
 {% /work %}

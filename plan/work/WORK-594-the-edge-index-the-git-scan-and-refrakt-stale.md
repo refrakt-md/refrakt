@@ -1,4 +1,4 @@
-{% work id="WORK-594" status="in-progress" priority="high" complexity="complex" source="SPEC-136" tags="cli, git, staleness, edge-index, drift, docs" milestone="v0.37.0" %}
+{% work id="WORK-594" status="done" priority="high" complexity="complex" source="SPEC-136" tags="cli, git, staleness, edge-index, drift, docs" milestone="v0.37.0" pr="refrakt-md/refrakt#648" %}
 
 # The edge index, the git scan, and refrakt stale
 
@@ -132,5 +132,51 @@ measurements; do not re-add them.
 - {% ref "WORK-596" /%} — the `touching` query this index must be able to answer
 - `packages/content/src/timestamps.ts` — the single-pass scan and `isShallowClone`, both adapted rather than rewritten
 - `packages/runes/src/lib/read-file.ts` — the shared reader carrying `path=`
+
+## Resolution
+
+Completed: 2026-09-24
+
+Branch: `claude/v0-37-0-review-vqpl41`
+PR: refrakt-md/refrakt#648 (batched with WORK-590)
+
+### What was done
+
+- **`packages/content/src/edges/`** (new) — `extract.ts`, `git-scan.ts` and
+  `index.ts`. The index is addressable in both directions; ranking is one
+  reader of it.
+- **`packages/cli/src/commands/stale.ts`** (new) — `refrakt stale`, registered
+  in `bin.ts` with `--top`, `--class`, `--min`, `--format`.
+- **`packages/content/test/edges.test.ts`** — 21 tests.
+- `site/content/docs/cli/cli-overview.md` gains the row.
+
+### Notes
+
+- **Built for `touching` even though WORK-596 ships it.** A walk-score-print
+  function cannot answer a query that runs target → referrer and without git.
+  `edgesTouching` already exists and is tested, including for a path with no
+  commit history at all.
+- **The `--full-history` test needed a real divergence.** My first fixture
+  reported 2 commits both ways — it would have passed while proving nothing. A
+  merge using `-s ours` (discarding the side's version) is the construction
+  that diverges: simplified 2, scan 3. Worth knowing if this fixture is ever
+  edited.
+- **The shallow-clone refusal was exercised for real.** This container is a
+  shallow clone, so the first live run refused with `fetch-depth: 0` before the
+  test existed. `git fetch --unshallow` was needed to see any ranking at all.
+- **Fenced invocations must be excluded.** Counting `{% snippet %}` inside a
+  ```` ```markdoc ```` fence inflated this repo's index from 6 real edges to
+  10. Reuses WORK-588's Markdown masker rather than re-deriving fence tracking.
+- **Test fixtures need a fake clock.** Commits created in the same wall-clock
+  second make the measure — which counts commits strictly *after* the
+  referrer's change — see nothing. Four tests failed on this before the clock
+  was added.
+- **This phase finds almost nothing, as predicted.** One edge, base rate 1/6.
+  Embedded source reaches a fraction of the corpus; WORK-595 is where it is
+  actually reached.
+
+### Verification
+
+4858 tests pass. Live run against this repository produces one genuine finding.
 
 {% /work %}
