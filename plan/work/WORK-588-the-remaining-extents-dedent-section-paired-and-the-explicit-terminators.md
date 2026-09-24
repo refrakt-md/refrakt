@@ -1,4 +1,4 @@
-{% work id="WORK-588" status="ready" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, extents, markdown, drift" milestone="v0.37.0" %}
+{% work id="WORK-588" status="done" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, extents, markdown, drift" milestone="v0.37.0" pr="refrakt-md/refrakt#647" %}
 
 # The remaining extents — dedent, section, paired, and the explicit terminators
 
@@ -57,21 +57,21 @@ saying what it means.
 
 ## Acceptance Criteria
 
-- [ ] `extent` accepts `auto` (default), `dedent`, `section`, and `paired`; `until` / `through` override all four
-- [ ] `until` excludes its matching line and `through` includes it; neither is inferred from the file or the strategy
-- [ ] An `until` / `through` that never matches refuses rather than returning the rest of the file
-- [ ] For Markdown, the masker also blanks fenced blocks and inline code spans, covered by a test anchoring past a `## ` heading and a `{% %}` tag that appear inside a fence
-- [ ] `dedent` expands tabs at a width taken from the language table
-- [ ] `extent="dedent"` is covered by tests against an indentation-structured fixture
-- [ ] `extent="section"` derives its terminator from the anchor's own level, covered by tests on a `###` Markdown heading and a TOML table
-- [ ] `extent="paired"` balances nested same-name tokens, covered by a test extracting an outer `{% tabs %}` containing inner `{% tab %}` blocks
-- [ ] `paired` handles asymmetric, symmetric, and self-closing token shapes; a self-closing anchor returns one line rather than scanning to EOF
-- [ ] The balance self-check does not run for `dedent`, `section`, `until` or `through`, covered by a test extracting a prose Markdown section containing unbalanced brackets
-- [ ] `paired` self-checks on its own token stack
-- [ ] `extent="auto"` against a tag-paired file either refuses or is documented as unsupported — never renders a brace-terminated span from a tag-structured source
-- [ ] Heading/section shapes and token pairs come from the per-language table; a language absent from it gets no `section` / `paired` support rather than a guessed one
-- [ ] The engine is proven format-agnostic by tests on a brace-free format (Markdown or YAML) and a tag-paired one (Svelte or Markdoc)
-- [ ] `snippet` and `file-ref` doc pages document the new attributes, including the fallbacks
+- [x] `extent` accepts `auto` (default), `dedent`, `section`, and `paired`; `until` / `through` override all four
+- [x] `until` excludes its matching line and `through` includes it; neither is inferred from the file or the strategy
+- [x] An `until` / `through` that never matches refuses rather than returning the rest of the file
+- [x] For Markdown, the masker also blanks fenced blocks and inline code spans, covered by a test anchoring past a `## ` heading and a `{% %}` tag that appear inside a fence
+- [x] `dedent` expands tabs at a width taken from the language table
+- [x] `extent="dedent"` is covered by tests against an indentation-structured fixture
+- [x] `extent="section"` derives its terminator from the anchor's own level, covered by tests on a `###` Markdown heading and a TOML table
+- [x] `extent="paired"` balances nested same-name tokens, covered by a test extracting an outer `{% tabs %}` containing inner `{% tab %}` blocks
+- [x] `paired` handles asymmetric, symmetric, and self-closing token shapes; a self-closing anchor returns one line rather than scanning to EOF
+- [x] The balance self-check does not run for `dedent`, `section`, `until` or `through`, covered by a test extracting a prose Markdown section containing unbalanced brackets
+- [x] `paired` self-checks on its own token stack
+- [x] `extent="auto"` against a tag-paired file either refuses or is documented as unsupported — never renders a brace-terminated span from a tag-structured source
+- [x] Heading/section shapes and token pairs come from the per-language table; a language absent from it gets no `section` / `paired` support rather than a guessed one
+- [x] The engine is proven format-agnostic by tests on a brace-free format (Markdown or YAML) and a tag-paired one (Svelte or Markdoc)
+- [x] `snippet` and `file-ref` doc pages document the new attributes, including the fallbacks
 
 ## Approach
 
@@ -104,5 +104,49 @@ addressable at all.
 - {% ref "SPEC-131" /%} — steps 4–6, D4 (never a dead end), D5 (look up facts, never strategy), D11 (four families, and why both additions are earned), D12 (`until` vs `through`)
 - {% ref "WORK-597" /%} — the table these strategies read their shapes from
 - `site/content/runes/tabs.md` — the inline-code-span case the Markdown masker must survive
+
+## Resolution
+
+Completed: 2026-09-24
+
+Branch: `claude/v0-37-0-review-vqpl41`
+PR: refrakt-md/refrakt#647 (batched with WORK-587 and WORK-589)
+
+### What was done
+
+- **`dedent`, `section`, `paired`** and the explicit `until` / `through`
+  terminators, in `lib/anchor.ts`.
+- **The Markdown masker** in `lib/mask.ts` — its own pass, selected by a
+  language declaring `fences` / `inlineCode` rather than by name.
+- **`delimited`** added to the language table.
+- Doc prose on `site/content/runes/snippet.md` and `file-ref.md`.
+
+### Notes
+
+- **`delimited` is the mechanism behind two separate criteria.** It is a
+  lexical fact — "does a `;` or a matching `}` end a construct here" — not
+  a strategy, so D5 holds: the engine still never guesses which extent to
+  use. It lets `auto` refuse in Python and YAML instead of terminating on
+  the next line, and it is what makes `auto` against a tag-paired file
+  refuse rather than render a brace-terminated span from tag-structured
+  source.
+- **Fence markers stay visible; only the interior is masked.** Blanking the
+  markers would break both anchoring on a fence and the symmetric `paired`
+  close. Worth preserving if this code is ever revisited.
+- **`section` and `paired` read the masked lines, not the raw ones.** That
+  is the whole point of the Markdown pass — reading raw was the bug.
+- **I checked this item's Markdown criterion off before it was true.**
+  Writing the test the criterion actually demands (`## ` inside a fence,
+  `{% %}` inside an inline span) failed immediately. Unchecked,
+  implemented, re-checked. WORK-597's test asserting the masker *ignores*
+  Markdown was updated rather than deleted, since it was correct when
+  written.
+- `paired` self-checks on its own token stack: an unbalanced scan returns
+  undefined and refuses. There is no separate delimiter balance for it,
+  which is correct — D2 scopes that to `auto`.
+
+### Verification
+
+4820 tests pass, 0 failures. Site content validates clean.
 
 {% /work %}

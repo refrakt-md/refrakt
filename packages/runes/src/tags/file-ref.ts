@@ -33,7 +33,54 @@ export const fileRef = createContentModelSchema({
 			type: String,
 			required: false,
 			description:
-				'Line range. `"42-58"` (range), `"42"` (single line). Drives both the GitHub anchor (#L42-L58) and the drawer-body snippet slice when `preview="drawer"`.',
+				'Line range. `"42-58"` (range), `"42"` (single line). Drives both the GitHub anchor (#L42-L58) and the drawer-body snippet slice when `preview="drawer"`. A coordinate into a file nobody promised to hold still — prefer `symbol` or `match`. Mutually exclusive with both.',
+		},
+		symbol: {
+			type: String,
+			required: false,
+			description:
+				'Name a declaration instead of a line range: `symbol="SiteConfig"`. The drawer body shows the resolved region, recomputed from the current file rather than frozen at authoring time. Note the trade: the GitHub link loses its `#L` fragment and points at the whole file, because the range is not known until the file is read, which happens after the link is built. Includes the doc comment by default.',
+		},
+		match: {
+			type: String,
+			required: false,
+			description:
+				'Raw regex anchor, applied per line. The general form; `symbol` is sugar over it.',
+		},
+		occurrence: {
+			type: Number,
+			required: false,
+			description:
+				'Which match to take when the anchor is ambiguous, 1-based. An escape hatch rather than a naming form; out of range refuses rather than clamping.',
+		},
+		extent: {
+			type: String,
+			required: false,
+			matches: ['auto', 'dedent', 'section', 'paired'],
+			description:
+				'How far the slice runs: `auto` (delimiters), `dedent` (indentation), `section` (next sibling), `paired` (token pair). Never inferred from the file.',
+		},
+		until: {
+			type: String,
+			required: false,
+			description: 'Regex ending the extent, excluding the matching line. Overrides `extent`.',
+		},
+		through: {
+			type: String,
+			required: false,
+			description: 'As `until`, but including the matching line.',
+		},
+		doc: {
+			type: Boolean,
+			required: false,
+			description:
+				'Include the preceding doc comment. Defaults on for `symbol`, off for `match`. Annotations attach regardless.',
+		},
+		reindent: {
+			type: Boolean,
+			required: false,
+			description:
+				"Strip the drawer slice's common leading whitespace. Defaults on for anchors, off for `lines`.",
 		},
 		label: {
 			type: String,
@@ -56,6 +103,10 @@ export const fileRef = createContentModelSchema({
 		const lines = attrs.lines !== undefined ? String(attrs.lines) : '';
 		const label = attrs.label !== undefined ? String(attrs.label) : '';
 		const preview = attrs.preview !== undefined ? String(attrs.preview) : '';
+		// SPEC-131 anchor attributes. Carried as meta through to the drawer
+		// builder, which is the only stage with file access.
+		const str = (name: string) => (attrs[name] !== undefined ? String(attrs[name]) : '');
+		const bool = (name: string) => (attrs[name] === undefined ? '' : String(attrs[name] === true));
 
 		// Default label: the basename of the path. Authors typically want
 		// to refer to a symbol inside the file (e.g. "ThemeTokensConfig")
@@ -71,6 +122,14 @@ export const fileRef = createContentModelSchema({
 			meta('file-ref-lines', lines),
 			meta('file-ref-label', label),
 			meta('file-ref-preview', preview),
+			meta('file-ref-symbol', str('symbol')),
+			meta('file-ref-match', str('match')),
+			meta('file-ref-occurrence', str('occurrence')),
+			meta('file-ref-extent', str('extent')),
+			meta('file-ref-until', str('until')),
+			meta('file-ref-through', str('through')),
+			meta('file-ref-doc', bool('doc')),
+			meta('file-ref-reindent', bool('reindent')),
 			meta(FILE_REF_SENTINEL, 'true'),
 		];
 

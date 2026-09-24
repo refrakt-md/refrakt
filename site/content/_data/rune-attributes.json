@@ -2207,7 +2207,87 @@
 			"name": "lines",
 			"type": "string",
 			"required": false,
-			"description": "Line range. `\"42-58\"` (range), `\"42\"` (single line). Drives both the GitHub anchor (#L42-L58) and the drawer-body snippet slice when `preview=\"drawer\"`.",
+			"description": "Line range. `\"42-58\"` (range), `\"42\"` (single line). Drives both the GitHub anchor (#L42-L58) and the drawer-body snippet slice when `preview=\"drawer\"`. A coordinate into a file nobody promised to hold still — prefer `symbol` or `match`. Mutually exclusive with both.",
+			"page": "file-ref"
+		},
+		{
+			"rune": "file-ref",
+			"plugin": "core",
+			"scope": "own",
+			"name": "symbol",
+			"type": "string",
+			"required": false,
+			"description": "Name a declaration instead of a line range: `symbol=\"SiteConfig\"`. The drawer body shows the resolved region, recomputed from the current file rather than frozen at authoring time. Note the trade: the GitHub link loses its `#L` fragment and points at the whole file, because the range is not known until the file is read, which happens after the link is built. Includes the doc comment by default.",
+			"page": "file-ref"
+		},
+		{
+			"rune": "file-ref",
+			"plugin": "core",
+			"scope": "own",
+			"name": "match",
+			"type": "string",
+			"required": false,
+			"description": "Raw regex anchor, applied per line. The general form; `symbol` is sugar over it.",
+			"page": "file-ref"
+		},
+		{
+			"rune": "file-ref",
+			"plugin": "core",
+			"scope": "own",
+			"name": "occurrence",
+			"type": "number",
+			"required": false,
+			"description": "Which match to take when the anchor is ambiguous, 1-based. An escape hatch rather than a naming form; out of range refuses rather than clamping.",
+			"page": "file-ref"
+		},
+		{
+			"rune": "file-ref",
+			"plugin": "core",
+			"scope": "own",
+			"name": "extent",
+			"type": "\"auto\" | \"dedent\" | \"section\" | \"paired\"",
+			"required": false,
+			"description": "How far the slice runs: `auto` (delimiters), `dedent` (indentation), `section` (next sibling), `paired` (token pair). Never inferred from the file.",
+			"page": "file-ref"
+		},
+		{
+			"rune": "file-ref",
+			"plugin": "core",
+			"scope": "own",
+			"name": "until",
+			"type": "string",
+			"required": false,
+			"description": "Regex ending the extent, excluding the matching line. Overrides `extent`.",
+			"page": "file-ref"
+		},
+		{
+			"rune": "file-ref",
+			"plugin": "core",
+			"scope": "own",
+			"name": "through",
+			"type": "string",
+			"required": false,
+			"description": "As `until`, but including the matching line.",
+			"page": "file-ref"
+		},
+		{
+			"rune": "file-ref",
+			"plugin": "core",
+			"scope": "own",
+			"name": "doc",
+			"type": "boolean",
+			"required": false,
+			"description": "Include the preceding doc comment. Defaults on for `symbol`, off for `match`. Annotations attach regardless.",
+			"page": "file-ref"
+		},
+		{
+			"rune": "file-ref",
+			"plugin": "core",
+			"scope": "own",
+			"name": "reindent",
+			"type": "boolean",
+			"required": false,
+			"description": "Strip the drawer slice's common leading whitespace. Defaults on for anchors, off for `lines`.",
 			"page": "file-ref"
 		},
 		{
@@ -4067,7 +4147,97 @@
 			"name": "lines",
 			"type": "string",
 			"required": false,
-			"description": "Line range. Formats: \"10-25\", \"10-\" (to EOF), \"-20\" (from start), \"10\" (single line). 1-indexed, inclusive.",
+			"description": "Line range. Formats: \"10-25\", \"10-\" (to EOF), \"-20\" (from start), \"10\" (single line). 1-indexed, inclusive. A coordinate into a file nobody promised to hold still — prefer `symbol` or `match`, which survive edits above the region. Mutually exclusive with both.",
+			"page": "snippet"
+		},
+		{
+			"rune": "snippet",
+			"plugin": "core",
+			"scope": "own",
+			"name": "symbol",
+			"type": "string",
+			"required": false,
+			"description": "Name a declaration instead of a line range: `symbol=\"SiteConfig\"`. The anchor is built from the language's keyword table, so a symbol that moves is still found and a symbol that is renamed fails loudly instead of rendering the wrong region. Includes the doc comment by default (see `doc`).",
+			"page": "snippet"
+		},
+		{
+			"rune": "snippet",
+			"plugin": "core",
+			"scope": "own",
+			"name": "match",
+			"type": "string",
+			"required": false,
+			"description": "Raw regex anchor, applied per line: `match=\"^\\\\.rf-hint\\\\s*\\\\{\"`. The general form — `symbol` is sugar over it — and the way to address a language whose keywords the table does not carry.",
+			"page": "snippet"
+		},
+		{
+			"rune": "snippet",
+			"plugin": "core",
+			"scope": "own",
+			"name": "occurrence",
+			"type": "number",
+			"required": false,
+			"description": "Which match to take when the anchor is ambiguous, 1-based. An escape hatch, not a naming form: it is a better coordinate than a line number, but it still drifts when another match is inserted above the one addressed. Prefer a more specific `match=`. Out of range refuses rather than clamping.",
+			"page": "snippet"
+		},
+		{
+			"rune": "snippet",
+			"plugin": "core",
+			"scope": "own",
+			"name": "extent",
+			"type": "\"auto\" | \"dedent\" | \"section\" | \"paired\"",
+			"required": false,
+			"description": "How far the slice runs. `auto` (default) balances delimiters — TS, CSS, JSON. `dedent` consumes lines indented deeper than the anchor — Python, YAML. `section` runs to the next sibling at the anchor's own level — Markdown headings, TOML tables. `paired` balances a token pair — Markdoc, HTML, Svelte. Never inferred from the file.",
+			"page": "snippet"
+		},
+		{
+			"rune": "snippet",
+			"plugin": "core",
+			"scope": "own",
+			"name": "until",
+			"type": "string",
+			"required": false,
+			"description": "Regex ending the extent, excluding the matching line. Overrides `extent`. Refuses if it never matches rather than returning the rest of the file.",
+			"page": "snippet"
+		},
+		{
+			"rune": "snippet",
+			"plugin": "core",
+			"scope": "own",
+			"name": "through",
+			"type": "string",
+			"required": false,
+			"description": "As `until`, but including the matching line. Two attributes rather than one flag because `until=\"^}\"` in code wants the brace in and `until=\"^## \"` in Markdown wants the heading out — either default is silently wrong half the time.",
+			"page": "snippet"
+		},
+		{
+			"rune": "snippet",
+			"plugin": "core",
+			"scope": "own",
+			"name": "doc",
+			"type": "boolean",
+			"required": false,
+			"description": "Include the preceding doc comment. Defaults on for `symbol` (which names an entity and delegates the boundary) and off for `match` (which names a line the author already chose). Annotations and decorators attach regardless.",
+			"page": "snippet"
+		},
+		{
+			"rune": "snippet",
+			"plugin": "core",
+			"scope": "own",
+			"name": "reindent",
+			"type": "boolean",
+			"required": false,
+			"description": "Strip the slice's common leading whitespace, so a nested target does not render with a ragged left edge. Defaults on for `symbol`/`match` and off for `lines`, so no existing line-addressed invocation changes how it renders. Relative structure is preserved, so a dedented Python method stays valid.",
+			"page": "snippet"
+		},
+		{
+			"rune": "snippet",
+			"plugin": "core",
+			"scope": "own",
+			"name": "highlight-match",
+			"type": "string",
+			"required": false,
+			"description": "Comma-separated regexes; lines matching any of them are emphasized. The anchor-native form of `highlight` — under an anchor the author never saw a line number, so content is the only thing they can point at.",
 			"page": "snippet"
 		},
 		{
@@ -4097,7 +4267,7 @@
 			"name": "highlight",
 			"type": "string",
 			"required": false,
-			"description": "Range(s) to emphasize without cropping — Shiki-style format: \"74-78\", \"74-78,82,90-92\". Indices are file coordinates (same frame as `lines=`). Use this when you want full context visible but want to draw the eye to specific lines. WORK-304.",
+			"description": "Range(s) to emphasize without cropping — Shiki-style format: \"74-78\", \"74-78,82,90-92\". Indices are file coordinates (same frame as `lines=`), and stay so under an anchor. Note that a *numeric* highlight under `symbol`/`match` carries the same coordinate exposure anchoring otherwise removes — the resolver chose the region, so the author is guessing at its line numbers. Use `highlight-match` there. WORK-304.",
 			"page": "snippet"
 		},
 		{

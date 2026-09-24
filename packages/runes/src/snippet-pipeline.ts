@@ -34,6 +34,14 @@ import type {
 	TransformedPage,
 	AggregatedData,
 } from '@refrakt-md/types';
+import type { AnchorOptions } from './lib/anchor.js';
+import {
+	formatHighlight,
+	highlightMatchLines,
+	parseHighlightMatch,
+	reindent,
+	shouldReindent,
+} from './lib/present.js';
 import { readSnippetFile, SnippetSandboxError } from './lib/read-file.js';
 import { inferLanguage } from './lang-map.js';
 
@@ -162,6 +170,27 @@ function resolveSnippetToFence(
 			? resolveAttributeValue(tag.attributes.highlight, ctx.variables)
 			: undefined;
 
+	// SPEC-131 — anchor attributes. Resolution lands in the shared reader, so
+	// `file-ref` gains the same capability from the same change.
+	const str = (name: string): string | undefined =>
+		tag.attributes[name] !== undefined
+			? resolveAttributeValue(tag.attributes[name], ctx.variables)
+			: undefined;
+
+	const anchor = {
+		symbol: str('symbol'),
+		match: str('match'),
+		occurrence:
+			tag.attributes.occurrence !== undefined ? Number(tag.attributes.occurrence) : undefined,
+		extent: str('extent') as AnchorOptions['extent'],
+		until: str('until'),
+		through: str('through'),
+		doc: tag.attributes.doc === undefined ? undefined : tag.attributes.doc === true,
+	};
+	const reindentAttr =
+		tag.attributes.reindent === undefined ? undefined : tag.attributes.reindent === true;
+	const highlightMatch = str('highlight-match');
+
 	if (!pathAttr) {
 		const msg =
 			'snippet `path` attribute is required (and an unresolvable variable reference resolves to empty)';
@@ -175,6 +204,8 @@ function resolveSnippetToFence(
 			files,
 			pathAttr,
 			lines: lines || undefined,
+			anchor,
+			lang: langAttr || undefined,
 			referencingPage: page.relativePath,
 		});
 	} catch (err) {
@@ -195,18 +226,43 @@ function resolveSnippetToFence(
 
 	const language = langAttr && langAttr.length > 0 ? langAttr : inferLanguage(result.relativePath);
 
+	// WORK-589 — presentation runs strictly **after** the resolved range is
+	// fixed, so `reindent` can never shift the coordinates `linenumbers` and a
+	// numeric `highlight` read (D13). `highlight-match` is computed against the
+	// pre-reindent text because reindent changes columns, not lines.
+	const highlightMatchLinesFound = highlightMatch
+		? highlightMatchLines(result.content, parseHighlightMatch(highlightMatch))
+		: [];
+
+	const content = shouldReindent(result.anchored, reindentAttr)
+		? reindent(result.content)
+		: result.content;
+
 	// WORK-304 — write unprefixed `source` / `lines` directly. The fence
 	// schema renders them as `data-source` / `data-lines`. `linenumbers` /
 	// `highlight` are propagated from the rune attributes (file-coordinate
 	// semantics — see WORK-304 acceptance criteria).
 	const fenceAttrs: Record<string, unknown> = {
-		content: result.content,
+		content,
 		language,
 		source: result.relativePath,
 	};
+	// The coordinate frame survives anchoring (D13): an anchored slice reports
+	// the range it actually resolved to, so `linenumbers` still starts at the
+	// real file line and the displayed numbers stay a pointer back into it.
 	if (lines) fenceAttrs.lines = lines;
+	else if (result.anchored && result.start !== undefined && result.end !== undefined) {
+		fenceAttrs.lines = `${result.start}-${result.end}`;
+	}
 	if (linenumbers) fenceAttrs.linenumbers = true;
-	if (highlight && highlight.length > 0) fenceAttrs.highlight = highlight;
+
+	if (highlightMatchLinesFound.length > 0) {
+		// Slice offsets converted into the file frame the fence expects.
+		const base = result.start ?? 1;
+		fenceAttrs.highlight = formatHighlight(highlightMatchLinesFound.map((n) => n + base - 1));
+	} else if (highlight && highlight.length > 0) {
+		fenceAttrs.highlight = highlight;
+	}
 
 	// Construct a fence Ast.Node. Markdoc parses ``` blocks as
 	// new Ast.Node('fence', { content, language }) — same shape here.

@@ -32,6 +32,14 @@ export const LANG_MAP: Readonly<Record<string, string>> = Object.freeze({
 	'.toml': 'toml',
 	'.sh': 'bash',
 	'.bash': 'bash',
+	// SPEC-131 — these carry lexical entries in the language table
+	// (`lib/languages.ts`), so an extension missing here makes that entry
+	// unreachable by path and a `symbol=` anchor refuses for the wrong reason.
+	'.py': 'python',
+	'.rs': 'rust',
+	'.go': 'go',
+	'.mts': 'typescript',
+	'.cts': 'typescript',
 });
 
 /** Fallback language for extensions not covered by {@link LANG_MAP}. */

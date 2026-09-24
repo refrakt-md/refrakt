@@ -1,4 +1,4 @@
-{% work id="WORK-587" status="ready" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, anchors, drift" milestone="v0.37.0" %}
+{% work id="WORK-587" status="done" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, anchors, drift" milestone="v0.37.0" pr="refrakt-md/refrakt#647" %}
 
 # Anchor resolution, the auto extent, and the corpus test
 
@@ -69,28 +69,28 @@ refusal, 0.07% silent-wrong, 0% false alarm.
 
 ## Acceptance Criteria
 
-- [ ] `readSnippetFile` resolves `symbol` and `match` anchors in addition to `lines`, and both `snippet` and `file-ref` gain the capability from that one change
-- [ ] `expand` is unchanged and gains no anchor attributes
-- [ ] `symbol` builds its anchor from the keyword table; `match` accepts a raw regex; the two are mutually exclusive with each other and with `lines`
-- [ ] Anchors match against raw source; a match landing inside a masked region is skipped, covered by tests for `match='"scripts"'` on `package.json` (must resolve) and an anchor mentioned only in a comment (must be skipped)
-- [ ] The extent terminates only on a `;` at anchor depth or a `}` closing a brace block opened at anchor depth; parens and brackets nest without terminating
-- [ ] Depth is measured relative to the anchor line, covered by a test anchoring on a nested target (a `package.json` key, a class method, a rule inside `@media`)
-- [ ] Brace-less statements use continuation lookahead that skips blank and comment lines
-- [ ] `type` aliases do not terminate on a brace
-- [ ] An `auto` extent reaching EOF without terminating refuses and names `extent="dedent"`
-- [ ] Under `extent="auto"`, an extracted slice that is not delimiter-balanced is refused, never rendered
-- [ ] An anchor matching more than once takes the first and warns, naming every matching line
-- [ ] `occurrence` selects the Nth match, 1-based, defaulting to 1, reading from the same enumeration the warning names
-- [ ] `occurrence` does not suppress the ambiguity warning
-- [ ] An `occurrence` beyond the number of matches refuses, naming how many were found and where — never clamping to the last or falling back to the first
-- [ ] `occurrence` is documented beside `lines` / `until` / `through` as an escape hatch, not beside `symbol` as a naming form
-- [ ] Annotations (`@Component`, `#[derive]`, `@dataclass`) attach to the symbol always, independent of `doc`
-- [ ] `doc` is tri-state: unset defaults to on for `symbol` and off for `match`; `doc=true` and `doc=false` force the choice
-- [ ] A test covers the abutting-comment limit (D9) so the behaviour is pinned rather than accidental, including the file-header variant
-- [ ] Every refusal names the file, the anchor, the reason, and the `until=` / `through=` / `lines=` fallback
-- [ ] Failures use the existing error-fence path and emit a `ctx.error` diagnostic — no new failure channel
-- [ ] A regression corpus test scores the resolver against the repo's own sources and asserts the silent-wrong count stays at or below its recorded baseline
-- [ ] The engine is proven delimiter-agnostic by a test extracting a CSS rule via `match=`
+- [x] `readSnippetFile` resolves `symbol` and `match` anchors in addition to `lines`, and both `snippet` and `file-ref` gain the capability from that one change
+- [x] `expand` is unchanged and gains no anchor attributes
+- [x] `symbol` builds its anchor from the keyword table; `match` accepts a raw regex; the two are mutually exclusive with each other and with `lines`
+- [x] Anchors match against raw source; a match landing inside a masked region is skipped, covered by tests for `match='"scripts"'` on `package.json` (must resolve) and an anchor mentioned only in a comment (must be skipped)
+- [x] The extent terminates only on a `;` at anchor depth or a `}` closing a brace block opened at anchor depth; parens and brackets nest without terminating
+- [x] Depth is measured relative to the anchor line, covered by a test anchoring on a nested target (a `package.json` key, a class method, a rule inside `@media`)
+- [x] Brace-less statements use continuation lookahead that skips blank and comment lines
+- [x] `type` aliases do not terminate on a brace
+- [x] An `auto` extent reaching EOF without terminating refuses and names `extent="dedent"`
+- [x] Under `extent="auto"`, an extracted slice that is not delimiter-balanced is refused, never rendered
+- [x] An anchor matching more than once takes the first and warns, naming every matching line
+- [x] `occurrence` selects the Nth match, 1-based, defaulting to 1, reading from the same enumeration the warning names
+- [x] `occurrence` does not suppress the ambiguity warning
+- [x] An `occurrence` beyond the number of matches refuses, naming how many were found and where — never clamping to the last or falling back to the first
+- [x] `occurrence` is documented beside `lines` / `until` / `through` as an escape hatch, not beside `symbol` as a naming form
+- [x] Annotations (`@Component`, `#[derive]`, `@dataclass`) attach to the symbol always, independent of `doc`
+- [x] `doc` is tri-state: unset defaults to on for `symbol` and off for `match`; `doc=true` and `doc=false` force the choice
+- [x] A test covers the abutting-comment limit (D9) so the behaviour is pinned rather than accidental, including the file-header variant
+- [x] Every refusal names the file, the anchor, the reason, and the `until=` / `through=` / `lines=` fallback
+- [x] Failures use the existing error-fence path and emit a `ctx.error` diagnostic — no new failure channel
+- [x] A regression corpus test scores the resolver against the repo's own sources and asserts the silent-wrong count stays at or below its recorded baseline
+- [x] The engine is proven delimiter-agnostic by a test extracting a CSS rule via `match=`
 
 ## Approach
 
@@ -147,5 +147,58 @@ creates the ambiguity.
 - `packages/runes/src/lib/read-file.ts` — `readSnippetFile`, where resolution lands
 - `packages/runes/src/snippet-pipeline.ts`, `packages/runes/src/file-ref-resolve.ts` — the two call sites
 - `packages/lumina/styles/runes/hint.css` — the anchor-relative depth proof
+
+## Resolution
+
+Completed: 2026-09-24
+
+Branch: `claude/v0-37-0-review-vqpl41`
+PR: refrakt-md/refrakt#647 (batched with WORK-588 and WORK-589)
+
+### What was done
+
+- **`packages/runes/src/lib/anchor.ts`** (new) — `resolveAnchor()`. Anchor
+  enumeration, the three termination rules, anchor-relative depth, the
+  self-check, the head, and every refusal message.
+- **`packages/runes/src/lib/read-file.ts`** — `readSnippetFile` takes an
+  `anchor` option and returns `start`/`end`/`anchored`. One change, both
+  call sites.
+- **`packages/runes/src/tags/snippet.ts`, `tags/file-ref.ts`** — the
+  attribute surface.
+- **`packages/runes/src/lang-map.ts`** — added `.py`, `.rs`, `.go`,
+  `.mts`, `.cts`.
+- Tests: `anchor.test.ts` (70), `anchor-corpus.test.ts` (4),
+  `snippet-anchor-pipeline.test.ts` (13).
+
+### Notes
+
+- **Batched with WORK-588 deliberately.** This item's criteria require
+  every refusal to name `until=` / `through=`, which WORK-588 implements.
+  Split, this would ship error messages pointing at attributes that do not
+  exist, which D4 calls worse than no fallback at all.
+- **Two masks, and this was not in the plan.** The spec says an anchor
+  inside "a masked region" is a false positive. Implemented literally that
+  makes `match='"scripts"'` unresolvable, because in JSON every key is a
+  string — and that exact case is one of this item's criteria. The
+  resolution: the depth counter reads the full mask, the anchor step reads
+  a **comment-only** mask (`maskComments`). Commentary is what must be
+  rejected; literals are legitimate things to name.
+- **`.py` was missing from LANG_MAP**, so Python's table entry was
+  unreachable by path and a `symbol=` anchor refused with "declares no
+  keywords" — the wrong reason. The unit tests missed it because they pass
+  table entries directly; the end-to-end test caught it. There is now a
+  guard asserting every table language is reachable by extension.
+- **The corpus numbers are not comparable to the spec's.** 99.23% exact
+  here vs 95.37% in SPEC-131, because this oracle only checks the start and
+  the balance where the spec used the TypeScript compiler. Higher and
+  weaker. The assertion that matters is `silentWrong === 0`; raising that
+  number is a decision about the spec's central guarantee, not a test fix.
+- A JSON key with a **scalar** value has nothing for `auto` to balance and
+  refuses. Pinned by a test, with `until=` shown as the way through.
+
+### Verification
+
+4820 tests pass, 0 failures. Typecheck, `format:check`, `biome lint` clean.
+Contracts up to date; `refrakt validate --site main` 0 errors, 0 warnings.
 
 {% /work %}

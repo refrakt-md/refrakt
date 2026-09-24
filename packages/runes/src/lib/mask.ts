@@ -53,10 +53,25 @@ type Context =
  * @param source Raw file text.
  * @param lang The language's lexical definition, or `undefined` for a language
  *   absent from the table — in which case the source is returned unchanged.
+ * @param options `only: 'comments'` lexes strings and templates exactly as
+ *   normal but leaves them **visible**, blanking only commentary. See
+ *   {@link maskComments} for why that distinction matters.
  */
-export function maskSource(source: string, lang: LanguageDefinition | undefined): string {
+export function maskSource(
+	source: string,
+	lang: LanguageDefinition | undefined,
+	options?: { only?: 'comments' },
+): string {
 	if (!lang) return source;
 
+	// Markdown is a different problem and gets a different pass. Declaring
+	// fences is what selects it — the masker still branches on table data, not
+	// on a language name.
+	if (lang.fences.length > 0 || lang.inlineCode.length > 0) {
+		return maskMarkdown(source, lang);
+	}
+
+	const commentsOnly = options?.only === 'comments';
 	const n = source.length;
 	const out = source.split('');
 	const escapeChar = lang.escape;
@@ -66,8 +81,11 @@ export function maskSource(source: string, lang: LanguageDefinition | undefined)
 	const strings = byLengthDesc(lang.strings, (s) => s.delim.length);
 	const templates = byLengthDesc(lang.templates, (t) => t.delim.length);
 
-	/** Blank [from, to), never touching a newline. */
-	const blank = (from: number, to: number): void => {
+	/** Blank [from, to), never touching a newline. Under `only: 'comments'`
+	 *  a literal is lexed but left visible, so an anchor naming a JSON key or a
+	 *  quoted selector still matches. */
+	const blank = (from: number, to: number, kind: 'comment' | 'literal' = 'comment'): void => {
+		if (commentsOnly && kind === 'literal') return;
 		for (let k = from; k < to && k < n; k++) {
 			if (out[k] !== '\n') out[k] = ' ';
 		}
@@ -103,23 +121,23 @@ export function maskSource(source: string, lang: LanguageDefinition | undefined)
 
 		if (top.type === 'template') {
 			if (escapeChar && source.startsWith(escapeChar, i)) {
-				blank(i, i + escapeChar.length + 1);
+				blank(i, i + escapeChar.length + 1, 'literal');
 				i += escapeChar.length + 1;
 				continue;
 			}
 			if (top.open && source.startsWith(top.open, i)) {
-				blank(i, i + top.open.length);
+				blank(i, i + top.open.length, 'literal');
 				i += top.open.length;
 				stack.push({ type: 'interp', close: top.close ?? '}', depth: 0 });
 				continue;
 			}
 			if (source.startsWith(top.delim, i)) {
-				blank(i, i + top.delim.length);
+				blank(i, i + top.delim.length, 'literal');
 				i += top.delim.length;
 				stack.pop();
 				continue;
 			}
-			blank(i, i + 1);
+			blank(i, i + 1, 'literal');
 			i++;
 			continue;
 		}
@@ -153,7 +171,7 @@ export function maskSource(source: string, lang: LanguageDefinition | undefined)
 
 		for (const template of templates) {
 			if (source.startsWith(template.delim, i)) {
-				blank(i, i + template.delim.length);
+				blank(i, i + template.delim.length, 'literal');
 				i += template.delim.length;
 				stack.push({
 					type: 'template',
@@ -170,7 +188,7 @@ export function maskSource(source: string, lang: LanguageDefinition | undefined)
 		for (const str of strings) {
 			if (source.startsWith(str.delim, i)) {
 				const end = scanString(i, str.delim, str.multiline === true);
-				blank(i, end);
+				blank(i, end, 'literal');
 				i = end;
 				advanced = true;
 				break;
@@ -181,7 +199,7 @@ export function maskSource(source: string, lang: LanguageDefinition | undefined)
 		if (top.type === 'interp') {
 			if (source.startsWith(top.close, i)) {
 				if (top.depth === 0) {
-					blank(i, i + top.close.length);
+					blank(i, i + top.close.length, 'literal');
 					i += top.close.length;
 					stack.pop();
 					continue;
@@ -196,6 +214,106 @@ export function maskSource(source: string, lang: LanguageDefinition | undefined)
 	}
 
 	return out.join('');
+}
+
+/** Blank a line to spaces, preserving its length. */
+function blankLine(line: string): string {
+	return ' '.repeat(line.length);
+}
+
+/**
+ * The Markdown pass — fenced blocks and inline code spans.
+ *
+ * Budgeted separately from the C-family state machine, per SPEC-131: on a docs
+ * site the fences frequently contain the very tokens being counted, and the
+ * pages most worth quoting with `paired` are exactly the ones full of fenced
+ * examples of the tags. Without this, a `section` anchor stops at a `## ` that
+ * lives inside a fence, and a `paired` count is thrown off by a tag nobody ever
+ * wrote as a tag.
+ *
+ * **Fence marker lines stay visible; only the interior is blanked.** An author
+ * can legitimately anchor on a fence, and a symmetric `paired` scan needs to
+ * see the closing one — blanking the markers would break both.
+ */
+function maskMarkdown(source: string, lang: LanguageDefinition): string {
+	const lines = source.split('\n');
+	const fences = byLengthDesc(lang.fences, (f) => f.length);
+	const spans = byLengthDesc(lang.inlineCode, (c) => c.length);
+	const blockComments = byLengthDesc(lang.blockComments, ([open]) => open.length);
+
+	let openFence: string | undefined;
+	let openComment: [string, string] | undefined;
+
+	const out = lines.map((line) => {
+		const trimmed = line.trimStart();
+
+		if (openFence !== undefined) {
+			// Inside a fence: the closing marker line stays, everything else goes.
+			if (trimmed.startsWith(openFence)) {
+				openFence = undefined;
+				return line;
+			}
+			return blankLine(line);
+		}
+
+		if (openComment !== undefined) {
+			if (line.includes(openComment[1])) openComment = undefined;
+			return blankLine(line);
+		}
+
+		const fence = fences.find((f) => trimmed.startsWith(f));
+		if (fence !== undefined) {
+			openFence = fence;
+			return line;
+		}
+
+		const comment = blockComments.find(([open]) => trimmed.startsWith(open));
+		if (comment !== undefined) {
+			if (!line.includes(comment[1])) openComment = comment;
+			return blankLine(line);
+		}
+
+		// Inline code spans, blanked delimiters and all.
+		let masked = line;
+		for (const delim of spans) {
+			let from = masked.indexOf(delim);
+			while (from !== -1) {
+				const close = masked.indexOf(delim, from + delim.length);
+				if (close === -1) break;
+				const end = close + delim.length;
+				masked = masked.slice(0, from) + ' '.repeat(end - from) + masked.slice(end);
+				from = masked.indexOf(delim, end);
+			}
+		}
+		return masked;
+	});
+
+	return out.join('\n');
+}
+
+/**
+ * Blank **commentary only**, lexing literals normally but leaving them visible.
+ *
+ * This is the mask the anchor step rejects against, and it is deliberately not
+ * the same as the one the depth counter reads.
+ *
+ * The two masks answer different questions. The depth counter needs every
+ * literal blanked, because a `{` inside a string must not be counted. The
+ * anchor step needs the opposite for literals: in JSON *every key is a string*,
+ * so rejecting matches inside literals would make `match='"scripts"'`
+ * unresolvable — and a quoted attribute selector, a key, or text inside a
+ * template are all perfectly good things to name.
+ *
+ * What the anchor step does need to reject is **commentary**: a `.rf-hint {`
+ * mentioned in a comment, or a `## Install` inside a fenced block, is talking
+ * *about* code rather than being it, so an anchor landing there is a false
+ * positive.
+ *
+ * Strings are still lexed here, just not blanked — otherwise a `//` inside a
+ * URL would open a comment that blanked the rest of the line.
+ */
+export function maskComments(source: string, lang: LanguageDefinition | undefined): string {
+	return maskSource(source, lang, { only: 'comments' });
 }
 
 /**

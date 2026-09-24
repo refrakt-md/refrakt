@@ -1,4 +1,4 @@
-{% work id="WORK-589" status="ready" priority="medium" complexity="moderate" source="SPEC-131" tags="snippet, file-ref, resolver, presentation, highlight, drift" milestone="v0.37.0" %}
+{% work id="WORK-589" status="done" priority="medium" complexity="moderate" source="SPEC-131" tags="snippet, file-ref, resolver, presentation, highlight, drift" milestone="v0.37.0" pr="refrakt-md/refrakt#647" %}
 
 # Anchor-native presentation — reindent, highlight-match, and the coordinate frame
 
@@ -47,13 +47,13 @@ forbidding it.
 
 ## Acceptance Criteria
 
-- [ ] `reindent` strips the slice's common leading whitespace, defaulting on for `symbol` / `match` and off for `lines`, covered by a test on a nested target
-- [ ] `reindent=false` and `reindent=true` force either way
-- [ ] A dedented indentation-significant slice remains structurally valid, covered by a Python method and a YAML subtree
-- [ ] `linenumbers` and numeric `highlight` stay in file coordinates under an anchor
-- [ ] `highlight-match` accepts one or more regexes and highlights matching lines within the resolved slice
-- [ ] The docs state that numeric `highlight` under an anchor carries the coordinate exposure anchoring otherwise removes
-- [ ] `reindent` is applied after the resolved `[start, end]` is fixed, so it never shifts the coordinates `linenumbers` and `highlight` read
+- [x] `reindent` strips the slice's common leading whitespace, defaulting on for `symbol` / `match` and off for `lines`, covered by a test on a nested target
+- [x] `reindent=false` and `reindent=true` force either way
+- [x] A dedented indentation-significant slice remains structurally valid, covered by a Python method and a YAML subtree
+- [x] `linenumbers` and numeric `highlight` stay in file coordinates under an anchor
+- [x] `highlight-match` accepts one or more regexes and highlights matching lines within the resolved slice
+- [x] The docs state that numeric `highlight` under an anchor carries the coordinate exposure anchoring otherwise removes
+- [x] `reindent` is applied after the resolved `[start, end]` is fixed, so it never shifts the coordinates `linenumbers` and `highlight` read
 
 ## Approach
 
@@ -84,5 +84,45 @@ backwards and produces a confusing failure in each direction:
 - {% ref "SPEC-131" /%} — D13 (`highlight` / `linenumbers` keep file coordinates; `highlight-match` is the anchor-native form), D16 (`reindent`, its default, and the codemod interaction)
 - {% ref "SPEC-134" /%} — normalization step 1, which is this item's `reindent`
 - `packages/runes/src/tags/snippet.ts` — the schema carrying `linenumbers` and `highlight`, and their `lines=`-framed descriptions
+
+## Resolution
+
+Completed: 2026-09-24
+
+Branch: `claude/v0-37-0-review-vqpl41`
+PR: refrakt-md/refrakt#647 (batched with WORK-587 and WORK-588)
+
+### What was done
+
+- **`packages/runes/src/lib/present.ts`** (new) — `reindent`,
+  `shouldReindent`, `highlightMatchLines`, `parseHighlightMatch`,
+  `formatHighlight`.
+- Wired into `snippet-pipeline.ts` after the resolved range is fixed, and
+  into the `file-ref` drawer builder.
+- `reindent` and `highlight-match` attributes on both runes.
+
+### Notes
+
+- **These are separate entry points on purpose**, as this item's Approach
+  requires. WORK-590's codemod compares slices *before* `reindent` or every
+  nested target fails verification for a difference the codemod itself
+  introduced; WORK-591's hash applies it *first* so that moving a function
+  into a class does not fire the marker. An inlined transform would allow
+  neither.
+- **`reindent` does not guess a tab width.** A slice mixing tabs and spaces
+  has no common prefix and is returned unchanged — manufacturing one would
+  change bytes the author did not ask to change. Pinned by a test.
+- **The coordinate frame survives anchoring.** An anchored slice now emits
+  `lines="start-end"` from the resolved range, so `linenumbers` keeps
+  starting at the real file line. `highlight-match` offsets are converted
+  from slice coordinates into that same file frame before reaching the
+  fence.
+- Defaults follow the addressing mode, so none of the existing
+  line-addressed invocations change how they render — covered by a test
+  asserting a `lines=` slice keeps its leading indentation.
+
+### Verification
+
+4820 tests pass, 0 failures.
 
 {% /work %}

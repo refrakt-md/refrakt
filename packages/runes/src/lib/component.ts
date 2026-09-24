@@ -1,4 +1,4 @@
-import { NodeType } from '@refrakt-md/types';
+import type { NodeType } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
 import type { Tag, RenderableTreeNodes } from '@markdoc/markdoc';
 import { toKebabCase } from '@refrakt-md/transform';

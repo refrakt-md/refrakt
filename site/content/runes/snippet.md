@@ -29,6 +29,60 @@ Renders as a live embed of refrakt's own language-map module (the one snippet it
 
 The reader is looking at the actual file in this repository, sliced to its first 40 lines. The build re-reads the file every time it runs, so this stays in sync.
 
+## Address by name, not by line number
+
+A line range is a coordinate into a file nobody promised to hold still. Edit anything above the range and the snippet quietly starts quoting something else — it still renders, still highlights, still looks right. Prefer an anchor:
+
+```markdoc
+{% snippet path="packages/types/src/config.ts" symbol="SiteConfig" /%}
+```
+
+`symbol` names a declaration. The anchor is built from the language's own keywords, so the region is found wherever it has moved to — and if the symbol is renamed or deleted, the snippet **fails loudly** instead of rendering a plausible wrong span.
+
+`match` is the general form: a raw regex applied per line. `symbol` is sugar over it, and `match` is what to reach for in a language whose keywords refrakt does not carry.
+
+```markdoc
+{% snippet path="packages/lumina/styles/runes/hint.css" match="^\.rf-hint\s*\{" /%}
+```
+
+Anchors are matched against the **raw** source, so a JSON key or a quoted selector works. A match landing inside a comment is skipped — a declaration mentioned in a comment is talking about code rather than being it.
+
+### How far the slice runs
+
+`extent` picks the strategy. It is never inferred from the file, because guessing right most of the time and silently wrong the rest is the failure this feature exists to remove.
+
+| `extent` | Ends at | For |
+|---|---|---|
+| `auto` *(default)* | a `;` or the matching `}` | TypeScript, CSS, JSON |
+| `dedent` | the first line back at the anchor's indent | Python, YAML |
+| `section` | the next sibling at the anchor's own level | Markdown headings, TOML tables |
+| `paired` | the matching close token | Markdoc, HTML, Svelte |
+
+`auto` only ends a construct in a brace-and-semicolon language. Point it at Python and it refuses, naming `extent="dedent"` — it will not hand back the rest of the file.
+
+### When an anchor will not do it
+
+Anchoring is not a dead end. Every refusal names the way through, and all three stay supported permanently:
+
+| Attribute | Use |
+|---|---|
+| `through="^}"` | End at a regex, **including** the matching line |
+| `until="^## "` | End at a regex, **excluding** the matching line |
+| `lines="10-25"` | Address by coordinate, as before |
+| `occurrence=2` | Take the *N*th match when the anchor is ambiguous |
+
+`until` and `through` are two attributes rather than one flag on purpose: in code the terminator line usually belongs in the slice, and in Markdown it usually does not. Either default would be silently wrong half the time.
+
+**`occurrence` belongs on this list, not beside `symbol`.** It is counting, and this whole feature exists to replace counting with naming. It is a *better* count than a line number — inserting unrelated content above does not move it — but it still drifts the moment someone adds another match above the one you meant. Reach for a more specific `match=` first, and use `occurrence` only when the anchors are genuinely identical. An ambiguous anchor warns either way, naming every line that matched; `occurrence` selects one, it does not assert you picked correctly.
+
+An `occurrence` past the end refuses rather than clamping to the last match.
+
+### Presentation
+
+`reindent` strips the slice's common leading whitespace, so a class method or a nested key does not render with a ragged left edge. It defaults **on** for `symbol`/`match` and **off** for `lines` — an author who wrote a line range chose those columns, and changing how they render would be a silent visual change.
+
+`linenumbers` and numeric `highlight` stay in **file** coordinates under an anchor, so the numbers remain a pointer back into the real file. But a numeric `highlight` under an anchor carries exactly the coordinate exposure anchoring removes — you are guessing at line numbers the resolver chose. Use `highlight-match` there, which takes regexes and highlights the lines that match.
+
 ## Line ranges
 
 Slice the file with the `lines` attribute. Four formats:

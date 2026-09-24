@@ -42,6 +42,20 @@ for the shape.
 
 The href becomes `https://github.com/{owner}/{repo}/blob/{repoBranch}/packages/types/src/theme.ts#L19-L49` — clicking jumps straight to the highlighted range on GitHub.
 
+## Anchoring by name
+
+A line range is a coordinate into a file nobody promised to hold still, and a `file-ref` labelled with a symbol is the case where that hurts most: the label claims one thing and the drawer shows whatever now occupies those lines. Name the declaration instead:
+
+```markdoc
+{% file-ref path="packages/types/src/config.ts" symbol="SiteConfig" preview="drawer" /%}
+```
+
+The drawer body is resolved from the current file, so it follows the symbol as it moves and fails loudly if the symbol is gone. `match`, `extent`, `until`, `through`, `doc` and `reindent` all work as they do on [`snippet`](/runes/snippet#address-by-name-not-by-line-number).
+
+{% hint type="note" %}
+**The GitHub link loses its line fragment under an anchor.** The inline `<a>` is built before the file is read, so the resolved range is not yet known — an anchored `file-ref` links to the whole file, and the drawer shows the exact region. Keep `lines=` when the deep link matters more than drift resistance.
+{% /hint %}
+
 ## Preview drawer
 
 `preview="drawer"` is where file-ref earns its keep for docs. The inline link stays in prose, and clicking opens a hoisted drawer containing the file's snippet:

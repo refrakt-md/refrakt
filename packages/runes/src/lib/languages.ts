@@ -104,8 +104,39 @@ export interface LanguageDefinition {
 	headings: HeadingShape[];
 	/** Token pairs — WORK-588 (`extent="paired"`). */
 	tokenPairs: TokenPair[];
+	/**
+	 * Block-fence markers (```` ``` ````, `~~~`).
+	 *
+	 * Declaring these switches the masker onto its **Markdown** pass, which is
+	 * a separate budget line from the C-family state machine and not the same
+	 * ~40 lines: on a docs site the fences frequently contain the very tokens
+	 * being counted. `site/content/runes/tabs.md` has a `{% tab %}` in an
+	 * inline code span, and the pages most worth quoting with `paired` are
+	 * exactly the ones full of fenced examples of the tags.
+	 *
+	 * The fence *marker lines stay visible* and only the interior is blanked,
+	 * so an author can still anchor on a fence and a symmetric `paired` scan
+	 * can still find its close.
+	 */
+	fences: string[];
+	/** Inline code-span delimiters. Blanked span and all. */
+	inlineCode: string[];
 	/** Columns a tab expands to — WORK-588 (`extent="dedent"`). */
 	tabWidth: number;
+	/**
+	 * Whether the language belongs to D11's **balanced delimiters** family —
+	 * the one `extent="auto"` is for, where a `;` or a matching `}` ends a
+	 * construct.
+	 *
+	 * This is a lexical fact, not a strategy (D5): the engine still never
+	 * guesses which extent to use. What it does is let `auto` refuse in a
+	 * language where delimiter balance is meaningless, instead of returning a
+	 * plausible wrong span. Python and YAML are indentation-structured, and
+	 * Markdoc, Svelte and HTML are tag-paired — pointing `auto` at any of them
+	 * is the silently-wrong case, so `auto` fails loudly there and the refusal
+	 * names the strategy that does fit.
+	 */
+	delimited: boolean;
 }
 
 /** A partial definition, as an override or a newly declared language. */
@@ -120,7 +151,7 @@ export type LanguageDefinitionOverrides = Partial<LanguageDefinition>;
  */
 function cFamily(): Pick<
 	LanguageDefinition,
-	'lineComments' | 'blockComments' | 'strings' | 'escape' | 'tabWidth'
+	'lineComments' | 'blockComments' | 'strings' | 'escape' | 'tabWidth' | 'delimited'
 > {
 	return {
 		lineComments: ['//'],
@@ -128,6 +159,7 @@ function cFamily(): Pick<
 		strings: [{ delim: '"' }, { delim: "'" }],
 		escape: '\\',
 		tabWidth: 4,
+		delimited: true,
 	};
 }
 
@@ -167,6 +199,8 @@ export const BASE_LANGUAGES: Readonly<Record<string, LanguageDefinition>> = Obje
 		],
 		headings: [],
 		tokenPairs: [],
+		fences: [],
+		inlineCode: [],
 	},
 	javascript: {
 		...cFamily(),
@@ -176,6 +210,8 @@ export const BASE_LANGUAGES: Readonly<Record<string, LanguageDefinition>> = Obje
 		modifiers: ['export', 'default', 'async', 'static'],
 		headings: [],
 		tokenPairs: [],
+		fences: [],
+		inlineCode: [],
 	},
 	json: {
 		// JSON has no comments. Giving it `//` would blank a URL inside a string
@@ -190,7 +226,10 @@ export const BASE_LANGUAGES: Readonly<Record<string, LanguageDefinition>> = Obje
 		modifiers: [],
 		headings: [],
 		tokenPairs: [],
+		fences: [],
+		inlineCode: [],
 		tabWidth: 2,
+		delimited: true,
 	},
 	jsonc: {
 		lineComments: ['//'],
@@ -203,7 +242,10 @@ export const BASE_LANGUAGES: Readonly<Record<string, LanguageDefinition>> = Obje
 		modifiers: [],
 		headings: [],
 		tokenPairs: [],
+		fences: [],
+		inlineCode: [],
 		tabWidth: 2,
+		delimited: true,
 	},
 	css: {
 		// D10's hazard lives here: CSS has **no** line comment. `#header { … }`
@@ -214,12 +256,18 @@ export const BASE_LANGUAGES: Readonly<Record<string, LanguageDefinition>> = Obje
 		strings: [{ delim: '"' }, { delim: "'" }],
 		templates: [],
 		escape: '\\',
-		annotations: ['@'],
+		// CSS at-rules are **not** annotations. `@media` and `@layer` open a
+		// block; absorbing one as a head would pull an enclosing wrapper into
+		// the slice, which is the opposite of what a head is for.
+		annotations: [],
 		keywords: [],
 		modifiers: [],
 		headings: [],
 		tokenPairs: [],
+		fences: [],
+		inlineCode: [],
 		tabWidth: 2,
+		delimited: true,
 	},
 	python: {
 		lineComments: ['#'],
@@ -237,7 +285,10 @@ export const BASE_LANGUAGES: Readonly<Record<string, LanguageDefinition>> = Obje
 		modifiers: ['async'],
 		headings: [],
 		tokenPairs: [],
+		fences: [],
+		inlineCode: [],
 		tabWidth: 4,
+		delimited: false,
 	},
 	rust: {
 		...cFamily(),
@@ -247,6 +298,8 @@ export const BASE_LANGUAGES: Readonly<Record<string, LanguageDefinition>> = Obje
 		modifiers: ['pub', 'async', 'unsafe', 'default'],
 		headings: [],
 		tokenPairs: [],
+		fences: [],
+		inlineCode: [],
 	},
 	go: {
 		...cFamily(),
@@ -257,6 +310,8 @@ export const BASE_LANGUAGES: Readonly<Record<string, LanguageDefinition>> = Obje
 		modifiers: [],
 		headings: [],
 		tokenPairs: [],
+		fences: [],
+		inlineCode: [],
 		tabWidth: 8,
 	},
 	yaml: {
@@ -270,7 +325,10 @@ export const BASE_LANGUAGES: Readonly<Record<string, LanguageDefinition>> = Obje
 		modifiers: [],
 		headings: [],
 		tokenPairs: [],
+		fences: [],
+		inlineCode: [],
 		tabWidth: 2,
+		delimited: false,
 	},
 	toml: {
 		lineComments: ['#'],
@@ -285,7 +343,10 @@ export const BASE_LANGUAGES: Readonly<Record<string, LanguageDefinition>> = Obje
 		// the capture is the bracket itself.
 		headings: [{ pattern: '^(\\[)[^\\[\\]]+\\]\\s*$' }],
 		tokenPairs: [],
+		fences: [],
+		inlineCode: [],
 		tabWidth: 2,
+		delimited: false,
 	},
 	bash: {
 		lineComments: ['#'],
@@ -298,7 +359,10 @@ export const BASE_LANGUAGES: Readonly<Record<string, LanguageDefinition>> = Obje
 		modifiers: [],
 		headings: [],
 		tokenPairs: [],
+		fences: [],
+		inlineCode: [],
 		tabWidth: 4,
+		delimited: true,
 	},
 	html: {
 		lineComments: [],
@@ -314,7 +378,10 @@ export const BASE_LANGUAGES: Readonly<Record<string, LanguageDefinition>> = Obje
 			{ open: '<img', close: '', shape: 'selfClosing' },
 			{ open: '<br', close: '', shape: 'selfClosing' },
 		],
+		fences: [],
+		inlineCode: [],
 		tabWidth: 2,
+		delimited: false,
 	},
 	markdoc: {
 		// Markdown's masker is recursive — fenced blocks and inline code spans
@@ -335,7 +402,10 @@ export const BASE_LANGUAGES: Readonly<Record<string, LanguageDefinition>> = Obje
 			{ open: '```', close: '```', shape: 'symmetric' },
 			{ open: '{%', close: '/%}', shape: 'selfClosing' },
 		],
+		fences: ['```', '~~~'],
+		inlineCode: ['`'],
 		tabWidth: 2,
+		delimited: false,
 	},
 	svelte: {
 		lineComments: [],
@@ -347,7 +417,10 @@ export const BASE_LANGUAGES: Readonly<Record<string, LanguageDefinition>> = Obje
 		modifiers: [],
 		headings: [],
 		tokenPairs: [{ open: '<', close: '</', shape: 'asymmetric' }],
+		fences: [],
+		inlineCode: [],
 		tabWidth: 2,
+		delimited: false,
 	},
 	vue: {
 		lineComments: [],
@@ -359,7 +432,10 @@ export const BASE_LANGUAGES: Readonly<Record<string, LanguageDefinition>> = Obje
 		modifiers: [],
 		headings: [],
 		tokenPairs: [{ open: '<', close: '</', shape: 'asymmetric' }],
+		fences: [],
+		inlineCode: [],
 		tabWidth: 2,
+		delimited: false,
 	},
 });
 
@@ -408,7 +484,10 @@ function normalizeDefinition(partial: LanguageDefinitionOverrides): LanguageDefi
 		modifiers: partial.modifiers ?? [],
 		headings: partial.headings ?? [],
 		tokenPairs: partial.tokenPairs ?? [],
+		fences: partial.fences ?? [],
+		inlineCode: partial.inlineCode ?? [],
 		tabWidth: partial.tabWidth ?? 4,
+		delimited: partial.delimited ?? false,
 	};
 }
 
