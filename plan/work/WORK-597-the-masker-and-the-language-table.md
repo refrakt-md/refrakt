@@ -1,4 +1,4 @@
-{% work id="WORK-597" status="ready" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, lexing, language-table, drift" milestone="v0.37.0" %}
+{% work id="WORK-597" status="in-progress" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, lexing, language-table, drift" milestone="v0.37.0" %}
 
 # The masker and the language table
 
@@ -57,15 +57,15 @@ shows which formats authors actually reach for.
 
 ## Acceptance Criteria
 
-- [ ] The masker handles line comments, block comments, single- and double-quoted strings, and template literals including nested `${}`
-- [ ] Masking preserves newlines, so a masked source has the same line count and the same line offsets as its input
-- [ ] Comment prefixes, annotation prefixes, string and template delimiters, `symbol` keywords and declaration modifiers all come from a per-language table, with no per-language branching in the masker
-- [ ] The table also carries heading/section shapes, token pairs and tab width, even though {% ref "WORK-588" /%} is their first consumer
-- [ ] A language absent from the table gets no head absorption rather than a guessed one, covered by a test on a format with no table entry
-- [ ] A CSS fixture containing `#header { … }` is not treated as carrying a comment, pinning D10's hazard
-- [ ] The table is exposed behind a `mergeLanguages()` seam mirroring `mergeThemeConfig()`
-- [ ] No `languages` or `anchors` key is added to `refrakt.config.json`
-- [ ] Regex literals are documented as unlexed, with a test pinning the resulting behaviour rather than asserting correctness
+- [x] The masker handles line comments, block comments, single- and double-quoted strings, and template literals including nested `${}`
+- [x] Masking preserves newlines, so a masked source has the same line count and the same line offsets as its input
+- [x] Comment prefixes, annotation prefixes, string and template delimiters, `symbol` keywords and declaration modifiers all come from a per-language table, with no per-language branching in the masker
+- [x] The table also carries heading/section shapes, token pairs and tab width, even though {% ref "WORK-588" /%} is their first consumer
+- [x] A language absent from the table gets no head absorption rather than a guessed one, covered by a test on a format with no table entry
+- [x] A CSS fixture containing `#header { … }` is not treated as carrying a comment, pinning D10's hazard
+- [x] The table is exposed behind a `mergeLanguages()` seam mirroring `mergeThemeConfig()`
+- [x] No `languages` or `anchors` key is added to `refrakt.config.json`
+- [x] Regex literals are documented as unlexed, with a test pinning the resulting behaviour rather than asserting correctness
 
 ## Approach
 
