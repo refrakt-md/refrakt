@@ -224,6 +224,26 @@ export {
 	renderableText,
 } from './util.js';
 export { LANG_MAP, FALLBACK_LANG, inferLanguage } from './lang-map.js';
+// SPEC-131's lexical layer (WORK-597). The table is data and the masker is the
+// engine that reads it — D15 keeps those separable, so they are exported as
+// separate concerns rather than one bundle.
+export { BASE_LANGUAGES, mergeLanguages, resolveLanguage } from './lib/languages.js';
+export type {
+	LanguageDefinition,
+	LanguageDefinitionOverrides,
+	StringDelimiter,
+	TemplateDelimiter,
+	TokenPair,
+	HeadingShape,
+} from './lib/languages.js';
+export {
+	maskSource,
+	isMasked,
+	isRangeMasked,
+	docHeadStart,
+	symbolAnchorPattern,
+	escapeRegExp,
+} from './lib/mask.js';
 export type { HeadingInfo } from './util.js';
 export { extractSeo, collectJsonLd, textContent } from './seo.js';
 export type { PageSeo, OgMeta } from './seo.js';
