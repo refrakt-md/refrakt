@@ -1,0 +1,10 @@
+{
+  "name": "spike-rune-typing",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node check.mjs",
+    "show": "node check.mjs --show",
+    "bench": "node bench.mjs"
+  }
+}

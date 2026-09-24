@@ -193,6 +193,42 @@ catalog read. The transform is still the right place to explain an unresolved
 tag — and with a per-rune hook it becomes reachable through one path only, so
 the error can name it precisely.
 
+### D8 — `emitTag` stays declarative; only when it runs may move
+
+A per-rune `preprocess` hook can express the `emitTag` conversion — split by
+heading, wrap each section in a tag — so it is fair to ask whether `emitTag` is
+still needed. It is, and replacing it with a function would be a straight loss.
+
+**`emitTag` is data three tools read.** The rune reference
+(`reference.ts:549`), the block editor (`editor/src/server.ts:1008`) and
+`refrakt edit` (`cli/src/commands/edit.ts:167`) all consult the content model as
+a structure. A `preprocess` function is opaque to every one of them: nothing
+could tell a reader, from the declaration, that `{% character %}` produces
+`character-section` children. That is the trade {% ref "SPEC-130" /%} made in
+the other direction when it moved schema.org out of imperative transforms into a
+table, and {% ref "ADR-028" /%} is the same principle.
+
+**What may move is when the declaration executes.** Running `emitTag` at
+preprocess rather than mid-transform costs nothing this spec can find — none of
+the seven `emitTag` runes takes the `attrs` parameter on its `contentModel`
+thunk, so the conversion does not depend on resolved attributes (only
+`breadcrumb`, `bento` and `symbol` read `attrs`, and none of them emits). It
+buys AST-level visibility for tooling, and composition with `include` / `data`
+by tree order rather than by special case.
+
+**The declaration keeps both facts, unchanged.** `match` states what an author
+may write; `emitTag` states what it becomes. A field stays
+
+```ts
+{ name: 'tracks', match: 'list|tag:track', itemModel: {…}, emitTag: 'track' }
+```
+
+and is **not** narrowed to `match: 'tag:track'` on the grounds that the
+conversion now happens earlier. Narrowing it would delete the only statement
+that a list is valid input — unrecoverable by any inference, and invisible to
+the editor and the reference. Execution timing is an implementation detail; the
+declaration is the contract.
+
 ## Non-goals
 
 - Deprecating or removing `PluginPipelineHooks.preprocess` (D2)
@@ -220,12 +256,15 @@ the error can name it precisely.
 - [ ] `{% snippet %}` inside `{% codegroup %}` and `{% diff %}` is unchanged
 - [ ] `refrakt contracts --check` drift is limited to snippet's wrapper removal, on both committed copies
 - [ ] `npm run seo:baseline:check` reports no drift
+- [ ] `emitTag` remains a declarative field; no rune's content model is narrowed to match the emitted tag, and `match` still states the authored input shape (D8)
 - [ ] The rune authoring guide documents `preprocess`, and says when to reach for the plugin-level hook instead (D2)
 
 ## References
 
 - {% ref "BUG-027" /%} — the composition gap tree order closes; the motivating case
 - {% ref "BUG-028" /%} — `figure` drops non-media children, which is why "compose with figure" does not work yet
+- {% ref "BUG-030" /%} — a mixed `list|tag:x` field with `emitTag` drops the authored tags; surfaced by D8's question
+- {% ref "BUG-031" /%} — the reference drops `emitTag` and the item grammar, so D8's "the declaration is the contract" does not yet reach a reader
 - {% ref "SPEC-062" /%} — the snippet rune, its preprocess design and the figure wrapper this removes
 - {% ref "SPEC-129" /%} — the include rune and the load-bearing order this replaces
 - {% ref "SPEC-127" /%} — per-row templates; what made `data` a producer
