@@ -1,4 +1,4 @@
-{% work id="WORK-597" status="in-progress" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, lexing, language-table, drift" milestone="v0.37.0" %}
+{% work id="WORK-597" status="done" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, lexing, language-table, drift" milestone="v0.37.0" pr="refrakt-md/refrakt#645" %}
 
 # The masker and the language table
 
@@ -88,5 +88,62 @@ duplicated.
 - {% ref "SPEC-131" /%} — step 1 (the masker), D8 (regex literals, deferred), D10 (table not union regex), D15 (what is data and what is engine, and the merge seam)
 - `packages/runes/src/lib/read-file.ts` — the shared reader this sits beside
 - `packages/runes/src/lang-map.ts` — existing extension → language identification, to reuse
+
+## Resolution
+
+Completed: 2026-09-24
+
+Branch: `claude/v0-37-0-review-vqpl41`
+PR: refrakt-md/refrakt#645
+
+### What was done
+
+- **`packages/runes/src/lib/languages.ts`** (new) — the table, as data.
+  Comment prefixes, annotation prefixes, string and template delimiters,
+  `symbol=` keywords and declaration modifiers for 14 languages, plus the
+  heading shapes, token pairs and tab width WORK-588 consumes. `TokenPair`
+  carries a `shape` discriminant (asymmetric / symmetric / selfClosing)
+  because a `paired` scan anchored on a self-closing token would otherwise
+  run to EOF. Exposes `mergeLanguages()` and `resolveLanguage()`.
+- **`packages/runes/src/lib/mask.ts`** (new) — the state machine, written
+  against the table with no per-language branching. Plus `isMasked` /
+  `isRangeMasked` (the anchor step's rejection test), `docHeadStart` (the
+  table-driven half of WORK-587's `doc`) and `symbolAnchorPattern`.
+- **`packages/runes/test/mask.test.ts`** (new) — 46 tests.
+- **`packages/runes/src/index.ts`** — exports the table and the masker as
+  separate concerns, mirroring D15's split.
+
+### Notes
+
+- **The data/engine split is load-bearing, not tidiness.** `languages.ts`
+  has no logic and `mask.ts` has no language names. Anything added to one
+  that belongs in the other re-creates the union-regex hazard D10 forbids.
+- **CSS declares no line comment**, which is D10 stated as data rather than
+  guarded against in code. JSON likewise. Both are pinned by tests.
+- **`mergeLanguages()` replaces arrays rather than concatenating**, so a
+  project can *remove* a comment prefix. A concatenating merge makes that
+  impossible, and removal is the case a project narrowing a language needs.
+- **No config surface shipped.** `refrakt.config.json` is unchanged, per
+  D15 — the seam exists, the key does not.
+- **Regex literals (D8) are pinned, not fixed.** Two tests record what the
+  masker does today and say in the assertion that this is not a claim of
+  correctness; they should flip when lexing lands. Do not "fix" them
+  without doing the lexing. WORK-590 owns that decision.
+- **Markdown masking is deliberately absent.** `markdoc` declares its
+  heading shapes and token pairs, and a test asserts the masker leaves
+  Markdown untouched — the recursive fence and inline-code masking is
+  WORK-588's, and the spec is explicit it is "not the same ~40 lines".
+- `cFamily()` is a function rather than a shared object so the four C-family
+  languages do not alias one another's arrays.
+
+### Verification
+
+Full suite green: 384 files, 4727 tests, 0 failures. `tsc` clean,
+`format:check` clean, `biome lint` clean on the new files.
+
+An intermediate full-suite run showed 101 failures, every one a
+`Cannot find package …/dist` from a partially-built workspace; they cleared
+after `npm run build`. Recorded because "it was the build state" is a claim
+that should be checked rather than assumed — it was.
 
 {% /work %}
