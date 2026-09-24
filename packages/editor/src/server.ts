@@ -25,6 +25,7 @@ import {
 	serializeContentModel,
 } from '@refrakt-md/runes';
 import type { ThemeConfig, RendererNode, RuneConfig } from '@refrakt-md/transform';
+import { stampOnInsert } from './stamp-on-insert.js';
 import type { RouteRule, Plugin, AggregatedData } from '@refrakt-md/types';
 import { createTransform, toKebabCase } from '@refrakt-md/transform';
 import { bundleCss } from './css.js';
@@ -263,7 +264,7 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 			} else if (method === 'PUT' && url.pathname.startsWith('/api/files/')) {
 				const filePath = decodeURIComponent(url.pathname.slice('/api/files/'.length));
 				markOwnWrite(filePath);
-				await handlePutFile(req, res, absContentDir, filePath);
+				await handlePutFile(req, res, absContentDir, filePath, process.cwd());
 				// Refresh layout resolver so layout changes propagate to preview
 				layoutResolver.refresh().catch(() => {});
 				refreshPipelineCache().catch(() => {});
@@ -534,6 +535,7 @@ async function handlePutFile(
 	res: import('node:http').ServerResponse,
 	contentDir: string,
 	filePath: string,
+	projectRoot: string,
 ): Promise<void> {
 	const fullPath = safePath(contentDir, filePath);
 	if (!fullPath) {
@@ -545,9 +547,15 @@ async function handlePutFile(
 	const body = await readBody(req);
 	const { content } = JSON.parse(body) as { content: string };
 
-	writeFileSync(fullPath, content, 'utf-8');
+	// SPEC-134 phase 3 (WORK-593) — a snippet inserted by a human who just
+	// looked at the code is the one moment when a marker is unambiguously
+	// honest. Existing markers are never touched: re-stamping on save would
+	// silently clear one that was asking for a review.
+	const stamped = stampOnInsert(content, projectRoot);
 
-	serveJson(res, { ok: true, path: filePath });
+	writeFileSync(fullPath, stamped, 'utf-8');
+
+	serveJson(res, { ok: true, path: filePath, stamped: stamped !== content });
 }
 
 function handlePreview(

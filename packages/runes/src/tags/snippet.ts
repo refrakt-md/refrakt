@@ -80,6 +80,12 @@ export const snippet = createContentModelSchema({
 			description:
 				"Strip the slice's common leading whitespace, so a nested target does not render with a ragged left edge. Defaults on for `symbol`/`match` and off for `lines`, so no existing line-addressed invocation changes how it renders. Relative structure is preserved, so a dedented Python method stays valid.",
 		},
+		reviewed: {
+			type: String,
+			required: false,
+			description:
+				'Records that a human read this version of the slice and confirmed the prose around it matched. Freezes nothing — the snippet still tracks HEAD and re-resolves every build. When the slice changes, a diagnostic asks for a re-read; the page still renders the current code. Written by `refrakt snippet review`, never by hand.',
+		},
 		'highlight-match': {
 			type: String,
 			required: false,

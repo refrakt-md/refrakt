@@ -299,27 +299,31 @@ fire. The tool should say so rather than stamping a marker that means nothing.
 
 ## Approach
 
-**Two prerequisites, and the first is now measured rather than assumed.**
+**One prerequisite, and the blocker that was named here is now cleared.**
 {% ref "WORK-554" /%} established, by planting a synthetic error-severity
-`PipelineWarning` and observing every surface, that **it fails nothing,
-anywhere**: `vite build` exits 0 in both dogfooded sites, 4,402 tests exit 0
-because nothing observes the count, and — the sharpest result — the adapter dev
-server prints **nothing at all**, because `packages/sveltekit/src/plugin.ts:171`
-returns early on `if (!isBuild)`.
+`PipelineWarning` and observing every surface, that it fails nothing anywhere:
+`vite build` exits 0 in both dogfooded sites, the tests exit 0 because nothing
+observes the count, and — the sharpest result at the time — the adapter dev
+server printed **nothing at all**.
 
-That last row is disqualifying for this feature specifically. A review marker's
-entire audience is someone editing documentation, and someone editing
-documentation is running the dev server. Today they would see nothing, ever.
-{% ref "SPEC-131" /%} survives this — a refused anchor still paints an error
-fence on the page — but a review marker has no visual of its own by D6, so
-until {% ref "WORK-573" /%} makes the channel load-bearing, this feature would
-ship as a no-op with a CLI attached.
+That last row was disqualifying for this feature specifically, because a review
+marker's entire audience is someone editing documentation, and someone editing
+documentation is running the dev server. This spec therefore said the feature
+would "ship as a no-op with a CLI attached" until {% ref "WORK-573" /%} made the
+channel load-bearing.
 
-`--check` (phase 1) is the partial exception and the reason phase 1 is still
-worth building first: it is a command with its own exit code, so it works
-independently of the diagnostic channel. The in-build diagnostic, and any
-chance of a marker being noticed without someone running a command, waits on
-{% ref "WORK-573" /%}.
+**{% ref "WORK-575" /%} shipped in v0.36.0 and fixed exactly that** — one
+reporter at `loadContent`, printing in dev. A review-marker diagnostic now
+reaches someone editing documentation, which was the disqualifying row, so the
+dependency is gone.
+
+What {% ref "WORK-573" /%} still owns is whether an error-severity diagnostic
+*fails a build* — and D7 says a fired marker is a review prompt, not a failure,
+so this feature actively does not want that. **No dependency in either
+direction.**
+
+`--check` remains the surface that works in a job: it has its own exit code, so
+it is independent of the diagnostic channel either way.
 
 {% ref "SPEC-131" /%} phases 1–2 are the second prerequisite: there is no
 resolved slice to hash without the resolver, and D16's `reindent` is the first
@@ -345,17 +349,17 @@ than not having it, because a noisy marker trains people to ignore a real one.
 
 ## Open questions
 
-- **Where does `--check` run?** {% ref "WORK-554" /%} answered the diagnostic
-  question (it reaches nobody; see Approach), which leaves the CLI as this
-  feature's only reliable surface — and the repository has **one** workflow,
-  `release.yml`, triggered on push to `main`. There is no pre-merge job for
-  `--check` to run in, so a stale marker would be discovered after merge, on the
-  branch that publishes the site. Adding a PR workflow is outside this spec, but
-  something has to own it or `--check` is a command nobody invokes.
-- **What is the right granularity for the diagnostic summary?** D7's example
-  says "+2 fields, 1 removed", which requires interpreting the diff rather than
-  reporting it. A line count is cheaper and less useful. Worth deciding once
-  `computeLineDiff` is extracted and its output shape is known.
+- ~~**Where does `--check` run?**~~ **Answered.** This was written when the
+  repository had one workflow, `release.yml`, triggered on push to `main`.
+  {% ref "WORK-580" /%} added a pre-merge job in v0.36.0, and
+  {% ref "WORK-592" /%} added `snippet review --check` to it. A stale marker is
+  now found on the branch rather than after merge.
+- ~~**What is the right granularity for the diagnostic summary?**~~
+  **Answered — line counts.** Naming *fields* needs a language-aware layer
+  {% ref "SPEC-131" /%} D1 deliberately declined to build, and a count that said
+  "fields" while actually counting lines would be worse than the cheap version
+  for sounding authoritative. `summarizeDiff` reports "+1 line, -2 lines"
+  ({% ref "WORK-592" /%}).
 - **Should `--check` distinguish "changed" from "changed a lot"?** A one-line
   change and a rewrite are the same signal today. A magnitude threshold would
   let a team triage, and would also be a way to sneak silence back in.

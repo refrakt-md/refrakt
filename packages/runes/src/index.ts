@@ -237,6 +237,19 @@ export type {
 	HeadingShape,
 } from './lib/languages.js';
 export { resolveAnchor, AnchorResolutionError } from './lib/anchor.js';
+// SPEC-134's review markers (WORK-591) and the shared line diff (WORK-592).
+export {
+	normalizeStrict,
+	normalizeLoose,
+	hashSlice,
+	compareMarker,
+	formatMarker,
+	parseMarker,
+	canCarryMarker,
+} from './lib/review-marker.js';
+export type { HashPair, MarkerVerdict, MarkerComparison } from './lib/review-marker.js';
+export { computeLineDiff, summarizeDiff } from './lib/line-diff.js';
+export type { DiffHunk } from './lib/line-diff.js';
 export type { AnchorOptions, AnchorResolution, ExtentStrategy } from './lib/anchor.js';
 export {
 	reindent,

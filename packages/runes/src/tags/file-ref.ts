@@ -82,6 +82,12 @@ export const fileRef = createContentModelSchema({
 			description:
 				"Strip the drawer slice's common leading whitespace. Defaults on for anchors, off for `lines`.",
 		},
+		reviewed: {
+			type: String,
+			required: false,
+			description:
+				'Records that a human read this version of the slice and confirmed the prose around it matched. Written by `refrakt snippet review`, never by hand.',
+		},
 		label: {
 			type: String,
 			required: false,

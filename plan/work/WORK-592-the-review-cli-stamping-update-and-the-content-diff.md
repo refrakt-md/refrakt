@@ -55,17 +55,17 @@ only obtainable by being honest about what is and is not known.
 
 ## Acceptance Criteria
 
-- [ ] `refrakt snippet review` stamps unmarked invocations in place, per page and across the site, extending {% ref "WORK-591" /%}'s command rather than registering a second one
-- [ ] `refrakt snippet review --update` renders the content diff of every slice it re-stamps, never a bare hash change
-- [ ] A change that alters the strict hash but not the loose hash is re-stamped without prompting
-- [ ] A change that alters both is held for review
-- [ ] `--interactive` shows each held diff one at a time and takes a per-slice decision
-- [ ] `computeLineDiff` is extracted from `diff.ts` into a shared module, with the `diff` rune and the terminal renderer both reading it
-- [ ] No surface an author touches displays a hash
-- [ ] Output is phrased as a list of regions to look at, never as a failing check
-- [ ] `reviewed` on an invocation that cannot change is reported as a no-op rather than stamped
-- [ ] Docs explain what a fired marker means, and that re-stamping without reading is the one way to make the feature worthless
-- [ ] `site/content/docs/cli/cli-overview.md` gains a row for `snippet review` — the page {% ref "WORK-595" /%} cites as its motivating instance of a stale command table
+- [x] `refrakt snippet review` stamps unmarked invocations in place, per page and across the site, extending {% ref "WORK-591" /%}'s command rather than registering a second one
+- [x] `refrakt snippet review --update` renders the content diff of every slice it re-stamps, never a bare hash change
+- [x] A change that alters the strict hash but not the loose hash is re-stamped without prompting
+- [x] A change that alters both is held for review
+- [x] `--interactive` shows each held diff one at a time and takes a per-slice decision
+- [x] `computeLineDiff` is extracted from `diff.ts` into a shared module, with the `diff` rune and the terminal renderer both reading it
+- [x] No surface an author touches displays a hash
+- [x] Output is phrased as a list of regions to look at, never as a failing check
+- [x] `reviewed` on an invocation that cannot change is reported as a no-op rather than stamped
+- [x] Docs explain what a fired marker means, and that re-stamping without reading is the one way to make the feature worthless
+- [x] `site/content/docs/cli/cli-overview.md` gains a row for `snippet review` — the page {% ref "WORK-595" /%} cites as its motivating instance of a stale command table
 
 ## Approach
 

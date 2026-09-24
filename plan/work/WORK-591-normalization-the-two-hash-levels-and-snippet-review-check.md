@@ -66,20 +66,20 @@ paragraph *might* be stale is a straightforward regression for every reader.
 
 ## Acceptance Criteria
 
-- [ ] `reviewed` is accepted on `snippet` and `file-ref`, and its absence leaves behaviour unchanged
-- [ ] `expand` does not accept `reviewed` — it resolves no slice, so there is nothing of the right shape to hash
-- [ ] The hashed form applies `reindent` first, then normalizes line endings, per-line trailing whitespace, and the trailing newline
-- [ ] Comments are included in the hashed form, covered by a test where only a doc comment changes and the marker fires
-- [ ] A nesting-only change (a function moved into a class, content otherwise identical) does not fire the marker
-- [ ] The stored hash is truncated to 8–12 hex characters
-- [ ] Both hash levels are computed and exposed, with the loose form additionally collapsing whitespace runs and dropping blank lines
-- [ ] A change that alters the strict hash but not the loose hash is classified formatting-only, covered by a reformatting test
-- [ ] A stale marker produces a `PipelineWarning` and renders nothing into the page
-- [ ] A refused anchor never evaluates `reviewed`
-- [ ] A `snippet` command group is registered in `packages/cli/src/commands/` — no such command exists today, and this item is the first to need it; {% ref "WORK-592" /%}'s `review` extends it rather than adding a second
-- [ ] `refrakt snippet review --check` reports every stale marker with file, line, anchor, and a summary of what changed
-- [ ] `--check` has its own exit code, independent of the pipeline diagnostic channel
-- [ ] {% ref "SPEC-134" /%}'s Approach is corrected — it still says the feature "would ship as a no-op with a CLI attached" until {% ref "WORK-573" /%}, which {% ref "WORK-575" /%} made untrue in v0.36.0 — and its first open question is marked answered by {% ref "WORK-580" /%}'s pre-merge job
+- [x] `reviewed` is accepted on `snippet` and `file-ref`, and its absence leaves behaviour unchanged
+- [x] `expand` does not accept `reviewed` — it resolves no slice, so there is nothing of the right shape to hash
+- [x] The hashed form applies `reindent` first, then normalizes line endings, per-line trailing whitespace, and the trailing newline
+- [x] Comments are included in the hashed form, covered by a test where only a doc comment changes and the marker fires
+- [x] A nesting-only change (a function moved into a class, content otherwise identical) does not fire the marker
+- [x] The stored hash is truncated to 8–12 hex characters
+- [x] Both hash levels are computed and exposed, with the loose form additionally collapsing whitespace runs and dropping blank lines
+- [x] A change that alters the strict hash but not the loose hash is classified formatting-only, covered by a reformatting test
+- [x] A stale marker produces a `PipelineWarning` and renders nothing into the page
+- [x] A refused anchor never evaluates `reviewed`
+- [x] A `snippet` command group is registered in `packages/cli/src/commands/` — no such command exists today, and this item is the first to need it; {% ref "WORK-592" /%}'s `review` extends it rather than adding a second
+- [x] `refrakt snippet review --check` reports every stale marker with file, line, anchor, and a summary of what changed
+- [x] `--check` has its own exit code, independent of the pipeline diagnostic channel
+- [x] {% ref "SPEC-134" /%}'s Approach is corrected — it still says the feature "would ship as a no-op with a CLI attached" until {% ref "WORK-573" /%}, which {% ref "WORK-575" /%} made untrue in v0.36.0 — and its first open question is marked answered by {% ref "WORK-580" /%}'s pre-merge job
 
 ## Approach
 

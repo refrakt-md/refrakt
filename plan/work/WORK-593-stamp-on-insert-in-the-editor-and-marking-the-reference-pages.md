@@ -40,12 +40,12 @@ improvement on that, not a prerequisite for it.
 
 ## Acceptance Criteria
 
-- [ ] The block editor stamps `reviewed` when inserting a `snippet` or a `file-ref`
-- [ ] The editor does **not** stamp `expand` — {% ref "WORK-591" /%} does not accept `reviewed` there, because `expand` resolves no slice to hash
-- [ ] A snippet inserted through the editor whose target has not changed does not immediately report stale
-- [ ] The reference pages whose prose makes specific claims about a quoted slice are marked, with the selection recorded rather than exhaustive
-- [ ] Marking is a separate commit from {% ref "WORK-590" /%}'s migration
-- [ ] `--check` runs clean across `site/content` after the marking pass
+- [x] The block editor stamps `reviewed` when inserting a `snippet` or a `file-ref`
+- [x] The editor does **not** stamp `expand` — {% ref "WORK-591" /%} does not accept `reviewed` there, because `expand` resolves no slice to hash
+- [x] A snippet inserted through the editor whose target has not changed does not immediately report stale
+- [x] The reference pages whose prose makes specific claims about a quoted slice are marked, with the selection recorded rather than exhaustive
+- [x] Marking is a separate commit from {% ref "WORK-590" /%}'s migration
+- [x] `--check` runs clean across `site/content` after the marking pass
 
 ## Approach
 
