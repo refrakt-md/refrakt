@@ -1,4 +1,4 @@
-{% milestone name="v0.37.0" status="planning" %}
+{% milestone name="v0.37.0" status="active" %}
 
 # v0.37.0 — Documentation drift
 
