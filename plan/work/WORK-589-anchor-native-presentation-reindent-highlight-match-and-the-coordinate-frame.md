@@ -1,4 +1,4 @@
-{% work id="WORK-589" status="ready" priority="medium" complexity="moderate" source="SPEC-131" tags="snippet, file-ref, resolver, presentation, highlight, drift" milestone="v0.37.0" %}
+{% work id="WORK-589" status="in-progress" priority="medium" complexity="moderate" source="SPEC-131" tags="snippet, file-ref, resolver, presentation, highlight, drift" milestone="v0.37.0" %}
 
 # Anchor-native presentation — reindent, highlight-match, and the coordinate frame
 
@@ -47,13 +47,13 @@ forbidding it.
 
 ## Acceptance Criteria
 
-- [ ] `reindent` strips the slice's common leading whitespace, defaulting on for `symbol` / `match` and off for `lines`, covered by a test on a nested target
-- [ ] `reindent=false` and `reindent=true` force either way
-- [ ] A dedented indentation-significant slice remains structurally valid, covered by a Python method and a YAML subtree
-- [ ] `linenumbers` and numeric `highlight` stay in file coordinates under an anchor
-- [ ] `highlight-match` accepts one or more regexes and highlights matching lines within the resolved slice
-- [ ] The docs state that numeric `highlight` under an anchor carries the coordinate exposure anchoring otherwise removes
-- [ ] `reindent` is applied after the resolved `[start, end]` is fixed, so it never shifts the coordinates `linenumbers` and `highlight` read
+- [x] `reindent` strips the slice's common leading whitespace, defaulting on for `symbol` / `match` and off for `lines`, covered by a test on a nested target
+- [x] `reindent=false` and `reindent=true` force either way
+- [x] A dedented indentation-significant slice remains structurally valid, covered by a Python method and a YAML subtree
+- [x] `linenumbers` and numeric `highlight` stay in file coordinates under an anchor
+- [x] `highlight-match` accepts one or more regexes and highlights matching lines within the resolved slice
+- [x] The docs state that numeric `highlight` under an anchor carries the coordinate exposure anchoring otherwise removes
+- [x] `reindent` is applied after the resolved `[start, end]` is fixed, so it never shifts the coordinates `linenumbers` and `highlight` read
 
 ## Approach
 

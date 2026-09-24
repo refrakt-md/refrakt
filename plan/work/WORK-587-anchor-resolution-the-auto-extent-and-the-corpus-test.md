@@ -1,4 +1,4 @@
-{% work id="WORK-587" status="ready" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, anchors, drift" milestone="v0.37.0" %}
+{% work id="WORK-587" status="in-progress" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, anchors, drift" milestone="v0.37.0" %}
 
 # Anchor resolution, the auto extent, and the corpus test
 
@@ -69,28 +69,28 @@ refusal, 0.07% silent-wrong, 0% false alarm.
 
 ## Acceptance Criteria
 
-- [ ] `readSnippetFile` resolves `symbol` and `match` anchors in addition to `lines`, and both `snippet` and `file-ref` gain the capability from that one change
-- [ ] `expand` is unchanged and gains no anchor attributes
-- [ ] `symbol` builds its anchor from the keyword table; `match` accepts a raw regex; the two are mutually exclusive with each other and with `lines`
-- [ ] Anchors match against raw source; a match landing inside a masked region is skipped, covered by tests for `match='"scripts"'` on `package.json` (must resolve) and an anchor mentioned only in a comment (must be skipped)
-- [ ] The extent terminates only on a `;` at anchor depth or a `}` closing a brace block opened at anchor depth; parens and brackets nest without terminating
-- [ ] Depth is measured relative to the anchor line, covered by a test anchoring on a nested target (a `package.json` key, a class method, a rule inside `@media`)
-- [ ] Brace-less statements use continuation lookahead that skips blank and comment lines
-- [ ] `type` aliases do not terminate on a brace
-- [ ] An `auto` extent reaching EOF without terminating refuses and names `extent="dedent"`
-- [ ] Under `extent="auto"`, an extracted slice that is not delimiter-balanced is refused, never rendered
-- [ ] An anchor matching more than once takes the first and warns, naming every matching line
-- [ ] `occurrence` selects the Nth match, 1-based, defaulting to 1, reading from the same enumeration the warning names
-- [ ] `occurrence` does not suppress the ambiguity warning
-- [ ] An `occurrence` beyond the number of matches refuses, naming how many were found and where — never clamping to the last or falling back to the first
-- [ ] `occurrence` is documented beside `lines` / `until` / `through` as an escape hatch, not beside `symbol` as a naming form
-- [ ] Annotations (`@Component`, `#[derive]`, `@dataclass`) attach to the symbol always, independent of `doc`
-- [ ] `doc` is tri-state: unset defaults to on for `symbol` and off for `match`; `doc=true` and `doc=false` force the choice
-- [ ] A test covers the abutting-comment limit (D9) so the behaviour is pinned rather than accidental, including the file-header variant
-- [ ] Every refusal names the file, the anchor, the reason, and the `until=` / `through=` / `lines=` fallback
-- [ ] Failures use the existing error-fence path and emit a `ctx.error` diagnostic — no new failure channel
-- [ ] A regression corpus test scores the resolver against the repo's own sources and asserts the silent-wrong count stays at or below its recorded baseline
-- [ ] The engine is proven delimiter-agnostic by a test extracting a CSS rule via `match=`
+- [x] `readSnippetFile` resolves `symbol` and `match` anchors in addition to `lines`, and both `snippet` and `file-ref` gain the capability from that one change
+- [x] `expand` is unchanged and gains no anchor attributes
+- [x] `symbol` builds its anchor from the keyword table; `match` accepts a raw regex; the two are mutually exclusive with each other and with `lines`
+- [x] Anchors match against raw source; a match landing inside a masked region is skipped, covered by tests for `match='"scripts"'` on `package.json` (must resolve) and an anchor mentioned only in a comment (must be skipped)
+- [x] The extent terminates only on a `;` at anchor depth or a `}` closing a brace block opened at anchor depth; parens and brackets nest without terminating
+- [x] Depth is measured relative to the anchor line, covered by a test anchoring on a nested target (a `package.json` key, a class method, a rule inside `@media`)
+- [x] Brace-less statements use continuation lookahead that skips blank and comment lines
+- [x] `type` aliases do not terminate on a brace
+- [x] An `auto` extent reaching EOF without terminating refuses and names `extent="dedent"`
+- [x] Under `extent="auto"`, an extracted slice that is not delimiter-balanced is refused, never rendered
+- [x] An anchor matching more than once takes the first and warns, naming every matching line
+- [x] `occurrence` selects the Nth match, 1-based, defaulting to 1, reading from the same enumeration the warning names
+- [x] `occurrence` does not suppress the ambiguity warning
+- [x] An `occurrence` beyond the number of matches refuses, naming how many were found and where — never clamping to the last or falling back to the first
+- [x] `occurrence` is documented beside `lines` / `until` / `through` as an escape hatch, not beside `symbol` as a naming form
+- [x] Annotations (`@Component`, `#[derive]`, `@dataclass`) attach to the symbol always, independent of `doc`
+- [x] `doc` is tri-state: unset defaults to on for `symbol` and off for `match`; `doc=true` and `doc=false` force the choice
+- [x] A test covers the abutting-comment limit (D9) so the behaviour is pinned rather than accidental, including the file-header variant
+- [x] Every refusal names the file, the anchor, the reason, and the `until=` / `through=` / `lines=` fallback
+- [x] Failures use the existing error-fence path and emit a `ctx.error` diagnostic — no new failure channel
+- [x] A regression corpus test scores the resolver against the repo's own sources and asserts the silent-wrong count stays at or below its recorded baseline
+- [x] The engine is proven delimiter-agnostic by a test extracting a CSS rule via `match=`
 
 ## Approach
 

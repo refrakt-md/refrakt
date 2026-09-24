@@ -12,7 +12,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 import type { PipelineContext } from '@refrakt-md/types';
-import { buildGithubBlobUrl, formatLineAnchor } from '@refrakt-md/transform';
+import { buildGithubBlobUrl } from '@refrakt-md/transform';
 import {
 	HOIST_DRAWER_SENTINEL,
 	pathToSlug,
@@ -20,6 +20,8 @@ import {
 	type HoistBuildContext,
 } from './drawer-pipeline.js';
 import { FILE_REF_SENTINEL } from './tags/file-ref.js';
+import type { AnchorOptions } from './lib/anchor.js';
+import { reindent, shouldReindent } from './lib/present.js';
 import { readSnippetFile, SnippetSandboxError } from './lib/read-file.js';
 import { inferLanguage } from './lang-map.js';
 
@@ -50,6 +52,16 @@ interface FileRefQuery {
 	lines: string;
 	label: string;
 	preview: string;
+	/** SPEC-131 anchor attributes, carried through to the drawer builder —
+	 *  the only place with file access. */
+	symbol: string;
+	match: string;
+	occurrence: string;
+	extent: string;
+	until: string;
+	through: string;
+	doc: string;
+	reindent: string;
 }
 
 function readQuery(tag: TagNode): FileRefQuery {
@@ -58,6 +70,14 @@ function readQuery(tag: TagNode): FileRefQuery {
 		lines: metaContent(tag, 'file-ref-lines'),
 		label: metaContent(tag, 'file-ref-label'),
 		preview: metaContent(tag, 'file-ref-preview'),
+		symbol: metaContent(tag, 'file-ref-symbol'),
+		match: metaContent(tag, 'file-ref-match'),
+		occurrence: metaContent(tag, 'file-ref-occurrence'),
+		extent: metaContent(tag, 'file-ref-extent'),
+		until: metaContent(tag, 'file-ref-until'),
+		through: metaContent(tag, 'file-ref-through'),
+		doc: metaContent(tag, 'file-ref-doc'),
+		reindent: metaContent(tag, 'file-ref-reindent'),
 	};
 }
 
@@ -163,6 +183,14 @@ function resolveOne(
 			'data-title': label,
 			'data-path': q.path,
 			'data-lines': q.lines,
+			'data-symbol': q.symbol,
+			'data-match': q.match,
+			'data-occurrence': q.occurrence,
+			'data-extent': q.extent,
+			'data-until': q.until,
+			'data-through': q.through,
+			'data-doc': q.doc,
+			'data-reindent': q.reindent,
 			'data-github-url': githubUrl ?? '',
 		});
 		children.push(sentinel);
@@ -185,6 +213,21 @@ function buildFileRefHoist(
 ): TagNode | null {
 	const filePath = payload.path;
 	const lines = payload.lines;
+	// SPEC-131 — the drawer builder is the only stage with file access, so
+	// anchor resolution happens here. The inline GitHub link cannot carry an
+	// `#L` fragment for an anchored ref: the range is not known until the file
+	// is read, which is after the href was built. The link therefore points at
+	// the whole file, and the drawer shows the resolved region.
+	const anchor = {
+		symbol: payload.symbol || undefined,
+		match: payload.match || undefined,
+		occurrence: payload.occurrence ? Number(payload.occurrence) : undefined,
+		extent: (payload.extent || undefined) as AnchorOptions['extent'],
+		until: payload.until || undefined,
+		through: payload.through || undefined,
+		doc: payload.doc === '' ? undefined : payload.doc === 'true',
+	};
+	const reindentAttr = payload.reindent === '' ? undefined : payload.reindent === 'true';
 	const title = payload.title || defaultLabel(filePath);
 	const targetId = payload['target-id'];
 	const githubUrl = payload['github-url'];
@@ -210,9 +253,12 @@ function buildFileRefHoist(
 			files: context.projectFiles,
 			pathAttr: filePath,
 			lines: lines || undefined,
+			anchor,
 			referencingPage: context.pageUrl,
 		});
-		fileContent = result.content;
+		fileContent = shouldReindent(result.anchored, reindentAttr)
+			? reindent(result.content)
+			: result.content;
 		lang = inferLanguage(result.relativePath);
 		for (const w of result.warnings)
 			context.ctx.warn(`file-ref ${filePath}: ${w}`, context.pageUrl);

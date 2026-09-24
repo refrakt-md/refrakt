@@ -6,6 +6,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { LANG_MAP } from '../src/lang-map.js';
 import {
 	BASE_LANGUAGES,
 	type LanguageDefinition,
@@ -343,11 +344,29 @@ describe('the table carries WORK-588’s data', () => {
 		expect(BASE_LANGUAGES.css.tabWidth).toBe(2);
 	});
 
-	it('leaves Markdown masking to WORK-588', () => {
-		// `markdoc` declares the shapes `section` and `paired` need, but the
-		// recursive fence / inline-code masking is not this item's.
+	it('masks a fence interior while leaving the marker lines visible', () => {
+		// WORK-588 added this pass. The markers stay so that an author can
+		// anchor on a fence and a symmetric `paired` scan can find its close;
+		// the interior goes so that a `{% %}` shown as an example is not
+		// counted as a tag.
 		const src = '```\n{% tabs %}\n```\n{% tabs %}';
-		expect(maskSource(src, BASE_LANGUAGES.markdoc)).toBe(src);
+		const masked = maskSource(src, BASE_LANGUAGES.markdoc);
+		const lines = masked.split('\n');
+
+		expect(lines[0]).toBe('```');
+		expect(lines[1].trim()).toBe('');
+		expect(lines[2]).toBe('```');
+		// Outside the fence, the real tag survives.
+		expect(lines[3]).toBe('{% tabs %}');
+		expect(masked.length).toBe(src.length);
+	});
+
+	it('masks an inline code span, delimiters and all', () => {
+		const src = 'Write `{% tab %}` to open one.';
+		const masked = maskSource(src, BASE_LANGUAGES.markdoc);
+		expect(masked).not.toContain('{% tab %}');
+		expect(masked.startsWith('Write ')).toBe(true);
+		expect(masked.length).toBe(src.length);
 	});
 });
 
@@ -412,5 +431,17 @@ describe('resolveLanguage', () => {
 	it('reads through a merged table when given one', () => {
 		const merged = mergeLanguages(BASE_LANGUAGES, { terraform: { lineComments: ['#'] } });
 		expect(resolveLanguage('terraform', merged)?.lineComments).toEqual(['#']);
+	});
+
+	it('every language in the table is reachable by at least one extension', () => {
+		// The two tables are separate by design — LANG_MAP identifies a
+		// language, BASE_LANGUAGES describes one — but an entry nobody can
+		// reach by path is dead weight that fails for a misleading reason: a
+		// `symbol=` anchor refuses with "declares no keywords" rather than
+		// resolving. Found the hard way, when Python's entry was unreachable
+		// because `.py` was missing from LANG_MAP.
+		const reachable = new Set(Object.values(LANG_MAP));
+		const unreachable = Object.keys(BASE_LANGUAGES).filter((name) => !reachable.has(name));
+		expect(unreachable).toEqual([]);
 	});
 });

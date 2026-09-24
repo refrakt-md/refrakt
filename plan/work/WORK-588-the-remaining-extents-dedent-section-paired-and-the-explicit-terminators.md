@@ -1,4 +1,4 @@
-{% work id="WORK-588" status="ready" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, extents, markdown, drift" milestone="v0.37.0" %}
+{% work id="WORK-588" status="in-progress" priority="high" complexity="complex" source="SPEC-131" tags="snippet, file-ref, resolver, extents, markdown, drift" milestone="v0.37.0" %}
 
 # The remaining extents — dedent, section, paired, and the explicit terminators
 
@@ -57,21 +57,21 @@ saying what it means.
 
 ## Acceptance Criteria
 
-- [ ] `extent` accepts `auto` (default), `dedent`, `section`, and `paired`; `until` / `through` override all four
-- [ ] `until` excludes its matching line and `through` includes it; neither is inferred from the file or the strategy
-- [ ] An `until` / `through` that never matches refuses rather than returning the rest of the file
-- [ ] For Markdown, the masker also blanks fenced blocks and inline code spans, covered by a test anchoring past a `## ` heading and a `{% %}` tag that appear inside a fence
-- [ ] `dedent` expands tabs at a width taken from the language table
-- [ ] `extent="dedent"` is covered by tests against an indentation-structured fixture
-- [ ] `extent="section"` derives its terminator from the anchor's own level, covered by tests on a `###` Markdown heading and a TOML table
-- [ ] `extent="paired"` balances nested same-name tokens, covered by a test extracting an outer `{% tabs %}` containing inner `{% tab %}` blocks
-- [ ] `paired` handles asymmetric, symmetric, and self-closing token shapes; a self-closing anchor returns one line rather than scanning to EOF
-- [ ] The balance self-check does not run for `dedent`, `section`, `until` or `through`, covered by a test extracting a prose Markdown section containing unbalanced brackets
-- [ ] `paired` self-checks on its own token stack
-- [ ] `extent="auto"` against a tag-paired file either refuses or is documented as unsupported — never renders a brace-terminated span from a tag-structured source
-- [ ] Heading/section shapes and token pairs come from the per-language table; a language absent from it gets no `section` / `paired` support rather than a guessed one
-- [ ] The engine is proven format-agnostic by tests on a brace-free format (Markdown or YAML) and a tag-paired one (Svelte or Markdoc)
-- [ ] `snippet` and `file-ref` doc pages document the new attributes, including the fallbacks
+- [x] `extent` accepts `auto` (default), `dedent`, `section`, and `paired`; `until` / `through` override all four
+- [x] `until` excludes its matching line and `through` includes it; neither is inferred from the file or the strategy
+- [x] An `until` / `through` that never matches refuses rather than returning the rest of the file
+- [x] For Markdown, the masker also blanks fenced blocks and inline code spans, covered by a test anchoring past a `## ` heading and a `{% %}` tag that appear inside a fence
+- [x] `dedent` expands tabs at a width taken from the language table
+- [x] `extent="dedent"` is covered by tests against an indentation-structured fixture
+- [x] `extent="section"` derives its terminator from the anchor's own level, covered by tests on a `###` Markdown heading and a TOML table
+- [x] `extent="paired"` balances nested same-name tokens, covered by a test extracting an outer `{% tabs %}` containing inner `{% tab %}` blocks
+- [x] `paired` handles asymmetric, symmetric, and self-closing token shapes; a self-closing anchor returns one line rather than scanning to EOF
+- [x] The balance self-check does not run for `dedent`, `section`, `until` or `through`, covered by a test extracting a prose Markdown section containing unbalanced brackets
+- [x] `paired` self-checks on its own token stack
+- [x] `extent="auto"` against a tag-paired file either refuses or is documented as unsupported — never renders a brace-terminated span from a tag-structured source
+- [x] Heading/section shapes and token pairs come from the per-language table; a language absent from it gets no `section` / `paired` support rather than a guessed one
+- [x] The engine is proven format-agnostic by tests on a brace-free format (Markdown or YAML) and a tag-paired one (Svelte or Markdoc)
+- [x] `snippet` and `file-ref` doc pages document the new attributes, including the fallbacks
 
 ## Approach
 

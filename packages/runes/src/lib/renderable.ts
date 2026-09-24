@@ -1,6 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Tag, RenderableTreeNode } from '@markdoc/markdoc';
-import { NodeType } from '@refrakt-md/types';
+import type { NodeType } from '@refrakt-md/types';
 import { toKebabCase } from '@refrakt-md/transform';
 import { walkTag } from '../util.js';
 
@@ -49,12 +49,12 @@ export class RenderableNodeCursor<T extends RenderableTreeNode = RenderableTreeN
 	}
 
 	concat(...other: (RenderableTreeNode | RenderableNodeCursor)[]) {
-		const nodes = other.map((o) => (o instanceof RenderableNodeCursor ? o.nodes : o)).flat();
+		const nodes = other.flatMap((o) => (o instanceof RenderableNodeCursor ? o.nodes : o));
 		return new RenderableNodeCursor([...this.nodes, ...nodes]);
 	}
 
 	flatten() {
-		const nodes = this.nodes.map((t) => (Markdoc.Tag.isTag(t) ? Array.from(walkTag(t)) : t)).flat();
+		const nodes = this.nodes.flatMap((t) => (Markdoc.Tag.isTag(t) ? Array.from(walkTag(t)) : t));
 		return new RenderableNodeCursor(nodes);
 	}
 

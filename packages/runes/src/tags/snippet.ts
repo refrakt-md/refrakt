@@ -29,7 +29,62 @@ export const snippet = createContentModelSchema({
 			type: String,
 			required: false,
 			description:
-				'Line range. Formats: "10-25", "10-" (to EOF), "-20" (from start), "10" (single line). 1-indexed, inclusive.',
+				'Line range. Formats: "10-25", "10-" (to EOF), "-20" (from start), "10" (single line). 1-indexed, inclusive. A coordinate into a file nobody promised to hold still — prefer `symbol` or `match`, which survive edits above the region. Mutually exclusive with both.',
+		},
+		symbol: {
+			type: String,
+			required: false,
+			description:
+				'Name a declaration instead of a line range: `symbol="SiteConfig"`. The anchor is built from the language\'s keyword table, so a symbol that moves is still found and a symbol that is renamed fails loudly instead of rendering the wrong region. Includes the doc comment by default (see `doc`).',
+		},
+		match: {
+			type: String,
+			required: false,
+			description:
+				'Raw regex anchor, applied per line: `match="^\\\\.rf-hint\\\\s*\\\\{"`. The general form — `symbol` is sugar over it — and the way to address a language whose keywords the table does not carry.',
+		},
+		occurrence: {
+			type: Number,
+			required: false,
+			description:
+				'Which match to take when the anchor is ambiguous, 1-based. An escape hatch, not a naming form: it is a better coordinate than a line number, but it still drifts when another match is inserted above the one addressed. Prefer a more specific `match=`. Out of range refuses rather than clamping.',
+		},
+		extent: {
+			type: String,
+			required: false,
+			matches: ['auto', 'dedent', 'section', 'paired'],
+			description:
+				"How far the slice runs. `auto` (default) balances delimiters — TS, CSS, JSON. `dedent` consumes lines indented deeper than the anchor — Python, YAML. `section` runs to the next sibling at the anchor's own level — Markdown headings, TOML tables. `paired` balances a token pair — Markdoc, HTML, Svelte. Never inferred from the file.",
+		},
+		until: {
+			type: String,
+			required: false,
+			description:
+				'Regex ending the extent, excluding the matching line. Overrides `extent`. Refuses if it never matches rather than returning the rest of the file.',
+		},
+		through: {
+			type: String,
+			required: false,
+			description:
+				'As `until`, but including the matching line. Two attributes rather than one flag because `until="^}"` in code wants the brace in and `until="^## "` in Markdown wants the heading out — either default is silently wrong half the time.',
+		},
+		doc: {
+			type: Boolean,
+			required: false,
+			description:
+				'Include the preceding doc comment. Defaults on for `symbol` (which names an entity and delegates the boundary) and off for `match` (which names a line the author already chose). Annotations and decorators attach regardless.',
+		},
+		reindent: {
+			type: Boolean,
+			required: false,
+			description:
+				"Strip the slice's common leading whitespace, so a nested target does not render with a ragged left edge. Defaults on for `symbol`/`match` and off for `lines`, so no existing line-addressed invocation changes how it renders. Relative structure is preserved, so a dedented Python method stays valid.",
+		},
+		'highlight-match': {
+			type: String,
+			required: false,
+			description:
+				'Comma-separated regexes; lines matching any of them are emphasized. The anchor-native form of `highlight` — under an anchor the author never saw a line number, so content is the only thing they can point at.',
 		},
 		lang: {
 			type: String,
@@ -46,7 +101,7 @@ export const snippet = createContentModelSchema({
 			type: String,
 			required: false,
 			description:
-				'Range(s) to emphasize without cropping — Shiki-style format: "74-78", "74-78,82,90-92". Indices are file coordinates (same frame as `lines=`). Use this when you want full context visible but want to draw the eye to specific lines. WORK-304.',
+				'Range(s) to emphasize without cropping — Shiki-style format: "74-78", "74-78,82,90-92". Indices are file coordinates (same frame as `lines=`), and stay so under an anchor. Note that a *numeric* highlight under `symbol`/`match` carries the same coordinate exposure anchoring otherwise removes — the resolver chose the region, so the author is guessing at its line numbers. Use `highlight-match` there. WORK-304.',
 		},
 	},
 	contentModel: { type: 'sequence', fields: [] },

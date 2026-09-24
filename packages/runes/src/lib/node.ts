@@ -1,5 +1,5 @@
 import type { Node } from '@markdoc/markdoc';
-import { NodeFilter, NodeFilterOptions } from '../interfaces.js';
+import type { NodeFilter, NodeFilterOptions } from '../interfaces.js';
 
 export function isFilterMatching(n: Node, match: NodeFilter) {
 	if (typeof match === 'function') {

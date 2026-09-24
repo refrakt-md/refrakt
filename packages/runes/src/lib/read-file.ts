@@ -15,15 +15,31 @@
  */
 
 import type { ProjectFiles } from '@refrakt-md/types';
+import { type AnchorOptions, AnchorResolutionError, resolveAnchor } from './anchor.js';
+import { resolveLanguage } from './languages.js';
 
 /** Diagnostics from a single read. */
 export interface ReadFileResult {
-	/** Resolved file content (possibly sliced by `lines`). */
+	/** Resolved file content (possibly sliced by `lines` or by an anchor). */
 	content: string;
 	/** Project-root-relative POSIX path — what `data-snippet-source` carries. */
 	relativePath: string;
 	/** Warnings the preprocess hook should surface (e.g., end-clamp). */
 	warnings: string[];
+	/**
+	 * 1-indexed inclusive start line of the slice, in **file** coordinates.
+	 *
+	 * The coordinate frame survives anchoring on purpose (D13): `linenumbers`
+	 * keeps starting at the real line and numeric `highlight` keeps meaning
+	 * file lines, so the displayed numbers stay a usable pointer back into the
+	 * file. Undefined only when the whole file was returned.
+	 */
+	start?: number;
+	/** 1-indexed inclusive end line, in file coordinates. */
+	end?: number;
+	/** Whether the slice was located by anchor rather than by `lines=`. Drives
+	 *  the `reindent` and `doc` defaults, which follow the addressing mode. */
+	anchored: boolean;
 }
 
 export interface ReadFileOptions {
@@ -36,6 +52,11 @@ export interface ReadFileOptions {
 	/** Optional source-page context used in error messages
 	 *  ("Referenced from: docs/getting-started.md:42"). */
 	referencingPage?: string;
+	/** Optional anchor attributes — `symbol`, `match`, `extent` and friends.
+	 *  Mutually exclusive with `lines`. */
+	anchor?: AnchorOptions;
+	/** Optional explicit language id, overriding extension inference. */
+	lang?: string;
 }
 
 /** Range parsed from the `lines=` attribute. */
@@ -136,13 +157,64 @@ export function readSnippetFile(opts: ReadFileOptions): ReadFileResult {
 		);
 	}
 
+	const anchor = opts.anchor;
+	const hasAnchor =
+		anchor !== undefined &&
+		((typeof anchor.symbol === 'string' && anchor.symbol.length > 0) ||
+			(typeof anchor.match === 'string' && anchor.match.length > 0));
+	const hasLines = typeof opts.lines === 'string' && opts.lines.length > 0;
+
+	if (hasAnchor && hasLines) {
+		throw new SnippetSandboxError(
+			`snippet "${opts.pathAttr}" sets both \`lines\` and an anchor (\`symbol\`/\`match\`), ` +
+				'which are mutually exclusive — an anchor names a region and `lines` addresses one by ' +
+				'coordinate. Remove one.',
+		);
+	}
+
+	if (hasAnchor) {
+		const lang = resolveLanguage(opts.lang ?? opts.pathAttr);
+		let resolved: ReturnType<typeof resolveAnchor>;
+		try {
+			resolved = resolveAnchor(rawContent, lang, anchor, opts.pathAttr);
+		} catch (err) {
+			// One failure channel. D6: resolution failures raise
+			// `SnippetSandboxError`, which the existing path turns into an error
+			// fence plus a `ctx.error` diagnostic. No new channel.
+			if (err instanceof AnchorResolutionError) {
+				const referenced = opts.referencingPage
+					? `\n\nReferenced from: ${opts.referencingPage}`
+					: '';
+				throw new SnippetSandboxError(`snippet ${err.message}${referenced}`);
+			}
+			throw err;
+		}
+
+		const allLines = rawContent.split('\n');
+		return {
+			content: allLines.slice(resolved.start - 1, resolved.end).join('\n'),
+			relativePath: opts.pathAttr,
+			warnings: resolved.warnings,
+			start: resolved.start,
+			end: resolved.end,
+			anchored: true,
+		};
+	}
+
 	const range = parseLineRange(opts.lines);
 	const { sliced, warnings } = sliceContent(rawContent, range);
+
+	const total = rawContent.split('\n').length;
+	const start = range ? (range.start ?? 1) : undefined;
+	const end = range ? Math.min(range.end ?? total, total) : undefined;
 
 	return {
 		content: sliced,
 		relativePath: opts.pathAttr,
 		warnings,
+		start,
+		end,
+		anchored: false,
 	};
 }
 
