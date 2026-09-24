@@ -55,7 +55,7 @@ only obtainable by being honest about what is and is not known.
 
 ## Acceptance Criteria
 
-- [ ] `refrakt snippet review` stamps unmarked invocations in place, per page and across the site
+- [ ] `refrakt snippet review` stamps unmarked invocations in place, per page and across the site, extending {% ref "WORK-591" /%}'s command rather than registering a second one
 - [ ] `refrakt snippet review --update` renders the content diff of every slice it re-stamps, never a bare hash change
 - [ ] A change that alters the strict hash but not the loose hash is re-stamped without prompting
 - [ ] A change that alters both is held for review
@@ -65,6 +65,7 @@ only obtainable by being honest about what is and is not known.
 - [ ] Output is phrased as a list of regions to look at, never as a failing check
 - [ ] `reviewed` on an invocation that cannot change is reported as a no-op rather than stamped
 - [ ] Docs explain what a fired marker means, and that re-stamping without reading is the one way to make the feature worthless
+- [ ] `site/content/docs/cli/cli-overview.md` gains a row for `snippet review` — the page {% ref "WORK-595" /%} cites as its motivating instance of a stale command table
 
 ## Approach
 

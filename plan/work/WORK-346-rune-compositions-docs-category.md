@@ -1,4 +1,4 @@
-{% work id="WORK-346" status="review" priority="medium" complexity="moderate" source="SPEC-084" milestone="v0.20.1" tags="composability,docs" %}
+{% work id="WORK-346" status="done" priority="medium" complexity="moderate" source="SPEC-084" milestone="v0.20.1" tags="composability,docs" %}
 
 # Rune compositions docs category
 
@@ -39,7 +39,7 @@ container surface around/under the guest. Document these alongside Family A
 
 ## Acceptance Criteria
 - [x] A new "Compositions" category exists under `site/content/` with its own index/landing page explaining the media-zone model (containers adapt the slot; guests are open).
-- [ ] Each Family A pattern is its own page: authored Markdown + rendered `preview` + the mechanism note.
+- [x] Each Family A pattern is its own page: authored Markdown + rendered `preview` + the mechanism note.
 - [x] Only patterns that are actually styled/verified ({% ref "WORK-339" /%}, {% ref "WORK-345" /%}) ship as Family A pages; un-verified families (B/C/D/E) are scaffolded or deferred, not documented as working before they are.
 - [x] The surface compositions (cover/frame/elevation/substrate/tint/gradient) are documented as patterns and cross-linked with the surface-model gallery ({% ref "WORK-380" /%}) and the `surfaces`/`card`/`bg` references.
 - [x] The category is linked from the docs nav and cross-referenced from the rune-authoring composability guide ({% ref "WORK-338" /%}).
@@ -78,6 +78,36 @@ Branch: `claude/work-346-compositions-docs` (stacked on `claude/work-380-surface
 - **Visual pass pending** (same as WORK-380): no headless browser in this container, so the 5 new `preview` clusters are build-verified structurally but not eyeballed in light/dark/mobile. Worth a glance when running the dev server — `map-in-card` (interactive guest, live), `chart-in-bento` (cell media sizing / row-track alignment), and `diagram-in-card` (SVG fit) especially.
 - **Curated starter, not the full Family A** — criterion 2 ("each Family A pattern is its own page") is intentionally left unchecked: 5 of the ~10 Family-A patterns ship now (the doc-grounded ones); the rest — `gallery`, `embed`, `audio`/`playlist`, design `swatch`/`palette`, `timeline` — are listed on the landing page and join the catalogue as they're verified. Decide at review whether to finish the remaining patterns here or split them into a follow-up item.
 
+
+---
+
+Completed: 2026-09-24
+
+## Closing note — milestone audit, 2026-09-24
+
+Flipped from `review` to `done` during a v0.20.1 close-out audit. The item had
+sat in `review` since 2026-06-10, holding v0.20.1 open long after it shipped.
+
+**The page-per-pattern criterion is checked as superseded, not as met.** The
+"Compositions" category it describes was deliberately reorganised into a single
+consolidated `site/content/runes/media-guests.md` under the Essentials nav group
+— the Update section above records that IA decision and why (duplication forming
+between the surface docs and the composition docs). Page-per-pattern is no
+longer the intended shape, so the criterion cannot be met as written and is
+closed rather than left dangling.
+
+**Two things this item deliberately does not carry to completion**, neither of
+which should reopen it:
+
+- The remaining Family-A patterns (`gallery`, `embed`, `audio`/`playlist`,
+  design `swatch`/`palette`, `timeline`) are listed on the page and join it as
+  they are verified. That is ongoing docs work, not an open work item.
+- Families B–E stay deferred, as the original scope stated.
+
+The light/dark/mobile visual pass was never performed — no headless browser in
+the container. A regression found on `media-guests.md` should be filed as a bug
+against that page rather than reopening this item.
+
 ## Update — consolidated into "Media guests" (IA reorg)
 The page-per-pattern "Compositions" category was reorganised into a single
 consolidated **Media guests** page (`runes/media-guests.md`) under a renamed
@@ -91,3 +121,4 @@ so registry-fed and layout-signature recipes become their own concept-named
 sibling pages later. Rationale: removing the duplication that was forming between
 the surface docs and the composition docs.
 
+{% /work %}

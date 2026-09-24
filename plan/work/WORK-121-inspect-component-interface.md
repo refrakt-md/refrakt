@@ -45,3 +45,5 @@ Branch: `claude/adr-008-implementation-nBN9K`
 - Uses the serialized (pre-identity-transform) tree since properties are consumed by the engine
 - Falls back to findFirstRuneTag when data-rune doesn't match CLI name (e.g., tabs → tab-group)
 - Schema attribute types used for richer type info in output (union literals for enum matches)
+
+{% /work %}

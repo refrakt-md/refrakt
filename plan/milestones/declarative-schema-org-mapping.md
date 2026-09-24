@@ -1,4 +1,4 @@
-{% milestone name="v0.35.0" status="planning" %}
+{% milestone name="v0.35.0" status="complete" %}
 
 # v0.35.0 — Declarative schema.org mapping
 

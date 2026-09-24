@@ -59,6 +59,7 @@ actually reached.
 
 ## Acceptance Criteria
 
+- [ ] A `stale` command is registered in `packages/cli/src/commands/` — no such command exists today
 - [ ] `refrakt stale` reports a ranked list of edges, ordered by commits to the target since the referrer last changed
 - [ ] The git scan is a single `git log --name-only` pass over the repository, not one `git log` invocation per edge
 - [ ] The scan runs with `--full-history` and no pathspec, so history simplification cannot drop commits from a file's history
@@ -75,6 +76,7 @@ actually reached.
 - [ ] The edge index is a shared module, with ranking as one reader of it and no query owning it
 - [ ] A test fixture reproduces the measured case: a page referencing a file that has since taken N commits ranks above one referencing an unchanged file
 - [ ] Docs state that a zero score is the absence of evidence of staleness, not evidence of freshness
+- [ ] `site/content/docs/cli/cli-overview.md` gains a row for `stale` — the page {% ref "WORK-595" /%} cites as its motivating instance of a stale command table
 
 ## Approach
 

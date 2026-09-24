@@ -5,18 +5,30 @@
 The item that removes the live exposure. Everything before it builds capability;
 this one spends it.
 
-The measured surface in `site/content` today:
+The measured surface in `site/content`, re-counted at milestone review:
 
-| | count |
-|---|---|
-| `{% snippet %}` invocations | 37 |
-| …of which line-addressed (`lines=`) | **23** |
-| `{% file-ref %}` invocations | 10 |
+| | live | inside a fence | total |
+|---|---|---|---|
+| `{% snippet %}` invocations | 31 | 12 | **43** |
+| …of which line-addressed (`lines=`) | **15** | **8** | **23** |
+| `{% file-ref %}` invocations | 5 | 5 | 10 |
 
-Each of those 23 has a 100% silent-wrong exposure to any edit above its range.
-Several already slice mid-construct: `packages/runes/src/util.ts:42-50` opens on
-a blank line, and three separate `lang-map.ts` slices open in the middle of a
-comment block.
+The 23 is unchanged from the spec's measurement. The invocation total has grown
+from 37 since, which does not move this item's scope — but the **live / fenced
+split does**, and it is the number the codemod's design turns on.
+
+Each of the 15 live line-addressed invocations has a 100% silent-wrong exposure
+to any edit above its range. Several already slice mid-construct:
+`packages/runes/src/util.ts:42-50` opens on a blank line, and three separate
+`lang-map.ts` slices open in the middle of a comment block.
+
+**The other 8 are inside ` ```markdoc ` fences and are not resolvable targets**,
+so none of them can be verified byte-identically. They are documentation
+*examples*, and they divide in two: the ones demonstrating the `lines=` form
+deliberately keep it, and the ones that happen to use `lines=` incidentally get
+hand-rewritten to match whatever their live counterparts became. Neither is
+codemod work — see {% ref "BUG-020" /%} below, where two of the four affected
+references are exactly this case.
 
 ## {% ref "BUG-020" /%} is resolved here
 
@@ -38,8 +50,9 @@ the broken pattern by example. That correction restored accuracy and left the
 addressing exposure exactly where it was.
 
 So by the time the codemod runs these are **ordinary migrations**, pointing at
-the right files with the right ranges, and they convert like the other
-nineteen. The bug closes here, on the anchoring rather than on the ranges.
+the right files with the right ranges, and the live ones convert like the rest
+of the live set. The bug closes here, on the anchoring rather than on the
+ranges.
 
 Two corrections to the bug's original account, both recorded on it:
 
@@ -86,7 +99,8 @@ it. Do not do it speculatively.
 - [ ] A `--fix` codemod converts `lines=` invocations to anchors, verifying byte-identical output and refusing to rewrite when it differs
 - [ ] The codemod's byte-identical check compares the slice before `reindent` is applied
 - [ ] An invocation carrying `highlight=` or `linenumbers=` is either preserved with its coordinates or rewritten to `highlight-match=`, with its own verification separate from the slice check
-- [ ] The 23 line-addressed snippets in `site/content` are migrated, or individually justified as intentionally line-addressed
+- [ ] The 15 **live** line-addressed snippets in `site/content` are migrated by the codemod, or individually justified as intentionally line-addressed
+- [ ] The 8 **fenced** line-addressed snippets are rewritten by hand to match their live counterparts, or justified as deliberate demonstrations of the `lines=` form — the codemod does not attempt them, and a fenced invocation is never reported as an unverifiable refusal
 - [ ] {% ref "BUG-020" /%}'s four references are anchored — `symbol="SiteConfig"` on the three in `config.ts`, `symbol="SiteThemeConfig"` on the one in `theme.ts` — and {% ref "BUG-020" /%} is closed
 - [ ] The codemod does **not** stamp {% ref "SPEC-134" /%} `reviewed` markers on anything it migrates
 - [ ] Which languages and formats the migration actually reached is recorded, as the input to D15's deferred config-surface decision

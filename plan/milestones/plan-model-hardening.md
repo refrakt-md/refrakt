@@ -1,4 +1,4 @@
-{% milestone name="v0.28.0" status="planning" %}
+{% milestone name="v0.28.0" status="complete" %}
 
 # v0.28.0 — Plan model hardening
 

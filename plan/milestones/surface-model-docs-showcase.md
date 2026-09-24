@@ -1,4 +1,4 @@
-{% milestone name="v0.20.1" status="active" %}
+{% milestone name="v0.20.1" status="complete" %}
 
 # v0.20.1 — Surface model: docs & showcase
 

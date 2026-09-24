@@ -36,3 +36,5 @@ Branch: `claude/adr-008-implementation-nBN9K`
 ### Notes
 - Validation runs before attribute decoration, catching collisions at build time
 - All 1969 existing tests pass after fixing the 3 collisions
+
+{% /work %}

@@ -76,8 +76,10 @@ paragraph *might* be stale is a straightforward regression for every reader.
 - [ ] A change that alters the strict hash but not the loose hash is classified formatting-only, covered by a reformatting test
 - [ ] A stale marker produces a `PipelineWarning` and renders nothing into the page
 - [ ] A refused anchor never evaluates `reviewed`
+- [ ] A `snippet` command group is registered in `packages/cli/src/commands/` — no such command exists today, and this item is the first to need it; {% ref "WORK-592" /%}'s `review` extends it rather than adding a second
 - [ ] `refrakt snippet review --check` reports every stale marker with file, line, anchor, and a summary of what changed
 - [ ] `--check` has its own exit code, independent of the pipeline diagnostic channel
+- [ ] {% ref "SPEC-134" /%}'s Approach is corrected — it still says the feature "would ship as a no-op with a CLI attached" until {% ref "WORK-573" /%}, which {% ref "WORK-575" /%} made untrue in v0.36.0 — and its first open question is marked answered by {% ref "WORK-580" /%}'s pre-merge job
 
 ## Approach
 

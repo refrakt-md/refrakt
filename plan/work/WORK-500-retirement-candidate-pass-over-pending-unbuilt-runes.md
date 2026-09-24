@@ -1,4 +1,4 @@
-{% work id="WORK-500" status="draft" priority="low" complexity="simple" milestone="v0.28.0" source="SPEC-117" tags="plan, content, status, audit, cleanup" %}
+{% work id="WORK-500" status="draft" priority="low" complexity="simple" source="SPEC-117" tags="plan, content, status, audit, cleanup" %}
 
 # Retirement-candidate pass over pending unbuilt runes
 
