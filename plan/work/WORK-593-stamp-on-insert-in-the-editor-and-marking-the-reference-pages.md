@@ -1,4 +1,4 @@
-{% work id="WORK-593" status="ready" priority="medium" complexity="simple" source="SPEC-134" tags="editor, snippet, reviewed, adoption, docs, drift" milestone="v0.37.0" %}
+{% work id="WORK-593" status="in-progress" priority="medium" complexity="simple" source="SPEC-134" tags="editor, snippet, reviewed, adoption, docs, drift" milestone="v0.37.0" %}
 
 # Stamp-on-insert in the editor, and marking the reference pages
 

@@ -1,56 +1,9 @@
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import { computeLineDiff, type DiffHunk } from '../lib/line-diff.js';
 
 const modeType = ['unified', 'split', 'inline'] as const;
-
-interface DiffHunk {
-	type: 'equal' | 'add' | 'remove';
-	text: string;
-}
-
-/**
- * Compute line-level diff using LCS (Longest Common Subsequence).
- * Returns an array of hunks with type and raw text.
- * Highlighting is deferred to the pipeline's highlight transform.
- */
-function computeLineDiff(before: string, after: string): DiffHunk[] {
-	const a = before.split('\n');
-	const b = after.split('\n');
-
-	// Build LCS table
-	const m = a.length,
-		n = b.length;
-	const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
-	for (let i = 1; i <= m; i++) {
-		for (let j = 1; j <= n; j++) {
-			dp[i][j] =
-				a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
-		}
-	}
-
-	// Backtrack to produce hunks
-	let i = m,
-		j = n;
-	const stack: DiffHunk[] = [];
-
-	while (i > 0 || j > 0) {
-		if (i > 0 && j > 0 && a[i - 1] === b[j - 1]) {
-			stack.push({ type: 'equal', text: a[i - 1] });
-			i--;
-			j--;
-		} else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-			stack.push({ type: 'add', text: b[j - 1] });
-			j--;
-		} else {
-			stack.push({ type: 'remove', text: a[i - 1] });
-			i--;
-		}
-	}
-
-	stack.reverse();
-	return stack;
-}
 
 type SplitLine = { hunk: DiffHunk; num: number } | null;
 

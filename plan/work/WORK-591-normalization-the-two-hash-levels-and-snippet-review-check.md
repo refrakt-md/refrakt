@@ -1,4 +1,4 @@
-{% work id="WORK-591" status="ready" priority="high" complexity="moderate" source="SPEC-134" tags="snippet, file-ref, reviewed, hashing, diagnostics, drift" milestone="v0.37.0" %}
+{% work id="WORK-591" status="in-progress" priority="high" complexity="moderate" source="SPEC-134" tags="snippet, file-ref, reviewed, hashing, diagnostics, drift" milestone="v0.37.0" %}
 
 # Normalization, the two hash levels, and snippet review --check
 

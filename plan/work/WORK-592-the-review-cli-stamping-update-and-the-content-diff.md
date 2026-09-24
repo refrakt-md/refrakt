@@ -1,4 +1,4 @@
-{% work id="WORK-592" status="ready" priority="high" complexity="moderate" source="SPEC-134" tags="cli, snippet, reviewed, diff, dx, drift" milestone="v0.37.0" %}
+{% work id="WORK-592" status="in-progress" priority="high" complexity="moderate" source="SPEC-134" tags="cli, snippet, reviewed, diff, dx, drift" milestone="v0.37.0" %}
 
 # The review CLI — stamping, --update, and the content diff
 
