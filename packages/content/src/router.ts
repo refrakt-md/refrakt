@@ -1,5 +1,5 @@
 import * as path from 'node:path';
-import { Frontmatter } from './frontmatter.js';
+import type { Frontmatter } from './frontmatter.js';
 
 export interface Route {
 	/** The URL path for this page */

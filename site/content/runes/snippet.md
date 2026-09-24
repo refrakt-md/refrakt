@@ -96,6 +96,12 @@ Slice the file with the `lines` attribute. Four formats:
 
 1-indexed (matches editor line numbers), inclusive on both ends. Out-of-range ends clamp to the file length with a build warning; out-of-range starts (entirely past EOF) are a build error.
 
+{% hint type="note" %}
+**The `lines=` invocations on this page are deliberate.** They demonstrate the attribute, so they keep it — and they are the reason `refrakt migrate snippets` refuses most of what it finds here. Everywhere else, [anchor by name](#address-by-name-not-by-line-number): a line range is a coordinate into a file nobody promised to hold still.
+
+Several of these also slice mid-construct — opening on a blank line, or in the middle of a comment block — which is itself a symptom of line addressing, and why the codemod cannot infer an anchor for them.
+{% /hint %}
+
 ```markdoc
 {% snippet path="packages/runes/src/lang-map.ts" lines="15-35" title="LANG_MAP definition" /%}
 ```

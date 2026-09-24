@@ -20,6 +20,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./edges": {
+      "types": "./dist/edges/index.d.ts",
+      "default": "./dist/edges/index.js"
     }
   },
   "files": [

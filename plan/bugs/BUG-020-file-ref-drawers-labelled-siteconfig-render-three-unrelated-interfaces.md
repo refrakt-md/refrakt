@@ -1,4 +1,4 @@
-{% bug id="BUG-020" status="confirmed" severity="major" source="SPEC-131" tags="snippet, file-ref, docs, drift" milestone="v0.37.0" %}
+{% bug id="BUG-020" status="fixed" severity="major" source="SPEC-131" tags="snippet, file-ref, docs, drift" milestone="v0.37.0" pr="refrakt-md/refrakt#648" %}
 
 # file-ref drawers labelled SiteConfig render three unrelated interfaces
 
@@ -131,5 +131,32 @@ That is the argument for {% ref "SPEC-136" /%}'s `touching` query in one
 paragraph. An index keyed on the *path* would have returned all six references
 to `theme.ts` at once, including the `SiteThemeConfig` one and the two
 captions, without anyone having guessed which symbols to search for.
+
+## Resolution
+
+Completed: 2026-09-24
+
+Fixed by WORK-590 (refrakt-md/refrakt#648).
+
+Fix (1), correcting the ranges, landed separately in refrakt-md/refrakt#639
+because the `file-ref` doc page was teaching the broken pattern by example.
+This is fix (2): all four references are now anchored by name, so the class of
+failure is removed rather than the instance.
+
+| Reference | Now |
+|---|---|
+| `file-ref.md:31` | `symbol="SiteThemeConfig"` |
+| `file-ref.md:67` | `symbol="SiteConfig"` (rewritten by the codemod, byte-identical verified) |
+| `file-ref.md:91` | `symbol="SiteConfig"` (fenced example, rewritten by hand) |
+| `drawer.md:155` | `symbol="SiteConfig"` (fenced example, rewritten by hand) |
+
+A label can no longer disagree with what the drawer shows: the region is
+resolved from the symbol the label names, and a symbol that is renamed or
+deleted now fails loudly instead of rendering whatever occupies those lines.
+
+The `lines=` example in the 'Anchoring to a line range' section was repointed
+at CHANGELOG.md — a file with no symbols in it, which is when a line range is
+actually the right tool. Documenting `lines=` on a source declaration was
+teaching the pattern this bug is about.
 
 {% /bug %}

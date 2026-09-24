@@ -41,6 +41,7 @@
   "dependencies": {
     "@markdoc/markdoc": "0.4.0",
     "@refrakt-md/ai": "0.36.0",
+    "@refrakt-md/content": "0.36.0",
     "@refrakt-md/editor": "0.36.0",
     "@refrakt-md/html": "0.36.0",
     "@refrakt-md/runes": "0.36.0",
