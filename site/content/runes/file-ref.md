@@ -64,7 +64,7 @@ The drawer body is resolved from the current file, so it follows the symbol as i
 
 {% preview source=true %}
 
-See {% file-ref path="packages/types/src/config.ts" symbol="SiteConfig" label="SiteConfig" preview="drawer" /%} for the full shape.
+See {% file-ref path="packages/types/src/config.ts" symbol="SiteConfig" label="SiteConfig" preview="drawer" reviewed="48d8f7af2241:f9a453726159" /%} for the full shape.
 
 {% /preview %}
 

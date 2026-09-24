@@ -82,3 +82,19 @@ jobs:
       # anything that later wants to turn these into PR annotations.
       - name: refrakt validate
         run: node packages/cli/dist/bin.js validate
+
+      # SPEC-134 / WORK-592 — review markers.
+      #
+      # `--check` is the surface that works in a job: it has its own exit code,
+      # independent of the pipeline diagnostic channel. This is deliberately a
+      # *check*, never an `--update`: a bot that re-stamps on green defeats the
+      # feature completely, because the marker would then certify that a
+      # machine saw a diff nobody read.
+      #
+      # It fails the job when a marker is stale, which is not the same as
+      # `refrakt stale` — that one ranks and never fails, because its score can
+      # be reset by editing the referring page. A marker is a *fact* about
+      # content a human read, so a stale one is actionable rather than a
+      # correlation to weigh.
+      - name: refrakt snippet review --check
+        run: node packages/cli/dist/bin.js snippet review --check

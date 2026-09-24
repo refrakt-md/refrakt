@@ -1,4 +1,4 @@
-{% work id="WORK-592" status="ready" priority="high" complexity="moderate" source="SPEC-134" tags="cli, snippet, reviewed, diff, dx, drift" milestone="v0.37.0" %}
+{% work id="WORK-592" status="done" priority="high" complexity="moderate" source="SPEC-134" tags="cli, snippet, reviewed, diff, dx, drift" milestone="v0.37.0" pr="refrakt-md/refrakt#649" %}
 
 # The review CLI — stamping, --update, and the content diff
 
@@ -55,17 +55,17 @@ only obtainable by being honest about what is and is not known.
 
 ## Acceptance Criteria
 
-- [ ] `refrakt snippet review` stamps unmarked invocations in place, per page and across the site, extending {% ref "WORK-591" /%}'s command rather than registering a second one
-- [ ] `refrakt snippet review --update` renders the content diff of every slice it re-stamps, never a bare hash change
-- [ ] A change that alters the strict hash but not the loose hash is re-stamped without prompting
-- [ ] A change that alters both is held for review
-- [ ] `--interactive` shows each held diff one at a time and takes a per-slice decision
-- [ ] `computeLineDiff` is extracted from `diff.ts` into a shared module, with the `diff` rune and the terminal renderer both reading it
-- [ ] No surface an author touches displays a hash
-- [ ] Output is phrased as a list of regions to look at, never as a failing check
-- [ ] `reviewed` on an invocation that cannot change is reported as a no-op rather than stamped
-- [ ] Docs explain what a fired marker means, and that re-stamping without reading is the one way to make the feature worthless
-- [ ] `site/content/docs/cli/cli-overview.md` gains a row for `snippet review` — the page {% ref "WORK-595" /%} cites as its motivating instance of a stale command table
+- [x] `refrakt snippet review` stamps unmarked invocations in place, per page and across the site, extending {% ref "WORK-591" /%}'s command rather than registering a second one
+- [x] `refrakt snippet review --update` renders the content diff of every slice it re-stamps, never a bare hash change
+- [x] A change that alters the strict hash but not the loose hash is re-stamped without prompting
+- [x] A change that alters both is held for review
+- [x] `--interactive` shows each held diff one at a time and takes a per-slice decision
+- [x] `computeLineDiff` is extracted from `diff.ts` into a shared module, with the `diff` rune and the terminal renderer both reading it
+- [x] No surface an author touches displays a hash
+- [x] Output is phrased as a list of regions to look at, never as a failing check
+- [x] `reviewed` on an invocation that cannot change is reported as a no-op rather than stamped
+- [x] Docs explain what a fired marker means, and that re-stamping without reading is the one way to make the feature worthless
+- [x] `site/content/docs/cli/cli-overview.md` gains a row for `snippet review` — the page {% ref "WORK-595" /%} cites as its motivating instance of a stale command table
 
 ## Approach
 
@@ -105,5 +105,47 @@ docs.
 - {% ref "WORK-591" /%} — normalization, both hashes, and `--check`
 - {% ref "WORK-580" /%} — the pre-merge job `--check` can join
 - `packages/runes/src/tags/diff.ts` — `computeLineDiff`, to extract
+
+## Resolution
+
+Completed: 2026-09-24
+
+Branch: `claude/v0-37-0-review-vqpl41`
+PR: refrakt-md/refrakt#649 (batched with WORK-591 and WORK-593)
+
+### What was done
+
+- **`packages/cli/src/commands/snippet-review.ts`** (new) — the `snippet`
+  command group with `review`, `--all`, `--check`, `--update`,
+  `--interactive`.
+- **`packages/runes/src/lib/line-diff.ts`** (new) — `computeLineDiff`
+  extracted from `tags/diff.ts` as its own commit, plus `summarizeDiff`.
+- `snippet review --check` added to the pre-merge job.
+- **`packages/cli/test/snippet-review.test.ts`** — 17 tests.
+
+### Notes
+
+- **Recovering the reviewed slice from git is the load-bearing piece, and it is
+  not in the spec.** D5 says show content, never hashes — but a hash cannot be
+  un-hashed. The commit that introduced a marker value is when the review
+  happened, so `git show <sha>:<target>` gives the file as the author read it,
+  and resolving the same anchor there produces the diff. Without this the tool
+  could only show a hex string changing, and the feature would be ceremonial.
+  It degrades cleanly: no git, no diff, finding still reported.
+- **The open question on granularity is settled: line counts.** D7's example
+  says "+2 fields", which needs a language-aware layer SPEC-131 D1 declined to
+  build. A count that said "fields" while counting lines would be worse than
+  the cheap version for sounding authoritative. Recorded in `summarizeDiff`'s
+  doc comment so the reasoning survives.
+- **Never auto-re-stamp in CI.** The job runs `--check`, never `--update`.
+  A bot re-stamping on green defeats the feature completely.
+- `--interactive` holds rather than writing, so each diff is a per-slice
+  decision. Tested by asserting the file is unchanged after an interactive run
+  that produced a finding.
+
+### Verification
+
+4903 tests pass, including a test that stamps, commits, changes the target and
+asserts the recovered diff contains the added line.
 
 {% /work %}

@@ -24,6 +24,8 @@ if (!command || command === '--help' || command === '-h') {
 	runStale(args.slice(1));
 } else if (command === 'migrate' && args[1] === 'snippets') {
 	runMigrateSnippets(args.slice(2));
+} else if (command === 'snippet') {
+	runSnippetCommand(args.slice(1));
 } else if (command === 'theme') {
 	runTheme(args.slice(1));
 } else if (command === 'template') {
@@ -66,6 +68,7 @@ Commands:
   scaffold-css         Generate CSS stub files for all runes
   validate             Validate this project's sites (config + content)
   stale                Rank documentation references by how far their target has moved
+  snippet review       Stamp and check review markers on embedded source
   theme <subcommand>   Manage themes (install, info)
   edit                 Launch the browser-based content editor
   reference <subcommand>  Emit rune syntax reference for authors and AI agents
@@ -1785,4 +1788,86 @@ Options:
 			console.error(`\nError: ${(err as Error).message}`);
 			process.exit(1);
 		});
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// `refrakt snippet review` — SPEC-134 / WORK-591 + WORK-592
+// ─────────────────────────────────────────────────────────────────────
+
+function runSnippetCommand(snippetArgs: string[]): void {
+	const sub = snippetArgs[0];
+	if (sub !== 'review') {
+		console.error(`Error: unknown snippet subcommand "${sub ?? ''}"\n`);
+		printSnippetReviewUsage();
+		process.exit(1);
+	}
+
+	const rest = snippetArgs.slice(1);
+	let all = false;
+	let check = false;
+	let update = false;
+	let interactive = false;
+	let format: 'text' | 'json' = 'text';
+	const pages: string[] = [];
+
+	for (const arg of rest) {
+		if (arg === '--all') all = true;
+		else if (arg === '--check') check = true;
+		else if (arg === '--update') update = true;
+		else if (arg === '--interactive') interactive = true;
+		else if (arg === '--format=json') format = 'json';
+		else if (arg === '--help' || arg === '-h') {
+			printSnippetReviewUsage();
+			process.exit(0);
+		} else if (arg.startsWith('-')) {
+			console.error(`Error: Unknown flag "${arg}"\n`);
+			printSnippetReviewUsage();
+			process.exit(1);
+		} else {
+			pages.push(arg);
+		}
+	}
+
+	import('./commands/snippet-review.js')
+		.then(({ snippetReviewCommand }) =>
+			snippetReviewCommand({ pages, all, check, update, interactive, format }),
+		)
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
+}
+
+function printSnippetReviewUsage(): void {
+	console.log(`
+Usage: refrakt snippet review [pages...] [options]
+
+Record that a human read a quoted region and confirmed the prose around it
+matched. The marker freezes nothing — the snippet still tracks HEAD and
+re-resolves every build. When the region changes, the marker asks for a
+re-read.
+
+Markers are never hand-written; this command writes them.
+
+  refrakt snippet review site/content/runes/file-ref.md   stamp unmarked
+  refrakt snippet review --all                            stamp every unmarked
+  refrakt snippet review --check                          report, own exit code
+  refrakt snippet review --update --interactive           re-stamp what changed
+
+A change that alters the content but not its meaning — a reformat — is
+re-stamped without prompting, because that is provable rather than a judgement
+made under time pressure. Everything else is held for a human.
+
+Options:
+  --all            Stamp every unmarked invocation (not every invocation)
+  --check          Report stale markers; exits non-zero when any are found
+  --update         Re-stamp what changed, showing the content diff
+  --interactive    Show each held diff one at a time
+  --format=json    Machine-readable output
+  -h, --help       Show this help
+
+Adoption is deliberately selective: mark the references whose prose makes
+specific claims about the code beside them. Marking everything makes --check
+permanently noisy and trains everyone to ignore it.
+`);
 }

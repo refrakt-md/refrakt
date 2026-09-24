@@ -1,4 +1,4 @@
-{% work id="WORK-591" status="ready" priority="high" complexity="moderate" source="SPEC-134" tags="snippet, file-ref, reviewed, hashing, diagnostics, drift" milestone="v0.37.0" %}
+{% work id="WORK-591" status="done" priority="high" complexity="moderate" source="SPEC-134" tags="snippet, file-ref, reviewed, hashing, diagnostics, drift" milestone="v0.37.0" pr="refrakt-md/refrakt#649" %}
 
 # Normalization, the two hash levels, and snippet review --check
 
@@ -66,20 +66,20 @@ paragraph *might* be stale is a straightforward regression for every reader.
 
 ## Acceptance Criteria
 
-- [ ] `reviewed` is accepted on `snippet` and `file-ref`, and its absence leaves behaviour unchanged
-- [ ] `expand` does not accept `reviewed` — it resolves no slice, so there is nothing of the right shape to hash
-- [ ] The hashed form applies `reindent` first, then normalizes line endings, per-line trailing whitespace, and the trailing newline
-- [ ] Comments are included in the hashed form, covered by a test where only a doc comment changes and the marker fires
-- [ ] A nesting-only change (a function moved into a class, content otherwise identical) does not fire the marker
-- [ ] The stored hash is truncated to 8–12 hex characters
-- [ ] Both hash levels are computed and exposed, with the loose form additionally collapsing whitespace runs and dropping blank lines
-- [ ] A change that alters the strict hash but not the loose hash is classified formatting-only, covered by a reformatting test
-- [ ] A stale marker produces a `PipelineWarning` and renders nothing into the page
-- [ ] A refused anchor never evaluates `reviewed`
-- [ ] A `snippet` command group is registered in `packages/cli/src/commands/` — no such command exists today, and this item is the first to need it; {% ref "WORK-592" /%}'s `review` extends it rather than adding a second
-- [ ] `refrakt snippet review --check` reports every stale marker with file, line, anchor, and a summary of what changed
-- [ ] `--check` has its own exit code, independent of the pipeline diagnostic channel
-- [ ] {% ref "SPEC-134" /%}'s Approach is corrected — it still says the feature "would ship as a no-op with a CLI attached" until {% ref "WORK-573" /%}, which {% ref "WORK-575" /%} made untrue in v0.36.0 — and its first open question is marked answered by {% ref "WORK-580" /%}'s pre-merge job
+- [x] `reviewed` is accepted on `snippet` and `file-ref`, and its absence leaves behaviour unchanged
+- [x] `expand` does not accept `reviewed` — it resolves no slice, so there is nothing of the right shape to hash
+- [x] The hashed form applies `reindent` first, then normalizes line endings, per-line trailing whitespace, and the trailing newline
+- [x] Comments are included in the hashed form, covered by a test where only a doc comment changes and the marker fires
+- [x] A nesting-only change (a function moved into a class, content otherwise identical) does not fire the marker
+- [x] The stored hash is truncated to 8–12 hex characters
+- [x] Both hash levels are computed and exposed, with the loose form additionally collapsing whitespace runs and dropping blank lines
+- [x] A change that alters the strict hash but not the loose hash is classified formatting-only, covered by a reformatting test
+- [x] A stale marker produces a `PipelineWarning` and renders nothing into the page
+- [x] A refused anchor never evaluates `reviewed`
+- [x] A `snippet` command group is registered in `packages/cli/src/commands/` — no such command exists today, and this item is the first to need it; {% ref "WORK-592" /%}'s `review` extends it rather than adding a second
+- [x] `refrakt snippet review --check` reports every stale marker with file, line, anchor, and a summary of what changed
+- [x] `--check` has its own exit code, independent of the pipeline diagnostic channel
+- [x] {% ref "SPEC-134" /%}'s Approach is corrected — it still says the feature "would ship as a no-op with a CLI attached" until {% ref "WORK-573" /%}, which {% ref "WORK-575" /%} made untrue in v0.36.0 — and its first open question is marked answered by {% ref "WORK-580" /%}'s pre-merge job
 
 ## Approach
 
@@ -126,5 +126,47 @@ of the intended response.
 - {% ref "SPEC-132" /%} — the diagnostics routing model
 - `packages/content/src/site.ts` — the diagnostics surface
 - `packages/editor/src/community-tags-builder.ts` — the 8-character truncated-hash precedent
+
+## Resolution
+
+Completed: 2026-09-24
+
+Branch: `claude/v0-37-0-review-vqpl41`
+PR: refrakt-md/refrakt#649 (batched with WORK-592 and WORK-593)
+
+### What was done
+
+- **`packages/runes/src/lib/review-marker.ts`** (new) — `normalizeStrict`,
+  `normalizeLoose`, `hashSlice`, `compareMarker`, `formatMarker`,
+  `parseMarker`, `canCarryMarker`.
+- **`snippet-pipeline.ts`** — comparison after resolution, emitting a
+  `PipelineWarning` and rendering nothing into the page.
+- `reviewed` attribute on `snippet` and `file-ref`; deliberately not `expand`.
+- `refrakt snippet review --check` (the command group lives in WORK-592's
+  module, registered here as the first consumer).
+- SPEC-134's Approach corrected; both its open questions marked answered.
+- **`packages/runes/test/review-marker.test.ts`** — 18 tests.
+
+### Notes
+
+- **Both hash levels are stored inline, colon-separated.** This is a decision
+  beyond what the spec states. D3 requires formatting-only to be *proven*, and
+  with a single stored value it cannot be — so a one-value marker degrades to
+  `stale` rather than guessing. That direction is deliberate: it asks for a
+  review that may be trivial rather than skipping one that mattered.
+- **The pipeline warning carries no diff, and cannot.** At transform time the
+  only record of the reviewed version is its hash. Recovering the old content
+  needs git, which is WORK-592's job — this is why D5's "show content, never
+  hashes" is the CLI's responsibility rather than the pipeline's.
+- **D9's layering is load-bearing in the code, not just the spec.** A refused
+  anchor returns before the marker is evaluated, so one failure never produces
+  two findings. Covered by a test that renames a symbol and asserts silence.
+- Comments stay in the hash (D2) even though SPEC-131's masker could strip them
+  for free. The test that pins this changes *only* a doc comment and asserts the
+  marker fires.
+
+### Verification
+
+4903 tests pass. `refrakt snippet review --check` clean, exit 0.
 
 {% /work %}

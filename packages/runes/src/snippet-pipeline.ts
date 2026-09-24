@@ -43,6 +43,7 @@ import {
 	shouldReindent,
 } from './lib/present.js';
 import { readSnippetFile, SnippetSandboxError } from './lib/read-file.js';
+import { compareMarker, parseMarker } from './lib/review-marker.js';
 import { inferLanguage } from './lang-map.js';
 
 const { Ast, Tag } = Markdoc;
@@ -190,6 +191,7 @@ function resolveSnippetToFence(
 	const reindentAttr =
 		tag.attributes.reindent === undefined ? undefined : tag.attributes.reindent === true;
 	const highlightMatch = str('highlight-match');
+	const reviewedAttr = str('reviewed');
 
 	if (!pathAttr) {
 		const msg =
@@ -222,6 +224,35 @@ function resolveSnippetToFence(
 
 	for (const warning of result.warnings) {
 		ctx.warn(warning, page.url);
+	}
+
+	// SPEC-134 — the review marker. Evaluated only after the anchor resolved,
+	// because D9 layers the two features: SPEC-131 answers *can I find the
+	// region* and refuses if not, so a refusal never reaches here at all.
+	//
+	// A finding is a `PipelineWarning` beside the page and **nothing is
+	// rendered into it** (D6). This is deliberately different from SPEC-131's
+	// error fence, and the difference is principled: there, the content could
+	// not be produced, so the fence takes its place. Here the content was
+	// produced perfectly — real, current, correctly located. What is uncertain
+	// is the prose beside it, which the resolver cannot see. Replacing a
+	// correct code block with an error because a paragraph *might* be stale is
+	// a straightforward regression for every reader.
+	if (reviewedAttr && reviewedAttr.length > 0) {
+		const stored = parseMarker(reviewedAttr);
+		const comparison = compareMarker(stored.strict, result.content, stored.loose);
+		if (comparison.verdict === 'stale') {
+			// Deliberately no diff here: at transform time the only record of
+			// the reviewed version is its hash, and a hash cannot be turned
+			// back into content. `refrakt snippet review --update` recovers the
+			// old slice from git and shows the diff — which is why D5's "show
+			// content, never hashes" is the CLI's job rather than this one's.
+			ctx.warn(
+				`snippet \`${pathAttr}\` has changed since it was last reviewed. Re-read the prose ` +
+					'around it, then run `refrakt snippet review --update` to see the diff and re-stamp.',
+				page.url,
+			);
+		}
 	}
 
 	const language = langAttr && langAttr.length > 0 ? langAttr : inferLanguage(result.relativePath);

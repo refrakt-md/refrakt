@@ -240,6 +240,38 @@ Range syntax matches Shiki: single ranges (`"74-78"`), single lines (`"82"`), or
 
 Both `linenumbers` and `highlight` are also fence-level annotations — `` ```ts {% linenumbers=true highlight="3-5" %} `` works on any hand-authored fence too, no snippet required.
 
+## Review markers
+
+Anchoring answers *am I quoting the right region*. It cannot answer the next question up: **the region is right, and the prose around it no longer describes what is in it.**
+
+A field is removed, a default flips, a parameter is reordered. The anchor resolves perfectly, the code block renders real current code, and the paragraph above it quietly becomes false. That is the *ordinary* case, because editing a declaration is far more common than renaming one.
+
+```markdoc
+{% snippet path="packages/types/src/config.ts" symbol="SiteConfig" reviewed="a3f91c4e:70b2d118" /%}
+```
+
+The marker records that a human read this version of the slice and confirmed the prose matched. **It freezes nothing** — the snippet still tracks HEAD and re-resolves every build. When the region changes, a diagnostic asks for a re-read; the page still renders the current code.
+
+### Never written by hand
+
+```bash
+refrakt snippet review site/content/runes/file-ref.md   # stamp unmarked
+refrakt snippet review --check                          # report, own exit code
+refrakt snippet review --update                         # re-stamp what changed
+```
+
+`--update` shows the **content diff** of every slice it re-stamps, recovered from the commit that wrote the marker. A commit full of changed hex strings is unreviewable; a commit where someone saw each before/after is the entire point.
+
+A change that alters the content but not its meaning — a reformat — is re-stamped without prompting, because two hash levels make "it was just the formatter" a fact the tool establishes rather than a judgement you make under time pressure. Everything else is held for you.
+
+### Mark selectively
+
+Marking every snippet makes `--check` permanently noisy and trains everyone to ignore it. Mark the references whose prose makes **specific claims** about the code beside them.
+
+This repository marks exactly one. Almost every `snippet` on these pages demonstrates the rune that quotes it — the prose says "here is what `lines=` does", not "this code means X" — so a change to the quoted file does not make the surrounding sentence false. A `file-ref` at `package.json` is the sharp counter-example: it changes on every dependency bump, and a marker there would fire constantly while certifying nothing.
+
+If `--check` is noisy after a marking pass, the remedy is **unmarking pages**, not loosening the comparison. A marker that fires on a page whose prose did not depend on the slice is a selection error.
+
 ## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:snippet"} /%}
