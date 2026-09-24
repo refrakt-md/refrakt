@@ -48,6 +48,32 @@ export interface Frontmatter {
 	 *  filesystem reports. Read by `timestamps.ts`. */
 	modified?: string;
 
+	/**
+	 * Repository paths this page is *about* (SPEC-136 D13).
+	 *
+	 * The highest-precision edge class `refrakt stale` and `refrakt_stale`
+	 * read, because there is no extraction heuristic to be wrong: an author who
+	 * lists three files has chosen three files the page actually describes.
+	 *
+	 * It exists because a page's subject is not always in its words — 209 of
+	 * 237 pages in this repository name no file at all, and no extraction rule
+	 * reaches them.
+	 *
+	 * Unlike a `reviewed` marker, this does not decay: it names what the page
+	 * is about, which survives every edit to the code it describes. Written
+	 * once, it keeps producing edges for years.
+	 *
+	 * Paths are repo-root-relative POSIX, resolved through the same containment
+	 * as `snippet path=`. **A declared path that resolves to nothing is an
+	 * error**, not a skip — the author asserted the relationship, so a miss
+	 * means the file moved and the declaration did not. Declared edges fail
+	 * loudly; inferred ones fail quietly.
+	 *
+	 * Deliberately does **not** cascade from a `_layout.md`: a layout declaring
+	 * what it documents would attribute that claim to every page beneath it.
+	 */
+	documents?: string[];
+
 	/** Arbitrary author fields. Deliberately open: runes and pipeline hooks read
 	 *  frontmatter keys refrakt itself knows nothing about, so the declared
 	 *  members above describe what refrakt consumes rather than closing the set. */

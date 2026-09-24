@@ -274,6 +274,15 @@
 			"group": "top-level",
 			"groupName": "Top-level",
 			"scope": "top-level",
+			"name": "stale",
+			"type": "StaleConfig",
+			"required": false,
+			"description": "Which edges `refrakt stale` must not measure. Two lists rather than one generic `exclude`, because they name opposite sides of an edge and opposite reasons: a single ignore list is the easy way to make the report disappear one page at a time. A page that is merely noisy belongs in neither — fix the extraction rule, or narrow the page's subject with `documents:` in its frontmatter. Both lists default to empty."
+		},
+		{
+			"group": "top-level",
+			"groupName": "Top-level",
+			"scope": "top-level",
 			"name": "xrefs",
 			"type": "XrefPattern[]",
 			"required": false,

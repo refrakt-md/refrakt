@@ -34,6 +34,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@refrakt-md/cli": "0.36.0",
+    "@refrakt-md/content": "0.36.0",
     "@refrakt-md/runes": "0.36.0",
     "@refrakt-md/transform": "0.36.0",
     "@refrakt-md/types": "0.36.0"

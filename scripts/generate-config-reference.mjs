@@ -105,7 +105,7 @@ export const TOP_LEVEL = {
 	slug: 'top-level',
 	name: 'Top-level',
 	blurb: 'Fields that sit outside a site entry, at the root of the file.',
-	fields: ['plan', 'xrefs', 'fileRoots'],
+	fields: ['plan', 'stale', 'xrefs', 'fileRoots'],
 };
 
 /**

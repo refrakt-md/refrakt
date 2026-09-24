@@ -78,6 +78,13 @@
     "modified": {
       "description": "Last-modified date (ISO 8601), overriding what git history or the filesystem reports.",
       "type": "string"
+    },
+    "documents": {
+      "description": "Repository paths this page is about. Read by `refrakt stale` and the `refrakt.stale` MCP tool to rank documentation against the code it describes, and to answer \"I am about to change these files — what documents them?\". Unlike a review marker this does not decay: it names the page's subject, which survives every edit to the code. Paths are repo-root-relative POSIX; one that resolves to no file is reported as an error, because the author asserted the relationship. Does not cascade from a `_layout.md`.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   }
 }

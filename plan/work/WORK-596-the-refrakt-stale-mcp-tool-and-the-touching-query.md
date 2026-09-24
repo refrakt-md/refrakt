@@ -1,4 +1,4 @@
-{% work id="WORK-596" status="ready" priority="high" complexity="moderate" source="SPEC-136" tags="mcp, staleness, agents, ai-workflow, drift" milestone="v0.37.0" %}
+{% work id="WORK-596" status="in-progress" priority="high" complexity="moderate" source="SPEC-136" tags="mcp, staleness, agents, ai-workflow, drift" milestone="v0.37.0" %}
 
 # The refrakt_stale MCP tool and the touching query
 
@@ -50,15 +50,15 @@ rot that has already happened.
 
 ## Acceptance Criteria
 
-- [ ] A `refrakt_stale` MCP tool with no arguments returns the ranked report as structured findings, not formatted text
-- [ ] `refrakt_stale { touching: [paths] }` returns every page whose edges point at those paths, with referring page, line, target, and whether a `reviewed` marker is attached
-- [ ] `touching` runs without the git scan and returns results for a path with no commit history — including a file created in the working tree and never committed
-- [ ] `touching` returns every match, unbounded by `--top`
-- [ ] `refrakt_stale { since: <ref> }` resolves the changed paths from that ref and answers as `touching` would
-- [ ] The ranking, `touching` and `since` queries all read the same shared index, with no query owning it
-- [ ] CLAUDE.md documents the `touching` call as a step in the per-task workflow
-- [ ] Marker awareness is additive and gated on {% ref "WORK-591" /%}: where the `reviewed` attribute exists, an invocation carrying a matching marker scores zero regardless of commit count, and `touching` rows report whether one is attached
-- [ ] With {% ref "WORK-591" /%} not yet landed, every other criterion above still passes and the marker column is absent rather than blocking
+- [x] A `refrakt_stale` MCP tool with no arguments returns the ranked report as structured findings, not formatted text
+- [x] `refrakt_stale { touching: [paths] }` returns every page whose edges point at those paths, with referring page, line, target, and whether a `reviewed` marker is attached
+- [x] `touching` runs without the git scan and returns results for a path with no commit history — including a file created in the working tree and never committed
+- [x] `touching` returns every match, unbounded by `--top`
+- [x] `refrakt_stale { since: <ref> }` resolves the changed paths from that ref and answers as `touching` would
+- [x] The ranking, `touching` and `since` queries all read the same shared index, with no query owning it
+- [x] CLAUDE.md documents the `touching` call as a step in the per-task workflow
+- [x] Marker awareness is additive and gated on {% ref "WORK-591" /%}: where the `reviewed` attribute exists, an invocation carrying a matching marker scores zero regardless of commit count, and `touching` rows report whether one is attached
+- [x] With {% ref "WORK-591" /%} not yet landed, every other criterion above still passes and the marker column is absent rather than blocking
 
 ## Approach
 

@@ -1,4 +1,4 @@
-{% work id="WORK-595" status="ready" priority="high" complexity="moderate" source="SPEC-136" tags="frontmatter, staleness, extraction, docs, drift" milestone="v0.37.0" %}
+{% work id="WORK-595" status="in-progress" priority="high" complexity="moderate" source="SPEC-136" tags="frontmatter, staleness, extraction, docs, drift" milestone="v0.37.0" %}
 
 # Edge coverage — the documents frontmatter field and prose path extraction
 
@@ -81,22 +81,22 @@ is the point: one is a declaration, the other is a guess.
 
 ## Acceptance Criteria
 
-- [ ] `documents` is a declared member of the `Frontmatter` interface, not read through its index signature
-- [ ] Each `documents` entry produces an edge that ranks and answers `touching` identically to an extracted one
-- [ ] `documents` entries resolve through `ProjectFiles`, rejecting absolute paths and traversal escapes as `snippet path=` does
-- [ ] A `documents` entry that resolves to no existing file is reported as an error, naming the page and the entry
-- [ ] A `documents` entry set in a `_layout.md` does not cascade to pages beneath it
-- [ ] The frontmatter reference documents `documents`, generated from the schema
-- [ ] Described-link edges are extracted from internal links carrying an adjacent description — a table cell whose neighbouring cell is prose, or a list item whose link is followed by a dash and prose
-- [ ] A link with no adjacent description produces no edge, covered by a test over a nav list and an inline paragraph mention
-- [ ] Described-link targets resolve through both `<path>.md` and `<path>/index.md`, with any `#anchor` stripped first
-- [ ] A described link whose target does not resolve to a content page is skipped, not reported
-- [ ] `{% ref %}` / `{% xref %}` entity links produce no described-link edges — extraction reads Markdoc source, not resolved hrefs
-- [ ] A fixture reproduces the motivating case: an overview row whose description contradicts its target after the target changed
-- [ ] Prose path mentions are extracted from backticked repo-relative paths that resolve to an existing file
-- [ ] A backticked path that does not resolve to an existing file is skipped, not reported
+- [x] `documents` is a declared member of the `Frontmatter` interface, not read through its index signature
+- [x] Each `documents` entry produces an edge that ranks and answers `touching` identically to an extracted one
+- [x] `documents` entries resolve through `ProjectFiles`, rejecting absolute paths and traversal escapes as `snippet path=` does
+- [x] A `documents` entry that resolves to no existing file is reported as an error, naming the page and the entry
+- [x] A `documents` entry set in a `_layout.md` does not cascade to pages beneath it
+- [x] The frontmatter reference documents `documents`, generated from the schema
+- [x] Described-link edges are extracted from internal links carrying an adjacent description — a table cell whose neighbouring cell is prose, or a list item whose link is followed by a dash and prose
+- [x] A link with no adjacent description produces no edge, covered by a test over a nav list and an inline paragraph mention
+- [x] Described-link targets resolve through both `<path>.md` and `<path>/index.md`, with any `#anchor` stripped first
+- [x] A described link whose target does not resolve to a content page is skipped, not reported
+- [x] `{% ref %}` / `{% xref %}` entity links produce no described-link edges — extraction reads Markdoc source, not resolved hrefs
+- [x] A fixture reproduces the motivating case: an overview row whose description contradicts its target after the target changed
+- [x] Prose path mentions are extracted from backticked repo-relative paths that resolve to an existing file
+- [x] A backticked path that does not resolve to an existing file is skipped, not reported
 - [ ] A first run over `site/content` is reviewed by a maintainer, and the top ten are agreed to be worth reading before the item is closed
-- [ ] The per-class base rate for both new classes appears in the report footer
+- [x] The per-class base rate for both new classes appears in the report footer
 
 ## Approach
 
