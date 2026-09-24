@@ -1,4 +1,4 @@
-{% work id="WORK-591" status="in-progress" priority="high" complexity="moderate" source="SPEC-134" tags="snippet, file-ref, reviewed, hashing, diagnostics, drift" milestone="v0.37.0" %}
+{% work id="WORK-591" status="done" priority="high" complexity="moderate" source="SPEC-134" tags="snippet, file-ref, reviewed, hashing, diagnostics, drift" milestone="v0.37.0" pr="refrakt-md/refrakt#649" %}
 
 # Normalization, the two hash levels, and snippet review --check
 
@@ -126,5 +126,47 @@ of the intended response.
 - {% ref "SPEC-132" /%} — the diagnostics routing model
 - `packages/content/src/site.ts` — the diagnostics surface
 - `packages/editor/src/community-tags-builder.ts` — the 8-character truncated-hash precedent
+
+## Resolution
+
+Completed: 2026-09-24
+
+Branch: `claude/v0-37-0-review-vqpl41`
+PR: refrakt-md/refrakt#649 (batched with WORK-592 and WORK-593)
+
+### What was done
+
+- **`packages/runes/src/lib/review-marker.ts`** (new) — `normalizeStrict`,
+  `normalizeLoose`, `hashSlice`, `compareMarker`, `formatMarker`,
+  `parseMarker`, `canCarryMarker`.
+- **`snippet-pipeline.ts`** — comparison after resolution, emitting a
+  `PipelineWarning` and rendering nothing into the page.
+- `reviewed` attribute on `snippet` and `file-ref`; deliberately not `expand`.
+- `refrakt snippet review --check` (the command group lives in WORK-592's
+  module, registered here as the first consumer).
+- SPEC-134's Approach corrected; both its open questions marked answered.
+- **`packages/runes/test/review-marker.test.ts`** — 18 tests.
+
+### Notes
+
+- **Both hash levels are stored inline, colon-separated.** This is a decision
+  beyond what the spec states. D3 requires formatting-only to be *proven*, and
+  with a single stored value it cannot be — so a one-value marker degrades to
+  `stale` rather than guessing. That direction is deliberate: it asks for a
+  review that may be trivial rather than skipping one that mattered.
+- **The pipeline warning carries no diff, and cannot.** At transform time the
+  only record of the reviewed version is its hash. Recovering the old content
+  needs git, which is WORK-592's job — this is why D5's "show content, never
+  hashes" is the CLI's responsibility rather than the pipeline's.
+- **D9's layering is load-bearing in the code, not just the spec.** A refused
+  anchor returns before the marker is evaluated, so one failure never produces
+  two findings. Covered by a test that renames a symbol and asserts silence.
+- Comments stay in the hash (D2) even though SPEC-131's masker could strip them
+  for free. The test that pins this changes *only* a doc comment and asserts the
+  marker fires.
+
+### Verification
+
+4903 tests pass. `refrakt snippet review --check` clean, exit 0.
 
 {% /work %}
