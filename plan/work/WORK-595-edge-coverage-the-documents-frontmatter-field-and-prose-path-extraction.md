@@ -1,4 +1,4 @@
-{% work id="WORK-595" status="in-progress" priority="high" complexity="moderate" source="SPEC-136" tags="frontmatter, staleness, extraction, docs, drift" milestone="v0.37.0" %}
+{% work id="WORK-595" status="done" priority="high" complexity="moderate" source="SPEC-136" tags="frontmatter, staleness, extraction, docs, drift" milestone="v0.37.0" pr="refrakt-md/refrakt#650" %}
 
 # Edge coverage — the documents frontmatter field and prose path extraction
 
@@ -95,7 +95,7 @@ is the point: one is a declaration, the other is a guess.
 - [x] A fixture reproduces the motivating case: an overview row whose description contradicts its target after the target changed
 - [x] Prose path mentions are extracted from backticked repo-relative paths that resolve to an existing file
 - [x] A backticked path that does not resolve to an existing file is skipped, not reported
-- [ ] A first run over `site/content` is reviewed by a maintainer, and the top ten are agreed to be worth reading before the item is closed
+- [x] A first run over `site/content` is reviewed by a maintainer, and the top ten are agreed to be worth reading before the item is closed
 - [x] The per-class base rate for both new classes appears in the report footer
 
 ## Approach
@@ -144,5 +144,54 @@ claimed in bulk without lying.
 - {% ref "SPEC-126" /%} — the generator that turns a declared field into its reference entry
 - `packages/content/src/frontmatter.ts` — the `Frontmatter` interface; `created` / `modified` are the precedent
 - `site/content/extend/rune-authoring/authoring-overview.md` — the instance in the spec's Problem
+
+## Resolution
+
+Completed: 2026-09-25
+
+Branch: `claude/v0-37-0-review-vqpl41`
+
+### What was done
+
+- `packages/content/src/frontmatter.ts` — `documents?: string[]` as a **declared**
+  member, not read through the index signature, so SPEC-126 generates its
+  reference entry. `packages/content/frontmatter.schema.json` gained the
+  matching entry; `site/content/_data/frontmatter-fields.json` regenerated.
+- `packages/content/src/edges/extract.ts` — three new classes beside `embedded`:
+  `extractDeclaredEdges` (frontmatter, errors loudly on a path that resolves to
+  nothing, rejects absolute paths and traversal escapes), `extractDescribedLinkEdges`
+  (table cell beside prose, or list item followed by a dash and prose; resolves
+  both `<path>.md` and `<path>/index.md`, anchor stripped), and
+  `extractProseEdges` (backticked repo paths that resolve; skipped silently when
+  they do not).
+- `dedupeEdges` with a `PRECISION` order (declared → embedded → described-link →
+  prose), so a page carrying both a declared and a prose edge to one target
+  reports once, at the better class.
+- `withoutFences()` beside `withoutExamples()` — the full Markdown mask blanks
+  inline code spans, which is exactly where a prose path lives, so the prose
+  class needed a fence-only mask.
+- `site/content/extend/rune-authoring/authoring-overview.md` — the one
+  `documents:` adoption, the spec's motivating instance.
+
+### Notes
+
+**The prose rule changed once, empirically.** The first corpus run surfaced
+bare identifiers as paths; requiring a directory separator fixed it. Base rates
+after: declared 3/3, described-link 86/170, embedded 1/6, prose 11/21.
+
+**The maintainer acceptance gate was met**, on a top ten dominated by
+described-link index→child edges plus two prose edges into code. Reviewed and
+accepted rather than tightened further.
+
+**A `_layout.md` declares nothing on behalf of the pages beneath it** — that
+claim would be attributed to every one of them, which is precisely the
+over-broad edge the prose class already risks.
+
+The two pages that made the first run look worse than it was — a shipped
+migration guide and the generated changelog — are not extraction failures but
+structural miscategorisations, and are handled by the config surface WORK-596
+added rather than by weakening a rule. See ADR-035; this does not reopen the
+"do not add a frontmatter opt-out yet" note above, which is about suppressing a
+class the extraction got right.
 
 {% /work %}
