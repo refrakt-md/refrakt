@@ -11,15 +11,26 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { formatMarker, hashSlice } from '@refrakt-md/runes';
 import {
 	buildEdgeIndex,
 	edgesTouching,
 	GitScanRefusal,
+	globMatcher,
+	globToRegExp,
 	indexEdges,
 	rankEdges,
+	resolveStaleSettings,
 	scanHistory,
+	StaleConfigRefusal,
 } from '../src/edges/index.js';
-import { dedupeEdges, extractEmbeddedEdges } from '../src/edges/extract.js';
+import {
+	dedupeEdges,
+	extractDeclaredEdges,
+	extractDescribedLinkEdges,
+	extractEmbeddedEdges,
+	extractProseEdges,
+} from '../src/edges/extract.js';
 
 describe('embedded-source extraction', () => {
 	it('extracts path= from snippet, file-ref and expand', () => {
@@ -72,6 +83,26 @@ describe('embedded-source extraction', () => {
 		]);
 		expect(edges).toHaveLength(2);
 		expect(edges.find((e) => e.target === 'a.ts')?.line).toBe(3);
+	});
+
+	it('collapses the same claim reached by two classes, keeping the precise one', () => {
+		// A page that *declares* a file and also mentions it in prose is making
+		// one claim, not two. Keying on the class produced duplicate rows in
+		// the ranked report the moment the first `documents:` entry landed.
+		const edges = dedupeEdges([
+			{ referrer: 'p.md', line: 40, target: 'a.ts', class: 'prose' },
+			{ referrer: 'p.md', line: 1, target: 'a.ts', class: 'declared' },
+		]);
+		expect(edges).toHaveLength(1);
+		expect(edges[0].class).toBe('declared');
+	});
+
+	it('does not let a prose mention displace a declared edge, whatever the order', () => {
+		const declaredFirst = dedupeEdges([
+			{ referrer: 'p.md', line: 1, target: 'a.ts', class: 'declared' },
+			{ referrer: 'p.md', line: 40, target: 'a.ts', class: 'prose' },
+		]);
+		expect(declaredFirst[0].class).toBe('declared');
 	});
 });
 
@@ -313,8 +344,53 @@ describe('the git scan', () => {
 			},
 		]);
 		// A marker is a stronger statement than a commit count, so where one
-		// exists it wins. Inert until WORK-591 makes markers writable.
+		// exists it wins.
 		expect(rankEdges(index, scanHistory(repo)).ranked).toEqual([]);
+	});
+
+	it('a marker the target has outgrown does not score zero', () => {
+		// The half of D3 that is easy to get backwards. A marker suppresses the
+		// count because a human said the prose still holds *for that content*;
+		// once the content moves on, the statement has expired and the count is
+		// the best evidence again. Suppressing on the mere presence of the
+		// attribute would make a stale marker permanently silence the edge —
+		// worse than no marker at all.
+		commit('page.md', 'v1', 'add page');
+		commit('target.ts', 'v1', 'one');
+		commit('target.ts', 'v2', 'two');
+
+		const index = indexEdges([
+			{
+				referrer: 'page.md',
+				line: 1,
+				target: 'target.ts',
+				class: 'embedded',
+				reviewed: 'a3f91c4e',
+				markerStale: true,
+			},
+		]);
+		expect(rankEdges(index, scanHistory(repo)).ranked).toHaveLength(1);
+	});
+
+	it('decides marker currency against the same slice the review tool hashes', () => {
+		const body = 'export function keep() {\n\treturn 1;\n}\n';
+		commit('src/a.ts', body, 'add source');
+
+		const marker = formatMarker(hashSlice(body.trimEnd()));
+		commit(
+			'site/content/page.md',
+			`{% snippet path="src/a.ts" reviewed="${marker}" /%}\n`,
+			'add page',
+		);
+
+		const fresh = buildEdgeIndex({ repoRoot: repo, contentDirs: ['site/content'] });
+		expect(fresh.edges[0].reviewed).toBe(marker);
+		expect(fresh.edges[0].markerStale).toBe(false);
+
+		// The target moves on; the marker now certifies content that is gone.
+		commit('src/a.ts', 'export function keep() {\n\treturn 2;\n}\n', 'change source');
+		const after = buildEdgeIndex({ repoRoot: repo, contentDirs: ['site/content'] });
+		expect(after.edges[0].markerStale).toBe(true);
 	});
 
 	it('builds an index from a content directory', () => {
@@ -325,5 +401,303 @@ describe('the git scan', () => {
 		expect(index.edges).toHaveLength(1);
 		expect(index.edges[0].referrer).toBe('site/content/page.md');
 		expect(index.edges[0].target).toBe('src/a.ts');
+	});
+});
+
+describe('declared edges — the documents: field (D13)', () => {
+	const exists = (p: string) => ['src/a.ts', 'src/b.ts'].includes(p);
+
+	it('produces an edge per entry', () => {
+		const { edges, errors } = extractDeclaredEdges(
+			'page.md',
+			{ documents: ['src/a.ts', 'src/b.ts'] },
+			exists,
+		);
+		expect(edges.map((e) => e.target)).toEqual(['src/a.ts', 'src/b.ts']);
+		expect(edges.every((e) => e.class === 'declared')).toBe(true);
+		expect(errors).toEqual([]);
+	});
+
+	it('reports an entry that resolves to nothing as an error, not a skip (D14)', () => {
+		// The asymmetry is the point: inferred edges fail quietly, declared
+		// edges fail loudly. The author asserted the relationship, so a miss
+		// means the file moved and the declaration did not.
+		const { edges, errors } = extractDeclaredEdges(
+			'page.md',
+			{ documents: ['src/gone.ts'] },
+			exists,
+		);
+		expect(edges).toEqual([]);
+		expect(errors).toHaveLength(1);
+		expect(errors[0].entry).toBe('src/gone.ts');
+		expect(errors[0].message).toContain('resolves to no existing file');
+	});
+
+	it('rejects absolute paths and traversal escapes', () => {
+		const { errors } = extractDeclaredEdges(
+			'page.md',
+			{ documents: ['/etc/passwd', '../outside.ts'] },
+			exists,
+		);
+		expect(errors).toHaveLength(2);
+		for (const e of errors) expect(e.message).toContain('repo-root-relative');
+	});
+
+	it('reports a non-list value', () => {
+		const { errors } = extractDeclaredEdges('page.md', { documents: 'src/a.ts' }, exists);
+		expect(errors[0].message).toContain('must be a list');
+	});
+
+	it('is absent when the field is', () => {
+		expect(extractDeclaredEdges('page.md', {}, exists)).toEqual({ edges: [], errors: [] });
+	});
+});
+
+describe('described-link edges (D16)', () => {
+	const resolve = (href: string) =>
+		({ '/runes/xref': 'site/content/runes/xref.md', '/docs/cli': 'site/content/docs/cli.md' })[
+			href
+		];
+
+	it('extracts a table row whose neighbouring cell is prose', () => {
+		const src = '| [validate](/docs/cli) | Validate theme config and manifest |';
+		const edges = extractDescribedLinkEdges('p.md', src, resolve);
+		expect(edges.map((e) => e.target)).toEqual(['site/content/docs/cli.md']);
+	});
+
+	it('extracts a list item whose link is followed by a dash and prose', () => {
+		const src = '- [xref](/runes/xref) — id-based sibling. Same `preview` attribute.';
+		expect(extractDescribedLinkEdges('p.md', src, resolve)).toHaveLength(1);
+	});
+
+	it('produces nothing for a bare list item', () => {
+		// A link says "go here". It asserts nothing.
+		expect(extractDescribedLinkEdges('p.md', '- [xref](/runes/xref)', resolve)).toEqual([]);
+	});
+
+	it('produces nothing for a link in a paragraph', () => {
+		const src = 'See [xref](/runes/xref) for the details of how this works.';
+		expect(extractDescribedLinkEdges('p.md', src, resolve)).toEqual([]);
+	});
+
+	it('produces nothing for a table row of links with no prose cell', () => {
+		const src = '| [xref](/runes/xref) | [validate](/docs/cli) |';
+		expect(extractDescribedLinkEdges('p.md', src, resolve)).toEqual([]);
+	});
+
+	it('skips an external link', () => {
+		const src = '| [github](https://github.com/x) | The repository |';
+		expect(extractDescribedLinkEdges('p.md', src, resolve)).toEqual([]);
+	});
+
+	it('skips a target that does not resolve to a content page', () => {
+		// An inferred edge, so it fails quietly.
+		const src = '| [nope](/does/not/exist) | Some description |';
+		expect(extractDescribedLinkEdges('p.md', src, resolve)).toEqual([]);
+	});
+
+	it('strips an anchor before resolving', () => {
+		const src = '| [validate](/docs/cli#refrakt-validate) | Validate the thing |';
+		expect(extractDescribedLinkEdges('p.md', src, resolve)).toHaveLength(1);
+	});
+
+	it('ignores a fenced example', () => {
+		const src = ['```markdoc', '| [xref](/runes/xref) | A description |', '```'].join('\n');
+		expect(extractDescribedLinkEdges('p.md', src, resolve)).toEqual([]);
+	});
+});
+
+describe('prose path mentions (D7)', () => {
+	const exists = (p: string) => ['packages/runes/src/config.ts', 'refrakt.config.json'].includes(p);
+
+	it('extracts a backticked path that resolves', () => {
+		const src = 'The engine config lives in `packages/runes/src/config.ts` today.';
+		const edges = extractProseEdges('p.md', src, exists);
+		expect(edges.map((e) => e.target)).toEqual(['packages/runes/src/config.ts']);
+		expect(edges[0].class).toBe('prose');
+	});
+
+	it('skips a bare root-level filename', () => {
+		// The rule the first corpus run forced. Four near-identical rows for
+		// `refrakt.config.json` reached the top ten — a file mentioned in
+		// passing by unrelated pages and changing for reasons none of them are
+		// about. It resolves, and it is still not a claim.
+		const src = 'Config lives in `refrakt.config.json` at the root.';
+		expect(extractProseEdges('p.md', src, exists)).toEqual([]);
+	});
+
+	it('skips a path that does not resolve', () => {
+		// The likeliest explanation is that the extractor misfired on something
+		// that was never a path. Silence is right there.
+		const src = 'Something about `not/a/real/file.ts` here.';
+		expect(extractProseEdges('p.md', src, exists)).toEqual([]);
+	});
+
+	it('skips an unbackticked path', () => {
+		const src = 'See packages/runes/src/config.ts for details.';
+		expect(extractProseEdges('p.md', src, exists)).toEqual([]);
+	});
+
+	it('ignores a fenced block but keeps inline spans', () => {
+		// The distinction that makes this class work at all: the full Markdown
+		// mask blanks inline code spans, which is exactly where the path lives.
+		const src = [
+			'```ts',
+			'import x from `packages/runes/src/config.ts`;',
+			'```',
+			'Prose about `packages/runes/src/config.ts`.',
+		].join('\n');
+		const edges = extractProseEdges('p.md', src, exists);
+		expect(edges).toHaveLength(1);
+		expect(edges[0].line).toBe(4);
+	});
+});
+
+describe('project-configured exclusions (WORK-596)', () => {
+	let repo: string;
+
+	beforeEach(() => {
+		repo = mkdtempSync(join(tmpdir(), 'refrakt-exclude-'));
+		mkdirSync(join(repo, 'site/content/docs/migration'), { recursive: true });
+		mkdirSync(join(repo, 'src'), { recursive: true });
+		writeFileSync(join(repo, 'src/a.ts'), 'x', 'utf8');
+		writeFileSync(join(repo, 'CHANGELOG.md'), '# changes', 'utf8');
+		writeFileSync(
+			join(repo, 'site/content/guide.md'),
+			'{% snippet path="src/a.ts" /%}\n{% snippet path="CHANGELOG.md" /%}\n',
+			'utf8',
+		);
+		writeFileSync(
+			join(repo, 'site/content/docs/migration/v1.md'),
+			'{% snippet path="src/a.ts" /%}\n',
+			'utf8',
+		);
+	});
+
+	afterEach(() => rmSync(repo, { recursive: true, force: true }));
+
+	const build = (stale: { archival?: string[]; generated?: string[] } = {}) =>
+		buildEdgeIndex({ repoRoot: repo, contentDirs: ['site/content'], ...stale });
+
+	it('excludes nothing by default', () => {
+		// The whole point of the config surface: no folder convention is
+		// compiled in, so an unconfigured project sees every edge.
+		const index = build();
+		expect(index.edges).toHaveLength(3);
+		expect(index.excluded).toEqual({ archivalPages: 0, generatedTargets: 0 });
+	});
+
+	it('drops every edge out of an archival page, and its touching answer with it', () => {
+		const index = build({ archival: ['site/content/docs/migration/**'] });
+		expect(index.edges.map((e) => e.referrer)).toEqual([
+			'site/content/guide.md',
+			'site/content/guide.md',
+		]);
+		expect(index.excluded.archivalPages).toBe(1);
+		// Not merely filtered out of the ranking: "what documents src/a.ts"
+		// must not answer with a record of what was once true.
+		expect(edgesTouching(index, ['src/a.ts']).map((e) => e.referrer)).toEqual([
+			'site/content/guide.md',
+		]);
+	});
+
+	it('drops edges into a generated target but not out of it', () => {
+		const index = build({ generated: ['CHANGELOG.md'] });
+		expect(index.edges.map((e) => e.target)).toEqual(['src/a.ts', 'src/a.ts']);
+		expect(index.excluded.generatedTargets).toBe(1);
+	});
+
+	it('counts what it removed, so the exclusions cannot grow silently', () => {
+		const index = build({
+			archival: ['site/content/docs/migration/'],
+			generated: ['CHANGELOG.md'],
+		});
+		expect(index.excluded).toEqual({ archivalPages: 1, generatedTargets: 1 });
+		expect(index.edges).toHaveLength(1);
+	});
+});
+
+describe('the glob subset', () => {
+	const m = (glob: string, path: string) => globToRegExp(glob).test(path);
+
+	it('keeps * inside one segment', () => {
+		expect(m('docs/*.md', 'docs/a.md')).toBe(true);
+		expect(m('docs/*.md', 'docs/nested/a.md')).toBe(false);
+	});
+
+	it('spans segments with **', () => {
+		expect(m('docs/**', 'docs/nested/deep/a.md')).toBe(true);
+		expect(m('**/*.generated.json', 'a/b/c.generated.json')).toBe(true);
+		// `**/` matches zero segments too, so the pattern still fires at the root.
+		expect(m('**/*.generated.json', 'c.generated.json')).toBe(true);
+	});
+
+	it('reads a trailing slash as "everything beneath"', () => {
+		expect(m('blog/', 'blog/2024/post.md')).toBe(true);
+		expect(m('blog/', 'blog')).toBe(false);
+	});
+
+	it('treats regex metacharacters literally', () => {
+		expect(m('a.ts', 'axts')).toBe(false);
+		expect(m('a.ts', 'a.ts')).toBe(true);
+	});
+
+	it('matches nothing for an empty list', () => {
+		// The dangerous default would be the other way round.
+		expect(globMatcher([])('anything')).toBe(false);
+		expect(globMatcher(undefined)('anything')).toBe(false);
+	});
+});
+
+describe('resolveStaleSettings', () => {
+	let repo: string;
+
+	beforeEach(() => {
+		repo = mkdtempSync(join(tmpdir(), 'refrakt-settings-'));
+	});
+	afterEach(() => rmSync(repo, { recursive: true, force: true }));
+
+	const writeConfig = (config: unknown) =>
+		writeFileSync(join(repo, 'refrakt.config.json'), JSON.stringify(config), 'utf8');
+
+	it('takes content roots from every declared site', () => {
+		writeConfig({
+			sites: {
+				main: { contentDir: './site/content', theme: 'lumina' },
+				plan: { contentDir: './plan-site/content', theme: 'lumina' },
+			},
+		});
+		expect(resolveStaleSettings(repo).contentDirs).toEqual(['site/content', 'plan-site/content']);
+	});
+
+	it('reads the singular and flat shapes too', () => {
+		writeConfig({ site: { contentDir: 'content', theme: 'lumina' } });
+		expect(resolveStaleSettings(repo).contentDirs).toEqual(['content']);
+		writeConfig({ contentDir: 'legacy/content', theme: 'lumina' });
+		expect(resolveStaleSettings(repo).contentDirs).toEqual(['legacy/content']);
+	});
+
+	it('defaults both exclusion lists to empty', () => {
+		writeConfig({ site: { contentDir: 'content', theme: 'lumina' } });
+		const settings = resolveStaleSettings(repo);
+		expect(settings.archival).toEqual([]);
+		expect(settings.generated).toEqual([]);
+	});
+
+	it('carries the stale section through', () => {
+		writeConfig({
+			site: { contentDir: 'content', theme: 'lumina' },
+			stale: { archival: ['blog/**'], generated: ['CHANGELOG.md'] },
+		});
+		const settings = resolveStaleSettings(repo);
+		expect(settings.archival).toEqual(['blog/**']);
+		expect(settings.generated).toEqual(['CHANGELOG.md']);
+	});
+
+	it('refuses rather than guessing where content lives', () => {
+		// "I could not look" and "nothing to report" are different answers.
+		expect(() => resolveStaleSettings(repo)).toThrow(StaleConfigRefusal);
+		writeConfig({ plan: { dir: 'plan' } });
+		expect(() => resolveStaleSettings(repo)).toThrow(/no site with a contentDir/);
 	});
 });

@@ -23,6 +23,7 @@ export type {
 	RefraktConfig,
 	SiteConfig,
 	PlanConfig,
+	StaleConfig,
 	XrefPattern,
 	RouteRule,
 	EntityRoute,

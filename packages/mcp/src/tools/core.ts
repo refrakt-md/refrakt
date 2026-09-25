@@ -281,6 +281,141 @@ export const validateTool: McpTool = {
 };
 
 // ----------------------------------------------------------------------------
+// refrakt.stale — staleness ranking and the `touching` query (SPEC-136 / WORK-596)
+// ----------------------------------------------------------------------------
+
+export const staleTool: McpTool = {
+	name: 'refrakt.stale',
+	description:
+		'Find documentation that may no longer describe the code it references. ' +
+		'With no arguments it returns the ranked survey — pages ordered by commits to their target since the page last changed. ' +
+		'**With `touching` it asks the question backwards, and that is the one that matters: "I am about to change these files. What documents them?" ' +
+		'Call it before editing, so the divergence is caught before it exists rather than reported afterwards.** ' +
+		'`touching` is an index lookup, not a staleness measurement: no commit count is involved because the change has not happened yet, it needs no git history, and it answers for a file created in the working tree and never committed. ' +
+		'Findings are never a failure — the score exists to be read, not satisfied.',
+	inputSchema: {
+		type: 'object',
+		properties: {
+			touching: {
+				type: 'array',
+				items: { type: 'string' },
+				description:
+					'Repo-root-relative paths you are about to change. Returns every page whose edges point at them, unbounded — a budget designed to keep a survey readable would silently drop pages you need.',
+			},
+			since: {
+				type: 'string',
+				description:
+					'A git ref. Resolves what changed since it and answers as `touching` would. For a PR-scoped sweep.',
+			},
+			top: {
+				type: 'number',
+				description: 'Bound the ranked survey. Default 10. Ignored by `touching` and `since`.',
+			},
+			class: {
+				type: 'string',
+				enum: ['declared', 'embedded', 'described-link', 'prose'],
+				description: 'Narrow the ranked survey to one edge class.',
+			},
+			min: { type: 'number', description: 'Floor on the commit count for the ranked survey.' },
+		},
+		additionalProperties: false,
+	},
+	async handler(input, ctx) {
+		const o = input as {
+			touching?: string[];
+			since?: string;
+			top?: number;
+			class?: string;
+			min?: number;
+		};
+
+		const edges = await import('@refrakt-md/content/edges');
+		const repoRoot = ctx.cwd;
+
+		// Content roots and the exclusion lists come from the project's
+		// `refrakt.config.json` — nothing about any one repository's folder
+		// layout is compiled in.
+		let settings: Awaited<ReturnType<typeof edges.resolveStaleSettings>>;
+		try {
+			settings = edges.resolveStaleSettings(repoRoot);
+		} catch (err) {
+			return { ok: false, error: (err as Error).message, rows: [], ranked: [] };
+		}
+
+		// Both lookups read the same shared index — no query owns it.
+		const index = edges.buildEdgeIndex({
+			repoRoot,
+			contentDirs: settings.contentDirs,
+			archival: settings.archival,
+			generated: settings.generated,
+		});
+
+		if (o.touching !== undefined || o.since !== undefined) {
+			let paths = o.touching ?? [];
+			if (o.since !== undefined) {
+				paths = [...paths, ...edges.changedSince(repoRoot, o.since)];
+			}
+
+			// No git scan at all: this is why it works in a shallow clone and
+			// for a file that has never been committed.
+			const rows = edges.edgesTouching(index, paths);
+			return {
+				ok: true,
+				query: 'touching',
+				paths,
+				// Structured rows, never formatted text (SPEC-135 D6).
+				rows: rows.map((e) => ({
+					page: e.referrer,
+					line: e.line,
+					target: e.target,
+					class: e.class,
+					reviewed: e.reviewed,
+					// A marker the target has outgrown certifies nothing, and an
+					// agent must not read it as "someone checked this".
+					reviewedStale: e.reviewed ? e.markerStale === true : undefined,
+				})),
+				count: rows.length,
+				declaredErrors: index.errors,
+				excluded: index.excluded,
+			};
+		}
+
+		let history: ReturnType<typeof edges.scanHistory>;
+		try {
+			history = edges.scanHistory(repoRoot);
+		} catch (err) {
+			// A refusal is "could not measure", which must not look like a
+			// clean corpus.
+			return { ok: false, error: (err as Error).message, ranked: [] };
+		}
+
+		const result = edges.rankEdges(index, history, {
+			edgeClass: o.class as never,
+			min: o.min,
+		});
+		const top = o.top ?? 10;
+
+		return {
+			ok: true,
+			query: 'ranked',
+			ranked: result.ranked.slice(0, top).map((e) => ({
+				page: e.edge.referrer,
+				line: e.edge.line,
+				target: e.edge.target,
+				class: e.edge.class,
+				score: e.score,
+				commits: e.commits.slice(0, 5).map((c) => ({ sha: c.sha, subject: c.subject })),
+			})),
+			totalNonZero: result.totalNonZero,
+			baseRates: result.baseRates,
+			declaredErrors: index.errors,
+			excluded: index.excluded,
+			note: 'A zero score is the absence of evidence of staleness, not evidence of freshness: the referrer side resets on any edit to the page.',
+		};
+	},
+};
+
+// ----------------------------------------------------------------------------
 // Aggregate set
 // ----------------------------------------------------------------------------
 
@@ -293,6 +428,7 @@ export const CORE_TOOLS: McpTool[] = [
 	inspectTool,
 	inspectListTool,
 	validateTool,
+	staleTool,
 ];
 
 // ----------------------------------------------------------------------------

@@ -20,7 +20,12 @@
  * nothing is exactly the silent-wrong this feature exists to avoid.
  */
 
-import { GitScanRefusal, type RankedEdge, runStale } from '@refrakt-md/content/edges';
+import {
+	GitScanRefusal,
+	type RankedEdge,
+	runStale,
+	StaleConfigRefusal,
+} from '@refrakt-md/content/edges';
 
 export interface StaleOptions {
 	top?: number;
@@ -28,6 +33,7 @@ export interface StaleOptions {
 	min?: number;
 	format?: 'text' | 'json';
 	repoRoot?: string;
+	/** Override the content roots taken from `refrakt.config.json`. */
 	contentDirs?: string[];
 }
 
@@ -57,19 +63,21 @@ function renderEntry(entry: RankedEdge, out: string[]): void {
 
 export async function staleCommand(opts: StaleOptions): Promise<void> {
 	const repoRoot = opts.repoRoot ?? process.cwd();
-	const contentDirs = opts.contentDirs ?? ['site/content'];
 	const top = opts.top ?? 10;
 
 	let result: ReturnType<typeof runStale>;
 	try {
+		// Content roots and both exclusion lists come from
+		// `refrakt.config.json`. Nothing about this repository's folder names is
+		// compiled in — every project's structure is its own.
 		result = runStale({
 			repoRoot,
-			contentDirs,
+			contentDirs: opts.contentDirs,
 			edgeClass: opts.class as never,
 			min: opts.min,
 		});
 	} catch (err) {
-		if (err instanceof GitScanRefusal) {
+		if (err instanceof GitScanRefusal || err instanceof StaleConfigRefusal) {
 			// Could not measure. Distinct from "measured, nothing wrong".
 			if (opts.format === 'json') {
 				process.stdout.write(`${JSON.stringify({ error: err.message, ranked: [] }, null, 2)}\n`);
@@ -100,6 +108,7 @@ export async function staleCommand(opts: StaleOptions): Promise<void> {
 					totalNonZero: result.totalNonZero,
 					baseRates: result.baseRates,
 					scanned: result.index.edges.length,
+					excluded: result.index.excluded,
 				},
 				null,
 				2,
@@ -134,6 +143,17 @@ export async function staleCommand(opts: StaleOptions): Promise<void> {
 	// extraction rule is visible rather than inferred.
 	const rates = result.baseRates.map((r) => `${r.class} ${r.nonZero}/${r.scanned}`).join(', ');
 	out.push(`Base rate — ${rates || 'no edges scanned'}.`);
+
+	// What the project's config removed, stated every run. An exclusion list
+	// that hides its own effect is how a report converges on empty without
+	// anyone deciding that it should.
+	const { archivalPages, generatedTargets } = result.index.excluded;
+	if (archivalPages > 0 || generatedTargets > 0) {
+		const parts: string[] = [];
+		if (archivalPages > 0) parts.push(`${archivalPages} archival page(s) skipped`);
+		if (generatedTargets > 0) parts.push(`${generatedTargets} edge(s) to generated targets`);
+		out.push(`Excluded by config — ${parts.join(', ')}.`);
+	}
 
 	process.stdout.write(`${out.join('\n')}\n`);
 	process.exit(0);

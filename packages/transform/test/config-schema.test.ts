@@ -40,6 +40,7 @@ const COVERAGE: ReadonlyArray<[string, () => Record<string, unknown>]> = [
 	['RefraktConfig', () => schema.properties],
 	['SiteConfig', () => schema.definitions.SiteConfig.properties],
 	['PlanConfig', () => schema.definitions.PlanConfig.properties],
+	['StaleConfig', () => schema.definitions.StaleConfig.properties],
 	['RouteRule', () => schema.definitions.RouteRule.properties],
 	['EntityRoute', () => schema.definitions.EntityRoute.properties],
 	['XrefPattern', () => schema.definitions.XrefPattern.properties],
