@@ -135,8 +135,33 @@ Derived from the family, not invented:
 **A slot may be named differently from its field.** `description` → `blurb`,
 `sections` → `body`. A rename is one token.
 
-**A slot has a wrapper element.** `header` for a title, `div` for a body. Today
-this is `cursor.wrap('header')`.
+**A slot is a value or a region, and a region has an element.** This is the one
+capability that looks presentational and is not.
+
+A **value** slot is already a single node — a `span`, a resolved heading. Nothing
+to wrap.
+
+A **region** slot is N nodes, and N nodes need a boundary. The transform must emit
+it, because `layout` cannot: `assembleWithBlocks` resolves names out of
+`mapDataNames` and appends anything unnamed to `rest`
+(`packages/transform/src/engine.ts:1417-1423`). A prose body's contents are
+unnamed paragraphs and lists, so no `layout` entry can collect them into a created
+wrapper. There is nowhere else for the box to come from.
+
+So the declaration states the *kind*, and the element defaults from it:
+
+```ts
+title: { from: 'title',    as: 'region', el: 'header' },
+body:  { from: 'sections', as: 'region' },              // el defaults to 'div'
+name:  { from: 'name',     as: 'value'  },              // no box
+```
+
+`div` is the neutral default — "these nodes are one region and I claim nothing
+else about them". `header` is stated when the grouping is semantically a header,
+which is a claim about meaning that survives any theme. {% ref "SPEC-081" /%}'s
+rule holds under a sharper reading: **choosing to have a boundary is semantics;
+choosing how it looks is presentation.** That removes 63 restatements of `'div'`
+without changing a byte of output.
 
 **A slot may be omitted when empty.** `work`'s `blurb` appears only when
 `resolved.description` has content. Today `descNodes.count() > 0 ? … : undefined`.
@@ -191,7 +216,7 @@ export const hint = createContentModelSchema({
 		tag: 'section',
 		property: 'contentSection',
 		properties: { hintType: { from: 'attrs.type', default: 'note' } },
-		slots: { body: { from: 'body', wrap: 'div' } },
+		slots: { body: { from: 'body', as: 'region' } },
 	},
 });
 ```
@@ -216,12 +241,16 @@ emits: {
 		modified: { from: ['attrs.modified', 'file.modified'], default: '' },
 	},
 	slots: {
-		title: { from: 'title',       wrap: 'header' },
-		blurb: { from: 'description', wrap: 'div', omitWhenEmpty: true },
-		body:  { from: 'sections',    wrap: 'div' },
+		title: { from: 'title',       as: 'region', el: 'header' },
+		blurb: { from: 'description', as: 'region', omitWhenEmpty: true },
+		body:  { from: 'sections',    as: 'region' },
 	},
 },
 ```
+
+`title` states `el: 'header'` because "these nodes are this item's heading group"
+is a claim about meaning. `blurb` and `body` take the `div` default, which claims
+nothing beyond "one region".
 
 Everything else `work` renders — the eyebrow bar, the twelve metadata rows with
 their labels, badges and sentiments, the content column — is already declared in
@@ -363,6 +392,45 @@ being introduced is the cheapest moment to make absence loud, and because the
 information already exists — the content model's `optional` flag says which
 slots are expected, and the generator knows when one came back empty.
 
+## Why a region needs a boundary — three consumers, not CSS
+
+The wrapper reads like a CSS convenience and is not. `data-name` is an *address*,
+and three things resolve against it.
+
+**The editor.** `editHints` is documented as "keys are data-name values … resolved
+at click time by the editor" (`packages/transform/src/types.ts:440`). Three sibling
+paragraphs each carrying `data-name="body"` means a click on the second resolves
+`body` and edits *one paragraph* as though it were the whole body.
+
+**`layout`.** `mapDataNames` builds a `Map` keyed by name, last write wins.
+Duplicates collapse to one entry and the rest fall through to `rest`, appended at
+root.
+
+**`projection`.** A theme can `hide`, `group` or `relocate` by `data-name`. If a
+prose body's paragraphs were individually named, a theme could hide or move part of
+an authored body — reshaping content it does not own.
+
+That last one inverts the intuition. The flat-nodes-inside-a-named-box shape is
+what makes a region **opaque to the theme**: its children carry no `data-name`, so
+nothing in `layout` or `projection` can reach inside. The box is the boundary that
+protects authored content, not decoration around it.
+
+### The correspondence with `editHints`, tested and rejected
+
+It is tempting to derive `as: 'region'` from `editHint: 'none'` and `as: 'value'`
+from `'inline'` — one fact stated twice is exactly what this spec removes
+elsewhere. **It does not hold.**
+
+`Sidenote` wraps its body in a `div` *and* declares
+`editHints: { body: 'inline' }`. So do `PullQuote`, `ConversationMessage` and
+`AnnotateNote`. Meanwhile `Annotate` declares `body: 'none'` — and both `Sidenote`
+and `Annotate` declare `provides: ['prose']`, so it is not tracking prose either.
+
+The two are orthogonal. `as` is structural: how many nodes, does it need a
+boundary. `editHint` is a UX judgement: is this short enough to type into in place.
+A sidenote's body is a region either way; the editor is simply willing to edit it
+inline. Both stay declared.
+
 ## Constraints carried forward from SPEC-081
 
 Its "why the two layers stay" section is binding. Three are limits and one is an
@@ -387,6 +455,18 @@ nodes would reintroduce that bug class by construction. **Flat bag only.**
 
 **The two layers do not collapse.** SPEC-081's first non-goal. Themes still run
 no code at the transform stage.
+
+**One node per `data-name`, and the generator must enforce it.** This is an
+invariant of the existing output contract that nothing currently checks.
+`createComponentRenderable`'s refs loop names *every* node in a cursor
+(`component.ts:96-106`), so a rune passing an unwrapped multi-node cursor silently
+produces duplicates — ambiguous for the editor, lossy for `layout`, and reachable
+by `projection`.
+
+The fix is **not** to make `mapDataNames` a multimap. That would legitimise the
+ambiguous case rather than reject it. A declaration that would emit duplicate names
+is an error, and the same assertion is worth adding to the structure contract so it
+also covers hand-written transforms.
 
 ## Decisions
 
@@ -492,6 +572,10 @@ takes the data form.
 - [ ] A rune can declare its content slots: source field, slot name, wrapper element, and omit-when-empty
 - [ ] A slot whose name equals its field name needs no declaration beyond being listed
 - [ ] The declaration cannot express nesting, ordering or container creation (D2), and a declaration attempting it is rejected rather than silently partially applied
+- [ ] A slot declares whether it is a `value` or a `region`; a region emits a boundary element defaulting to `div`, and only a non-default element is stated
+- [ ] No declaration can produce two nodes carrying the same `data-name`; one that would is rejected at schema construction, naming the slot
+- [ ] The same one-node-per-`data-name` assertion is added to the structure contract, so it covers hand-written transforms too
+- [ ] A region's children carry no `data-name`, so neither `layout` nor `projection` can address inside an authored body
 - [ ] Both section arrival modes work, read from the content model's `emitTag` rather than declared again (D5)
 - [ ] `work`, `bug` and `decision` have no `transform`, and `refrakt contracts --check` plus `npm run seo:baseline:check` report no drift for any of them (D7)
 - [ ] `character`, `realm` and `faction` have no `transform` for the entity rune, under the same no-drift gate — these span the `emitTag` split, so covering both proves the mechanism
