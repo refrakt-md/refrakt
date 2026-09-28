@@ -313,6 +313,7 @@ question has a map:
 | `contentModel: { type: 'custom', processChildren }` | 14 | undeclarable by design ({% ref "SPEC-003" /%}) |
 | `itemModel` `pattern: /…/` | 8 | serialises, but see below |
 | `config.postTransform` | 4 | undeclarable by design ({% ref "SPEC-081" /%} non-goals) |
+| `config.styles[…].transform` | 11 | **a named-enum sibling already exists** — and three helpers cover all 11 sites |
 | plugin pipeline hooks | 9 | functions |
 
 Two of those deserve flagging now rather than on discovery:
@@ -329,6 +330,91 @@ skipped.
 is necessarily a *subset* of what a plugin can express. D4's family test then has
 a second job: it becomes the published boundary of that subset rather than an
 internal heuristic.
+
+### The engine config travels too — and it arrives pre-split
+
+A rune is three payloads, not one: the schema, the `RuneConfig` the engine reads,
+and CSS. The config cannot be left behind, because `block`, `modifiers` and
+`sections` *are* the rune — no theme can supply them for a rune it has never
+seen. That sounds like it triples the problem. It does not, for three reasons.
+
+**The config is already the declarative half.** Across the whole of `RuneConfig`
+there are exactly two function-typed fields: `styles[…].transform`
+(`packages/transform/src/types.ts:301`) and `postTransform` (`:527`). Everything
+else — `structure`, `layout`, `contentWrapper`, `autoLabel`, `staticModifiers`,
+`editHints`, `projection`, `variants` — is data today. And the plugin boundary is
+*already* untyped data: `PluginThemeConfig.runes?: Record<string, Record<string,
+unknown>>` (`packages/types/src/package.ts:48`). Config crossing a serialisation
+boundary is what plugins already do; it is the transform side that is imperative,
+which is this spec's subject.
+
+**The split between what the rune owns and what a theme owns is already drawn,
+enumerated and enforced.** `packages/transform/src/identity-fields.ts` is, in its
+own words, "the one place the 'a theme restructures a rune, never redefines it'
+rule is expressed":
+
+| Half | Fields | Override semantics |
+|---|---|---|
+| Identity ({% ref "ADR-028" /%}) | `block`, `modifiers`, `sections`, `mediaSlots`, `frameTarget`, `universalAttributes`, `provides`, `schema` | A theme override is dropped and reported as an `IdentityViolation` (`merge.ts`) |
+| Presentation | `structure`, `layout`, `contentWrapper`, `styles`, `staticModifiers`, `autoLabel`, `editHints`, `projection`, `variants` | A theme may "hide, reorder, re-wrap and re-decorate" |
+
+So a user rune's config is not one payload but two with different semantics. The
+identity half must travel because nothing else can supply it; the presentation
+half travels as a **default a theme may override**, which is exactly what plugin
+`theme.runes` already is. No new position in the cascade is needed.
+
+**And most of the identity half should not be authored at all.** `sections` is
+the slot declaration this spec introduces. `modifiers` follows from the attributes
+that feed properties. `block` should be the kebab-cased rune name — *derived, not
+declared*, for user runes especially: an author writing `block: 'hero'` would
+collide with a core rune's CSS, and deriving it makes collision-avoidance the same
+check as the rune-name uniqueness `mergePlugins` already enforces
+(`packages/runes/src/plugins.ts:169`). The residue that still needs declaring is
+small: `schema`, `provides`, and occasionally `frameTarget` / `mediaSlots`.
+
+#### What that implies for file layout
+
+The cut runs *through* `RuneConfig`, not between config and schema — so a file
+named for the theme layer that carried the whole config would hold eight fields a
+theme is forbidden to set. The layout that follows the enforced semantics is:
+
+- `<rune>.rune.md` — attributes, slots, and the identity residue. The portable
+  part: what makes the markdown *mean* something.
+- `<rune>.skin.md` — presentation config plus the CSS. Shaped as a theme
+  override, so it flows through the existing `mergeRuneConfig` path with
+  `guardIdentity: true`. (`skin` is already the project's word for this layer —
+  `@layer skeleton, skin` in `packages/skeleton/index.css:18`.)
+- `<rune>[.scenario].md` — fixtures, unchanged. These cannot fold into the rune
+  file: {% ref "SPEC-102" /%} already standardised them as *plural* per rune
+  (`role: canonical | minimal | rich | edge-case`, `packages/runes/src/fixtures.ts:11-28`),
+  with 40 in `packages/runes/fixtures/` consumed by the example generator,
+  `discoverPluginFixtures`, the CI corpus check and `plugin-validate`.
+
+The payoff is larger than tidiness: because the skin file *is* a theme override,
+"same rune, different skin" becomes a file swap, and a user rune dropped into a
+site with a real theme degrades gracefully — its styling is a default, not a
+demand. That is the difference between a rune being a fixed widget and being a
+portable content type.
+
+**Why CSS belongs with the presentation config rather than beside it.** Today the
+two are separated by package role — config in `packages/runes/src/config.ts`, CSS
+in `packages/lumina/styles/runes/` — and `css-coverage.test.ts` maintains a
+**116-entry** `KNOWN_MISSING_SELECTORS` allowlist to police the seam, nearly every
+entry reading some variant of "styled via a shared dimension selector instead"
+(`.rf-event__header` → `[data-section="header"]`, `.rf-recipe__meta` → shared
+`split.css`). That allowlist is the price of the separation, and it is affordable
+because this repo has CI and reviewers. A user rune has neither — and as a leaf
+with no shared dimension system to route through, it can only style its own block,
+so co-location makes its coverage check exact rather than allowlisted.
+
+**One category the split does not cover: claims about content.** `schema` is an
+identity field — a rune's schema.org table. {% ref "SPEC-130" /%} D5 accepted
+deliberately that nothing validates a table against schema.org, because
+"visibility replaces validation" and a wrong row is caught by a reviewer reading
+it. That holds while every rune ships in a package a human reviewed. It does not
+survive untrusted authorship: a user rune's table is a claim published about
+someone else's content with no reviewer in the loop. That needs its own answer,
+separate from the regex-safety and CSS-sanitisation questions already deferred.
 
 ## Capabilities considered, and declined
 
@@ -569,11 +655,13 @@ takes the data form.
 
 ## Open questions
 
-These three came out of thinking about the file format a hosted renderer would
-accept for a user-authored rune. None of them block this spec — the mechanism
-here is a TypeScript sibling to `transform`, and the serialisable form only has
-to *exist*, not to have a file extension. They belong to the follow-on spec that
-defines that file, and are recorded here because that spec does not exist yet.
+These came out of thinking about the file format a hosted renderer would accept
+for a user-authored rune. None of them block this spec — the mechanism here is a
+TypeScript sibling to `transform`, and the serialisable form only has to *exist*,
+not to have a file extension. They belong to the follow-on spec that defines that
+file, and are recorded here because that spec does not exist yet. The file-layout
+question that used to sit here is answered above, in the enforced identity /
+presentation split; what follows is what that answer left open.
 
 **Where does the rune-definition schema live?** Two JSON Schemas are already
 committed and drift-tested — `packages/transform/refrakt.config.schema.json`
@@ -583,24 +671,33 @@ and `config-schema.test.ts` shows what that treatment costs: it asserts
 bidirectionally, so a field added to the interface fails the test until the
 schema gains it too, *and* the schema may declare no property the interfaces do
 not have. The question is whether the rune schema sits beside those two as a
-third top-level artifact or is generated from the same source, and it is worth
-answering before the first one is written by hand.
+third top-level artifact or is generated from the same source — and now also
+whether it is *one* schema spanning both halves of the pair or one per file. One
+schema is the better answer if a serialised rune is understood as a single-rune
+`Plugin`, which is what the two halves add up to.
 
-**Where do the files live?** A conventional directory discovered by scanning —
-the way `discoverPluginFixtures` already finds plugin fixtures — or an explicit
-list in `refrakt.config.json`. Convention is cheaper to author and worse to
-debug; a declaration is the reverse. The choice also decides whether a hosted
-renderer can accept a rune as an upload without touching site config.
+**How is the pair discovered?** A conventional directory scanned the way
+`discoverPluginFixtures` already finds plugin fixtures, or an explicit list in
+`refrakt.config.json`. Convention is cheaper to author and worse to debug; a
+declaration is the reverse. The choice also decides whether a hosted renderer can
+accept a rune as an upload without touching site config. The two-file layout adds
+a sub-question: is a `.skin.md` required, or does a rune with no skin file load and
+render unstyled?
 
-**Does CSS come with it?** This is the sharpest of the three, because it may
-change what the file has to contain. A declaratively-defined rune emits correct
-BEM classes and renders completely unstyled, which is a third authoring barrier
-standing beside the schema and the config. Either the definition carries a
-`style` block — and then sanitisation is in scope, with the same untrusted-input
-posture the regex-safety non-goal above defers — or user runes are limited to
-reusing the BEM blocks a theme already styles, which is a real limitation and
-should be stated as one rather than discovered. Answer this before fixing the
-format.
+**What stops a user rune from making false claims about content?** The narrowest
+of the three and the one with no precedent to lean on. `schema` is an identity
+field, so a user rune's schema.org table travels with it and is published as an
+assertion about the site's content; {% ref "SPEC-130" /%} D5's trade — visibility
+in place of validation, with a reviewer as the check — has no reviewer here.
+Options span refusing `schema` on user runes outright, a closed allowlist of
+types, or shipping the ontology D5 declined. This is not the CSS-sanitisation
+question in another costume: bad CSS is visible on the page, a bad schema.org row
+is invisible by construction.
+
+**Answered, recorded above rather than here:** whether CSS travels with the rune
+(it does, in the skin half, where the config generating its selectors also lives),
+and whether the engine config has to travel (it does, split along
+`IDENTITY_FIELDS`, with the presentation half overridable).
 
 ## Acceptance Criteria
 
@@ -625,6 +722,7 @@ format.
 - [ ] The declaration carries the renderable's identity — `rune`, `tag` and `property` — since `createComponentRenderable` is no longer called from a transform
 - [ ] The slot declaration contains no function values, and a declaration carrying one is rejected at schema construction (D9)
 - [ ] The declaration round-trips through `JSON.parse(JSON.stringify(…))` unchanged for every migrated rune
+- [ ] The slot declaration is sufficient to derive the rune's `sections` config entry, so the identity half of `RuneConfig` is not authored a second time alongside it
 - [ ] Total `transform()` line count across the tag files is recorded before and after
 
 ## References
@@ -636,5 +734,7 @@ format.
 - {% ref "SPEC-142" /%} — inferring the transform signature; would type this declaration
 - {% ref "ADR-028" /%} — rune identity is not theme configuration
 - {% ref "SPEC-033" /%} — structure slots; where `projection` came from and why it is the wrong word here
+- {% ref "SPEC-102" /%} — the standardised fixture format; why fixtures stay sibling files
+- {% ref "SPEC-130" /%} — the schema.org table as identity, and the D5 trade that untrusted authorship breaks
 
 {% /spec %}
