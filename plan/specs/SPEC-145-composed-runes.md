@@ -93,6 +93,131 @@ already "the parent is the authority"; item 2 above is that principle applied to
 `data-rune` and cross-page registration rather than to `typeof`. Extending an
 existing principle is a much better position than inventing one.
 
+## Worked examples
+
+A composed rune has two halves, and only one of them is the template. The body
+says where a slot's content *goes*; something still has to say how authored
+markdown *becomes* a slot with that name. That is the content model — which
+already exists and is exactly what {% ref "SPEC-143" /%}'s slot declaration names.
+So: **frontmatter is the input declaration, the body is the output template, and
+slot names are the join.** Frontmatter rather than the H2 sections a declared rune
+might use, because here the body is claimed by the template and the declaration has
+nowhere else to go.
+
+### The small end — `bond`
+
+```md
+---
+rune: bond
+tag: aside
+attributes:
+  from:          { type: string, required: true }
+  to:            { type: string, required: true }
+  type:          { type: string, default: fellowship }
+  status:        { type: string, matches: [active, broken, strained], default: active }
+  bidirectional: { type: boolean, default: true }
+content:
+  type: sequence
+  fields:
+    body: { match: any, optional: true, greedy: true }
+registers:
+  edge: { from: from, to: to, kind: { field: type } }
+---
+
+{% hint type="note" %}
+**{% $attrs.from %}** {% if $attrs.bidirectional %}↔{% else /%}→{% /if %} **{% $attrs.to %}**
+
+{% slot name="body" /%}
+{% /hint %}
+```
+
+Seventeen lines replace `plugins/storytelling/src/tags/bond.ts` (88 lines) plus its
+slice of the registration pipeline. The `bidirectional` arrow is Markdoc's own
+`{% if %}`, not a conditional this spec invents — D1 holding up in practice.
+
+### The full case — `character`
+
+```md
+---
+rune: character
+tag: article
+base: taxonomy
+provides: [prose]
+attributes:
+  name:    { type: string, required: true, description: "Display name shown in the header." }
+  role:    { type: string, matches: [protagonist, antagonist, supporting, minor], default: supporting }
+  status:  { type: string, matches: [alive, dead, unknown, missing], default: alive }
+  aliases: { type: string, description: "Comma-separated alternate names." }
+content:
+  type: sections
+  sectionHeading: heading
+  preamble:
+    portrait:    { match: image, optional: true }
+    description: { match: paragraph, optional: true, greedy: true }
+schema:
+  type: Person
+  properties: { name: name, role: jobTitle }
+registers:
+  entity:
+    idFrom: name
+    data: [role, status, aliases, tags]
+    aliases: { from: aliases, separator: "," }
+---
+
+{% card %}
+{% slot name="portrait" /%}
+
+# {% $attrs.name %}
+
+{% badge tone=$attrs.role %}{% $attrs.role %}{% /badge %}
+{% badge tone=$attrs.status %}{% $attrs.status %}{% /badge %}
+
+{% slot name="description" /%}
+
+{% slot name="sections" each %}
+  {% details summary=$item.heading %}
+    {% slot /%}
+  {% /details %}
+{% /slot %}
+{% /card %}
+```
+
+**The comparison that makes the case.** `character.ts` is 184 lines, and it defines
+a *second* rune — `character-section` — for no reason other than to carry each H2
+section: its content model sets `emitTag: 'character-section'` and
+`emitAttributes: { name: '$heading' }`. The composed version does not need it. That
+child rune exists only because there was no way to say "wrap each section in
+something that already exists", which is precisely the gap this spec closes.
+Across the plugin, `character`, `realm` and `faction` share that shape exactly, so
+three child runes go with it.
+
+### Repeated slots are the `collection` pattern, not iteration
+
+`{% slot name="sections" each %}` does not put a loop in the template. The engine
+iterates and the template describes *one* item with `$item` bound — the same
+arrangement `collection`, `data` and `relationships` item templates already use. A
+bare `{% slot /%}` inside an `each` means "this item's content", which avoids an
+`of=$item` argument.
+
+This matters because the constraint is already documented and deliberate.
+`site/content/runes/data.md:174`:
+
+> The binding is deliberately shallow — bind a row, render a block. `{% if %}`
+> works (`{% else /%}` is self-closing), but there is no iteration, and formatting
+> goes through the shared Markdoc functions, the same constraint `collection`
+> templates hold.
+
+Composition must hold that same line rather than quietly crossing it.
+
+### Smaller shape decisions the examples imply
+
+- **Fallback content.** `{% slot name="description" %}No description yet.{% /slot %}`
+  — cheap, and the difference between an unfilled optional slot rendering nothing
+  and rendering something sensible. Self-closing stays the common form.
+- **`$attrs` is a binding, not new syntax.** Markdoc's variable form already works
+  in content (`{% $attrs.name %}`) and in attribute position (`tone=$attrs.role`),
+  alongside the `$item` / `$row` bindings that exist.
+
 ## What worries me, stated plainly
 
 **Contract derivation couples to the primitives' versions.**
@@ -165,6 +290,34 @@ the noise story is an acceptance criterion, not an afterthought.
 - Composing *across* sites, or composing a layout rather than a rune
 - Resolving the dormant editor's `editHints` ownership question — recorded, not answered
 - Answering {% ref "SPEC-143" /%}'s open question on unreviewed schema.org claims; this spec must not ship a `schema` composition path ahead of it
+
+## Open questions
+
+Four that the worked examples surfaced. Each is a shape decision that changes what
+the template may contain, so they want answering before the format is fixed.
+
+**Is `sections` a slot name, or a special case?** The `character` example treats it
+as a slot with `each`. But `sections` is the content model's *arrival mode*, which
+{% ref "SPEC-143" /%} D5 says to read rather than restate — so a template naming it
+as a slot may be restating it by another route. The alternative is a distinct form
+for "the thing the sections mode produced", which is uglier and more honest.
+
+**May a template name a slot the content model does not produce?** It should be an
+error, caught at schema construction with the slot named — the same unresolvable-
+source check a schema table already gets and {% ref "SPEC-144" /%} asks for. Worth
+confirming rather than assuming, because a silently-empty slot is the failure mode
+that wastes an author's afternoon.
+
+**May a slot appear twice in one template?** Instinct says no, for the same
+one-node-per-`data-name` reason SPEC-143 already asserts. But composition makes the
+temptation concrete — a portrait in the header *and* the footer — so the answer needs
+to be stated rather than inherited.
+
+**What does `{% slot %}` leave behind?** Ideally nothing: it is a placeholder and the
+primitives supply the structure. But a slot filled with several block nodes may need
+a boundary, which is the `value` vs `region` question SPEC-143 settled for declared
+runes. The answer here should almost certainly be the same one, and saying so
+explicitly is cheaper than rediscovering it.
 
 ## Acceptance Criteria
 
