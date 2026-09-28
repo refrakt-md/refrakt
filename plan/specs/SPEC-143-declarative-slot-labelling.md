@@ -141,11 +141,99 @@ this is `cursor.wrap('header')`.
 **A slot may be omitted when empty.** `work`'s `blurb` appears only when
 `resolved.description` has content. Today `descNodes.count() > 0 ? … : undefined`.
 
+**The renderable's identity moves with the slots.** `createComponentRenderable`
+is called *inside* the transform today, so `rune`, `tag` and `property` are
+stated there — `hint` is a `section`, `work` an `article`, both with
+`property: 'contentSection'`. With no transform there is nowhere else for them to
+live, so the declaration carries them. The rune name is not otherwise derivable:
+a plugin's `loadPlugin` knows it as the `pkg.runes` key, but
+`createContentModelSchema` runs inside the tag module, before that.
+
 **Sections arrive one of two ways.** Resolved entries the rune renders itself
 (`work`, `bug`, `decision` — no `emitTag`), or child-rune tags already rendered
 (`character`, `realm`, `faction` — with `emitTag`). Both must be expressible, and
 the distinction is already declared by the content model's `emitTag`, so the
 labelling layer should read it rather than restate it.
+
+## Worked examples
+
+### The simple end — `hint`
+
+Today, 17 lines:
+
+```ts
+transform(resolved, attrs, config) {
+	const hintType = new Tag('meta', { content: attrs.type ?? 'note' });
+	const body = new RenderableNodeCursor(
+		Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+	);
+	const bodyDiv = body.wrap('div');
+	return createComponentRenderable({
+		rune: 'hint', tag: 'section', property: 'contentSection',
+		properties: { hintType },
+		refs: { body: bodyDiv.tag('div') },
+		children: [hintType, bodyDiv.next()],
+	});
+}
+```
+
+Declared:
+
+```ts
+export const hint = createContentModelSchema({
+	sections: hintSections,
+	attributes: {
+		type: { type: String, matches: hintType.slice(), errorLevel: 'critical' },
+	},
+	contentModel: bodyOnly(),
+	emits: {
+		rune: 'hint',
+		tag: 'section',
+		property: 'contentSection',
+		properties: { hintType: { from: 'attrs.type', default: 'note' } },
+		slots: { body: { from: 'body', wrap: 'div' } },
+	},
+});
+```
+
+Note `hintType` is *not* an identity rename — the attribute is `type`, the
+property is `hintType`. A rename is one token either way, and the declaration
+makes it visible instead of buried in a variable name.
+
+### The complex end — `work`
+
+64 lines become roughly this, with the properties channel in
+{% ref "SPEC-140" /%}'s data form:
+
+```ts
+emits: {
+	rune: 'work',
+	tag: 'article',
+	properties: {
+		id: '', status: 'draft', priority: 'medium', complexity: 'unknown',
+		assignee: '', milestone: '', source: '', supersedes: '', pr: '', tags: '',
+		created:  { from: ['attrs.created',  'file.created'],  default: '' },
+		modified: { from: ['attrs.modified', 'file.modified'], default: '' },
+	},
+	slots: {
+		title: { from: 'title',       wrap: 'header' },
+		blurb: { from: 'description', wrap: 'div', omitWhenEmpty: true },
+		body:  { from: 'sections',    wrap: 'div' },
+	},
+},
+```
+
+Everything else `work` renders — the eyebrow bar, the twelve metadata rows with
+their labels, badges and sentiments, the content column — is already declared in
+`config.metaFields`, `config.blocks` and `config.layout`, and is untouched by
+this.
+
+Three things the two examples show together. The declaration is **flat** — no
+entry nests another, per D2. The **slot names come from the content model** where
+they can (`title`, `body`) and are renamed where the output disagrees (`blurb`
+from `description`), which is the 62% identity figure in practice. And the
+**hard part is already elsewhere**: `work` is longer than `hint` because it has
+more attributes, not because it has more structure.
 
 ## How many runes this reaches
 
@@ -212,6 +300,68 @@ skipped.
 is necessarily a *subset* of what a plugin can express. D4's family test then has
 a second job: it becomes the published boundary of that subset rather than an
 internal heuristic.
+
+## Capabilities considered, and declined
+
+Tier B above is 27 transforms that each fail on exactly one construct, so each is
+an argument for one capability. Recording the verdicts here so they do not have to
+be re-argued, and because D4's purpose is resisting exactly this growth.
+
+| Candidate | Runes | Verdict |
+|---|---|---|
+| **`unwrap`** — take a rendered node's children instead of the node | 7 | **the named next candidate** |
+| **`pick`** — find a node by kind inside a field | 5 | belongs to the content model, not here |
+| raw AST read — `node.name`, `node.attributes` | 8 | hard boundary; the escape hatch's job |
+| `filter` — select rendered nodes by predicate | 3 | needs a predicate language |
+| `map` — one value to one node, N times | 3 | iteration; SPEC-033 refused this |
+
+**`unwrap` is the one to add first if any.** `datatable` does
+`wrapper.children.find(c => c.name === 'table')`; `recipe` does
+`ingredients.push(...node.children)`; `form`, `conversation`, `storyboard`,
+`symbolGroup`, `symbolMember` and `budgetCategory` each do a version of the same
+thing. It is one bounded operation — *this slot is the contents of the field's
+rendered wrapper, not the wrapper* — it stays flat, and it does not cross D2.
+Noted rather than included because the mechanism should prove itself on labelling
+alone first. **It would also cost this spec its best example**: `recipe` is D3's
+standing proof the escape hatch is needed, and `unwrap` is most of what `recipe`
+needs.
+
+**`pick` is the tempting one to get wrong.** `card`, `event`, `bentoCell`,
+`step` and `organization` take one authored field and split it into several slots
+by node kind — `splitMediaBodyFooter`, `extractMediaImage`. But one field
+yielding several slots by inspection is {% ref "SPEC-081" /%}'s *content
+interpretation*: "deciding which authored child is the headline… it cannot be
+config." If it is ever wanted it belongs in the **content model** as a resolution
+feature, where interpretation already lives, not in the labelling declaration.
+Putting it here would move the boundary SPEC-081 drew.
+
+**The raw AST read is a boundary, not a gap.** Those 8 read the *unresolved*
+node, before the content model has interpreted anything. Exposing it to a
+declaration hands user-defined runes the whole AST — the widest possible surface,
+and precisely what a hosted renderer must not grant. This is where
+`type: 'custom'` and `transform` earn their keep.
+
+**`filter` and `map` are where a slot table becomes a language.** A predicate is
+a function, which D9 forbids, so they would need an expression grammar and an
+evaluator. Three runes each does not pay for that, and {% ref "SPEC-033" /%}
+already refused the general form: "five targeted additions, **not a template
+language**". If these are ever wanted, the answer is composition from primitives,
+not a bigger slot table.
+
+### One capability not on the list, rated above all of them
+
+**Declaring a slot expected, so its absence is loud.** A slot that resolves to
+nothing currently vanishes silently — the same shape as
+{% ref "BUG-028" /%} (`figure` dropping non-image children),
+{% ref "BUG-030" /%} (a mixed field dropping authored tags) and
+{% ref "BUG-031" /%} (an em-dash `date` that never matches). Four of the six bugs
+filed alongside this spec are silent absence.
+
+It eliminates no imperative code, so it fails {% ref "SPEC-033" /%}'s test
+outright and is not in this spec's criteria. It is recorded because a mechanism
+being introduced is the cheapest moment to make absence loud, and because the
+information already exists — the content model's `optional` flag says which
+slots are expected, and the generator knows when one came back empty.
 
 ## Constraints carried forward from SPEC-081
 
@@ -353,6 +503,7 @@ takes the data form.
 - [ ] Declaring both `transform` and the slot declaration on one rune is rejected at schema construction, naming the rune (D8)
 - [ ] Declaring neither is rejected the same way
 - [ ] The generated transform is invoked at the existing call site, with no second code path through `createContentModelSchema`
+- [ ] The declaration carries the renderable's identity — `rune`, `tag` and `property` — since `createComponentRenderable` is no longer called from a transform
 - [ ] The slot declaration contains no function values, and a declaration carrying one is rejected at schema construction (D9)
 - [ ] The declaration round-trips through `JSON.parse(JSON.stringify(…))` unchanged for every migrated rune
 - [ ] Total `transform()` line count across the tag files is recorded before and after
