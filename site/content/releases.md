@@ -6,7 +6,17 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.36.0
+## v0.37.0
+
+- Fix `validateManifest` rejecting every theme the project produces.
+- ADR-024 made themes framework-agnostic — no `target`, and layouts declare regions rather than pointing at framework components. `validateManifest` was never updated, so it still demanded `target`, `designTokens` and `layouts.*.component`, and therefore rejected **the manifest `create-refrakt` scaffolds** and **the manifest Lumina ships**.
+- `target` — `ThemeManifest.target` was already optional and deprecated, with a doc comment naming the ADR. The validator simply hadn't caught up.
+- `designTokens` and `layouts.*.component` — required by the type but read by no runtime code. A field nothing reads is not a contract.
+- `name` and `version` remain required. Optional fields are still type-checked when present, so a typo is caught without the field being mandatory, and a framework theme that _does_ declare `target` and layout components still validates.
+- `ThemeManifest.designTokens` and `LayoutDefinition.component` are now optional in the types to match.
+- The test fixture was a pre-ADR-024 Svelte theme, which is how the check drifted while its suite stayed green. It is now the manifest `create-refrakt` actually emits, with Lumina's own manifest added as a case.
+
+## v0.36.0 - September 21, 2026
 
 - Pipeline diagnostics now print in the adapter dev server.
 - Previously a dev session showed **no pipeline diagnostics of any severity** — the data was there (`loadContent` runs in dev via `createRefraktLoader` and populates `site.pipelineWarnings`), but nothing read it. Content validation findings, including error-severity ones, were computed on every edit and discarded. They now appear on first load and again on each HMR reload, so a mistyped rune name or an undefined attribute surfaces while you are editing rather than at build time.
