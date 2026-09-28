@@ -52,12 +52,34 @@ Schema.transform(node, config):
 The change is that line: **when `options.transform` is absent, call a transform
 generated from the declaration instead.**
 
-**This is a compiler, not an interpreter.** The declaration is compiled into a
-function with the same signature, invoked at the same point, returning the same
-`RenderableTreeNodes`. There is no second code path and no new stage. Nothing
-downstream can distinguish the two — resolution, `applySchemaTable`,
-serialization, BEM, `layout`, `blocks`, `contracts`, `inspect` and the pre-engine
-pipeline reads are untouched.
+**A closure factory, not code generation and not an interpreter.** Three readings
+of "compile" are possible here and only one is meant:
+
+| Reading | What it would be | Verdict |
+|---|---|---|
+| Emit source text | a build step writing `.ts` files | no — adds a stage, and one a hosted user could not run |
+| `new Function` / `eval` | code built from the declaration at runtime | no — arbitrary code execution from input |
+| **Build a closure over the declaration** | `makeSlotTransform(options)` returns a function | **this** |
+
+```ts
+const transform = options.transform ?? makeSlotTransform(options);
+```
+
+**When:** at `createContentModelSchema(...)` call time — module load, once per
+process when the plugin is imported, at dev-server or build startup. Not per
+page, not per rune instance.
+
+The declaration stays inert data; the only code that executes is refrakt's own
+generator, parameterised by it. The contrast that matters is with an
+*interpreter* in the other sense — a second walk of the tree inside the engine,
+consulting the slot table at render time. That would mean two code paths to keep
+in agreement, declarative runes being a different *kind* of thing downstream, and
+"same output" as a property to be tested rather than had.
+
+Instead: one call site, one function type, and nothing downstream can
+distinguish the two — resolution, `applySchemaTable`, serialization, BEM,
+`layout`, `blocks`, `contracts`, `inspect` and the pre-engine pipeline reads are
+untouched.
 
 That is what makes D7's byte-identical gate provable rather than aspirational.
 The generated function is interchangeable with the hand-written one *by
@@ -155,6 +177,42 @@ leave the rune imperative. D4 is the tiebreaker, and the answer should usually b
 to leave it — a mechanism that grows a feature per borderline rune stops being a
 mechanism.
 
+## Why this is a prerequisite for hosted rune definitions
+
+A closure factory over inert data means a user-defined rune is **data to
+validate, not code to sandbox**: JSON arrives, it is checked against a schema, a
+closure is built. No `eval`, no VM, no worker isolation, no dependency surface.
+That is a materially easier security story than any codegen approach, and it is
+why the shape chosen here is the one a hosted renderer would want anyway.
+
+**It is necessary and not sufficient.** "Declarative at every step" is a larger
+bar than this spec clears, and the remaining surfaces are worth naming so the
+question has a map:
+
+| Surface | Sites | Status |
+|---|---|---|
+| `transform` | 135 | this spec |
+| `contentModel` as a thunk `(attrs) => …` | 15 | **a declarative form already exists** — `ConditionalContentModel`'s `when` over `AttributeInCondition` / `AttributeExistsCondition` / `HasChildCondition` |
+| `contentModel: { type: 'custom', processChildren }` | 14 | undeclarable by design ({% ref "SPEC-003" /%}) |
+| `itemModel` `pattern: /…/` | 8 | serialises, but see below |
+| `config.postTransform` | 4 | undeclarable by design ({% ref "SPEC-081" /%} non-goals) |
+| plugin pipeline hooks | 9 | functions |
+
+Two of those deserve flagging now rather than on discovery:
+
+**A regex is code in the way that matters.** `pattern: /…/` crosses a JSON
+boundary as a string, but a user-supplied pattern in a hosted renderer is a ReDoS
+vector. Making `itemModel` user-definable needs either a timeout-guarded engine
+or a restricted pattern grammar — and `itemModel` is where the list-item
+authoring grammar lives ({% ref "BUG-031" /%}), so it is not a corner that can be
+skipped.
+
+**The escape hatches are the boundary, and that is the good outcome.**
+`type: 'custom'` and `postTransform` stay imperative by design, so a hosted rune
+is necessarily a *subset* of what a plugin can express. D4's family test then has
+a second job: it becomes the published boundary of that subset rather than an
+internal heuristic.
+
 ## Constraints carried forward from SPEC-081
 
 Its "why the two layers stay" section is binding. Three are limits and one is an
@@ -248,6 +306,27 @@ would both have partial claims on the same slots.
 "the imperative form either still works or is fully migrated — **not half of
 each, per rune**". The same rule, for the same reason.
 
+### D9 — the declaration must stay serialisable; no function values
+
+Every value in the declaration is data. No slot may take a function — not a
+computed default, not a predicate, not a formatter. This is what keeps the
+declaration transportable across a JSON boundary, and therefore what makes a
+hosted rune definition possible at all.
+
+**This is in tension with {% ref "SPEC-140" /%} as drafted**, and the tension
+should be resolved rather than inherited. SPEC-140's `metaFields` utility takes a
+function for a computed default:
+
+```ts
+created: () => attrs.created || fileVars?.created || '',
+```
+
+That is a closure, so a properties spec written that way is not serialisable. The
+declarative equivalent is a fallback chain — a list of sources tried in order
+with a literal default — which covers the twelve `fileVars`-derived metas without
+a function value. Whichever form SPEC-140 ships, this spec's slot declaration
+takes the data form.
+
 ## Non-goals
 
 - Reopening the SPEC-080 field / block / layout vocabulary — this builds on it
@@ -255,6 +334,7 @@ each, per rune**". The same rule, for the same reason.
 - Removing `transform`, `postTransform` or `projection` (D3)
 - Composing a rune from other runes with a Markdoc template — a separate idea, with its own unresolved questions about contract derivation, CSS ownership, cycles and schema.org, and a different payoff (ecosystem reach rather than maintenance)
 - Letting a theme influence labelling — labelling is rune identity ({% ref "ADR-028" /%})
+- Specifying hosted rune definitions, or the validation, quotas and regex-safety story a hosted renderer needs — this spec only removes one of the blockers
 - Covering `recipe`, `symbol`, `event` or any rune that fails D4's test
 
 ## Acceptance Criteria
@@ -273,6 +353,8 @@ each, per rune**". The same rule, for the same reason.
 - [ ] Declaring both `transform` and the slot declaration on one rune is rejected at schema construction, naming the rune (D8)
 - [ ] Declaring neither is rejected the same way
 - [ ] The generated transform is invoked at the existing call site, with no second code path through `createContentModelSchema`
+- [ ] The slot declaration contains no function values, and a declaration carrying one is rejected at schema construction (D9)
+- [ ] The declaration round-trips through `JSON.parse(JSON.stringify(…))` unchanged for every migrated rune
 - [ ] Total `transform()` line count across the tag files is recorded before and after
 
 ## References
