@@ -567,6 +567,41 @@ takes the data form.
 - Specifying hosted rune definitions, or the validation, quotas and regex-safety story a hosted renderer needs — this spec only removes one of the blockers
 - Covering `recipe`, `symbol`, `event` or any rune that fails D4's test
 
+## Open questions
+
+These three came out of thinking about the file format a hosted renderer would
+accept for a user-authored rune. None of them block this spec — the mechanism
+here is a TypeScript sibling to `transform`, and the serialisable form only has
+to *exist*, not to have a file extension. They belong to the follow-on spec that
+defines that file, and are recorded here because that spec does not exist yet.
+
+**Where does the rune-definition schema live?** Two JSON Schemas are already
+committed and drift-tested — `packages/transform/refrakt.config.schema.json`
+against `SiteConfig`, and `packages/content/frontmatter.schema.json`. A rune
+definition needs the same treatment against the slot declaration's interface,
+and `config-schema.test.ts` shows what that treatment costs: it asserts
+bidirectionally, so a field added to the interface fails the test until the
+schema gains it too, *and* the schema may declare no property the interfaces do
+not have. The question is whether the rune schema sits beside those two as a
+third top-level artifact or is generated from the same source, and it is worth
+answering before the first one is written by hand.
+
+**Where do the files live?** A conventional directory discovered by scanning —
+the way `discoverPluginFixtures` already finds plugin fixtures — or an explicit
+list in `refrakt.config.json`. Convention is cheaper to author and worse to
+debug; a declaration is the reverse. The choice also decides whether a hosted
+renderer can accept a rune as an upload without touching site config.
+
+**Does CSS come with it?** This is the sharpest of the three, because it may
+change what the file has to contain. A declaratively-defined rune emits correct
+BEM classes and renders completely unstyled, which is a third authoring barrier
+standing beside the schema and the config. Either the definition carries a
+`style` block — and then sanitisation is in scope, with the same untrusted-input
+posture the regex-safety non-goal above defers — or user runes are limited to
+reusing the BEM blocks a theme already styles, which is a real limitation and
+should be stated as one rather than discovered. Answer this before fixing the
+format.
+
 ## Acceptance Criteria
 
 - [ ] A rune can declare its content slots: source field, slot name, wrapper element, and omit-when-empty
