@@ -648,7 +648,7 @@ takes the data form.
 - Reopening the SPEC-080 field / block / layout vocabulary — this builds on it
 - Moving any structural assembly out of `layout`, or reviving `projection`'s deprecated `group` / `relocate`
 - Removing `transform`, `postTransform` or `projection` (D3)
-- Composing a rune from other runes with a Markdoc template — a separate idea, with its own unresolved questions about contract derivation, CSS ownership, cycles and schema.org, and a different payoff (ecosystem reach rather than maintenance)
+- Composing a rune from other runes with a Markdoc template — now {% ref "SPEC-145" /%}, which carries its own questions about contract derivation, CSS ownership, cycles and schema.org, and has a different payoff (ecosystem reach rather than maintenance)
 - Letting a theme influence labelling — labelling is rune identity ({% ref "ADR-028" /%})
 - Specifying hosted rune definitions, or the validation, quotas and regex-safety story a hosted renderer needs — this spec only removes one of the blockers
 - Covering `recipe`, `symbol`, `event` or any rune that fails D4's test
@@ -736,5 +736,9 @@ and whether the engine config has to travel (it does, split along
 - {% ref "SPEC-033" /%} — structure slots; where `projection` came from and why it is the wrong word here
 - {% ref "SPEC-102" /%} — the standardised fixture format; why fixtures stay sibling files
 - {% ref "SPEC-130" /%} — the schema.org table as identity, and the D5 trade that untrusted authorship breaks
+- {% ref "SPEC-144" /%} — declarative entity and edge registration; the cross-page half of the same programme
+- {% ref "SPEC-145" /%} — composed runes; the second authoring tier, which needs no CSS
+- {% ref "ADR-035" /%} — where the skin format applies, and why Lumina stays a package
+- {% ref "ADR-036" /%} — name the pattern, do not open a language; the rule governing every gap this spec leaves
 
 {% /spec %}
