@@ -34,6 +34,45 @@ The claim here is narrower: semantics does not have to mean TypeScript, because
 the content model is already the semantic declaration and it already carries the
 names.
 
+## Mechanism — one substitution at one call site
+
+`options.transform` is invoked in exactly one place, inside the Schema's own
+`transform` (`packages/runes/src/lib/index.ts:865`):
+
+```
+Schema.transform(node, config):
+  attrs         = resolved attributes
+  resolvedModel = options.contentModel      (or the thunk, called with attrs)
+  { content }   = resolveContentModel(node.children, resolvedModel, attrs)
+  result        = options.transform(content, attrs, config, node)   ← the only call
+  result        = applySchemaTable(result, options.schema)          ← SPEC-130
+  return result
+```
+
+The change is that line: **when `options.transform` is absent, call a transform
+generated from the declaration instead.**
+
+**This is a compiler, not an interpreter.** The declaration is compiled into a
+function with the same signature, invoked at the same point, returning the same
+`RenderableTreeNodes`. There is no second code path and no new stage. Nothing
+downstream can distinguish the two — resolution, `applySchemaTable`,
+serialization, BEM, `layout`, `blocks`, `contracts`, `inspect` and the pre-engine
+pipeline reads are untouched.
+
+That is what makes D7's byte-identical gate provable rather than aspirational.
+The generated function is interchangeable with the hand-written one *by
+construction*, so a diff means the generator is wrong — never that the output
+legitimately moved.
+
+Two properties follow:
+
+- **No new inputs.** The generated function receives the same `content`, `attrs`,
+  `config`, `node`. It needs `config` for the reason every transform does: to run
+  `Markdoc.transform` over resolved AST nodes.
+- **{% ref "SPEC-130" /%}'s table is unaffected.** `applySchemaTable` runs *after*
+  the transform and is already independent of how the tree was built, so a
+  declaratively-labelled rune keeps its schema.org row unchanged.
+
 ## Problem
 
 `plugins/plan/src/tags/work.ts` is the clean case. After SPEC-081 it builds no
@@ -85,6 +124,36 @@ this is `cursor.wrap('header')`.
 (`character`, `realm`, `faction` — with `emitTag`). Both must be expressible, and
 the distinction is already declared by the content model's `emitTag`, so the
 labelling layer should read it rather than restate it.
+
+## How many runes this reaches
+
+Scanning the 124 candidate transforms (excluding `snippet`'s deliberate throw and
+the structural `layout` / `region` / `include`) for constructs that D4's test
+rules out — unwrapping rendered `.children`, filtering rendered output, looping
+to build nodes, reading the raw AST node, or calling a content-inspecting helper:
+
+| | transforms | lines |
+|---|---|---|
+| **A** — no disqualifying construct | 60 | 1,798 |
+| **B** — exactly one | 27 | 920 |
+| **C** — two or more | 37 | 2,582 |
+
+**Treat 60 as a ceiling, not a forecast.** The figure moved twice during
+calibration — an early pass counted `if (` as disqualifying and returned 41,
+which wrongly excluded `spec`, `character` and `realm` whose only branch is the
+omit-when-empty case this spec declares; a later pass returned 65 and admitted
+`card`, which calls `splitMediaBodyFooter(resolved.body)` and so turns one field
+into three slots by inspecting node types — interpretation, not labelling.
+
+A static scan cannot see every such case, so some of tier A will fail on contact.
+A realistic expectation is **40–50 transforms converting**, with the 7 entity
+runes and 6 child sub-runes named in the acceptance criteria as the proving set.
+
+Tier B is where the mechanism's boundary gets decided. Each of those 27 fails on
+one construct, so each is an argument about whether to add one capability or
+leave the rune imperative. D4 is the tiebreaker, and the answer should usually be
+to leave it — a mechanism that grows a feature per borderline rune stops being a
+mechanism.
 
 ## Constraints carried forward from SPEC-081
 
@@ -166,6 +235,19 @@ is the gate per rune, as it was for {% ref "SPEC-140" /%}. A rune whose
 declarative form does not reproduce its transform's output byte for byte has
 found a gap in the mechanism, and the mechanism changes rather than the output.
 
+### D8 — exactly one of `transform` or the declaration, never both
+
+`transform` becomes optional; it is currently required. Neither present is an
+error. **Both present is also an error**, rather than "declare the common slots
+and let a transform patch the rest".
+
+A half-declared rune is the hardest kind to reason about: a reader cannot tell
+from either half what the output is, and the generator and the hand-written code
+would both have partial claims on the same slots.
+{% ref "SPEC-130" /%}'s acceptance criteria already rejected this shape once —
+"the imperative form either still works or is fully migrated — **not half of
+each, per rune**". The same rule, for the same reason.
+
 ## Non-goals
 
 - Reopening the SPEC-080 field / block / layout vocabulary — this builds on it
@@ -188,6 +270,9 @@ found a gap in the mechanism, and the mechanism changes rather than the output.
 - [ ] The emitted tree is unchanged as a semantic IR: the cross-page pipeline's registry, `extractTitle` and breadcrumb reads produce identical results
 - [ ] `refrakt inspect` and the generated reference describe a declaratively-labelled rune at least as completely as a transform-built one
 - [ ] The rune authoring guide documents the family test (D4) as the way to decide whether a new rune needs a transform
+- [ ] Declaring both `transform` and the slot declaration on one rune is rejected at schema construction, naming the rune (D8)
+- [ ] Declaring neither is rejected the same way
+- [ ] The generated transform is invoked at the existing call site, with no second code path through `createContentModelSchema`
 - [ ] Total `transform()` line count across the tag files is recorded before and after
 
 ## References
