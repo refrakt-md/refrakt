@@ -282,6 +282,86 @@ Recording it opaquely would lose the drift check that makes contracts worth
 having. The cost is the version coupling named above, accepted deliberately — but
 the noise story is an acceptance criterion, not an afterthought.
 
+### D7 — a composed rune places declared meta blocks; `layout` cannot reach into primitives
+
+{% ref "SPEC-080" /%}'s `metaFields` + `blocks` is already the metadata primitive,
+and it is better factored than a `meta` rune would be: `metaFields` is a pure data
+manifest of field semantics (`metaType`, label, sentiment, condition, plus `href` /
+`rating` / `icon`), and `blocks` groups those fields under a `LayoutPrimitive` —
+a closed two-member vocabulary, `'definition-list' | 'bar'`. Field *shape* is
+intrinsic to `metaType`, so the same field renders as a chip in a `<dd>` and as bare
+text in an eyebrow with no per-field config change.
+
+**But blocks are placed by `layout`, whose keys are container `data-name`s, and a
+composed rune does not own its containers** — they belong to `card`, `details` or
+whatever the template reached for. A composed rune's `layout` would be addressing
+inside a primitive it does not own, which is exactly what this spec's sibling
+forbids for authored regions: a region's children carry no `data-name`, so neither
+`layout` nor `projection` can address inside them.
+
+So the projection path assumes the rune owns its tree, and composition breaks that
+assumption. The resolution is a template-side placement — `{% meta block="header" /%}`
+— giving one `blocks` declaration two consumers:
+
+- the **engine** projects it, for runes that own their tree (today's mechanism,
+  untouched)
+- a **template** places it, for composed runes
+
+The theme keeps the same authority in both: `blocks` is not an identity field, so
+which fields, their order and which primitive renders them stay theme-overridable.
+One declaration, one authority model, two placement paths.
+
+Half of this already exists: `bar` and `deflist` ship *twice* — as `LayoutPrimitive`
+values the engine projects into, and as author-callable runes ("Block-level wrapper
+that renders the SPEC-080 `bar` layout primitive over author-written content"). The
+missing piece is a binding, not a primitive.
+
+### D8 — a theme supplies no rune template
+
+Tempting, for symmetry: if a composed rune assembles itself with a template, why not
+let a theme do the same and retire `layout`/`blocks` projection? Because the two
+mechanisms are not the same power, and the difference is exactly the one
+{% ref "ADR-028" /%} exists to police.
+
+`layout` is a **permutation with wrappers** over content the transform emitted. It
+can reorder, create a container (`{ tag, children }`), and inject structural
+elements. It cannot fabricate content, and it cannot drop any: "Transform-built
+children a list doesn't name are appended in transform order (rune content is never
+dropped)" (`packages/transform/src/types.ts:236`).
+
+A template is a **free function producing a tree**. It can fabricate — the
+`{% badge %}{% $attrs.role %}{% /badge %}` in the `character` example is a badge no
+transform emitted — and it can omit, by not placing a slot. Fabrication would let a
+theme add claims the author never made; omission would let it silently swallow
+authored content. ADR-028's own reasoning applies directly: a theme that could
+rewrite structural facts "could change what the same markdown *means*, which is the
+portability premise the project rests on."
+
+So this is not a slope toward violating ADR-028. Creating the tree *is* the act of
+defining the rune, and a template is a tree-creating device.
+
+**The asymmetry is not an inconsistency — it tracks the portability boundary.**
+refrakt already has both mechanisms, split by scope:
+
+| Scope | Mechanism | Why |
+|---|---|---|
+| Page | template — `{% layout %}` / `{% region %}` in `_layout.md`, cascading, with `region`'s `mode: replace \| prepend \| append` | A page's arrangement is not portable content; nobody moves a layout between sites expecting meaning preserved |
+| Rune | config — `blocks` / `layout` projection | The same markdown must mean the same thing under any theme |
+
+This spec moves the template mechanism *down* to rune scope. The theme does not
+follow it down, because at rune scope the portability guarantee starts applying.
+
+A theme that genuinely needs more already has a route, and an appropriately
+heavyweight one: a Svelte component override in `packages/svelte/src/registry.ts`,
+or `postTransform`. Both are code, shipped in a package, reviewed as code. Nothing
+is being denied — only a cheap path to an expensive capability.
+
+**This costs a documentation obligation, not nothing.** Two assembly mechanisms at
+two scopes invites "when do I reach for `layout` versus a template?", and both will
+grow features under pressure from the same use cases. The answer — *`layout` when
+the rune owns its tree, a template when you are creating one* — belongs in the
+theme-authoring guide beside ADR-028 rather than left to be inferred.
+
 ## Non-goals
 
 - Replacing {% ref "SPEC-143" /%}'s declared tier — the two tiers coexist, and D5 keeps them distinct
@@ -290,6 +370,9 @@ the noise story is an acceptance criterion, not an afterthought.
 - Composing *across* sites, or composing a layout rather than a rune
 - Resolving the dormant editor's `editHints` ownership question — recorded, not answered
 - Answering {% ref "SPEC-143" /%}'s open question on unreviewed schema.org claims; this spec must not ship a `schema` composition path ahead of it
+- Letting a theme supply a rune template, or retiring `layout` / `blocks` projection in favour of templates (D8)
+- Adding a `meta` rune — {% ref "SPEC-080" /%} already is that primitive (D7); what is missing is a template-side placement for a block it already defines
+- Widening `LayoutPrimitive` beyond `'definition-list' | 'bar'` — a vocabulary extension governed by {% ref "ADR-036" /%}, decided on its own evidence rather than here
 
 ## Open questions
 
@@ -332,6 +415,10 @@ explicitly is cheaper than rediscovering it.
 - [ ] A composed rune ships no CSS, and a definition that tries to is rejected naming the rune (D2)
 - [ ] `refrakt contracts` derives a composed rune's structure by expansion, and the spec states how a primitive's change is reviewed when it diffs many composed contracts (D6)
 - [ ] Declaring more than one of slot declaration / template / `transform` is rejected at schema construction (D5)
+- [ ] A composed rune can place a declared `blocks` entry from its template, and the rendered result is identical to what the engine's `layout` projection produces for a tree-owning rune with the same block (D7)
+- [ ] A composed rune declaring `layout` keys that name a primitive's containers is rejected, naming the key — the projection path is not silently half-applied (D7)
+- [ ] A `blocks` theme override reaches a composed rune's placed block exactly as it reaches a projected one, so the theme's authority is unchanged by which placement path is used (D7)
+- [ ] The theme-authoring guide states the `layout`-versus-template rule beside {% ref "ADR-028" /%} (D8)
 - [ ] `refrakt inspect` shows both the composition and its expansion
 - [ ] One storytelling rune is reimplemented as a composed rune in a spike, and the emitted tree is compared against today's — not necessarily identical, but every difference explained
 - [ ] The rune authoring guide documents which tier to reach for, with the table from this spec
@@ -345,5 +432,8 @@ explicitly is cheaper than rediscovering it.
 - {% ref "SPEC-129" /%} — `include`'s preprocess splice, the mechanism this extends
 - {% ref "SPEC-130" /%} — the schema.org table, parent-retypes-children, and the D5 trade
 - {% ref "SPEC-063" /%} — file roots and partial resolution; where a template file would live
+- {% ref "SPEC-080" /%} — `metaFields` / `blocks` / `LayoutPrimitive`: the metadata primitive D7 places rather than replaces
+- {% ref "SPEC-081" /%} — `layout` projection, and the `{ tag, children }` creating form D8 contrasts against a template
+- {% ref "ADR-028" /%} — a theme restructures a rune, never redefines it; the rule D8 turns on
 
 {% /spec %}

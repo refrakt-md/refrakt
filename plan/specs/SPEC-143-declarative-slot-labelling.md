@@ -694,6 +694,18 @@ types, or shipping the ontology D5 declined. This is not the CSS-sanitisation
 question in another costume: bad CSS is visible on the page, a bad schema.org row
 is invisible by construction.
 
+**Is `metaFields` identity or presentation?** It is not in `IDENTITY_FIELDS`, so a
+theme may currently override a field's `metaType` — and `metaType` both selects
+chip-versus-bare rendering *and* is described as the field's "domain semantics".
+For a first-party rune that is harmless: the override ships in a package a reviewer
+reads. For a user-authored rune it means a theme can change what the author declared
+their data to *mean*. Compare the reasoning that guards `schema`: a theme able to
+restate a rune's schema.org type "would be able to change what a site asserts about
+its own content by changing its appearance". `metaType` looks like it belongs on the
+same side of that line; `blocks` and `layout` are unambiguously presentation and are
+correctly placed. Worth an answer rather than an accident, and it is cheap to settle
+while adoption is 20 runes out of 126.
+
 **Answered, recorded above rather than here:** whether CSS travels with the rune
 (it does, in the skin half, where the config generating its selectors also lives),
 and whether the engine config has to travel (it does, split along
