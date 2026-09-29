@@ -1212,6 +1212,7 @@ explicitly is cheaper than rediscovering it.
 - {% ref "SPEC-084" /%} — `requiresParent`, the nearest-ancestor check D12 turns on
 - {% ref "SPEC-091" /%} — `variants`; D15 borrows its conventions but not its machinery, which runs two stages later
 - {% ref "ADR-030" /%} — arrangements name topologies, variants are modifiers; the distinction D15 sits outside of, and why rule 2 does not bite
+- {% ref "SPEC-147" /%} — replacing the storytelling plugin; the first substantial exercise of this mechanism, and where its gaps were measured
 - {% ref "SPEC-035" /%} — i18n keying, and the tension D13 records
 - {% ref "SPEC-125" /%} — universal attribute applicability, which D14 leaves intact while moving where they apply
 - {% ref "ADR-008" /%} — the flat per-rune namespace whose boundary name resolution has to cross safely
