@@ -947,24 +947,143 @@ composition **nominates a chrome carrier**, the placed rune that universal attri
 apply to, defaulting to the single top-level placed rune when the template has exactly
 one. Where it has several, the default is ambiguous and the declaration is required.
 
-### D15 — a variant may select a different template
+### D15 — a rune may declare several templates, selected by a declared attribute
 
-{% ref "SPEC-091" /%}'s `variants` is already a modifier-keyed restructuring vocabulary,
-already theme-overridable, already excluded from `IDENTITY_FIELDS` for exactly that
-purpose. Letting a composed rune declare **a template per variant value** is therefore
-an extension of an existing vocabulary rather than a new mechanism
-({% ref "ADR-036" /%}), and it is the largest capability increase available for the cost:
-one rune, several arrangements of the same slots, still entirely declarative.
+One rune, several assemblies of the same slots, still entirely declarative. This is the
+largest capability increase available for the cost — and an earlier draft got both its
+mechanism and its name wrong, so both corrections are recorded.
 
-```yaml
-variants:
-  layout:
-    compact: { template: compact }
+#### It is not {% ref "SPEC-091" /%}'s `variants`, because of when each runs
+
+`variants` is `Record<axis, Record<value, Partial<RuneConfig>>>`, and selection "rides
+the modifier system": the **engine** resolves each axis's modifier value and merges the
+delta over base *before layout assembly* — stage 4. A template renders at the rune's
+transform, stage 2 (D4). By the time the engine merges a delta, the template is already
+a tree. So a `variants` delta cannot select a template; the earlier draft claiming it
+could was the D4 error repeated.
+
+**What survives is the selection input.** A variant axis is a declared attribute, and a
+transform has `attrs` — so template selection is a transform-time switch on an attribute,
+needing no engine involvement at all. It borrows `variants`' conventions (a closed value
+set, the attribute's own `default` supplying the active value, no cross-axis compounds)
+without claiming its machinery.
+
+**And the two then compose, at their own stages, with their own owners:**
+
+| | Stage | Decides | Theme-overridable |
+|---|---|---|---|
+| Template selection | transform | which **assembly** of the slots | **no** — it is the rune's own output |
+| `variants` deltas | engine | which **decoration** of that assembly | yes — not an identity field |
+
+That is D8's authority split one level down: the author composes, the theme decorates.
+Both may apply to the same rune on the same axis.
+
+#### It is not an "arrangement" either, by {% ref "ADR-030" /%}'s own test
+
+ADR-030 draws a deliberate line between two words, and a whole-rune template sits outside
+both:
+
+- **Rule 1** — an arrangement names a *topology*, "the shape of the relationship between
+  a container and its children": `stack`, `row`, `grid`, `split`, `ladder`, `rail`. It is
+  explicit that `timeline`, `steps` and `playlist` are **not** arrangements, they are
+  "runes that use one". **Rule 5b** requires an enabling topology to have "a contract
+  statable **without naming any rune**". A `character`'s compact assembly is
+  rune-specific by construction and fails that test outright.
+- **Rule 2** — "variants are modifiers, not names": direction, marker, wrap, density.
+  A template is not a modifier on a topology.
+
+So this is a **third thing**, and naming it either would break a distinction someone
+thought carefully about. It is a named alternative assembly of *one rune's own* slots, and
+`template` is what it actually is.
+
+**Rule 2's combinatorial-explosion argument does not bite, and it is worth saying why.**
+That rule guards a *shared* vocabulary — naming `timeline` "immediately owes
+`timeline-horizontal`, `timeline-grouped`". A template name is **rune-local**:
+`character`'s `compact` obliges nothing of `realm`, so there is no shared namespace to
+explode. Rune-locality is the property that makes names safe here and unsafe there.
+
+#### Several templates in one file, keyed by value
+
+Keeps {% ref "ADR-037" /%}'s one-file-per-rune shape. With one assembly the body *is* the
+template; with several it is a sectioned document — the same `sections` pattern refrakt
+uses everywhere, so the definition format eats its own dog food.
+
+```md
+---
+rune: character
+tag: article
+attributes:
+  name:   { type: string, required: true }
+  role:   { type: string, matches: [protagonist, antagonist, supporting, minor], default: supporting }
+  layout: { type: string, matches: [full, compact], default: full }
+content:
+  type: sections
+  sectionHeading: heading
+  preamble:
+    portrait:    { match: image, optional: true }
+    description: { match: paragraph, optional: true, greedy: true }
+schema:
+  type: Person
+  properties: { name: name, role: jobTitle }
+templates: { by: layout }
+---
+
+## full
+
+{% card %}
+{% slot name="portrait" /%}
+
+# {% $attrs.name %}
+
+{% slot name="description" /%}
+
+{% slot name="sections" each %}
+  {% details summary=$item.heading %}{% slot /%}{% /details %}
+{% /slot %}
+{% /card %}
+
+## compact
+
+{% bar %}
+{% slot name="portrait" /%}
+**{% $attrs.name %}** — {% slot name="description" /%}
+---
+{% details summary="Details" %}
+  {% slot name="sections" each %}{% slot /%}{% /slot %}
+{% /details %}
+{% /bar %}
 ```
 
-The slot *set* stays fixed by the rune — variants choose an arrangement, they do not add
-or remove content, which keeps D5's mutual exclusion and the unplaced-field error (D11)
-meaningful. A variant template that omits a declared field is the same build error.
+`{% character name="Veshra" %}` renders `full` (the attribute's `default`);
+`layout="compact"` renders the other. Same content, same schema row, different assembly.
+
+#### Why keyed sections rather than `{% if %}` inside one template
+
+`{% if %}` already works, so this is a real choice, and the deciding factor is tooling
+visibility. **Contracts already model this shape**: `packages/transform/src/contracts.ts:98-99`
+declares `variants?: Record<string, Record<string, RuneContract>>` and `:372-379` expands
+each axis value into its own `RuneContract`. A keyed declaration maps straight onto that,
+with no new contract shape. Conditional branches inside one template hide the arity from
+`contracts`, `inspect` and the generated reference, all of which would report one assembly
+where three exist.
+
+#### Three constraints, each mechanically checkable
+
+1. **The selecting attribute must declare `matches`.** Without a closed value set there is
+   nothing to check coverage against. A `default` is wanted too, mirroring `variants`'
+   "the modifier's own `default` already provides the active value".
+2. **Section names and `matches` values correspond exactly, both directions** — a value
+   with no section is an error, a section with no value is an error. The same bidirectional
+   shape the config-schema drift test already uses.
+3. **Every declared content-model field is placed by every template.** D11 makes an
+   unplaced field a build error because content is never silently dropped; with several
+   templates that check runs per template. A compact assembly that wants less prominence
+   therefore *places the content differently* — inside a `{% details %}`, as above — rather
+   than omitting it.
+
+Cost: N templates means N contract expansions, N chrome carriers to nominate (D14), and
+probably a fixture per assembly, which {% ref "SPEC-102" /%}'s `<rune>.<scenario>.md`
+already accommodates.
 
 ### D16 — the theme can already style a composed rune in context
 
@@ -1066,7 +1185,12 @@ explicitly is cheaper than rediscovering it.
 - [ ] Literal text in a template has a stated translation story, even if that story is "it has none" (D13)
 - [ ] Whether universal attributes on a composed root produce double chrome is verified against Lumina before the carrier mechanism is designed (D14)
 - [ ] Universal attributes apply to the nominated chrome carrier; a template with several top-level placed runes and no nomination is rejected (D14)
-- [ ] A variant may select an alternative template, and one omitting a declared content-model field is the same build error as a base template omitting it (D15)
+- [ ] A rune may declare several templates in one file, keyed by the values of a declared attribute, selected at transform time (D15)
+- [ ] The selecting attribute must declare `matches`; one without it is rejected, naming the rune (D15)
+- [ ] Template section names and the attribute's `matches` values correspond exactly in both directions, each mismatch reported by name (D15)
+- [ ] Every declared content-model field is placed by every template; one that omits a field is the same build error as a single template omitting it (D15)
+- [ ] Templates and `variants` deltas both apply to the same rune on the same axis, at their own stages, with the theme able to override the delta and not the template (D15)
+- [ ] `refrakt contracts` records one expansion per template under the existing `variants` contract shape, adding no new shape (D15)
 - [ ] `{% if $slots.<name> %}` tests whether a slot is filled, so an optional slot's wrapper can be omitted rather than rendered empty
 - [ ] The theme-authoring guide documents `contextModifiers` keyed on a composed rune as the supported way to style a primitive inside one (D16)
 - [ ] The rune authoring guide documents which tier to reach for, with the table from this spec
@@ -1086,7 +1210,8 @@ explicitly is cheaper than rediscovering it.
 - {% ref "ADR-037" /%} — users author composed runes only; why this path is the user-facing one and the declared path is internal
 - {% ref "ADR-034" /%} — file-qualified source location; D11's dependency, and what draws the editable line
 - {% ref "SPEC-084" /%} — `requiresParent`, the nearest-ancestor check D12 turns on
-- {% ref "SPEC-091" /%} — `variants`, the vocabulary D15 extends
+- {% ref "SPEC-091" /%} — `variants`; D15 borrows its conventions but not its machinery, which runs two stages later
+- {% ref "ADR-030" /%} — arrangements name topologies, variants are modifiers; the distinction D15 sits outside of, and why rule 2 does not bite
 - {% ref "SPEC-035" /%} — i18n keying, and the tension D13 records
 - {% ref "SPEC-125" /%} — universal attribute applicability, which D14 leaves intact while moving where they apply
 - {% ref "ADR-008" /%} — the flat per-rune namespace whose boundary name resolution has to cross safely
