@@ -631,62 +631,28 @@ This is mechanically checkable — both the contract generator and the compositi
 expander know which runes carry schema tables — so it is a build diagnostic rather
 than something a reviewer must notice.
 
-### D10 — an ownership marker, so a name resolves to the right namespace
+### D10 — name resolution across boundaries is {% ref "SPEC-146" /%}'s, not this spec's
 
-The boundary guard means *stop at another rune's namespace*; it is implemented as
-*stop at any `data-rune`*, which works only while ancestry implies ownership.
-Composition makes ancestry lie: slot-placed nodes sit inside a primitive but belong
-to the composing rune.
+Composition cannot make a correct structured-data claim until two resolvers change:
+`findAllByName` must be able to cross a nested rune's boundary to reach content placed
+on the composing rune's behalf, and `findChildren` must stop matching content it was
+never about. The mechanism is an ownership marker declared on the node instead of
+inferred from ancestry, used to *admit* in one resolver and *reject* in the other.
 
-So state ownership on the node instead of inferring it. The slot tag stamps what it
-places:
+**That is split out, for a reason worth stating.** One half of it is a present-tense
+defect with no connection to composition: `findChildren` matches `data-rune === name`
+across the whole subtree, and `howto`/`recipe`'s `children: { step }` collides with
+the real `step` rune, so a `{% steps %}` block an author nests inside a `{% recipe %}`
+gets stamped as one of its instructions. That is reproduced in SPEC-146 and is worth
+fixing whether or not composition ships.
 
-```html
-<img data-name="portrait" data-owner="character" src="…">
-```
+The other half — reaching placed content — is inert until this spec places any, so
+the sequencing is: land the resolver change, prove it inert against the seo-baseline,
+then build composition on a verified foundation. Changing the resolver and adding
+composition in one diff would leave a baseline diff that cannot be attributed.
 
-and `findAllByName` gains a *foreign* mode in place of a hard stop:
-
-```ts
-if (!top && attrs['data-rune'] !== undefined) {
-  // Another rune. Its names are not mine — but it may hold nodes my
-  // template placed, so keep descending in foreign mode.
-  for (const c of node.children ?? []) visit(c, false, true);
-  return;
-}
-const named = (attrs['data-name'] === name || …) &&
-              (!foreign || attrs['data-owner'] === owner);
-```
-
-Inside a rune's own nodes nothing changes — a name needs no marker. Past a boundary,
-**only owner-marked nodes count**.
-
-**The same marker serves `children` inverted.** `findChildren` must keep crossing
-boundaries, so instead it *rejects* what is not owner-marked when the rune is
-composed: a template-placed `{% details %}` carries the marker, an author's
-`{% figure %}` inside a slot does not.
-
-| | Today | With the marker |
-|---|---|---|
-| `findAllByName` (`properties`, `text`) | hard stop → cannot reach slot content | crosses, admits **only** owner-marked |
-| `findChildren` (`children`) | crosses freely → over-matches authored content | crosses, rejects non-owner-marked |
-
-One mechanism, one question — *is this node mine?* — used in opposite directions.
-
-**It is provably backward compatible, and that is the first thing to verify.** Take
-the bug the guard was added for: declared `character`'s sections are
-`character-section` runes whose `name` spans come from that rune's own
-`createComponentRenderable`, so they carry no `data-owner`. Crossing in foreign mode
-and requiring `data-owner === "character"` finds nothing — identical to today's hard
-stop. No existing rune has slot-placed content inside a nested rune, so
-`npm run seo:baseline:check` should show zero diff.
-
-Two things fall out without extra rules. **Repeated slots keep working**:
-`{% slot name="sections" each %}` yields N owner-marked wrappers, `findChildren`
-returns all of them, and `items.forEach((item, i) => …)` still supplies the index
-that `generated: { position: 'index' }` consumes. **Nested compositions are correct**:
-composed A crossing into composed B looks for `data-owner="A"` and finds nothing, so
-A cannot reach into B's internals and B cannot leak into A's claims.
+**This spec therefore depends on {% ref "SPEC-146" /%}** and its slot substitution
+must set the marker that spec defines. Nothing else here changes.
 
 ### D11 — editability follows the source file, not the tree
 
@@ -756,6 +722,7 @@ before it does.
 - Answering {% ref "SPEC-143" /%}'s open question on unreviewed schema.org claims; this spec must not ship a `schema` composition path ahead of it
 - Letting a theme supply a rune template, or retiring `layout` / `blocks` projection in favour of templates (D8)
 - Adding a `meta` rune — {% ref "SPEC-080" /%} already is that primitive (D7); what is missing is a template-side placement for a block it already defines
+- Changing the schema-table resolvers — that is {% ref "SPEC-146" /%} (D10)
 - Widening `LayoutPrimitive` beyond `'definition-list' | 'bar'` — a vocabulary extension governed by {% ref "ADR-036" /%}, decided on its own evidence rather than here
 
 ## Open questions
@@ -810,11 +777,11 @@ explicitly is cheaper than rediscovering it.
 - [ ] The theme-authoring guide states the `layout`-versus-template rule beside {% ref "ADR-028" /%} (D8)
 - [ ] A composition template placing a rune that declares a top-level schema `type` is rejected at build, naming both runes; a subordinate emitter (`figure`, `gallery`) is allowed (D9)
 - [ ] `recipe` composed from `howto` is covered by a test asserting the rejection, so the counter-example cannot regress into a supported path (D9)
-- [ ] Slot-placed and template-placed nodes carry an ownership marker identifying the composing rune (D10)
-- [ ] `findAllByName` crosses a nested-rune boundary in foreign mode and admits only owner-marked nodes; a composed rune's content-derived `properties` resolve (D10)
-- [ ] `findChildren` rejects non-owner-marked matches for a composed rune, so an author's nested rune inside a slot is never retyped as part of the entity (D10)
-- [ ] `npm run seo:baseline:check` shows zero diff after the resolver change, with the `character` / `character-section` name collision still suppressed (D10)
+- [ ] Slot substitution sets the ownership marker {% ref "SPEC-146" /%} defines, on both slot-placed and template-placed nodes (D10)
+- [ ] A composed rune's content-derived `properties` resolve — the `image` from a slot-placed portrait reaches the entity, asserted against the graph and not just the attributes (D10)
+- [ ] An author's nested rune inside a slot is never retyped as part of the composed entity (D10)
 - [ ] A composed rune nested inside another cannot reach the inner one's names, and vice versa (D10)
+- [ ] {% ref "SPEC-146" /%} has landed and its baseline gates are green before any composed rune declares a `schema` row (D10)
 - [ ] The editor offers edits only where `location.file` is the page being edited; template nodes are not editable in place (D11)
 - [ ] A template node interpolating an attribute routes its edit affordance to that attribute rather than offering inline text editing (D11)
 - [ ] A content-model field that no slot places is a build error naming the field — content is never silently dropped (D11)
@@ -837,6 +804,7 @@ explicitly is cheaper than rediscovering it.
 - {% ref "ADR-028" /%} — a theme restructures a rune, never redefines it; the rule D8 turns on
 - {% ref "ADR-037" /%} — users author composed runes only; why this path is the user-facing one and the declared path is internal
 - {% ref "ADR-034" /%} — file-qualified source location; D11's dependency, and what draws the editable line
-- {% ref "ADR-008" /%} — the flat per-rune namespace whose boundary D10 has to cross safely
+- {% ref "ADR-008" /%} — the flat per-rune namespace whose boundary name resolution has to cross safely
+- {% ref "SPEC-146" /%} — name resolution across rune boundaries; split out of D10, and a dependency of this spec
 
 {% /spec %}
