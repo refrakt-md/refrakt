@@ -27,16 +27,24 @@ Counted precisely across every rune in the repo — 22 use `pageSectionPropertie
 | Plugin | Rune | Note |
 |---|---|---|
 | docs | `symbol` | |
-| learning | `howto` | already excluded from composition by {% ref "SPEC-143" /%} D4 |
-| learning | `recipe` | already excluded by D4 |
+| learning | `howto` | composable — see the correction below |
+| learning | `recipe` | composable — see the correction below |
 | marketing | `pricing` | |
 | places | `event` | {% ref "SPEC-148" /%}'s measured case |
 | business | `organization` | reached through an `orgProperties` indirection, which a naive search misses |
 
-So **four live cases across four plugins**, all failing identically, all on the same two
+So **six live cases across five plugins**, all failing identically, all on the same two
 properties. That is what SPEC-146 Problem 2 buys: not an abstract reachability gap, but
-`name` and `description` on four entity runes that otherwise compose. It is the single
+`name` and `description` on six entity runes that otherwise compose. It is the single
 strongest argument for scheduling that spec, and no individual audit could see it.
+
+**Correction.** An earlier draft of this table excluded `howto` and `recipe` as "already
+excluded from composition by {% ref "SPEC-143" /%} D4", giving four. That was wrong. D4's
+test — *"does every output slot come from exactly one resolved field, wrapped but not
+restructured?"* — gates whether a rune can **shed its transform** on the *declared* emit
+path. Composition does not shed a transform; it replaces one with a template, which is a
+different mechanism with a different gate. D4 says nothing about composability, and both
+runes are in fact composable — see {% ref "SPEC-145" /%} D18.
 
 ## Per-property, for the two schema-bearing runes
 
@@ -146,10 +154,10 @@ and this spec is its corroboration.
 
 ### D3 — the `pageSectionProperties` headline/blurb pattern is SPEC-146's headline case
 
-Four live runes across four plugins fail identically on the same two properties. Any work
-on {% ref "SPEC-146" /%} Problem 2 should be measured against all four, not against one,
+Six live runes across five plugins fail identically on the same two properties. Any work
+on {% ref "SPEC-146" /%} Problem 2 should be measured against all six, not against one,
 and `event` remains the reference fixture ({% ref "SPEC-148" /%} D4) because it is
-measured.
+measured. The count was four in an earlier draft; the correction above says why.
 
 ### D4 — `comparison` is not a candidate for a richer content-model vocabulary
 
@@ -183,7 +191,7 @@ inventing an expression language for one consumer, which {% ref "ADR-036" /%} fo
 - [ ] `testimonial`'s author-name and author-role sources are determined and its row in the table above is closed
 - [ ] `pricing` composes after SPEC-146 with `name` and `description` publishing, and its `tier` children still typed as `offers` via path E
 - [ ] `tier` is either left in the plugin or its price parsing moved to an authored attribute pair, with the choice recorded (D2)
-- [ ] All four live `pageSectionProperties` cases — `symbol`, `pricing`, `event`, `organization` — are verified together when SPEC-146 Problem 2 lands (D3)
+- [ ] All six live `pageSectionProperties` cases — `symbol`, `howto`, `recipe`, `pricing`, `event`, `organization` — are verified together when SPEC-146 Problem 2 lands (D3)
 - [ ] `plugins/marketing/` is unchanged and passing its tests until an explicit decision
 - [ ] The authoring guide's blocker list cites `tier` alongside `design-context` for derived data, so the category does not read as design-specific
 

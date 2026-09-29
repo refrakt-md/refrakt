@@ -1144,6 +1144,55 @@ So a composed rune is not unstyleable — it is **theme-styleable in context**, 
 the same authority split the rest of this spec argues for: the author composes, the theme
 decorates. This is a documentation obligation, not work.
 
+### D18 — `card` is the canonical media-split primitive, and composing over it deletes work
+
+The split-layout *vocabulary* is already unified and the *mechanism* is not, which is the
+largest single duplication the plugin audits found.
+
+`SplitLayoutModel` is `splitLayoutAttributes` — `media-position`
+(`top | bottom | start | end | cover`), `media-ratio` (`1/3 … 2/3`), `valign` — and its
+own comment states the intent: *"Shared layout attributes for media+content runes — same
+vocabulary as `bento-cell`, so **every media-bearing surface (card, recipe, hero, feature,
+step, realm, faction, playlist) speaks one language**."* Eight runes declare
+`base: SplitLayoutModel`. Each still implements its own split.
+
+**`card` is the one that embodies it.** It carries `base: SplitLayoutModel`
+(`packages/runes/src/tags/card.ts:49`), splits media / body / footer on `---`, and is
+described as *"usable standalone or inside a collection body template"*. `mediatext` is a
+narrower second.
+
+So a composition wanting a media-first layout places `{% card %}` and passes the split
+attributes through — which makes `card` the {% ref "SPEC-151" /%}-era answer to "what
+primitive gives me a split?" and D14's chrome carrier in the common case.
+
+**And composing over it deletes imperative work rather than reproducing it.** `recipe`
+hand-rolls three helpers that `card` already performs:
+
+| `recipe` does | `card` already does |
+|---|---|
+| `extractMediaImage` — unwrap `<p><img>` to a bare `<img>` | `extractMediaImage(mediaCursor)` at `card.ts:115` |
+| `buildLayoutMetas(attrs)` — split attributes into metas | carries `splitLayoutAttributes` itself |
+| `pageSectionProperties(header)` — harvest headline/blurb | replaced by naming them as content-model fields |
+
+**Which makes `recipe` and `howto` composable, blocked only on {% ref "SPEC-146" /%}.**
+Neither has a custom content model, a `postTransform`, a behaviour or a pipeline hook;
+recipe's `delimited`/zoned model and howto's flat `sequence` are both declarable in
+frontmatter. The only gap is `headline` / `blurb`, which is
+{% ref "SPEC-151" /%} D3's six-rune case.
+
+This corrects a claim that reached {% ref "SPEC-151" /%}: {% ref "SPEC-143" /%} D4 gates
+the *declared* emit path, not composability, so its exclusion of `recipe` and `howto` says
+nothing about this path.
+
+**A consequence worth stating, because it closes an earlier question.** If both are
+compositions, neither needs a `by`/`rows` variant schema to merge them —
+`{% howto type="recipe" %}` was floated as a way to share one rune between two
+schema.org types, and two composition files with different schema tables cost less while
+keeping both rune names findable. The variant form stays right for its actual case: *one
+authored shape, several schema.org types*, which is `playlist`'s five and
+`organization`'s org types. `recipe` and `howto` are two shapes sharing a layout, which is
+a different thing.
+
 ## Non-goals
 
 - Replacing {% ref "SPEC-143" /%}'s declared tier — the two tiers coexist, and D5 keeps them distinct
@@ -1242,6 +1291,9 @@ explicitly is cheaper than rediscovering it.
 - [ ] A conditional containing a structural delimiter, placed inside a rune whose content model reads one, is reported at definition load (D17)
 - [ ] An optional slot placed into `card`'s media zone renders the card without a media div when unfilled, and with one when filled — the D17 worked case, asserted both ways
 - [ ] The theme-authoring guide documents `contextModifiers` keyed on a composed rune as the supported way to style a primitive inside one (D16)
+- [ ] A composition placing `{% card %}` and passing the split attributes through renders the same media split as a rune declaring `base: SplitLayoutModel` itself, asserted for `start`, `end` and `cover` (D18)
+- [ ] A composed rune placing `{% card %}` inherits `extractMediaImage`'s unwrapping, so `![x](y)` in a media slot emits a bare `<img>` and not `<p><img>` (D18)
+- [ ] `recipe` and `howto` are confirmed composable once {% ref "SPEC-146" /%} lands, or the reason either is not is recorded against D18's claim
 - [ ] The rune authoring guide documents which tier to reach for, with the table from this spec
 
 ## References
@@ -1263,6 +1315,7 @@ explicitly is cheaper than rediscovering it.
 - {% ref "ADR-030" /%} — arrangements name topologies, variants are modifiers; the distinction D15 sits outside of, and why rule 2 does not bite
 - {% ref "SPEC-147" /%} — replacing the storytelling plugin; the first substantial exercise of this mechanism, and where its gaps were measured
 - {% ref "SPEC-148" /%} — the places audit; the per-property method, and where D17 was found
+- {% ref "SPEC-151" /%} — the marketing audit; where the six-rune `pageSectionProperties` count and D18's correction are recorded
 - {% ref "SPEC-035" /%} — i18n keying, and the tension D13 records
 - {% ref "SPEC-125" /%} — universal attribute applicability, which D14 leaves intact while moving where they apply
 - {% ref "ADR-008" /%} — the flat per-rune namespace whose boundary name resolution has to cross safely
