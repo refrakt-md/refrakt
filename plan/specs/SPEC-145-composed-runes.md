@@ -300,8 +300,9 @@ forbids for authored regions: a region's children carry no `data-name`, so neith
 `layout` nor `projection` can address inside them.
 
 So the projection path assumes the rune owns its tree, and composition breaks that
-assumption. The resolution is a template-side placement — `{% meta block="header" /%}`
-— giving one `blocks` declaration two consumers:
+assumption. The resolution is a template-side placement tag — spelled
+`{% metablock name="…" /%}` below, though see the naming sub-question — giving one
+`blocks` declaration two consumers:
 
 - the **engine** projects it, for runes that own their tree (today's mechanism,
   untouched)
@@ -315,6 +316,144 @@ Half of this already exists: `bar` and `deflist` ship *twice* — as `LayoutPrim
 values the engine projects into, and as author-callable runes ("Block-level wrapper
 that renders the SPEC-080 `bar` layout primitive over author-written content"). The
 missing piece is a binding, not a primitive.
+
+#### It is a placeholder, not a renderer
+
+Timing forces this, and it is the reason the tag is cheap. `metaFields` resolve
+against the engine's `modifierValues` —
+`resolveField(fieldName, metaFields, modifierValues, locale)` at `engine.ts:1395`,
+stage 4 of the pipeline. A composition template splices at **preprocess**, before
+`Markdoc.transform` (D4). At the moment the tag exists, the values do not. So it
+cannot render metadata; it can only be a marker that survives parse → transform →
+serialize and is substituted by the engine. That is idiomatic here — the engine
+already consumes and strips meta tags, and deferred sentinels (`breadcrumb auto`)
+already work this way.
+
+**Which makes this decision's first acceptance criterion true by construction rather
+than by test.** `renderBlock` at `engine.ts:1388` is already a named, on-demand
+closure returning `SerializedTag | null`:
+
+```ts
+const renderBlock = (name: string): SerializedTag | null => {
+  const def: BlockDef | undefined = blocks[name];
+  if (!def) return null;
+  … resolveField per field …
+  if (items.length === 0) return null;
+  if (def.layout === 'bar') return renderBarLayout(name, items, def.wrap ?? true, locale, config);
+  return renderDefListBlock(name, items.map((i) => i.resolved), locale, config);
+};
+```
+
+`layout` placement calls it at `engine.ts:1563`. The tag is a *second trigger for the
+same closure* — same code, same output, different placement source. Anything that
+re-rendered metadata for composed runes would have to be kept in step by hand.
+
+#### Worked example — `realm`, projected and composed
+
+`Realm` today (`plugins/storytelling/src/config.ts:102-118`):
+
+```ts
+metaFields: {
+  realmType: { metaType: 'category', label: 'Type' },
+  scale:     { metaType: 'category', label: 'Scale', condition: 'scale' },
+},
+blocks: {
+  metadata: { fields: ['realmType', 'scale'], layout: 'definition-list' },
+},
+layout: {
+  root:     ['scene', 'content'],
+  content:  { tag: 'div', children: ['preamble', 'metadata', 'body', 'sections'] },
+  preamble: { tag: 'header', children: ['name'] },
+},
+```
+
+`'metadata'` sits in `content.children` beside `preamble`, `body` and `sections`,
+which are transform slots — **block names and slot names share one namespace in
+`layout`**, with blocks resolved first (`engine.ts:1562-1571`). That is precisely why
+a tag is needed: a composed rune has no `layout` to write the name into.
+
+The composed form keeps `metaFields` and `blocks` verbatim and drops `layout`:
+
+```md
+---
+rune: realm
+tag: article
+attributes:
+  name:      { type: string, required: true }
+  realmType: { type: string }
+  scale:     { type: string }
+content:
+  type: sections
+  sectionHeading: heading
+  preamble:
+    scene: { match: image, optional: true }
+metaFields:
+  realmType: { metaType: category, label: Type }
+  scale:     { metaType: category, label: Scale, condition: scale }
+blocks:
+  metadata: { fields: [realmType, scale], layout: definition-list }
+---
+
+{% mediatext %}
+{% slot name="scene" /%}
+---
+# {% $attrs.name %}
+
+{% metablock name="metadata" /%}
+
+{% slot name="body" /%}
+
+{% slot name="sections" each %}
+  {% details summary=$item.heading %}{% slot /%}{% /details %}
+{% /slot %}
+{% /mediatext %}
+```
+
+What lands is the DOM the projection already produces: a `<dl>` of
+`<dt data-meta-label>` / `<dd>` pairs, each `<dd>` a chip or bare text chosen from the
+field's `metaType` (`engine.ts:1330-1356`); a `bar` block would land as
+`<div data-name="{block}" data-zone="{block}" data-zone-layout="bar">`
+(`engine.ts:1318-1324`). Lumina styles both through `[data-zone-layout]` and
+`[data-meta-type]` without knowing composed runes exist.
+
+#### Whose config resolves the marker
+
+The marker sits inside `{% mediatext %}`, but the block belongs to `realm`.
+`assembleWithBlocks` is called per-rune with *that* rune's config and
+`modifierValues`, so the outer rune's pass must scan its whole subtree for markers —
+not only its direct children, which is all `layout` addresses.
+
+That reads like a breach of {% ref "SPEC-143" /%}'s rule that `layout` may not address
+inside a region, and it is not, but the distinction has to be stated or it will be
+read as one: **the template is the rune's own output, so the rune may address inside
+it. Authored content is what it may not reach into.** Same rule, different material.
+
+#### The failure this prevents
+
+`engine.ts:1408-1409` — *"No `layout` → render the transform tree verbatim (no
+projection)."* A rune with `blocks` and no `layout` renders **no blocks at all**,
+silently. Every composed rune has no `layout`. So without this tag a composed rune
+could declare `metaFields` and `blocks` in full and get nothing, with no diagnostic,
+which is the worst available outcome.
+
+#### Sub-questions on the tag
+
+- **It must not be called `meta`.** `meta` already means two other things here — HTML
+  `<meta>`, and refrakt's "meta tags", the properties channel `createComponentRenderable`
+  emits. With one `metaFields` collision already being untangled, a third `meta` is a
+  mistake. `{% metablock %}` is the placeholder used above; `{% fields %}` is a
+  candidate. `{% block %}` is out — it collides with `RuneConfig.block`, the BEM name.
+- **Empty and undefined need different handling.** `renderBlock` returns null both for
+  an undefined block and for one whose every field resolved empty. Empty is legitimate
+  — `condition` exists for exactly that — so the marker is removed silently. An
+  undefined name is an authoring error and should be rejected at schema construction,
+  naming the block.
+- **Placing one block twice is an error.** `renderBlock` sets `'data-name': blockName`
+  (`engine.ts:1319`), so two placements produce duplicate `data-name`s, which SPEC-143
+  forbids and `mapDataNames` silently collapses.
+- **May a tree-owning rune use the tag instead of `layout`?** Mechanically yes, which
+  would leave one rune with two placement mechanisms. Wants a stated preference rather
+  than both being left open.
 
 ### D8 — a theme supplies no rune template
 
@@ -417,6 +556,11 @@ explicitly is cheaper than rediscovering it.
 - [ ] Declaring more than one of slot declaration / template / `transform` is rejected at schema construction (D5)
 - [ ] A composed rune can place a declared `blocks` entry from its template, and the rendered result is identical to what the engine's `layout` projection produces for a tree-owning rune with the same block (D7)
 - [ ] A composed rune declaring `layout` keys that name a primitive's containers is rejected, naming the key — the projection path is not silently half-applied (D7)
+- [ ] The placement tag reuses the engine's existing `renderBlock` closure; no second block-rendering path exists (D7)
+- [ ] The tag is resolved in the declaring rune's config and `modifierValues`, from anywhere in its own template's subtree — not only its direct children (D7)
+- [ ] A block whose fields all resolve empty removes the marker and emits nothing; a tag naming an undefined block is rejected at schema construction, naming the block (D7)
+- [ ] Placing the same block twice is rejected rather than collapsed by `mapDataNames` (D7)
+- [ ] The tag is not named `meta`, and the chosen name collides with neither `RuneConfig.block` nor the properties-channel meta tags (D7)
 - [ ] A `blocks` theme override reaches a composed rune's placed block exactly as it reaches a projected one, so the theme's authority is unchanged by which placement path is used (D7)
 - [ ] The theme-authoring guide states the `layout`-versus-template rule beside {% ref "ADR-028" /%} (D8)
 - [ ] `refrakt inspect` shows both the composition and its expansion
