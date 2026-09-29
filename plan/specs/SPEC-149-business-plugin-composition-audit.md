@@ -188,5 +188,6 @@ like ordinary strings. Any composed rune taking an image attribute inherits this
 - {% ref "SPEC-146" /%} — name resolution across boundaries; what gates `organization`
 - {% ref "SPEC-130" /%} — the schema table and its applier; the five paths and the `by` / `rows` variant form
 - {% ref "SPEC-106" /%} — image src schemes; the `resolveImageScheme` behaviour D4 preserves
+- {% ref "SPEC-150" /%} — the design audit; the first plugin that stays a plugin, and the derived-data blocker
 
 {% /spec %}

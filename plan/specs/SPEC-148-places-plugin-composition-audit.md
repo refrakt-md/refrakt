@@ -234,5 +234,6 @@ Kept here rather than filed, so the adopting milestone decides its own breakdown
 - {% ref "SPEC-130" /%} — the schema table and its applier; the five paths
 - {% ref "WORK-567" /%} — why `itinerary` and `map` emit nothing today
 - {% ref "SPEC-149" /%} — the business audit; splits this spec's path B into B-intrinsic and B-by-choice, and supplies the negative case for the misfiled-capability pattern
+- {% ref "SPEC-150" /%} — the design audit; establishes that this method has a precondition, and that the answer is sometimes no
 
 {% /spec %}
