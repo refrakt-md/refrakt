@@ -47,17 +47,21 @@ users get this path, and only this path.
 
 ## The mechanism mostly exists
 
-`{% include %}` (`packages/runes/src/tags/include.ts`, SPEC-129) splices a file's
-parsed AST into the page during **preprocess**, ahead of every other preprocess
-step, and substitutes `variables` bindings at paste time. Its own doc comment is
-explicit that this is substitution rather than a transform-time scope, "so bound
-values reach preprocessor attributes such as `{% data where=$q %}`".
+Two existing mechanisms supply most of it, and it matters which one does what.
 
-That is the right machinery, for a reason worth stating: because the splice happens
-before `Markdoc.transform`, the primitives' own transforms then run on the spliced
-tree exactly as if the author had typed it. No special-casing, no second code path,
-and SPEC-129 already settled the ordering problem a preprocessor inside a pasted
-file creates.
+**AST substitution is a solved shape.** `{% include %}`
+(`packages/runes/src/tags/include.ts`, SPEC-129) clones a file's parsed AST and
+substitutes `variables` bindings into it. That is the substitution *technique* a
+template needs — cloning a parsed tree and filling named holes — and it is already
+written.
+
+**But the timing is a rune's transform, not preprocess.** `include` splices during
+preprocess so that `data` and `snippet` inside the pasted file get preprocessed; a
+composition cannot use that timing, because at preprocess the content model has not
+resolved and no slot has a value (D4). A template renders where `transform` would
+have, and calls `Markdoc.transform` on its result so the primitives inside it are
+transformed normally — exactly as `character.ts` already does with
+`resolved.items`. No new pipeline stage either way.
 
 Three things are missing.
 
@@ -434,10 +438,66 @@ returns. Which is also why a definition that tries to is rejected rather than ig
 the composition. An author-stated type on an inner rune survives, per
 `SCHEMA_TYPE_EXPLICIT`; an implicit one does not.
 
-### D4 — substitution happens at preprocess, through `include`'s existing path
+### D4 — the template renders at transform time, where `transform` would have run
 
-Not a new pipeline stage. The primitives' transforms must run on the spliced tree
-unmodified, which is what the preprocess timing already guarantees.
+An earlier draft put substitution at **preprocess**, through `include`'s splice path,
+on the grounds that the primitives' own transforms would then run on the spliced tree
+unmodified. That is wrong, and the reason is decisive: **at preprocess the content
+model has not resolved anything.** Field matching, `sections`, `emitAttributes` and
+`headingExtract` all run inside the rune's transform at stage 2, so a template spliced
+at preprocess has no `resolved.title`, no `$item`, no heading text — nothing to bind a
+slot to.
+
+So the template renders where a `transform` would have: **after field resolution, at
+the one call site {% ref "SPEC-143" /%} substitutes at** (`lib/index.ts:865`). A
+template is an alternative to `transform`, not to parsing. The generated transform
+resolves fields as usual, binds them, substitutes into a clone of the template AST, and
+calls `Markdoc.transform` on the result — which is not a new move:
+`plugins/storytelling/src/tags/character.ts` already does
+`Markdoc.transform(asNodes(resolved.items), config)`.
+
+**What the preprocess timing bought is real but narrow, and giving it up is the right
+trade.** `include` exists so that `data` and `snippet` inside a pasted file are
+preprocessed ({% ref "SPEC-129" /%}'s whole reason). A template containing only
+ordinary runes never needed it. So: **a composition template may not contain the
+preprocessor runes** — `data`, `snippet`, `include` — and one that does is rejected at
+definition load rather than failing mysteriously at render.
+
+This also simplifies D7: a `{% metablock %}` placeholder placed at transform time is
+consumed by the engine immediately afterwards, rather than having to survive three
+stages as a marker.
+
+### D4a — a node-sourced value becomes an attribute through the content model, not the template
+
+The asymmetry is worth stating because it is the first thing an author will hit.
+Attribute → anywhere is free: `{% $attrs.name %}` in content, `tone=$attrs.role` in an
+attribute, `{% if $attrs.bidirectional %}` in a conditional — all ordinary Markdoc
+variables. The reverse, a heading's text used as a child rune's attribute, needs the
+value flattened, and **the content model already does that**:
+
+```yaml
+content:
+  type: sections
+  sectionHeading: heading
+  emitAttributes: { heading: $heading }     # heading text, as a string
+```
+
+```md
+{% slot name="sections" each %}
+  {% details summary=$item.heading %}{% slot /%}{% /details %}
+{% /slot %}
+```
+
+`$heading` resolves to flattened heading text (`packages/runes/src/lib/resolver.ts:491-492`),
+`$field` to a `headingExtract` field (`:493-494`), and `'$a|$b'` gives an ordered
+fallback (`:204-207`). `character` already relies on this, via
+`emitTag: 'character-section'` with `emitAttributes: { name: '$heading' }`.
+
+**The template must not do the extraction itself.** An attribute is a scalar and a
+heading can be rich — `## The **Bone** Witch` — so flattening discards the emphasis.
+Declaring it in the content model makes that loss a choice the rune author made;
+inferring it from an attribute position would make it a surprise. There is no
+non-lossy alternative, since a node list cannot live in an attribute at all.
 
 ### D5 — exactly one of: a slot declaration, a composition template, or a `transform`
 
@@ -494,12 +554,15 @@ missing piece is a binding, not a primitive.
 Timing forces this, and it is the reason the tag is cheap. `metaFields` resolve
 against the engine's `modifierValues` —
 `resolveField(fieldName, metaFields, modifierValues, locale)` at `engine.ts:1395`,
-stage 4 of the pipeline. A composition template splices at **preprocess**, before
-`Markdoc.transform` (D4). At the moment the tag exists, the values do not. So it
-cannot render metadata; it can only be a marker that survives parse → transform →
-serialize and is substituted by the engine. That is idiomatic here — the engine
-already consumes and strips meta tags, and deferred sentinels (`breadcrumb auto`)
-already work this way.
+**stage 4**. A template renders at the rune's transform, **stage 2** (D4). So even
+with the corrected timing the tag still precedes its values by two stages: it cannot
+render metadata, only mark where metadata goes, and the engine substitutes it. That
+is idiomatic here — the engine already consumes and strips meta tags, and deferred
+sentinels (`breadcrumb auto`) work this way.
+
+The correction to D4 shortens the marker's life from three stages to one hop —
+transform to engine, the same distance any meta tag travels — which is a smaller
+thing to get right than a marker surviving preprocess as well.
 
 **Which makes this decision's first acceptance criterion true by construction rather
 than by test.** `renderBlock` at `engine.ts:1388` is already a named, on-demand
@@ -848,6 +911,12 @@ explicitly is cheaper than rediscovering it.
 
 - [ ] A rune can be defined by a Markdoc template that places named slots into other runes
 - [ ] Authored content reaches a named slot as a node list, not a string
+- [ ] The template renders at the rune's transform, after field resolution, at the call site {% ref "SPEC-143" /%} substitutes at — not at preprocess (D4)
+- [ ] A template containing `data`, `snippet` or `include` is rejected at definition load, naming the rune and the offending tag (D4)
+- [ ] Runes placed by a template are transformed normally, verified by composing from a behaviour-driven primitive and confirming its markup and behavior binding are unchanged (D4)
+- [ ] A node-sourced value reaches a child rune's attribute only through the content model's `emitAttributes`; a template cannot flatten a node itself (D4a)
+- [ ] `emitAttributes`' existing `$heading`, `$field` and `'$a|$b'` forms all work from a composition template, asserted per form (D4a)
+
 - [ ] A slot filled twice, never filled, or filled with content the target primitive's content model rejects each has a defined, tested outcome
 - [ ] A composition cycle is detected and reported by rune name, at schema construction rather than at render
 - [ ] The emitted tree carries the composed rune's `data-rune`; the primitives' markers remain but do not claim the rune's identity (D3)
@@ -887,7 +956,7 @@ explicitly is cheaper than rediscovering it.
 - {% ref "SPEC-144" /%} — where a composed rune's cross-page identity comes from
 - {% ref "ADR-036" /%} — why the template is Markdoc and not a DSL
 - {% ref "ADR-035" /%} — the skin format, which composed runes do not need
-- {% ref "SPEC-129" /%} — `include`'s preprocess splice, the mechanism this extends
+- {% ref "SPEC-129" /%} — `include`'s AST substitution technique, which this reuses at a different stage (D4)
 - {% ref "SPEC-130" /%} — the schema.org table, parent-retypes-children, and the D5 trade
 - {% ref "SPEC-063" /%} — file roots and partial resolution; where a template file would live
 - {% ref "SPEC-080" /%} — `metaFields` / `blocks` / `LayoutPrimitive`: the metadata primitive D7 places rather than replaces
