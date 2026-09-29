@@ -1085,6 +1085,53 @@ Cost: N templates means N contract expansions, N chrome carriers to nominate (D1
 probably a fixture per assembly, which {% ref "SPEC-102" /%}'s `<rune>.<scenario>.md`
 already accommodates.
 
+### D17 — a template's `{% if %}` hides what it wraps from a nested rune's content model
+
+Slot-presence conditionals are useful for content and for wrappers, and they have a hard
+limit that is silent when crossed.
+
+Content models match **AST children, before transformation**, and `{% if %}` is still an
+unresolved tag node at that point. So anything a template wraps in a conditional is
+invisible to the structural matching of the rune it sits inside.
+
+**The worked case is `card`'s media zone.** `splitMediaBodyFooter`
+(`packages/runes/src/tags/common.ts:160-173`) iterates a flat AST node list checking
+`n.type === 'hr'`, and does not recurse. So this does not work:
+
+```md
+{% card %}
+{% if $slots.image %}
+{% slot name="image" /%}
+---
+{% /if %}
+…body…
+{% /card %}
+```
+
+The `hr` is nested inside the `if` and the split never sees it — the card silently gets
+one zone instead of two. The correct form emits both unconditionally and relies on the
+consuming rune's empty-zone guard, which `card` has at `card.ts:111`
+(`if (mediaNodes.length > 0)`):
+
+```md
+{% card %}
+{% slot name="image" /%}
+---
+…body…
+{% /card %}
+```
+
+An absent optional image yields an empty media zone, and `card` omits the media div.
+
+**The rule:** use `{% if %}` around whole rune invocations and around content; never
+around anything a nested rune matches structurally — delimiters, and positional
+`sequence` fields alike. Where a conditional is genuinely needed inside a nested rune's
+body, the consuming rune's empty-input guard is the mechanism, not the conditional.
+
+This bounds the slot-presence conditional rather than removing it, and the bound is worth
+a diagnostic: a template placing a conditional that contains a delimiter, inside a rune
+whose content model reads one, is checkable at definition load.
+
 ### D16 — the theme can already style a composed rune in context
 
 Worth recording because it materially softens D2 and requires **no new mechanism**.
@@ -1192,6 +1239,8 @@ explicitly is cheaper than rediscovering it.
 - [ ] Templates and `variants` deltas both apply to the same rune on the same axis, at their own stages, with the theme able to override the delta and not the template (D15)
 - [ ] `refrakt contracts` records one expansion per template under the existing `variants` contract shape, adding no new shape (D15)
 - [ ] `{% if $slots.<name> %}` tests whether a slot is filled, so an optional slot's wrapper can be omitted rather than rendered empty
+- [ ] A conditional containing a structural delimiter, placed inside a rune whose content model reads one, is reported at definition load (D17)
+- [ ] An optional slot placed into `card`'s media zone renders the card without a media div when unfilled, and with one when filled — the D17 worked case, asserted both ways
 - [ ] The theme-authoring guide documents `contextModifiers` keyed on a composed rune as the supported way to style a primitive inside one (D16)
 - [ ] The rune authoring guide documents which tier to reach for, with the table from this spec
 
@@ -1213,6 +1262,7 @@ explicitly is cheaper than rediscovering it.
 - {% ref "SPEC-091" /%} — `variants`; D15 borrows its conventions but not its machinery, which runs two stages later
 - {% ref "ADR-030" /%} — arrangements name topologies, variants are modifiers; the distinction D15 sits outside of, and why rule 2 does not bite
 - {% ref "SPEC-147" /%} — replacing the storytelling plugin; the first substantial exercise of this mechanism, and where its gaps were measured
+- {% ref "SPEC-148" /%} — the places audit; the per-property method, and where D17 was found
 - {% ref "SPEC-035" /%} — i18n keying, and the tension D13 records
 - {% ref "SPEC-125" /%} — universal attribute applicability, which D14 leaves intact while moving where they apply
 - {% ref "ADR-008" /%} — the flat per-rune namespace whose boundary name resolution has to cross safely

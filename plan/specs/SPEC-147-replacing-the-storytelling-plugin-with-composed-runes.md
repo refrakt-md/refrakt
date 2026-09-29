@@ -233,5 +233,6 @@ Plus the dependency chain this spec sits on: {% ref "SPEC-146" /%} →
 - {% ref "ADR-035" /%} — a format the reference implementation does not use is a format that rots
 - {% ref "SPEC-003" /%} — the declarative content model the `segmented` addition belongs to
 - {% ref "WORK-603" /%} — `groupByHeading`'s seven sites, and the utility form to weigh against
+- {% ref "SPEC-148" /%} — the places audit; the second data point for the misfiled-capability finding, and the per-property method this spec predates
 
 {% /spec %}
