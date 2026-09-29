@@ -866,6 +866,118 @@ carries a source range yet — verified. Composition is its sixth consumer and t
 first that cannot be served another way, so SPEC-145's editor story does not land
 before it does.
 
+### D12 — the placeable set is the intersection of two exclusions, stated in one place
+
+Two separate rules shrink what a template may place, and nobody will derive the
+intersection from two decisions in different sections.
+
+**D9 excludes runes that emit a peer schema type.** **`requiresParent` excludes runes
+that need a specific ancestor** — SPEC-084's hard nesting requirement, validated by the
+engine "when the rune appears without that parent as its **nearest ancestor**". A
+composition's own rune is the nearest ancestor of anything its template places, so a
+parent-requiring rune placed directly always fails the check. Thirteen runes declare
+one:
+
+| Rune | Requires | |
+|---|---|---|
+| `AccordionItem` | `Accordion` | core |
+| `BreadcrumbItem` | `Breadcrumb` | core |
+| `Tab`, `TabPanel` | `TabGroup` | core |
+| `JuxtaposePanel` | `Juxtapose` | core |
+| `BentoCell` | `Bento` | marketing |
+| `Definition` | `Feature` | marketing |
+| `Step` | `Steps` | marketing |
+| `Tier`, `FeaturedTier` | `Pricing` | marketing |
+| `ItineraryDay`, `ItineraryStop` | `Itinerary` | places |
+| `MapPin` | `Map` | places |
+
+The two lists overlap but are not the same: `Step` and `Tier` fail both rules, `Tab` and
+`BentoCell` only this one. **The placeable set is the intersection**, and the authoring
+guide must state it as one list rather than leaving an author to compute it.
+
+**The workable pattern is to place the parent.** A template reaches for
+`{% steps %}` or `{% pricing %}` and lets that rune's own content model produce its
+children from the slot content — which is also the arrangement that keeps the child
+runes' schema rows correct, since the parent is their declared retyper (D9). So this is
+a constraint on *how* to compose a list, not a bar on composing one.
+
+### D13 — a composed rune's strings need a keying name, or they are untranslatable
+
+i18n keys are auto-derived as `{scope}.{block}.{ref}`
+(`packages/transform/src/types.ts:123`, `:145`, `:591`), with `scope` defaulting to
+`core` and set per plugin. A composed rune has **no block** — that is D2, and it is
+load-bearing for the CSS story. So its `metaFields` labels have no derivable key, and a
+user rune has no plugin to supply a scope either.
+
+Literal text in the template is worse: `{% badge %}antagonist{% /badge %}`, or a
+`summary=` label, is not in `metaFields` at all, so no keying scheme reaches it.
+
+**This is a genuine tension between D2 and {% ref "SPEC-035" /%}, and it wants deciding
+rather than discovering.** Three candidates, none obviously right:
+
+1. **A keying name that is not a BEM block.** The rune has a name; use it as the i18n
+   scope without introducing a block. Preserves D2, costs one more identifier.
+2. **Require an explicit `i18nKey`** on anything translatable, and treat an unkeyed
+   label as single-locale by declaration.
+3. **State that composed runes are single-locale** — honest, and probably unacceptable
+   for a hosted product with international users.
+
+Option 1 is the one I would pursue, because it separates "a name for keying" from "a
+name for CSS", which were only ever conflated by convenience. Literal template text
+needs its own answer under any of the three.
+
+### D14 — universal attributes apply to a nominated chrome carrier, not the empty root
+
+A composed rune gets the universal attribute surface — `width`, `spacing`, `inset`,
+`elevation`, `substrate`, `scrim`, `reveal`, `tint` — and its *applicability* resolves
+correctly, because that derives from `sections` / `mediaSlots` / `frameTarget`, which a
+composed rune declares (`packages/runes/src/schema-universals.ts`; applicability is rune
+identity per {% ref "ADR-028" /%}).
+
+The problem is where they land. The engine applies them to the rune's own root, and a
+composed rune's root is a semantically necessary but **visually empty** wrapper around a
+primitive that already carries chrome. `width="wide"` plausibly behaves: the outer box
+widens and the card follows. `elevation="raised"` plausibly produces a shadow around a
+shadow, and `substrate` / `scrim` decorate a wrapper no theme designed.
+
+**Not yet verified** — it depends on Lumina's dimension CSS, and confirming it is the
+first task here rather than an assumption to build on. But the failure mode is the kind
+that reads as "composition is second-class", so the design should anticipate it: a
+composition **nominates a chrome carrier**, the placed rune that universal attributes
+apply to, defaulting to the single top-level placed rune when the template has exactly
+one. Where it has several, the default is ambiguous and the declaration is required.
+
+### D15 — a variant may select a different template
+
+{% ref "SPEC-091" /%}'s `variants` is already a modifier-keyed restructuring vocabulary,
+already theme-overridable, already excluded from `IDENTITY_FIELDS` for exactly that
+purpose. Letting a composed rune declare **a template per variant value** is therefore
+an extension of an existing vocabulary rather than a new mechanism
+({% ref "ADR-036" /%}), and it is the largest capability increase available for the cost:
+one rune, several arrangements of the same slots, still entirely declarative.
+
+```yaml
+variants:
+  layout:
+    compact: { template: compact }
+```
+
+The slot *set* stays fixed by the rune — variants choose an arrangement, they do not add
+or remove content, which keeps D5's mutual exclusion and the unplaced-field error (D11)
+meaningful. A variant template that omits a declared field is the same build error.
+
+### D16 — the theme can already style a composed rune in context
+
+Worth recording because it materially softens D2 and requires **no new mechanism**.
+`contextModifiers` keys on the parent's kebab-case `data-rune` and adds a BEM modifier
+when a rune is nested inside it. A composed rune sets its own `data-rune` (D3), so a
+theme can write `contextModifiers: { character: 'in-character' }` on `card` and get
+`.rf-card--in-character` today.
+
+So a composed rune is not unstyleable — it is **theme-styleable in context**, which is
+the same authority split the rest of this spec argues for: the author composes, the theme
+decorates. This is a documentation obligation, not work.
+
 ## Non-goals
 
 - Replacing {% ref "SPEC-143" /%}'s declared tier — the two tiers coexist, and D5 keeps them distinct
@@ -948,6 +1060,15 @@ explicitly is cheaper than rediscovering it.
 - [ ] {% ref "ADR-034" /%} is landed before the editor story; the spec records it as a dependency rather than an assumption (D11)
 - [ ] `refrakt inspect` shows both the composition and its expansion
 - [ ] One storytelling rune is reimplemented as a composed rune in a spike, and the emitted tree is compared against today's — not necessarily identical, but every difference explained
+- [ ] A template placing a rune that declares `requiresParent` is rejected at definition load, naming both runes and the required parent (D12)
+- [ ] The authoring guide states the placeable set as one list — the intersection of the no-peer-schema and no-required-parent exclusions — not as two rules to combine (D12)
+- [ ] A composed rune's `metaFields` labels resolve through a keying scheme that does not require a BEM block, or an unkeyed label is rejected rather than silently untranslated (D13)
+- [ ] Literal text in a template has a stated translation story, even if that story is "it has none" (D13)
+- [ ] Whether universal attributes on a composed root produce double chrome is verified against Lumina before the carrier mechanism is designed (D14)
+- [ ] Universal attributes apply to the nominated chrome carrier; a template with several top-level placed runes and no nomination is rejected (D14)
+- [ ] A variant may select an alternative template, and one omitting a declared content-model field is the same build error as a base template omitting it (D15)
+- [ ] `{% if $slots.<name> %}` tests whether a slot is filled, so an optional slot's wrapper can be omitted rather than rendered empty
+- [ ] The theme-authoring guide documents `contextModifiers` keyed on a composed rune as the supported way to style a primitive inside one (D16)
 - [ ] The rune authoring guide documents which tier to reach for, with the table from this spec
 
 ## References
@@ -964,6 +1085,10 @@ explicitly is cheaper than rediscovering it.
 - {% ref "ADR-028" /%} — a theme restructures a rune, never redefines it; the rule D8 turns on
 - {% ref "ADR-037" /%} — users author composed runes only; why this path is the user-facing one and the declared path is internal
 - {% ref "ADR-034" /%} — file-qualified source location; D11's dependency, and what draws the editable line
+- {% ref "SPEC-084" /%} — `requiresParent`, the nearest-ancestor check D12 turns on
+- {% ref "SPEC-091" /%} — `variants`, the vocabulary D15 extends
+- {% ref "SPEC-035" /%} — i18n keying, and the tension D13 records
+- {% ref "SPEC-125" /%} — universal attribute applicability, which D14 leaves intact while moving where they apply
 - {% ref "ADR-008" /%} — the flat per-rune namespace whose boundary name resolution has to cross safely
 - {% ref "SPEC-146" /%} — name resolution across rune boundaries; split out of D10, and a dependency of this spec
 
