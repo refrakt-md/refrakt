@@ -125,31 +125,36 @@ and it is precisely the bug composition would reintroduce:
 > `character-section` inside it. Reaching across that boundary published a character
 > whose `name` was the character plus each of its section headings.
 
-**So for `properties`, the problem is not ambiguity — it is unreachability.** Trace
-a composed `character` whose template parks slot content inside `{% card %}`:
+**So for `properties`, the problem is not ambiguity — it is unreachability, and it
+is confined to properties whose source is a node rather than an attribute.** Take a
+table mapping a node, as `castMemberSchema` does (`{ name: 'name', role: 'jobTitle',
+portrait: 'image' }`), and a template that parks the portrait inside `{% card %}`:
 
 ```html
-<article data-rune="character" data-rune-fields='{"role":"antagonist","status":"alive"}'>
-  <div data-rune="card">                    <!-- boundary -->
-    <img data-name="portrait" src="…">      <!-- slot-placed: the author's image -->
-    <h1>Veshra</h1>                         <!-- {% $attrs.name %}, no data-name -->
-    <span data-rune="badge">antagonist</span>
-    <p data-name="description">…</p>        <!-- slot-placed -->
-    <div data-rune="details">…</div>        <!-- template-placed, per section -->
+<article data-rune="member" data-rune-fields='{"name":"Veshra"}'>
+  <div data-rune="card">                                  <!-- boundary -->
+    <img data-name="portrait" data-owner="member" src="v.jpg">
   </div>
 </article>
 ```
 
 `findAllByName(root, 'portrait')` visits the `<article>` (exempt, it is `top`), then
 hits `div[data-rune="card"]` and returns. Nothing inside the card is ever visited.
-`stamp` then falls back to the field bag (`:309-312`), which holds no image because
-an image is a node and not a scalar — so the Person publishes **with no `image`
-property and no diagnostic**.
+`stamp` falls back to the field bag (`:309-312`), which holds no image because an
+image is a node and not a scalar. Measured against today's applier, with the same
+table over both tree shapes:
 
-What survives is exactly what the bag holds: `name`, `role` and `status`, because
-they are attributes. So **attribute-derived properties work today and
-content-derived ones vanish**, which is the worst possible split — it works well
-enough in the simple case to look correct.
+```json
+// composed — portrait slot-placed inside {% card %}
+{ "@type": "Person", "name": "Veshra", "@context": "https://schema.org" }
+
+// declared — portrait at the rune's own root
+{ "@type": "Person", "image": "v.jpg", "name": "Veshra", "@context": "https://schema.org" }
+```
+
+The `image` is gone, with no diagnostic. What survives is what the bag holds, so
+**attribute-derived properties work and node-derived ones vanish** — the worst
+possible split, because the simple case looks correct.
 
 **And for `children`, the problem is the opposite: over-matching.** `findChildren`
 has no boundary guard and also matches `data-rune === name`, because that is how
@@ -260,6 +265,92 @@ child rune exists only because there was no way to say "wrap each section in
 something that already exists", which is precisely the gap this spec closes.
 Across the plugin, `character`, `realm` and `faction` share that shape exactly, so
 three child runes go with it.
+
+### What the two schema-bearing cases actually emit
+
+Both of these were built as trees and run through today's `applySchemaTable` +
+`collectJsonLd`. They work **without** {% ref "SPEC-146" /%}, which is worth knowing
+before reading its Problem 2 as a blanket veto on composed entities.
+
+**`character` — every property is an attribute.** `characterSchema` is
+`{ type: 'Person', properties: { name: 'name', role: 'jobTitle' } }`: it never maps
+the portrait. Both sources are attributes, so both sit in the field bag on the root,
+where nesting cannot reach them. With the definition above and this page:
+
+```md
+{% character name="Veshra" role="antagonist" status="alive" %}
+![portrait](veshra.jpg)
+
+A necromancer raised in the shadow of the Ashen Spire.
+
+## Backstory
+...
+{% /character %}
+```
+
+measured output:
+
+```json
+{ "@type": "Person", "name": "Veshra", "jobTitle": "antagonist",
+  "@context": "https://schema.org" }
+```
+
+**`children` retyping also crosses a composition today.** An Organization whose
+members are `Person`s, with the members placed inside a `{% grid %}`:
+
+```md
+---
+rune: troupe
+tag: section
+attributes:
+  name: { type: string, required: true }
+content:
+  type: sequence
+  fields:
+    member: { match: list-item, greedy: true }
+schema:
+  type: Organization
+  properties: { name: name }
+  children:
+    member: { type: Person, property: employee, text: { member: name }, textTag: span }
+---
+
+{% grid columns=3 %}
+{% slot name="member" each %}
+  {% card %}{% slot /%}{% /card %}
+{% /slot %}
+{% /grid %}
+```
+
+measured output:
+
+```json
+{ "@type": "Organization", "name": "The Bone Choir",
+  "@context": "https://schema.org",
+  "employee": [ { "@type": "Person", "name": "Veshra" },
+                { "@type": "Person", "name": "Kel" } ] }
+```
+
+This works because `findChildren` has no boundary guard and walks straight through
+the `grid` — which is exactly why it over-matches. The missing guard that gives it
+reach is {% ref "SPEC-146" /%}'s Problem 1.
+
+**So five resolution paths, and composition breaks one:**
+
+| Path | Resolver | Through a composition today |
+|---|---|---|
+| `properties` from an **attribute** | `stamp` → bag fallback | works |
+| `properties` from a **node** | `findAllByName` | **fails silently** |
+| `text` | `findByName` (same walk) | fails silently |
+| `entities` | `buildEntity` — node first, then bag (`:384-395`) | node source fails, attribute source works |
+| `children` | `findChildren` | works, and over-matches |
+
+**Which creates an authoring trade worth stating.** A composed rune can sidestep the
+gap entirely by declaring a schema-bearing value as an *attribute* —
+`image: { type: string }` mapped `{ image: image }` — which works today and reads
+less like markdown. Harvesting the author's `![portrait](…)` from a slot is the nicer
+authoring experience and needs SPEC-146. Both are legitimate; only one is available
+before that lands.
 
 ### Repeated slots are the `collection` pattern, not iteration
 

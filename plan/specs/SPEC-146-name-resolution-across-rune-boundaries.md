@@ -72,28 +72,57 @@ own `properties` resolves them with `findAllByName(item, …)`, where `item` is 
 author's node and is therefore `top` and exempt from the guard. Worth a targeted test
 before deciding this is RDFa-only.
 
-## Problem 2 — `properties` cannot reach across a boundary it should
+## Problem 2 — a **node-sourced** property cannot reach across a boundary it should
 
-This one does not bite today and cannot, because every rune's transform builds its
-own subtree, so its named nodes are its own and the guard only ever suppresses
-correctly. It bites the moment a rune's content is placed *inside* another rune,
-which is what {% ref "SPEC-145" /%} does:
+This one does not bite today and cannot, because every rune's transform builds its own
+subtree, so its named nodes are its own and the guard only ever suppresses correctly.
+It bites the moment a rune's content is placed *inside* another rune, which is what
+{% ref "SPEC-145" /%} does.
+
+**Its scope is narrower than "composed runes cannot make claims", and the distinction
+matters for scheduling.** A schema row's source resolves either from a node or from
+the field bag on the rune's root, and the bag is untouched by nesting. So only
+node-sourced values are affected. Measured against today's applier, one table over
+two tree shapes — `castMemberSchema`'s `{ name: 'name', portrait: 'image' }`, where
+`name` is an attribute and `portrait` is a node:
 
 ```html
-<article data-rune="character" data-rune-fields='{"role":"antagonist"}'>
-  <div data-rune="card">                    <!-- boundary -->
-    <img data-name="portrait" src="…">      <!-- the author's image -->
-    <p data-name="description">…</p>
+<article data-rune="member" data-rune-fields='{"name":"Veshra"}'>
+  <div data-rune="card">                                  <!-- boundary -->
+    <img data-name="portrait" src="v.jpg">
   </div>
 </article>
 ```
 
+```json
+// composed — portrait inside the primitive
+{ "@type": "Person", "name": "Veshra", "@context": "https://schema.org" }
+
+// declared — portrait at the rune's own root
+{ "@type": "Person", "image": "v.jpg", "name": "Veshra", "@context": "https://schema.org" }
+```
+
 `findAllByName(root, 'portrait')` visits the `<article>` (exempt, `top`), reaches
-`div[data-rune="card"]` and returns. `stamp` falls back to the field bag
-(`:309-312`), which holds no image because an image is a node and not a scalar, so
-the entity publishes with **no `image` property and no diagnostic**. Scalar
-properties survive via the bag; content-derived ones vanish — the worst split, since
-the simple case looks correct.
+`div[data-rune="card"]` and returns; `stamp` falls back to the bag (`:309-312`), which
+holds no image because an image is a node and not a scalar. The property is absent with
+no diagnostic.
+
+The five resolution paths, and which of them this affects:
+
+| Path | Resolver | Across a boundary today |
+|---|---|---|
+| `properties` from an **attribute** | `stamp` → bag fallback | works |
+| `properties` from a **node** | `findAllByName` | **this problem** |
+| `text` | `findByName` (same walk) | **this problem** |
+| `entities` | `buildEntity` — node first, then bag (`:384-395`) | node source affected, attribute source works |
+| `children` | `findChildren` | works — and is Problem 1 |
+
+So a composed entity whose schema-bearing values are all attributes publishes
+correctly before this spec lands; `character` is exactly that case
+(`characterSchema` maps only `name` and `role`, both attributes). What this unblocks
+is harvesting a value from authored content — an image, or a headline taken from a
+heading — which is `recipe`, `event` and `cast-member`'s shape and the nicer authoring
+experience.
 
 ## Mechanism — state ownership on the node
 
@@ -199,6 +228,8 @@ sequencing: land the resolver, prove it inert, then build on it.
 
 - [ ] A probe reproducing Problem 1 exists as a test before the fix, asserting the wrong `typeof` / `property` on an author-nested rune of a colliding name
 - [ ] Whether a child row's own `properties` carry the over-match into the JSON-LD graph is determined by a targeted test, and the finding recorded
+- [ ] The node-sourced scope of Problem 2 is asserted by a test pair: one table over a composed and a declared tree, where the attribute-sourced property resolves in both and the node-sourced one resolves only after the fix
+- [ ] A composed entity whose schema values are all attributes publishes correctly *before* this spec's change, asserted so the narrower scope cannot be lost
 - [ ] `findAllByName` crosses a nested-rune boundary in foreign mode, admitting only nodes marked for the resolving rune
 - [ ] `findChildren` rejects a match marked for another rune, and still matches a rune's own content-model children
 - [ ] `npm run seo:baseline:check` shows zero diff attributable to the `findAllByName` change
