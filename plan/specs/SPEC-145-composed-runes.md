@@ -23,18 +23,27 @@ temptation at every expressive gap is a richer language in the definition file;
 {% ref "ADR-036" /%} rules that out and names composition as the alternative. This
 spec is that alternative.
 
-The tier split falls out of what each tier can and cannot do:
+**These are not two authoring tiers a user chooses between.** They share their whole
+declaration half — a composed rune's frontmatter declares `attributes`, `content`,
+`schema`, `metaFields`, `blocks` and `registers`, which is {% ref "SPEC-143" /%}'s and
+{% ref "SPEC-144" /%}'s vocabulary in full. They differ only in what *emits*, and
+{% ref "ADR-037" /%} assigns the two emit paths to different audiences:
 
-| | Declared rune ({% ref "SPEC-143" /%}) | Composed rune (this spec) |
+| | Declared emit path ({% ref "SPEC-143" /%}) | Composed emit path (this spec) |
 |---|---|---|
+| Audience | **Internal** — first-party runes shedding transforms | **Users** — the one way to author a rune outside this repo |
 | Output | Own block, own BEM classes | The primitives' blocks |
-| CSS | Ships in a skin file ({% ref "ADR-035" /%}) | **None needed** — inherits the theme's |
-| Fits | A new atom with no precedent | A domain type shaped like something that exists |
+| CSS | Ships with the theme | **None** — inherits whatever the theme gives the primitives |
+| Arrangement decided by | the theme, via `layout` | the rune author, in the template |
 | Contract | Derived from config, as today | Derived by expanding the composition |
 
-The CSS column is the important one. "A declaratively-defined rune renders
-unstyled" is the sharpest authoring barrier {% ref "SPEC-143" /%} identifies, and
-composition dissolves it rather than solving it: there is no new block to style.
+The arrangement row is why the split lands this way. A declared rune hands
+arrangement to the theme, which is full {% ref "ADR-028" /%} portability and exactly
+what `work`, `character` and the rest need. A user running one site with one theme
+cannot cash that benefit, and pays for it in the CSS column: "a declaratively-defined
+rune renders unstyled" is the sharpest authoring barrier SPEC-143 identifies, and
+composition dissolves rather than solves it — there is no new block to style. Hence
+users get this path, and only this path.
 
 ## The mechanism mostly exists
 
@@ -256,9 +265,15 @@ either a weaker vocabulary in worse clothing or a sandbox problem.
 
 ### D2 — a composed rune has no block and ships no CSS
 
-If it needs its own styling it is a declared rune, not a composed one. This keeps
-the tiers from collapsing into each other and keeps the CSS-sanitisation question
-confined to one tier.
+If it needs its own styling it belongs on the declared emit path, which per
+{% ref "ADR-037" /%} means it is a first-party rune or a plugin — not a user
+definition.
+
+**This is load-bearing, not tidiness.** Because users author only composed runes, D2
+is what keeps untrusted CSS out of the hosted story entirely: no `style` fence, no
+sanitiser, no scope assertion over author-written selectors, no question about what a
+skin file may contain. The moment a user-facing rune could ship CSS, all of that
+returns. Which is also why a definition that tries to is rejected rather than ignored.
 
 ### D3 — the outer rune owns identity; inner runes are implementation detail
 
@@ -275,6 +290,10 @@ unmodified, which is what the preprocess timing already guarantees.
 
 The same mutual exclusion {% ref "SPEC-143" /%} D8 establishes, extended to three
 options. Declaring two is rejected at schema construction, naming the rune.
+
+Under {% ref "ADR-037" /%} this gains a second job: it is also the line between the
+internal and user-facing paths. A user definition carrying a slot declaration instead
+of a template is rejected rather than quietly accepted onto a path it was not offered.
 
 ### D6 — a composed rune's contract is its expansion, not an opaque marker
 
@@ -579,5 +598,6 @@ explicitly is cheaper than rediscovering it.
 - {% ref "SPEC-080" /%} — `metaFields` / `blocks` / `LayoutPrimitive`: the metadata primitive D7 places rather than replaces
 - {% ref "SPEC-081" /%} — `layout` projection, and the `{ tag, children }` creating form D8 contrasts against a template
 - {% ref "ADR-028" /%} — a theme restructures a rune, never redefines it; the rule D8 turns on
+- {% ref "ADR-037" /%} — users author composed runes only; why this path is the user-facing one and the declared path is internal
 
 {% /spec %}

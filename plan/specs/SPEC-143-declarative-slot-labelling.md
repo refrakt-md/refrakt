@@ -302,6 +302,17 @@ closure is built. No `eval`, no VM, no worker isolation, no dependency surface.
 That is a materially easier security story than any codegen approach, and it is
 why the shape chosen here is the one a hosted renderer would want anyway.
 
+**But not because a user would write the declaration this spec adds.**
+{% ref "ADR-037" /%} settles that users author *composed* runes
+({% ref "SPEC-145" /%}) and that this spec's slot declaration is the internal emit
+path — how first-party runes shed their transforms. This spec is a prerequisite for
+a different reason: a composed rune's frontmatter declares `attributes`, `content`,
+`schema`, `metaFields`, `blocks` and `registers`, which is *this* spec's and
+{% ref "SPEC-144" /%}'s vocabulary in full. The two paths share their whole
+declaration half and differ only in what emits. Make the declaration serialisable
+here and the hosted case inherits it; leave it imperative and no emit path can be
+authored as data.
+
 **It is necessary and not sufficient.** "Declarative at every step" is a larger
 bar than this spec clears, and the remaining surfaces are worth naming so the
 question has a map:
@@ -663,6 +674,14 @@ file, and are recorded here because that spec does not exist yet. The file-layou
 question that used to sit here is answered above, in the enforced identity /
 presentation split; what follows is what that answer left open.
 
+{% ref "ADR-037" /%} has since **retired two of these** rather than answering them.
+Because a user authors a composed rune, which ships no CSS, "does CSS come with it?"
+no longer applies to a rune author at all — it applies to a theme author, where
+{% ref "ADR-035" /%} already answers it. And the two-file `.rune.md` / `.skin.md` pair
+collapses to one file, so the discovery question is about a single shape rather than a
+pair. What the schema question and the schema.org question lose in scope they keep in
+force; both are recorded below as they stand.
+
 **Where does the rune-definition schema live?** Two JSON Schemas are already
 committed and drift-tested — `packages/transform/refrakt.config.schema.json`
 against `SiteConfig`, and `packages/content/frontmatter.schema.json`. A rune
@@ -676,13 +695,14 @@ whether it is *one* schema spanning both halves of the pair or one per file. One
 schema is the better answer if a serialised rune is understood as a single-rune
 `Plugin`, which is what the two halves add up to.
 
-**How is the pair discovered?** A conventional directory scanned the way
+**How is a definition discovered?** A conventional directory scanned the way
 `discoverPluginFixtures` already finds plugin fixtures, or an explicit list in
 `refrakt.config.json`. Convention is cheaper to author and worse to debug; a
 declaration is the reverse. The choice also decides whether a hosted renderer can
-accept a rune as an upload without touching site config. The two-file layout adds
-a sub-question: is a `.skin.md` required, or does a rune with no skin file load and
-render unstyled?
+accept a rune as an upload without touching site config. Narrowed by
+{% ref "ADR-037" /%}: this is now one file per rune plus its
+{% ref "SPEC-102" /%} fixtures, not a `.rune.md` / `.skin.md` pair, so the
+"is a skin file required?" sub-question is gone.
 
 **What stops a user rune from making false claims about content?** The narrowest
 of the three and the one with no precedent to lean on. `schema` is an identity
@@ -752,5 +772,6 @@ and whether the engine config has to travel (it does, split along
 - {% ref "SPEC-145" /%} — composed runes; the second authoring tier, which needs no CSS
 - {% ref "ADR-035" /%} — where the skin format applies, and why Lumina stays a package
 - {% ref "ADR-036" /%} — name the pattern, do not open a language; the rule governing every gap this spec leaves
+- {% ref "ADR-037" /%} — users author composed runes only; why this spec's declaration is the internal emit path
 
 {% /spec %}

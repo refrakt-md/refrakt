@@ -64,8 +64,10 @@ is exactly that.
   syntax and is the point: the enum is the documentation.
 - **Some users will be unable to express their domain declaratively.** The honest
   answer for them is a plugin, published as a package — not a richer language in
-  the definition file. The path from a declared rune to a plugin should therefore
-  stay open and documented.
+  the definition file. The path from a composed rune ({% ref "ADR-037" /%} makes that
+  the one user-facing form) to a plugin should therefore stay open and documented.
+  It is also the answer for a rune needing its own visual form or its own CSS, since
+  a composed rune has neither.
 - **Composition is the pressure valve, not a language.** Where a domain type is
   structurally a familiar shape, {% ref "SPEC-145" /%} lets it be assembled from
   primitives rather than described in a DSL. Most of what would motivate an
@@ -114,5 +116,6 @@ to diagnose than a pattern rejected at authoring time.
 - {% ref "WORK-608" /%} — retires the last non-`postTransform` function in `RuneConfig`
 - {% ref "BUG-031" /%} — the item-model authoring grammar, and why the one exception exists
 - {% ref "ADR-035" /%} — the companion decision on where the skin format applies
+- {% ref "ADR-037" /%} — users author composed runes only; which makes composition the graduation path's starting point
 
 {% /decision %}
