@@ -236,5 +236,6 @@ Kept here rather than filed, so the adopting milestone decides its own breakdown
 - {% ref "SPEC-149" /%} — the business audit; splits this spec's path B into B-intrinsic and B-by-choice, and supplies the negative case for the misfiled-capability pattern
 - {% ref "SPEC-150" /%} — the design audit; establishes that this method has a precondition, and that the answer is sometimes no
 - {% ref "SPEC-151" /%} — the marketing audit; quantifies what `event`'s failure costs across the corpus
+- {% ref "SPEC-152" /%} — the plan audit; the sixth application of this method, and the first whose outcome is neither retire nor dissolve
 
 {% /spec %}

@@ -1319,6 +1319,7 @@ explicitly is cheaper than rediscovering it.
 - {% ref "SPEC-035" /%} — i18n keying, and the tension D13 records
 - {% ref "SPEC-125" /%} — universal attribute applicability, which D14 leaves intact while moving where they apply
 - {% ref "ADR-008" /%} — the flat per-rune namespace whose boundary name resolution has to cross safely
+- {% ref "SPEC-152" /%} — the plan audit; `section` as the document counterpart to D18's `card`, and four runes already hand-rolling this mechanism
 - {% ref "SPEC-146" /%} — name resolution across rune boundaries; split out of D10, and a dependency of this spec
 
 {% /spec %}

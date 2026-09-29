@@ -726,6 +726,13 @@ same side of that line; `blocks` and `layout` are unambiguously presentation and
 correctly placed. Worth an answer rather than an accident, and it is cheap to settle
 while adoption is 20 runes out of 126.
 
+{% ref "SPEC-152" /%} is where that question stops being theoretical. A composed plan
+entity's *entire* differentiation from its four siblings is its `metaFields` and
+`blocks` manifest — the layout is byte-identical five ways — so a theme retyping
+`status` would not be restyling a work item, it would be changing what a work item's
+status means. That audit therefore carries this as a prerequisite rather than an open
+question.
+
 **Answered, recorded above rather than here:** whether CSS travels with the rune
 (it does, in the skin half, where the config generating its selectors also lives),
 and whether the engine config has to travel (it does, split along
@@ -773,5 +780,6 @@ and whether the engine config has to travel (it does, split along
 - {% ref "ADR-035" /%} — where the skin format applies, and why Lumina stays a package
 - {% ref "ADR-036" /%} — name the pattern, do not open a language; the rule governing every gap this spec leaves
 - {% ref "ADR-037" /%} — users author composed runes only; why this spec's declaration is the internal emit path
+- {% ref "SPEC-152" /%} — the plan audit; where the `metaFields` identity question becomes load-bearing rather than theoretical
 
 {% /spec %}
