@@ -1,17 +1,17 @@
 {% work id="WORK-603" status="ready" priority="medium" complexity="moderate" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dx" %}
 
-# Add `metaFields` and `groupByHeading`
+# Add `fieldMetas` and `groupByHeading`
 
 The two utilities with actual design in them, as opposed to the spellings in
 {% ref "WORK-602" /%}.
 
-**`metaFields(attrs, spec)`** collapses the declare-then-name-again cycle into
+**`fieldMetas(attrs, spec)`** collapses the declare-then-name-again cycle into
 one declaration, returning a `Record<string, Tag>` usable directly as
 `properties`. `plugins/plan/src/tags/work.ts` goes from 36 lines of plumbing to
 about 13:
 
 ```ts
-properties: metaFields(attrs, config, {
+properties: fieldMetas(attrs, config, {
   id: '', status: 'draft', priority: 'medium', complexity: 'unknown',
   assignee: '', milestone: '', source: '', supersedes: '', pr: '', tags: '',
   created:  { from: ['attrs.created',  'file.created'],  default: '' },
@@ -48,7 +48,24 @@ The pattern is narrow enough to be worth doing properly: exactly five runes read
 `config.variables.file` (`work`, `bug`, `decision`, `milestone`, `spec`), all with
 the same `attrs.X || file.X || ''` shape.
 
-**This constraint applies to `metaFields`'s spec only, not to
+### Why `fieldMetas` and not `metaFields`
+
+The utility was called `metaFields` in the first draft, which collides head-on with
+`RuneConfig.metaFields` — SPEC-080's pure data manifest of meta-bearing fields, the
+thing `blocks` references by name and the engine resolves against modifier values
+(`packages/transform/src/engine.ts:1395`). They are different objects on different
+sides of the pipeline: this one builds `properties` metas *in a transform*, that one
+describes *how the engine renders* a field. Two same-named things landing in the same
+authoring-guide paragraph is a trap, and it gets worse as a user-facing rune
+definition declares `metaFields` in its frontmatter
+({% ref "SPEC-145" /%} D7) while the guide also documents a `metaFields()` call.
+
+The config key keeps its name: it is the published surface, referenced by
+{% ref "SPEC-080" /%}, {% ref "SPEC-081" /%} and 20 rune configs. The utility is
+renamed instead, and `fieldMetas` says what it returns — a `Record<string, Tag>` of
+meta tags, keyed by field.
+
+**This constraint applies to `fieldMetas`' spec only, not to
 `groupByHeading`.** That takes a per-item callback and is ordinary imperative
 helper code called from inside a transform — it is not part of any declaration,
 so D9 has nothing to say about it.
@@ -60,20 +77,21 @@ running group; list items become entries" loop, written seven times:
 
 ## Acceptance Criteria
 
-- [ ] `metaFields`' spec is data: a bare string, or `{ from: [...], default }` — no entry accepts a function
+- [ ] `fieldMetas`' spec is data: a bare string, or `{ from: [...], default }` — no entry accepts a function
 - [ ] The spec round-trips through `JSON.parse(JSON.stringify(...))` unchanged
 - [ ] `from` resolves only the declared roots (`attrs.*`, `file.*`); an unknown root is rejected at call time rather than resolving to empty
 - [ ] The five runes reading `config.variables.file` express their `created` / `modified` fallback without a closure
-- [ ] A property-and-ref name collision is still rejected with the {% ref "ADR-008" /%} error when the properties object comes from `metaFields`
-- [ ] `metaFields` is adopted where a rune's metas are all plain `attrs` reads mapped into `properties`; runes needing a meta outside `properties`, or conditionally, keep the explicit form
+- [ ] A property-and-ref name collision is still rejected with the {% ref "ADR-008" /%} error when the properties object comes from `fieldMetas`
+- [ ] `fieldMetas` is adopted where a rune's metas are all plain `attrs` reads mapped into `properties`; runes needing a meta outside `properties`, or conditionally, keep the explicit form
 - [ ] `groupByHeading` is adopted at the seven loop sites, with each rune's per-item parser left rune-specific
 - [ ] No lint rule or contract assertion makes either utility mandatory
+- [ ] The utility is named `fieldMetas`; nothing in the codebase or docs introduces a second `metaFields`, and `RuneConfig.metaFields` is unchanged
 - [ ] `refrakt contracts --check` and `npm run seo:baseline:check` report no drift
 - [ ] `npm test` passes unchanged
 
 ## Approach
 
-`metaFields` writes into the same flat key space as `refs` ({% ref "ADR-008" /%}),
+`fieldMetas` writes into the same flat key space as `refs` ({% ref "ADR-008" /%}),
 so the collision check has to keep working against a computed object rather than
 a literal — worth a test, since the current check reads `Object.keys` of both and
 a generated object is the case nobody has exercised.
@@ -88,7 +106,7 @@ duplication, not the parsing.
 
 ## Blocked by
 
-- {% ref "WORK-598" /%} — `metaFields` produces the `properties` object, so it lands after the children emission is gone rather than having to reproduce it
+- {% ref "WORK-598" /%} — `fieldMetas` produces the `properties` object, so it lands after the children emission is gone rather than having to reproduce it
 
 ## References
 

@@ -48,7 +48,7 @@ what goes in it.
 Ten items in three groups, plus one unrelated rider:
 
 - **Deletion** (3) — the inert metas, the dead schema channel, the redundant guards. Output-identical; `contracts --check` and `seo:baseline:check` must report no diff.
-- **Consolidation** (3) — one `extractText`, `renderNodes` + `bodyOnly`, `metaFields` + `groupByHeading`.
+- **Consolidation** (3) — one `extractText`, `renderNodes` + `bodyOnly`, `fieldMetas` + `groupByHeading`.
 - **Declarations that arrive** (3) — the mixed-field fix, `playlist` adopting it, and the reference projecting the item grammar.
 - **Rider** (1) — {% ref "BUG-026" /%}, `plan migrate ids` renumbering the published claimant. Unrelated to the rune work; small, self-contained, and already understood.
 
