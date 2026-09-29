@@ -234,5 +234,6 @@ Plus the dependency chain this spec sits on: {% ref "SPEC-146" /%} →
 - {% ref "SPEC-003" /%} — the declarative content model the `segmented` addition belongs to
 - {% ref "WORK-603" /%} — `groupByHeading`'s seven sites, and the utility form to weigh against
 - {% ref "SPEC-148" /%} — the places audit; the second data point for the misfiled-capability finding, and the per-property method this spec predates
+- {% ref "SPEC-149" /%} — the business audit; a plugin with no misfiled capability, qualifying the pattern to "at most one"
 
 {% /spec %}
