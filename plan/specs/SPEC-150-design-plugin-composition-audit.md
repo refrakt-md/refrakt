@@ -196,5 +196,6 @@ five-path table.
 - {% ref "SPEC-145" /%} — composed runes; the mechanism audited
 - {% ref "SPEC-144" /%} — entity registration; covers design's `register` and `aggregate`
 - {% ref "ADR-036" /%} — the plugin escape hatch, which design is a correct use of
+- {% ref "SPEC-151" /%} — the marketing audit; corroborates the derived-data blocker in a second plugin
 
 {% /spec %}

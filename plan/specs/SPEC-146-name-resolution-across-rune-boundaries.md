@@ -246,5 +246,6 @@ sequencing: land the resolver, prove it inert, then build on it.
 - {% ref "SPEC-145" /%} — composed runes; where this was split from (D10) and the consumer of Problem 2's fix
 - {% ref "ADR-008" /%} — the flat per-rune namespace whose boundary this is about
 - {% ref "WORK-565" /%} — the applier's implementation and the RDFa wrapper's rationale
+- {% ref "SPEC-151" /%} — the marketing audit; counts four live runes across four plugins that Problem 2 unblocks, all failing on the same two properties
 
 {% /spec %}
