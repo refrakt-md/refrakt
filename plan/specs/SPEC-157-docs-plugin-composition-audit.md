@@ -24,7 +24,7 @@ which is what gives that category two data points rather than one.
 |---|---|---|
 | `api` | 67 | **Composes today** — the cleanest candidate in the corpus |
 | `changelog` | 116 | Composes after adopting `emitTag` |
-| `symbol` | 239 | Needs one new form; see below |
+| `symbol` | 239 | Composes after adopting `ConditionalContentModel`; see below |
 
 ### `api` — the cleanest composition candidate audited
 
@@ -49,7 +49,27 @@ Its transform then maps resolved sections to `changelog-release` tag nodes by ha
 what `emitTag` does. Second instance in this series after `playlist`
 ({% ref "SPEC-155" /%} D3) of *the transform hand-rolls `emitTag`*, and the same fix applies.
 
-### `symbol` — an attribute-varying content model, which is a new shape
+### `symbol` — an attribute-varying content model, and the primitive for it already exists
+
+**Corrected.** An earlier revision of this section called this *"a new shape"* that *"no prior
+audit hit"*, and proposed `{ by, models, fallback }` as a form to be invented. All three claims
+were wrong, and {% ref "ADR-036" /%} says so in its own Decision: `contentModel` *"had a thunk
+form `(attrs) => …` and gained `ConditionalContentModel`'s `when`"*. Verified at
+`packages/types/src/content-model.ts:277`:
+
+```ts
+export interface ConditionalContentModel {
+  when: Array<{ condition: ContentModelCondition; model: ContentModel }>;
+  default: ContentModel;
+}
+```
+
+over `AttributeInCondition` / `AttributeExistsCondition` / `HasChildCondition`, with **two live
+adopters** — `steps` and `itinerary`. And `symbol`'s branch condition is
+`GROUP_KINDS.includes(attrs.kind)`, which is `AttributeInCondition` exactly.
+
+So `symbol` is a **non-adopter of a shipping primitive** — the eighth instance in this series
+of *the primitive exists, adoption is partial* — not a request for a new one.
 
 `symbol`'s content model is genuinely a function of its attributes:
 
@@ -63,22 +83,15 @@ contentModel: (attrs) => {
 ```
 
 A `class`, `interface` or `module` promotes every `###` heading into a `symbol-group`; every
-other kind is a flat header/body sequence. **No prior audit hit this**: eight plugins
-produced custom content models, but none whose *choice* of model depended on an attribute.
+other kind is a flat header/body sequence. It decomposes into two parts, and **both mechanisms
+ship today**:
 
-It decomposes into two parts, and neither is a new category:
+1. **The variance** is `ConditionalContentModel`'s `when`, with an `AttributeInCondition` over
+   `kind`.
+2. **The group branch** is heading-delimited sections plus `emitTag: 'symbol-group'`, which is
+   what `itinerary` and `accordion` already do.
 
-1. **The variance** is the content-model counterpart of {% ref "SPEC-130" /%}'s variant
-   schema — `{ by, rows, fallback }` — which `playlist` and `track` already use for schema.
-   The obvious form is `contentModel: { by: 'kind', models: { … }, fallback: { … } }`, and
-   having precedent for the exact shape in the same codebase is most of the argument for it.
-2. **The group branch** is heading-delimited sections plus `emitTag: 'symbol-group'`, which
-   is what `itinerary` and `accordion` already do.
-
-So `symbol` needs the variant form applied to content models and nothing else. Under
-{% ref "ADR-030" /%} rule 5b that is an *enabling* addition with one concrete case, so it
-either waits for a second consumer or ships provisional — but it is a small, well-precedented
-shape rather than an open problem.
+So `symbol` is unblocked, and what it needs is a migration rather than a decision.
 
 `symbol` also carries `symbolSchema = { type: 'TechArticle' }` with `pageSectionProperties`
 sourcing, so it is one of {% ref "SPEC-151" /%} D3's six and gated on
@@ -111,12 +124,20 @@ content-model addition.
 It is a constant wrapped in a function. Leaving it misrepresents the codebase as having two
 attribute-varying content models when it has one, which matters because D4 turns on the count.
 
-### D4 — an attribute-varying content model is a real shape with exactly one consumer
+### D4 — `symbol` adopts `ConditionalContentModel`; nothing new is needed
 
-Recorded so it is neither invented for `symbol` alone nor forgotten. `{ by, models, fallback }`
-mirrors {% ref "SPEC-130" /%}'s variant schema; {% ref "ADR-030" /%} rule 5b's bar wants a
-second consumer before it ships stable, and `bento`'s parent-attribute cascade is *not* one —
-that is a different mechanism ({% ref "SPEC-156" /%} D8).
+**Corrected**, and the correction changes the disposition rather than the wording. This
+decision previously read *"an attribute-varying content model is a real shape with exactly one
+consumer"* and deferred `symbol` pending a second. The shape ships, with two adopters, and
+`symbol`'s condition is one of the three condition types verbatim. So `symbol` moves out of
+"waits on a mechanism" and into "migrates", alongside `api` and `changelog`.
+
+The wider measurement is worth carrying here because it is this plugin's two runes that exposed
+it: **the thunk form survives at 15 sites, and only three of them read `attrs`** —
+`breadcrumb.ts:52`, `symbol.ts:156` and `bento.ts:383`. The other twelve, `changelog`'s among
+them, are `() => ({ … })` returning a constant. That is the same shape
+{% ref "WORK-608" /%} is retiring for `styles[…].transform` (11 sites resolving to 3 helpers),
+and it means finishing this consolidation is mostly deletion: flatten twelve, convert three.
 
 ### D5 — the runes stay distributed even once they are compositions
 
@@ -129,7 +150,8 @@ knowledge nothing validates — applies here as a *format* rather than a schema 
 
 1. **Compose `api`** (D2). First in the programme, gated on nothing.
 2. **Flatten `changelog`'s thunk** (D3), then adopt `emitTag: 'changelog-release'`.
-3. **Leave `symbol`** until the content-model variant form has a second consumer (D4).
+3. **Migrate `symbol`** onto `ConditionalContentModel` + `emitTag: 'symbol-group'`, then
+   compose it (D4). No longer gated on a mechanism.
 4. **Leave `extract/` entirely alone.** It is the plugin.
 
 ## Non-goals
@@ -144,7 +166,8 @@ knowledge nothing validates — applies here as a *format* rather than a schema 
 - [ ] `api` exists as a composition with a fixture, rendering identically to its declared form, with `refrakt contracts --check` and `npm run seo:baseline:check` reporting no drift
 - [ ] `changelog`'s content model is a plain object rather than a thunk, and the repo has exactly one attribute-varying content model (D3)
 - [ ] `changelog` emits its releases via `emitTag`, and the hand-rolled section mapping is gone
-- [ ] `symbol` is unchanged until the variant form exists, and this spec's decomposition of its two branches is recorded in the authoring guide as the plan for it
+- [ ] `symbol`'s content model is a `ConditionalContentModel` with an `AttributeInCondition` over `kind`, and its group branch emits `symbol-group` via `emitTag` rather than `processChildren` (D4)
+- [ ] The twelve constant thunks are flattened to plain objects, so the repo's remaining `contentModel` functions are exactly the attribute-varying three (D4)
 - [ ] `plugins/docs/src/extract/` is untouched, and `refrakt docs extract` produces byte-identical output before and after `api` and `changelog` are composed
 - [ ] The authoring guide names `api` as the introductory composition example for a first-party rune, beside `objective` ({% ref "SPEC-154" /%}) for a planned one
 
@@ -156,7 +179,7 @@ knowledge nothing validates — applies here as a *format* rather than a schema 
 - {% ref "SPEC-151" /%} — the marketing audit; `symbol` is one of its six `pageSectionProperties` cases
 - {% ref "SPEC-155" /%} — the media audit; the first `emitTag` non-adopter, which `changelog` joins
 - {% ref "SPEC-156" /%} — the ladder and row arrangements; `api` is already a consumer of the row primitive
-- {% ref "SPEC-130" /%} — the variant schema form D4's content-model counterpart would mirror
-- {% ref "ADR-030" /%} — rule 5b's bar, which D4's one consumer does not yet clear
+- {% ref "SPEC-130" /%} — the variant schema, whose `by` / `rows` / `fallback` spelling diverges from the conditional model's `when` / `default`
+- {% ref "ADR-036" /%} — name the pattern; its Decision records the conditional content model that D4's correction turns on
 
 {% /spec %}

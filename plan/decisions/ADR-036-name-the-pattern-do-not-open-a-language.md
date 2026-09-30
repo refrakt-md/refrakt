@@ -33,6 +33,24 @@ The codebase already does this, twice, and both are the pattern to copy:
   `AttributeExistsCondition` / `HasChildCondition` — typed conditions rather than
   arbitrary predicates.
 
+**Both consolidations are unfinished, and the numbers say how unfinished.** Stating
+them here rather than implying a banked win, because a closed vocabulary nobody
+adopted is a worse position than the function form it replaced — the gap reads as
+the enum being inadequate when it is not.
+
+| Vocabulary | Adopters | Function form remaining |
+|---|---|---|
+| named `styles[…].transform` enum | in use (`learning/config.ts:35`) | 11 sites → exactly 3 helpers ({% ref "WORK-608" /%}) |
+| `ConditionalContentModel`'s `when` | 2 — `steps`, `itinerary` | **15 thunk sites**, of which **only 3 read `attrs`** |
+
+The three that genuinely branch are `breadcrumb.ts:52`, `symbol.ts:156` and
+`bento.ts:383`. The other twelve are `() => ({ … })` returning a constant, so they
+are noise rather than capability. Finishing this is mostly deletion — flatten
+twelve, convert three — and `ContentModel`'s union has **no function member**, so
+those fifteen sites are reaching an untyped escape rather than a supported form.
+{% ref "SPEC-157" /%} D4 is where that measurement was taken, and where a prior
+draft wrongly proposed inventing the shape this enum already is.
+
 Each addition to a closed vocabulary is a reviewed, documented, schema-validated
 thing with a name. Each addition to a language is a new way to be surprised.
 
@@ -45,6 +63,20 @@ restricted grammar. A restricted grammar is the better answer: bounded,
 non-backtracking, safe by construction rather than by watchdog. It is a grammar
 for splitting one line of text, not a language for defining runes, and its scope
 is exactly that.
+
+**The exception has no owner, and that is the one thing about this ADR that should
+worry a reader.** {% ref "ADR-035" /%} was `rejected` largely because its central
+obligation was owed to a "follow-on spec" that was never written; this exception is
+in the same position, and it carries a security rationale rather than a
+convenience one. Nothing specifies the grammar, {% ref "BUG-031" /%} is a
+reference-generation defect rather than this, and the hosted story depends on it:
+until it exists, `itemModel`'s `pattern` is either closed to user-authored runes or
+open as a ReDoS vector. The two honest interim positions are to say which, and
+this ADR currently says neither.
+
+The eight sites are not a small corpus, either — `playlist`'s item model alone
+carries four patterns across two nesting levels ({% ref "SPEC-155" /%}), so the
+grammar has to cover nested extraction rather than one flat line.
 
 ## Consequences
 
@@ -62,6 +94,13 @@ is exactly that.
 - **Each gap costs a named decision.** Extending a vocabulary means someone must
   name the thing and write it down, which is slower than shipping an expression
   syntax and is the point: the enum is the documentation.
+- **Which makes the names themselves a cost this ADR has to police.** Two closed
+  vocabularies already spell the same idea differently: a conditional content model
+  is `when` / `default`, and {% ref "SPEC-130" /%}'s variant schema is `by` / `rows`
+  / `fallback`. Both mean "pick a shape from an attribute's value, with a
+  fallback". {% ref "ADR-018" /%} exists because exactly this drift happened to the
+  layout tokens, and "the enum is the documentation" fails if one enum documents
+  itself in two dialects. Aligning them is cheap now and a migration later.
 - **Some users will be unable to express their domain declaratively.** The honest
   answer for them is a plugin, published as a package — not a richer language in
   the definition file. The path from a composed rune ({% ref "ADR-037" /%} makes that
@@ -107,6 +146,11 @@ to diagnose than a pattern rejected at authoring time.
   (`storyboard`), and one `postTransform` in `config.ts:243`
 - `packages/runes/src/tags/include.ts` — `variables` as paste-time substitution, the
   mechanism SPEC-145 extends rather than replaces
+- **Re-verified on review**: `postTransform` is 4 (`runes/config.ts:494`, `:509`,
+  `design/config.ts:95`, `storytelling/config.ts:243`), `pattern: /` is 8, and
+  `type: 'custom'` is 14 across rune modules — all three as stated. A first
+  re-count said 16 for `custom`; it wrongly included `reference.ts`, which is
+  tooling rather than a rune content model.
 
 ## References
 
@@ -117,5 +161,9 @@ to diagnose than a pattern rejected at authoring time.
 - {% ref "BUG-031" /%} — the item-model authoring grammar, and why the one exception exists
 - {% ref "ADR-035" /%} — `rejected`; cited here for its rot principle, which survives the format
 - {% ref "ADR-037" /%} — users author composed runes only; which makes composition the graduation path's starting point
+- {% ref "ADR-039" /%} — where a rune lives; the three package kinds the graduation path now lands in
+- {% ref "SPEC-157" /%} — the docs audit; where the conditional content model's adoption gap was measured
+- {% ref "ADR-018" /%} — the canonical layout vocabulary; the precedent for policing enum spellings
+- {% ref "SPEC-130" /%} — the variant schema, whose `by` / `rows` / `fallback` is the diverging spelling
 
 {% /decision %}
