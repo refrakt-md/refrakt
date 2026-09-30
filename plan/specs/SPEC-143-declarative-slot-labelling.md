@@ -784,5 +784,6 @@ and whether the engine config has to travel (it does, split along
 - {% ref "ADR-036" /%} — name the pattern, do not open a language; the rule governing every gap this spec leaves
 - {% ref "ADR-037" /%} — users author composed runes only; why this spec's declaration is the internal emit path
 - {% ref "SPEC-152" /%} — the plan audit; where the `metaFields` identity question becomes load-bearing rather than theoretical
+- {% ref "SPEC-158" /%} — where that question is answered: `metaType` is identity, `label` / `sentimentMap` / `transform` are not
 
 {% /spec %}

@@ -237,6 +237,7 @@ Plus the dependency chain this spec sits on: {% ref "SPEC-146" /%} →
 - {% ref "SPEC-149" /%} — the business audit; a plugin with no misfiled capability, qualifying the pattern to "at most one"
 - {% ref "SPEC-150" /%} — the design audit; contrasts this spec's promotable `postProcess` against one that correctly stays plugin code
 
-- {% ref "SPEC-154" /%} — the learning audit; `glossary` is the second witness that SPEC-144 D2's `postProcess` exclusion loses a capability
+- {% ref "SPEC-154" /%} — the learning audit; `glossary` is the unbounded `postProcess` case, against this spec's bounded one
+- {% ref "SPEC-158" /%} — the identity guard's granularity, settled alongside SPEC-144 D2's revision
 
 {% /spec %}

@@ -154,6 +154,35 @@ query runes' business. In particular this spec does not add a way to declare a
 `postProcess` sentinel resolution — that is where the remaining storytelling
 pipeline code lives, and it stays imperative.
 
+#### Revised: the exclusion splits on the scope of the write, not on the hook
+
+Two audits pushed back on this, and they turn out to be describing different things.
+{% ref "SPEC-147" /%} found that excluding `postProcess` **loses a real capability**, and
+{% ref "SPEC-154" /%} found that `glossary` cannot exist without one. Treating those as the
+same objection is what made D2 look either too strict or too loose depending on which you read
+last. They separate cleanly:
+
+**Bounded — a rune resolves a placeholder it emitted itself, from aggregated data.** This is
+a pattern with **five first-party instances**, all the same shape, all in
+`packages/runes/src/config.ts`: `expand` (`:214`), `collection` (`:238`), `file-ref` (`:244`),
+`aggregate` (`:250`) and `buildAutoBreadcrumb` (`:966`). Storytelling's is a sixth. The
+declaration is a lookup — *which registry, keyed by what, replacing which sentinel* — not
+arbitrary code, and it is squarely within what this spec's vocabulary can express.
+
+**Unbounded — a rune rewrites content it did not emit.** `glossary`'s own note is the
+statement of it: *"the pipeline collects all glossary terms and rewrites matching text nodes
+across other pages into links."* No declaration expresses that without becoming a language,
+which {% ref "ADR-036" /%} forbids, and the failure mode is a page changed by a rune that does
+not appear on it.
+
+**So: the bounded case becomes declarable; the unbounded case is the plugin escape hatch,
+permanently.** That satisfies both witnesses rather than splitting the difference —
+storytelling's capability is declared rather than lost, and `glossary` stays a plugin rune,
+which is what {% ref "SPEC-154" /%} D2 concluded independently on its own evidence.
+
+The line is checkable, which is what makes it a rule rather than a judgement: a bounded
+resolver only ever writes to nodes carrying its own rune's sentinel.
+
 ### D3 — one open question is deliberately deferred: channel explicitness
 
 Whether `idFrom: name` must say `ref:name` / `field:name`, or whether the implicit
@@ -200,6 +229,8 @@ what runs.
 - [ ] `refrakt inspect` shows a rune's registration declaration
 - [ ] The generated reference documents `registers` for every rune that carries one
 - [ ] The plan plugin's pipeline is unchanged, and the spec's reach table is reflected in the authoring guide
+- [ ] A bounded sentinel resolution is declarable, and the five first-party instances (`expand`, `collection`, `file-ref`, `aggregate`, `buildAutoBreadcrumb`) each produce identical output through the declaration (D2)
+- [ ] A declared resolver that writes to a node carrying another rune's sentinel is rejected, so the bounded/unbounded line is enforced rather than documented (D2)
 
 ## References
 
@@ -210,6 +241,7 @@ what runs.
 - {% ref "SPEC-064" /%} — plan content registered from outside a site's content tree; part of why `plan` is out of scope
 - {% ref "SPEC-147" /%} — the storytelling replacement; the consumer that motivated this spec, and which finds D2's `postProcess` exclusion loses a capability
 - {% ref "SPEC-152" /%} — the plan audit; why D5's exclusion leaves the plugin's runes composable anyway
-- {% ref "SPEC-154" /%} — the learning audit; `prerequisite` is this spec's first greenfield consumer, and the planned `glossary` is a second witness for D2's `postProcess` exclusion
+- {% ref "SPEC-154" /%} — the learning audit; `prerequisite` is this spec's first greenfield consumer, and the planned `glossary` is the unbounded case D2 now names
+- {% ref "SPEC-158" /%} — the identity guard's granularity; the other axis the refinement pass separated from this one
 
 {% /spec %}

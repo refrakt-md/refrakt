@@ -209,5 +209,6 @@ is not sugar over a primitive and has no composition path.
 - {% ref "SPEC-153" /%} — delivery; this plugin is its forcing function, being the first that stays and still ships composed runes
 - {% ref "SPEC-154" /%} — the learning audit; the fourth plugin that stays, and the first whose reason is in its backlog rather than its code
 - {% ref "ADR-039" /%} — where a rune lives; this plugin is the clearest domain package, and `docs` is its second member
+- {% ref "SPEC-158" /%} — the identity guard's granularity; D4's prerequisite, now specified
 
 {% /spec %}
