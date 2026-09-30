@@ -972,6 +972,15 @@ One rune, several assemblies of the same slots, still entirely declarative. This
 largest capability increase available for the cost — and an earlier draft got both its
 mechanism and its name wrong, so both corrections are recorded.
 
+**A second worked case, and a caution about credit.** Displaying a `track` as a name with a
+byline underneath rather than as one row is a second assembly of identical parts, and
+{% ref "SPEC-156" /%} establishes that the **declared** path already does it with shipping
+machinery: `metaFields` + `blocks` for the group, two `layout` values, and a
+{% ref "SPEC-091" /%} `variants` axis to select. What is missing there is adoption — `Track`
+declares no `metaFields` — not mechanism. D15's value is therefore specifically the *composed*
+path, where there is no config to put a variant delta in; it should not be credited with
+capability the declared path has.
+
 #### It is not {% ref "SPEC-091" /%}'s `variants`, because of when each runs
 
 `variants` is `Record<axis, Record<value, Partial<RuneConfig>>>`, and selection "rides
@@ -1169,6 +1178,23 @@ composition exists. That covers everything in this repo and covers nothing a use
 D16 therefore answers "can a theme style a composed rune" and not "can a composed rune be
 styled", and the second question is the one {% ref "ADR-037" /%}'s audience asks.
 
+### D19 — a template groups with an engine wrapper, never a placed rune, where schema is involved
+
+A sibling of D17's delimiter rule, and silent in the same way. Grouping parts is ordinary
+template work — a byline holding artist, date and duration — and there are two devices for
+it. An engine-made group (a {% ref "SPEC-080" /%} `blocks` zone, or {% ref "SPEC-081" /%}'s
+`{ tag, children }` wrapper) carries `data-name` and no `data-rune`. A group made by
+**placing a rune**, `{% bar %}…{% /bar %}`, carries `data-rune="bar"` — a name-resolution
+boundary. `findAllByName` stops there (D10, {% ref "SPEC-146" /%} Problem 2), so any schema
+property sourced from a node inside that group vanishes with no diagnostic.
+
+`track` would survive it by luck: every property in `trackSchema` is attribute-sourced, so
+they ride the field bag. A rune harvesting its meta from authored content would not.
+
+So: **group with an engine wrapper where the rune emits schema; either device is safe where
+it emits none.** {% ref "SPEC-156" /%} carries the arrangement half of this, since a created
+wrapper cannot yet declare a geometry.
+
 ### D18 — `card` is the canonical media-split primitive, and composing over it deletes work
 
 The split-layout *vocabulary* is already unified and the *mechanism* is not, which is the
@@ -1350,6 +1376,7 @@ explicitly is cheaper than rediscovering it.
 - {% ref "SPEC-155" /%} — the media audit; the place / promote / rebuild distinction, and the measured CSS gap D2 now states
 - {% ref "ADR-038" /%} — a behavior binds on a data contract; what makes a composed rune interactive, and the answer to D2's state-styling half
 - {% ref "ADR-018" /%} — the canonical layout vocabulary; one of the two rune-agnostic routes D2 depends on
+- {% ref "SPEC-156" /%} — the ladder and row arrangements; what makes D2's inheritance real, and the arrangement half of D19
 - {% ref "SPEC-146" /%} — name resolution across rune boundaries; split out of D10, and a dependency of this spec
 
 {% /spec %}

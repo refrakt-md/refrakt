@@ -351,6 +351,7 @@ Kept here rather than filed, so the adopting milestone decides its own breakdown
 - {% ref "ADR-038" /%} — a behavior binds on a data contract; the rule the three couplings above motivated
 - {% ref "ADR-030" /%} — arrangements; rule 4 names this plugin's track rows as its motivating case
 - {% ref "ADR-018" /%} — the canonical layout vocabulary a composed track row would be styled through
+- {% ref "SPEC-156" /%} — the ladder and row arrangements; `emitTag` here is its prerequisite, and `track`'s two hand-written row implementations are its evidence
 - {% ref "WORK-065" /%} — the `data-state` migration that never reached the audio player
 - {% ref "SPEC-100" /%} — the `carousel` contract; the block-agnostic pattern the player should follow
 

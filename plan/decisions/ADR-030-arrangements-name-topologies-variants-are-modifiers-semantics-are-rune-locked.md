@@ -325,5 +325,6 @@ honesty about which parts are settled.
 - {% ref "SPEC-155" /%} — the media audit; the measured consumer for rule 4
 - {% ref "ADR-037" /%} — users author composed runes only; the audience that cannot be styled by name
 - {% ref "ADR-038" /%} — a behavior binds on a data contract; the same rune-agnostic principle for state and binding
+- {% ref "SPEC-156" /%} — the later spec this decision constrains, scoped to `ladder` and `row`; both clear rule 5a, and it finds rule 3 currently unenforced
 
 {% /decision %}

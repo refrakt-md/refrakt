@@ -106,6 +106,13 @@ attribute. That is not arrangement and not segmentation: it is **computing child
 attributes from parent attributes**. A `childDefaults` declaration is imaginable, and
 would want its own justification rather than being invented for one rune.
 
+**It has that justification now.** {% ref "SPEC-156" /%} D8 counts three instances, two of
+them shipped and hand-rolled outside this plugin: `playlist`'s `artist` (*"Default artist
+applied to tracks that omit their own"* — `track.artist ?? artistValue`) and `playlist`'s
+child kind (`CHILD_KIND[playlistTypeValue]`, passed into `adoptNestedTrack`). Three clears
+{% ref "ADR-030" /%} rule 5a's bar, so the mechanism is evidenced; it is a separate spec
+rather than this plugin's business.
+
 **`comparison`'s `convertComparisonChildren`** — *"Multi-pass heading+list parser with
 cross-column row alignment. Converts headings to columns, list items to rows with bold
 labels for alignment, blockquotes to callouts, and builds a master label list for
@@ -206,5 +213,6 @@ inventing an expression language for one consumer, which {% ref "ADR-036" /%} fo
 - {% ref "ADR-036" /%} — why `comparison` is not generalised
 - {% ref "SPEC-152" /%} — the plan audit; the third plugin that stays, and the dedupe-inside-a-surviving-plugin outcome this plugin also has
 - {% ref "SPEC-154" /%} — the learning audit; adds a seventh, planned, `pageSectionProperties` case in `concept`, so D3's set grows as the backlog lands
+- {% ref "SPEC-156" /%} — the ladder and row arrangements; supplies the third instance that justifies `bento`'s attribute cascade as a mechanism
 
 {% /spec %}
