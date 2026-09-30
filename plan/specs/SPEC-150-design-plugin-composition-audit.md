@@ -197,6 +197,7 @@ five-path table.
 - {% ref "SPEC-144" /%} — entity registration; covers design's `register` and `aggregate`
 - {% ref "ADR-036" /%} — the plugin escape hatch, which design is a correct use of
 - {% ref "SPEC-151" /%} — the marketing audit; corroborates the derived-data blocker in a second plugin
+- {% ref "SPEC-155" /%} — the media audit; a third instance of the derived-data blocker, in `playlist`'s inline player payload
 - {% ref "SPEC-152" /%} — the plan audit; the third plugin that stays, and the one that shows staying does not mean staying as-is
 
 {% /spec %}

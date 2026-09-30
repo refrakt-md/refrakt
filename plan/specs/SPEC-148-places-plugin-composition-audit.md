@@ -238,5 +238,6 @@ Kept here rather than filed, so the adopting milestone decides its own breakdown
 - {% ref "SPEC-151" /%} — the marketing audit; quantifies what `event`'s failure costs across the corpus
 - {% ref "SPEC-152" /%} — the plan audit; the sixth application of this method, and the first whose outcome is neither retire nor dissolve
 - {% ref "SPEC-154" /%} — the learning audit; the seventh, and where the delimiter rule and D3's permanence precedent are both reused
+- {% ref "SPEC-155" /%} — the media audit; the second dissolution, and where D3's Svelte-registry citation is corrected
 
 {% /spec %}

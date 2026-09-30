@@ -296,5 +296,6 @@ Kept here rather than filed, so the adopting milestone decides its own breakdown
 - {% ref "SPEC-091" /%} — `variants`; the mechanism `recipe` reached for in D15's absence
 - {% ref "ADR-037" /%} — users author composed runes only; the tier test D7 turns on
 - {% ref "ADR-036" /%} — the plugin escape hatch `quiz` and `glossary` fall under
+- {% ref "SPEC-155" /%} — the media audit; repeats D4's content-model-adoption finding, and supplies the place / promote / rebuild unit `howto`'s items sit in
 
 {% /spec %}

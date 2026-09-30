@@ -248,5 +248,6 @@ sequencing: land the resolver, prove it inert, then build on it.
 - {% ref "WORK-565" /%} — the applier's implementation and the RDFa wrapper's rationale
 - {% ref "SPEC-151" /%} — the marketing audit; counts four live runes across four plugins that Problem 2 unblocks, all failing on the same two properties
 - {% ref "SPEC-154" /%} — the learning audit; `recipe`'s `ingredient` is the first path-B property carrying a set, so Problem 2 must preserve multiplicity
+- {% ref "SPEC-155" /%} — the media audit; `playlist`'s six-property child rows are the fixture for this spec's open question about a child row's own `properties`
 
 {% /spec %}
