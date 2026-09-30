@@ -276,16 +276,37 @@ The `player` attribute is what does not survive, not the capability. Authors get
 decoupled form, which is better factored anyway: one player implementation instead of
 playlist and `audio` both serializing payloads.
 
-### D5 — `audio` is out of scope for composition permanently
+### D5 — `audio` is out of scope for composition permanently, and it splits in two
 
 A custom-element wrapper whose output is a serialized blob. Recorded as permanent, like
 {% ref "SPEC-148" /%} D3's `map`, so it is not re-examined each time the vocabulary grows.
 
-### D6 — media dissolves rather than retires
+**Refined by {% ref "ADR-039" /%} rule 6.** Sending the whole rune to core was half right:
+`<rf-audio>` does two jobs. The **bare player** — `src`, controls, waveform, chapters — is
+domain-free and belongs in core beside `diagram` / `nav` / `sandbox`. The **playlist binding**
+— finding a playlist in the document and driving its track rows — is not: even after
+{% ref "ADR-038" /%} replaces its three rune-specific selectors with a data contract, the
+contract is still "a ladder of track-ish items with a `src`", which is media vocabulary. That
+half stays in the package.
 
-`playlist` and `track` become compositions; `audio` relocates to the client-lifecycle
-family. Same replace-not-delete staging as {% ref "SPEC-147" /%} D1 and
-{% ref "SPEC-148" /%} D2.
+### D6 — media becomes a pack; it does not dissolve
+
+**Corrected.** An earlier revision read *"media dissolves rather than retires"*, reasoning
+about the code and letting that stand as a verdict on the package —
+{% ref "SPEC-153" /%} D1 had already separated the two.
+
+Measured, the cost argument reverses: the plugin is 1,278 lines of transform plus **341 lines
+of CSS for `playlist` and `track` alone** (188 + 153 across skin and skeleton), and after
+composition it is two `.rune.md` files, two fixtures and *no CSS*, because a composed rune has
+no block ({% ref "SPEC-145" /%} D2). A package that cheap should be kept, not retired — and
+`playlistSchema`'s five-row variant table is curated schema.org knowledge that nothing
+validates ({% ref "SPEC-130" /%} D5), which is {% ref "ADR-039" /%} rule 3's third criterion.
+A user writing their own podcast rune would have to curate `PodcastSeries` / `PodcastEpisode` /
+`hasPart` themselves and would get it wrong silently.
+
+So media is a **capability package and a pack at once** (ADR-039 rule 4): the compositions and
+their schema tables, plus the playlist↔player binding. Same replace-not-delete staging as
+{% ref "SPEC-147" /%} D1.
 
 ### D7 — `playlist` is the fixture for {% ref "SPEC-146" /%}'s open child-row question
 
@@ -351,6 +372,7 @@ Kept here rather than filed, so the adopting milestone decides its own breakdown
 - {% ref "ADR-038" /%} — a behavior binds on a data contract; the rule the three couplings above motivated
 - {% ref "ADR-030" /%} — arrangements; rule 4 names this plugin's track rows as its motivating case
 - {% ref "ADR-018" /%} — the canonical layout vocabulary a composed track row would be styled through
+- {% ref "ADR-039" /%} — where a rune lives; why this plugin becomes a pack rather than dissolving, and where the player splits
 - {% ref "SPEC-156" /%} — the ladder and row arrangements; `emitTag` here is its prerequisite, and `track`'s two hand-written row implementations are its evidence
 - {% ref "WORK-065" /%} — the `data-state` migration that never reached the audio player
 - {% ref "SPEC-100" /%} — the `carousel` contract; the block-agnostic pattern the player should follow

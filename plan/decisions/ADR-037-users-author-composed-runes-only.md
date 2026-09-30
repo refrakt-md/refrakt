@@ -135,5 +135,6 @@ authoring inside a hosted renderer means no domain coverage beyond what ships.
 - {% ref "ADR-035" /%} — the skin format, which targets theme authors and is untouched by this
 - {% ref "ADR-028" /%} — a theme restructures a rune, never redefines it; the portability premise
 - {% ref "SPEC-153" /%} — delivery for the path this decision gives users, and where `runes.local`'s scope is recorded
+- {% ref "ADR-039" /%} — where a rune lives; the empty code/project cell is this decision, and the three package kinds are its consequence
 
 {% /decision %}

@@ -178,6 +178,16 @@ client-lifecycle runes. No `plugins/places/` remains. Same replace-not-delete st
 {% ref "SPEC-147" /%} D1 — the composed implementations ship alongside until an explicit
 later decision.
 
+**Superseded by {% ref "ADR-039" /%}: places becomes a pack, it does not dissolve.** This
+decision reasoned about the *code* and let that stand as a verdict on the *package*, which
+{% ref "SPEC-153" /%} D1 had already separated by making a plugin-shipped composition
+byte-identical to a user-authored one. Two things the cost argument missed: a package of
+compositions is nearly free — no transform, and no CSS at all, since a composed rune has no
+block — and `event`'s schema row (Event with a nested `Place`, `startDate` / `endDate` /
+`url`) is **curated knowledge nothing validates**, which is ADR-039 rule 3's third criterion
+and reason enough to keep distributing it. `itinerary` emits no schema and is not covered by
+that; `map` still relocates, as stated. The code findings in this spec are unaffected.
+
 ### D3 — `map` is out of scope for composition permanently
 
 Not "blocked pending a mechanism". It needs a component lifecycle, which is
@@ -238,6 +248,7 @@ Kept here rather than filed, so the adopting milestone decides its own breakdown
 - {% ref "SPEC-151" /%} — the marketing audit; quantifies what `event`'s failure costs across the corpus
 - {% ref "SPEC-152" /%} — the plan audit; the sixth application of this method, and the first whose outcome is neither retire nor dissolve
 - {% ref "SPEC-154" /%} — the learning audit; the seventh, and where the delimiter rule and D3's permanence precedent are both reused
+- {% ref "ADR-039" /%} — where a rune lives; supersedes D2's dissolution in favour of a pack
 - {% ref "SPEC-155" /%} — the media audit; the second dissolution, and where D3's Svelte-registry citation is corrected
 
 {% /spec %}

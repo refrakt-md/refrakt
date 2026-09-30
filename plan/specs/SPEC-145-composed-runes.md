@@ -1377,6 +1377,8 @@ explicitly is cheaper than rediscovering it.
 - {% ref "ADR-038" /%} — a behavior binds on a data contract; what makes a composed rune interactive, and the answer to D2's state-styling half
 - {% ref "ADR-018" /%} — the canonical layout vocabulary; one of the two rune-agnostic routes D2 depends on
 - {% ref "SPEC-156" /%} — the ladder and row arrangements; what makes D2's inheritance real, and the arrangement half of D19
+- {% ref "SPEC-157" /%} — the docs audit; the last of the nine, and `api` as the first composition to build
+- {% ref "ADR-039" /%} — where a rune lives; the taxonomy the nine audits produced, and the cost collapse D2 causes
 - {% ref "SPEC-146" /%} — name resolution across rune boundaries; split out of D10, and a dependency of this spec
 
 {% /spec %}
