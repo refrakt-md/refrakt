@@ -432,6 +432,25 @@ sanitiser, no scope assertion over author-written selectors, no question about w
 skin file may contain. The moment a user-facing rune could ship CSS, all of that
 returns. Which is also why a definition that tries to is rejected rather than ignored.
 
+**What D2 does not claim, corrected here rather than discovered later.** "Its appearance
+is whatever the installed theme already gives the primitives it is built from" is true
+only where that styling is **addressable without naming the rune**. Measured on `track`
+({% ref "SPEC-155" /%}): 98 lines in `lumina/styles/runes/track.css`, every selector
+keyed on `.rf-track` or `.rf-track__*` — the tabular-nums duration, the `·` separators
+before artist and meta, the name's ellipsis. Compose the rune and all of them stop
+matching. The primitives supply geometry; what vanishes is everything the theme said
+about *this* shape.
+
+Two routes close the gap, and they serve different audiences. D16's `contextModifiers`
+works for a first-party composition, because Lumina can name it. For a user-authored
+rune it cannot — Lumina has never heard of `wine-tasting-note` — so the only route is a
+contract the theme styles **without** knowing the rune: an arrangement
+({% ref "ADR-030" /%}), a layout token ({% ref "ADR-018" /%}), a `data-state`
+({% ref "ADR-038" /%}). So D2 is not "composed runes are styled"; it is **"composed runes
+are styleable to the extent the vocabulary is rune-agnostic"**, and today that vocabulary
+is three layout tokens adopted by three runes. The arrangement work is therefore a
+dependency of this spec's promise rather than a neighbouring nice-to-have.
+
 ### D3 — the outer rune owns identity; inner runes are implementation detail
 
 `data-rune`, the schema row, and any {% ref "SPEC-144" /%} registration belong to
@@ -1144,6 +1163,12 @@ So a composed rune is not unstyleable — it is **theme-styleable in context**, 
 the same authority split the rest of this spec argues for: the author composes, the theme
 decorates. This is a documentation obligation, not work.
 
+**Its reach stops at first-party compositions, which is the half D2 now states.**
+`contextModifiers` keys on a *named* parent rune, so it requires the theme to know the
+composition exists. That covers everything in this repo and covers nothing a user writes.
+D16 therefore answers "can a theme style a composed rune" and not "can a composed rune be
+styled", and the second question is the one {% ref "ADR-037" /%}'s audience asks.
+
 ### D18 — `card` is the canonical media-split primitive, and composing over it deletes work
 
 The split-layout *vocabulary* is already unified and the *mechanism* is not, which is the
@@ -1322,7 +1347,9 @@ explicitly is cheaper than rediscovering it.
 - {% ref "SPEC-152" /%} — the plan audit; `section` as the document counterpart to D18's `card`, and four runes already hand-rolling this mechanism
 - {% ref "SPEC-153" /%} — how a composed rune is delivered, from a project directory and from a plugin package
 - {% ref "SPEC-154" /%} — the learning audit; `recipe`'s `cover` variant is D15's measured case, and four planned runes are dispositioned rather than built
-- {% ref "SPEC-155" /%} — the media audit; the place / promote / rebuild distinction that decides whether a repeated-item rune can be composed
+- {% ref "SPEC-155" /%} — the media audit; the place / promote / rebuild distinction, and the measured CSS gap D2 now states
+- {% ref "ADR-038" /%} — a behavior binds on a data contract; what makes a composed rune interactive, and the answer to D2's state-styling half
+- {% ref "ADR-018" /%} — the canonical layout vocabulary; one of the two rune-agnostic routes D2 depends on
 - {% ref "SPEC-146" /%} — name resolution across rune boundaries; split out of D10, and a dependency of this spec
 
 {% /spec %}

@@ -251,8 +251,31 @@ already styles. It can ship before any arrangement work and is the one part of
 this decision with an immediate audience, plugin authors included: they have no
 group name they can rely on today when shipping CSS for their own runes.
 
-**This decision does not authorise building anything.** It constrains a later
-spec. If that spec never comes, nothing is owed.
+**Composition changes what rule 5b's "a concrete design that wants it" means.**
+Recorded after the fact, because the justification moved. When this decision was written,
+an arrangement vocabulary consolidated bespoke CSS — five runes with their own grid, one
+with its own row — and the gain was tidiness plus a theme's ability to restyle.
+
+{% ref "SPEC-145" /%} makes it **enabling**. A composed rune has no block (D2), so it has
+no selectors of its own, and its appearance is whatever the theme gives the primitives it
+places. For a first-party composition a theme can reach it by name through
+`contextModifiers` (SPEC-145 D16). For a user-authored one it cannot: Lumina will never
+have heard of `wine-tasting-note`, and {% ref "ADR-037" /%} makes user-authored
+compositions the *only* way a rune reaches a site from outside this repo. So a vocabulary
+the theme styles **without naming the rune** is the only route those runes have to being
+styled at all.
+
+Rule 4 is the specific case, and it now has a measured consumer. {% ref "SPEC-155" /%}
+found `playlist` composable on every axis but appearance, and the appearance gap is exactly
+the ladder-of-rows this decision named: 98 lines in `lumina/styles/runes/track.css`, every
+selector keyed on `.rf-track` / `.rf-track__*`, all of it unreachable once the rune has no
+block. That satisfies 5b's "at least one concrete design that wants it" with a design that
+exists rather than a sketch — and 5a's three-implementation bar is separately met for the
+row/ladder case by `track` rows, `cast`'s `list` roster and `steps`.
+
+**This decision still does not authorise building anything.** It constrains a later
+spec. If that spec never comes, nothing is owed — but the thing owed if composition ships
+without it is now stated: composed runes that only the theme's author can style.
 
 ## Alternatives considered
 
@@ -298,5 +321,9 @@ honesty about which parts are settled.
 - {% ref "ADR-028" /%} — attribute applicability is rune identity; the source of the semantic-locking principle
 - {% ref "ADR-029" /%} — structural assembly is theme-owned; draws the container half of the same line
 - {% ref "BUG-024" /%} — the sequence duplication that exposed the `<ol>`/`<li>` coupling
+- {% ref "SPEC-145" /%} — composed runes; why this vocabulary became enabling rather than consolidating
+- {% ref "SPEC-155" /%} — the media audit; the measured consumer for rule 4
+- {% ref "ADR-037" /%} — users author composed runes only; the audience that cannot be styled by name
+- {% ref "ADR-038" /%} — a behavior binds on a data contract; the same rune-agnostic principle for state and binding
 
 {% /decision %}

@@ -137,9 +137,28 @@ regression.
 
 Both fail silently: a player with an empty queue looks like a player.
 
+**3. The active-track marker is a BEM class, so a composed track can never carry it.**
+`audio.ts:192` is `item.classList.toggle('rf-track--active', i === this.currentTrackIndex)`,
+styled at `audio.css:145-149` (which also reaches `.rf-track--active .rf-track__track-name`).
+That class exists only because `track` declares `block: 'track'`, so
+{% ref "SPEC-145" /%} D2 rules it out by construction.
+
+It is also unfinished work rather than a design choice. {% ref "WORK-065" /%} (`done`)
+migrated behaviors *"from class-based state toggling to `data-state` attribute toggling…
+enabling themes to style all interactive states generically"*, and
+`lumina/styles/dimensions/state.css` ships `[data-state="open" | "active" | "inactive" |
+"selected" | "disabled"]`. It enumerated accordion, tabs, datatable and form. The audio
+player was not in that list, so it is the last behavior writing a state class.
+
+So the player couples to these two runes through **three rune-specific selectors**, while
+the repo already contains the pattern that would replace all three — `carousel`'s
+block-agnostic `[data-layout="carousel"]` contract ({% ref "SPEC-100" /%}).
+{% ref "ADR-038" /%} generalises that into a rule, and its three-change migration of
+`<rf-audio>` is exactly this list.
+
 **And `emitTag: 'track'` repairs the second as a side effect**, because a promoted item is a
 real `track` rune and carries `data-rune="track"`. The change that makes playlist composable
-fixes half of this.
+fixes one of the three.
 
 ## Per property
 
@@ -218,11 +237,25 @@ Place, promote, or rebuild. Only rebuilding blocks composition, and promoting co
 rebuild into two tractable problems. This subsumes per-rune guesswork the same way
 {% ref "SPEC-148" /%} D1's five paths did for schema properties.
 
-### D2 — `playlist` composes, after promotion and the player decoupling
+### D2 — `playlist` composes structurally; its **appearance** has a further dependency
 
 Not a new primitive: `emitTag` alongside an `itemModel` is the documented, implemented
 mechanism, and `{% audio playlist %}` is a shipped attribute pair. `name` and `image` remain
 gated on {% ref "SPEC-146" /%}, as for every other entity rune with a harvested headline.
+
+**Corrected.** An earlier revision of this decision read "`playlist` composes", concluded
+from the transform, the schema and the content model, and did not check the CSS. It should
+have: `lumina/styles/runes/track.css` is 98 lines with every selector keyed on `.rf-track`
+or `.rf-track__*` — the duration's `tabular-nums`, the `·` separators on artist and meta,
+the name's ellipsis — and a composed `track` has no block, so none of it matches. The
+mechanism holds; the appearance does not.
+
+That is not a playlist problem. It is {% ref "SPEC-145" /%} D2's inheritance claim being
+conditional on the theme's vocabulary being rune-agnostic, which today is three layout
+tokens ({% ref "ADR-018" /%}) adopted by three runes. {% ref "ADR-030" /%} rule 4 already
+names this exact case — *"A playlist is a ladder of rows… This is the capability whose
+absence currently forces bespoke CSS"* — so composing `playlist` well is gated on the
+arrangement vocabulary, not only on SPEC-146. D2 of SPEC-145 now states the conditional.
 
 ### D3 — `emitTag: 'track'` stands on its own merits, before any composition work
 
@@ -230,6 +263,12 @@ It deletes ~46 lines of per-item tag construction, collapses the two track forms
 (retiring WORK-572's count-walking merge), and repairs defect 2 above. None of that depends
 on playlist ever being composed, and this is the second audit in a row whose most valuable
 finding is a content-model adoption ({% ref "SPEC-154" /%} D4 was the first).
+
+**It also deletes duplicated CSS**, which the first revision of this decision missed.
+`playlist.css`'s `.rf-playlist__tracks > li` carries the same `gap`, `padding`,
+`transition`, `+ li` border-top, `:hover` background and `::before` ordinal rules that
+`track.css` gives `.rf-track`. Two parallel blocks because the markup has two forms: a
+promoted item is a `track` rune, so one block serves both and the playlist-side copy goes.
 
 ### D4 — a composed playlist has no inline player
 
@@ -287,6 +326,7 @@ Kept here rather than filed, so the adopting milestone decides its own breakdown
 
 - [ ] `<rf-audio>` finds a playlist of every `type`, not only `mix` — asserted per type, since the current selector matches one of five
 - [ ] `<rf-audio>` finds markdown-list tracks as well as authored `{% track %}` children, asserted on a fixture containing both
+- [ ] `<rf-audio>` marks the active track with `data-state` rather than `rf-track--active`, completing {% ref "WORK-065" /%}'s coverage, with Lumina styling `[data-state]` instead of reaching into the track block
 - [ ] `playlist` emits its tracks via `emitTag: 'track'` + `emitAttributes`, with `refrakt contracts --check` and `npm run seo:baseline:check` reviewed rather than regenerated — the `<li>` gains `data-rune="track"`, so a diff is expected (D3)
 - [ ] The two track forms share one path after promotion, and WORK-572's count-walking merge is gone
 - [ ] Whether a child row's own `properties` reach the JSON-LD graph is answered against `playlist`'s six-property rows, and the finding recorded in {% ref "SPEC-146" /%} (D7)
@@ -308,5 +348,10 @@ Kept here rather than filed, so the adopting milestone decides its own breakdown
 - {% ref "BUG-013" /%} — the per-type schema defect whose fix caused defect 1
 - {% ref "BUG-016" /%} — why `{% track %}` lands in the `tracks` field, and what promotion would simplify
 - {% ref "ADR-036" /%} — the plugin escape hatch `audio` falls under
+- {% ref "ADR-038" /%} — a behavior binds on a data contract; the rule the three couplings above motivated
+- {% ref "ADR-030" /%} — arrangements; rule 4 names this plugin's track rows as its motivating case
+- {% ref "ADR-018" /%} — the canonical layout vocabulary a composed track row would be styled through
+- {% ref "WORK-065" /%} — the `data-state` migration that never reached the audio player
+- {% ref "SPEC-100" /%} — the `carousel` contract; the block-agnostic pattern the player should follow
 
 {% /spec %}
