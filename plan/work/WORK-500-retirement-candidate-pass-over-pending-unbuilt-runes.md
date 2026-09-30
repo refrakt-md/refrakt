@@ -17,5 +17,6 @@ Once `cancelled` / `superseded` exist, review the plan corpus for items that sho
 ## References
 - {% ref "SPEC-117" /%} — spec (Migration: optional follow-up)
 - {% ref "SPEC-008" /%} — the source of the pending items
+- {% ref "SPEC-154" /%} — the learning audit; supplies the reviewed judgment for six of the 13 items (`concept`, `exercise`, `glossary`, `objective`, `prerequisite`, `quiz`) and a tier test for the rest
 
 {% /work %}

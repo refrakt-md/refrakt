@@ -205,5 +205,6 @@ inventing an expression language for one consumer, which {% ref "ADR-036" /%} fo
 - {% ref "SPEC-145" /%} — composed runes; D12's `requiresParent` constraint, five of whose thirteen live here
 - {% ref "ADR-036" /%} — why `comparison` is not generalised
 - {% ref "SPEC-152" /%} — the plan audit; the third plugin that stays, and the dedupe-inside-a-surviving-plugin outcome this plugin also has
+- {% ref "SPEC-154" /%} — the learning audit; adds a seventh, planned, `pageSectionProperties` case in `concept`, so D3's set grows as the backlog lands
 
 {% /spec %}

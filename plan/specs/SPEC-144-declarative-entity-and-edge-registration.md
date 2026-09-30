@@ -210,5 +210,6 @@ what runs.
 - {% ref "SPEC-064" /%} — plan content registered from outside a site's content tree; part of why `plan` is out of scope
 - {% ref "SPEC-147" /%} — the storytelling replacement; the consumer that motivated this spec, and which finds D2's `postProcess` exclusion loses a capability
 - {% ref "SPEC-152" /%} — the plan audit; why D5's exclusion leaves the plugin's runes composable anyway
+- {% ref "SPEC-154" /%} — the learning audit; `prerequisite` is this spec's first greenfield consumer, and the planned `glossary` is a second witness for D2's `postProcess` exclusion
 
 {% /spec %}

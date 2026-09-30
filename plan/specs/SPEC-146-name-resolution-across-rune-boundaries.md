@@ -247,5 +247,6 @@ sequencing: land the resolver, prove it inert, then build on it.
 - {% ref "ADR-008" /%} — the flat per-rune namespace whose boundary this is about
 - {% ref "WORK-565" /%} — the applier's implementation and the RDFa wrapper's rationale
 - {% ref "SPEC-151" /%} — the marketing audit; counts four live runes across four plugins that Problem 2 unblocks, all failing on the same two properties
+- {% ref "SPEC-154" /%} — the learning audit; `recipe`'s `ingredient` is the first path-B property carrying a set, so Problem 2 must preserve multiplicity
 
 {% /spec %}

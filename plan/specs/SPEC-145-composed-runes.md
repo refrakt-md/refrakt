@@ -1321,6 +1321,7 @@ explicitly is cheaper than rediscovering it.
 - {% ref "ADR-008" /%} — the flat per-rune namespace whose boundary name resolution has to cross safely
 - {% ref "SPEC-152" /%} — the plan audit; `section` as the document counterpart to D18's `card`, and four runes already hand-rolling this mechanism
 - {% ref "SPEC-153" /%} — how a composed rune is delivered, from a project directory and from a plugin package
+- {% ref "SPEC-154" /%} — the learning audit; `recipe`'s `cover` variant is D15's measured case, and four planned runes are dispositioned rather than built
 - {% ref "SPEC-146" /%} — name resolution across rune boundaries; split out of D10, and a dependency of this spec
 
 {% /spec %}
