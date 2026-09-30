@@ -130,8 +130,8 @@ headed *"Referencing Your Package → During Development (Local Files)"*: its pu
 ADR-037 assigns the declared emit path to. So its intent is consistent with ADR-037.
 
 What remains true is narrower and still worth settling: nothing in `runes.local`
-*restricts* it to that use, it takes a JS module path so a `.rune.md` cannot go through
-it at all, and ADR-037 does not mention it. That is a documentation and scope question
+*restricts* it to that use, it takes a JS module path so a rune definition cannot go
+through it at all, and ADR-037 does not mention it. That is a documentation and scope question
 (D7), not a contradiction.
 
 ## Decisions
@@ -182,7 +182,7 @@ load, not a unit test.
 
 Its documented purpose is unpublished plugin development. That is recorded in ADR-037's
 own terms so the relationship stops being implicit, and it rejects a composed-rune path
-rather than half-accepting one: it takes a JS module and a `.rune.md` is not one.
+rather than half-accepting one: it takes a JS module and a rune definition is not one.
 
 ### D8 — precedence is core < plugin < project, and core names are not shadowable
 
@@ -192,11 +192,32 @@ portability premise {% ref "ADR-028" /%} rests on, one layer out. A project rune
 shadow a *plugin* rune, because `runes.prefer` already exists for exactly that and makes
 the choice explicit.
 
-### D9 — one file per composed rune; there is no skin half
+### D9 — one file per composed rune, named `<rune>.md`, and the filename is authoritative
 
-{% ref "ADR-035" /%}'s `<rune>.skin.md` has no counterpart here: {% ref "SPEC-145" /%} D2
-says a composed rune ships no CSS, so there is nothing for a second file to hold. The
-two-file split stays a declared-tier and theme concern.
+**There is no second file**, and the justification got simpler than it was: an earlier
+revision said {% ref "ADR-035" /%}'s `<rune>.skin.md` *"has no counterpart here"*, leaving the
+two-file split a theme concern. ADR-035 is now `rejected`, so there is no skin format at all
+and no pair to be half of.
+
+**So the file is `playlist.md`, not `playlist.rune.md`.** A suffix earns its keep when a file
+must be identified out of context, and these never are: a plugin **declares** its rune
+directory (D2) and a project's is a declared directory whose contents are discovered (D4), so
+the directory always says what they are. That matches every other convention in the repo —
+`site/content/**`, `fixtures/*.md`, `plan/specs/*.md` are all directory-scoped, `_layout.md` is
+the single prefix special case, and nothing uses a double extension.
+
+**The filename carries the rune's name, and frontmatter does not repeat it.** This repo has
+already run the other experiment: plan entities are `{ID}-{slug}.md` *and* carry `id="…"` in
+frontmatter, two sources of truth for one fact, and they drifted badly enough to need
+`refrakt plan migrate filenames --apply --git`. So `rune:` comes out of the frontmatter —
+resolution needs the filename anyway (`{% playlist %}` → `<runeDir>/playlist.md` is the
+cheapest possible lookup), and a rename becomes just a rename. Frontmatter keeps what a
+filename cannot carry: `tag`, `aliases`, `attributes`, `content`, `schema`, `metaFields`,
+`blocks` and `registers`.
+
+**The fixture is separated by directory, not by suffix.** {% ref "SPEC-102" /%} fixtures are
+also `.md`, so `fixtures/playlist.md` sits beside `runes/playlist.md` — which is what plugins
+already do — rather than introducing `playlist.fixture.md`.
 
 ### D10 — a rune edit invalidates every page that uses it
 
@@ -264,6 +285,7 @@ Kept here rather than filed, so the adopting milestone decides its own breakdown
 - [ ] A project rune taking a core rune's name is rejected at load with both names reported; taking a plugin rune's name requires a `runes.prefer` entry (D8)
 - [ ] Editing a file in the project's rune directory in dev invalidates every page using that rune, asserted on a two-page fixture where only one page uses it (D10)
 - [ ] A plugin rune entry carrying a template and no `transform` passes `validatePlugin`, and one carrying both is rejected naming the rune (D11)
+- [ ] A composed rune is named `<rune>.md`, its name is read from the filename, and a frontmatter key restating it is rejected rather than silently preferred (D9)
 - [ ] `create-refrakt` scaffolds the `runes.dir` key, and the authoring guide states the project-versus-package asymmetry with the reason rather than as a convention
 
 ## References
@@ -274,7 +296,8 @@ Kept here rather than filed, so the adopting milestone decides its own breakdown
 - {% ref "SPEC-113" /%} — `ProjectFiles`; the seam that decides D5
 - {% ref "SPEC-063" /%} — file roots and partial resolution; the package-relative resolution technique D2 borrows
 - {% ref "SPEC-102" /%} — the standardised fixture format, whose file-discovery half is the mechanism measured here
-- {% ref "ADR-035" /%} — the skin format, which D9 records has no counterpart for a composed rune
+- {% ref "ADR-035" /%} — the skin format, `rejected`; D9 is where the one-file naming decision lives instead
+- {% ref "SPEC-102" /%} — the standardised fixture format D9 separates by directory rather than by suffix
 - {% ref "ADR-028" /%} — the portability premise D8 extends from themes to rune names
 
 {% /spec %}

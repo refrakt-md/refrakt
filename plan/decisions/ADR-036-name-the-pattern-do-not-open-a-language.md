@@ -115,7 +115,7 @@ to diagnose than a pattern rejected at authoring time.
 - {% ref "SPEC-145" /%} — composed runes; the pressure valve this ADR relies on
 - {% ref "WORK-608" /%} — retires the last non-`postTransform` function in `RuneConfig`
 - {% ref "BUG-031" /%} — the item-model authoring grammar, and why the one exception exists
-- {% ref "ADR-035" /%} — the companion decision on where the skin format applies
+- {% ref "ADR-035" /%} — `rejected`; cited here for its rot principle, which survives the format
 - {% ref "ADR-037" /%} — users author composed runes only; which makes composition the graduation path's starting point
 
 {% /decision %}

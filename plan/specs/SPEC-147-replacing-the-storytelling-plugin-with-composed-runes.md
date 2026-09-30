@@ -230,7 +230,7 @@ Plus the dependency chain this spec sits on: {% ref "SPEC-146" /%} →
 - {% ref "ADR-037" /%} — users author composed runes only; why this is the shape of the replacement
 - {% ref "ADR-036" /%} — name the pattern, do not open a language; the rule Finding 1 follows
 - {% ref "ADR-030" /%} — arrangements and variants; rule 5a, the bar Finding 2 clears
-- {% ref "ADR-035" /%} — a format the reference implementation does not use is a format that rots
+- {% ref "ADR-035" /%} — a format the reference implementation does not use is a format that rots; `rejected`, and now its own best example
 - {% ref "SPEC-003" /%} — the declarative content model the `segmented` addition belongs to
 - {% ref "WORK-603" /%} — `groupByHeading`'s seven sites, and the utility form to weigh against
 - {% ref "SPEC-148" /%} — the places audit; the second data point for the misfiled-capability finding, and the per-property method this spec predates

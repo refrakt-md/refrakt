@@ -179,7 +179,9 @@ says where a slot's content *goes*; something still has to say how authored
 markdown *becomes* a slot with that name. That is the content model — which
 already exists and is exactly what {% ref "SPEC-143" /%}'s slot declaration names.
 So: **frontmatter is the input declaration, the body is the output template, and
-slot names are the join.** Frontmatter rather than the H2 sections a declared rune
+slot names are the join.** The rune's *name* is not in the frontmatter — it is the
+filename, per {% ref "SPEC-153" /%} D9, which also records why duplicating it in both
+places was not worth the drift. Frontmatter rather than the H2 sections a declared rune
 might use, because here the body is claimed by the template and the declaration has
 nowhere else to go.
 
@@ -187,7 +189,6 @@ nowhere else to go.
 
 ```md
 ---
-rune: bond
 tag: aside
 attributes:
   from:          { type: string, required: true }
@@ -218,7 +219,6 @@ slice of the registration pipeline. The `bidirectional` arrow is Markdoc's own
 
 ```md
 ---
-rune: character
 tag: article
 base: taxonomy
 provides: [prose]
@@ -304,7 +304,6 @@ members are `Person`s, with the members placed inside a `{% grid %}`:
 
 ```md
 ---
-rune: troupe
 tag: section
 attributes:
   name: { type: string, required: true }
@@ -630,7 +629,6 @@ The composed form keeps `metaFields` and `blocks` verbatim and drops `layout`:
 
 ```md
 ---
-rune: realm
 tag: article
 attributes:
   name:      { type: string, required: true }
@@ -1038,7 +1036,6 @@ uses everywhere, so the definition format eats its own dog food.
 
 ```md
 ---
-rune: character
 tag: article
 attributes:
   name:   { type: string, required: true }
@@ -1352,7 +1349,7 @@ explicitly is cheaper than rediscovering it.
 - {% ref "SPEC-143" /%} — the declared tier, and the open question this spec must not outrun
 - {% ref "SPEC-144" /%} — where a composed rune's cross-page identity comes from
 - {% ref "ADR-036" /%} — why the template is Markdoc and not a DSL
-- {% ref "ADR-035" /%} — the skin format, which composed runes do not need
+- {% ref "ADR-035" /%} — the skin format, `rejected` once this spec removed its premise
 - {% ref "SPEC-129" /%} — `include`'s AST substitution technique, which this reuses at a different stage (D4)
 - {% ref "SPEC-130" /%} — the schema.org table, parent-retypes-children, and the D5 trade
 - {% ref "SPEC-063" /%} — file roots and partial resolution; where a template file would live

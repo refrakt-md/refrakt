@@ -676,9 +676,12 @@ presentation split; what follows is what that answer left open.
 
 {% ref "ADR-037" /%} has since **retired two of these** rather than answering them.
 Because a user authors a composed rune, which ships no CSS, "does CSS come with it?"
-no longer applies to a rune author at all — it applies to a theme author, where
-{% ref "ADR-035" /%} already answers it. And the two-file `.rune.md` / `.skin.md` pair
-collapses to one file, so the discovery question is about a single shape rather than a
+no longer applies to a rune author at all. It was said here to apply to a theme author
+instead, *"where {% ref "ADR-035" /%} already answers it"* — but ADR-035 is now
+`rejected`, because after composition a theme's work is cross-cutting and a capability
+package shipping CSS is simply a package. So there is no skin format, the two-file
+`.rune.md` / `.skin.md` pair collapses to a single `<rune>.md`
+({% ref "SPEC-153" /%} D9), and the discovery question is about one shape rather than a
 pair. What the schema question and the schema.org question lose in scope they keep in
 force; both are recorded below as they stand.
 

@@ -61,6 +61,15 @@ no CSS at all (SPEC-145 D2). None of that applies to a rune author any more.
 audience with a different job. The scope of the skin format does not change; only the
 claim that rune authors would use one goes away.
 
+**Revisited, and wrong: ADR-035 is now `rejected`.** That paragraph assumed the remaining
+audience — a leaf theme styling a few self-contained runes — survives this decision. It does
+not. After composition a theme styles tokens, primitives and dimensions, all cross-cutting by
+construction, which is ADR-035's own *package* row rather than its *skin* row; and a
+capability package shipping CSS for a rune it owns is likewise a package. ADR-035's rejected
+third alternative — *"user runes reference existing BEM blocks instead of shipping CSS"* — is
+precisely what this decision chose, so its premise is gone rather than narrowed. Its full
+reasoning is preserved in place.
+
 **The hosted validation surface barely grows.** A user rune becomes frontmatter plus a
 Markdoc template. Markdoc is already parsed and already safe. What remains is the
 schema.org claims question (SPEC-143's open question) and `itemModel`'s regex

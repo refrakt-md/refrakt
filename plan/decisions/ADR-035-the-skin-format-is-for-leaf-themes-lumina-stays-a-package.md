@@ -1,6 +1,10 @@
-{% decision id="ADR-035" status="proposed" date="2026-09-28" source="SPEC-143" tags="theme, css, config, serialisation, hosted, dx" %}
+{% decision id="ADR-035" status="rejected" date="2026-09-28" source="SPEC-143" tags="theme, css, config, serialisation, hosted, dx" %}
 
 # The skin format is for leaf themes; Lumina stays a package
+
+> **Rejected.** The premise below — that a user-authored rune must be able to ship its own
+> CSS — was removed by {% ref "ADR-037" /%}. The reasoning is kept rather than deleted; see
+> **Why this was declined** at the end, which is the operative section.
 
 ## Context
 
@@ -108,9 +112,68 @@ format rot. The conversion function is cheap and it is the test.
 - `packages/skeleton/index.css:18` — `@layer skeleton, skin`, where the word
   `skin` comes from
 
+## Why this was declined
+
+Four reasons, three of them drawn from this decision's own text.
+
+**1. The alternative this ADR rejected became the architecture.** Under *Alternatives
+considered*: *"Neither uses it — user runes reference existing BEM blocks instead of shipping
+CSS. Rejected in SPEC-143: a rune that cannot style itself is not a rune an author can define
+for a new domain."* {% ref "ADR-037" /%} decided exactly that — users author composed runes
+only, and a composed rune has no block and ships no CSS ({% ref "SPEC-145" /%} D2). The
+premise the Context rests on is gone.
+
+**2. Its own stated cost was never paid.** Consequences: *"A format the reference theme does
+not use is a format that rots… Without that test, this decision is a liability rather than a
+trade."* The round-trip test is owed to "the follow-on spec", cited twice above. **That spec
+was never written**, so the decision has been sitting on the liability side of its own trade
+since the day it was made.
+
+**3. The audience is empty on both sides of its own threshold table.** That table splits on
+isolation — *"styles a few runes, each self-contained"* → skin, *"cross-cutting
+mechanisms"* → package. After composition:
+
+- A **theme** styles tokens, primitives and dimensions. One rule on `card` serves every
+  composition built from it, so the work is cross-cutting by construction — the *package* row.
+- A **capability package** ({% ref "ADR-039" /%} rule 4) shipping CSS for a rune it owns is a
+  package, and ships `styles/<block>.css` exactly as Lumina ships `styles/runes/card.css` —
+  also the package row. Measured: **no plugin ships any CSS today**, and `@refrakt-md/plan`'s
+  `files` field even declares a `styles` directory that does not exist.
+
+**4. Nothing depends on the format.** Of the eleven references to this ADR in the corpus,
+three say it does not apply, two cite its *rot principle* rather than its mechanism, and the
+rest are cross-links. {% ref "SPEC-147" /%} Finding 5 — the one place a real CSS migration was
+costed, at 413 lines — resolves it with {% ref "SPEC-145" /%} D16's `contextModifiers`, not
+with a skin file.
+
+**A wrinkle that would have to be solved if it were kept**, recorded in case the question is
+reopened: `skin` is a cascade layer. {% ref "SPEC-094" /%}'s `@layer skeleton, skin` separates
+geometry from decoration, and a package shipping a rune's CSS ships both halves. A
+`.skin.md` holding skeleton rules is misnamed, and a `.skeleton.md` / `.skin.md` pair is two
+files for one block — which is the co-location this format existed to provide.
+
+### What survives
+
+**"Lumina stays a package" stops being a decision.** With no alternative encoding, it is the
+status quo rather than a choice.
+
+**The evidence is worth keeping visible**, because this ADR is the only place it is written
+down: `packages/lumina/test/css-coverage.test.ts` maintains a 116-entry
+`KNOWN_MISSING_SELECTORS` set whose entries record **shared-selector routing, not gaps** —
+`.rf-event__header` is *"styled via `[data-section="header"]` dimension"*, and so on. That is
+a real fact about how the reference theme is built, and it is the reason a per-rune file was
+never going to fit it.
+
+**The rot principle survives independently** and is cited as such by
+{% ref "SPEC-147" /%} and {% ref "ADR-036" /%}: a format the reference implementation does not
+use is a format that rots. This ADR is now its own best example.
+
 ## References
 
 - {% ref "SPEC-143" /%} — the identity/presentation split, and why CSS travels with the presentation half
+- {% ref "ADR-037" /%} — users author composed runes only; the decision that removed this one's premise
+- {% ref "ADR-039" /%} — where a rune lives; the capability-package category that is the nearest thing to a residual audience, and is still a package
+- {% ref "SPEC-153" /%} — delivery; where the one-file-per-rune naming decision lives now
 - {% ref "ADR-028" /%} — a theme restructures a rune, never redefines it; the rule `IDENTITY_FIELDS` expresses
 - {% ref "ADR-031" /%} — site-level rune config overrides; the other consumer of the same merge path
 - {% ref "SPEC-094" /%} — the cascade-layer contract that gives `skin` its meaning
