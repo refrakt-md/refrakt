@@ -85,6 +85,15 @@ is writing a plugin anyway, so the constraint bites only if they try to avoid th
 between the internal and user-facing paths, so a user definition carrying a slot
 declaration instead of a template is rejected rather than quietly accepted.
 
+**`runes.local` is not an exception to this, and the reason should be stated rather
+than assumed.** It takes a JS module path and registers a rune with a hand-written
+transform, which reads like the declared path offered to users. Its documentation scopes
+it otherwise — *"Referencing Your Package → During Development (Local Files)"* — so its
+audience is a plugin author's inner loop before publishing, which is the code path this
+decision assigns the declared emit path to. Nothing in the mechanism *enforces* that
+scope, and a composed rune cannot travel through it at all, since a `.rune.md` is not a
+module. {% ref "SPEC-153" /%} D7 records the scope explicitly.
+
 ## Alternatives considered
 
 **Offer both tiers, with documentation explaining when to use which.** Rejected — this
@@ -125,5 +134,6 @@ authoring inside a hosted renderer means no domain coverage beyond what ships.
 - {% ref "ADR-036" /%} — name the pattern, do not open a language; owns the plugin graduation path
 - {% ref "ADR-035" /%} — the skin format, which targets theme authors and is untouched by this
 - {% ref "ADR-028" /%} — a theme restructures a rune, never redefines it; the portability premise
+- {% ref "SPEC-153" /%} — delivery for the path this decision gives users, and where `runes.local`'s scope is recorded
 
 {% /decision %}

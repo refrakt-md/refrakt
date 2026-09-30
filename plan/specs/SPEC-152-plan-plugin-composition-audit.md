@@ -206,5 +206,6 @@ is not sugar over a primitive and has no composition path.
 - {% ref "SPEC-150" /%} — the design audit; the other plugin that stays, and the schema-table precondition this audit also meets
 - {% ref "SPEC-151" /%} — the marketing audit; the third plugin that stays, with its own internal duplication
 - {% ref "SPEC-072" /%} — the `collection` / `aggregate` resolvers the four sugar views already lower to
+- {% ref "SPEC-153" /%} — delivery; this plugin is its forcing function, being the first that stays and still ships composed runes
 
 {% /spec %}
