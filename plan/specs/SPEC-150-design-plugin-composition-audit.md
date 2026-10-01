@@ -35,9 +35,9 @@ content model, behaviour and pipeline, and the audit is a different shape.
 |---|---|---|
 | `swatch` | 76 | **Composes today.** `sequence` with no fields; renders a chip from attributes alone |
 | `mockup` | 193 | **Composes today.** `sequence` body + a named viewport wrapper; its own comment notes the device chrome is `data-*` attributes "not in a postTransform", so it already follows the declarative convention |
-| `palette` | 309 | Needs {% ref "SPEC-147" /%}'s `segmented` model (two `groupByHeading` sites), **and** see the coupling below |
-| `spacing` | 270 | Same — two `groupByHeading` sites, same coupling |
-| `typography` | 284 | No heading grouping; composable in principle, same coupling |
+| `palette` | 309 | Needs {% ref "SPEC-147" /%}'s `segmented` model (two `groupByHeading` sites); **the coupling below is corrected and does not block it** |
+| `spacing` | 270 | Same — two `groupByHeading` sites, same correction |
+| `typography` | 284 | No heading grouping; **composes**, gated on nothing |
 | `preview` | 237 | **Triply blocked**, and misfiled — see below |
 | `design-context` | 99 | **Uncomposable by nature** — see below |
 
@@ -62,15 +62,51 @@ Worth naming because it is not obvious from the outside: `design-context` looks 
 container, is described in the catalog as *"composing palette, typography, and spacing
 runes"*, and is the plugin's least composable rune.
 
-### And it constrains its children
+### Corrected: it does not constrain its children
 
-The extractors walk `palette` / `typography` / `spacing`'s **output trees**. So those
-three runes' emitted structure is a contract `design-context` depends on — composing them
-changes that structure and breaks the extraction silently.
+**This section claimed a coupling that does not exist, and the correction frees three
+runes.** It read: *"the extractors walk `palette` / `typography` / `spacing`'s **output
+trees**… composing them changes that structure and breaks the extraction silently"*, and
+called it *"the first cross-rune output coupling any audit has turned up"*. Read, the stage
+is wrong — and with the stage goes the conclusion.
 
-This is the first cross-rune output coupling any audit has turned up, and it means the
-three display runes cannot be composed independently of `design-context`'s fate. They are
-composable in isolation and not in place.
+`design-context`'s transform extracts **before** its children are transformed, and says so
+in its own comment:
+
+```ts
+const children = asNodes(resolved.body) as Node[];
+// Extract tokens from child AST nodes before transforming
+for (const child of children) {
+  if (child.type === 'tag') {
+    const tagName = (child as any).tag;
+    if (tagName === 'palette') tokens.colors = extractPaletteTokens(child);
+```
+
+And the extractors consume **AST node types**, not emitted tags —
+`extractPaletteTokens(node: Node)` walks `child.type === 'heading'`,
+`child.type === 'list'`, `item.type === 'item'` (`tags/palette.ts:276`).
+
+So what `design-context` depends on is the **authored markdown shape** inside
+`{% palette %}` — headings and lists — which is the content model's input, not any rune's
+output. Composition changes what a rune *emits*; it cannot change what the author *wrote*.
+The extraction never sees `palette`'s output and is therefore untouched.
+
+**Consequences, in order of how much they matter:**
+
+1. **`palette`, `spacing` and `typography` are composable in place**, not merely in
+   isolation. `typography` is gated on nothing at all; the other two need only
+   {% ref "SPEC-147" /%}'s `segmented` model, as the table says.
+2. **The "cross-rune output coupling" category is withdrawn.** No audit has found one, and
+   recording a blocker category on a single misread instance is the error
+   {% ref "ADR-039" /%} rule 2 had to retract at larger scale.
+3. **The fourth blocker category survives intact.** `design-context` still computes a value
+   from its children rather than arranging them, and is still uncomposable. What it does
+   *not* do is propagate that property to its children.
+
+The surviving dependency is weaker and worth stating so it is not rediscovered as a
+blocker: `design-context` dispatches on the child's **tag name**, so a child must still be
+a tag named `palette` / `typography` / `spacing`. A composed `palette` is still a rune named
+`palette`, so even that holds.
 
 ## `preview` — triply blocked, and in the wrong plugin
 
@@ -121,13 +157,13 @@ Not "retires later" or "dissolves". Of its seven runes:
 
 - `swatch` and `mockup` could compose, and gain little from it — they are small and
   already declarative
-- `palette`, `spacing` and `typography` could compose in isolation but not in place,
-  because `design-context` reads their output
+- `palette`, `spacing` and `typography` compose **in place** — the output coupling this
+  audit first recorded was a misread of the extraction stage, corrected above
 - `preview` belongs elsewhere and cannot compose regardless
 - `design-context` cannot compose and should not
 
 Removing `preview` would leave a coherent plugin whose core is a computation over its own
-runes' output, wired to an interactive core rune. That is precisely what the plugin
+runes' **authored content**, wired to an interactive core rune. That is precisely what the plugin
 mechanism exists for, and {% ref "ADR-036" /%} already names it as the escape hatch for
 anything composition cannot express.
 

@@ -34,7 +34,7 @@ worth more than the lines saved by removing it.
 
 ## What the plugin actually contains
 
-2,106 lines: 319 config, 319 pipeline, 1,030 across eight tag files, the rest shared
+2,106 lines: 319 config, 319 pipeline, 1,132 across the eight files in `tags/` — of which `common.ts` is 122 lines of shared helpers, so the seven rune modules are 1,010 — and 336 elsewhere
 helpers and manifest. The imperative residue across all eight runes is **one** custom
 content model (`storyboard`) and **one** `postTransform` (`plot`).
 

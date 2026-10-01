@@ -7,9 +7,11 @@
 Ninth and last plugin audited against {% ref "SPEC-145" /%}, and the quickest verdict in the
 series: **docs is a domain package, and its runes are almost beside the point.**
 
-`plugins/docs/src` is 3,261 lines. **2,368 of them — 73% — are `extract/`**: a TypeScript
+`plugins/docs/src` is 3,261 lines. **2,402 of them — 73% — are `extract/`**: a TypeScript
 parser (705), a Python parser (657), a Python docstring parser (473), a symbol generator
-(244), a command (189), plus types and a layout generator. On top of that sits
+(244), a command (189), plus types (70), an extractor registry (32) and a layout generator
+(32). An earlier revision said 2,368 and omitted the registry from the list; the eight files
+sum to 2,402, and the 73% share is unchanged. On top of that sits
 `cli-plugin.ts` (123) with a `./cli-plugin` package export and an MCP tool, whose one command
 is *"Extract symbols from source code into `{% symbol %}` Markdown"*.
 

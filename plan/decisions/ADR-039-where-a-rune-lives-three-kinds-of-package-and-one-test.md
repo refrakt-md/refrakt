@@ -15,7 +15,7 @@ in each case is a capability, not a subject**:
 
 | Plugin | What actually keeps it alive |
 |---|---|
-| design | `design-context` computes tokens from its children's rendered output |
+| design | `design-context` computes tokens from its children's authored AST |
 | marketing | `comparison`'s cross-column alignment over the whole child set |
 | learning | `quiz` (a behavior + `[x]` parsing), `glossary` (a `postProcess` over other pages' prose) |
 | plan | a filesystem scan outside any content tree, prose-parsed edges, a CLI, an MCP surface |
@@ -87,6 +87,16 @@ A fourth instance was lost separately and for a better reason: {% ref "SPEC-157"
 established that `symbol`'s attribute-varying model **is** reached by a declarative
 matcher, so it is a non-adopter of a shipping primitive rather than evidence that one is
 missing.
+
+**One row of the table above is also corrected, in the same direction.** It read
+*"`design-context` computes tokens from its children's **rendered** output"*. It reads their
+**authored AST**, before any child is transformed, and the extractors consume AST node types
+(`heading`, `list`, `item` — `design/src/tags/palette.ts:276`). The capability claim is
+unaffected: computing a value from content is still code a composition cannot express. What
+the stage error did do is propagate — {% ref "SPEC-150" /%} built a *"cross-rune output
+coupling"* blocker category on it and withheld three runes from composition. That category
+is now withdrawn and the three runes are released, which is this pass's largest single
+change to an audit's verdict.
 
 Measured, the five bullets stand at **3, 3, 2, 1, 1** — the third gaining `preview` to
 replace what the fourth and fifth lost. **Both remaining ones are genuine, and `bento`'s

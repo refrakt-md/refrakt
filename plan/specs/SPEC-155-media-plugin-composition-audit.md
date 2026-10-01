@@ -296,7 +296,7 @@ about the code and letting that stand as a verdict on the package —
 {% ref "SPEC-153" /%} D1 had already separated the two.
 
 Measured, the cost argument reverses: the plugin is 1,278 lines of transform plus **341 lines
-of CSS for `playlist` and `track` alone** (188 + 153 across skin and skeleton), and after
+of CSS for `playlist` and `track` alone** (188 for `playlist` and 153 for `track`, each summed across skin and skeleton; by layer it is 225 skin and 116 skeleton), and after
 composition it is two `.rune.md` files, two fixtures and *no CSS*, because a composed rune has
 no block ({% ref "SPEC-145" /%} D2). A package that cheap should be kept, not retired — and
 `playlistSchema`'s five-row variant table is curated schema.org knowledge that nothing
