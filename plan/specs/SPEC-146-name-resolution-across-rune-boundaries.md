@@ -58,19 +58,58 @@ author-nested `{% step %}` inside a `{% steps %}` wrapper:
 The author's unrelated content is stamped as one of the recipe's instructions, in
 published RDFa.
 
-**Severity, stated precisely rather than dramatised.** In the two shapes probed the
-mis-stamping did *not* reach the JSON-LD harvest, because the mis-stamped node yields
-no readable text: `applyText` builds its `property="text"` wrapper through
-`findByName`, which *is* boundary-guarded, so it never reaches the author's node, and
-`collectJsonLd` drops a typed node with no properties. So today this is an
-RDFa-level defect — an incorrect claim in published markup, which the project treats
-as load-bearing output rather than decoration ({% ref "SPEC-130" /%} cites RDFa Core
-1.1 §7.5 for exactly this reason).
+**Severity, measured in two stages, because the first measurement was incomplete.** In the
+two shapes probed first the mis-stamping did *not* reach the JSON-LD harvest, because the
+mis-stamped node yields no readable text: `applyText` builds its `property="text"` wrapper
+through `findByName`, which *is* boundary-guarded, so it never reaches the author's node,
+and `collectJsonLd` drops a typed node with no properties. That produced the earlier
+conclusion that this is an RDFa-level defect — an incorrect claim in published markup, which
+the project treats as load-bearing output rather than decoration ({% ref "SPEC-130" /%}
+cites RDFa Core 1.1 §7.5 for exactly this reason).
 
-There is a plausible path to the graph that was not probed: a child row carrying its
-own `properties` resolves them with `findAllByName(item, …)`, where `item` is the
-author's node and is therefore `top` and exempt from the guard. Worth a targeted test
-before deciding this is RDFa-only.
+**It reaches the graph. Probed, and the earlier conclusion was wrong for the rows that
+matter.** A playlist with one legitimate track and one author-written `{% track %}` inside
+an unrelated container, run through `applySchemaTable` and `collectJsonLd`:
+
+```json
+{ "@type": "MusicPlaylist", "name": "My Mix",
+  "track": [
+    { "@type": "MusicRecording", "name": "Own Song",  "byArtist": "Own Artist" },
+    { "@type": "MusicRecording", "name": "Unrelated", "byArtist": "Someone Else" }
+  ] }
+```
+
+The author's unrelated content is published as a track of the playlist, with readable
+values, in the JSON-LD graph.
+
+**The mechanism is the re-rooted walk, and naming it matters because it bounds the fix.**
+The guard is not bypassed from the parent's root — it is never consulted. `applySchemaTable`
+calls `applyRow(item, childRow, readBag(item), i)` with the **author's node as root**
+(`schema-table.ts:510`), and `findAllByName` exempts its own root: `visit(root, true)`, then
+`if (!top && attrs['data-rune'] !== undefined) return`. So the child row's property sources
+resolve freely inside foreign content, one level down. The earlier reasoning — *"`findByName`
+is boundary-guarded, so it never reaches the author's node"* — was true of the walk from the
+recipe's root and irrelevant to the walk that re-roots on the author's node.
+
+**Which rows can do this is a closed, measured set: the two that carry their own
+`properties`.** Of every schema child row in the repo, exactly two do —
+`playlist`'s `musicRow` and `spokenRow` (`{ 'track-name': 'name', 'track-artist':
+'byArtist', … }`, six properties) and `breadcrumb`'s `breadcrumb-item` row
+(`{ name: 'name', url: 'item' }`). Both keys are real rune names
+(`plugins/media/src/tags/track.ts:209`, `packages/runes/src/tags/breadcrumb.ts:105`), so
+both collide. The rest — `recipe`, `howto`, `pricing`, `timeline`, `accordion` — carry
+`text` or `generated` only, which is why the first probe missed it.
+
+**A second-order effect, from the same call site.** When the parent retypes a child it runs
+`clearProperties(item)` first (`:508`), on the author's node. So the over-match does not only
+add a false claim: where the author's rune had declared properties of its own under a
+different mapping, those are stripped and replaced by the parent's. The probe above cannot
+show it, because `track`'s own mapping and the playlist row's agree on `track-name`; a
+podcast row over a music track would.
+
+**Unfiled.** This is a present-tense defect in published structured data, distinct from the
+composition work this spec enables, and it has no bug report. Recorded here rather than
+filed, per the standing preference for implementation notes on this branch.
 
 ## Problem 2 — a **node-sourced** property cannot reach across a boundary it should
 
@@ -201,6 +240,12 @@ The over-match is a real defect, so correcting it changes recorded output. That 
 is reviewed and explained in the work item, never regenerated silently — the same
 rule SPEC-130 sets for every schema change.
 
+**And the diff is larger than this decision first assumed.** Written while Problem 1 read as
+RDFa-only, it anticipated movement in the baseline's `rendered` harvest alone. The probe
+above puts the over-match in the graph, so a fixture exercising a colliding nest moves
+`jsonLd` too — which is the harvest {% ref "SPEC-130" /%} calls the one output nobody looks
+at. Reviewing that half of the diff is the point of the gate, not a formality.
+
 ### D4 — the marker is pipeline bookkeeping and is stripped before render
 
 It exists to answer a resolution question during the transform. Leaving it in the
@@ -227,7 +272,8 @@ sequencing: land the resolver, prove it inert, then build on it.
 ## Acceptance Criteria
 
 - [ ] A probe reproducing Problem 1 exists as a test before the fix, asserting the wrong `typeof` / `property` on an author-nested rune of a colliding name
-- [ ] Whether a child row's own `properties` carry the over-match into the JSON-LD graph is determined by a targeted test, and the finding recorded
+- [ ] The JSON-LD path is a regression test, not an open question: a playlist with an author-nested `{% track %}` publishes exactly one track before the fix is reverted and exactly one after, asserted on the graph rather than on the markup
+- [ ] `breadcrumb`'s `breadcrumb-item` row — the second and only other child row carrying its own `properties` — is covered by the same assertion shape
 - [ ] The node-sourced scope of Problem 2 is asserted by a test pair: one table over a composed and a declared tree, where the attribute-sourced property resolves in both and the node-sourced one resolves only after the fix
 - [ ] A composed entity whose schema values are all attributes publishes correctly *before* this spec's change, asserted so the narrower scope cannot be lost
 - [ ] `findAllByName` crosses a nested-rune boundary in foreign mode, admitting only nodes marked for the resolving rune
