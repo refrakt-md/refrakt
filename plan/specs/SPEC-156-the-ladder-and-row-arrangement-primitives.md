@@ -63,6 +63,23 @@ So on {% ref "ADR-030" /%} rule 5a's bar — *"a consolidating topology needs th
 implementations… Two is a coincidence; three is a pattern"* — `row` has three and `ladder`
 has five.
 
+**Re-verified, with one correction and one addition.** All five files exist and all five
+reset the marker (61 / 78 / 39 / 57 / 47 lines, one `list-style` each). The *counter* half is
+narrower than "each with its own": only `playlist` and `steps` carry a `counter-reset`, so
+two of five. The row's three consumers verify too — `symbol`, `bar` and `api` key on
+`[data-zone-layout="bar"]`, beside the one generic definition in
+`skeleton/styles/dimensions/metadata.css`.
+
+**The addition is `cast`, and it is the strongest single piece of 5a evidence here.** `cast`
+hand-writes 47 lines of ladder CSS and its config declares **no `sequence` at all** — six
+`sequence:` sites exist across five plugins and none of them is `Cast`
+(`plugins/business/src/config.ts:20`). So the config-level and CSS-level populations are
+different sets, and `cast` is a ladder that nothing in config knows is one. That is
+{% ref "ADR-030" /%} rule 5b's warning instanced exactly — *"every would-be rail became
+bespoke CSS and does not register as an implementation of anything"* — except that here it
+happened to a shape rule 5a does count, so it was recoverable by reading the CSS rather than
+the configs. Counting declarations alone would have found four.
+
 ## What is actually missing
 
 | Part | Status | Contract |
@@ -205,8 +222,8 @@ identity-guarded precisely so a theme cannot set them ({% ref "ADR-028" /%}). Wh
 **1. `sequence` is not identity-guarded.** `RuneConfig.sequence` is
 `'numbered' | 'connected' | 'plain'` (`packages/transform/src/types.ts:456`), and
 `IDENTITY_FIELDS` is `block, modifiers, sections, mediaSlots, frameTarget,
-universalAttributes, provides, schema`. So a theme override can flip a playlist from
-`numbered` to `connected` today.
+universalAttributes, provides, schema` — re-read at `identity-fields.ts:41`, those eight and
+no others. So a theme override can flip a playlist from `numbered` to `connected` today.
 
 That is {% ref "ADR-030" /%} rule 3's founding example, and the reason it gives: doing so
 *"does not change how it looks. It deletes the track numbers."* **Rule 3 is currently

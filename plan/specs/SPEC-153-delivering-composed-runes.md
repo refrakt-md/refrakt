@@ -72,6 +72,28 @@ Each of these was measured, not inferred:
    attributes it to *"Plugin not resolvable via require (e.g., workspace link)"*, which
    is wrong about its own failure mode.
 
+**Re-measured across all nine, and the result is worse than "two are misconfigured".**
+Every claim above re-verifies, and widening the probe from two plugins to nine changes what
+it means:
+
+| | Count | Detail |
+|---|---|---|
+| `exports` map declared | 2 | `plan`, `docs` — both fail |
+| No `exports` map | 7 | all resolve |
+| Declares `./package.json` | **0** | none of the nine |
+
+So the seven that work **work by accident**. They resolve because they have no `exports`
+map, not because they export their manifest — nobody does. Adding an `exports` map is
+routine modernisation (it is what `plan` and `docs` already did, presumably for their
+`./cli-plugin` and subpath entries), so the convention path is not 2/9 broken: it is 2/9
+broken and 7/9 one ordinary change away. A mechanism whose working cases are all accidents
+is the argument for D2 rather than a caveat on it.
+
+**And `files` is unanimous: no plugin would publish a `runes/` directory.** All nine declare
+`dist` and nothing else, bar two additions — `learning`'s `i18n`, which exists, and `plan`'s
+`styles`, which does not. So the drift noted in point 2 is specific to `plan` and the
+publish gap is universal.
+
 All three degrade to the same thing: `refrakt inspect` shows no fixture. Invisible,
 harmless, which is exactly why none was noticed.
 
