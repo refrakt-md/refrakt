@@ -127,6 +127,19 @@ counter-example that keeps this spec from overreaching — its edges come from
 prose, its scan reaches outside any site, and no field-list declaration expresses
 either.
 
+**Re-verified, and the table holds exactly:** `plugins/storytelling/src/pipeline.ts` is 319
+lines, `design`'s is 92, `plan`'s is 1,120. D2's five first-party sentinel instances also
+land where cited — `packages/runes/src/config.ts:214`, `:238`, `:244`, `:250` and `:966`,
+each on a comment describing that exact emit-then-resolve pattern.
+
+**And this reach is measured, which the greenfield consumers named elsewhere are not.**
+{% ref "SPEC-154" /%} calls `prerequisite` this spec's first greenfield consumer, and
+`prerequisite` does not exist — {% ref "WORK-011" /%} is `pending` and
+`plugins/learning/src/tags/` holds `howto.ts` and `recipe.ts` and nothing else. That is a
+fair thing to say about a *planned* rune and a wrong thing to add to the table above.
+Recorded because {% ref "ADR-039" /%} rule 2 made precisely that addition and had to retract
+it: planned consumers justify a mechanism's shape, never its reach.
+
 ## What this unlocks that is not in this repo
 
 A user-defined rune with a `registers` block participates in the cross-page graph
@@ -243,5 +256,7 @@ what runs.
 - {% ref "SPEC-152" /%} — the plan audit; why D5's exclusion leaves the plugin's runes composable anyway
 - {% ref "SPEC-154" /%} — the learning audit; `prerequisite` is this spec's first greenfield consumer, and the planned `glossary` is the unbounded case D2 now names
 - {% ref "SPEC-158" /%} — the identity guard's granularity; the other axis the refinement pass separated from this one
+- {% ref "ADR-039" /%} — where counting a planned rune as measured evidence was caught and retracted
+- {% ref "WORK-011" /%} — `prerequisite`; `pending`, and the greenfield consumer the reach table does not count
 
 {% /spec %}

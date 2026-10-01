@@ -320,7 +320,7 @@ question has a map:
 | Surface | Sites | Status |
 |---|---|---|
 | `transform` | 135 | this spec |
-| `contentModel` as a thunk `(attrs) => …` | 15 | **a declarative form already exists** — `ConditionalContentModel`'s `when` over `AttributeInCondition` / `AttributeExistsCondition` / `HasChildCondition` |
+| `contentModel` as a thunk `(attrs) => …` | 15 | **a declarative form already exists** — `ConditionalContentModel`'s `when` over `AttributeInCondition` / `AttributeExistsCondition` / `HasChildCondition` — for 12 constants and 2 of the 3 branching sites; `bento.ts:383` parameterises one model rather than choosing between two and is unreachable ({% ref "ADR-036" /%}) |
 | `contentModel: { type: 'custom', processChildren }` | 14 | undeclarable by design ({% ref "SPEC-003" /%}) |
 | `itemModel` `pattern: /…/` | 8 | serialises, but see below |
 | `config.postTransform` | 4 | undeclarable by design ({% ref "SPEC-081" /%} non-goals) |
@@ -383,40 +383,34 @@ check as the rune-name uniqueness `mergePlugins` already enforces
 (`packages/runes/src/plugins.ts:169`). The residue that still needs declaring is
 small: `schema`, `provides`, and occasionally `frameTarget` / `mediaSlots`.
 
-#### What that implies for file layout
+#### Superseded: what that implied for file layout
 
-The cut runs *through* `RuneConfig`, not between config and schema — so a file
-named for the theme layer that carried the whole config would hold eight fields a
-theme is forbidden to set. The layout that follows the enforced semantics is:
+**This subsection prescribed a two-file layout, and the premise under it is gone.** It
+specified `<rune>.rune.md` for attributes, slots and the identity residue, `<rune>.skin.md`
+for the presentation config plus CSS — shaped as a theme override so it flowed through
+`mergeRuneConfig` with `guardIdentity: true` — and argued at length that CSS belongs with
+the presentation config, since a user rune has neither CI nor reviewers to police the seam
+that `css-coverage.test.ts`'s 116-entry `KNOWN_MISSING_SELECTORS` allowlist polices here.
 
-- `<rune>.rune.md` — attributes, slots, and the identity residue. The portable
-  part: what makes the markdown *mean* something.
-- `<rune>.skin.md` — presentation config plus the CSS. Shaped as a theme
-  override, so it flows through the existing `mergeRuneConfig` path with
-  `guardIdentity: true`. (`skin` is already the project's word for this layer —
-  `@layer skeleton, skin` in `packages/skeleton/index.css:18`.)
-- `<rune>[.scenario].md` — fixtures, unchanged. These cannot fold into the rune
-  file: {% ref "SPEC-102" /%} already standardised them as *plural* per rune
-  (`role: canonical | minimal | rich | edge-case`, `packages/runes/src/fixtures.ts:11-28`),
-  with 40 in `packages/runes/fixtures/` consumed by the example generator,
-  `discoverPluginFixtures`, the CI corpus check and `plugin-validate`.
+Three decisions removed the audience it was written for. {% ref "ADR-037" /%} makes the
+declaration on this page the **internal** emit path — how first-party runes shed their
+transforms — so no user ever authors one and there is no file to lay out: it is a
+TypeScript sibling to `transform`. {% ref "ADR-035" /%} is `rejected`, so there is no skin
+format for the second file to be written in. And {% ref "SPEC-153" /%} D9 settles the
+user-facing case as a single `<rune>.md`, because a composed rune ships no CSS
+({% ref "SPEC-145" /%} D2) and therefore has no presentation half to separate.
 
-The payoff is larger than tidiness: because the skin file *is* a theme override,
-"same rune, different skin" becomes a file swap, and a user rune dropped into a
-site with a real theme degrades gracefully — its styling is a default, not a
-demand. That is the difference between a rune being a fixed widget and being a
-portable content type.
+**What survives is the paragraph above this one, and it survives intact.** The cut running
+*through* `RuneConfig` rather than between config and schema is a fact about
+`identity-fields.ts` and `merge.ts`, not about files, and it is what makes the engine
+config travel as two payloads with different override semantics. The `block`-should-be-
+derived argument stands on the same footing. Only the file names, the skin override path
+and the CSS co-location argument are void.
 
-**Why CSS belongs with the presentation config rather than beside it.** Today the
-two are separated by package role — config in `packages/runes/src/config.ts`, CSS
-in `packages/lumina/styles/runes/` — and `css-coverage.test.ts` maintains a
-**116-entry** `KNOWN_MISSING_SELECTORS` allowlist to police the seam, nearly every
-entry reading some variant of "styled via a shared dimension selector instead"
-(`.rf-event__header` → `[data-section="header"]`, `.rf-recipe__meta` → shared
-`split.css`). That allowlist is the price of the separation, and it is affordable
-because this repo has CI and reviewers. A user rune has neither — and as a leaf
-with no shared dimension system to route through, it can only style its own block,
-so co-location makes its coverage check exact rather than allowlisted.
+Recorded as superseded rather than deleted because the reasoning was load-bearing for a
+while and a reader meeting `.skin.md` in {% ref "SPEC-153" /%}'s history, in
+{% ref "ADR-035" /%}, or in this spec's own open questions deserves to find where it went
+rather than inferring it.
 
 **One category the split does not cover: claims about content.** `schema` is an
 identity field — a rune's schema.org table. {% ref "SPEC-130" /%} D5 accepted
@@ -693,10 +687,10 @@ and `config-schema.test.ts` shows what that treatment costs: it asserts
 bidirectionally, so a field added to the interface fails the test until the
 schema gains it too, *and* the schema may declare no property the interfaces do
 not have. The question is whether the rune schema sits beside those two as a
-third top-level artifact or is generated from the same source — and now also
-whether it is *one* schema spanning both halves of the pair or one per file. One
-schema is the better answer if a serialised rune is understood as a single-rune
-`Plugin`, which is what the two halves add up to.
+third top-level artifact or is generated from the same source. The sub-question of
+whether it spans both halves of a file pair or one per file is void with the pair
+({% ref "SPEC-153" /%} D9): there is one file, so one schema — and understanding a
+serialised rune as a single-rune `Plugin` is what that one schema describes.
 
 **How is a definition discovered?** A conventional directory scanned the way
 `discoverPluginFixtures` already finds plugin fixtures, or an explicit list in
@@ -717,7 +711,14 @@ types, or shipping the ontology D5 declined. This is not the CSS-sanitisation
 question in another costume: bad CSS is visible on the page, a bad schema.org row
 is invisible by construction.
 
-**Is `metaFields` identity or presentation?** It is not in `IDENTITY_FIELDS`, so a
+**Answered — is `metaFields` identity or presentation?** {% ref "SPEC-158" /%} D3 splits it
+by sub-key: `metaFields.*.metaType` **is** identity and a theme override of it is dropped,
+while `label`, `sentimentMap` and `transform` merge normally. The reasoning below is kept
+because it is the argument that answer rests on, and because the mechanism it needed — a
+guard that can protect a path with a wildcard segment rather than a whole top-level field —
+is SPEC-158's subject rather than a detail. The question as posed here is closed.
+
+It is not in `IDENTITY_FIELDS`, so a
 theme may currently override a field's `metaType` — and `metaType` both selects
 chip-versus-bare rendering *and* is described as the field's "domain semantics".
 For a first-party rune that is harmless: the override ships in a package a reviewer
@@ -736,10 +737,15 @@ entity's *entire* differentiation from its four siblings is its `metaFields` and
 status means. That audit therefore carries this as a prerequisite rather than an open
 question.
 
-**Answered, recorded above rather than here:** whether CSS travels with the rune
-(it does, in the skin half, where the config generating its selectors also lives),
-and whether the engine config has to travel (it does, split along
-`IDENTITY_FIELDS`, with the presentation half overridable).
+**Answered, recorded above rather than here:** whether the engine config has to travel
+(it does, split along `IDENTITY_FIELDS`, with the presentation half overridable).
+
+**Withdrawn rather than answered: whether CSS travels with the rune.** This paragraph used
+to answer *"it does, in the skin half, where the config generating its selectors also
+lives"* — which contradicted the opening of this very section, where the skin half is
+recorded as gone. There is no skin half, and the question no longer has a subject on either
+path: a composed rune ships no CSS at all ({% ref "SPEC-145" /%} D2), and a declared rune is
+first-party, so its CSS lives where every other first-party rune's does.
 
 ## Acceptance Criteria
 
@@ -780,10 +786,11 @@ and whether the engine config has to travel (it does, split along
 - {% ref "SPEC-130" /%} — the schema.org table as identity, and the D5 trade that untrusted authorship breaks
 - {% ref "SPEC-144" /%} — declarative entity and edge registration; the cross-page half of the same programme
 - {% ref "SPEC-145" /%} — composed runes; the second authoring tier, which needs no CSS
-- {% ref "ADR-035" /%} — where the skin format applies, and why Lumina stays a package
+- {% ref "ADR-035" /%} — `rejected`; the skin format this spec's file layout was built on, and whose rejection superseded it
 - {% ref "ADR-036" /%} — name the pattern, do not open a language; the rule governing every gap this spec leaves
 - {% ref "ADR-037" /%} — users author composed runes only; why this spec's declaration is the internal emit path
 - {% ref "SPEC-152" /%} — the plan audit; where the `metaFields` identity question becomes load-bearing rather than theoretical
-- {% ref "SPEC-158" /%} — where that question is answered: `metaType` is identity, `label` / `sentimentMap` / `transform` are not
+- {% ref "SPEC-158" /%} — where that question is answered: `metaFields.*.metaType` is identity, `label` / `sentimentMap` / `transform` are not
+- {% ref "SPEC-153" /%} — delivery; D9's single `<rune>.md`, which supersedes this spec's two-file layout
 
 {% /spec %}
