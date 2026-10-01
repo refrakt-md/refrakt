@@ -382,6 +382,61 @@ Composition must hold that same line rather than quietly crossing it.
   in content (`{% $attrs.name %}`) and in attribute position (`tone=$attrs.role`),
   alongside the `$item` / `$row` bindings that exist.
 
+## The template vocabulary, in one place
+
+Scattered across the worked examples, D7, D17 and the repeated-slots section above, this
+spec introduces **two tags and three bindings** and never lists them together. Collected
+here because {% ref "SPEC-153" /%} D9 makes this file the user-facing authoring surface, so
+this list is the spine of its documentation rather than a summary of it. Nothing below is
+new; each row points at where it is decided.
+
+| Form | Means | Decided in |
+|---|---|---|
+| `{% slot name="x" /%}` | place resolved field `x` here | this spec's subject |
+| `{% slot name="x" %}…{% /slot %}` | the same, with fallback content when `x` is empty | "Smaller shape decisions" above |
+| `{% slot name="xs" each %}…{% /slot %}` | the engine iterates; the body describes **one** item with `$item` bound | "Repeated slots are the `collection` pattern" above |
+| `{% slot /%}` (bare, inside `each`) | this item's content — avoids an `of=$item` argument | same |
+| `{% metablock name="x" /%}` | place the rune's declared meta block `x` | D7 |
+| `{% if %}` / `{% else /%}` | Markdoc's own, with the content-model consequence D17 states | D17 |
+| `$attrs.name` | a resolved attribute, in content or attribute position | "Smaller shape decisions" above |
+| `$item` | the current item inside an `each` slot — **but see the shape collision below** | repeated-slots section |
+| `$row` | the existing `data` / `collection` row binding, unchanged | prior art, not added here |
+
+**There is no iteration tag and that is deliberate** — `each` is a slot modifier, not a
+loop, and `site/content/runes/data.md:174` already states the constraint this holds: *"bind
+a row, render a block… there is no iteration"*. A reader scanning for `{% for %}` should
+find this row and stop.
+
+**Every placed rune is ordinary rune vocabulary, not part of this surface.** `card`,
+`details`, `badge`, `grid`, `figure`, `bar` and `mediatext` appear throughout the examples
+because they are what compositions place; they are not additions, and D12 is what bounds
+which of them may be placed.
+
+**Four things on this list are not settled, and the list is where that becomes visible.**
+`metablock`'s name is still open against `{% fields %}` (D7's sub-questions); whether
+`sections` may be a slot name at all is an open question below; whether a slot may appear
+twice is another; and what a multi-node slot leaves behind is the third. Three of the four
+are about `{% slot %}` itself — which says the tag with one obvious meaning is carrying most
+of the undecided surface, and that the open questions below are load-bearing rather than
+tidying.
+
+**And a fifth, which collecting the list is what surfaced: `$item` would be one name for a
+third shape.** The repeated-slots section justifies `each` as *"the same arrangement
+`collection`, `data` and `relationships` item templates already use"* — but those two
+`$item`s are already different, and the documentation says so directly, two lines below the
+no-iteration limit this spec cites:
+
+> **`$item` is not an alias for `$row`.** A collection's `$item` is an entity (`id` / `type`
+> / `url` / `data`); a data row is flat. One name for two shapes is a trap, so reaching for
+> `$item.data.x` here is an error rather than a silent `undefined`.
+
+A composed rune's `each` iterates **resolved content** — node lists from the content model —
+which is neither an entity nor a flat row. So borrowing the name borrows a trap the project
+has already named once, and the arrangement being "the same" is true of the *iteration* and
+false of the *binding*. Either the binding gets its own name, or the composed case has to
+state what `$item` is for it in the same breath the others do. This is not an argument
+against `each`; it is the one unlabelled edge on it.
+
 ## What worries me, stated plainly
 
 **Contract derivation couples to the primitives' versions.**
@@ -943,6 +998,49 @@ Option 1 is the one I would pursue, because it separates "a name for keying" fro
 name for CSS", which were only ever conflated by convenience. Literal template text
 needs its own answer under any of the three.
 
+**Measured, and the three options cost very different amounts — plus the status quo is
+worse than option 3.** Two functions derive the key, and they do not agree about a
+missing block:
+
+| Site | Expression | Block-less result |
+|---|---|---|
+| `engine.ts:933` (`localizedLabel`, the lookup) | `` `${scope ?? 'core'}.${config?.block ?? ''}.${ref}` `` | `core..status` |
+| `i18n-extract.ts:33` (`labelKey`, the extractor) | `` `${config.scope ?? 'core'}.${config.block}.${ref}` `` | `core.undefined.status` |
+
+So a composed rune would not be *untranslated*; it would be **mis-keyed in two different
+ways**. The extractor would hand a translator `core.undefined.status`, the runtime would
+look up `core..status`, and the label would silently fall back to English however
+faithfully the locale file was filled in. That is strictly worse than option 3's honest
+"single-locale", because it looks like translation is wired up.
+
+**Which reprices the options:**
+
+- **Option 2 works today with no code change.** Both functions are `override ?? …`, so an
+  explicit `i18nKey` short-circuits before `block` is read. That makes it the available
+  fallback rather than a design to build, and it is what makes declaring composed runes
+  translatable-by-declaration cheap.
+- **Option 1 is a coordinated two-site change**, and the two sites must move *together* —
+  changing only the engine leaves the extractor emitting keys nothing resolves, which is
+  the present bug with a different spelling. Still the right end state for the reason
+  above; the cost is simply named now.
+- **Option 3 is not the status quo** and should not be chosen on the grounds that it is
+  already how things behave. It is not.
+
+**A latent defect, not reachable today.** `RuneConfig.block` is typed `block: string` and
+required, so no shipping rune hits either branch — the `?? ''` and the bare interpolation
+are both dead code until a block-less rune exists. D2 makes block-less the normal case for
+every composed rune, so this spec is what makes them reachable, and whichever option is
+chosen has to close both.
+
+**Literal template text remains unanswered**, and the measurement does not touch it: a
+`{% badge %}antagonist{% /badge %}` has no `metaFields` entry, so neither `labelKey` nor
+`localizedLabel` is ever called for it. Options 1 and 2 both key *declared labels*; neither
+reaches a string the template spells out. That gap is the same shape as
+{% ref "SPEC-035" /%}'s Zone 6 enum-as-text problem, which solved it by requiring the rune
+to *declare* the values it wants substituted (`i18nEnums`, `localizedEnumValue` at
+`engine.ts:941`) — and that precedent is the obvious starting point rather than a new
+mechanism.
+
 ### D14 — universal attributes apply to a nominated chrome carrier, not the empty root
 
 A composed rune gets the universal attribute surface — `width`, `spacing`, `inset`,
@@ -957,12 +1055,52 @@ primitive that already carries chrome. `width="wide"` plausibly behaves: the out
 widens and the card follows. `elevation="raised"` plausibly produces a shadow around a
 shadow, and `substrate` / `scrim` decorate a wrapper no theme designed.
 
-**Not yet verified** — it depends on Lumina's dimension CSS, and confirming it is the
-first task here rather than an assumption to build on. But the failure mode is the kind
-that reads as "composition is second-class", so the design should anticipate it: a
-composition **nominates a chrome carrier**, the placed rune that universal attributes
-apply to, defaulting to the single top-level placed rune when the template has exactly
-one. Where it has several, the default is ambiguous and the declaration is required.
+**Verified, and the prediction was right but understated.** This decision read *"not yet
+verified — confirming it is the first task here rather than an assumption to build on"*.
+Read against Lumina's and skeleton's dimension CSS, the universals do not behave as one
+set. They behave as three, and the groups have **opposite** requirements:
+
+| Group | Universals | Selector form | On a composed rune's empty root |
+|---|---|---|---|
+| Position-dependent | `width`, `spacing`, `inset` | **zero** unscoped rules; every one requires `.rf-page-content > article > …` (or the docs equivalent) | **correct** — the root is the thing in page flow |
+| Position-independent | `elevation`, `substrate`, `reveal` | 10 / 8 / 7 unscoped `[data-*]` rules | **double-paints** |
+| Context-coupled | `scrim` | zero unscoped rules; every one requires `[data-media-position="cover"]` or `[data-name="scrim"]` | **inert** — does nothing at all |
+
+`tint` straddles: 9 unscoped rules project its tokens anywhere, while its spacing and
+background interactions are position-scoped like the first group.
+
+**`elevation` is worse than "a shadow around a shadow".** `surfaces.css:49` groups
+`flat`, `sunken`, `raised`, `floating` and `overlay` under one block that sets
+`background`, `border: 1px`, `border-radius` and `padding` — the shadow is added
+afterwards, per rung. So `elevation="raised"` on a root wrapping a `card` draws a
+**complete second surface** around the first: two fills, two borders, two radii, two
+paddings, two shadows.
+
+**One thing works correctly for a reason worth keeping.** `surfaces.css:33` gives
+`margin: var(--rf-spacing-md) 0` to `[data-rune]:not([data-rune] [data-rune])` — top-level
+runes only. A composed rune's root is that top-level `[data-rune]` and its placed card is
+nested, so vertical rhythm lands on the wrapper and not on the primitive, which is right.
+The wrapper is not visually empty by accident; it is the box in page flow.
+
+**So the fix is not one carrier.** This decision proposed that a composition *nominates a
+chrome carrier* — "the placed rune that universal attributes apply to" — which is right for
+the position-independent group and **wrong for the other two**. Moving `width`, `spacing` or
+`inset` to a nested carrier silently no-ops them, because their CSS requires the
+direct-child-of-article position the carrier does not occupy. And `scrim` needs the rune
+that owns the media slot, which is not necessarily the nominated carrier.
+
+The split that follows the measurement:
+
+- **`width`, `spacing`, `inset`** stay on the root. No change, no declaration.
+- **`elevation`, `substrate`, `reveal`, and `tint`'s paint half** go to a nominated chrome
+  carrier, defaulting to the single top-level placed rune where the template has exactly
+  one and required where it has several.
+- **`scrim`** resolves to whichever placed rune carries the media slot, or is rejected at
+  construction when none does — an attribute that silently does nothing is the failure this
+  spec is trying to avoid, and it is already doing nothing today.
+
+Stating it as one carrier would have shipped three regressions dressed as a fix, which is
+why the verification was worth doing before building on it rather than after.
 
 ### D15 — a rune may declare several templates, selected by a declared attribute
 
