@@ -41,12 +41,38 @@ A user defining a domain type — `wine-tasting-note`, `property-listing`, `case
 cannot cash, so the declared path's principal advantage is worthless to precisely the
 audience it was being offered to.
 
-The catalog supports this empirically. Of 126 runes, nearly every domain rune is
-structurally a card / section / deflist / details shape, which composition reaches.
-The genuinely novel visual forms — `storyboard`, `map`, `chart`, `juxtapose`,
-`gallery` — need behaviors or external integration, so they need a plugin regardless.
+The catalog supports this empirically, and the evidence is now measured rather than
+estimated. An earlier revision of this paragraph read *"of 126 runes, nearly every
+domain rune is structurally a card / section / deflist / details shape"* and named
+`storyboard`, `map`, `chart`, `juxtapose` and `gallery` as the novel forms needing a
+plugin regardless. Nine plugin audits have since answered it per rune:
+
+| Plugin | Everything composes? | What does not, and why |
+|---|---|---|
+| storytelling | **yes** | — |
+| business | **yes** | — |
+| places | all but one | `map` — a client lifecycle |
+| media | all but one | `audio` — a custom element |
+| design | no | `design-context` computes tokens from its children's output |
+| marketing | no | `comparison` computes over the whole child set |
+| learning | no | `quiz` (a behavior), `glossary` (a cross-page prose rewrite) |
+| plan | yes, but | a filesystem scan outside any content tree, plus a CLI |
+| docs | yes, but | 73% of the package is a source-code extractor |
+
+So the claim holds and is stronger than the estimate: in two plugins *everything*
+composes, and what survives elsewhere is a **capability**, never a shape.
+{% ref "ADR-039" /%} rule 2 lists the five blocker categories with their instance
+counts and is the canonical statement; it is not restated here.
+
+**Two of the five named forms were wrong, and the correction sharpens the argument.**
+`gallery` is a *core* rune, so citing it as a form that "needs a plugin regardless"
+cited something already in core. And `storyboard` needs no behavior at all — it is a
+`grid` of `figure`s with CSS chrome, 79 lines across both layers, with no component, no
+lifecycle and no schema of its own. `map`, `chart` and `juxtapose` stand.
+
 The declared path's unique niche for a user is therefore "a novel *static* visual form
-with no interactivity": real, but narrow, and already routed to a plugin.
+with no interactivity": real, but narrower than the original list implied, and already
+routed to a plugin.
 
 ## Consequences
 
@@ -89,6 +115,16 @@ it belongs in the authoring documentation rather than being discovered.
 **A composed rune is a poor basis for a redistributable rune package.** Anyone wanting
 `@acme/wine-runes` to work under any theme is constrained by a baked arrangement — and
 is writing a plugin anyway, so the constraint bites only if they try to avoid that.
+
+**Qualified: the observation survives, the conclusion does not.** A baked arrangement is
+still a real constraint, but {% ref "ADR-039" /%} rule 4 names a **pack** — compositions
+plus curated knowledge, no code — as one of three legitimate package kinds, and
+{% ref "SPEC-153" /%} D1 makes a plugin-shipped composition byte-identical to a
+user-authored one. So a redistributable package of composed runes is not a misuse; it is
+the expected shape wherever the value being distributed is a curated schema mapping or a
+format rather than cross-theme portability. `@refrakt-md/media` is the worked case
+({% ref "SPEC-155" /%} D6): two compositions, no code for them, and a five-row
+schema.org table nothing validates.
 
 **D5's mutual exclusion still holds**, and gains a second job: it is now also the line
 between the internal and user-facing paths, so a user definition carrying a slot
@@ -144,6 +180,8 @@ authoring inside a hosted renderer means no domain coverage beyond what ships.
 - {% ref "ADR-035" /%} — the skin format, which targets theme authors and is untouched by this
 - {% ref "ADR-028" /%} — a theme restructures a rune, never redefines it; the portability premise
 - {% ref "SPEC-153" /%} — delivery for the path this decision gives users, and where `runes.local`'s scope is recorded
-- {% ref "ADR-039" /%} — where a rune lives; the empty code/project cell is this decision, and the three package kinds are its consequence
+- {% ref "ADR-039" /%} — where a rune lives; the empty code/project cell is this decision, the three package kinds are its consequence, and rule 2 is the canonical blocker list
+- {% ref "SPEC-155" /%} — the media audit; the worked case for a pack of composed runes
+- {% ref "SPEC-147" /%} — the storytelling audit; one of the two plugins where everything composes
 
 {% /decision %}
