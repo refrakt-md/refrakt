@@ -43,13 +43,38 @@ the enum being inadequate when it is not.
 | named `styles[…].transform` enum | in use (`learning/config.ts:35`) | 11 sites → exactly 3 helpers ({% ref "WORK-608" /%}) |
 | `ConditionalContentModel`'s `when` | 2 — `steps`, `itinerary` | **15 thunk sites**, of which **only 3 read `attrs`** |
 
-The three that genuinely branch are `breadcrumb.ts:52`, `symbol.ts:156` and
+The three that read `attrs` are `breadcrumb.ts:52`, `symbol.ts:156` and
 `bento.ts:383`. The other twelve are `() => ({ … })` returning a constant, so they
-are noise rather than capability. Finishing this is mostly deletion — flatten
-twelve, convert three — and `ContentModel`'s union has **no function member**, so
-those fifteen sites are reaching an untyped escape rather than a supported form.
-{% ref "SPEC-157" /%} D4 is where that measurement was taken, and where a prior
-draft wrongly proposed inventing the shape this enum already is.
+are noise rather than capability — flattening them is pure deletion. And
+`ContentModel`'s union has **no function member**, so all fifteen sites are reaching
+an untyped escape rather than a supported form. {% ref "SPEC-157" /%} D4 is where
+that measurement was taken, and where a prior draft wrongly proposed inventing the
+shape this enum already is.
+
+**Of the three, only two branch, and the third cannot be converted at all.** An
+earlier revision of this paragraph read *"flatten twelve, convert three"*, which
+assumed reading `attrs` and branching on them were the same thing. Read:
+
+| Site | What it does with `attrs` | Converts to |
+|---|---|---|
+| `breadcrumb.ts:52` | `if (attrs.auto)` → one of two `sequence` models | `AttributeExistsCondition` |
+| `symbol.ts:156` | `if (GROUP_KINDS.includes(attrs.kind))` → one of two models | `AttributeInCondition` |
+| `bento.ts:383` | returns **one** `custom` model that closes over the values | **nothing** |
+
+`bento` uses `attrs['media-position']` and a seven-key `GRID_CASCADE` *inside*
+`processChildren`, to default grid-level chrome onto cells. `ConditionalContentModel`
+chooses between models; it does not parameterise one. So the consolidation is **flatten
+twelve, convert two, and one site stays a function.**
+
+**Which leaves a real gap this ADR should not paper over.** `styles[…].transform` can be
+fully retired by {% ref "WORK-608" /%} because its 11 sites resolve to 3 named helpers.
+`contentModel` cannot: after the migration one legitimate consumer still needs a
+function, and the union still has no function member for it to sit in. The three honest
+options are to admit a function member to the union for the parameterised case, to give
+`custom` a declared way to receive attribute values, or to leave `bento` on an untyped
+escape and say so. This ADR picks none of them yet, and that is this entry's open item
+beside `itemModel`'s grammar — a smaller one, with no security edge, but owed to the same
+reader who is told the function form is going away.
 
 Each addition to a closed vocabulary is a reviewed, documented, schema-validated
 thing with a name. Each addition to a language is a new way to be surprised.

@@ -393,6 +393,11 @@ without migration. Promotion needs *"a second independent consumer that adopted 
 needing its shape changed"* — `swatch` or `pullquote` for materiality, `gallery` for variation.
 `register` fails gate 2 and its control already exists in tokens.
 
+Rule 5b is written about *topologies*, so applying it to a chrome axis is a borrowing;
+{% ref "ADR-030" /%} now ratifies it as a bar on any theme-facing vocabulary term and notes
+that this spec makes four provisional terms queued behind a tier mechanism that does not
+exist yet. Whichever vocabulary ships first owes that mechanism, not just this one.
+
 ### D10 — composite intents are a cheap, open, rule-6 layer, shippable from core
 
 Not sugar (they are the unit of reuse) and not theme-locked (every term is interpretable). A

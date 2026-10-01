@@ -61,18 +61,48 @@ loop rather than being an exception to it ({% ref "SPEC-153" /%} D7).
 
 ### 2. The tier test — does it need code?
 
-Yes if any of the following. This list is audit output, not invention: every entry has two or
-more measured instances.
+Yes if any of the following.
 
-- **A behavior or custom element** — a client lifecycle (`map`, `preview`, `audio`, `quiz`)
+- **A behavior or custom element** — a client lifecycle (`map`, `preview`, `audio`)
 - **A value computed from content rather than carried by it** — `design-context`'s tokens,
   `tier`'s `"$29/mo"` parse, `playlist`'s player payload
-- **A computation over the whole child set**, not a per-child pass — `comparison`
-- **A content model no declarative matcher reaches** — `quiz`'s `[x]`, `bento`'s cascade,
-  `symbol`'s attribute-varying model
-- **A cross-page hook beyond declarable registration** — `glossary`, `plan`'s scan
+- **A computation over the whole child set**, not a per-child pass — `comparison` at
+  content-model time, and `preview`'s `postTransform`, which states its own reason:
+  *"this must happen in postTransform (not the rune) because it needs the fully-transformed
+  tree with BEM classes and structural elements"*
+- **A content model no declarative matcher reaches** — `bento`'s cascade
+- **A cross-page hook beyond declarable registration** — `plan`'s scan
 
 Otherwise it is a composition, with no exception and no judgement call.
+
+**Corrected: an earlier revision of this list claimed *"every entry has two or more
+measured instances"*, and three of its citations named two runes that do not exist.**
+`quiz` (cited twice) and `glossary` have **zero occurrences** anywhere in `plugins/` or
+`packages/runes/src/tags/` — `plugins/learning/src/tags/` contains `howto.ts` and
+`recipe.ts` and nothing else, and {% ref "WORK-009" /%} and {% ref "WORK-010" /%} are both
+`pending`. They arrived from {% ref "SPEC-154" /%}, which audited them deliberately *as
+planned runes*, and the sentence above them called them measured.
+
+A fourth instance was lost separately and for a better reason: {% ref "SPEC-157" /%} D4
+established that `symbol`'s attribute-varying model **is** reached by a declarative
+matcher, so it is a non-adopter of a shipping primitive rather than evidence that one is
+missing.
+
+Measured, the five bullets stand at **3, 3, 2, 1, 1** — the third gaining `preview` to
+replace what the fourth and fifth lost. **Both remaining ones are genuine, and `bento`'s
+is unreachable for a reason worth stating precisely, because neither
+{% ref "ADR-036" /%} nor SPEC-157 stated it:** its thunk does not *branch*. It closes over
+attribute values and uses them **inside** `processChildren` —
+`const gridPos = attrs['media-position']`, then a seven-key `GRID_CASCADE` consumed off
+the grid and defaulted onto cells (`bento.ts:383`) — and `ConditionalContentModel` selects
+*between* models rather than parameterising one. No amount of adoption reaches it.
+
+**The test is unharmed; the evidence sentence is retracted.** A blocker with one instance
+is still a blocker, because the tier test asks whether code is *needed* — not whether the
+need recurs, which is {% ref "ADR-030" /%} rule 5a's question about a different kind of
+addition entirely. What the retraction costs is the claim that this list was derived rather
+than chosen: two of its five entries rest on a single rune each, and a reader deciding
+where their own rune goes is entitled to know which two.
 
 ### 3. The distribution test — what would someone otherwise have to get right?
 
@@ -193,7 +223,8 @@ install. Collapsing it saves a word in the docs and costs the reader the answer.
 - {% ref "SPEC-155" /%} — the media audit; a D6 this decision corrects, and the player split of rule 6
 - {% ref "SPEC-152" /%} — the plan audit; the first plugin that stays and ships compositions
 - {% ref "SPEC-157" /%} — the docs audit; the second domain package, which is what makes that category a category
-- {% ref "SPEC-154" /%} — the learning audit; D7's tier test, which rule 6 refines
+- {% ref "SPEC-154" /%} — the learning audit; D7's tier test, which rule 6 refines, and the source of the planned runes rule 2 wrongly counted as measured
+- {% ref "WORK-009" /%}, {% ref "WORK-010" /%} — `quiz` and `glossary`; both `pending`, both cited as evidence before being checked
 - {% ref "ADR-038" /%} — a behavior binds on a data contract; why the playlist binding is still domain-coupled after the cleanup
 
 {% /decision %}

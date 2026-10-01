@@ -108,6 +108,23 @@ mechanism is expensive, exactly as {% ref "ADR-030" /%} rule 6 argues for arrang
 This decision constrains how a behavior binds; it does not propose a set of behaviors, and
 {% ref "ADR-036" /%}'s plugin escape hatch still covers anything needing a real component.
 
+**Rule 1 bans `data-rune` for *binding* only, and the distinction is load-bearing enough to
+state.** CSS keys on the rune name legitimately, in two forms, and three documents now depend
+on it: the engine's `contextModifiers` facet reads the parent's rune name
+(`facets/modifiers.ts:84`, `ctx.config.contextModifiers?.[ctx.parentRune]`) and emits a class
+for it, which is how {% ref "SPEC-145" /%} D16 lets a theme style a composed rune in context
+and how {% ref "SPEC-147" /%} Finding 5 re-keys `.rf-character__portrait` to
+`.rf-figure--in-character`; and a plain attribute selector on `[data-rune="…"]` resolves
+directly, which {% ref "SPEC-159" /%} Part 4 measured. A reader applying rule 1 uniformly
+would conclude all three are forbidden and that composed runes cannot be styled at all.
+
+The asymmetry has a reason rather than being a carve-out. A selector that fails to match
+**silently** is the hazard rule 1 exists for, and the two halves fail differently: a style that
+does not apply is visible on the page, while a behavior that binds nothing produces a control
+that looks functional and does nothing. The same `data-rune` is safe in the first position and
+not the second, so the rule is about what breaks quietly, not about which attributes are
+respectable.
+
 **Rule 3 costs a composed rune some affordances, and that is the right trade.** A composed
 playlist cannot place its own per-track play buttons. It does not need to: `<rf-audio>`
 already injects its whole player UI, and per-item controls belong in the same place.
@@ -143,5 +160,7 @@ looks like a player.
 - {% ref "ADR-037" /%} — users author composed runes only; the audience that needs generic contracts
 - {% ref "ADR-030" /%} — arrangements; rule 6's cheap-vocabulary / expensive-mechanism split, applied here
 - {% ref "ADR-036" /%} — name the pattern, do not open a language; the plugin route for anything needing a component
+- {% ref "SPEC-147" /%} — the storytelling audit; Finding 5's re-keying, one of the styling uses of the rune name that rule 1 does not forbid
+- {% ref "SPEC-159" /%} — chrome as intent; where a `[data-rune]` style selector was measured resolving under composition
 
 {% /decision %}

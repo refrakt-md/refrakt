@@ -136,8 +136,17 @@ The wider measurement is worth carrying here because it is this plugin's two run
 it: **the thunk form survives at 15 sites, and only three of them read `attrs`** —
 `breadcrumb.ts:52`, `symbol.ts:156` and `bento.ts:383`. The other twelve, `changelog`'s among
 them, are `() => ({ … })` returning a constant. That is the same shape
-{% ref "WORK-608" /%} is retiring for `styles[…].transform` (11 sites resolving to 3 helpers),
-and it means finishing this consolidation is mostly deletion: flatten twelve, convert three.
+{% ref "WORK-608" /%} is retiring for `styles[…].transform` (11 sites resolving to 3 helpers).
+
+**Corrected: of those three, two branch and one cannot be converted.** This decision read
+*"flatten twelve, convert three"*, which treated reading `attrs` and branching on them as the
+same thing. `breadcrumb` branches on `attrs.auto` (`AttributeExistsCondition`) and `symbol` on
+`attrs.kind` (`AttributeInCondition`), so both convert. `bento` returns a **single** `custom`
+model that closes over the values and consumes a seven-key `GRID_CASCADE` *inside*
+`processChildren` — and `ConditionalContentModel` chooses between models rather than
+parameterising one, so nothing reaches it. The consolidation is **flatten twelve, convert two,
+and one site stays a function**, which means `contentModel`'s function form cannot be retired
+the way `styles[…].transform`'s can. {% ref "ADR-036" /%} now carries that as an open item.
 
 ### D5 — the runes stay distributed even once they are compositions
 
@@ -164,10 +173,11 @@ knowledge nothing validates — applies here as a *format* rather than a schema 
 ## Acceptance Criteria
 
 - [ ] `api` exists as a composition with a fixture, rendering identically to its declared form, with `refrakt contracts --check` and `npm run seo:baseline:check` reporting no drift
-- [ ] `changelog`'s content model is a plain object rather than a thunk, and the repo has exactly one attribute-varying content model (D3)
+- [ ] `changelog`'s content model is a plain object rather than a thunk (D3)
 - [ ] `changelog` emits its releases via `emitTag`, and the hand-rolled section mapping is gone
 - [ ] `symbol`'s content model is a `ConditionalContentModel` with an `AttributeInCondition` over `kind`, and its group branch emits `symbol-group` via `emitTag` rather than `processChildren` (D4)
-- [ ] The twelve constant thunks are flattened to plain objects, so the repo's remaining `contentModel` functions are exactly the attribute-varying three (D4)
+- [ ] The twelve constant thunks are flattened to plain objects, and `breadcrumb` and `symbol` are converted to `ConditionalContentModel`, leaving `bento.ts:383` as the repo's one remaining `contentModel` function (D4)
+- [ ] `bento`'s surviving function has a stated disposition — a function member admitted to the `ContentModel` union, a declared way for `custom` to receive attribute values, or a recorded exception — rather than being left as an unexplained holdout (D4)
 - [ ] `plugins/docs/src/extract/` is untouched, and `refrakt docs extract` produces byte-identical output before and after `api` and `changelog` are composed
 - [ ] The authoring guide names `api` as the introductory composition example for a first-party rune, beside `objective` ({% ref "SPEC-154" /%}) for a planned one
 
