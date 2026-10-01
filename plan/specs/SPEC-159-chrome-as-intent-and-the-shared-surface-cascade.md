@@ -424,9 +424,26 @@ deliver it now, from the signals in D9's axes.
   `bg.ts:246` already deprecates its sibling raw passthrough — *"will be removed in a future
   minor"*
 - The content-role axis found in Part 2; recorded, not specified
-- Project-authored presets. Presets are theme-and-package-authored; a project references a name
-  and never defines one, which keeps {% ref "ADR-037" /%}'s "data to validate, not code to
-  sandbox" intact
+- Project-authored **composite intents**. A project references a name and never defines one,
+  which keeps {% ref "ADR-037" /%}'s "data to validate, not code to sandbox" intact.
+
+  **Corrected: this non-goal previously asserted that "presets are theme-and-package-authored",
+  which is false of the preset mechanisms that ship today.** `backgrounds`, `tints` and
+  `presets` are all in the site-config schema; this repo's own `sites.main` declares a
+  `backgrounds` entry (`surface-dark`, a raw `style` map of `border-radius` + `border`) and
+  nine `tints` extending Lumina's preset modules; and `site/content/releases.md` documents
+  `sandbox` bg presets as *"project-level `backgrounds` config"* deliberately. So a project
+  can define a preset today, and the premise was wrong rather than the policy.
+
+  The policy stands on its own grounds, and stating them is what the premise was standing in
+  for: a composite intent resolves to **intent values only** (Part 3), so admitting a
+  project-authored one costs nothing in trust — there is no CSS in it to sanitise. The reason
+  to withhold it is narrower: a project-defined name is unresolvable anywhere else, so it
+  reintroduces the portability loss Part 3's third table row exists to remove. Nothing here
+  revisits whether *today's* project-level `backgrounds` should keep its raw `style` map; the
+  non-goals below already decline a raw-CSS tier for the new mechanism, and
+  {% ref "SPEC-088" /%}'s deprecation of the sibling passthrough is where that question
+  belongs.
 - The arrangement vocabulary ({% ref "SPEC-156" /%}); a surface is not a topology
 
 ## Acceptance Criteria
