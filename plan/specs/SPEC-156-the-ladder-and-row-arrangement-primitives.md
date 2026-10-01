@@ -361,6 +361,7 @@ which is rule 2's combinatorial explosion arriving by the back door.
 - {% ref "SPEC-094" /%} — the `@layer skeleton, skin` split that separates arrangement from decoration
 - {% ref "SPEC-100" /%} — the `carousel` contract; the model for a block-agnostic arrangement
 - {% ref "ADR-028" /%} — identity fields; what D4 and D5 both restore
+- {% ref "SPEC-159" /%} — the surface treatment a container shares with its items; takes D8's theme-owned half and leaves the author-driven cascade here
 - {% ref "SPEC-158" /%} — the identity guard's granularity; owns D4's `sequence` move and D5's `attrs` guard, so this spec inherits them rather than specifying them
 - {% ref "ADR-038" /%} — behaviors bind on a data contract; the same rune-agnostic principle for behaviour
 

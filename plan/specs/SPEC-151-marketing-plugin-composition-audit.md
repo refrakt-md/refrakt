@@ -214,5 +214,6 @@ inventing an expression language for one consumer, which {% ref "ADR-036" /%} fo
 - {% ref "SPEC-152" /%} — the plan audit; the third plugin that stays, and the dedupe-inside-a-surviving-plugin outcome this plugin also has
 - {% ref "SPEC-154" /%} — the learning audit; adds a seventh, planned, `pageSectionProperties` case in `concept`, so D3's set grows as the backlog lands
 - {% ref "SPEC-156" /%} — the ladder and row arrangements; supplies the third instance that justifies `bento`'s attribute cascade as a mechanism
+- {% ref "SPEC-159" /%} — the shared surface treatment; `bento-cell` hand-draws two elevation rungs, and is its acceptance consumer
 
 {% /spec %}

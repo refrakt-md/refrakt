@@ -239,5 +239,6 @@ Plus the dependency chain this spec sits on: {% ref "SPEC-146" /%} →
 
 - {% ref "SPEC-154" /%} — the learning audit; `glossary` is the unbounded `postProcess` case, against this spec's bounded one
 - {% ref "SPEC-158" /%} — the identity guard's granularity, settled alongside SPEC-144 D2's revision
+- {% ref "SPEC-159" /%} — the shared surface treatment; `storyboard`'s three variants are its stress case, and its chrome is measured to survive composition regardless
 
 {% /spec %}
