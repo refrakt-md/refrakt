@@ -355,6 +355,126 @@ less like markdown. Harvesting the author's `![portrait](…)` from a slot is th
 authoring experience and needs SPEC-146. Both are legitimate; only one is available
 before that lands.
 
+### The loss case — `recipe` over `card`
+
+`bond` and `character` are the cases that work. `recipe` is the one that shows what
+composition costs when a rune's own structure is richer than the primitive it composes
+over, and it is worth working because it is the rune most often cited as an obvious
+candidate.
+
+**Today, measured** (`refrakt inspect recipe --site main`) — one node carries identity,
+schema, the field bag and every BEM part:
+
+```html
+<article data-rune="recipe" typeof="Recipe" class="rf-recipe rf-recipe--medium"
+         data-prep-time="PT15M" data-cook-time="PT30M" data-servings="4"
+         data-difficulty="medium" data-media-position="end"
+         data-elevation="flat" data-density="full">
+  <div data-name="media"   class="rf-recipe__media" data-section="media">…</div>
+  <div data-name="content" class="rf-recipe__content">
+    <header data-name="preamble" class="rf-recipe__preamble">…</header>
+    <dl  data-name="metadata"    class="rf-recipe__metadata">…</dl>
+    <ul  data-name="ingredients" class="rf-recipe__ingredients">…</ul>
+    <ol  data-name="steps"       class="rf-recipe__steps" data-sequence="numbered">…</ol>
+    <div data-name="tips"        class="rf-recipe__tips">…</div>
+  </div>
+  <meta property="prepTime" content="PT15M" />…
+</article>
+```
+
+**Composed** — two rune nodes, because `card` declares no schema and so cannot carry the
+type:
+
+```html
+<article data-rune="recipe" typeof="Recipe" class="rf-undefined"
+         data-rune-fields='{"prepTime":"PT15M",…}' data-difficulty="medium">
+  <div class="rf-card rf-card--in-recipe" data-rune="card" data-media-position="end">
+    <div data-name="media"   class="rf-card__media" data-section="media">…</div>
+    <div data-name="content" class="rf-card__content">
+      <div data-name="body"  class="rf-card__body">…</div>
+    </div>
+  </div>
+  <meta property="prepTime" content="PT15M" />…
+</article>
+```
+
+**The wrapper is not optional, and four things force it.** Recorded because "just put
+`typeof="Recipe"` on the card" is the obvious first instinct and D3 rules it out:
+
+1. **The type.** D9 permits composing only over runes that emit no type or a subordinate
+   one, and `card` declares no schema at all — so the type has nowhere else to go. Putting
+   it on the card would make one node both `data-rune="card"` and the recipe.
+2. **The field bag.** `data-rune-fields` is how attribute-sourced schema values resolve
+   ({% ref "SPEC-146" /%} path A). It is recipe's, not card's.
+3. **The position-dependent universals.** `width` / `spacing` / `inset` have zero unscoped
+   CSS rules — every one requires the direct-child-of-article position only the outer node
+   occupies (D14).
+4. **`data-rune="recipe"` itself**, which is what `contextModifiers` keys on
+   (`facets/modifiers.ts:84` reads `ctx.parentRune`) and therefore the only route by which a
+   theme reaches a composed rune at all (D16).
+
+**The wrapper is also malformed today.** `engine.ts:311` is
+`` const block = `${prefix}-${config.block}` ``, so a block-less rune emits
+`class="rf-undefined"`. D2 makes block-less the normal case for every composed rune, so
+this is on the critical path rather than a curiosity.
+
+**What is deleted: 176 lines of CSS and a 278-line transform.** `recipe.css` is 136 lines
+in Lumina plus 40 in skeleton, all keyed on `.rf-recipe*`; `tags/recipe.ts` is 278 lines.
+That is the payoff, and it is real.
+
+**What is lost: four of seven schema properties, silently.** `recipeSchema` maps
+`headline → name`, `blurb → description`, `prepTime`, `cookTime`, `servings → recipeYield`,
+`mediaImage → image` and `ingredient → recipeIngredient`:
+
+| Source | Path | After composition |
+|---|---|---|
+| `prepTime`, `cookTime`, `servings` | attribute → field bag | **survive** |
+| `headline`, `blurb`, `mediaImage`, `ingredient` | node | **lost** — inside `data-rune="card"`, where `findAllByName` stops |
+| `children: { step }` | `findChildren` | survive — it crosses boundaries by design |
+
+So `recipe` is close to the worst case for {% ref "SPEC-146" /%} Problem 2, and the
+clearest statement of why that spec is a prerequisite rather than a companion: a composed
+recipe publishes a `Recipe` with a yield and two durations and **no name, no description,
+no image and no ingredients**, with no diagnostic. {% ref "SPEC-154" /%} notes the
+additional constraint that `ingredient` is the first path-B property carrying a *set*, so
+the fix must preserve multiplicity rather than merely presence.
+
+**And the theme loses restructuring, not just styling.** This is the consequence least
+visible from the output above, so it is stated as a table of the two layouts as they ship:
+
+| | Declares | Slots a theme can place |
+|---|---|---|
+| `Recipe` | `root: [media, content]`, `content: [preamble, metadata, ingredients, steps, tips]`, `preamble: header > [eyebrow, headline, blurb]` | 8 |
+| `Card` | `root: [media, content]`, `content: [eyebrow, body, footer]` | 4 |
+
+`card` has `media`, `eyebrow`, `body` and `footer`. Recipe's `headline`, `blurb`,
+`metadata`, `ingredients`, `steps` and `tips` — six parts — all have to land in `body`,
+where card's `layout` cannot address them, because `layout` places a rune's *declared
+slots* and not the content inside one. So their grouping stops being declarable by any
+theme, rather than becoming someone else's to declare.
+
+The sharpest casualty is concrete: `Recipe` carries a {% ref "SPEC-089" /%}
+`variants['media-position'].cover` that **restructures** the root into a `cover-band`
+grouping media with an overlaid preamble, with its own `rootAttributes` and
+`staticModifiers`. That is theme-owned restructuring, and D8 says a theme supplies no rune
+template — so nothing in the composed path reproduces it. The author may offer a `cover`
+template variant (D15), but a theme cannot add one, which means the capability moves to the
+author rather than changing hands between themes.
+
+**How much of the rest survives is an open question below, not a settled answer.** Whether
+a theme can even *style* recipe's six collapsed parts depends on what `{% slot %}` leaves
+behind: nothing, and there is no hook; a named boundary, and
+`[data-rune="recipe"] [data-name="ingredients"]` resolves. That question is listed in Open
+questions and this example is its most expensive instance.
+
+**The verdict this example supports.** `recipe` is a legal composition that is not yet a
+good one. It needs SPEC-146 for correctness and a `{% slot %}` boundary answer for
+styleability, and even with both it trades a theme's ability to restructure it — including
+a shipped cover variant — for 454 deleted lines. {% ref "SPEC-156" /%} D7 and D15 record
+the alternative: the **declared** path already does variant selection with shipping
+machinery, so a rune whose value is in being restructurable has a home that is not this
+one.
+
 ### Repeated slots are the `collection` pattern, not iteration
 
 `{% slot name="sections" each %}` does not put a loop in the template. The engine
