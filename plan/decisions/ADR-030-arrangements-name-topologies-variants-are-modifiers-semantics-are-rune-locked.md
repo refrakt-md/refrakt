@@ -251,8 +251,75 @@ already styles. It can ship before any arrangement work and is the one part of
 this decision with an immediate audience, plugin authors included: they have no
 group name they can rely on today when shipping CSS for their own runes.
 
-**This decision does not authorise building anything.** It constrains a later
-spec. If that spec never comes, nothing is owed.
+**Composition changes what rule 5b's "a concrete design that wants it" means.**
+Recorded after the fact, because the justification moved. When this decision was written,
+an arrangement vocabulary consolidated bespoke CSS — five runes with their own grid, one
+with its own row — and the gain was tidiness plus a theme's ability to restyle.
+
+{% ref "SPEC-145" /%} makes it **enabling**. A composed rune has no block (D2), so it has
+no selectors of its own, and its appearance is whatever the theme gives the primitives it
+places. For a first-party composition a theme can reach it by name through
+`contextModifiers` (SPEC-145 D16). For a user-authored one it cannot: Lumina will never
+have heard of `wine-tasting-note`, and {% ref "ADR-037" /%} makes user-authored
+compositions the *only* way a rune reaches a site from outside this repo. So a vocabulary
+the theme styles **without naming the rune** is the only route those runes have to being
+styled at all.
+
+Rule 4 is the specific case, and it now has a measured consumer. {% ref "SPEC-155" /%}
+found `playlist` composable on every axis but appearance, and the appearance gap is exactly
+the ladder-of-rows this decision named: 98 lines in `lumina/styles/runes/track.css`, every
+selector keyed on `.rf-track` / `.rf-track__*`, all of it unreachable once the rune has no
+block. That satisfies 5b's "at least one concrete design that wants it" with a design that
+exists rather than a sketch — and 5a's three-implementation bar is separately met for the
+row/ladder case by `track` rows, `cast`'s `list` roster and `steps`.
+
+**This decision still does not authorise building anything.** It constrains a later
+spec. If that spec never comes, nothing is owed — but the thing owed if composition ships
+without it is now stated: composed runes that only the theme's author can style.
+
+**Rules 5a and 5b have been borrowed for a second vocabulary, and that extension should be
+explicit rather than assumed.** Every rule here is written about *topologies* — rule 1
+defines an arrangement as the shape of a container-to-children relationship, and 5a/5b say
+"a consolidating topology" and "an enabling topology". {% ref "SPEC-159" /%} applies the
+same two bars to **chrome axes** (`materiality`, `variation`), which are qualities of a
+single surface and not relationships at all, and its D8 records walking into 5a's counting
+trap on the way.
+
+The borrowing is sound and the generalisation is worth stating: **5a and 5b are bars on a
+theme-facing vocabulary term, whatever the term describes.** What transfers is the
+asymmetry — a term that replaces existing hand-rolled CSS is claiming recurrence and owes
+instances; a term that enables something nothing can express today has nothing to count and
+owes a contract, a case and the provisional tier. Nothing in that reasoning depends on the
+term being a topology. Rule 3's semantic/cosmetic split transfers too, and lands cleanly:
+chrome is cosmetic by construction, so chrome axes are theme-free and none of them may
+encode whether something is information.
+
+**Which makes the provisional tier's teeth overdue rather than pending.** The consequence
+above — *"the provisional tier needs teeth or it is a comment nobody reads"* — was written
+with `rail` and `track` in view. SPEC-159 D9 adds two more provisional terms in a different
+vocabulary, so there are now four queued behind a mechanism that does not exist, and the
+first shipment of either vocabulary is the one that decides whether 5b is a tier or a
+disclaimer. Two provisional terms with no build-time signal are a rounding error; four
+across two vocabularies is a convention.
+
+**Rule 2 forbids naming a combination; {% ref "SPEC-159" /%} Part 3 names combinations
+deliberately. Both are right, and the reconciliation belongs here.** Rule 2's target is the
+*axis*: promoting `timeline` to an arrangement value owes `timeline-horizontal` and
+`timeline-grouped`, because every modifier multiplies through the name. A composite intent
+sits in a **separate layer above** the axes, resolving to axis values rather than joining
+them — so it adds no value to any axis and nothing multiplies. That is rule 6's territory
+(vocabulary is cheap, mechanism expensive) and the governance follows rule 6's bar, not
+rule 5's.
+
+The reading generalises, and saying so now costs nothing: **a composite arrangement would
+be allowed on the same terms** — a name resolving to `ladder` plus its modifiers is not a
+new topology, exactly as `keepsake` is not a new chrome axis. Nothing proposes one, and the
+rule that would govern it is already written.
+
+The guard that keeps the layers honest is rule 6's own: *"a group name carries no
+geometry."* Its chrome analogue is that **a composite intent carries no CSS** — if a preset
+can paint, it has stopped being a name for axis values and become a specification, which is
+the mechanism SPEC-159's first revision proposed and its rewrite rejected.
 
 ## Alternatives considered
 
@@ -298,5 +365,12 @@ honesty about which parts are settled.
 - {% ref "ADR-028" /%} — attribute applicability is rune identity; the source of the semantic-locking principle
 - {% ref "ADR-029" /%} — structural assembly is theme-owned; draws the container half of the same line
 - {% ref "BUG-024" /%} — the sequence duplication that exposed the `<ol>`/`<li>` coupling
+- {% ref "SPEC-145" /%} — composed runes; why this vocabulary became enabling rather than consolidating
+- {% ref "SPEC-155" /%} — the media audit; the measured consumer for rule 4
+- {% ref "ADR-037" /%} — users author composed runes only; the audience that cannot be styled by name
+- {% ref "ADR-038" /%} — a behavior binds on a data contract; the same rune-agnostic principle for state and binding
+- {% ref "SPEC-156" /%} — the later spec this decision constrains, scoped to `ladder` and `row`; both clear rule 5a, and it finds rule 3 currently unenforced
+- {% ref "SPEC-158" /%} — where "semantic locking needs somewhere to live" is answered, and where rule 3 becomes enforceable
+- {% ref "SPEC-159" /%} — chrome as intent; the second vocabulary to adopt 5a/5b, the second client of the provisional tier, and the composite-intent layer rule 2 had to be read against
 
 {% /decision %}
