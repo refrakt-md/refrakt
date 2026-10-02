@@ -1475,7 +1475,9 @@ step, realm, faction, playlist) speaks one language**."* Eight runes declare
 **`card` is the one that embodies it.** It carries `base: SplitLayoutModel`
 (`packages/runes/src/tags/card.ts:49`), splits media / body / footer on `---`, and is
 described as *"usable standalone or inside a collection body template"*. `mediatext` is a
-narrower second.
+narrower second **in purpose only** — it does not carry `SplitLayoutModel` and is not one of
+the eight; its `wrap` attribute floats text around media rather than splitting a row, which
+D20's scope limit records as the reason it inherits nothing from this line of work.
 
 So a composition wanting a media-first layout places `{% card %}` and passes the split
 attributes through — which makes `card` the {% ref "SPEC-151" /%}-era answer to "what
@@ -1590,8 +1592,14 @@ re-reading. No structured-data movement: `card` declares no schema. And `card` i
 many existing pages, so this is a {% ref "SPEC-143" /%} D7-style no-drift migration on
 everything that already uses it — the one part of this that is not cheap.
 
-**Scope limit.** This decision covers `card`. `mediatext` is D18's narrower second primitive
-and may want the same treatment; nothing here assumes it, and the evidence above is card's.
+**Scope limit, and it is a decision rather than a deferral.** This covers `card`.
+**`mediatext` is out, measured:** `mediatextSections` is `{ body, media }` — media and text,
+no header of its own — and it does **not** carry `base: SplitLayoutModel`, so it was never
+one of the eight above. Its own attributes say why it is a different thing: `side`, a width
+ratio, and `wrap` — *"Wrap text around the media"* — which is prose float rather than a
+two-column split. A rune whose job is to run text around an image has no preamble to place,
+so giving it one would be adding parts nothing asks for, which is the opposite of this
+decision's argument.
 
 ## Non-goals
 
