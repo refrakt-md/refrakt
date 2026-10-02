@@ -447,11 +447,21 @@ visible from the output above, so it is stated as a table of the two layouts as 
 | `Recipe` | `root: [media, content]`, `content: [preamble, metadata, ingredients, steps, tips]`, `preamble: header > [eyebrow, headline, blurb]` | 8 |
 | `Card` | `root: [media, content]`, `content: [eyebrow, body, footer]` | 4 |
 
-`card` has `media`, `eyebrow`, `body` and `footer`. Recipe's `headline`, `blurb`,
-`metadata`, `ingredients`, `steps` and `tips` — six parts — all have to land in `body`,
-where card's `layout` cannot address them, because `layout` places a rune's *declared
-slots* and not the content inside one. So their grouping stops being declarable by any
-theme, rather than becoming someone else's to declare.
+`card` has `media`, `eyebrow`, `body` and `footer` placeable. Recipe's `headline`,
+`blurb`, `metadata`, `ingredients`, `steps` and `tips` — six parts — all have to land in
+`body`, where card's `layout` cannot address them, because `layout` places a rune's
+*declared slots* and not the content inside one. So their grouping stops being declarable by
+any theme, rather than becoming someone else's to declare.
+
+**One qualification, because the table undercounts what card already finds.** Card is not
+blind to the page-section pattern — its own comment calls it *"the page-section / recipe
+pattern"*. It promotes a leading paragraph before a heading to a flat `eyebrow` slot, and it
+names the body's first heading as `refs.title`, deliberately searching for the first heading
+rather than position 0 *"so a composed header (e.g. a `{% bar %}` before the title) doesn't
+leave the title with a prose-sized gap"* — written with composition in view. So `title`
+exists as a BEM hook (`data-name="title"`, `.rf-card__title`); what it is not is
+**placeable**, because it is nested inside `bodyDiv` rather than emitted as a flat slot, and
+`layout` cannot hoist it. D20 is that gap and is the smaller fix it implies.
 
 The sharpest casualty is concrete: `Recipe` carries a {% ref "SPEC-089" /%}
 `variants['media-position'].cover` that **restructures** the root into a `cover-band`
@@ -1498,6 +1508,90 @@ keeping both rune names findable. The variant form stays right for its actual ca
 authored shape, several schema.org types*, which is `playlist`'s five and
 `organization`'s org types. `recipe` and `howto` are two shapes sharing a layout, which is
 a different thing.
+
+### D20 — the canonical primitive owes its composers a placeable preamble
+
+`card` is D18's canonical media-split primitive and **the only split-layout rune without the
+page-section anatomy.** Measured across every rune declaring `base: SplitLayoutModel`:
+
+| Rune | Declared sections |
+|---|---|
+| `recipe`, `feature`, `hero` | `preamble`, `headline: 'title'`, `blurb: 'description'`, `media` |
+| `playlist` | the same four, plus `body` |
+| `steps` | `preamble`, `headline: 'title'`, `blurb: 'description'` (no media) |
+| `realm`, `faction` | `body` only — domain runes with no header of their own |
+| **`card`** | **`media`, `body`** |
+
+Five of the eight declare the identical `preamble` / `title` / `description` triple. The
+primitive everything is supposed to compose over declares the least of all of them, which is
+backwards for its role and is the root of the collapse the `recipe` example measures. The
+wider vocabulary agrees: **23 runes declare `preamble`, 29 declare `blurb: 'description'`,
+21 declare `headline: 'title'`.**
+
+**The gap is narrower than "card lacks an anatomy", and stating it precisely is what makes
+the fix small.** Card already *detects* the pattern (see the qualification in the worked
+example): it promotes an eyebrow to a flat slot and names the body's first heading as
+`refs.title`. Two things are missing:
+
+1. **`title` is nested, not placeable.** It lives inside `bodyDiv`, so card's
+   `layout: { content: ['eyebrow', 'body', 'footer'] }` cannot list it and no theme can group
+   it with the eyebrow. `projection`'s `relocate` — the only thing that could hoist it — is
+   deprecated as subsumed by recursive `layout` (D1 of {% ref "SPEC-143" /%}).
+2. **No `description` slot at all**, and no `data-section` semantics: `cardSections` is
+   `{ media, body }`, so card's `title` is a BEM ref but not a *section*, and the shared
+   section-anatomy CSS keys on `data-section`.
+
+**Decision: `card` emits `title` and `blurb` as flat slots and declares them in
+`cardSections`.** The preamble then falls out of `layout` — `preamble: { tag: 'header',
+children: ['eyebrow', 'title', 'blurb'] }` — which puts the grouping in the theme's hands,
+where {% ref "ADR-028" /%} says presentation belongs, rather than requiring a new mechanism.
+Nothing in this decision adds a knob; it adds parts.
+
+**What it unlocks, in order of size:**
+
+- **`cover-scope="header"` becomes expressible on `card`.** The cover dimension is already
+  rune-agnostic — `skeleton/styles/dimensions/cover.css` keys on
+  `[data-cover-scope="header"] > [data-name="cover-band"] > [data-section="media"]`,
+  `[data-name="preamble"]`, with no rune name anywhere. What blocked it was the missing
+  `preamble`, not the missing switch. Today `header` scope has **exactly one consumer** —
+  `recipe` sets it; `card` and `hero` both set `full` — so a one-instance capability becomes a
+  shared one, which is rule 5a's argument rather than a new mechanism.
+- **Every composition gets somewhere to put a headline and a blurb**, instead of dumping them
+  into `body` as undifferentiated prose.
+- **{% ref "SPEC-151" /%} D3's six runes are the same population.** The runes that fail on
+  `headline` / `blurb` under {% ref "SPEC-146" /%} Problem 2 are the runes that have nowhere
+  to put them under composition. One gap, measured twice from two directions.
+
+**Three things interlock here, and they are complements rather than alternatives.** Worth
+stating because solving any one alone leaves the case broken:
+
+| Question | Governs | Status |
+|---|---|---|
+| What `{% slot %}` leaves behind | whether the placed value is *named* at all | open question, below |
+| {% ref "SPEC-146" /%} Problem 2 | whether a named value is *reachable* across the boundary | specced |
+| This decision | whether a reachable value has a *declared place* a theme can position | here |
+
+So SPEC-146 alone is insufficient: it makes `headline` resolvable, and card's anatomy is what
+gives it a position. A headline that resolves into prose inside `rf-card__body` is published
+correctly and unstyleable.
+
+**Consequences for the planned migrations, which is why this is not recipe-specific.**
+{% ref "SPEC-151" /%} nominates `hero`, `cta` and `steps` as *"the largest set of unblocked
+runes"* and the first marketing migrations. `hero` and `steps` both declare the full
+preamble triple, so the first planned compositions hit this gap before `recipe` ever does.
+`playlist` ({% ref "SPEC-155" /%}) carries the triple plus `body`. `realm` and `faction`
+({% ref "SPEC-147" /%}) are body-only and unaffected, which is the useful negative: this is
+a need of header-bearing runes, not of composition in general.
+
+**The cost, stated rather than discovered.** Card's output structure changes, so
+`refrakt contracts --check` diffs on both committed copies and the change is reviewed, not
+regenerated. Card's `body` loses its leading heading, so `.rf-card__body`'s prose rules want
+re-reading. No structured-data movement: `card` declares no schema. And `card` is placed by
+many existing pages, so this is a {% ref "SPEC-143" /%} D7-style no-drift migration on
+everything that already uses it — the one part of this that is not cheap.
+
+**Scope limit.** This decision covers `card`. `mediatext` is D18's narrower second primitive
+and may want the same treatment; nothing here assumes it, and the evidence above is card's.
 
 ## Non-goals
 
