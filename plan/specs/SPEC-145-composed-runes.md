@@ -1666,6 +1666,119 @@ than one design's wish.
 named slot — the gap D20's `meta` slot shares with `title` and the `cover-band` grouping. D21
 settles whose decision the placement is; it does not supply the mechanism that carries it.
 
+### D22 — two routing channels: prose by position, declared blocks by role
+
+{% ref "ADR-028" /%} and D21 settle *who* places a part. This settles *how a host rune works
+out what it has been handed*, which is the mechanism D21 deliberately left out.
+
+**A host rune routes by two channels, and position governs only one:**
+
+| Channel | What it is | Role comes from | Placement decided by |
+|---|---|---|---|
+| **Prose** | what an author (or a template) types | **position**, per the host's own grammar | the theme, via the zone it lands in |
+| **Declared block** | `metaFields` + `blocks`, or a composition's `{% metablock %}` | the **declaration** — it is self-identifying | the theme, wherever it places the zone |
+
+**The prose channel is card's existing grammar, written down.** Position maps to role: the media
+group (before the first `---`) is the media and anything about it; a leading paragraph before a
+heading is the eyebrow; the first heading is the title; what follows is body; after the second
+`---` is footer. Nothing new — card already does all of this, and its own comment calls it *"the
+page-section / recipe pattern"*.
+
+**Position in the *source* declaring a *role* is not the thing D21 forbids.** Worth stating
+plainly, because the two read alike. Declaring a role by position is refrakt's founding idea —
+*a heading inside `{% nav %}` becomes a group title*. Declaring a *rendered position* is what
+belongs to the theme. The first is grammar; the second is presentation.
+
+**And under composition the grammar's author changes.** The content author's markdown is parsed
+by the composition's own `content:` declaration into named fields. The **template** then arranges
+those fields inside the host, and the host's positional grammar reads *the template's*
+arrangement, not the original markdown. Two parses, two authors — the single most confusable
+thing about the `recipe` example above.
+
+**A declared block carries its role, so its source position must carry nothing.** This is what
+makes D21 implementable: the host routes a meta block to its `meta` slot (D20) because of *what
+it is*, exactly as it routes prose by *where it is*. Both are the host's content model sorting
+its input. No new template syntax is needed, and an explicit `into="…"` target is the inferior
+alternative because it would hand placement back to the template author — the thing D21 rules
+out.
+
+**Measured consequence, which is the test an author can apply:** entity metadata is **always
+declared, never authored as body prose.** `metaFields` project *attributes* — across the catalog
+they are `date`, `endDate`, `location`, `register`, `method`, `path`, `auth`, `kind`, `lang`,
+`since`, `deprecated`, `source`, `duration`, `currency` — which is what
+{% ref "ADR-030" /%} means by *"fields projected from `metaFields`"*. So if an author types
+"Prep 15 min · Serves 4" as body text, that is **not** entity metadata; it is a byline. Entity
+metadata would be `prepTime="PT15M" servings="4"`.
+
+**The gap this names.** {% ref "ADR-030" /%} rule 6 proposes `byline` in its conventional group
+vocabulary, and **`byline` appears nowhere in the codebase or CSS** — confirming rule 6's own
+description of itself as *"a documentation page and an agreed list"*. So the multi-item case
+before the title is unbuilt rather than disallowed: today that position holds one eyebrow line.
+
+### D23 — structure resolves once; responsive variation is CSS's work
+
+Two questions arrive together and have one answer. Can a theme put bar-shaped metadata in a cover
+band but def-list metadata in the body? And can it put a def-list over the media at one breakpoint
+and in the body at another?
+
+**The first question's premise is inverted: the theme never branches on shape, because the theme
+*chose* the shape.** `blocks[].layout` is outside `IDENTITY_FIELDS`, so a theme owns it. Shape and
+position are therefore one decision, not a condition on one another — band pairs with
+`layout: 'bar'`, body pairs with `definition-list`. A conditional would be circular.
+
+Where variation is genuinely wanted, both routes already ship:
+
+- **Per rune** — config is already per-rune. `Recipe.blocks.metadata.layout: 'bar'` with `meta` in
+  the band; `Event`'s as a definition list in content. Two entries, no branching.
+- **Per instance** — a {% ref "SPEC-091" /%} `variants` axis, and a delta may carry **both**
+  `blocks` and `layout`: `VARIANT_DELTA_RESERVED_FIELDS` is `[...IDENTITY_FIELDS, 'variants']`,
+  so neither is reserved. `Recipe`'s cover variant already ships a `layout` delta, making this a
+  proven pattern rather than a proposal. The axis keys on an author-visible modifier, which is the
+  right division: the author says which *kind* of thing this is; the theme says what that looks
+  like.
+
+**The second question: supported in the form that matters, correctly impossible in the form that
+does not.** The cover overlay is not a wrapper trick — it is a one-cell grid with overlapping
+siblings (`skeleton/styles/dimensions/cover.css`):
+
+```css
+[data-media-position="cover"]:not([data-cover-scope="header"]) {
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+}
+… > [data-section="media"], … > [data-name="content"] { grid-area: 1 / 1; }
+```
+
+and that file already carries `@media (max-width: 40rem)` and
+`@container (min-aspect-ratio: 1 / 1)`. So a `meta` node that is a **grid sibling** moves
+responsively with no new mechanism — `grid-area: 1 / 1` to overlay, `grid-area: auto` under a
+query to stack below. One node, one DOM position, two visual placements.
+
+**What is declined: moving a node between different parents at a breakpoint.** CSS cannot
+reparent, and both workarounds are worse than the limitation. Emitting it twice and hiding one
+violates {% ref "SPEC-143" /%}'s one-node-per-`data-name` rule and regresses accessibility, since
+assistive technology sees both copies. A client-side move contradicts the static-first model.
+
+**So: structure resolves once, at build; responsive variation is CSS's job.** That is already how
+`collapse` and `cover` behave, so this names existing practice rather than adding a rule.
+
+**The trade this exposes, which is the part worth writing down.** It looks like a styling choice
+and is really a structural commitment:
+
+| `meta` placed… | Buys | Forfeits |
+|---|---|---|
+| **inside** the cover band (a wrapper) | scoped tokens — the band carries `data-color-scheme: 'dark'`, so overlaid text reads light against scrimmed media | responsive movement; nothing can lift it out of the wrapper |
+| as a **grid sibling** (flat) | responsive movement via `grid-area` | the band's scoped colour scheme; contrast needs a scrim or a token on the node |
+
+`Recipe`'s cover variant chose the wrapper deliberately, for exactly that scoping. Both options
+are legitimate; what is not legitimate is expecting both at once. This belongs in the
+theme-authoring surfaces documentation beside the cover scopes, because it is discovered late and
+expensively otherwise.
+
+**Neither question needs anything built.** Recorded because "can the theme do X?" was answered
+twice by measurement, and the answers are only obvious once the ownership of `blocks[].layout` and
+the grid-sibling shape of the overlay are both in view.
+
 ## Non-goals
 
 - Replacing {% ref "SPEC-143" /%}'s declared tier — the two tiers coexist, and D5 keeps them distinct
