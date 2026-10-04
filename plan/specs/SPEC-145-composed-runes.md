@@ -1549,6 +1549,16 @@ children: ['eyebrow', 'title', 'blurb'] }` — which puts the grouping in the th
 where {% ref "ADR-028" /%} says presentation belongs, rather than requiring a new mechanism.
 Nothing in this decision adds a knob; it adds parts.
 
+**A third slot, `meta`, joins them — but it is a different kind of slot and the difference
+matters.** `title` and `blurb` have a source in card's *own* content model: card detects them
+in authored markdown. `meta` has none — card declares no `metaFields` and has no attributes to
+project, so it would never fill the slot itself. What it reserves is a **position** for a meta
+block a composition declares and emits (D7), which D21 establishes is the entity's metadata
+rather than the media's. A `layout` entry naming a child that nothing emits is simply absent,
+so the slot is inert when unused and costs nothing. It is listed here rather than separately
+because card's slot vocabulary should be decided once; it is flagged as distinct because a
+reader would otherwise expect card to grow a metadata channel of its own, which it must not.
+
 **What it unlocks, in order of size:**
 
 - **`cover-scope="header"` becomes expressible on `card`.** The cover dimension is already
@@ -1600,6 +1610,61 @@ ratio, and `wrap` — *"Wrap text around the media"* — which is prose float ra
 two-column split. A rune whose job is to run text around an image has no preamble to place,
 so giving it one would be adding parts nothing asks for, which is the opposite of this
 decision's argument.
+
+### D21 — the subject of a metadatum decides its owner; the desired position never does
+
+The question this settles: when a composition wants metadata near the media, does the author
+declare it **as part of the media zone** and the theme comply, or declare it **as the entity's
+metadata** and the theme decide where it goes?
+
+**It is the second, and the fork dissolves once the question becomes "what is this metadatum
+*about*?"** Two categories had been conflated:
+
+| Category | Subject | Owner of placement | Home today |
+|---|---|---|---|
+| Entity metadata — `prepTime`, `servings`, `difficulty`, a date, an author | the rune's subject | **the theme** | `metaFields` + `blocks` + `layout` |
+| Media metadata — a caption, a credit, a licence, a duration | the media asset | travels with the media | `figure`'s `caption: 'description'` — and nothing else |
+
+The second category is nearly empty, measured: `figure` declares `caption`, and there is **no
+credit, licence or duration concept anywhere in the catalog**. So the author-declares-position
+option would be inventing a channel for a category with one member, to carry data that already
+has a complete one.
+
+**The rule: the subject decides the owner. A desired position never does.** This is
+{% ref "ADR-028" /%}'s line on this case — *"these four fields are metadata about the recipe"*
+is identity, *"it sits over the image"* is presentation.
+
+**Why author-declared position fails for entity metadata**, in increasing order of severity:
+
+1. It duplicates a shipped mechanism. `metaFields` / `blocks` / `layout` already assigns the
+   declaration to the author and the shape and position to the theme, and both `blocks` and
+   `layout` sit outside `IDENTITY_FIELDS`.
+2. It crosses ADR-028 in the forbidden direction, by having the author assert a position.
+3. It does not survive a theme switch — the same failure {% ref "SPEC-159" /%} records for
+   `polaroid` against `materiality: object`. A theme with no media overlay, whether print,
+   text-first or a narrow viewport, either ignores the declaration, in which case it was never
+   a guarantee, or honours it badly.
+4. **It is self-defeating under composition, which is the decisive reason.** If "in the media
+   zone" is the author's declaration, the template freezes it — and a template's placement is
+   precisely what a theme cannot reach (D8, and the `recipe` worked example). So this option
+   would convert a theme-owned decision into an author-frozen one *by construction*. Declaring
+   a named **zone** survives composition, because a zone is something a theme can place.
+
+**The overlay case is served by this, with no author involvement.** A theme wanting entity
+metadata over the media moves `'metadata'` from `content.children` into `'cover-band'.children`
+in `Recipe`'s existing cover variant — one array edit, no code. The author said which fields are
+metadata; the theme said where metadata goes.
+
+**The test for the genuine edge case**, so it does not have to be re-argued per rune: a badge on
+an image — "15 min" as a visual device on the photo — could be read either way. **Would it still
+make sense with no image?** If yes, it is entity metadata and belongs to the theme's placement.
+If no, it is media metadata, and the next question is whether it is a caption, which has a home,
+or a new category, which does not and would need {% ref "ADR-030" /%} rule 5b evidence rather
+than one design's wish.
+
+**What this does not settle.** A composition still cannot *aim* a meta block at a host rune's
+named slot — the gap D20's `meta` slot shares with `title` and the `cover-band` grouping. D21
+settles whose decision the placement is; it does not supply the mechanism that carries it.
 
 ## Non-goals
 
