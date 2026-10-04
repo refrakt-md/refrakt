@@ -567,6 +567,64 @@ false of the *binding*. Either the binding gets its own name, or the composed ca
 state what `$item` is for it in the same breath the others do. This is not an argument
 against `each`; it is the one unlabelled edge on it.
 
+## Authoring note — `{% metablock %}` versus placing `{% bar %}` or `{% deflist %}`
+
+Written out because the two produce **nearly identical HTML and mean completely different
+things**, and the convergence is a feature rather than an accident: both land on the shared row
+geometry {% ref "SPEC-156" /%} consolidates. Measured side by side:
+
+```html
+<!-- {% deflist %} placed in a template -->
+<dl data-zone-layout="definition-list" class="rf-deflist" data-rune="deflist">
+  <div data-name="row" class="rf-deflist__row">
+    <dt data-meta-label="">Priority</dt>
+    <dd><span class="rf-badge" data-meta-type="tag" data-meta-sentiment="caution">high</span></dd>
+```
+
+```html
+<!-- {% metablock name="metadata" /%} — a `blocks` zone -->
+<dl data-name="metadata" data-zone="metadata" data-zone-layout="definition-list">
+  <div data-name="row" data-field="prepTime">
+    <dt data-meta-label="">Prep</dt>
+    <dd data-meta-type="temporal">15m</dd>
+```
+
+| | `{% bar %}` / `{% deflist %}` | `{% metablock %}` |
+|---|---|---|
+| Value source | **authored content** — someone types it | **declared attributes**, via `metaFields` |
+| `data-rune` on the container | **yes** → a name-resolution boundary | **no** — an engine zone |
+| Row ↔ declaration link | none | `data-field="prepTime"` |
+| `data-meta-type` | always `tag`, from a nested `{% badge %}` | per field — `temporal`, `quantity`, `category`, `id`, `status` |
+| Formatting | whatever was typed | `transform: 'duration'` renders `PT15M` as `15m` |
+| Omitted when empty | no — an empty deflist renders empty | `condition: prepTime` |
+| Sentiment | hand-written per badge | `sentimentMap`, derived from the value |
+| i18n | literal text, and **no keying scheme reaches it** (D13) | labels keyed `{scope}.{block}.{ref}` |
+| Who picks bar vs definition-list | the **template author**, by choosing the tag | the **theme**, via `blocks[].layout` |
+| Who picks the position | the template author, frozen | the theme, via `layout` |
+
+**The rule: is the value in an attribute? Use a metablock. Is it content someone writes? Place
+the rune.** In a composed `recipe`, `prepTime="PT15M"` is an attribute and belongs in a
+metablock; a `deflist` the *content* author typed inside the body is content and stays a
+`deflist`.
+
+**Three things go wrong when a declared value is hand-placed as a rune**, in the order they
+bite:
+
+1. **It creates a schema boundary.** A placed `bar` or `deflist` is a `data-rune` node, so a
+   schema property sourced from a node inside it silently disappears
+   ({% ref "SPEC-146" /%} Problem 2). This is exactly what D19 and {% ref "SPEC-156" /%} D9 mean
+   by *group with an engine wrapper, never a placed rune, where schema is involved* — and the
+   metablock is the escape that rule assumes exists.
+2. **It takes a decision that belongs to the theme.** Choosing `deflist` over `bar` *is* choosing
+   the shape, and placing it fixes the position — the two things D23 assigns to the theme. The
+   metablock exists so a composition can say *"here is metadata"* without saying *"as a
+   definition list, there"*.
+3. **It discards an identity-guarded semantic.** A badge's `data-meta-type` is always `tag`,
+   while `metaFields` give `temporal` / `quantity` / `category`, and {% ref "SPEC-158" /%} D3
+   makes `metaFields.*.metaType` **identity** — not theme-overridable — precisely because it
+   states what the data *means*. Hand-rolled badges replace that with "this is a tag". The output
+   looks right and the semantics are gone, which is why this is the failure that gets found last.
+
 ## What worries me, stated plainly
 
 **Contract derivation couples to the primitives' versions.**
@@ -1881,6 +1939,7 @@ explicitly is cheaper than rediscovering it.
 - [ ] A composed rune placing `{% card %}` inherits `extractMediaImage`'s unwrapping, so `![x](y)` in a media slot emits a bare `<img>` and not `<p><img>` (D18)
 - [ ] `recipe` and `howto` are confirmed composable once {% ref "SPEC-146" /%} lands, or the reason either is not is recorded against D18's claim
 - [ ] The rune authoring guide documents which tier to reach for, with the table from this spec
+- [ ] The rune authoring guide carries the `{% metablock %}` versus placed-`{% bar %}`/`{% deflist %}` note, including the attribute-or-content rule and all three failure modes — the schema boundary, the usurped theme decision, and the lost `metaType`
 
 ## References
 
