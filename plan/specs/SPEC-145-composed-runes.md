@@ -760,6 +760,47 @@ about a stage a template comes *after*; postProcess is a stage it comes *before*
 other constraint on what a template may place is D12's intersection, and no aggregation
 rune is in it.
 
+**Two places the `include` route cannot be hoisted to, measured, because both look like the
+obvious way to avoid repeating it per page.**
+
+**`_layout.md` cannot hold an `{% include %}`, and it fails loudly.** Three independent
+reasons, any one sufficient. Layouts get **no preprocess pass**: `parseLayout` runs
+`Markdoc.parse` then `Markdoc.transform` directly (`content/src/layout.ts:66-80`), while
+preprocess is a *page* phase by construction (`site.ts:482`, *"so the preprocess phase can run
+during page processing"*; `:512`, *"Per-page preprocess context"*). So the tag reaches transform
+unresolved and `include`'s own transform throws — *"{% include %} reached the transform phase
+unresolved — its preprocess hook was not wired through."* Second, a layout's variable scope is
+the **layout's**, not the page's: `path: layoutPage.relativePath`, `__source`, `__sourcePath`,
+`__icons` — no page frontmatter and no page name, so there would be nothing to key a query on
+even with a preprocess pass. Third, `mergeRegions` parses each layout **once per layout file**
+and wraps every page in the tree with the result, so one resolution would serve every page
+identically.
+
+The rule that follows: **a layout carries chrome that is identical across its subtree; per-page
+derived content belongs on the page.** Nav, pagination and a toc qualify; "this page's own
+record" never can.
+
+**`entityRoutes` gives `$item` for free and cannot carry prose.** It is the one mechanism that
+injects a page-scoped *object* (`entity-routes.ts:103`, `variables: { item: project(entity) }`),
+which makes `{% $item.plugin %}` work with no `data` tag at all — genuinely nicer, and the wrong
+trade for a document. Two reasons:
+
+1. **`content` is computed once per *rule*, outside the entity loop** — `let content = inline ??
+   ''`, then one `resolvePartial(templateName)` — and the same string is handed to every page the
+   rule generates. Only `url`, `title`, `frontmatter` and `variables.item` vary per entity. There
+   is no per-page body, not because prose is discarded but because there is nowhere to put it.
+2. **Substitution is not parsing.** `project()` spreads the entity's `data`, so a long markdown
+   string could ride along as a field — but a Markdoc variable interpolates a *value*. A body
+   containing headings, lists and `{% preview %}` blocks would render as literal text. This is the
+   same line as `include` versus `partial`: pasting an AST parses, binding a variable does not.
+
+So `entityRoutes` fits pages whose body genuinely *is* their fields — plan items, a listing, an
+event. It does not fit a document whose value is its prose, and reaching for it to obtain `$item`
+trades the body for the metadata.
+
+**Which is why the plan site is the shape that keeps both:** real `.md` files with authored prose
+bodies, each wrapped in a page-level rune. The body is per file; only the structure is shared.
+
 This also simplifies D7: a `{% metablock %}` placeholder placed at transform time is
 consumed by the engine immediately afterwards, rather than having to survive three
 stages as a marker.
