@@ -724,6 +724,42 @@ ordinary runes never needed it. So: **a composition template may not contain the
 preprocessor runes** — `data`, `snippet`, `include` — and one that does is rejected at
 definition load rather than failing mysteriously at render.
 
+**And the ban needs to point at its alternative, because otherwise it reads as a dead
+end.** It is not one: `{% include %}` is the supported route for a repeated block that
+*needs* a preprocessor rune, and its own `variables` doc comment describes exactly this
+case —
+
+> Bindings substituted into the pasted AST at paste time, e.g. `variables={q: "rune:card"}`
+> makes `$q` inside the file that string. Unlike `partial`, this is substitution rather
+> than a transform-time scope, **so bound values reach preprocessor attributes such as
+> `{% data where=$q %}`**.
+
+So a derived-data block is `{% include file="_intro.md" variables={query: "name:card"} /%}`,
+and the substitution also sidesteps `data`'s no-concatenation limit, since `variables` are
+bound before `where` is read. Note `partial` does **not** serve this: it is a transform-time
+scope, so its bindings never reach a preprocessor attribute.
+
+| | `{% include %}` | a composition |
+|---|---|---|
+| Stage | preprocess splice | transform (this decision) |
+| May contain `data` / `snippet` / `include` | **yes — its whole purpose** | **no, rejected at load** |
+| Content model, slots | none | yes |
+| Bindings | scalar, paste-time | `$attrs` plus slot values |
+
+**The rule: a repeated block containing a preprocessor rune is an `include`; a repeated
+block of ordinary runes with a content model is a composition.** Recorded because the ban
+above invites exactly one wrong inference — that a composition could wrap `{% data %}` to
+give a docs site derived content without writing code. It cannot, and the walk into that
+inference is what prompted this paragraph.
+
+**Runes that resolve at `postProcess` are not affected, and saying so prevents the same
+question being asked of them.** `collection`, `aggregate`, `expand` and `file-ref` emit a
+sentinel at transform and are resolved in phase 4, so a template may place them freely —
+the sentinel survives by design, exactly as `breadcrumb auto` does. The preprocess ban is
+about a stage a template comes *after*; postProcess is a stage it comes *before*. The only
+other constraint on what a template may place is D12's intersection, and no aggregation
+rune is in it.
+
 This also simplifies D7: a `{% metablock %}` placeholder placed at transform time is
 consumed by the engine immediately afterwards, rather than having to survive three
 stages as a marker.
