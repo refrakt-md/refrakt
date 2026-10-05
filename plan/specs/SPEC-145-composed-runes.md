@@ -1931,6 +1931,58 @@ expensively otherwise.
 twice by measurement, and the answers are only obvious once the ownership of `blocks[].layout` and
 the grid-sibling shape of the overlay are both in view.
 
+### D24 — carrier resolution descends through compositions, and nomination delegates
+
+D14 defaults the paint group's chrome carrier to *"the single top-level placed rune"*. Nesting
+breaks that default without breaking the decision: when the single top-level placed rune is
+itself a **composition**, it is another block-less, visually empty wrapper, so painting there
+reproduces exactly the double-paint failure D14 exists to prevent — one level down, and harder
+to see.
+
+**A composition is transparent for carrier resolution.** This is not a special case; it
+follows from D2. A composed rune has no block and ships no CSS, so there is nothing on it to
+paint. Resolution therefore **descends through composition boundaries and stops at the first
+rune that declares a `block`.** `RuneConfig.block` is typed required, so only compositions are
+block-less and the search terminates at a painted rune or at nothing.
+
+The three groups then behave as follows under nesting:
+
+| Group | Under nesting |
+|---|---|
+| `width`, `spacing`, `inset` | unchanged — the **outer** root, which is the only node in the article's direct-child position |
+| `elevation`, `substrate`, `reveal`, `tint`'s paint half | descend to the first blocked rune |
+| `scrim` | descend to the rune owning the media slot, which a composition never does |
+
+**Nomination delegates; it does not reach through.** An outer composition's template names only
+what it places, so it nominates the inner *composition* — never something inside it. That inner
+composition's own declaration then decides where the chrome lands within it. Each composition
+stays responsible for its own carrier and neither knows the other's internals, which keeps D3
+("inner runes are implementation detail") intact and needs no ability to address a host rune's
+slots. Nomination composes down the chain the same way resolution does.
+
+**The correctness test is equivalence with the direct case.** Whatever rune the descent lands
+on must receive the attribute exactly as if an author had written it on that rune directly. So
+a chain bottoming out in `grid` paints the grid — which is what `{% grid elevation="raised" %}`
+does anyway, and consistency with the unnested case is the bar rather than a judgement about
+whether painting a grid is wise.
+
+**Two failure modes, both resolved by existing precedent:**
+
+- **A composition whose template places no rune at all** — only engine wrappers and slots — has
+  no carrier. Warn and drop the chrome, following `frameTarget`'s posture
+  (`facets/frame.ts:105`: *"has no frame target — set `frameTarget` or give the rune a media
+  section. Frame chrome ignored."*). Silently painting the empty root is the outcome this
+  decision exists to prevent, so it must not be the fallback.
+- **A cycle** needs nothing new: it is caught at schema construction by the cycle detection this
+  spec already owes, before any carrier is resolved.
+
+No depth limit is needed. Cycles are the only unbounded case, and they are already rejected.
+
+**One practical note, because it will be written by mistake.** Do not forward a
+position-dependent universal into a template — `width=$attrs.width` on a placed rune sets
+`data-width` on a node that is not in the article's direct-child position, where none of its CSS
+matches. It is inert rather than wrong, but it reads as working and will be copied.
+
 ## Non-goals
 
 - Replacing {% ref "SPEC-143" /%}'s declared tier — the two tiers coexist, and D5 keeps them distinct
@@ -1984,6 +2036,8 @@ explicitly is cheaper than rediscovering it.
 
 - [ ] A slot filled twice, never filled, or filled with content the target primitive's content model rejects each has a defined, tested outcome
 - [ ] A composition cycle is detected and reported by rune name, at schema construction rather than at render
+- [ ] Carrier resolution descends through a nested composition to the first rune declaring a `block`, asserted on a two-level chain where the paint attribute lands identically to the same attribute written on that rune directly (D24)
+- [ ] A composition placing no rune warns and drops the paint group rather than painting its own root (D24)
 - [ ] A wrapper composition declaring no `schema:` block may place a schema-emitting rune, asserted on a `recipe` wrapper whose graph contains exactly one `Recipe` and no second entity (D9)
 - [ ] A composition declaring its own type *and* placing a peer-emitting rune is rejected at definition load, naming both types (D9)
 - [ ] The emitted tree carries the composed rune's `data-rune`; the primitives' markers remain but do not claim the rune's identity (D3)
