@@ -1081,6 +1081,64 @@ This is mechanically checkable — both the contract generator and the compositi
 expander know which runes carry schema tables — so it is a build diagnostic rather
 than something a reviewer must notice.
 
+#### The rule is relational, and the common case it permits is easy to misread as banned
+
+*"Never from one"* and the two-column table above read, on a quick pass, as **a schema-
+emitting rune may not be placed at all**. That is not what this decision says. The forbidden
+thing is a **peer** — two competing top-level entities in one subtree — which is why the
+counter-example is an outer `Recipe` over an inner `HowTo` and why `figure`'s subordinate
+`ImageObject` is fine. A rune's schema is only a peer *relative to a claim the outer rune
+makes.*
+
+**So a wrapper composition that declares no schema of its own may place an entity rune.**
+The worked case is the one an author will actually hit — a cooking blog wanting one standard
+shape for every recipe post:
+
+```md
+{% cooking-post rating="4" %}
+…the author's whole recipe body…
+{% /cooking-post %}
+```
+
+`cooking-post` places `{% recipe %}` plus the blogger's furniture — a byline, a rating, a
+"jump to recipe" link — and declares **no `schema:` block**. Exactly one type then exists in
+the subtree, `recipe`'s own `Recipe`: no peer, no renamed property, no RDFa capture at the
+wrong resource. D9 is satisfied on its terms rather than by exception, and the semantics are
+right — in a recipe blog post the entity *is* the recipe, and the wrapper is page furniture
+that should claim nothing.
+
+**What remains genuinely forbidden is the other reading of the same wish:** a composition
+that wants to *be* the recipe, declaring `Recipe` itself while borrowing `recipe`'s markup.
+That is composing from a peer, and `schema="none"` is explicitly the worse escape above. The
+answer there is to compose a **sibling**, not a wrapper — a composition over `card` / `grid`
+/ `deflist` carrying its own `schema: { type: Recipe, … }`, which is the worked example this
+spec already contains. Such an author is writing their own recipe rune rather than extending
+ours, and that is the supported shape.
+
+#### A wrapper passes the body through intact, and this is the part that fails silently
+
+A wrapper over an entity rune **must take one greedy body slot and place it whole, outside
+any conditional.** Two reasons, and the second is invisible when crossed:
+
+1. **Parsing consumes the inner rune's grammar.** If the outer's content model splits the
+   author's markdown into fields, it has eaten the structure the inner rune depends on —
+   `recipe`'s zone delimiters above all. The inner would receive pre-split pieces and parse
+   them wrongly.
+2. **A conditional hides structure from the inner content model.** D17 is this exact failure:
+   content models match AST children *before* transformation, so anything a template wraps in
+   `{% if %}` is invisible to the structural matching of the rune it sits inside. Its worked
+   case is an `hr` nested in an `{% if %}` that `splitMediaBodyFooter` never sees, leaving a
+   card with one zone instead of two.
+
+So the wrapper adds chrome *around* the inner rune and never reaches inside it. Stated here
+rather than only in D17 because the wrapper pattern is where an author meets it first, and
+because "my recipe lost its media zone" is not a diagnosis anyone reaches unaided.
+
+**And a wrapper may be more machinery than the job needs.** Where the want is only consistent
+furniture around every page in a section, the layout cascade already does that —
+`_layout.md` with regions, scoped to a directory tree. Worth asking which is meant before
+reaching for a rune at all.
+
 ### D10 — name resolution across boundaries is {% ref "SPEC-146" /%}'s, not this spec's
 
 Composition cannot make a correct structured-data claim until two resolvers change:
@@ -1926,6 +1984,8 @@ explicitly is cheaper than rediscovering it.
 
 - [ ] A slot filled twice, never filled, or filled with content the target primitive's content model rejects each has a defined, tested outcome
 - [ ] A composition cycle is detected and reported by rune name, at schema construction rather than at render
+- [ ] A wrapper composition declaring no `schema:` block may place a schema-emitting rune, asserted on a `recipe` wrapper whose graph contains exactly one `Recipe` and no second entity (D9)
+- [ ] A composition declaring its own type *and* placing a peer-emitting rune is rejected at definition load, naming both types (D9)
 - [ ] The emitted tree carries the composed rune's `data-rune`; the primitives' markers remain but do not claim the rune's identity (D3)
 - [ ] A composed rune's schema.org row retypes its slots via the existing `applySchemaTable` child mechanism, with no new schema code path
 - [ ] An author-stated `typeof` on content inside a slot survives the parent's row (`SCHEMA_TYPE_EXPLICIT`)
