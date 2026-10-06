@@ -1,4 +1,4 @@
-{% work id="WORK-605" status="ready" priority="medium" complexity="moderate" milestone="v0.38.0" source="SPEC-003" tags="runes,playlist,media,emitTag" %}
+{% work id="WORK-605" status="in-progress" priority="medium" complexity="moderate" milestone="v0.38.0" source="SPEC-003" tags="runes,playlist,media,emitTag" %}
 
 # `playlist` adopts field-level `emitTag`, keeping a minimal inheritance pass
 

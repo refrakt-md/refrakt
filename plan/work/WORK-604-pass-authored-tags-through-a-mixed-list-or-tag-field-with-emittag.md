@@ -1,4 +1,4 @@
-{% work id="WORK-604" status="ready" priority="high" complexity="simple" milestone="v0.38.0" source="SPEC-003" tags="runes,content-model,emitTag,content-loss" %}
+{% work id="WORK-604" status="in-progress" priority="high" complexity="simple" milestone="v0.38.0" source="SPEC-003" tags="runes,content-model,emitTag,content-loss" %}
 
 # Pass authored tags through a mixed `list|tag:x` field with `emitTag`
 

@@ -1466,3 +1466,69 @@ describe('resolveSequence with itemModel', () => {
 		expect((result.membersData as any[])[1].role).toBe('Engineer');
 	});
 });
+
+// ---------------------------------------------------------------------------
+// BUG-030 — a mixed `list|tag:x` field with emitTag keeps the authored tags
+// ---------------------------------------------------------------------------
+
+describe('emitTag on a mixed list|tag field', () => {
+	const trackModel: ItemModel = {
+		fields: [{ name: 'name', match: 'text', pattern: 'remainder' }],
+	};
+	const names = (nodes: unknown) => (nodes as any[]).map((n) => `${n.tag}:${n.attributes.name}`);
+
+	it('keeps authored tags in document order between list-derived ones', () => {
+		const ast = Markdoc.parse('- Song A\n- Song B\n\n{% track name="Song C" /%}\n\n- Song D\n');
+		const fields: ContentFieldDefinition[] = [
+			{
+				name: 'tracks',
+				match: 'list|tag:track',
+				greedy: true,
+				itemModel: trackModel,
+				emitTag: 'track',
+				emitAttributes: { name: '$name' },
+			} as ContentFieldDefinition,
+		];
+
+		const result = resolveSequence(ast.children, fields);
+		expect(names(result.tracks)).toEqual([
+			'track:Song A',
+			'track:Song B',
+			'track:Song C',
+			'track:Song D',
+		]);
+	});
+
+	it('leaves a list-only field unchanged', () => {
+		const ast = Markdoc.parse('- Ann\n- Bo\n');
+		const fields: ContentFieldDefinition[] = [
+			{
+				name: 'members',
+				match: 'list',
+				itemModel: trackModel,
+				emitTag: 'member',
+				emitAttributes: { name: '$name' },
+			} as ContentFieldDefinition,
+		];
+
+		expect(names(resolveSequence(ast.children, fields).members)).toEqual([
+			'member:Ann',
+			'member:Bo',
+		]);
+	});
+
+	it('passes a non-greedy field whose single match is a tag straight through', () => {
+		const ast = Markdoc.parse('{% track name="Solo" /%}\n');
+		const fields: ContentFieldDefinition[] = [
+			{
+				name: 'tracks',
+				match: 'list|tag:track',
+				itemModel: trackModel,
+				emitTag: 'track',
+				emitAttributes: { name: '$name' },
+			} as ContentFieldDefinition,
+		];
+
+		expect(names(resolveSequence(ast.children, fields).tracks)).toEqual(['track:Solo']);
+	});
+});

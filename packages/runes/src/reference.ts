@@ -6,7 +6,7 @@
  */
 
 import type { Schema } from '@markdoc/markdoc';
-import type { ContentModel, ContentFieldDefinition } from '@refrakt-md/types';
+import type { ContentModel, ContentFieldDefinition, ItemModel } from '@refrakt-md/types';
 import { RUNE_EXAMPLES } from './examples.js';
 import {
 	UNIVERSAL_ATTRIBUTE_NAMES,
@@ -97,6 +97,27 @@ export interface SerializedContentField {
 	template?: string;
 	description?: string;
 	emitTag?: string;
+	/** How each item of a matched list is read (BUG-031). */
+	itemModel?: SerializedItemModel;
+}
+
+export interface SerializedItemField {
+	name: string;
+	/** Inline node type (`strong`, `em`, `link`, `image`, `code`, `text`) or block (`paragraph`, `list`). */
+	match: string;
+	optional?: boolean;
+	greedy?: boolean;
+	/** Attribute read instead of text content, e.g. `href` on a link. */
+	extract?: string;
+	/** Regex source, or the literal string `'remainder'`. */
+	pattern?: string;
+	/** The regex's flags, when it has any. */
+	patternFlags?: string;
+	itemModel?: SerializedItemModel;
+}
+
+export interface SerializedItemModel {
+	fields: SerializedItemField[];
 }
 
 export interface SerializedSequenceModel {
@@ -383,6 +404,22 @@ function stripField(f: ContentFieldDefinition): SerializedContentField {
 		template: f.template,
 		description: f.description,
 		emitTag: f.emitTag,
+		itemModel: f.itemModel ? stripItemModel(f.itemModel) : undefined,
+	};
+}
+
+function stripItemModel(model: ItemModel): SerializedItemModel {
+	return {
+		fields: model.fields.map((f) => ({
+			name: f.name,
+			match: f.match,
+			optional: f.optional,
+			greedy: f.greedy,
+			extract: f.extract,
+			pattern: f.pattern === undefined || f.pattern === 'remainder' ? f.pattern : f.pattern.source,
+			patternFlags: f.pattern instanceof RegExp && f.pattern.flags ? f.pattern.flags : undefined,
+			itemModel: f.itemModel ? stripItemModel(f.itemModel) : undefined,
+		})),
 	};
 }
 
@@ -485,7 +522,73 @@ function renderField(field: SerializedContentField): string {
 	const repeat = field.greedy ? ', repeatable' : '';
 	const match = formatMatch(field.match);
 	const desc = field.description ? ` — ${field.description}` : '';
-	return `\`${field.name}\` (${required}${repeat} ${match})${desc}`;
+	const lines = [`\`${field.name}\` (${required}${repeat} ${match})${desc}`];
+
+	// Authoring shape first: what to write, then how it is read, then what it
+	// becomes — the order the sections branch reads in.
+	if (field.template) {
+		lines.push('    Written as:');
+		for (const line of field.template.split('\n')) lines.push(`      ${line}`);
+	}
+	if (field.itemModel) {
+		lines.push('    Each list item is read as:');
+		for (const item of field.itemModel.fields) lines.push(`      - ${renderItemField(item)}`);
+	}
+	if (field.emitTag) {
+		const what = field.itemModel ? 'Each list item' : 'Each match';
+		lines.push(`    ${what} becomes a \`${field.emitTag}\` tag.`);
+	}
+	return lines.join('\n');
+}
+
+/** One item field, as an author would write it. Nested item models render one level deep. */
+function renderItemField(f: SerializedItemField): string {
+	const status = f.optional ? 'optional' : 'required';
+	return `\`${f.name}\`: ${describeItemMatch(f)} (${status})`;
+}
+
+function describeItemMatch(f: SerializedItemField): string {
+	const of = f.extract ? ` — its \`${f.extract}\`` : '';
+	switch (f.match) {
+		case 'strong':
+			return `**bold** text${of}`;
+		case 'em':
+			return `*italic* text${of}`;
+		case 'link':
+			return `a link${of}`;
+		case 'image':
+			return `an image${of}`;
+		case 'code':
+			return `\`inline code\`${of}`;
+		case 'paragraph':
+			return f.greedy ? 'paragraphs under the item' : 'a paragraph under the item';
+		case 'list': {
+			const nested = f.itemModel?.fields.map((n) => `\`${n.name}\``).join(', ');
+			return nested
+				? `a nested list whose items are read as ${nested}, not expanded here`
+				: 'a nested list';
+		}
+		case 'text':
+			// A text field without a pattern consumes what the others leave, so it
+			// is described by that rather than as if it matched a node type.
+			if (f.pattern === undefined || f.pattern === 'remainder') return 'the remaining text';
+			return `text matching \`${f.pattern}\`${f.patternFlags ? ` (flags \`${f.patternFlags}\`)` : ''}${nonAsciiNote(f.pattern)}`;
+		default:
+			return `${f.match}${of}`;
+	}
+}
+
+/**
+ * Name any non-ASCII character in a pattern. A pattern that requires `—`
+ * (U+2014) does not match a typed `-`, and the two look alike in most fonts.
+ */
+function nonAsciiNote(pattern: string): string {
+	const chars = [...new Set([...pattern].filter((c) => c.charCodeAt(0) > 0x7e))];
+	if (chars.length === 0) return '';
+	const named = chars.map(
+		(c) => `\`${c}\` is U+${c.codePointAt(0)!.toString(16).toUpperCase().padStart(4, '0')}`,
+	);
+	return ` — note: ${named.join(', ')}`;
 }
 
 function formatMatch(match: string): string {

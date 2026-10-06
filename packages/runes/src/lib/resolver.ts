@@ -192,7 +192,14 @@ export function resolveSequence(
 						: [result[field.name] as Node];
 					const tagNodes: Node[] = [];
 					for (const listNode of listNodes) {
-						if (!listNode || (listNode as any).type !== 'list') continue;
+						if (!listNode) continue;
+						// BUG-030 — a mixed `list|tag:x` field also collects tags the author
+						// wrote. They are already tags: keep each in its place rather than
+						// dropping it when the field is replaced with the emitted nodes.
+						if ((listNode as any).type !== 'list') {
+							tagNodes.push(listNode as Node);
+							continue;
+						}
 						const items = resolveListItems(listNode, field.itemModel);
 						const listItems = (listNode as Node).children ?? [];
 						for (let i = 0; i < items.length; i++) {

@@ -1,4 +1,4 @@
-{% work id="WORK-606" status="ready" priority="medium" complexity="moderate" milestone="v0.38.0" source="SPEC-128" tags="runes,reference,docs,dx" %}
+{% work id="WORK-606" status="in-progress" priority="medium" complexity="moderate" milestone="v0.38.0" source="SPEC-128" tags="runes,reference,docs,dx" %}
 
 # Project `itemModel` and render `emitTag` and `template` in the rune reference
 
