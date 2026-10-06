@@ -1,4 +1,4 @@
-{% work id="WORK-603" status="in-progress" priority="medium" complexity="moderate" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dx" pr="refrakt-md/refrakt#657" %}
+{% work id="WORK-603" status="done" priority="medium" complexity="moderate" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dx" pr="refrakt-md/refrakt#657" %}
 
 # Add `fieldMetas` and `groupByHeading`
 
@@ -112,5 +112,23 @@ duplication, not the parsing.
 
 - {% ref "SPEC-140" /%} — Tier 3, D5
 - {% ref "ADR-008" /%} — the flat namespace `properties` and `refs` share
+
+## Resolution
+
+Completed: 2026-10-06
+
+Branch: `claude/v0-37-post-release-plan-dc3va1`
+PR: refrakt-md/refrakt#657
+
+### What was done
+- `packages/runes/src/lib/field-metas.ts`: `fieldMetas(attrs, config, spec)` — spec is data (bare-string default, or `{ from: ['attrs.x' | 'file.x', …], default }`); every source is validated before one is chosen, so an unknown root throws even after a hit; keys emerge in declaration order. Exported with `FieldMetaSpec` / `FieldMetaEntry` / `FieldMetaSource`.
+- Adopted by the five plan runes (work, bug, decision, milestone, spec — the `fileVars` closures are gone) and the seven other calls whose properties are all plain `attrs.X ?? 'literal'` reads: sidenote, pullquote, map-pin (gained its `config` param), event, organization, comparison-row, api.
+- `packages/runes/src/lib/node.ts`: `groupByHeading(nodes, { initial, heading, item, other? })` — shares only the traversal; the rune's `heading` callback decides the next group. Adopted at tint (unrecognised heading keeps the section), palette ×2 (same-titled headings stay separate groups), spacing ×2 (unrecognised heading closes the section; one shared `sectionOf`), map (non-list nodes pass through in order).
+- `packages/runes/test/field-metas.test.ts`: JSON round-trip, root rejection (incl. a bad source after a hit), declaration order, ADR-008 collision on a computed properties object, traversal incl. `other`.
+
+### Notes
+- **Bento is left explicit, by decision on #658.** Its loop collects the sibling nodes under each heading and never looks at list items — a different walk, and fitting it would grow the helper for one caller. Hence the unchecked "seven loop sites" criterion: six adopted.
+- Runes whose property keys differ from their attribute names (hint's `hintType` ← `type`) or whose metas are conditional keep the explicit form; neither utility is mandatory.
+- `refrakt inspect --json` over every rune × variant on both sites was byte-identical to main.
 
 {% /work %}

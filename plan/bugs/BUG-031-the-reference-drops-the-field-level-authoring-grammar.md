@@ -1,4 +1,4 @@
-{% bug id="BUG-031" status="confirmed" severity="minor" source="SPEC-128" tags="runes,reference,docs,emitTag,itemModel,dx" %}
+{% bug id="BUG-031" status="fixed" severity="minor" source="SPEC-128" tags="runes,reference,docs,emitTag,itemModel,dx" pr="refrakt-md/refrakt#658" %}
 
 # The reference drops the field-level authoring grammar
 
@@ -125,5 +125,11 @@ emitted tag as the consequence.
 - {% ref "SPEC-128" /%} — generating rune attribute tables from the rune reference
 - {% ref "BUG-030" /%} — the runtime half: a mixed field with `emitTag` drops the authored tags
 - {% ref "SPEC-003" /%} — the declarative content model whose grammar this fails to surface
+
+## Resolution
+
+Completed: 2026-10-06
+
+Fixed by WORK-606 (#658): the reference projects `itemModel` and renders the template, the item grammar (including non-ASCII pattern characters such as the U+2014 date dash) and both field- and section-level `emitTag`. Tightening the preamble `match: 'tag'` fields was declined: a greedy run stops at the first non-match, so it would drop items after a stray tag.
 
 {% /bug %}

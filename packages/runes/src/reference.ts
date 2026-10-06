@@ -472,6 +472,8 @@ function renderSectionsModel(model: SerializedSectionsModel): string {
 
 	lines.push(`Section body: ${describeInner(model.sectionModel)}`);
 
+	if (model.emitTag) lines.push(`Each section becomes \`{% ${model.emitTag} %}\`.`);
+
 	if (model.headingExtract) {
 		const parts = model.headingExtract.fields.map((f) => {
 			const shape = f.pattern === 'remainder' ? 'remaining text' : `pattern \`${f.pattern}\``;
@@ -536,7 +538,7 @@ function renderField(field: SerializedContentField): string {
 	}
 	if (field.emitTag) {
 		const what = field.itemModel ? 'Each list item' : 'Each match';
-		lines.push(`    ${what} becomes a \`${field.emitTag}\` tag.`);
+		lines.push(`    ${what} becomes \`{% ${field.emitTag} %}\`.`);
 	}
 	return lines.join('\n');
 }

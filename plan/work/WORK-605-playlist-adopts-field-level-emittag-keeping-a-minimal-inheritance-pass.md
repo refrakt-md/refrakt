@@ -1,4 +1,4 @@
-{% work id="WORK-605" status="in-progress" priority="medium" complexity="moderate" milestone="v0.38.0" source="SPEC-003" tags="runes,playlist,media,emitTag" %}
+{% work id="WORK-605" status="cancelled" priority="medium" complexity="moderate" milestone="v0.38.0" source="SPEC-003" tags="runes,playlist,media,emitTag" %}
 
 # `playlist` adopts field-level `emitTag`, keeping a minimal inheritance pass
 
@@ -58,5 +58,21 @@ keys off its own attribute") and is not settled here.
 
 - {% ref "BUG-030" /%} — why `playlist` could not use the existing mechanism
 - {% ref "SPEC-130" /%} — D9, and the per-type `playlistSchema` table the inheritance feeds
+
+## Resolution
+
+Completed: 2026-10-06
+
+Cancelled (decision on #658): playlist keeps rendering list-form tracks itself.
+
+### Why
+The item assumed an emitted `{% track %}` could replace a list-derived track, leaving only the inheritance pass. Checked against the code, it cannot without redesigning `track`:
+- **Names would be lost.** `track` has no `name` attribute — it reads its name from a title heading/paragraph — and `emitTag` forwards only the list item's children *after* the first inline one, which is where the name is.
+- **Cue points would lose structure.** `buildCuePoints` builds chapter/lyric lists; an emitted track wraps a nested list as plain body.
+- **The embedded player would break.** It is built from `tracksData`, which the `emitTag` branch never produces.
+- **Visible output would change.** A playlist `artist` renders as a visible `track-artist` span on list-form tracks; `adoptNestedTrack` supplies it as a hidden meta.
+
+### Notes
+- WORK-604 (BUG-030) still landed: the resolver no longer drops authored tags from a mixed `emitTag` field, so the mechanism is now available to playlist if the two track forms are converged later. That convergence (a `name` attribute and cue-point rendering on `track`, player data from emitted tags) is a design question for its own item, not this one.
 
 {% /work %}

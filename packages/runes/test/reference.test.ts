@@ -72,7 +72,8 @@ describe('renderContentModel — sections', () => {
 			  - \`portrait\` (optional image)
 			  - \`header\` (optional, repeatable heading or paragraph)
 			  - \`items\` (optional, repeatable tag)
-			Section body: any blocks"
+			Section body: any blocks
+			Each section becomes \`{% character-section %}\`."
 		`);
 	});
 
@@ -441,7 +442,7 @@ describe('item grammar (BUG-031)', () => {
 			      - \`date\`: text matching \`—\\s*(.+)$\` (flags \`i\`) — note: \`—\` is U+2014 (optional)
 			      - \`rest\`: the remaining text (required)
 			      - \`cues\`: a nested list whose items are read as \`time\`, not expanded here (optional)
-			    Each list item becomes a \`track\` tag."
+			    Each list item becomes \`{% track %}\`."
 		`);
 	});
 });
