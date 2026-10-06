@@ -111,14 +111,14 @@ export const grid = createContentModelSchema({
 			tag: 'section',
 			children: [layout],
 			properties: {
-				...(modeMeta ? { mode: modeMeta } : {}),
+				mode: modeMeta,
 				ratio: ratioMeta,
 				gap: gapMeta,
 				valign: valignMeta,
 				collapse: collapseMeta,
-				...(minMeta ? { min: minMeta } : {}),
-				...(aspectMeta ? { aspect: aspectMeta } : {}),
-				...(stackMeta ? { stack: stackMeta } : {}),
+				min: minMeta,
+				aspect: aspectMeta,
+				stack: stackMeta,
 			},
 			refs: {
 				cell: new RenderableNodeCursor(layout.children).tag('div'),

@@ -69,7 +69,7 @@ export const juxtapose = createContentModelSchema({
 				tag: 'div',
 				properties: {},
 				refs: {
-					...(nameTag ? { name: nameTag } : {}),
+					name: nameTag,
 					body: bodyRef.tag('div'),
 				},
 				children: [...(nameTag ? [nameTag] : []), bodyRef.next()],

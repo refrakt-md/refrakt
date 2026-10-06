@@ -21,3 +21,14 @@ export function isFilterMatching(n: Node, match: NodeFilter) {
 	}
 	return true;
 }
+
+/**
+ * Concatenated text of every `text` node under an AST node, unmodified — no
+ * trimming, no separator between nodes. For a rendered tree use `textContent`.
+ */
+export function extractText(node: Node): string {
+	return Array.from(node.walk())
+		.filter((n) => n.type === 'text')
+		.map((n) => n.attributes.content)
+		.join('');
+}

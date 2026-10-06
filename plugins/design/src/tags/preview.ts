@@ -220,13 +220,13 @@ export const preview = createContentModelSchema({
 			rune: 'preview',
 			tag: 'div',
 			properties: {
-				...(titleMeta ? { title: titleMeta } : {}),
+				title: titleMeta,
 				theme: themeMeta,
-				...(responsiveMeta ? { responsive: responsiveMeta } : {}),
+				responsive: responsiveMeta,
 			},
 			refs: {
-				...(sourcePre ? { source: sourcePre } : {}),
-				...(htmlSourcePre ? { 'html-source': htmlSourcePre } : {}),
+				source: sourcePre,
+				'html-source': htmlSourcePre,
 			},
 			children: childNodes,
 		});

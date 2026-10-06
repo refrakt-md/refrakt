@@ -264,7 +264,7 @@ export const recipe = createContentModelSchema({
 				// contributes an `image` key for the *header's* image, and the flat
 				// namespace is unique per rune (ADR-008). `media` is the wrapper;
 				// this is the image inside it.
-				...(seoImage ? { mediaImage: seoImage } : {}),
+				mediaImage: seoImage,
 			},
 			children,
 		});

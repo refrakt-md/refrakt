@@ -92,9 +92,9 @@ export const chart = createContentModelSchema({
 			properties: {
 				type: typeMeta,
 				stacked: stackedMeta,
-				...(tickCountMeta ? { 'tick-count': tickCountMeta } : {}),
-				...(tickStepMeta ? { 'tick-step': tickStepMeta } : {}),
-				...(labelAngleMeta ? { 'label-angle': labelAngleMeta } : {}),
+				'tick-count': tickCountMeta,
+				'tick-step': tickStepMeta,
+				'label-angle': labelAngleMeta,
 			},
 			children: emitted,
 		});

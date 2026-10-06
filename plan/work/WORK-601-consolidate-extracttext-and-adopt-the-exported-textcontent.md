@@ -1,4 +1,4 @@
-{% work id="WORK-601" status="ready" priority="medium" complexity="simple" milestone="v0.38.0" source="SPEC-140" tags="runes,duplication" %}
+{% work id="WORK-601" status="done" priority="medium" complexity="simple" milestone="v0.38.0" source="SPEC-140" tags="runes,duplication" pr="refrakt-md/refrakt#656" %}
 
 # Consolidate `extractText` and adopt the exported `textContent`
 
@@ -18,10 +18,10 @@ Tag-flavoured `extractText`.
 
 ## Acceptance Criteria
 
-- [ ] `extractText` for AST nodes is defined once, exported from `@refrakt-md/runes`, and imported by all six former copies
-- [ ] `plan`, `storytelling` and `media` either import `textContent` or carry a comment stating why they keep a local variant
-- [ ] `npm test` passes unchanged
-- [ ] `refrakt contracts --check` and `npm run seo:baseline:check` report no drift
+- [x] `extractText` for AST nodes is defined once, exported from `@refrakt-md/runes`, and imported by all six former copies
+- [x] `plan`, `storytelling` and `media` either import `textContent` or carry a comment stating why they keep a local variant
+- [x] `npm test` passes unchanged
+- [x] `refrakt contracts --check` and `npm run seo:baseline:check` report no drift
 
 ## Approach
 
@@ -42,5 +42,18 @@ blanket swap is the failure mode here.
 ## References
 
 - {% ref "SPEC-140" /%} — Tier 2, D6
+
+## Resolution
+
+Completed: 2026-10-06
+
+Branch: `claude/v0-37-post-release-plan-dc3va1`
+
+### What was done
+- `extractText(node: Node)` added to `packages/runes/src/lib/node.ts`, exported via `lib/index.ts` and the package index; the six byte-identical copies (form, map, palette, typography, spacing, comparison) now import it.
+- `plugins/plan/src/pipeline.ts`, `plugins/storytelling/src/pipeline.ts`, `plugins/media/src/tags/track.ts`: local untrimmed helpers replaced by the exported `textContent` (storytelling's `extractTextContent(node).trim()` becomes `textContent(node)`).
+
+### Notes
+- Measured rather than reasoned: temporarily wrapped each local helper to log any call whose result differed from its trimmed form, then ran `refrakt validate --deep` on the main site (1,520 calls), on the real `plan/` entities via a temporary contentDir swap (2,375 calls), and the plugin tests. The only differences were 4 whole-entity texts feeding `countCheckboxes` / `extractIdReferences` — trimming cannot change a count or a matched ID. No title, storytelling entity name or track name differed.
 
 {% /work %}

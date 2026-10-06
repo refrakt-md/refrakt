@@ -1,15 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes } from '@refrakt-md/runes';
-
-// Extract plain text from an AST node
-function extractText(node: Node): string {
-	return Array.from(node.walk())
-		.filter((n) => n.type === 'text')
-		.map((n) => n.attributes.content)
-		.join('');
-}
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	extractText,
+} from '@refrakt-md/runes';
 
 // Parse a color entry from "name: #value" or "name: #val1, #val2, ..."
 function parseColorEntry(text: string): { name: string; values: string[] } | null {

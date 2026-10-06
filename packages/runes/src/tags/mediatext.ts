@@ -80,7 +80,7 @@ export const mediatext = createContentModelSchema({
 			properties: {
 				align: alignMeta,
 				ratio: ratioMeta,
-				...(wrapMeta ? { wrap: wrapMeta } : {}),
+				wrap: wrapMeta,
 			},
 			refs: {
 				media: mediaTag,

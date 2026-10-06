@@ -16,13 +16,11 @@ import type { BaseComponentProps, PageSectionSlots } from '@refrakt-md/types';
 
 export interface AccordionItemProps<R = unknown> extends BaseComponentProps<R> {
 	name?: string;
-	schemaOrgType?: string;
 	body?: R;
 }
 
 export interface AccordionProps<R = unknown> extends BaseComponentProps<R>, PageSectionSlots<R> {
 	item?: string;
-	schemaOrgType?: string;
 	items?: R;
 }
 

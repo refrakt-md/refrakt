@@ -59,7 +59,7 @@ export const castMember = createContentModelSchema({
 				name: nameTag,
 				role: roleTag,
 				body: body.tag('div'),
-				...(portraitTag ? { portrait: portraitTag } : {}),
+				portrait: portraitTag,
 			},
 			children,
 		});

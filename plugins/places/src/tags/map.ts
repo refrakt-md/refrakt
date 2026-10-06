@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes } from '@refrakt-md/runes';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	asNodes,
+	extractText,
+} from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
 const variantType = ['street', 'satellite', 'terrain', 'dark', 'minimal'] as const;
@@ -13,14 +18,6 @@ const COORD_PATTERN = /(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/;
 
 // Separator between name/description/coordinates: " - ", " — ", " – "
 const SEPARATOR = /\s*[-–—]\s*/;
-
-// Extract plain text content from an AST node
-function extractText(node: Node): string {
-	return Array.from(node.walk())
-		.filter((n) => n.type === 'text')
-		.map((n) => n.attributes.content)
-		.join('');
-}
 
 // Parse a list item node into location properties
 function parseLocationItem(node: Node): {

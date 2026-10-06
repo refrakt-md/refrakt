@@ -6,16 +6,9 @@ import {
 	createContentModelSchema,
 	asNodes,
 	headingsToList,
+	extractText,
 } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
-
-// Extract plain text from an AST node by walking all text children
-function extractText(node: Node): string {
-	return Array.from(node.walk())
-		.filter((n) => n.type === 'text')
-		.map((n) => n.attributes.content)
-		.join('');
-}
 
 // Extract bold label from a list item (the text inside the first strong node)
 function extractBoldLabel(node: Node): string | null {
