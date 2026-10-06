@@ -1,5 +1,53 @@
 # @refrakt-md/mcp
 
+## 0.37.0
+
+### Minor Changes
+
+- 172b29b: Rank documentation against the code it describes, and ask before the divergence
+  exists.
+
+  `refrakt stale` ranks every reference a content page makes by one measure —
+  commits touching the referenced file since the referring page itself last
+  changed — and prints the commit subjects alongside it. "11 commits" is a number,
+  but "generate breadcrumb positions from a declared index" is a person
+  recognising that the page they wrote is out of date.
+
+  **It ranks; it never fails.** Findings do not affect the exit code, and there is
+  no flag to make them. The cheapest way to turn any edge green is to edit the
+  referring page, so a gate would train people to make trivial documentation edits
+  to clear it — destroying the signal it measures. Being unable to measure at all
+  (a shallow clone, no config) is a different event and does exit non-zero.
+
+  Four kinds of reference are found: `snippet` / `file-ref` `path=` attributes,
+  internal links that carry an adjacent description, backticked repo paths in
+  prose, and a new `documents:` frontmatter field listing the repository paths a
+  page is about. A page's subject is often not in its words, and `documents:` says
+  it outright. Unlike an inferred reference, an entry that resolves to no file is
+  an error: the author asserted the relationship.
+
+  The `refrakt.stale` MCP tool answers the same survey, and one more question that
+  is better timed. Called as `refrakt.stale { touching: [paths] }` it names the
+  pages that document those files _before_ they change, which involves no commit
+  count and no git history at all — so it answers for a file created in the
+  working tree and never committed.
+
+  An optional `stale` section in `refrakt.config.json` narrows what is measured:
+  `archival` globs name referring pages that are historical records, `generated`
+  globs name targets that change by construction. Both default to empty, and
+  whatever they remove is counted in the report footer.
+
+### Patch Changes
+
+- Updated dependencies [172b29b]
+- Updated dependencies [f88f959]
+- Updated dependencies [172b29b]
+  - @refrakt-md/runes@0.37.0
+  - @refrakt-md/cli@0.37.0
+  - @refrakt-md/transform@0.37.0
+  - @refrakt-md/types@0.37.0
+  - @refrakt-md/content@0.37.0
+
 ## 0.36.0
 
 ### Minor Changes
