@@ -13,7 +13,7 @@ import {
 	EXIT_INVALID_ARGS as MIGRATE_INVALID_ARGS,
 } from './commands/migrate.js';
 import { runMigrateIds } from './commands/migrate-ids.js';
-import { readRefIds, collisionsFrom } from './commands/against.js';
+import { readRefIds, collisionsFrom, baseClaimants } from './commands/against.js';
 import { scanPlanFiles } from './scanner.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
 import { resolvePlanDir, scaffoldRefraktConfigForPlan } from './plan-config.js';
@@ -682,7 +682,7 @@ function handleAgainst(dir: string, ref: string, formatJson: boolean): void {
 	console.log(
 		`\n${collisions.length} collision(s). Merging would leave two entities claiming the same ID,` +
 			'\nand every reference to it ambiguous. Renumber now, while this branch still makes' +
-			'\nresolution unambiguous: `refrakt plan migrate ids --apply --git`.',
+			`\nresolution unambiguous: \`refrakt plan migrate ids --against ${ref} --apply --git\`.`,
 	);
 	process.exit(1);
 }
@@ -691,7 +691,7 @@ function handleMigrate(args: string[]): void {
 	const sub = args[0];
 	if (sub !== 'filenames' && sub !== 'pr-attrs' && sub !== 'dependencies' && sub !== 'ids') {
 		console.error(
-			'Usage: refrakt plan migrate <filenames|pr-attrs|dependencies|ids> [--dir <path>] [--dry-run] [--apply] [--git] [--format json]',
+			'Usage: refrakt plan migrate <filenames|pr-attrs|dependencies|ids> [--dir <path>] [--dry-run] [--apply] [--git] [--against <ref>] [--format json]',
 		);
 		console.error('Subcommands: filenames, pr-attrs, dependencies, ids');
 		process.exit(MIGRATE_INVALID_ARGS);
@@ -702,11 +702,18 @@ function handleMigrate(args: string[]): void {
 	let dryRun = false;
 	let useGit = false;
 	let formatJson = false;
+	let against: string | undefined;
 
 	for (let i = 1; i < args.length; i++) {
 		const arg = args[i];
 		if (arg === '--dir' && args[i + 1]) {
 			dir = args[++i];
+		} else if (arg === '--against' && sub === 'ids') {
+			against = args[++i];
+			if (!against) {
+				console.error('Error: --against requires a git ref');
+				process.exit(MIGRATE_INVALID_ARGS);
+			}
 		} else if (arg === '--apply') {
 			apply = true;
 		} else if (arg === '--dry-run') {
@@ -728,7 +735,18 @@ function handleMigrate(args: string[]): void {
 	}
 
 	if (sub === 'ids') {
-		const result = runMigrateIds({ dir, apply, useGit });
+		// BUG-026 — the base ref decides who keeps a colliding ID. A ref that
+		// cannot be read is an error, never a silent fall-back to guessing.
+		let base: { ref: string; files: Map<string, string> } | undefined;
+		if (against) {
+			const read = baseClaimants(dir, against, process.cwd());
+			if ('error' in read) {
+				console.error(read.error);
+				process.exit(MIGRATE_INVALID_ARGS);
+			}
+			base = read;
+		}
+		const result = runMigrateIds({ dir, apply, useGit, base });
 		if (formatJson) {
 			console.log(JSON.stringify(result, null, 2));
 			process.exit(result.exitCode);
@@ -746,6 +764,7 @@ function handleMigrate(args: string[]): void {
 			for (const r of rows) {
 				console.log(`    ${r.from} → ${r.to}   ${r.file}`);
 				console.log(`      collides with ${r.collidesWith.join(', ')}`);
+				console.log(`      kept: ${r.kept.why}`);
 				console.log(`      file → ${r.toFile}`);
 			}
 		}
@@ -756,6 +775,7 @@ function handleMigrate(args: string[]): void {
 			for (const r of result.refused) {
 				console.log(`    ${r.id}  ${r.file}`);
 				console.log(`      ${r.reason}`);
+				if (r.kept) console.log(`      kept: ${r.kept.why}`);
 				for (const ref of r.ambiguousRefs.slice(0, 10)) {
 					console.log(`        ${ref.file}:${ref.line}  ${ref.text}`);
 				}

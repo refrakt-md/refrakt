@@ -1,4 +1,4 @@
-{% bug id="BUG-026" status="confirmed" severity="major" source="SPEC-135" tags="plan,cli,migrate,ids" %}
+{% bug id="BUG-026" status="fixed" severity="major" source="SPEC-135" tags="plan,cli,migrate,ids" pr="refrakt-md/refrakt#659" %}
 
 # `migrate ids` can renumber the published claimant, breaking references it never scans
 
@@ -125,5 +125,11 @@ would have renamed a published spec and left the unpublished draft holding
 
 - {% ref "SPEC-135" /%} — duplicate-ID detection, prevention and resolution; D8 is the "resolve only when provable" rule this narrows
 - {% ref "WORK-582" /%} — the work item that built `migrate ids` and `validate --against`
+
+## Resolution
+
+Completed: 2026-10-06
+
+Fixed by WORK-607 (#659): `migrate ids --against <ref>` keeps the claimant already on the base ref and moves the branch-local one; without a ref, a collision is refused instead of resolved by filename sort.
 
 {% /bug %}

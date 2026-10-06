@@ -9,6 +9,7 @@ import type {
 	MetaField,
 	BlockDef,
 	LayoutEntry,
+	NamedTransform,
 } from './types.js';
 import {
 	isTag,
@@ -19,6 +20,9 @@ import {
 	parsePlacement,
 	findNodeByDataName,
 	findMediaZone,
+	resolveValign,
+	ratioToFr,
+	resolveGap,
 } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
 import { DEFAULT_READING, type ReadingRegister } from './reading.js';
@@ -38,7 +42,7 @@ import {
 import type { FacetWarning } from './facets/index.js';
 
 /** Pure text transforms for metaText values */
-const transforms: Record<string, (v: string) => string> = {
+const transforms: Record<NamedTransform, (v: string) => string> = {
 	duration(iso: string): string {
 		const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
 		if (!m) return iso;
@@ -50,6 +54,9 @@ const transforms: Record<string, (v: string) => string> = {
 	},
 	uppercase: (s) => s.toUpperCase(),
 	capitalize: (s) => s.charAt(0).toUpperCase() + s.slice(1),
+	align: resolveValign,
+	fr: ratioToFr,
+	gap: resolveGap,
 };
 
 /** Parse an ISO 8601 duration (`PT1H30M`) into `{ hours, minutes, seconds }`. */
@@ -554,7 +561,7 @@ function transformRune(
 			if (typeof spec === 'string') {
 				styleParts.push(`${spec}: ${val}`);
 			} else if (spec.transform) {
-				styleParts.push(`${spec.prop}: ${spec.transform(val)}`);
+				styleParts.push(`${spec.prop}: ${transforms[spec.transform](val)}`);
 			} else if (spec.template) {
 				styleParts.push(`${spec.prop}: ${spec.template.replace('{}', val)}`);
 			} else {

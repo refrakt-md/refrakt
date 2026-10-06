@@ -1,4 +1,4 @@
-{% work id="WORK-608" status="ready" priority="medium" complexity="simple" source="SPEC-143" milestone="v0.38.0" tags="config,serialisation,engine" %}
+{% work id="WORK-608" status="in-progress" priority="medium" complexity="simple" source="SPEC-143" milestone="v0.38.0" tags="config,serialisation,engine" pr="refrakt-md/refrakt#659" %}
 
 # Promote the three styles transform helpers into the named-transform enum
 
@@ -47,14 +47,14 @@ files.
 
 ## Acceptance Criteria
 
-- [ ] `'valign'`, `'ratio-fr'` and `'gap'` (or better names) join the named-transform enum, with the existing three
-- [ ] All 11 function-form sites are converted to the string form
-- [ ] The function form is removed from the `styles` type in `packages/transform/src/types.ts`, so it cannot come back
-- [ ] `postTransform` is the only remaining function-typed field in `RuneConfig`, asserted by a test rather than by inspection
+- [x] `'valign'`, `'ratio-fr'` and `'gap'` (or better names) join the named-transform enum, with the existing three
+- [x] All 11 function-form sites are converted to the string form
+- [x] The function form is removed from the `styles` type in `packages/transform/src/types.ts`, so it cannot come back
+- [x] `postTransform` is the only remaining function-typed field in `RuneConfig`, asserted by a test rather than by inspection
 - [ ] `npx refrakt contracts --check` reports no drift on either contract copy
-- [ ] `npm run seo:baseline:check` reports no drift
-- [ ] `npx vitest run packages/lumina/test/css-coverage.test.ts` passes unchanged
-- [ ] A `RuneConfig` round-trips through `JSON.parse(JSON.stringify(…))` unchanged for every core and plugin rune
+- [x] `npm run seo:baseline:check` reports no drift
+- [x] `npx vitest run packages/lumina/test/css-coverage.test.ts` passes unchanged
+- [x] A `RuneConfig` round-trips through `JSON.parse(JSON.stringify(…))` unchanged for every core and plugin rune
 
 ## Approach
 

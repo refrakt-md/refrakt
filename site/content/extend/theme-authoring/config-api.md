@@ -275,6 +275,28 @@ styles: {
 // With columns=3: style="grid-template-columns: repeat(3, 1fr)"
 ```
 
+**Transform form** — reshapes the value with a named transform first:
+
+```typescript
+styles: {
+  ratio: { prop: '--split-ratio', transform: 'fr' },     // "2 1" → 2fr 1fr
+  valign: { prop: '--split-valign', transform: 'align' }, // top → start
+  gap: { prop: '--grid-gap', transform: 'gap' },          // tight → var(--rf-spacing-sm)
+}
+```
+
+The transform is a name, not a function. It is the same vocabulary as a meta field's or structure entry's `transform`:
+
+| Name | Does |
+|------|------|
+| `duration` | ISO 8601 (`PT30M`) → `30m` |
+| `uppercase` / `capitalize` | Case transforms |
+| `align` | Alignment keyword (`top`, `center`, `bottom`, `stretch`, `baseline`) → CSS `align-*` value |
+| `fr` | Space-separated ratio numbers → `fr` tracks |
+| `gap` | Gap preset (`tight`, `default`, `loose`) → spacing token; raw CSS passes through |
+
+Keeping it a name is what keeps a `RuneConfig` plain data: `postTransform` is the only function a rune config may carry.
+
 Multiple style entries produce semicolon-separated values. Existing inline styles on the tag are preserved.
 
 ### defaultDensity
@@ -552,7 +574,7 @@ interface StructureEntry {
   conditionAny?: string[];    // Only render if any named modifier is truthy
 
   // Text transforms
-  transform?: 'duration' | 'uppercase' | 'capitalize';
+  transform?: NamedTransform;   // 'duration' | 'uppercase' | 'capitalize' | 'align' | 'fr' | 'gap' — see styles
   textPrefix?: string;        // Prepend to metaText value
   textSuffix?: string;        // Append to metaText value
 

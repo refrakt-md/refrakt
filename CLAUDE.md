@@ -327,12 +327,14 @@ Plan files use `{ID}-{slug}.md` (e.g. `WORK-051-plan-validate-command.md`, `SPEC
 refrakt plan validate --against origin/main
 
 # Renumber a colliding entity, when it can be proved what every reference meant
-refrakt plan migrate ids --apply --git
+refrakt plan migrate ids --against origin/main --apply --git
 ```
 
 **`--against` is the one that changes outcomes.** Plain detection can only fire once both claimants are reachable — after the merge, when every `{% ref %}` to that ID has already become ambiguous. `--against` fires on the branch, where the base ref still makes resolution free. The PR job runs it.
 
 `migrate ids` renumbers only when **nothing outside the moved entity references the colliding ID**. Otherwise it refuses and names the references that blocked it, with file and line. It will not guess which entity a reference meant — repointing one at the wrong entity is silent and permanent.
+
+**The base ref decides which claimant moves.** An ID already on `--against <ref>` is published — merged commits, PR bodies, npm CHANGELOGs reference it — so it keeps the ID and the branch-local claimant is renumbered. Without `--against`, a collision is refused rather than resolved by filename, because nothing establishes which claimant shipped. Every renumber and refusal names the claimant that kept the ID and why.
 
 A ref that cannot be resolved fails loudly rather than reporting a clean run: "no collisions" and "I could not look" are different answers.
 

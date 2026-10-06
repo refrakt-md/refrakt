@@ -1,5 +1,4 @@
 import type { RuneConfig } from '@refrakt-md/transform';
-import { resolveValign } from '@refrakt-md/transform';
 
 // SPEC-125 Phase 2 — the join tables (`sections`, `mediaSlots`, `frameTarget`)
 // are declared in the tag modules that own them and referenced here. Config
@@ -97,7 +96,7 @@ export const config: Record<string, RuneConfig> = {
 			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
-			valign: { prop: '--split-valign', transform: resolveValign },
+			valign: { prop: '--split-valign', transform: 'align' },
 		},
 		metaFields: {
 			realmType: { metaType: 'category', label: 'Type' },
@@ -173,7 +172,7 @@ export const config: Record<string, RuneConfig> = {
 			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
-			valign: { prop: '--split-valign', transform: resolveValign },
+			valign: { prop: '--split-valign', transform: 'align' },
 		},
 		metaFields: {
 			factionType: { metaType: 'category', label: 'Type', condition: 'factionType' },

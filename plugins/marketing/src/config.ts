@@ -1,5 +1,5 @@
 import type { RuneConfig, SerializedTag } from '@refrakt-md/transform';
-import { isTag, makeTag, readMeta, resolveValign } from '@refrakt-md/transform';
+import { isTag, makeTag, readMeta } from '@refrakt-md/transform';
 
 // SPEC-125 Phase 2 — the join tables (`sections`, `mediaSlots`, `frameTarget`)
 // are declared in the tag modules that own them and referenced here. Config
@@ -59,7 +59,7 @@ export const config: Record<string, RuneConfig> = {
 			},
 		},
 		styles: {
-			valign: { prop: '--split-valign', transform: resolveValign },
+			valign: { prop: '--split-valign', transform: 'align' },
 			aspect: 'aspect-ratio',
 		},
 		sections: heroSections,
@@ -174,7 +174,7 @@ export const config: Record<string, RuneConfig> = {
 		// axis, styled via `[data-layout]` — decoupled from `media-position`. The
 		// old media-position → `definitions-grid` variant (SPEC-091) is retired.
 		styles: {
-			valign: { prop: '--split-valign', transform: resolveValign },
+			valign: { prop: '--split-valign', transform: 'align' },
 		},
 		contextModifiers: { hero: 'in-hero', grid: 'in-grid' },
 		// SPEC-100: the feature-items container is the carousel track — marked
@@ -215,7 +215,7 @@ export const config: Record<string, RuneConfig> = {
 			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
-			valign: { prop: '--split-valign', transform: resolveValign },
+			valign: { prop: '--split-valign', transform: 'align' },
 		},
 		mediaSlots: stepMediaSlots,
 		editHints: { content: 'none', media: 'image' },

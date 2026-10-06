@@ -12,6 +12,14 @@ function write(rel: string, body: string): void {
 	writeFileSync(abs, body);
 }
 
+/** A base ref on which `files` maps each published ID to its plan-relative path. */
+const onBase = (files: Record<string, string>, ref = 'origin/main') => ({
+	ref,
+	files: new Map(Object.entries(files)),
+});
+/** The common case below: `alpha` is the published WORK-001, `beta` the local draft. */
+const ALPHA_ON_MAIN = onBase({ 'WORK-001': 'work/WORK-001-alpha.md' });
+
 const work = (id: string, title: string, extra = '') =>
 	`{% work id="${id}" status="ready" priority="low"${extra} %}\n\n# ${title}\n\n## Acceptance Criteria\n\n- [ ] x\n\n{% /work %}\n`;
 
@@ -40,7 +48,7 @@ describe('plan migrate ids (SPEC-135 D8 / WORK-582)', () => {
 			write('work/WORK-001-alpha.md', work('WORK-001', 'Alpha'));
 			write('work/WORK-001-beta.md', work('WORK-001', 'Beta'));
 
-			const result = runMigrateIds({ dir });
+			const result = runMigrateIds({ dir, base: ALPHA_ON_MAIN });
 
 			expect(result.mode).toBe('dry-run');
 			expect(result.planned).toHaveLength(1);
@@ -62,7 +70,7 @@ describe('plan migrate ids (SPEC-135 D8 / WORK-582)', () => {
 				`{% work id="WORK-001" status="ready" source="SPEC-135" %}\n\n# Beta\n\nSelf: {% ref "WORK-001" /%}\n\n## Acceptance Criteria\n\n- [ ] x\n\n{% /work %}\n`,
 			);
 
-			const result = runMigrateIds({ dir, apply: true });
+			const result = runMigrateIds({ dir, apply: true, base: ALPHA_ON_MAIN });
 
 			expect(result.applied).toHaveLength(1);
 			expect(existsSync(join(dir, 'work/WORK-001-beta.md'))).toBe(false);
@@ -88,7 +96,7 @@ describe('plan migrate ids (SPEC-135 D8 / WORK-582)', () => {
 				`{% work id="WORK-001" status="ready" priority="low" %}\n\n# Beta\n\n{% ref "WORK-001" /%} and {% xref "WORK-001" /%}\n\n## Acceptance Criteria\n\n- [ ] x\n\n{% /work %}\n`,
 			);
 
-			runMigrateIds({ dir, apply: true });
+			runMigrateIds({ dir, apply: true, base: ALPHA_ON_MAIN });
 			const moved = readFileSync(join(dir, 'work/WORK-002-beta.md'), 'utf-8');
 
 			expect(moved).toContain('id="WORK-002"');
@@ -103,20 +111,20 @@ describe('plan migrate ids (SPEC-135 D8 / WORK-582)', () => {
 			write('work/WORK-001-alpha.md', work('WORK-001', 'Alpha'));
 			write('work/WORK-001-beta.md', work('WORK-001', 'Beta'));
 
-			runMigrateIds({ dir, apply: true });
-			const second = runMigrateIds({ dir });
+			runMigrateIds({ dir, apply: true, base: ALPHA_ON_MAIN });
+			const second = runMigrateIds({ dir, base: ALPHA_ON_MAIN });
 
 			expect(second.planned).toEqual([]);
 			expect(second.refused).toEqual([]);
 		});
 
-		it('picks which file moves deterministically', () => {
+		it('names which claimant kept the ID, and why', () => {
 			write('work/WORK-001-alpha.md', work('WORK-001', 'Alpha'));
 			write('work/WORK-001-beta.md', work('WORK-001', 'Beta'));
 
-			const a = runMigrateIds({ dir });
-			const b = runMigrateIds({ dir });
-			expect(a.planned[0]!.file).toBe(b.planned[0]!.file);
+			const [r] = runMigrateIds({ dir, base: ALPHA_ON_MAIN }).planned;
+			expect(r!.kept.file).toBe('work/WORK-001-alpha.md');
+			expect(r!.kept.why).toMatch(/holds WORK-001 on origin\/main/);
 		});
 	});
 
@@ -132,7 +140,7 @@ describe('plan migrate ids (SPEC-135 D8 / WORK-582)', () => {
 				work('WORK-050', 'Referrer').replace('- [ ] x', '- [ ] see {% ref "WORK-001" /%}'),
 			);
 
-			const result = runMigrateIds({ dir });
+			const result = runMigrateIds({ dir, base: ALPHA_ON_MAIN });
 
 			expect(result.planned).toEqual([]);
 			expect(result.refused).toHaveLength(1);
@@ -147,7 +155,7 @@ describe('plan migrate ids (SPEC-135 D8 / WORK-582)', () => {
 				work('WORK-050', 'Referrer').replace('- [ ] x', '- [ ] see {% ref "WORK-001" /%}'),
 			);
 
-			const { refused } = runMigrateIds({ dir });
+			const { refused } = runMigrateIds({ dir, base: ALPHA_ON_MAIN });
 			const blocked = refused[0]!.ambiguousRefs;
 
 			expect(blocked).toHaveLength(1);
@@ -161,7 +169,7 @@ describe('plan migrate ids (SPEC-135 D8 / WORK-582)', () => {
 			write('work/WORK-001-beta.md', work('WORK-001', 'Beta'));
 			write('work/WORK-050-child.md', work('WORK-050', 'Child', ' source="WORK-001"'));
 
-			const { refused, planned } = runMigrateIds({ dir });
+			const { refused, planned } = runMigrateIds({ dir, base: ALPHA_ON_MAIN });
 			expect(planned).toEqual([]);
 			expect(refused[0]!.ambiguousRefs[0]!.text).toContain('source="WORK-001"');
 		});
@@ -174,10 +182,72 @@ describe('plan migrate ids (SPEC-135 D8 / WORK-582)', () => {
 				work('WORK-050', 'Referrer').replace('- [ ] x', '- [ ] see {% ref "WORK-001" /%}'),
 			);
 
-			runMigrateIds({ dir, apply: true });
+			runMigrateIds({ dir, apply: true, base: ALPHA_ON_MAIN });
 
 			expect(existsSync(join(dir, 'work/WORK-001-beta.md'))).toBe(true);
 			expect(readFileSync(join(dir, 'work/WORK-001-beta.md'), 'utf-8')).toContain('id="WORK-001"');
+		});
+	});
+
+	// BUG-026 — the base ref decides who keeps the ID, not a filename sort.
+	describe('the published claimant keeps the ID', () => {
+		it('renumbers the branch-local draft and leaves the base-ref entity untouched', () => {
+			// The draft sorts first by path, which is what used to make it the keeper.
+			write('work/WORK-138-collapse-boilerplate.md', work('WORK-138', 'Local draft'));
+			write('work/WORK-138-pluggable-engines.md', work('WORK-138', 'Already on main'));
+			const published = readFileSync(join(dir, 'work/WORK-138-pluggable-engines.md'), 'utf-8');
+
+			const result = runMigrateIds({
+				dir,
+				apply: true,
+				base: onBase({ 'WORK-138': 'work/WORK-138-pluggable-engines.md' }),
+			});
+
+			expect(result.applied).toHaveLength(1);
+			expect(result.applied[0]).toMatchObject({
+				file: 'work/WORK-138-collapse-boilerplate.md',
+				kept: { file: 'work/WORK-138-pluggable-engines.md' },
+			});
+			expect(readFileSync(join(dir, 'work/WORK-138-pluggable-engines.md'), 'utf-8')).toBe(
+				published,
+			);
+			expect(existsSync(join(dir, 'work/WORK-138-collapse-boilerplate.md'))).toBe(false);
+		});
+
+		it('refuses with no base ref, saying it cannot tell which is published', () => {
+			write('work/WORK-001-alpha.md', work('WORK-001', 'Alpha'));
+			write('work/WORK-001-beta.md', work('WORK-001', 'Beta'));
+
+			const result = runMigrateIds({ dir, apply: true });
+
+			expect(result.planned).toEqual([]);
+			expect(result.refused).toHaveLength(1);
+			expect(result.refused[0]!.reason).toMatch(/no base ref was given/);
+			expect(result.refused[0]!.reason).toMatch(/--against/);
+			expect(result.exitCode).toBe(1);
+			expect(existsSync(join(dir, 'work/WORK-001-beta.md'))).toBe(true);
+		});
+
+		it('moves either claimant when the ID is not on the base ref, and says so', () => {
+			write('work/WORK-001-alpha.md', work('WORK-001', 'Alpha'));
+			write('work/WORK-001-beta.md', work('WORK-001', 'Beta'));
+
+			const [r] = runMigrateIds({ dir, base: onBase({}) }).planned;
+			expect(r!.file).toBe('work/WORK-001-beta.md');
+			expect(r!.kept.why).toMatch(/not on origin\/main, so no claimant is published/);
+		});
+
+		it('refuses when the base holds the ID at a path no claimant has', () => {
+			write('work/WORK-001-alpha-renamed.md', work('WORK-001', 'Alpha'));
+			write('work/WORK-001-beta.md', work('WORK-001', 'Beta'));
+
+			const result = runMigrateIds({
+				dir,
+				base: onBase({ 'WORK-001': 'work/WORK-001-alpha.md' }),
+			});
+
+			expect(result.planned).toEqual([]);
+			expect(result.refused[0]!.reason).toMatch(/which none of the claimants holds/);
 		});
 	});
 });
