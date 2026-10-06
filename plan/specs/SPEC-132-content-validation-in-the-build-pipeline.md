@@ -1,4 +1,4 @@
-{% spec id="SPEC-132" status="implemented" tags="validation, markdoc, pipeline, runes, dx" %}
+{% spec id="SPEC-132" status="shipped" tags="validation, markdoc, pipeline, runes, dx" released-in="v0.36.0" %}
 
 # Content validation in the build pipeline
 

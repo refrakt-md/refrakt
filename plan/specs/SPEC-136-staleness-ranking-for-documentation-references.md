@@ -1,4 +1,4 @@
-{% spec id="SPEC-136" status="implemented" tags="drift, docs, git, cli, mcp, ai-workflow, tooling, dx" %}
+{% spec id="SPEC-136" status="shipped" tags="drift, docs, git, cli, mcp, ai-workflow, tooling, dx" released-in="v0.37.0" %}
 
 # Staleness ranking for documentation references
 
