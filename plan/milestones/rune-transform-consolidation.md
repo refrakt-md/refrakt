@@ -1,4 +1,4 @@
-{% milestone name="v0.38.0" status="active" %}
+{% milestone name="v0.38.0" status="complete" %}
 
 # v0.38.0 — Rune transform consolidation
 
@@ -100,5 +100,32 @@ and `emitAttributes` cannot express that: its refs reach the extracted item
 data, never the parent rune's attributes. Roughly 55 lines become roughly 20.
 Whether `emitAttributes` should reach a parent at all is
 {% ref "SPEC-130" /%} D9's question, and is not asked here.
+
+## Outcome
+
+Ten of eleven items landed across #654, #656, #657, #658 and #659; one was
+cancelled. Every deletion and consolidation item met the acceptance test above:
+`refrakt inspect --json` over every rune and variant on both sites rendered
+identical HTML before and after.
+
+Where the result departs from the plan:
+
+- **{% ref "WORK-605" /%} cancelled.** `playlist` cannot hand its list items to
+  `track` through `emitTag`: `track` has no `name` attribute, cue points would
+  lose their structure, the embedded player reads `tracksData`, and the
+  inherited artist would stop rendering visibly. {% ref "BUG-030" /%} is still
+  fixed ({% ref "WORK-604" /%}), so converging the two track forms is open to a
+  later item that redesigns `track` rather than this one.
+- **{% ref "WORK-606" /%} without the tag tightening.** Narrowing the eight
+  preamble `match: 'tag'` fields to `tag:<name>` would end a greedy run at the
+  first stray tag and drop the matching items after it — new silent loss. The
+  reference names the child rune through the sections-level `emitTag` instead.
+- **{% ref "WORK-603" /%}: `groupByHeading` at six loops, not seven.** `bento`
+  walks sibling nodes under a heading rather than list items.
+- **{% ref "WORK-599" /%} moved one attribute.** `typeof` now follows `class` on
+  runes with a schema row; every value is unchanged.
+- **{% ref "WORK-608" /%} added to the contracts.** The `styles` transforms are
+  names now, so `structures.json` records them where it used to drop the
+  functions silently — additive, and kept deliberately.
 
 {% /milestone %}
