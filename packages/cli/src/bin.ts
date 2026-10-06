@@ -1711,6 +1711,32 @@ Options:
   --format <fmt>   text (default) or json
   -h, --help       Show this help
 
+Content roots come from the sites declared in refrakt.config.json, so a
+multi-site project is scanned whole and nothing needs a flag.
+
+Two optional lists under "stale" in refrakt.config.json narrow what is measured:
+
+  "stale": {
+    "archival":  ["docs/migration/**", "blog/**"],
+    "generated": ["CHANGELOG.md", "**/*.generated.json"]
+  }
+
+  archival   globs matched against the referring PAGE — historical records
+             (changelogs, release notes, migration guides) that are correct as
+             written and must never be updated when the code moves on. Matching
+             pages contribute no edges at all, so they also stop answering the
+             "what documents this file" query.
+  generated  globs matched against the TARGET file — artifacts that change by
+             construction, where "commits since" measures the generator rather
+             than any divergence.
+
+Both default to empty. Neither is a place to put a page that is merely noisy: a
+noisy page means the extraction rule is wrong, or the page's real subject is
+narrower than what it mentions — say so with "documents:" in its frontmatter,
+which replaces every inferred edge for that page. Whatever the lists remove is
+counted in the report footer, so the exclusions cannot quietly grow until the
+report is empty.
+
 Note: a zero score is the absence of evidence of staleness, not evidence of
 freshness. The referrer side resets on any edit to the page.
 `);

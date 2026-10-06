@@ -154,6 +154,43 @@ export interface PlanConfig {
 	dir?: string;
 }
 
+/** Which edges `refrakt stale` must not measure (SPEC-136).
+ *
+ *  **Two keys rather than one `exclude` list, deliberately.** A single "ignore
+ *  these paths" field is the easy way to make this feature disappear one page
+ *  at a time: every noisy finding has a path, so every noisy finding has an
+ *  entry, and the report quietly converges on empty. Splitting it forces the
+ *  author to say which *kind* of structural mismatch they are naming — and
+ *  neither kind describes a page that is merely noisy.
+ *
+ *  A page that produces bad findings for any other reason is not an exclusion:
+ *  either the extraction rule that found the edge is wrong (fix the rule), or
+ *  the page's real subject is narrower than what it happens to mention (say so
+ *  with `documents:` in its frontmatter, which replaces every inferred edge).
+ *
+ *  Both default to empty, so out of the box nothing is excluded. */
+export interface StaleConfig {
+	/** Glob patterns matched against the **referring page**, repo-root-relative.
+	 *
+	 *  For pages that are historical records — a changelog, a release note, a
+	 *  migration guide for a version already shipped. They are correct as
+	 *  written and must never be updated when the code moves on, so an edge out
+	 *  of them can only ever be a false positive. No edges are extracted from a
+	 *  matching page at all, which also removes it from `touching`: "what
+	 *  documents this file" should not answer with a record of what was once
+	 *  true. */
+	archival?: string[];
+
+	/** Glob patterns matched against the **target file**, repo-root-relative.
+	 *
+	 *  For files that change by construction — a generated artifact, a lockfile,
+	 *  a changelog written by tooling. "Commits since the page last changed"
+	 *  measures the generator's cadence rather than any divergence in what the
+	 *  page claims, so the count is meaningless rather than merely noisy. Edges
+	 *  pointing at a matching file are dropped; edges *out of* it are not. */
+	generated?: string[];
+}
+
 /** Project-level configuration (refrakt.config.json).
  *
  *  Three valid input shapes — all collapse to the same normalized internal form:
@@ -172,6 +209,10 @@ export interface RefraktConfig {
 
 	/** Plan-management configuration. */
 	plan?: PlanConfig;
+
+	/** Staleness-ranking configuration — which edges `refrakt stale` must not
+	 *  measure. See {@link StaleConfig}; both of its lists default to empty. */
+	stale?: StaleConfig;
 
 	/** Cross-reference URL templates. Patterns are tried in array order when an
 	 *  xref's ID isn't found in the registry (or when the registry-found entity

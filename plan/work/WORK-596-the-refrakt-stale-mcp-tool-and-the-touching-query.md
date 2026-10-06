@@ -1,4 +1,4 @@
-{% work id="WORK-596" status="ready" priority="high" complexity="moderate" source="SPEC-136" tags="mcp, staleness, agents, ai-workflow, drift" milestone="v0.37.0" %}
+{% work id="WORK-596" status="done" priority="high" complexity="moderate" source="SPEC-136" tags="mcp, staleness, agents, ai-workflow, drift" milestone="v0.37.0" pr="refrakt-md/refrakt#650" %}
 
 # The refrakt_stale MCP tool and the touching query
 
@@ -50,15 +50,15 @@ rot that has already happened.
 
 ## Acceptance Criteria
 
-- [ ] A `refrakt_stale` MCP tool with no arguments returns the ranked report as structured findings, not formatted text
-- [ ] `refrakt_stale { touching: [paths] }` returns every page whose edges point at those paths, with referring page, line, target, and whether a `reviewed` marker is attached
-- [ ] `touching` runs without the git scan and returns results for a path with no commit history — including a file created in the working tree and never committed
-- [ ] `touching` returns every match, unbounded by `--top`
-- [ ] `refrakt_stale { since: <ref> }` resolves the changed paths from that ref and answers as `touching` would
-- [ ] The ranking, `touching` and `since` queries all read the same shared index, with no query owning it
-- [ ] CLAUDE.md documents the `touching` call as a step in the per-task workflow
-- [ ] Marker awareness is additive and gated on {% ref "WORK-591" /%}: where the `reviewed` attribute exists, an invocation carrying a matching marker scores zero regardless of commit count, and `touching` rows report whether one is attached
-- [ ] With {% ref "WORK-591" /%} not yet landed, every other criterion above still passes and the marker column is absent rather than blocking
+- [x] A `refrakt_stale` MCP tool with no arguments returns the ranked report as structured findings, not formatted text
+- [x] `refrakt_stale { touching: [paths] }` returns every page whose edges point at those paths, with referring page, line, target, and whether a `reviewed` marker is attached
+- [x] `touching` runs without the git scan and returns results for a path with no commit history — including a file created in the working tree and never committed
+- [x] `touching` returns every match, unbounded by `--top`
+- [x] `refrakt_stale { since: <ref> }` resolves the changed paths from that ref and answers as `touching` would
+- [x] The ranking, `touching` and `since` queries all read the same shared index, with no query owning it
+- [x] CLAUDE.md documents the `touching` call as a step in the per-task workflow
+- [x] Marker awareness is additive and gated on {% ref "WORK-591" /%}: where the `reviewed` attribute exists, an invocation carrying a matching marker scores zero regardless of commit count, and `touching` rows report whether one is attached
+- [x] With {% ref "WORK-591" /%} not yet landed, every other criterion above still passes and the marker column is absent rather than blocking
 
 ## Approach
 
@@ -106,5 +106,61 @@ make a region resolvable on both ends.
 - {% ref "SPEC-043" /%} — the MCP server this joins
 - {% ref "WORK-594" /%} — the index all three queries read
 - `plugins/plan/src/mcp-bindings.ts` — the binding pattern to follow
+
+## Resolution
+
+Completed: 2026-09-25
+
+Branch: `claude/v0-37-0-review-vqpl41`
+
+### What was done
+
+- `packages/mcp/src/tools/core.ts` — the `refrakt.stale` tool. No arguments
+  returns the ranked survey as structured rows; `touching: [paths]` returns
+  every page whose edges point at them; `since: <ref>` resolves the changed
+  paths and answers as `touching` would. All three read one shared index built
+  by `buildEdgeIndex` — no query owns it.
+- `packages/content/src/edges/git-scan.ts` — `changedSince(repoRoot, ref)` for
+  the `since` query, kept beside `execSync` rather than reaching for `require()`
+  from an ESM module.
+- `CLAUDE.md` — workflow step 3b: call `refrakt.stale { touching: [...] }`
+  before changing a source file. The step that prevents drift rather than
+  reporting it.
+- `packages/content/src/edges/exclude.ts` (new) — `resolveStaleSettings()`
+  reads content roots from the sites the project declares and the optional
+  `stale` section; `globToRegExp`/`globMatcher` implement a deliberately small
+  glob subset (`*`, `**`, `?`, trailing `/`). No brace expansion, no negation.
+- `packages/types/src/config.ts` — `StaleConfig` with `archival` (referrer
+  globs) and `generated` (target globs), both defaulting to empty; added to
+  `refrakt.config.schema.json`, the schema drift guard, and the generated
+  configuration reference.
+- `packages/runes/src/lib/invocation.ts` (new) — `sliceForInvocation`, moved
+  out of the CLI's `snippet-review.ts` so the marker tool and the ranking
+  resolve an anchor identically.
+- `rankEdges` now suppresses an edge only for a marker that is **still
+  current**; `buildEdgeIndex` sets `markerStale` by comparing against the live
+  slice. `touching` rows report `reviewedStale`.
+
+### Notes
+
+**The marker rule was wrong in a way WORK-591 made real.** Skipping any edge
+carrying `reviewed=` was indistinguishable from the correct rule while no
+markers existed. Once they do, a marker the target has outgrown would silence
+the edge permanently — strictly worse than no marker. Fixed with a test that
+would have failed under the old rule.
+
+**Exclusions had to be project configuration, not hard-coded directories**
+(ADR-035). Every project using refrakt has a different folder structure, so
+compiling in `docs/migration/` or `blog/` builds the tool for one repository.
+Two named lists rather than one `exclude`, and the exclusion counts print in
+the footer, so the lists cannot quietly grow until the report is empty.
+
+Also removed the compiled-in `site/content`: roots come from the config's
+sites, and the command refuses rather than guessing when there is no config.
+
+**Whether agents call `touching` unprompted is still unmeasured.** The item
+asks for that to be checked rather than assumed; it cannot be answered inside
+the change that introduces the instruction. If it turns out they do not, the
+remedy is a hook or a `plan update` side effect, not a more emphatic sentence.
 
 {% /work %}

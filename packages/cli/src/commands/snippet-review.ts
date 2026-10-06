@@ -39,10 +39,7 @@ import {
 	type MarkerVerdict,
 	maskSource,
 	parseMarker,
-	reindent,
-	resolveAnchor,
-	resolveLanguage,
-	shouldReindent,
+	sliceForInvocation,
 } from '@refrakt-md/runes';
 import { computeLineDiff, summarizeDiff } from '@refrakt-md/runes';
 
@@ -141,55 +138,10 @@ function findInvocations(repoRoot: string, pages: string[]): Invocation[] {
 
 /** Resolve an invocation against a given version of its target file. */
 function sliceFor(inv: Invocation, fileSource: string): string | undefined {
-	const lang = resolveLanguage(inv.path);
-	const symbol = attr(inv.attrs, 'symbol');
-	const match = attr(inv.attrs, 'match');
-	const lines = attr(inv.attrs, 'lines');
-
-	if (symbol || match) {
-		try {
-			const resolved = resolveAnchor(
-				fileSource,
-				lang,
-				{
-					symbol,
-					match,
-					occurrence: attr(inv.attrs, 'occurrence')
-						? Number(attr(inv.attrs, 'occurrence'))
-						: undefined,
-					extent: attr(inv.attrs, 'extent') as never,
-					until: attr(inv.attrs, 'until'),
-					through: attr(inv.attrs, 'through'),
-					doc: /\bdoc\s*=\s*true/.test(inv.attrs)
-						? true
-						: /\bdoc\s*=\s*false/.test(inv.attrs)
-							? false
-							: undefined,
-				},
-				inv.path,
-			);
-			const raw = fileSource
-				.split('\n')
-				.slice(resolved.start - 1, resolved.end)
-				.join('\n');
-			return shouldReindent(true, undefined) ? reindent(raw) : raw;
-		} catch {
-			// D9 — the anchor refuses first, and a refusal never reaches the
-			// marker layer. Nothing to compare.
-			return undefined;
-		}
-	}
-
-	if (lines) {
-		const m = /^(\d*)-?(\d*)$/.exec(lines.trim());
-		if (!m) return undefined;
-		const all = fileSource.split('\n');
-		const start = m[1] ? Number(m[1]) : 1;
-		const end = m[2] ? Number(m[2]) : start;
-		return all.slice(start - 1, end).join('\n');
-	}
-
-	return fileSource;
+	// Shared with the staleness ranking (`@refrakt-md/runes`): if the two
+	// resolved an anchor differently, a marker would read as stale on one side
+	// and current on the other.
+	return sliceForInvocation(inv.attrs, inv.path, fileSource);
 }
 
 function git(command: string, cwd: string): string | undefined {

@@ -1,6 +1,10 @@
 ---
 title: Rune Authoring Overview
 description: Mental model, transformation pipeline, and anatomy of a rune
+documents:
+  - packages/runes/src/config.ts
+  - packages/runes/src/index.ts
+  - packages/transform/src/engine.ts
 ---
 
 # Rune Authoring Overview

@@ -237,6 +237,9 @@ export type {
 	HeadingShape,
 } from './lib/languages.js';
 export { resolveAnchor, AnchorResolutionError } from './lib/anchor.js';
+// The invocation → slice resolution both the marker tool and the staleness
+// ranking read, so the two can never disagree about what a marker certifies.
+export { attrValue, sliceForInvocation } from './lib/invocation.js';
 // SPEC-134's review markers (WORK-591) and the shared line diff (WORK-592).
 export {
 	normalizeStrict,

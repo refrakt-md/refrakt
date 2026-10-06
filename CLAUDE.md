@@ -369,6 +369,23 @@ npx refrakt plan update <id> --status in-progress
    - Related decision records in `plan/decisions/` (check tags)
    - Any dependency work items (ensure they're done)
 
+3b. **Before changing a source file, ask what documents it.** This is the one
+   step here that prevents drift rather than reporting it:
+
+   ```
+   mcp__refrakt__refrakt.stale  { touching: ["packages/runes/src/config.ts"] }
+   ```
+
+   It returns every page whose edges point at those paths — referring page,
+   line, and whether a review marker is attached. Open what it names and update
+   it in the same change. No git history is involved, so it works on a file you
+   just created and have not committed.
+
+   Every other drift check in this repository reports rot that has already
+   happened, through a command someone must choose to run. This one is asked
+   before the divergence exists, which is the whole reason it is in the
+   per-task workflow rather than in a periodic sweep.
+
 ```bash
 # 4. Check off acceptance criteria as you complete them
 npx refrakt plan update <id> --check "criterion text"

@@ -3,6 +3,16 @@
   "plan": {
     "dir": "plan"
   },
+  "stale": {
+    "archival": ["site/content/docs/migration/**", "site/content/releases.md"],
+    "generated": [
+      "CHANGELOG.md",
+      "packages/*/CHANGELOG.md",
+      "plugins/*/CHANGELOG.md",
+      "site/content/releases.md",
+      "site/content/_data/*.json"
+    ]
+  },
   "sites": {
     "main": {
       "contentDir": "./site/content",

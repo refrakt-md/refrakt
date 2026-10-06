@@ -56,6 +56,9 @@ refrakt inspect --all --audit-dimensions
 # Generate structure contracts for CI
 refrakt contracts -o contracts/structures.json --config .
 
+# Rank documentation by how far its subject has moved since the page changed
+refrakt stale --top 10
+
 # Launch the content editor
 refrakt edit
 

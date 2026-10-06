@@ -148,3 +148,19 @@ export function commitsSince(history: GitHistory, path: string, since: number): 
 	if (!commits) return [];
 	return commits.filter((c) => c.at > since);
 }
+
+/**
+ * Paths changed since a git ref — the `since:` query's input.
+ *
+ * A PR-scoped sweep: resolve what the branch touched, then ask the same
+ * question `touching` asks. Returns an empty list rather than throwing when the
+ * ref cannot be resolved, because a missing ref is the caller's mistake to
+ * report, not a reason to fail the whole query.
+ */
+export function changedSince(cwd: string, ref: string): string[] {
+	const out = git(`git diff --name-only ${ref}...HEAD`, cwd);
+	return out
+		.split('\n')
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
+}

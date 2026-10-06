@@ -17,6 +17,9 @@
     "plan": {
       "$ref": "#/definitions/PlanConfig"
     },
+    "stale": {
+      "$ref": "#/definitions/StaleConfig"
+    },
     "xrefs": {
       "type": "array",
       "description": "Cross-reference URL templates. Patterns are tried in array order when an xref's ID isn't found in the registry (or when the registry-found entity has no usable `sourceUrl`). First match wins.",
@@ -114,6 +117,23 @@
         "dir": {
           "type": "string",
           "description": "Plan directory, relative to project root. Default: 'plan'"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StaleConfig": {
+      "type": "object",
+      "description": "Which edges `refrakt stale` must not measure. Two lists rather than one generic `exclude`, because they name opposite sides of an edge and opposite reasons: a single ignore list is the easy way to make the report disappear one page at a time. A page that is merely noisy belongs in neither — fix the extraction rule, or narrow the page's subject with `documents:` in its frontmatter. Both lists default to empty.",
+      "properties": {
+        "archival": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Glob patterns matched against the referring page, repo-root-relative. For pages that are historical records — a changelog, a release note, a migration guide for a version already shipped — which are correct as written and must never be updated when the code moves on. No edges are extracted from a matching page, so it also stops answering `touching`."
+        },
+        "generated": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Glob patterns matched against the target file, repo-root-relative. For files that change by construction — a generated artifact, a lockfile, a tool-written changelog — where 'commits since the page last changed' measures the generator's cadence rather than any divergence. Edges pointing at a matching file are dropped; edges out of it are not."
         }
       },
       "additionalProperties": false
