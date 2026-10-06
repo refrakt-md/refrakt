@@ -1,4 +1,4 @@
-{% decision id="ADR-035" status="accepted" date="2026-09-24" source="SPEC-136" tags="staleness, config, drift, cli, mcp" %}
+{% decision id="ADR-040" status="accepted" date="2026-09-24" source="SPEC-136" tags="staleness, config, drift, cli, mcp" %}
 
 # Stale exclusions are two project-config lists, not one ignore list
 
