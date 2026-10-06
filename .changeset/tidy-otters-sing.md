@@ -9,12 +9,10 @@
 Rank documentation against the code it describes, and ask before the divergence
 exists.
 
-```
-staleness = commits touching the target since the referring page last changed
-```
-
-`refrakt stale` prints that ranking, with the commit subjects — "11 commits" is
-a number, but "generate breadcrumb positions from a declared index" is a person
+`refrakt stale` ranks every reference a content page makes by one measure —
+commits touching the referenced file since the referring page itself last
+changed — and prints the commit subjects alongside it. "11 commits" is a number,
+but "generate breadcrumb positions from a declared index" is a person
 recognising that the page they wrote is out of date.
 
 **It ranks; it never fails.** Findings do not affect the exit code, and there is
@@ -23,33 +21,18 @@ referring page, so a gate would train people to make trivial documentation edits
 to clear it — destroying the signal it measures. Being unable to measure at all
 (a shallow clone, no config) is a different event and does exit non-zero.
 
-Four kinds of reference are found: `snippet`/`file-ref` `path=`, internal links
-that carry an adjacent description, backticked repo paths in prose, and a new
-`documents:` frontmatter field:
-
-```yaml
----
-title: Rune Authoring Overview
-documents:
-  - packages/runes/src/config.ts
-  - packages/transform/src/engine.ts
----
-```
-
-A page's subject is often not in its words, and `documents:` says it outright.
-Unlike an inferred reference, an entry that resolves to no file is an error: the
-author asserted the relationship.
+Four kinds of reference are found: `snippet` / `file-ref` `path=` attributes,
+internal links that carry an adjacent description, backticked repo paths in
+prose, and a new `documents:` frontmatter field listing the repository paths a
+page is about. A page's subject is often not in its words, and `documents:` says
+it outright. Unlike an inferred reference, an entry that resolves to no file is
+an error: the author asserted the relationship.
 
 The `refrakt.stale` MCP tool answers the same survey, and one more question that
-is better timed:
-
-```
-refrakt.stale { touching: ["packages/runes/src/config.ts"] }
-→ the pages that document that file, before it changes
-```
-
-That query involves no commit count and no git history at all, so it answers for
-a file created in the working tree and never committed.
+is better timed. Called as `refrakt.stale { touching: [paths] }` it names the
+pages that document those files *before* they change, which involves no commit
+count and no git history at all — so it answers for a file created in the
+working tree and never committed.
 
 An optional `stale` section in `refrakt.config.json` narrows what is measured:
 `archival` globs name referring pages that are historical records, `generated`

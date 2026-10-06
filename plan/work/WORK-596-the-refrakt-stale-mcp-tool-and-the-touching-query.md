@@ -150,7 +150,7 @@ the edge permanently — strictly worse than no marker. Fixed with a test that
 would have failed under the old rule.
 
 **Exclusions had to be project configuration, not hard-coded directories**
-(ADR-035). Every project using refrakt has a different folder structure, so
+({% ref "ADR-040" /%}). Every project using refrakt has a different folder structure, so
 compiling in `docs/migration/` or `blog/` builds the tool for one repository.
 Two named lists rather than one `exclude`, and the exclusion counts print in
 the footer, so the lists cannot quietly grow until the report is empty.

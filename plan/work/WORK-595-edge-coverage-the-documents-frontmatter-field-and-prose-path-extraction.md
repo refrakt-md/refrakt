@@ -190,7 +190,7 @@ over-broad edge the prose class already risks.
 The two pages that made the first run look worse than it was — a shipped
 migration guide and the generated changelog — are not extraction failures but
 structural miscategorisations, and are handled by the config surface WORK-596
-added rather than by weakening a rule. See ADR-035; this does not reopen the
+added rather than by weakening a rule. See {% ref "ADR-040" /%}; this does not reopen the
 "do not add a frontmatter opt-out yet" note above, which is about suppressing a
 class the extraction got right.
 
