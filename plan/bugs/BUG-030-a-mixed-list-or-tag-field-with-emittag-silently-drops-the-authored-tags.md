@@ -1,4 +1,4 @@
-{% bug id="BUG-030" status="confirmed" severity="major" source="SPEC-003" tags="runes,content-model,emitTag,itemModel,content-loss,playlist" %}
+{% bug id="BUG-030" status="fixed" severity="major" source="SPEC-003" tags="runes,content-model,emitTag,itemModel,content-loss,playlist" pr="refrakt-md/refrakt#658" %}
 
 # A mixed `list|tag:x` field with `emitTag` silently drops the authored tags
 
