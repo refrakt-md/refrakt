@@ -1,8 +1,11 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
-import { RenderableNodeCursor } from '../lib/renderable.js';
+import {
+	createContentModelSchema,
+	bodyOnly,
+	createComponentRenderable,
+	renderNodes,
+} from '../lib/index.js';
 
 const alignValues = ['left', 'right'] as const;
 const ratioValues = ['1:2', '1:1', '2:1'] as const;
@@ -32,14 +35,9 @@ export const mediatext = createContentModelSchema({
 		},
 		wrap: { type: Boolean, required: false, description: 'Wrap text around the media' },
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
-		const children = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const children = renderNodes(resolved.body, config);
 
 		const align = attrs.align ?? 'left';
 		const ratio = attrs.ratio ?? '1:1';

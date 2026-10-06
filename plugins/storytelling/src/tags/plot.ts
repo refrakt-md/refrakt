@@ -1,7 +1,11 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes } from '@refrakt-md/runes';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	bodyOnly,
+	renderNodes,
+} from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 import { taxonomyAttributes } from './common.js';
 
@@ -22,10 +26,7 @@ export const beat = createContentModelSchema({
 		track: { type: String, required: false },
 		follows: { type: String, required: false },
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const labelTag = new Tag('span', {}, [attrs.label ?? '']);
 		// Map raw marker char to status string if needed
@@ -36,9 +37,7 @@ export const beat = createContentModelSchema({
 		const followsMeta = new Tag('meta', { content: attrs.follows ?? '' });
 
 		// Build body from description attribute + any block-level children
-		const childContent = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const childContent = renderNodes(resolved.body, config);
 		const descText = (attrs.description ?? '').replace(/^[\s—–-]+/, '').trim();
 		const bodyChildren: any[] = [];
 		if (descText) {
@@ -131,12 +130,8 @@ export const plot = createContentModelSchema({
 		],
 	},
 	transform(resolved, attrs, config) {
-		const descRendered = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.description), config) as RenderableTreeNode[],
-		);
-		const itemStream = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.beats), config) as RenderableTreeNode[],
-		);
+		const descRendered = renderNodes(resolved.description, config);
+		const itemStream = renderNodes(resolved.beats, config);
 
 		const titleTag = new Tag('span', {}, [attrs.title ?? '']);
 		const plotTypeMeta = new Tag('meta', { content: attrs.type ?? 'arc' });

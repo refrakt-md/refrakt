@@ -1,8 +1,11 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
-import { RenderableNodeCursor } from '../lib/renderable.js';
+import {
+	createContentModelSchema,
+	bodyOnly,
+	createComponentRenderable,
+	renderNodes,
+} from '../lib/index.js';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
@@ -29,14 +32,9 @@ export const datatable = createContentModelSchema({
 		},
 		defaultSort: { type: String, required: false, description: 'Column to sort by initially' },
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
-		const children = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const children = renderNodes(resolved.body, config);
 
 		const sortableMeta = new Tag('meta', { content: attrs.sortable ?? '' });
 		const searchableMeta = new Tag('meta', { content: String(attrs.searchable ?? false) });

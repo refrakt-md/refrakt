@@ -4,7 +4,9 @@ const { Tag } = Markdoc;
 import {
 	createComponentRenderable,
 	createContentModelSchema,
+	bodyOnly,
 	asNodes,
+	renderNodes,
 	RenderableNodeCursor,
 } from '@refrakt-md/runes';
 import { taxonomyAttributes, buildStoryContent } from './common.js';
@@ -20,15 +22,10 @@ export const characterSection = createContentModelSchema({
 	attributes: {
 		name: { type: String, required: true },
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		).wrap('div');
+		const body = renderNodes(resolved.body, config).wrap('div');
 
 		return createComponentRenderable({
 			rune: 'character-section',
@@ -129,9 +126,7 @@ export const character = createContentModelSchema({
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 
 		// Extract portrait image from preamble
-		const portraitNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.portrait), config) as RenderableTreeNode[],
-		);
+		const portraitNodes = renderNodes(resolved.portrait, config);
 		const portrait = portraitNodes.tag('img').limit(1);
 		const hasPortrait = portrait.count() > 0;
 		const portraitDiv = hasPortrait ? portrait.wrap('div') : undefined;

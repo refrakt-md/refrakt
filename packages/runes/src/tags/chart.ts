@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import {
+	createContentModelSchema,
+	bodyOnly,
+	createComponentRenderable,
+	asNodes,
+} from '../lib/index.js';
 
 const chartType = ['bar', 'line', 'pie', 'area'] as const;
 
@@ -49,10 +54,7 @@ export const chart = createContentModelSchema({
 				'X-axis label rotation: "auto" (default) rotates -45° when slots are crowded, "0" forces horizontal, or any explicit degree (e.g. "-45", "-90").',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const children = Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[];
 

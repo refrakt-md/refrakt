@@ -5,6 +5,7 @@ import {
 	createContentModelSchema,
 	createComponentRenderable,
 	asNodes,
+	renderNodes,
 	RenderableNodeCursor,
 	pageSectionProperties,
 	unwrapParagraphImages,
@@ -79,9 +80,7 @@ export const howto = createContentModelSchema({
 				Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
 			),
 		);
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const body = renderNodes(resolved.body, config);
 
 		const estimatedTimeMeta = new Tag('meta', { content: attrs.estimatedTime });
 		const difficultyMeta = new Tag('meta', { content: attrs.difficulty ?? '' });

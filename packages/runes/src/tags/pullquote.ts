@@ -1,8 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
-import { RenderableNodeCursor } from '../lib/renderable.js';
+import {
+	createContentModelSchema,
+	bodyOnly,
+	createComponentRenderable,
+	renderNodes,
+	fieldMetas,
+} from '../lib/index.js';
 
 const alignValues = ['left', 'center', 'right'] as const;
 const variantValues = ['default', 'accent', 'editorial'] as const;
@@ -29,17 +33,9 @@ export const pullquote = createContentModelSchema({
 			description: 'Visual style of the quote block',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
-		const children = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
-
-		const alignMeta = new Tag('meta', { content: attrs.align ?? 'center' });
-		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'default' });
+		const children = renderNodes(resolved.body, config);
 
 		// Extract blockquote or use all children as the quote text
 		const blockquote = children.tag('blockquote');
@@ -49,10 +45,10 @@ export const pullquote = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'pull-quote',
 			tag: 'blockquote',
-			properties: {
-				align: alignMeta,
-				variant: variantMeta,
-			},
+			properties: fieldMetas(attrs, config, {
+				align: 'center',
+				variant: 'default',
+			}),
 			children: quoteChildren,
 		});
 	},

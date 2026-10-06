@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Tag, RenderableTreeNode, Node } from '@markdoc/markdoc';
 import { headingsToList } from '../util.js';
-import { createContentModelSchema, asNodes } from '../lib/index.js';
+import { createContentModelSchema, bodyOnly, asNodes } from '../lib/index.js';
 import { createComponentRenderable } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
@@ -20,10 +20,7 @@ function isListNode(node: RenderableTreeNode): node is Tag {
 }
 
 const navItem = createContentModelSchema({
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const children = new RenderableNodeCursor(
 			Markdoc.transform(asNodes(resolved.body), {

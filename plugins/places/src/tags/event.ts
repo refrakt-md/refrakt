@@ -5,9 +5,11 @@ import {
 	createContentModelSchema,
 	createComponentRenderable,
 	asNodes,
+	renderNodes,
 	RenderableNodeCursor,
 	pageSectionProperties,
 	unwrapParagraphImages,
+	fieldMetas,
 } from '@refrakt-md/runes';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
@@ -70,14 +72,8 @@ export const event = createContentModelSchema({
 				Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
 			),
 		);
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const body = renderNodes(resolved.body, config);
 
-		const dateMeta = new Tag('meta', { content: attrs.date ?? '' });
-		const endDateMeta = new Tag('meta', { content: attrs.endDate ?? '' });
-		const locationMeta = new Tag('meta', { content: attrs.location ?? '' });
-		const urlMeta = new Tag('meta', { content: attrs.url ?? '' });
 		const sectionProps = pageSectionProperties(header);
 
 		const bodyDiv = body.wrap('div');
@@ -91,12 +87,12 @@ export const event = createContentModelSchema({
 			rune: 'event',
 			tag: 'article',
 			property: 'contentSection',
-			properties: {
-				date: dateMeta,
-				endDate: endDateMeta,
-				location: locationMeta,
-				url: urlMeta,
-			},
+			properties: fieldMetas(attrs, config, {
+				date: '',
+				endDate: '',
+				location: '',
+				url: '',
+			}),
 			refs: {
 				...sectionProps,
 				body: bodyDiv,

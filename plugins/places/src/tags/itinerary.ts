@@ -1,13 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createComponentRenderable,
 	createContentModelSchema,
-	asNodes,
+	bodyOnly,
+	renderNodes,
 	pageSectionProperties,
 } from '@refrakt-md/runes';
-import { RenderableNodeCursor } from '@refrakt-md/runes';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
@@ -51,10 +50,7 @@ export const itineraryStop = createContentModelSchema({
 			description: 'Longitude coordinate for placing this stop on a map.',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const timeTag = new Tag('time', {}, [attrs.time ?? '']);
 		const locationTag = new Tag('span', {}, [attrs.location ?? '']);
@@ -62,9 +58,7 @@ export const itineraryStop = createContentModelSchema({
 		const activityMeta = new Tag('meta', { content: attrs.activity ?? '' });
 		const latMeta = new Tag('meta', { content: attrs.lat ?? '' });
 		const lngMeta = new Tag('meta', { content: attrs.lng ?? '' });
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		).wrap('div');
+		const body = renderNodes(resolved.body, config).wrap('div');
 
 		return createComponentRenderable({
 			rune: 'itinerary-stop',
@@ -119,12 +113,8 @@ export const itineraryDay = createContentModelSchema({
 		},
 	},
 	transform(resolved, attrs, config) {
-		const headerNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
-		);
-		const stopsRendered = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.sections), config) as RenderableTreeNode[],
-		);
+		const headerNodes = renderNodes(resolved.header, config);
+		const stopsRendered = renderNodes(resolved.sections, config);
 
 		const stopsStream = stopsRendered.tag('li').typeof('ItineraryStop');
 
@@ -210,12 +200,8 @@ export const itinerary = createContentModelSchema({
 		},
 	},
 	transform(resolved, attrs, config) {
-		const headerNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
-		);
-		const bodyStream = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.sections), config) as RenderableTreeNode[],
-		);
+		const headerNodes = renderNodes(resolved.header, config);
+		const bodyStream = renderNodes(resolved.sections, config);
 
 		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'day-by-day' });
 		const directionMeta = new Tag('meta', { content: attrs.direction ?? 'vertical' });

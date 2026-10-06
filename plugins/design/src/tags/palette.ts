@@ -3,9 +3,11 @@ import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
+	bodyOnly,
 	createComponentRenderable,
 	asNodes,
 	extractText,
+	groupByHeading,
 } from '@refrakt-md/runes';
 
 // Parse a color entry from "name: #value" or "name: #val1, #val2, ..."
@@ -114,38 +116,25 @@ export const palette = createContentModelSchema({
 			description: 'Number of swatch columns in the grid; auto-calculated from count when omitted.',
 		},
 	},
-	contentModel: {
-		type: 'sequence' as const,
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs) {
 		const children = asNodes(resolved.body) as Node[];
 
 		// Parse headings and list items from the original AST
-		const groups: ColorGroup[] = [];
-		let currentGroup: ColorGroup = { title: '', entries: [] };
-		groups.push(currentGroup);
-
-		for (const child of children) {
-			if (child.type === 'heading') {
-				currentGroup = { title: extractText(child), entries: [] };
-				groups.push(currentGroup);
-			} else if (child.type === 'list') {
-				for (const item of child.children) {
-					if (item.type === 'item') {
-						const text = extractText(item);
-						const entry = parseColorEntry(text);
-						if (entry) {
-							currentGroup.entries.push({
-								name: entry.name,
-								values: entry.values,
-								group: currentGroup.title,
-							});
-						}
-					}
-				}
-			}
-		}
+		const groups: ColorGroup[] = [{ title: '', entries: [] }];
+		groupByHeading(children, {
+			initial: groups[0],
+			heading(heading) {
+				const group: ColorGroup = { title: extractText(heading), entries: [] };
+				groups.push(group);
+				return group;
+			},
+			item(item, group) {
+				const entry = parseColorEntry(extractText(item));
+				if (entry)
+					group.entries.push({ name: entry.name, values: entry.values, group: group.title });
+			},
+		});
 
 		const activeGroups = groups.filter((g) => g.entries.length > 0);
 
@@ -269,33 +258,20 @@ export function extractPaletteTokens(
 	node: Node,
 ): { name: string; value: string; group?: string }[] {
 	const tokens: { name: string; value: string; group?: string }[] = [];
-	let currentGroup = '';
-
-	for (const child of node.children) {
-		if (child.type === 'heading') {
-			currentGroup = extractText(child);
-		} else if (child.type === 'list') {
-			for (const item of child.children) {
-				if (item.type === 'item') {
-					const text = extractText(item);
-					const entry = parseColorEntry(text);
-					if (entry) {
-						if (entry.values.length <= 1) {
-							tokens.push({
-								name: entry.name,
-								value: entry.values[0] || '',
-								group: currentGroup || undefined,
-							});
-						} else {
-							for (const v of entry.values) {
-								tokens.push({ name: entry.name, value: v, group: currentGroup || undefined });
-							}
-						}
-					}
-				}
+	groupByHeading(node.children, {
+		initial: '',
+		heading: (heading) => extractText(heading),
+		item(item, title) {
+			const entry = parseColorEntry(extractText(item));
+			if (!entry) return;
+			const group = title || undefined;
+			if (entry.values.length <= 1) {
+				tokens.push({ name: entry.name, value: entry.values[0] || '', group });
+			} else {
+				for (const v of entry.values) tokens.push({ name: entry.name, value: v, group });
 			}
-		}
-	}
+		},
+	});
 
 	return tokens;
 }

@@ -1,11 +1,10 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
+	bodyOnly,
 	createComponentRenderable,
-	asNodes,
-	RenderableNodeCursor,
+	renderNodes,
 } from '@refrakt-md/runes';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
@@ -43,10 +42,7 @@ export const bond = createContentModelSchema({
 			description: 'Enable/disable mutual connection between both entities.',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const fromTag = new Tag('span', {}, [attrs.from ?? '']);
 		const toTag = new Tag('span', {}, [attrs.to ?? '']);
@@ -56,9 +52,7 @@ export const bond = createContentModelSchema({
 		const bondTypeMeta = new Tag('meta', { content: attrs.type ?? '' });
 		const statusMeta = new Tag('meta', { content: attrs.status ?? 'active' });
 		const bidirectionalMeta = new Tag('meta', { content: String(attrs.bidirectional ?? true) });
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		).wrap('div');
+		const body = renderNodes(resolved.body, config).wrap('div');
 
 		return createComponentRenderable({
 			rune: 'bond',

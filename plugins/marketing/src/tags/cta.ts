@@ -4,7 +4,7 @@ const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
 	createComponentRenderable,
-	asNodes,
+	renderNodes,
 	RenderableNodeCursor,
 	linkItem,
 	pageSectionProperties,
@@ -29,9 +29,7 @@ export const cta = createContentModelSchema({
 		],
 	},
 	transform(resolved, attrs, config) {
-		const header = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
-		);
+		const header = renderNodes(resolved.header, config);
 
 		// Transform actions with custom node overrides (same pattern as hero)
 		const baseConfig = config;
@@ -50,9 +48,7 @@ export const cta = createContentModelSchema({
 				},
 			},
 		};
-		const actions = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.actions), actionConfig) as RenderableTreeNode[],
-		);
+		const actions = renderNodes(resolved.actions, actionConfig);
 
 		const actionsDiv = actions.wrap('div');
 

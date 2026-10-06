@@ -1,13 +1,14 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
+import type { Node } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import {
 	createComponentRenderable,
 	createContentModelSchema,
-	asNodes,
+	renderNodes,
 	extractText,
+	groupByHeading,
+	fieldMetas,
 } from '@refrakt-md/runes';
-import { RenderableNodeCursor } from '@refrakt-md/runes';
 
 const variantType = ['street', 'satellite', 'terrain', 'dark', 'minimal'] as const;
 const heightType = ['small', 'medium', 'large', 'full'] as const;
@@ -99,25 +100,20 @@ const mapPin = createContentModelSchema({
 		type: 'sequence',
 		fields: [],
 	},
-	transform(resolved, attrs) {
+	transform(resolved, attrs, config) {
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
 		const descriptionTag = new Tag('span', {}, [attrs.description ?? '']);
-		const latMeta = new Tag('meta', { content: attrs.lat ?? '' });
-		const lngMeta = new Tag('meta', { content: attrs.lng ?? '' });
-		const addressMeta = new Tag('meta', { content: attrs.address ?? '' });
-		const urlMeta = new Tag('meta', { content: attrs.url ?? '' });
-		const groupMeta = new Tag('meta', { content: attrs.group ?? '' });
 
 		return createComponentRenderable({
 			rune: 'map-pin',
 			tag: 'li',
-			properties: {
-				lat: latMeta,
-				lng: lngMeta,
-				address: addressMeta,
-				url: urlMeta,
-				group: groupMeta,
-			},
+			properties: fieldMetas(attrs, config, {
+				lat: '',
+				lng: '',
+				address: '',
+				url: '',
+				group: '',
+			}),
 			refs: {
 				name: nameTag,
 				description: descriptionTag,
@@ -130,37 +126,31 @@ const mapPin = createContentModelSchema({
 // Parse list items into map-pin tags with heading-based grouping
 function convertMapChildren(nodes: unknown[]): unknown[] {
 	const converted: Node[] = [];
-	let currentGroup = '';
 
-	for (const node of nodes as Node[]) {
-		if (node.type === 'heading') {
-			currentGroup = extractText(node);
-		} else if (node.type === 'list') {
-			for (const item of node.children) {
-				if (item.type === 'item') {
-					const loc = parseLocationItem(item);
-					converted.push(
-						new Ast.Node(
-							'tag',
-							{
-								name: loc.name,
-								description: loc.description,
-								lat: loc.lat,
-								lng: loc.lng,
-								address: loc.address,
-								url: loc.url,
-								group: currentGroup,
-							},
-							[],
-							'map-pin',
-						),
-					);
-				}
-			}
-		} else {
-			converted.push(node);
-		}
-	}
+	groupByHeading(nodes as Node[], {
+		initial: '',
+		heading: (heading) => extractText(heading),
+		item(item, group) {
+			const loc = parseLocationItem(item);
+			converted.push(
+				new Ast.Node(
+					'tag',
+					{
+						name: loc.name,
+						description: loc.description,
+						lat: loc.lat,
+						lng: loc.lng,
+						address: loc.address,
+						url: loc.url,
+						group,
+					},
+					[],
+					'map-pin',
+				),
+			);
+		},
+		other: (node) => converted.push(node),
+	});
 
 	return converted;
 }
@@ -221,9 +211,7 @@ export const map = createContentModelSchema({
 			'link URLs, coordinate regex extraction, and heading-based grouping.',
 	},
 	transform(resolved, attrs, config) {
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.children), config) as RenderableTreeNode[],
-		);
+		const body = renderNodes(resolved.children, config);
 
 		const zoomMeta = new Tag('meta', { content: attrs.zoom ?? '' });
 		const centerMeta = new Tag('meta', { content: attrs.center ?? '' });

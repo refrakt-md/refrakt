@@ -1,11 +1,10 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
+	bodyOnly,
 	createComponentRenderable,
-	asNodes,
-	RenderableNodeCursor,
+	renderNodes,
 } from '@refrakt-md/runes';
 import { taxonomyAttributes } from './common.js';
 
@@ -38,18 +37,13 @@ export const lore = createContentModelSchema({
 			description: 'Enable/disable spoiler protection that hides content until revealed.',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const titleTag = new Tag('span', {}, [attrs.title ?? '']);
 		const categoryMeta = new Tag('meta', { content: attrs.category ?? '' });
 		const spoilerMeta = new Tag('meta', { content: String(attrs.spoiler ?? false) });
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		).wrap('div');
+		const body = renderNodes(resolved.body, config).wrap('div');
 
 		return createComponentRenderable({
 			rune: 'lore',

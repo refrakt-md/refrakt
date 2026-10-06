@@ -3,9 +3,11 @@ import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
+	bodyOnly,
 	createComponentRenderable,
 	asNodes,
 	extractText,
+	groupByHeading,
 } from '@refrakt-md/runes';
 
 // Parse "name: value" format
@@ -37,6 +39,15 @@ function maxScale(values: string[]): number {
 
 type SectionType = 'spacing' | 'radius' | 'shadows';
 
+/** Which section a heading opens; an unrecognised heading closes the current one. */
+function sectionOf(heading: Node): SectionType | '' {
+	const text = extractText(heading).toLowerCase();
+	if (text.includes('spacing')) return 'spacing';
+	if (text.includes('radius') || text.includes('radii')) return 'radius';
+	if (text.includes('shadow')) return 'shadows';
+	return '';
+}
+
 interface SpacingItem {
 	name: string;
 	value: string;
@@ -66,48 +77,31 @@ export const spacing = createContentModelSchema({
 			description: 'Heading displayed above the spacing, radii, and shadow sections.',
 		},
 	},
-	contentModel: {
-		type: 'sequence' as const,
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs) {
 		const children = asNodes(resolved.body) as Node[];
 
 		// Parse headings and list items from the original AST into structured data
 		const result: ParsedSections = { spacing: null, radii: [], shadows: [] };
-		let currentSection: SectionType | '' = '';
 		let unit = '';
 		let scaleValues: string[] = [];
 
-		for (const child of children) {
-			if (child.type === 'heading') {
-				const heading = extractText(child).toLowerCase();
-				if (heading.includes('spacing')) currentSection = 'spacing';
-				else if (heading.includes('radius') || heading.includes('radii')) currentSection = 'radius';
-				else if (heading.includes('shadow')) currentSection = 'shadows';
-				else currentSection = '';
-			} else if (child.type === 'list' && currentSection) {
-				for (const item of child.children) {
-					if (item.type === 'item') {
-						const text = extractText(item);
-						const entry = parseNameValue(text);
-						if (!entry) continue;
-
-						if (currentSection === 'spacing') {
-							if (entry.name === 'scale') {
-								scaleValues = entry.value.split(',').map((v) => v.trim());
-							} else if (entry.name === 'unit') {
-								unit = entry.value;
-							}
-						} else if (currentSection === 'radius') {
-							result.radii.push({ name: entry.name, value: entry.value });
-						} else if (currentSection === 'shadows') {
-							result.shadows.push({ name: entry.name, value: entry.value });
-						}
-					}
+		groupByHeading<SectionType | ''>(children, {
+			initial: '',
+			heading: sectionOf,
+			item(item, section) {
+				const entry = section ? parseNameValue(extractText(item)) : null;
+				if (!entry) return;
+				if (section === 'spacing') {
+					if (entry.name === 'scale') scaleValues = entry.value.split(',').map((v) => v.trim());
+					else if (entry.name === 'unit') unit = entry.value;
+				} else if (section === 'radius') {
+					result.radii.push({ name: entry.name, value: entry.value });
+				} else {
+					result.shadows.push({ name: entry.name, value: entry.value });
 				}
-			}
-		}
+			},
+		});
 
 		if (unit || scaleValues.length > 0) {
 			result.spacing = { unit, values: scaleValues };
@@ -218,41 +212,27 @@ export function extractSpacingTokens(node: Node): {
 		radii?: { name: string; value: string }[];
 		shadows?: { name: string; value: string }[];
 	} = {};
-	let currentSection: SectionType | '' = '';
 	let unit = '';
 	let scaleValues: string[] = [];
 	const radii: { name: string; value: string }[] = [];
 	const shadows: { name: string; value: string }[] = [];
 
-	for (const child of node.children) {
-		if (child.type === 'heading') {
-			const heading = extractText(child).toLowerCase();
-			if (heading.includes('spacing')) currentSection = 'spacing';
-			else if (heading.includes('radius') || heading.includes('radii')) currentSection = 'radius';
-			else if (heading.includes('shadow')) currentSection = 'shadows';
-			else currentSection = '';
-		} else if (child.type === 'list' && currentSection) {
-			for (const item of child.children) {
-				if (item.type === 'item') {
-					const text = extractText(item);
-					const entry = parseNameValue(text);
-					if (!entry) continue;
-
-					if (currentSection === 'spacing') {
-						if (entry.name === 'scale') {
-							scaleValues = entry.value.split(',').map((v) => v.trim());
-						} else if (entry.name === 'unit') {
-							unit = entry.value;
-						}
-					} else if (currentSection === 'radius') {
-						radii.push({ name: entry.name, value: entry.value });
-					} else if (currentSection === 'shadows') {
-						shadows.push({ name: entry.name, value: entry.value });
-					}
-				}
+	groupByHeading<SectionType | ''>(node.children, {
+		initial: '',
+		heading: sectionOf,
+		item(item, section) {
+			const entry = section ? parseNameValue(extractText(item)) : null;
+			if (!entry) return;
+			if (section === 'spacing') {
+				if (entry.name === 'scale') scaleValues = entry.value.split(',').map((v) => v.trim());
+				else if (entry.name === 'unit') unit = entry.value;
+			} else if (section === 'radius') {
+				radii.push({ name: entry.name, value: entry.value });
+			} else {
+				shadows.push({ name: entry.name, value: entry.value });
 			}
-		}
-	}
+		},
+	});
 
 	if (unit || scaleValues.length > 0) {
 		result.spacing = {

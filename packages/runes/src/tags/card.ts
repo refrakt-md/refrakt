@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import {
+	createContentModelSchema,
+	bodyOnly,
+	createComponentRenderable,
+	asNodes,
+} from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import {
 	SplitLayoutModel,
@@ -75,10 +80,7 @@ export const card = createContentModelSchema({
 			description: 'Intrinsic card aspect ratio (e.g. "16/9", "3/4") for cover / bg-only cards',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		// Split the body on `---` into media / body / footer zones. The shared
 		// helper enforces the canonical media-first body shape (1 group = body,

@@ -1,6 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, Schema, RenderableTreeNodes } from '@markdoc/markdoc';
-import { declareUniversalPosture } from '../lib/index.js';
+import { declareUniversalPosture, groupByHeading } from '../lib/index.js';
 const { Tag } = Markdoc;
 
 /** The 6 tint token names */
@@ -34,34 +34,23 @@ function parseTintBody(children: Node[]): {
 } {
 	const light: Record<string, string> = {};
 	const dark: Record<string, string> = {};
-	let section: 'light' | 'dark' = 'light';
 
-	for (const child of children) {
-		if (child.type === 'heading') {
-			const text = textContent(child).toLowerCase();
-			if (text === 'dark') section = 'dark';
-			else if (text === 'light') section = 'light';
-			continue;
-		}
-
-		if (child.type === 'list') {
-			for (const item of child.children) {
-				const text = textContent(item);
-				const match = text.match(TOKEN_PATTERN);
-				if (match) {
-					const token = match[1].toLowerCase();
-					const value = match[2].trim();
-					if ((TINT_TOKENS as readonly string[]).includes(token)) {
-						if (section === 'dark') {
-							dark[token] = value;
-						} else {
-							light[token] = value;
-						}
-					}
-				}
+	groupByHeading<'light' | 'dark'>(children, {
+		initial: 'light',
+		// An unrecognised heading keeps the section already in effect.
+		heading(heading, section) {
+			const text = textContent(heading).toLowerCase();
+			return text === 'dark' || text === 'light' ? text : section;
+		},
+		item(item, section) {
+			const match = textContent(item).match(TOKEN_PATTERN);
+			if (!match) return;
+			const token = match[1].toLowerCase();
+			if ((TINT_TOKENS as readonly string[]).includes(token)) {
+				(section === 'dark' ? dark : light)[token] = match[2].trim();
 			}
-		}
-	}
+		},
+	});
 
 	return { light, dark };
 }

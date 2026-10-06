@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode, Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, asNodes } from '../lib/index.js';
+import { createContentModelSchema, bodyOnly, asNodes } from '../lib/index.js';
 
 /** Split the bar body's node list on the FIRST top-level `hr` into
  *  `left` / `right` halves. 1 zone → everything is left, right is empty.
@@ -40,10 +40,7 @@ function splitBarZones(nodes: Node[]): { left: Node[]; right: Node[] } {
  */
 export const bar = createContentModelSchema({
 	attributes: {},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, _attrs, config) {
 		const zones = splitBarZones(asNodes(resolved.body));
 

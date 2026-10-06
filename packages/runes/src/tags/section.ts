@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
+import { createComponentRenderable, createContentModelSchema, renderNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
 
@@ -48,9 +48,7 @@ export const section = createContentModelSchema({
 		const header = new RenderableNodeCursor(
 			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
 		);
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		).wrap('div');
+		const body = renderNodes(resolved.body, config).wrap('div');
 
 		const align = (attrs.align as string) || 'start';
 		const alignMeta = new Tag('meta', { content: align });

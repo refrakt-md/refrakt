@@ -4,7 +4,9 @@ const { Ast, Tag } = Markdoc;
 import {
 	createComponentRenderable,
 	createContentModelSchema,
+	bodyOnly,
 	asNodes,
+	renderNodes,
 	RenderableNodeCursor,
 	pageSectionProperties,
 } from '@refrakt-md/runes';
@@ -17,16 +19,11 @@ export const changelogRelease = createContentModelSchema({
 		version: { type: String, required: false },
 		date: { type: String, required: false },
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const versionTag = new Tag('h3', {}, [attrs.version ?? '']);
 		const dateTag = new Tag('time', {}, [attrs.date ?? '']);
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		).wrap('div');
+		const body = renderNodes(resolved.body, config).wrap('div');
 
 		return createComponentRenderable({
 			rune: 'changelog-release',
@@ -70,9 +67,7 @@ export const changelog = createContentModelSchema({
 		},
 	}),
 	transform(resolved, attrs, config) {
-		const headerNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
-		);
+		const headerNodes = renderNodes(resolved.header, config);
 		const projectMeta = new Tag('meta', { content: attrs.project ?? '' });
 
 		// Convert resolved sections to changelog-release tag nodes

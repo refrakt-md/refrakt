@@ -1,11 +1,9 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
 	createComponentRenderable,
-	asNodes,
-	RenderableNodeCursor,
+	renderNodes,
 } from '@refrakt-md/runes';
 import { parseDuration } from '../duration.js';
 
@@ -88,9 +86,7 @@ export const audio = createContentModelSchema({
 		}
 
 		// Transform description
-		const descNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.description), config) as RenderableTreeNode[],
-		);
+		const descNodes = renderNodes(resolved.description, config);
 
 		// Meta tags for identity transform
 		const waveformMeta = waveform ? new Tag('meta', { content: 'true' }) : null;

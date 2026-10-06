@@ -1,11 +1,11 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
+	bodyOnly,
 	createComponentRenderable,
-	asNodes,
-	RenderableNodeCursor,
+	renderNodes,
+	fieldMetas,
 } from '@refrakt-md/runes';
 
 const methodType = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'] as const;
@@ -35,29 +35,20 @@ export const api = createContentModelSchema({
 			description: 'Authentication scheme required for this endpoint (e.g. "Bearer", "API Key").',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
-		const children = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
-
-		const methodMeta = new Tag('meta', { content: attrs.method ?? 'GET' });
-		const pathMeta = new Tag('meta', { content: attrs.path ?? '' });
-		const authMeta = new Tag('meta', { content: attrs.auth ?? '' });
+		const children = renderNodes(resolved.body, config);
 
 		const bodyDiv = children.wrap('div');
 
 		return createComponentRenderable({
 			rune: 'api',
 			tag: 'article',
-			properties: {
-				method: methodMeta,
-				path: pathMeta,
-				auth: authMeta,
-			},
+			properties: fieldMetas(attrs, config, {
+				method: 'GET',
+				path: '',
+				auth: '',
+			}),
 			refs: {
 				body: bodyDiv,
 			},

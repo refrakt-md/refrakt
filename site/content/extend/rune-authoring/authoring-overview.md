@@ -57,10 +57,13 @@ Every core rune has four parts. Here's the Hint rune as an example (core rune �
 
 ```typescript
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
-import { RenderableNodeCursor } from '../lib/renderable.js';
+import {
+  createContentModelSchema,
+  bodyOnly,
+  createComponentRenderable,
+  renderNodes,
+} from '../lib/index.js';
 
 const hintType = ['caution', 'check', 'note', 'warning'] as const;
 
@@ -68,17 +71,10 @@ export const hint = createContentModelSchema({
   attributes: {
     type: { type: String, matches: hintType.slice(), errorLevel: 'critical', description: 'Visual style: caution, check, note, or warning' },
   },
-  contentModel: {
-    type: 'sequence',
-    fields: [
-      { name: 'body', match: 'any', optional: true, greedy: true },
-    ],
-  },
+  contentModel: bodyOnly(),
   transform(resolved, attrs, config) {
     const hintType = new Tag('meta', { content: attrs.type ?? 'note' });
-    const body = new RenderableNodeCursor(
-      Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-    );
+    const body = renderNodes(resolved.body, config);
     const bodyDiv = body.wrap('div');
 
     return createComponentRenderable({
@@ -91,7 +87,7 @@ export const hint = createContentModelSchema({
       refs: {
         body: bodyDiv.tag('div'),
       },
-      children: [hintType, bodyDiv.next()],
+      children: [bodyDiv.next()],
     });
   },
 });
@@ -99,8 +95,9 @@ export const hint = createContentModelSchema({
 
 Key points:
 - `createContentModelSchema` defines the rune with declarative attributes and content model
-- `contentModel` declares how children are resolved (here, a simple greedy body)
-- `transform()` receives resolved content, wraps it, creates a meta tag, and calls `createComponentRenderable`
+- `contentModel` declares how children are resolved — `bodyOnly()` is the preset for the common case of one greedy `body` field
+- `transform()` receives resolved content, renders it (`renderNodes` transforms a resolved field and returns a cursor over the result), wraps it, creates a meta tag, and calls `createComponentRenderable`
+- A meta in `properties` is not also listed in `children`: its value travels in the `data-rune-fields` bag. When every property is a plain attribute read, `fieldMetas(attrs, config, { status: 'draft' })` builds the whole map from one declaration, each key reading the attribute of the same name
 - The rune's identity (`rune: 'hint'`) is passed inline — no separate type-definition file is needed
 - `properties` carry metadata (consumed by engine for modifiers; each becomes a `data-field` on the wrapped tag)
 - `refs` label structural elements (engine adds BEM element classes via `data-name`)

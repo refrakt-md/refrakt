@@ -4,7 +4,9 @@ const { Tag } = Markdoc;
 import {
 	createComponentRenderable,
 	createContentModelSchema,
+	bodyOnly,
 	asNodes,
+	renderNodes,
 	pageSectionProperties,
 	resolveImageScheme,
 	LAYOUT,
@@ -27,16 +29,11 @@ export const castMember = createContentModelSchema({
 		role: { type: String, required: false, description: 'Job title or role held by this member.' },
 		image: { type: String, required: false, description: 'Portrait image URL.' },
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
 		const roleTag = new Tag('span', {}, [attrs.role ?? '']);
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		).wrap('div');
+		const body = renderNodes(resolved.body, config).wrap('div');
 
 		const children: any[] = [];
 
@@ -110,9 +107,7 @@ export const cast = createContentModelSchema({
 		],
 	},
 	transform(resolved, attrs, config) {
-		const header = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
-		);
+		const header = renderNodes(resolved.header, config);
 		// List-shorthand emits cast-member tags via the itemModel; explicit
 		// {% cast-member %} children come through `items`. Both feed the same list.
 		const allMembers = [...asNodes(resolved.members), ...asNodes(resolved.items)];

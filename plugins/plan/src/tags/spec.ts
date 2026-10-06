@@ -1,11 +1,10 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
 	createComponentRenderable,
-	asNodes,
-	RenderableNodeCursor,
+	renderNodes,
+	fieldMetas,
 } from '@refrakt-md/runes';
 import { stripHorizontalRules } from '../util.js';
 import { VALID_STATUS } from '../commands/enums.js';
@@ -56,25 +55,9 @@ export const spec = createContentModelSchema({
 		],
 	},
 	transform(resolved, attrs, config) {
-		const titleNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.title), config) as RenderableTreeNode[],
-		);
-		const summaryNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.summary), config) as RenderableTreeNode[],
-		);
-		const bodyNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
-
-		const idMeta = new Tag('meta', { content: attrs.id ?? '' });
-		const statusMeta = new Tag('meta', { content: attrs.status ?? 'draft' });
-		const versionMeta = new Tag('meta', { content: attrs.version ?? '' });
-		const supersedesMeta = new Tag('meta', { content: attrs.supersedes ?? '' });
-		const releasedInMeta = new Tag('meta', { content: attrs['released-in'] ?? '' });
-		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
-		const fileVars = config.variables?.file as { created?: string; modified?: string } | undefined;
-		const createdMeta = new Tag('meta', { content: attrs.created || fileVars?.created || '' });
-		const modifiedMeta = new Tag('meta', { content: attrs.modified || fileVars?.modified || '' });
+		const titleNodes = renderNodes(resolved.title, config);
+		const summaryNodes = renderNodes(resolved.summary, config);
+		const bodyNodes = renderNodes(resolved.body, config);
 
 		const title = titleNodes.wrap('header');
 		const blurb = summaryNodes.count() > 0 ? summaryNodes.wrap('div').next() : undefined;
@@ -87,16 +70,16 @@ export const spec = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'spec',
 			tag: 'article',
-			properties: {
-				id: idMeta,
-				status: statusMeta,
-				version: versionMeta,
-				supersedes: supersedesMeta,
-				'released-in': releasedInMeta,
-				tags: tagsMeta,
-				created: createdMeta,
-				modified: modifiedMeta,
-			},
+			properties: fieldMetas(attrs, config, {
+				id: '',
+				status: 'draft',
+				version: '',
+				supersedes: '',
+				'released-in': '',
+				tags: '',
+				created: { from: ['attrs.created', 'file.created'], default: '' },
+				modified: { from: ['attrs.modified', 'file.modified'], default: '' },
+			}),
 			refs: {
 				title: title.tag('header'),
 				blurb,

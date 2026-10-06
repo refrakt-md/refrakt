@@ -3,6 +3,7 @@ import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
+	bodyOnly,
 	createComponentRenderable,
 	asNodes,
 	extractText,
@@ -111,10 +112,7 @@ export const typography = createContentModelSchema({
 			description: 'Enable/disable the full character set display for each specimen.',
 		},
 	},
-	contentModel: {
-		type: 'sequence' as const,
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs) {
 		const children = asNodes(resolved.body) as Node[];
 

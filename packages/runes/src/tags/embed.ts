@@ -1,8 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
-import { RenderableNodeCursor } from '../lib/renderable.js';
+import { createContentModelSchema, createComponentRenderable, renderNodes } from '../lib/index.js';
 
 const aspectType = ['16:9', '4:3', '1:1', 'auto'] as const;
 
@@ -129,9 +127,7 @@ export const embed = createContentModelSchema({
 		// no field-meta is emitted.
 		const providerMeta = new Tag('meta', { content: detected.provider });
 
-		const fallback = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.fallback), config) as RenderableTreeNode[],
-		).wrap('div');
+		const fallback = renderNodes(resolved.fallback, config).wrap('div');
 		const fallbackDiv = fallback.tag('div');
 
 		const children: any[] = [];

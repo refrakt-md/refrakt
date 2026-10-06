@@ -1,8 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
-import { RenderableNodeCursor } from '../lib/renderable.js';
+import {
+	createContentModelSchema,
+	bodyOnly,
+	createComponentRenderable,
+	renderNodes,
+	fieldMetas,
+} from '../lib/index.js';
 
 const variantType = ['sidenote', 'footnote', 'tooltip'] as const;
 
@@ -22,23 +26,17 @@ export const sidenote = createContentModelSchema({
 			description: 'Display style: sidenote, footnote, or tooltip',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
-		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'sidenote' });
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const body = renderNodes(resolved.body, config);
 		const bodyDiv = body.wrap('div');
 
 		return createComponentRenderable({
 			rune: 'sidenote',
 			tag: 'aside',
-			properties: {
-				variant: variantMeta,
-			},
+			properties: fieldMetas(attrs, config, {
+				variant: 'sidenote',
+			}),
 			refs: {
 				body: bodyDiv,
 			},

@@ -1,6 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Tag, Node, RenderableTreeNode, SchemaAttribute } from '@markdoc/markdoc';
-import { createContentModelSchema } from '../lib/index.js';
+import { createContentModelSchema, bodyOnly } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { registerAttributePreset } from '../attribute-presets.js';
 
@@ -59,10 +59,7 @@ registerAttributePreset(splitLayoutAttributes, {
 export const SplitLayoutModel = splitLayoutAttributes;
 
 export const linkItem = createContentModelSchema({
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const bodyNodes = resolved.body
 			? ((Array.isArray(resolved.body) ? resolved.body : [resolved.body]) as Node[])

@@ -1,11 +1,10 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
+import type { RenderableTreeNodes } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
 	createComponentRenderable,
-	asNodes,
-	RenderableNodeCursor,
+	renderNodes,
 	SCHEMA_TYPE_EXPLICIT,
 	textContent,
 } from '@refrakt-md/runes';
@@ -135,9 +134,7 @@ export const track = createContentModelSchema({
 		const typeValue = explicitType ?? 'song';
 
 		// Transform title
-		const titleNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.title), config) as RenderableTreeNode[],
-		);
+		const titleNodes = renderNodes(resolved.title, config);
 
 		// Extract track name from title heading or paragraph
 		let nameText = '';
@@ -150,9 +147,7 @@ export const track = createContentModelSchema({
 		}
 
 		// Transform body content (may contain chapters/lyrics as lists)
-		const bodyNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const bodyNodes = renderNodes(resolved.body, config);
 
 		// Build track element
 		const nameTag = new Tag('span', { 'data-name': 'track-name' }, [nameText]);
