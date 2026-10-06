@@ -42,7 +42,7 @@ export const sidenote = createContentModelSchema({
 			refs: {
 				body: bodyDiv,
 			},
-			children: [variantMeta, bodyDiv.next()],
+			children: [bodyDiv.next()],
 		});
 	},
 });

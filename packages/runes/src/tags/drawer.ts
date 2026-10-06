@@ -176,12 +176,7 @@ export const drawer = createContentModelSchema({
 				body: body.tag('div'),
 				...(footer ? { footer: footer.tag('footer') } : {}),
 			},
-			children: [
-				...Object.values(properties),
-				header,
-				body.next(),
-				...(footer ? [footer.next()] : []),
-			],
+			children: [header, body.next(), ...(footer ? [footer.next()] : [])],
 		});
 
 		// `data-drawer-id` carries the author-supplied id (before the

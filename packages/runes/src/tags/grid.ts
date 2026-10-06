@@ -106,21 +106,10 @@ export const grid = createContentModelSchema({
 		const aspectMeta = attrs.aspect ? new Tag('meta', { content: attrs.aspect }) : undefined;
 		const stackMeta = attrs.stack ? new Tag('meta', { content: attrs.stack }) : undefined;
 
-		const metas: any[] = [
-			ratioMeta,
-			gapMeta,
-			valignMeta,
-			collapseMeta,
-			modeMeta,
-			minMeta,
-			aspectMeta,
-			stackMeta,
-		].filter(Boolean);
-
 		return createComponentRenderable({
 			rune: 'grid',
 			tag: 'section',
-			children: [...metas, layout],
+			children: [layout],
 			properties: {
 				...(modeMeta ? { mode: modeMeta } : {}),
 				ratio: ratioMeta,

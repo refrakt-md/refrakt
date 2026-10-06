@@ -125,7 +125,7 @@ const mapPin = createContentModelSchema({
 				name: nameTag,
 				description: descriptionTag,
 			},
-			children: [nameTag, descriptionTag, latMeta, lngMeta, addressMeta, urlMeta, groupMeta],
+			children: [nameTag, descriptionTag],
 		});
 	},
 });
@@ -262,17 +262,7 @@ export const map = createContentModelSchema({
 				pin: pins,
 			},
 			refs: { pins: pinsList },
-			children: [
-				zoomMeta,
-				centerMeta,
-				variantMeta,
-				heightMeta,
-				providerMeta,
-				interactiveMeta,
-				routeMeta,
-				clusterMeta,
-				pinsList,
-			],
+			children: [pinsList],
 		});
 		// Emit as the rf-map custom element (the web component upgrades it).
 		node.name = 'rf-map';

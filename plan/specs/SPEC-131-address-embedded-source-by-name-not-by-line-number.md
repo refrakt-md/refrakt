@@ -1,4 +1,4 @@
-{% spec id="SPEC-131" status="implemented" tags="snippet, file-ref, docs, drift, tooling, runes" %}
+{% spec id="SPEC-131" status="shipped" tags="snippet, file-ref, docs, drift, tooling, runes" released-in="v0.37.0" %}
 
 # Address embedded source by name, not by line number
 

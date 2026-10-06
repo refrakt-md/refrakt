@@ -214,8 +214,7 @@ export const symbol = createContentModelSchema({
 		// SPEC-081: emit flat `data-name` header slots — `layout` wraps
 		// eyebrow/headline/blurb in the preamble <header>, so each is
 		// individually addressable (fixes the buried-preamble bug).
-		const children: any[] = [kindMeta, langMeta, sinceMeta, deprecatedMeta, sourceMeta];
-		children.push(...header.toArray());
+		const children: any[] = [...header.toArray()];
 		children.push(bodyDiv.next());
 
 		return createComponentRenderable({

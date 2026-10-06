@@ -125,7 +125,7 @@ export const cast = createContentModelSchema({
 		const members = body.tag('li').typeof('CastMember');
 		const membersList = new Tag('ul', {}, members.toArray());
 
-		const children: any[] = [layoutMeta];
+		const children: any[] = [];
 		if (header.count() > 0) {
 			children.push(header.wrap('header').next());
 		}

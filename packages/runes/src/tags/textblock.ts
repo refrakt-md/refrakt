@@ -45,11 +45,6 @@ export const textblock = createContentModelSchema({
 		const alignMeta = align !== 'left' ? new Tag('meta', { content: align }) : undefined;
 
 		const body = children.wrap('div');
-		const childNodes: any[] = [];
-		if (columnsMeta) childNodes.push(columnsMeta);
-		if (leadMeta) childNodes.push(leadMeta);
-		if (alignMeta) childNodes.push(alignMeta);
-		childNodes.push(body.next());
 
 		return createComponentRenderable({
 			rune: 'text-block',
@@ -62,7 +57,7 @@ export const textblock = createContentModelSchema({
 			refs: {
 				body: body.tag('div'),
 			},
-			children: childNodes,
+			children: [body.next()],
 		});
 	},
 });

@@ -74,15 +74,7 @@ export const bond = createContentModelSchema({
 				connector,
 				body: body.tag('div'),
 			},
-			children: [
-				fromTag,
-				connector,
-				toTag,
-				bondTypeMeta,
-				statusMeta,
-				bidirectionalMeta,
-				body.next(),
-			],
+			children: [fromTag, connector, toTag, body.next()],
 		});
 	},
 });

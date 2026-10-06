@@ -129,7 +129,6 @@ export const testimonial = createContentModelSchema({
 		if (quoteTag) resultChildren.push(quoteTag);
 		if (authorNameTag) resultChildren.push(authorNameTag);
 		if (authorRoleTag) resultChildren.push(authorRoleTag);
-		if (ratingMeta) resultChildren.push(ratingMeta);
 		resultChildren.push(variantMeta);
 		if (avatarTag) resultChildren.push(avatarTag);
 

@@ -58,8 +58,7 @@ export const planHistory = createContentModelSchema({
 		const sentinelMeta = new Tag('meta', { 'data-field': PLAN_HISTORY_SENTINEL, content: 'true' });
 		const placeholder = new Tag('div', {}, []);
 
-		const children: any[] = [limitMeta, typeMeta, groupMeta, sentinelMeta, placeholder];
-		if (idMeta) children.unshift(idMeta);
+		const children: any[] = [sentinelMeta, placeholder];
 		if (sinceMeta) children.splice(-1, 0, sinceMeta);
 
 		return createComponentRenderable({

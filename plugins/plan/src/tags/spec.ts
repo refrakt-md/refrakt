@@ -102,19 +102,7 @@ export const spec = createContentModelSchema({
 				blurb,
 				body: bodyDiv,
 			},
-			children: [
-				idMeta,
-				statusMeta,
-				versionMeta,
-				supersedesMeta,
-				releasedInMeta,
-				tagsMeta,
-				createdMeta,
-				modifiedMeta,
-				title.next(),
-				...(blurb ? [blurb] : []),
-				bodyDiv,
-			],
+			children: [title.next(), ...(blurb ? [blurb] : []), bodyDiv],
 		});
 	},
 });

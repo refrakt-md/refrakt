@@ -137,21 +137,7 @@ export const bug = createContentModelSchema({
 				blurb,
 				body: bodyDiv,
 			},
-			children: [
-				idMeta,
-				statusMeta,
-				severityMeta,
-				assigneeMeta,
-				milestoneMeta,
-				sourceMeta,
-				prMeta,
-				tagsMeta,
-				createdMeta,
-				modifiedMeta,
-				title.next(),
-				...(blurb ? [blurb] : []),
-				bodyDiv,
-			],
+			children: [title.next(), ...(blurb ? [blurb] : []), bodyDiv],
 		});
 	},
 });

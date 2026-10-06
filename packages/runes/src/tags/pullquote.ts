@@ -46,8 +46,6 @@ export const pullquote = createContentModelSchema({
 		const quoteChildren =
 			blockquote.count() > 0 ? blockquote.limit(1).toArray() : children.tag('p').toArray();
 
-		const childNodes: any[] = [...quoteChildren, alignMeta, variantMeta];
-
 		return createComponentRenderable({
 			rune: 'pull-quote',
 			tag: 'blockquote',
@@ -55,7 +53,7 @@ export const pullquote = createContentModelSchema({
 				align: alignMeta,
 				variant: variantMeta,
 			},
-			children: childNodes,
+			children: quoteChildren,
 		});
 	},
 });

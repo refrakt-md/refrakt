@@ -74,10 +74,6 @@ export const mediatext = createContentModelSchema({
 		const mediaTag = new Tag('div', {}, mediaChildren);
 		const bodyTag = new Tag('div', {}, bodyChildren);
 
-		const childNodes: any[] = [alignMeta, ratioMeta];
-		if (wrapMeta) childNodes.push(wrapMeta);
-		childNodes.push(mediaTag, bodyTag);
-
 		return createComponentRenderable({
 			rune: 'media-text',
 			tag: 'div',
@@ -90,7 +86,7 @@ export const mediatext = createContentModelSchema({
 				media: mediaTag,
 				body: bodyTag,
 			},
-			children: childNodes,
+			children: [mediaTag, bodyTag],
 		});
 	},
 });

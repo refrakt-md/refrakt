@@ -61,7 +61,7 @@ export const api = createContentModelSchema({
 			refs: {
 				body: bodyDiv,
 			},
-			children: [methodMeta, pathMeta, authMeta, bodyDiv.next()],
+			children: [bodyDiv.next()],
 		});
 	},
 });

@@ -97,16 +97,7 @@ export const milestone = createContentModelSchema({
 				blurb,
 				body: bodyDiv,
 			},
-			children: [
-				nameMeta,
-				targetMeta,
-				statusMeta,
-				createdMeta,
-				modifiedMeta,
-				...(title ? [title.next()] : []),
-				...(blurb ? [blurb] : []),
-				bodyDiv,
-			],
+			children: [...(title ? [title.next()] : []), ...(blurb ? [blurb] : []), bodyDiv],
 		});
 	},
 });

@@ -64,8 +64,7 @@ export const gallery = createContentModelSchema({
 
 		const itemsContainer = new Tag('div', { 'data-name': 'items' }, items);
 
-		const metas: any[] = [layoutMeta, lightboxMeta, columnsMeta].filter(Boolean);
-		const childNodes: any[] = [...metas, itemsContainer];
+		const childNodes: any[] = [itemsContainer];
 		if (captionTag) childNodes.push(captionTag);
 
 		return createComponentRenderable({

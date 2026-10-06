@@ -56,7 +56,7 @@ export const section = createContentModelSchema({
 		const alignMeta = new Tag('meta', { content: align });
 
 		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
-		const children = [alignMeta, ...headerContent, body.next()];
+		const children = [...headerContent, body.next()];
 
 		return createComponentRenderable({
 			rune: 'section',

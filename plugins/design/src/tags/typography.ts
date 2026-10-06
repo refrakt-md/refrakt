@@ -146,12 +146,7 @@ export const typography = createContentModelSchema({
 		const showCharsetMeta = new Tag('meta', { content: String(attrs.showCharset) });
 
 		// Build complete presentational Tag tree
-		const topChildren: (string | InstanceType<typeof Tag>)[] = [
-			titleMeta,
-			showSizesMeta,
-			showWeightsMeta,
-			showCharsetMeta,
-		];
+		const topChildren: (string | InstanceType<typeof Tag>)[] = [];
 
 		// Google Fonts links (rendered in body — browsers handle this fine per HTML5)
 		const fontsUrl = buildFontsUrl(specimens);

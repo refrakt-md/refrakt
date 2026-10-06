@@ -245,7 +245,7 @@ const formField = createContentModelSchema({
 			refs: {
 				body,
 			},
-			children: [fieldTypeMeta, body],
+			children: [body],
 		});
 	},
 });
@@ -504,15 +504,7 @@ export const form = createContentModelSchema({
 				field: fields,
 			},
 			refs: { body: bodyContainer },
-			children: [
-				actionMeta,
-				methodMeta,
-				successMeta,
-				errorMeta,
-				variantMeta,
-				honeypotMeta,
-				bodyContainer.next(),
-			],
+			children: [bodyContainer.next()],
 		});
 	},
 });

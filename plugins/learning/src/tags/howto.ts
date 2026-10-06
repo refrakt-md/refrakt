@@ -118,8 +118,6 @@ export const howto = createContentModelSchema({
 		// SPEC-081: emit flat `data-name` slots — the `layout` config groups them
 		// into the content column + preamble header.
 		const children: any[] = [
-			estimatedTimeMeta,
-			difficultyMeta,
 			...header.toArray(),
 			...(tools.length > 0 ? [toolsList] : []),
 			stepsList,

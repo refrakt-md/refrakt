@@ -126,7 +126,7 @@ export const storyboard = createContentModelSchema({
 				columns: columnsMeta,
 			},
 			refs: { panels: panelsContainer },
-			children: [variantMeta, columnsMeta, panelsContainer.next()],
+			children: [panelsContainer.next()],
 		});
 	},
 });

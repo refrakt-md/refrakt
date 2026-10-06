@@ -85,14 +85,7 @@ export const event = createContentModelSchema({
 		// SPEC-081: emit flat `data-name` header slots — `layout` wraps
 		// eyebrow/headline/blurb in the preamble <header>, so each is
 		// individually addressable (fixes the buried-preamble bug).
-		const resultChildren: any[] = [
-			dateMeta,
-			endDateMeta,
-			locationMeta,
-			urlMeta,
-			...header.toArray(),
-			bodyDiv.next(),
-		];
+		const resultChildren: any[] = [...header.toArray(), bodyDiv.next()];
 
 		return createComponentRenderable({
 			rune: 'event',

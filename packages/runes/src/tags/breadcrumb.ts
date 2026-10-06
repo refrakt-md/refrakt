@@ -79,7 +79,7 @@ export const breadcrumb = createContentModelSchema({
 				refs: {
 					items: emptyList,
 				},
-				children: [separatorMeta, sentinelMeta, emptyList],
+				children: [sentinelMeta, emptyList],
 			});
 		}
 
@@ -146,7 +146,7 @@ export const breadcrumb = createContentModelSchema({
 			refs: {
 				items: itemsList,
 			},
-			children: [separatorMeta, itemsList],
+			children: [itemsList],
 		});
 	},
 });

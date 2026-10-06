@@ -1,4 +1,4 @@
-{% milestone name="v0.38.0" status="planning" %}
+{% milestone name="v0.38.0" status="active" %}
 
 # v0.38.0 — Rune transform consolidation
 
@@ -45,12 +45,12 @@ what goes in it.
 
 ## What lands
 
-Ten items in three groups, plus one unrelated rider:
+Eleven items: nine in three groups, plus two riders:
 
 - **Deletion** (3) — the inert metas, the dead schema channel, the redundant guards. Output-identical; `contracts --check` and `seo:baseline:check` must report no diff.
 - **Consolidation** (3) — one `extractText`, `renderNodes` + `bodyOnly`, `fieldMetas` + `groupByHeading`.
 - **Declarations that arrive** (3) — the mixed-field fix, `playlist` adopting it, and the reference projecting the item grammar.
-- **Rider** (1) — {% ref "BUG-026" /%}, `plan migrate ids` renumbering the published claimant. Unrelated to the rune work; small, self-contained, and already understood.
+- **Riders** (2) — {% ref "BUG-026" /%}, `plan migrate ids` renumbering the published claimant: unrelated to the rune work, small, self-contained, and already understood. And {% ref "WORK-608" /%}, replacing the three function-typed `styles[…].transform` helpers with the named-transform enum: surfaced by {% ref "SPEC-143" /%} (still a draft) but not waiting on it. Eleven call sites resolve to three helpers a declarative sibling already covers, and removing them leaves `postTransform` as the only function-typed field in `RuneConfig`. `contracts --check` must report no drift.
 
 ## The acceptance test does most of the work
 

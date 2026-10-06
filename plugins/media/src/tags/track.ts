@@ -159,7 +159,6 @@ export const track = createContentModelSchema({
 
 		// Meta tags for identity transform
 		const typeMeta = new Tag('meta', { content: typeValue });
-		children.push(typeMeta);
 
 		if (artist) {
 			children.push(new Tag('span', { 'data-name': 'track-artist' }, [artist]));
@@ -192,18 +191,6 @@ export const track = createContentModelSchema({
 		const numberMeta =
 			number !== undefined ? new Tag('meta', { content: String(number) }) : undefined;
 		const dateMeta = date ? new Tag('meta', { content: date }) : undefined;
-
-		// WORK-572 — `artistMeta` and `durationMeta` were declared in `properties`
-		// and `schema` but never pushed here, so they were stamped onto nodes that
-		// were not in the tree: a standalone `{% track artist="Radiohead"
-		// duration="4:01" %}` published its name and nothing else. The visible
-		// `track-artist` / `track-duration` spans carry no `property=`, so
-		// `collectProperties` never saw a value either.
-		if (artistMeta) children.push(artistMeta);
-		if (durationMeta) children.push(durationMeta);
-		if (urlMeta) children.push(urlMeta);
-		if (numberMeta) children.push(numberMeta);
-		if (dateMeta) children.push(dateMeta);
 
 		const renderable = createComponentRenderable({
 			rune: 'track',

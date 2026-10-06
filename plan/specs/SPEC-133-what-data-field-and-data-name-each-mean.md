@@ -1,4 +1,4 @@
-{% spec id="SPEC-133" status="implemented" source="SPEC-130" tags="runes, transform, engine, contract, data-channel, bem" %}
+{% spec id="SPEC-133" status="shipped" source="SPEC-130" tags="runes, transform, engine, contract, data-channel, bem" released-in="v0.35.0" %}
 
 # What `data-field` and `data-name` each mean
 

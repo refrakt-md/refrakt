@@ -218,14 +218,7 @@ export const tier = createContentModelSchema({
 				name: nameTag,
 				price: priceTag,
 			},
-			children: [
-				nameTag,
-				priceTag,
-				parsedPriceMeta,
-				resolvedCurrencyMeta,
-				...(currencyMeta ? [currencyMeta] : []),
-				body.next(),
-			],
+			children: [nameTag, priceTag, body.next()],
 		});
 	},
 });

@@ -42,7 +42,7 @@ export const hint = createContentModelSchema({
 			refs: {
 				body: bodyDiv.tag('div'),
 			},
-			children: [hintType, bodyDiv.next()],
+			children: [bodyDiv.next()],
 		});
 	},
 });
