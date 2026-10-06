@@ -1,4 +1,4 @@
-{% work id="WORK-598" status="done" priority="high" complexity="simple" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dead-code" %}
+{% work id="WORK-598" status="done" priority="high" complexity="simple" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dead-code" pr="refrakt-md/refrakt#654" %}
 
 # Drop inert metas from rune children arrays
 
