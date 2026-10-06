@@ -5,9 +5,11 @@ import {
 	createContentModelSchema,
 	createComponentRenderable,
 	asNodes,
+	renderNodes,
 	RenderableNodeCursor,
 	pageSectionProperties,
 	unwrapParagraphImages,
+	fieldMetas,
 } from '@refrakt-md/runes';
 
 /**
@@ -84,10 +86,7 @@ export const organization = createContentModelSchema({
 				Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
 			),
 		);
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
-		const typeMeta = new Tag('meta', { content: attrs.type ?? 'Organization' });
+		const body = renderNodes(resolved.body, config);
 		const sectionProps = pageSectionProperties(header);
 
 		const bodyDiv = body.wrap('div');
@@ -96,9 +95,9 @@ export const organization = createContentModelSchema({
 			rune: 'organization',
 			tag: 'article',
 			property: 'contentSection',
-			properties: {
-				type: typeMeta,
-			},
+			properties: fieldMetas(attrs, config, {
+				type: 'Organization',
+			}),
 			refs: {
 				...sectionProps,
 				body: bodyDiv,

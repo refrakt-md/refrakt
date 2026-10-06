@@ -1,7 +1,13 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
+import type { Node } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	bodyOnly,
+	asNodes,
+	renderNodes,
+} from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
 export const conversationMessage = createContentModelSchema({
@@ -9,16 +15,11 @@ export const conversationMessage = createContentModelSchema({
 		speaker: { type: String, required: false },
 		align: { type: String, required: false, matches: ['left', 'right'] },
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const speakerTag = new Tag('span', {}, [attrs.speaker ?? '']);
 		const alignMeta = new Tag('meta', { content: attrs.align ?? 'left' });
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		).wrap('div');
+		const body = renderNodes(resolved.body, config).wrap('div');
 
 		return createComponentRenderable({
 			rune: 'conversation-message',

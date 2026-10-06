@@ -1,8 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
-import { RenderableNodeCursor } from '../lib/renderable.js';
+import {
+	createContentModelSchema,
+	bodyOnly,
+	createComponentRenderable,
+	renderNodes,
+} from '../lib/index.js';
 
 const displayValues = ['fraction', 'percent', 'none'] as const;
 const sentimentValues = ['positive', 'caution', 'negative'] as const;
@@ -44,10 +48,7 @@ export const progress = createContentModelSchema({
 			description: 'Tone cue: positive / caution / negative. Absent → the neutral primary fill.',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const value = attrs.value != null ? Number(attrs.value) : undefined;
 		const max = attrs.max != null ? Number(attrs.max) : undefined;
@@ -70,9 +71,7 @@ export const progress = createContentModelSchema({
 		if (display === 'fraction' && hasRatio) readout = `${value}/${max}`;
 		else if (display === 'percent') readout = `${pct}%`;
 
-		const labelNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const labelNodes = renderNodes(resolved.body, config);
 		const labelArr = labelNodes.toArray();
 		const labelText = textContent(labelArr).trim();
 

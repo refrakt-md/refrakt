@@ -4,7 +4,9 @@ const { Ast, Tag } = Markdoc;
 import {
 	createComponentRenderable,
 	createContentModelSchema,
+	bodyOnly,
 	asNodes,
+	renderNodes,
 	isMediaNode,
 } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
@@ -18,14 +20,9 @@ export const storyboardPanelMediaSlots = { image: 'cover' } as const;
 
 export const storyboardPanel = createContentModelSchema({
 	mediaSlots: storyboardPanelMediaSlots,
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
-		const children = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const children = renderNodes(resolved.body, config);
 
 		// The panel image is an <img> or a scheme-resolved <svg> (placeholder:/icon:).
 		const image = (

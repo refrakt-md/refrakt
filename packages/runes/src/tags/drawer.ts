@@ -22,7 +22,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import {
+	createContentModelSchema,
+	bodyOnly,
+	createComponentRenderable,
+	asNodes,
+} from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
 /** Marker attribute placed on the title heading when `headingLevel` is omitted.
@@ -94,10 +99,7 @@ export const drawer = createContentModelSchema({
 				'Panel size. "sm" / "md" (default) / "lg" — width for left/right sides, height for top/bottom.',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const drawerId = attrs.id;
 		const titleText = attrs.title;

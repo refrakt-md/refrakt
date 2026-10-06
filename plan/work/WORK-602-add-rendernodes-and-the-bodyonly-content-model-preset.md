@@ -1,4 +1,4 @@
-{% work id="WORK-602" status="ready" priority="medium" complexity="simple" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dx" %}
+{% work id="WORK-602" status="in-progress" priority="medium" complexity="simple" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dx" %}
 
 # Add `renderNodes` and the `bodyOnly` content-model preset
 

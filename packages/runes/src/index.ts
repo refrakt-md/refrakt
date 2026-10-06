@@ -96,6 +96,8 @@ export {
 	createContentModelSchema,
 	createComponentRenderable,
 	asNodes,
+	renderNodes,
+	bodyOnly,
 	schemaContentModels,
 	schemaRuneStructures,
 	declareUniversalPosture,
@@ -107,7 +109,11 @@ export {
 	selectRow,
 	findByName,
 	extractText,
+	groupByHeading,
+	fieldMetas,
 } from './lib/index.js';
+export type { GroupByHeadingHandlers } from './lib/index.js';
+export type { FieldMetaSpec, FieldMetaEntry, FieldMetaSource } from './lib/index.js';
 export type { RuneStructure, SectionRole } from './lib/index.js';
 export { describeSchemaRow, bySchemaProperty, collectSchemaRows, tableFor } from './schema-row.js';
 export type { ResolvedSchemaRow, SchemaPropertyRow } from './schema-row.js';

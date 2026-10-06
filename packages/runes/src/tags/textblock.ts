@@ -1,8 +1,11 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
-import { RenderableNodeCursor } from '../lib/renderable.js';
+import {
+	createContentModelSchema,
+	bodyOnly,
+	createComponentRenderable,
+	renderNodes,
+} from '../lib/index.js';
 
 const alignValues = ['left', 'center', 'right', 'justify'] as const;
 
@@ -24,14 +27,9 @@ export const textblock = createContentModelSchema({
 			description: 'Text alignment',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
-		const children = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const children = renderNodes(resolved.body, config);
 
 		// `dropcap` is now the universal SPEC-108 opt-in (gated on the prose register
 		// by the engine); textblock no longer declares it. `columns`/`lead`/`align`

@@ -1,11 +1,10 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
 	createComponentRenderable,
-	asNodes,
-	RenderableNodeCursor,
+	renderNodes,
+	fieldMetas,
 } from '@refrakt-md/runes';
 import { VALID_STATUS } from '../commands/enums.js';
 
@@ -51,25 +50,10 @@ export const milestone = createContentModelSchema({
 		],
 	},
 	transform(resolved, attrs, config) {
-		const titleNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.title), config) as RenderableTreeNode[],
-		);
-		const descNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.description), config) as RenderableTreeNode[],
-		);
-		const goalsNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.goals), config) as RenderableTreeNode[],
-		);
-		const notesNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.notes), config) as RenderableTreeNode[],
-		);
-
-		const nameMeta = new Tag('meta', { content: attrs.name ?? '' });
-		const targetMeta = new Tag('meta', { content: attrs.target ?? '' });
-		const statusMeta = new Tag('meta', { content: attrs.status ?? 'planning' });
-		const fileVars = config.variables?.file as { created?: string; modified?: string } | undefined;
-		const createdMeta = new Tag('meta', { content: attrs.created || fileVars?.created || '' });
-		const modifiedMeta = new Tag('meta', { content: attrs.modified || fileVars?.modified || '' });
+		const titleNodes = renderNodes(resolved.title, config);
+		const descNodes = renderNodes(resolved.description, config);
+		const goalsNodes = renderNodes(resolved.goals, config);
+		const notesNodes = renderNodes(resolved.notes, config);
 
 		const title = titleNodes.count() > 0 ? titleNodes.wrap('header') : undefined;
 		const blurb = descNodes.count() > 0 ? descNodes.wrap('div').next() : undefined;
@@ -85,13 +69,13 @@ export const milestone = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'milestone',
 			tag: 'section',
-			properties: {
-				name: nameMeta,
-				target: targetMeta,
-				status: statusMeta,
-				created: createdMeta,
-				modified: modifiedMeta,
-			},
+			properties: fieldMetas(attrs, config, {
+				name: '',
+				target: '',
+				status: 'planning',
+				created: { from: ['attrs.created', 'file.created'], default: '' },
+				modified: { from: ['attrs.modified', 'file.modified'], default: '' },
+			}),
 			refs: {
 				title: title?.tag('header'),
 				blurb,

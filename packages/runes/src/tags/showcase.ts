@@ -1,8 +1,11 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
-import { RenderableNodeCursor } from '../lib/renderable.js';
+import {
+	createContentModelSchema,
+	bodyOnly,
+	createComponentRenderable,
+	renderNodes,
+} from '../lib/index.js';
 
 const shadowValues = ['none', 'soft', 'hard', 'elevated'] as const;
 const bleedValues = ['none', 'top', 'bottom', 'both', 'end', 'bottom-end', 'top-end'] as const;
@@ -65,14 +68,9 @@ export const showcase = createContentModelSchema({
 			description: 'Position of content within the showcase area',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
-		const children = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const children = renderNodes(resolved.body, config);
 
 		const shadow = attrs.shadow ?? 'none';
 		const bleed = attrs.bleed ?? 'none';

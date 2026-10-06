@@ -1,4 +1,4 @@
-{% work id="WORK-603" status="ready" priority="medium" complexity="moderate" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dx" %}
+{% work id="WORK-603" status="in-progress" priority="medium" complexity="moderate" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dx" %}
 
 # Add `fieldMetas` and `groupByHeading`
 

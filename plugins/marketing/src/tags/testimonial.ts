@@ -1,11 +1,10 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
+	bodyOnly,
 	createComponentRenderable,
-	asNodes,
-	RenderableNodeCursor,
+	renderNodes,
 	isMediaNode,
 } from '@refrakt-md/runes';
 
@@ -61,17 +60,12 @@ export const testimonial = createContentModelSchema({
 				'Visual style: card with border, inline with text flow, or quote with large quotation marks',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	deprecations: {
 		layout: { newName: 'variant' },
 	},
 	transform(resolved, attrs, config) {
-		const children = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const children = renderNodes(resolved.body, config);
 
 		// Extract blockquote as the testimonial quote
 		let quoteTag: any;

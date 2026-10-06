@@ -4,6 +4,7 @@ const { Ast, Tag } = Markdoc;
 import {
 	createComponentRenderable,
 	createContentModelSchema,
+	bodyOnly,
 	RenderableNodeCursor,
 	asNodes,
 	unwrapParagraphImages,
@@ -71,10 +72,7 @@ export const bentoCell = createContentModelSchema({
 		},
 		href: { type: String, required: false },
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const all = asNodes(resolved.body);
 

@@ -3,6 +3,7 @@ import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
+	bodyOnly,
 	createComponentRenderable,
 	asNodes,
 	RenderableNodeCursor,
@@ -33,10 +34,7 @@ export const designContext = createContentModelSchema({
 			description: 'Named scope that identifies this token set for cross-page references.',
 		},
 	},
-	contentModel: {
-		type: 'sequence' as const,
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const children = asNodes(resolved.body) as Node[];
 

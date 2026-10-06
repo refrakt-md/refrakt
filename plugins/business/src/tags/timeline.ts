@@ -4,7 +4,9 @@ const { Tag } = Markdoc;
 import {
 	createComponentRenderable,
 	createContentModelSchema,
+	bodyOnly,
 	asNodes,
+	renderNodes,
 	RenderableNodeCursor,
 	pageSectionProperties,
 } from '@refrakt-md/runes';
@@ -36,16 +38,11 @@ export const timelineEntry = createContentModelSchema({
 			description: 'Short title or milestone name for the entry.',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const dateTag = new Tag('time', {}, [attrs.date ?? '']);
 		const labelTag = new Tag('span', {}, [attrs.label ?? '']);
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		).wrap('div');
+		const body = renderNodes(resolved.body, config).wrap('div');
 
 		return createComponentRenderable({
 			rune: 'timeline-entry',
@@ -120,9 +117,7 @@ export const timeline = createContentModelSchema({
 		},
 	}),
 	transform(resolved, attrs, config) {
-		const headerNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
-		);
+		const headerNodes = renderNodes(resolved.header, config);
 		// Combine explicit child tags (preamble items) with emitted section tags
 		const allItems = [...asNodes(resolved.items), ...asNodes(resolved.sections)];
 		const sectionNodes = new RenderableNodeCursor(

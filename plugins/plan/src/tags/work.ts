@@ -1,11 +1,10 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
 	createComponentRenderable,
-	asNodes,
-	RenderableNodeCursor,
+	renderNodes,
+	fieldMetas,
 } from '@refrakt-md/runes';
 import { slugify, buildSections } from '../util.js';
 import { VALID_STATUS, VALID_PRIORITY, VALID_COMPLEXITY } from '../commands/enums.js';
@@ -105,26 +104,8 @@ export const work = createContentModelSchema({
 		},
 	}),
 	transform(resolved, attrs, config) {
-		const titleNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.title), config) as RenderableTreeNode[],
-		);
-		const descNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.description), config) as RenderableTreeNode[],
-		);
-
-		const idMeta = new Tag('meta', { content: attrs.id ?? '' });
-		const statusMeta = new Tag('meta', { content: attrs.status ?? 'draft' });
-		const priorityMeta = new Tag('meta', { content: attrs.priority ?? 'medium' });
-		const complexityMeta = new Tag('meta', { content: attrs.complexity ?? 'unknown' });
-		const assigneeMeta = new Tag('meta', { content: attrs.assignee ?? '' });
-		const milestoneMeta = new Tag('meta', { content: attrs.milestone ?? '' });
-		const sourceMeta = new Tag('meta', { content: attrs.source ?? '' });
-		const supersedesMeta = new Tag('meta', { content: attrs.supersedes ?? '' });
-		const prMeta = new Tag('meta', { content: attrs.pr ?? '' });
-		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
-		const fileVars = config.variables?.file as { created?: string; modified?: string } | undefined;
-		const createdMeta = new Tag('meta', { content: attrs.created || fileVars?.created || '' });
-		const modifiedMeta = new Tag('meta', { content: attrs.modified || fileVars?.modified || '' });
+		const titleNodes = renderNodes(resolved.title, config);
+		const descNodes = renderNodes(resolved.description, config);
 
 		const title = titleNodes.wrap('header');
 		const blurb = descNodes.count() > 0 ? descNodes.wrap('div').next() : undefined;
@@ -137,20 +118,20 @@ export const work = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'work',
 			tag: 'article',
-			properties: {
-				id: idMeta,
-				status: statusMeta,
-				priority: priorityMeta,
-				complexity: complexityMeta,
-				assignee: assigneeMeta,
-				milestone: milestoneMeta,
-				source: sourceMeta,
-				supersedes: supersedesMeta,
-				pr: prMeta,
-				tags: tagsMeta,
-				created: createdMeta,
-				modified: modifiedMeta,
-			},
+			properties: fieldMetas(attrs, config, {
+				id: '',
+				status: 'draft',
+				priority: 'medium',
+				complexity: 'unknown',
+				assignee: '',
+				milestone: '',
+				source: '',
+				supersedes: '',
+				pr: '',
+				tags: '',
+				created: { from: ['attrs.created', 'file.created'], default: '' },
+				modified: { from: ['attrs.modified', 'file.modified'], default: '' },
+			}),
 			refs: {
 				title: title.tag('header'),
 				blurb,

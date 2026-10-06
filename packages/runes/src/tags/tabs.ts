@@ -2,7 +2,13 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import { headingsToList } from '../util.js';
-import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	bodyOnly,
+	asNodes,
+	renderNodes,
+} from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
 
@@ -11,10 +17,7 @@ export const tab = createContentModelSchema({
 		name: { type: String, required: true },
 		image: { type: String, required: false },
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		let tabCursor = new RenderableNodeCursor<RenderableTreeNode>([]);
 
@@ -26,9 +29,7 @@ export const tab = createContentModelSchema({
 
 		tabCursor = tabCursor.concat(new Tag('span', {}, [attrs.name ?? '']));
 
-		const panel = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const panel = renderNodes(resolved.body, config);
 
 		const name = tabCursor.tag('span');
 		const image = tabCursor.tag('svg');

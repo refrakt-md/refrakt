@@ -5,7 +5,7 @@ const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
 	createComponentRenderable,
-	asNodes,
+	renderNodes,
 	pageSectionProperties,
 	RenderableNodeCursor,
 	SplitLayoutModel,
@@ -398,9 +398,7 @@ export const playlist = createContentModelSchema({
 		// Transform any remaining body content, wrapped in a body slot.
 		let bodyDiv: RenderableNodeCursor<Markdoc.Tag> | undefined;
 		if (contentZone.body) {
-			const bodyNodes = new RenderableNodeCursor(
-				Markdoc.transform(asNodes(contentZone.body), config) as RenderableTreeNode[],
-			);
+			const bodyNodes = renderNodes(contentZone.body, config);
 			if (bodyNodes.count() > 0) {
 				bodyDiv = bodyNodes.wrap('div') as RenderableNodeCursor<Markdoc.Tag>;
 			}

@@ -6,6 +6,7 @@ import {
 	createContentModelSchema,
 	createComponentRenderable,
 	asNodes,
+	renderNodes,
 	RenderableNodeCursor,
 	SplitLayoutModel,
 	buildLayoutMetas,
@@ -234,9 +235,7 @@ export const feature = createContentModelSchema({
 				},
 			},
 		};
-		const definitions = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(contentZone.definitions), defConfig) as RenderableTreeNode[],
-		);
+		const definitions = renderNodes(contentZone.definitions, defConfig);
 
 		// Unwrap Markdoc's `<p>` around inline media (a bare image or a single
 		// block rune) so the media zone holds the element directly — matching

@@ -1,11 +1,10 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
+	bodyOnly,
 	createComponentRenderable,
-	asNodes,
-	RenderableNodeCursor,
+	renderNodes,
 } from '@refrakt-md/runes';
 
 const deviceType = [
@@ -72,14 +71,9 @@ export const mockup = createContentModelSchema({
 				'Content fitting mode: auto scales to fill the viewport, none uses natural size.',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const body = renderNodes(resolved.body, config);
 
 		const device = attrs.device ?? 'browser';
 		const color = attrs.color ?? 'dark';

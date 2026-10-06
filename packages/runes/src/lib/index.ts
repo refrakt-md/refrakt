@@ -3,6 +3,7 @@ import Markdoc from '@markdoc/markdoc';
 import type {
 	Config,
 	Node,
+	RenderableTreeNode,
 	RenderableTreeNodes,
 	Schema,
 	SchemaAttribute,
@@ -17,6 +18,7 @@ import type { UniversalAttributePosture } from '../universal-attributes.js';
 
 export { createComponentRenderable, stripSchemaOrg } from './component.js';
 import { stripSchemaOrg } from './component.js';
+import { RenderableNodeCursor } from './renderable.js';
 import { applySchemaTable, validateSchemaTable } from './schema-table.js';
 import type { SchemaTable } from './schema-table.js';
 export {
@@ -39,7 +41,10 @@ export {
 	matchesType,
 } from './resolver.js';
 export { sanitizeSandboxContent } from './sanitize.js';
-export { extractText } from './node.js';
+export { extractText, groupByHeading } from './node.js';
+export type { GroupByHeadingHandlers } from './node.js';
+export { fieldMetas } from './field-metas.js';
+export type { FieldMetaSpec, FieldMetaEntry, FieldMetaSource } from './field-metas.js';
 
 /**
  * Maps a Markdoc Schema to its content model declaration.
@@ -138,6 +143,29 @@ export function asNodes(value: unknown): Node[] {
 	if (Array.isArray(value)) return value as Node[];
 	if (value != null) return [value as Node];
 	return [];
+}
+
+/**
+ * Transform resolved content into a cursor over its renderable nodes — the
+ * `new RenderableNodeCursor(Markdoc.transform(asNodes(x), config))` spelling in
+ * one call. Takes anything `asNodes` accepts.
+ */
+export function renderNodes(value: unknown, config: Config): RenderableNodeCursor {
+	return new RenderableNodeCursor(
+		Markdoc.transform(asNodes(value), config) as RenderableTreeNode[],
+	);
+}
+
+/**
+ * The content model of a rune whose children are all body: a single optional,
+ * greedy `body` field matching anything. Returns a fresh object per call, so a
+ * rune that spreads and overrides it cannot change it for anyone else.
+ */
+export function bodyOnly(): ContentModel {
+	return {
+		type: 'sequence',
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
+	};
 }
 
 /** Rule for mapping a deprecated attribute to its replacement */

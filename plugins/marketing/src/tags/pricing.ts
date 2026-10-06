@@ -4,7 +4,9 @@ const { Ast, Tag } = Markdoc;
 import {
 	createComponentRenderable,
 	createContentModelSchema,
+	bodyOnly,
 	asNodes,
+	renderNodes,
 	RenderableNodeCursor,
 	headingsToList,
 	descriptionHelper as description,
@@ -168,19 +170,14 @@ export const tier = createContentModelSchema({
 		currency: { type: String, required: false },
 		priceMonthly: { type: String, required: false },
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const runeName = attrs.featured ? 'featured-tier' : 'tier';
 
 		const priceValue = attrs.price || attrs.priceMonthly || '';
 		const nameTag = new Tag('h1', {}, [attrs.name ?? '']);
 		const priceTag = new Tag('p', {}, [priceValue]);
-		const children = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const children = renderNodes(resolved.body, config);
 		const body = children.wrap('div');
 
 		const currencyMeta = attrs.currency ? new Tag('meta', { content: attrs.currency }) : undefined;

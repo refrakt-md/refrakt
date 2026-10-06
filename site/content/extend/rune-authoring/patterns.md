@@ -54,9 +54,7 @@ Use `pageSectionProperties(header)` for consistent extraction of eyebrow, headli
 
 ```typescript
 transform(resolved, attrs, config) {
-  const header = new RenderableNodeCursor(
-    Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
-  );
+  const header = renderNodes(resolved.header, config);
 
   return createComponentRenderable({
     rune: 'my-rune',

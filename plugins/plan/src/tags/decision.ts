@@ -1,11 +1,10 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
 	createContentModelSchema,
 	createComponentRenderable,
-	asNodes,
-	RenderableNodeCursor,
+	renderNodes,
+	fieldMetas,
 } from '@refrakt-md/runes';
 import { buildSections } from '../util.js';
 import { VALID_STATUS } from '../commands/enums.js';
@@ -73,22 +72,8 @@ export const decision = createContentModelSchema({
 		},
 	}),
 	transform(resolved, attrs, config) {
-		const titleNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.title), config) as RenderableTreeNode[],
-		);
-		const descNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.description), config) as RenderableTreeNode[],
-		);
-
-		const idMeta = new Tag('meta', { content: attrs.id ?? '' });
-		const statusMeta = new Tag('meta', { content: attrs.status ?? 'proposed' });
-		const dateMeta = new Tag('meta', { content: attrs.date ?? '' });
-		const supersedesMeta = new Tag('meta', { content: attrs.supersedes ?? '' });
-		const sourceMeta = new Tag('meta', { content: attrs.source ?? '' });
-		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
-		const fileVars = config.variables?.file as { created?: string; modified?: string } | undefined;
-		const createdMeta = new Tag('meta', { content: attrs.created || fileVars?.created || '' });
-		const modifiedMeta = new Tag('meta', { content: attrs.modified || fileVars?.modified || '' });
+		const titleNodes = renderNodes(resolved.title, config);
+		const descNodes = renderNodes(resolved.description, config);
 
 		const title = titleNodes.wrap('header');
 		const blurb = descNodes.count() > 0 ? descNodes.wrap('div').next() : undefined;
@@ -100,16 +85,16 @@ export const decision = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'decision',
 			tag: 'article',
-			properties: {
-				id: idMeta,
-				status: statusMeta,
-				date: dateMeta,
-				supersedes: supersedesMeta,
-				source: sourceMeta,
-				tags: tagsMeta,
-				created: createdMeta,
-				modified: modifiedMeta,
-			},
+			properties: fieldMetas(attrs, config, {
+				id: '',
+				status: 'proposed',
+				date: '',
+				supersedes: '',
+				source: '',
+				tags: '',
+				created: { from: ['attrs.created', 'file.created'], default: '' },
+				modified: { from: ['attrs.modified', 'file.modified'], default: '' },
+			}),
 			refs: {
 				title: title.tag('header'),
 				blurb,

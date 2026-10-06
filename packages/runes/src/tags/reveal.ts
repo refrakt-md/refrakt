@@ -1,7 +1,13 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	bodyOnly,
+	asNodes,
+	renderNodes,
+} from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
 
@@ -11,15 +17,10 @@ export const revealStep = createContentModelSchema({
 	attributes: {
 		name: { type: String, required: true },
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		).wrap('div');
+		const body = renderNodes(resolved.body, config).wrap('div');
 
 		return createComponentRenderable({
 			rune: 'reveal-step',
@@ -69,9 +70,7 @@ export const reveal = createContentModelSchema({
 		},
 	}),
 	transform(resolved, attrs, config) {
-		const headerNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
-		);
+		const headerNodes = renderNodes(resolved.header, config);
 		// Combine explicit child tags (preamble items) with emitted section tags
 		const allItems = [...asNodes(resolved.items), ...asNodes(resolved.sections)];
 		const sectionNodes = new RenderableNodeCursor(

@@ -3,8 +3,10 @@ import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
 import {
 	createContentModelSchema,
+	bodyOnly,
 	createComponentRenderable,
 	asNodes,
+	renderNodes,
 	resolveSequence,
 	RenderableNodeCursor,
 	pageSectionProperties,
@@ -19,14 +21,9 @@ const GROUP_KINDS = ['class', 'interface', 'module'];
 
 export const symbolMember = createContentModelSchema({
 	attributes: {},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, _attrs, config) {
-		const children = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const children = renderNodes(resolved.body, config);
 		const nameHeading = children.headings().limit(1);
 		const hasName = nameHeading.count() > 0;
 		const nameTag = new Tag('h4', {}, hasName ? nameHeading.next().children : []);

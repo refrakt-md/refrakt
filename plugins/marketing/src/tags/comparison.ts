@@ -4,11 +4,13 @@ const { Ast, Tag } = Markdoc;
 import {
 	createComponentRenderable,
 	createContentModelSchema,
+	bodyOnly,
 	asNodes,
+	renderNodes,
 	headingsToList,
 	extractText,
+	fieldMetas,
 } from '@refrakt-md/runes';
-import { RenderableNodeCursor } from '@refrakt-md/runes';
 
 // Extract bold label from a list item (the text inside the first strong node)
 function extractBoldLabel(node: Node): string | null {
@@ -94,23 +96,17 @@ const comparisonRow = createContentModelSchema({
 		label: { type: String, required: false },
 		rowType: { type: String, required: false },
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const labelTag = new Tag('span', {}, [attrs.label ?? '']);
-		const rowTypeMeta = new Tag('meta', { content: attrs.rowType ?? 'text' });
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		).wrap('div');
+		const body = renderNodes(resolved.body, config).wrap('div');
 
 		return createComponentRenderable({
 			rune: 'comparison-row',
 			tag: 'div',
-			properties: {
-				rowType: rowTypeMeta,
-			},
+			properties: fieldMetas(attrs, config, {
+				rowType: 'text',
+			}),
 			refs: {
 				body: body.tag('div'),
 				label: labelTag,
@@ -125,16 +121,11 @@ const comparisonColumn = createContentModelSchema({
 		name: { type: String, required: false },
 		highlighted: { type: Boolean, required: false },
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
 		const highlightedMeta = new Tag('meta', { content: String(attrs.highlighted ?? false) });
-		const rowStream = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
-		);
+		const rowStream = renderNodes(resolved.body, config);
 
 		const rowItems = rowStream.tag('div').typeof('ComparisonRow');
 		const body = rowItems.wrap('div');

@@ -1,8 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
-import { RenderableNodeCursor } from '../lib/renderable.js';
+import { createContentModelSchema, createComponentRenderable, renderNodes } from '../lib/index.js';
 
 /** Sentinel meta property written by breadcrumb auto mode; consumed by corePipelineHooks.postProcess */
 export const BREADCRUMB_AUTO_SENTINEL = '__breadcrumb-auto';
@@ -83,9 +81,7 @@ export const breadcrumb = createContentModelSchema({
 			});
 		}
 
-		const children = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.list), config) as RenderableTreeNode[],
-		);
+		const children = renderNodes(resolved.list, config);
 
 		// Extract list items from children — each <li> with an <a> becomes a breadcrumb item
 		const listItems: any[] = [];

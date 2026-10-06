@@ -1,7 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
+import { createContentModelSchema, createComponentRenderable, renderNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { SpaceSeparatedList } from '../attributes.js';
 import { flow, GridFlow, gridItems, gridLayout } from '../layouts/index.js';
@@ -81,12 +80,7 @@ export const grid = createContentModelSchema({
 	},
 	transform(resolved, attrs, config) {
 		const zones = (resolved.zones ?? []) as Array<Record<string, unknown>>;
-		const tiles = zones.map(
-			(zone) =>
-				new RenderableNodeCursor(
-					Markdoc.transform(asNodes(zone.content), config) as RenderableTreeNode[],
-				),
-		);
+		const tiles = zones.map((zone) => renderNodes(zone.content, config));
 
 		const layout = gridLayout({
 			items: gridItems(attrs.spans as string[], tiles),

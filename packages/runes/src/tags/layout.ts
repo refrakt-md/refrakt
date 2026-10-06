@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, asNodes } from '../lib/index.js';
+import { createContentModelSchema, bodyOnly, asNodes } from '../lib/index.js';
 
 export const layout = createContentModelSchema({
 	attributes: {
@@ -12,10 +12,7 @@ export const layout = createContentModelSchema({
 			description: 'Layout inheritance: parent or none',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
-	},
+	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const children = Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[];
 

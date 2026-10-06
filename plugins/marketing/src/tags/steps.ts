@@ -10,6 +10,7 @@ import {
 	nameHelper as name,
 	pageSectionProperties,
 	asNodes,
+	renderNodes,
 	unwrapParagraphImages,
 } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
@@ -45,9 +46,7 @@ export const step = createContentModelSchema({
 		const contentZone = (resolved.content ?? {}) as ResolvedContent;
 		const mediaZone = (resolved.media ?? {}) as ResolvedContent;
 
-		const main = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(contentZone.content), config) as RenderableTreeNode[],
-		);
+		const main = renderNodes(contentZone.content, config);
 		// Unwrap Markdoc's `<p>` around inline media (a bare image or a single
 		// block rune) so the media zone holds the element directly — matching hero.
 		const side = new RenderableNodeCursor(
@@ -131,9 +130,7 @@ export const steps = createContentModelSchema({
 		},
 	}),
 	transform(resolved, attrs, config) {
-		const headerNodes = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
-		);
+		const headerNodes = renderNodes(resolved.header, config);
 
 		let stepItems: RenderableNodeCursor<any>;
 
