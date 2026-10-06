@@ -1,4 +1,4 @@
-{% work id="WORK-604" status="ready" priority="high" complexity="simple" milestone="v0.38.0" source="SPEC-003" tags="runes,content-model,emitTag,content-loss" %}
+{% work id="WORK-604" status="done" priority="high" complexity="simple" milestone="v0.38.0" source="SPEC-003" tags="runes,content-model,emitTag,content-loss" pr="refrakt-md/refrakt#658" %}
 
 # Pass authored tags through a mixed `list|tag:x` field with `emitTag`
 
@@ -17,11 +17,11 @@ wrote**.
 
 ## Acceptance Criteria
 
-- [ ] A greedy `list|tag:x` field with `emitTag` yields both the emitted and the authored tags, in document order
-- [ ] A regression test covers the interleaved case — list, authored tag, list — and asserts document order, not just count
-- [ ] A `list`-only field with `emitTag` is unchanged (`cast`, `audio`, `plot`)
-- [ ] `refrakt contracts --check` and `npm run seo:baseline:check` report no drift
-- [ ] `npm test` passes unchanged
+- [x] A greedy `list|tag:x` field with `emitTag` yields both the emitted and the authored tags, in document order
+- [x] A regression test covers the interleaved case — list, authored tag, list — and asserts document order, not just count
+- [x] A `list`-only field with `emitTag` is unchanged (`cast`, `audio`, `plot`)
+- [x] `refrakt contracts --check` and `npm run seo:baseline:check` report no drift
+- [x] `npm test` passes unchanged
 
 ## Approach
 
@@ -49,5 +49,20 @@ lost. `cast` is not changed here, but the option becomes available to it.
 - {% ref "BUG-030" /%} — the bug this fixes
 - {% ref "BUG-028" /%} — the same silent-content-loss class
 - {% ref "SPEC-003" /%} — the declarative content model
+
+## Resolution
+
+Completed: 2026-10-06
+
+Branch: `claude/v0-37-post-release-plan-dc3va1`
+
+### What was done
+- `packages/runes/src/lib/resolver.ts`: the `emitTag` branch of `resolveSequence` passes a non-list node through into `tagNodes` in place instead of `continue`-ing past it, so a `list|tag:x` field resolves to one document-ordered array of tags.
+- `packages/runes/test/resolver.test.ts`: three tests — the bug report's interleaved input (list / authored `{% track %}` / list) asserting order, a list-only field unchanged, and a non-greedy field whose single match is a tag. The first and third fail without the fix.
+- `site/content/extend/rune-authoring/content-models.md`: the `emitTag` row states the mixed-field behaviour.
+
+### Notes
+- Latent: no built-in rune declared this combination, so rendered output is byte-identical (inspect over every rune × variant on both sites).
+- BUG-030 can close with this.
 
 {% /work %}

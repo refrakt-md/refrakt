@@ -194,10 +194,10 @@ Condition types:
 | `match` | `string` | Node type to match (see patterns below) |
 | `optional` | `boolean` | Whether the field can be absent. Default `false` |
 | `greedy` | `boolean` | Consume all consecutive matching nodes. Default `false` |
-| `template` | `string` | Markdoc snippet for editor insertion (e.g., `'- Ingredient'`) |
+| `template` | `string` | Markdoc snippet for editor insertion (e.g., `'- Ingredient'`); `refrakt reference` also shows it as the field's "Written as" example |
 | `description` | `string` | Human-readable hint for editor UI |
 | `itemModel` | `ItemModel` | Structured extraction from list items |
-| `emitTag` | `string` | Convert matched list items to child rune tags |
+| `emitTag` | `string` | Convert matched list items to child rune tags. On a mixed field such as `list\|tag:track`, tags the author wrote are kept in place, so the field resolves to one document-ordered array of tags |
 
 ### Match patterns
 

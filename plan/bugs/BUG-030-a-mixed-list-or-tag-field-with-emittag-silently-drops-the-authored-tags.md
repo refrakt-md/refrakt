@@ -1,4 +1,4 @@
-{% bug id="BUG-030" status="confirmed" severity="major" source="SPEC-003" tags="runes,content-model,emitTag,itemModel,content-loss,playlist" %}
+{% bug id="BUG-030" status="fixed" severity="major" source="SPEC-003" tags="runes,content-model,emitTag,itemModel,content-loss,playlist" pr="refrakt-md/refrakt#658" %}
 
 # A mixed `list|tag:x` field with `emitTag` silently drops the authored tags
 
@@ -103,5 +103,11 @@ Its own content model records the cost:
 - {% ref "BUG-028" /%} — `figure` dropping non-media children; the same silent-content-loss class
 - {% ref "BUG-031" /%} — the reference drops `emitTag`, `template` and the whole `itemModel` grammar, so neither half of the dual-syntax contract is visible
 - {% ref "SPEC-141" /%} — where the question that exposed this came from
+
+## Resolution
+
+Completed: 2026-10-06
+
+Fixed by WORK-604 (#658): resolveSequence's emitTag branch passes non-list nodes through in place, so a `list|tag:x` field resolves to one document-ordered array of tags. Regression tests cover the interleaved case from this report.
 
 {% /bug %}

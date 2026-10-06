@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
 	renderContentModel,
 	serializeContentModel,
+	stripContentModel,
 	describeRune,
 	type RuneInfo,
 	type SerializedContentModel,
@@ -71,7 +72,8 @@ describe('renderContentModel — sections', () => {
 			  - \`portrait\` (optional image)
 			  - \`header\` (optional, repeatable heading or paragraph)
 			  - \`items\` (optional, repeatable tag)
-			Section body: any blocks"
+			Section body: any blocks
+			Each section becomes \`{% character-section %}\`."
 		`);
 	});
 
@@ -388,5 +390,59 @@ describe('describeRune', () => {
 		};
 		const out = describeRune(rune);
 		expect(out).toContain('Content is split by `---` into zones.');
+	});
+});
+
+describe('item grammar (BUG-031)', () => {
+	const model: ContentModel = {
+		type: 'sequence',
+		fields: [
+			{
+				name: 'tracks',
+				match: 'list|tag:track',
+				greedy: true,
+				template: '- **Track Name** (3:45)',
+				itemModel: {
+					fields: [
+						{ name: 'name', match: 'strong' },
+						{ name: 'src', match: 'link', optional: true, extract: 'href' },
+						{ name: 'date', match: 'text', optional: true, pattern: /—\s*(.+)$/i },
+						{ name: 'rest', match: 'text', pattern: 'remainder' },
+						{
+							name: 'cues',
+							match: 'list',
+							optional: true,
+							itemModel: { fields: [{ name: 'time', match: 'text' }] },
+						},
+					],
+				},
+				emitTag: 'track',
+			},
+		],
+	};
+
+	it('projects itemModel as JSON-safe data, regex source and flags apart', () => {
+		const serialized = stripContentModel(model)!;
+		expect(JSON.parse(JSON.stringify(serialized))).toEqual(serialized);
+		const items = (serialized as any).fields[0].itemModel.fields;
+		expect(items[2]).toMatchObject({ pattern: '—\\s*(.+)$', patternFlags: 'i' });
+		expect(items[3].pattern).toBe('remainder');
+		expect(items[4].itemModel.fields[0].name).toBe('time');
+	});
+
+	it('leads with the authoring shape, then the item grammar, then what an item becomes', () => {
+		expect(renderContentModel(stripContentModel(model)!)).toMatchInlineSnapshot(`
+			"Content:
+			  - \`tracks\` (required, repeatable list or \`track\` tag)
+			    Written as:
+			      - **Track Name** (3:45)
+			    Each list item is read as:
+			      - \`name\`: **bold** text (required)
+			      - \`src\`: a link — its \`href\` (optional)
+			      - \`date\`: text matching \`—\\s*(.+)$\` (flags \`i\`) — note: \`—\` is U+2014 (optional)
+			      - \`rest\`: the remaining text (required)
+			      - \`cues\`: a nested list whose items are read as \`time\`, not expanded here (optional)
+			    Each list item becomes \`{% track %}\`."
+		`);
 	});
 });
