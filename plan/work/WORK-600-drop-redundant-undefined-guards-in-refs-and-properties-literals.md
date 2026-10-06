@@ -1,4 +1,4 @@
-{% work id="WORK-600" status="in-progress" priority="medium" complexity="trivial" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dead-code" %}
+{% work id="WORK-600" status="done" priority="medium" complexity="trivial" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dead-code" pr="refrakt-md/refrakt#656" %}
 
 # Drop redundant `undefined` guards in `refs` and `properties` literals
 
@@ -15,10 +15,10 @@ caption: captionTag                               // this
 
 ## Acceptance Criteria
 
-- [ ] No `...(x ? { k: x } : {})` remains inside a `refs` or `properties` object literal
-- [ ] The 20 equivalents on hand-built `Tag` attribute objects are **untouched** — there the guard is load-bearing
-- [ ] `refrakt contracts --check` and `npm run seo:baseline:check` report no drift
-- [ ] `npm test` passes unchanged
+- [x] No `...(x ? { k: x } : {})` remains inside a `refs` or `properties` object literal
+- [x] The 20 equivalents on hand-built `Tag` attribute objects are **untouched** — there the guard is load-bearing
+- [x] `refrakt contracts --check` and `npm run seo:baseline:check` report no drift
+- [x] `npm test` passes unchanged
 
 ## Approach
 
@@ -35,5 +35,20 @@ loops. The guard is redundant for every falsy value a rune actually produces.
 
 - {% ref "SPEC-140" /%} — Tier 1
 - {% ref "ADR-008" /%} — the flat namespace the slot loops enforce, which must keep working
+
+## Resolution
+
+Completed: 2026-10-06
+
+Branch: `claude/v0-37-post-release-plan-dc3va1`
+
+### What was done
+- 52 `...(x ? { k: x } : {})` → `k: x` inside `properties` / `refs` literals across 23 files, via a brace-matching rewrite scoped to the two slot literals and to sites where condition and value are the same expression.
+- `component.ts`: slot types admit `null`, and the loops skip `v == null`. They already treated `null` as a no-op (`Tag.isTag(null)` is false); widening the type avoided retyping every `Tag | null` declaration (plan-history's `idMeta` was the first to fail the build).
+
+### Notes
+- Six guards stay — condition ≠ value, so they are load-bearing: drawer `footer ? footer.tag('footer')` (would throw), figure `imgs.length > 0`, budget `hasPerDay`, character/realm/faction `hasSections`.
+- Converting a guard makes the key present-with-undefined, which `Object.keys` in the ADR-008 collision check would see. A static scan of every converted call found no key in both maps.
+- Attribute-object guards (`diff.ts`, `form.ts`, `sandbox.ts`, …) untouched.
 
 {% /work %}
