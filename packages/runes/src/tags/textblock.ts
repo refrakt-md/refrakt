@@ -50,9 +50,9 @@ export const textblock = createContentModelSchema({
 			rune: 'text-block',
 			tag: 'div',
 			properties: {
-				...(columnsMeta ? { columns: columnsMeta } : {}),
-				...(leadMeta ? { lead: leadMeta } : {}),
-				...(alignMeta ? { align: alignMeta } : {}),
+				columns: columnsMeta,
+				lead: leadMeta,
+				align: alignMeta,
 			},
 			refs: {
 				body: body.tag('div'),

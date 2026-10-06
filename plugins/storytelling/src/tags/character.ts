@@ -173,9 +173,9 @@ export const character = createContentModelSchema({
 			},
 			refs: {
 				name: nameTag,
-				...(portraitDiv ? { portrait: portraitDiv } : {}),
-				...(bodyDiv ? { body: bodyDiv } : {}),
-				...(sectionsContainer ? { sections: sectionsContainer } : {}),
+				portrait: portraitDiv,
+				body: bodyDiv,
+				sections: sectionsContainer,
 			},
 			children,
 		});

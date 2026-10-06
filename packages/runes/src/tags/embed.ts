@@ -170,7 +170,7 @@ export const embed = createContentModelSchema({
 				embedUrl: embedUrlMeta,
 			},
 			refs: {
-				...(wrapperDiv ? { wrapper: wrapperDiv } : {}),
+				wrapper: wrapperDiv,
 				fallback: fallbackDiv,
 			},
 			children,

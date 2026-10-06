@@ -81,8 +81,8 @@ export const gallery = createContentModelSchema({
 			properties: {
 				layout: layoutMeta,
 				lightbox: lightboxMeta,
-				...(columnsMeta ? { columns: columnsMeta } : {}),
-				...(captionTag ? { caption: captionTag } : {}),
+				columns: columnsMeta,
+				caption: captionTag,
 			},
 			children: childNodes,
 		});

@@ -119,7 +119,7 @@ export const audio = createContentModelSchema({
 			rune: 'audio',
 			tag: 'div',
 			properties: {
-				...(waveformMeta ? { waveform: waveformMeta } : {}),
+				waveform: waveformMeta,
 			},
 			children,
 		});

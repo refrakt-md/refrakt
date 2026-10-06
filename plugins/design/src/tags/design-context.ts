@@ -90,7 +90,7 @@ export const designContext = createContentModelSchema({
 				scope: scopeMeta,
 			},
 			refs: {
-				...(titleTag ? { title: titleTag } : {}),
+				title: titleTag,
 				sections: sectionsTag,
 			},
 			children: topChildren,

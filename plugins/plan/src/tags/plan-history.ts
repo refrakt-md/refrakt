@@ -66,7 +66,7 @@ export const planHistory = createContentModelSchema({
 			tag: 'section',
 			properties: {
 				limit: limitMeta,
-				...(idMeta ? { id: idMeta } : {}),
+				id: idMeta,
 				type: typeMeta,
 				group: groupMeta,
 			},

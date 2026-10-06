@@ -88,11 +88,11 @@ export const figure = createContentModelSchema({
 			rune: 'figure',
 			tag: 'figure',
 			properties: {
-				...(sizeMeta ? { size: sizeMeta } : {}),
-				...(alignMeta ? { align: alignMeta } : {}),
+				size: sizeMeta,
+				align: alignMeta,
 			},
 			refs: {
-				...(captionTag ? { caption: captionTag } : {}),
+				caption: captionTag,
 				// WORK-561 — the image survives and is rendered, so under WORK-560's
 				// rule it is a ref, not a property. It had no name at all: the schema
 				// reached it only as an anonymous positional `imgs[0]`.

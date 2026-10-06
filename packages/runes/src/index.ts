@@ -106,6 +106,7 @@ export {
 	SCHEMA_TYPE_EXPLICIT,
 	selectRow,
 	findByName,
+	extractText,
 } from './lib/index.js';
 export type { RuneStructure, SectionRole } from './lib/index.js';
 export { describeSchemaRow, bySchemaProperty, collectSchemaRows, tableFor } from './schema-row.js';

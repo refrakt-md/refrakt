@@ -1,4 +1,4 @@
-{% work id="WORK-599" status="ready" priority="high" complexity="simple" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dead-code,breaking" %}
+{% work id="WORK-599" status="in-progress" priority="high" complexity="simple" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dead-code,breaking" %}
 
 # Remove the unreachable schema.org channel from `createComponentRenderable`
 

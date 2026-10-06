@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	asNodes,
+	extractText,
+} from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
 const variantType = ['stacked', 'inline', 'compact'] as const;
@@ -44,14 +49,6 @@ function parseFieldText(text: string): { name: string; optional: boolean; placeh
 	const placeholder = placeholderMatch ? placeholderMatch[1].trim() : '';
 
 	return { name, optional, placeholder };
-}
-
-// Extract plain text from an AST node
-function extractText(node: Node): string {
-	return Array.from(node.walk())
-		.filter((n) => n.type === 'text')
-		.map((n) => n.attributes.content)
-		.join('');
 }
 
 // Check if a paragraph contains only bold text (submit button pattern)

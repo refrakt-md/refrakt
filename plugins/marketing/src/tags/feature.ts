@@ -300,7 +300,7 @@ export const feature = createContentModelSchema({
 			properties: {
 				'media-position': mediaPositionMeta,
 				layout: layoutMeta,
-				...(collapseToMeta ? { 'collapse-to': collapseToMeta } : {}),
+				'collapse-to': collapseToMeta,
 				align: alignMeta,
 				'media-ratio': mediaRatioMeta,
 				valign: valignMeta,

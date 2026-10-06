@@ -1,5 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import { readField as readNodeField } from '@refrakt-md/transform';
+import { textContent } from '@refrakt-md/runes';
 import type { PluginPipelineHooks, EntityRegistration } from '@refrakt-md/types';
 
 const { Tag } = Markdoc;
@@ -23,12 +24,6 @@ function walkTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => void): v
 	} else if (Array.isArray(node)) {
 		node.forEach((n) => walkTags(n, fn));
 	}
-}
-
-function extractTextContent(node: unknown): string {
-	if (typeof node === 'string') return node;
-	if (!Markdoc.Tag.isTag(node)) return '';
-	return node.children.map((c) => extractTextContent(c)).join('');
 }
 
 function readField(tag: InstanceType<typeof Tag>, field: string): string {
@@ -55,7 +50,7 @@ function findByName(
 
 function readRefText(tag: InstanceType<typeof Tag>, name: string): string {
 	const ref = findByName(tag, name);
-	return ref ? extractTextContent(ref) : '';
+	return ref ? textContent(ref) : '';
 }
 
 /** Extract the display name for a storytelling entity based on rune type */
@@ -292,7 +287,7 @@ export const storytellingPipelineHooks: PluginPipelineHooks = {
 
 			// Check for strong tags to cross-link
 			if (node.name === 'strong') {
-				const text = extractTextContent(node).trim();
+				const text = textContent(node);
 				if (text && !linkedNames.has(text)) {
 					const entity = storyData.entityByName.get(text);
 					if (entity && entity.sourceUrl !== page.url) {

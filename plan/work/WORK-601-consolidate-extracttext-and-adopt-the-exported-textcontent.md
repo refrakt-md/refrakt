@@ -1,4 +1,4 @@
-{% work id="WORK-601" status="ready" priority="medium" complexity="simple" milestone="v0.38.0" source="SPEC-140" tags="runes,duplication" %}
+{% work id="WORK-601" status="in-progress" priority="medium" complexity="simple" milestone="v0.38.0" source="SPEC-140" tags="runes,duplication" %}
 
 # Consolidate `extractText` and adopt the exported `textContent`
 

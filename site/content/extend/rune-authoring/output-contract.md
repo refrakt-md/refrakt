@@ -39,9 +39,7 @@ return createComponentRenderable({
 | `children` | `RenderableTreeNodes` | Content children — the actual output |
 | `properties` | `Record<string, Tag \| RenderableNodeCursor>` | Metadata tags consumed by the engine (each gets `data-field="kebab-name"`) |
 | `refs` | `Record<string, Tag \| RenderableNodeCursor>` | Named structural elements (each gets `data-name="key"`) |
-| `schema` | `Record<string, Tag \| RenderableNodeCursor>` (optional) | Schema.org property mappings — sets RDFa `property` on referenced tags |
 | `property` | `string` (optional) | Semantic role for the root tag (e.g., `'contentSection'`) — becomes `data-field` |
-| `schemaOrgType` / `typeof` | `string` (optional) | Schema.org type (e.g. `'FAQPage'`) — only needed for structured-data runes |
 | `id` | `string` (optional) | HTML id attribute |
 | `class` | `string` (optional) | CSS class to add |
 
@@ -49,8 +47,9 @@ return createComponentRenderable({
 
 1. Sets `data-field="kebab-name"` on each **properties** entry — marks tags as metadata carriers
 2. Sets `data-name="key"` on each **refs** entry — labels structural elements for BEM
-3. Sets `property="key"` on each **schema** entry — RDFa mapping for Schema.org consumers
-4. Creates the root tag with `data-rune="kebab-name"` — engine lookup key (plus `typeof` when `schemaOrgType` is provided)
+3. Creates the root tag with `data-rune="kebab-name"` — engine lookup key
+
+It never sets `typeof` or `property`. Structured data is declared once, as a table on `createContentModelSchema({ schema })`, and applied after the transform — see *Declaring schema.org output* in [Building a Custom Plugin](/extend/plugin-authoring/authoring).
 
 ## Properties vs Refs
 
@@ -161,7 +160,7 @@ The root tag gets `data-rune="kebab-name"`:
 
 The identity transform engine uses `data-rune` to look up the rune config (keyed by the matching `typeName` in `packages/runes/src/config.ts`), then applies BEM classes, modifiers, and structure. The Renderer outputs the transformed tree as generic HTML.
 
-Runes that contribute Schema.org structured data also emit a `typeof` attribute (e.g. `typeof="FAQPage"`) — set via `schemaOrgType` on `createComponentRenderable`. Most runes don't need it.
+Runes that contribute Schema.org structured data also carry a `typeof` attribute (e.g. `typeof="FAQPage"`), stamped from the rune's declarative schema table rather than by the transform. Most runes don't have one.
 
 ---
 

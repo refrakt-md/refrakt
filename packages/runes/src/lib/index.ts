@@ -39,6 +39,7 @@ export {
 	matchesType,
 } from './resolver.js';
 export { sanitizeSandboxContent } from './sanitize.js';
+export { extractText } from './node.js';
 
 /**
  * Maps a Markdoc Schema to its content model declaration.

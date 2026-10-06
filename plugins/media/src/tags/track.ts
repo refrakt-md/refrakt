@@ -7,6 +7,7 @@ import {
 	asNodes,
 	RenderableNodeCursor,
 	SCHEMA_TYPE_EXPLICIT,
+	textContent,
 } from '@refrakt-md/runes';
 import { parseDuration, formatDuration } from '../duration.js';
 
@@ -142,10 +143,10 @@ export const track = createContentModelSchema({
 		let nameText = '';
 		const headingCursor = titleNodes.headings().limit(1);
 		if (headingCursor.count() > 0) {
-			nameText = extractText(headingCursor.next());
+			nameText = textContent(headingCursor.next());
 		} else {
 			const pCursor = titleNodes.tag('p').limit(1);
-			if (pCursor.count() > 0) nameText = extractText(pCursor.next());
+			if (pCursor.count() > 0) nameText = textContent(pCursor.next());
 		}
 
 		// Transform body content (may contain chapters/lyrics as lists)
@@ -197,11 +198,11 @@ export const track = createContentModelSchema({
 			tag: 'li',
 			properties: {
 				name: nameTag,
-				...(artistMeta ? { artist: artistMeta } : {}),
-				...(durationMeta ? { duration: durationMeta } : {}),
-				...(urlMeta ? { url: urlMeta } : {}),
-				...(numberMeta ? { position: numberMeta } : {}),
-				...(dateMeta ? { datePublished: dateMeta } : {}),
+				artist: artistMeta,
+				duration: durationMeta,
+				url: urlMeta,
+				position: numberMeta,
+				datePublished: dateMeta,
 				type: typeMeta,
 			},
 			children,
@@ -214,12 +215,3 @@ export const track = createContentModelSchema({
 		return renderable;
 	},
 });
-
-function extractText(tag: any): string {
-	if (!tag) return '';
-	if (typeof tag === 'string') return tag;
-	if (tag.children) {
-		return tag.children.map(extractText).join('');
-	}
-	return '';
-}

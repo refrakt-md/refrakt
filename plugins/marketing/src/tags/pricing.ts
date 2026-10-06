@@ -199,7 +199,7 @@ export const tier = createContentModelSchema({
 			tag: 'li',
 			properties: {
 				description: description(children),
-				...(currencyMeta ? { currency: currencyMeta } : {}),
+				currency: currencyMeta,
 				url: children.flatten().tag('a'),
 				// WORK-561 — value-only SEO carriers, addressable by name for
 				// WORK-565's applier. Both stay in `schema:`, so they keep their

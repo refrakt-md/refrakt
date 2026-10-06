@@ -171,7 +171,7 @@ export const drawer = createContentModelSchema({
 			properties,
 			refs: {
 				header,
-				...(titleTag ? { title: titleTag } : {}),
+				title: titleTag,
 				close: closeButton,
 				body: body.tag('div'),
 				...(footer ? { footer: footer.tag('footer') } : {}),

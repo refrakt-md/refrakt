@@ -1,4 +1,4 @@
-{% work id="WORK-600" status="ready" priority="medium" complexity="trivial" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dead-code" %}
+{% work id="WORK-600" status="in-progress" priority="medium" complexity="trivial" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dead-code" %}
 
 # Drop redundant `undefined` guards in `refs` and `properties` literals
 

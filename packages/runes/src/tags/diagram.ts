@@ -64,9 +64,9 @@ export const diagram = createContentModelSchema({
 				language: languageMeta,
 			},
 			refs: {
-				...(titleEl ? { title: titleEl } : {}),
+				title: titleEl,
 				container: containerDiv,
-				...(sourcePre ? { source: sourcePre } : {}),
+				source: sourcePre,
 			},
 			children,
 		});

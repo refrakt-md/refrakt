@@ -1,5 +1,6 @@
 import Markdoc, { type Node } from '@markdoc/markdoc';
 import { readField as readNodeField } from '@refrakt-md/transform';
+import { textContent } from '@refrakt-md/runes';
 import type { PluginPipelineHooks, EntityRegistration, ProjectFiles } from '@refrakt-md/types';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -77,21 +78,15 @@ function extractTitle(tag: InstanceType<typeof Tag>): string {
 	for (const child of tag.children) {
 		if (!Markdoc.Tag.isTag(child)) continue;
 		if (child.attributes['data-name'] === 'title' || child.name === 'header') {
-			return extractTextContent(child);
+			return textContent(child);
 		}
 	}
 	return '';
 }
 
-function extractTextContent(node: unknown): string {
-	if (typeof node === 'string') return node;
-	if (!Markdoc.Tag.isTag(node)) return '';
-	return node.children.map((c) => extractTextContent(c)).join('');
-}
-
 /** Count checkbox items ([ ] and [x]) in a renderable tree's text content */
 function countCheckboxes(tag: InstanceType<typeof Tag>): { checked: number; total: number } {
-	const text = extractTextContent(tag);
+	const text = textContent(tag);
 	const unchecked = (text.match(/\[ \]/g) || []).length;
 	const checked = (text.match(/\[x\]/gi) || []).length;
 	return { checked, total: checked + unchecked };
@@ -108,7 +103,7 @@ const ID_PREFIX_TO_TYPE: Record<string, string> = {
 
 /** Extract all entity ID references from a tag's text content */
 function extractIdReferences(tag: InstanceType<typeof Tag>): Array<{ id: string; type: string }> {
-	const text = extractTextContent(tag);
+	const text = textContent(tag);
 	const refs: Array<{ id: string; type: string }> = [];
 	const seen = new Set<string>();
 	let match: RegExpExecArray | null;

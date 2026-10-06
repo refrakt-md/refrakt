@@ -440,17 +440,17 @@ export const playlist = createContentModelSchema({
 				'media-ratio': mediaRatioMeta,
 				valign: valignMeta,
 				collapse: collapseMeta,
-				...(artistMeta ? { artist: artistMeta } : {}),
-				...(idMeta ? { id: idMeta } : {}),
+				artist: artistMeta,
+				id: idMeta,
 				track: trackItems,
 			},
 			refs: {
 				...sectionProps,
-				...(bodyDiv ? { body: bodyDiv } : {}),
+				body: bodyDiv,
 				media: mediaDiv,
 				// WORK-561 — see the note on `recipe`: `image` is taken by
 				// `sectionProps`, so the media slot's image is `mediaImage`.
-				...(seoImage ? { mediaImage: seoImage } : {}),
+				mediaImage: seoImage,
 			},
 			children,
 		});
