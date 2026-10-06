@@ -1,4 +1,4 @@
-{% work id="WORK-607" status="ready" priority="medium" complexity="simple" milestone="v0.38.0" source="SPEC-135" tags="plan,cli,migrate,ids" %}
+{% work id="WORK-607" status="in-progress" priority="medium" complexity="simple" milestone="v0.38.0" source="SPEC-135" tags="plan,cli,migrate,ids" %}
 
 # `plan migrate ids` treats an ID present on the base ref as fixed
 

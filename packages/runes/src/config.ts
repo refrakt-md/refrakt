@@ -7,9 +7,6 @@ import {
 	findByDataName,
 	readMeta,
 	readField,
-	resolveGap,
-	ratioToFr,
-	resolveValign,
 } from '@refrakt-md/transform';
 import type {
 	PluginPipelineHooks,
@@ -149,9 +146,9 @@ export const coreConfig: ThemeConfig = {
 				min: { source: 'meta', noBemClass: true },
 			},
 			styles: {
-				ratio: { prop: '--grid-ratio', transform: ratioToFr },
-				valign: { prop: '--grid-valign', transform: resolveValign },
-				gap: { prop: '--grid-gap', transform: resolveGap },
+				ratio: { prop: '--grid-ratio', transform: 'fr' },
+				valign: { prop: '--grid-valign', transform: 'align' },
+				gap: { prop: '--grid-gap', transform: 'gap' },
 				min: '--grid-min',
 				aspect: '--grid-aspect',
 			},
@@ -290,7 +287,7 @@ export const coreConfig: ThemeConfig = {
 				},
 			},
 			styles: {
-				valign: { prop: '--split-valign', transform: resolveValign },
+				valign: { prop: '--split-valign', transform: 'align' },
 				aspect: 'aspect-ratio',
 			},
 		},

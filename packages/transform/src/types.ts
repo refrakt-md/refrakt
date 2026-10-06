@@ -14,6 +14,21 @@ import type { LocalizedValue } from './i18n.js';
  *    value renders as a chip for chip-type fields, bare otherwise. */
 export type LayoutPrimitive = 'definition-list' | 'bar';
 
+/**
+ * A value transform, by name. The one vocabulary for every place config
+ * reshapes a value: meta fields, structure entries and `styles`.
+ *
+ * - `duration` — ISO 8601 (`PT30M`) → human-readable (`30m`)
+ * - `uppercase` / `capitalize` — case transforms
+ * - `align` — an alignment keyword (`top` / `center` / `bottom` / …) → CSS `align-*` value
+ * - `fr` — space-separated ratio numbers → fr tracks (`"2 1"` → `"2fr 1fr"`)
+ * - `gap` — a gap preset (`tight` / `default` / `loose`) → spacing token; raw CSS passes through
+ *
+ * Named rather than a function so a `RuneConfig` stays plain data and can
+ * cross a JSON boundary (WORK-608).
+ */
+export type NamedTransform = 'duration' | 'uppercase' | 'capitalize' | 'align' | 'fr' | 'gap';
+
 /** SPEC-080 block definition — a named group of meta-fields rendered by a
  *  layout primitive. Field shape (chip vs bare) is intrinsic to each field's
  *  `metaType`; this declares only which fields, their order, the layout, and
@@ -117,7 +132,7 @@ export interface MetaField {
 	 *  (`30m`). `uppercase` / `capitalize` are simple case
 	 *  transforms. Mirrors the legacy `StructureEntry.transform`
 	 *  field. */
-	transform?: 'duration' | 'uppercase' | 'capitalize';
+	transform?: NamedTransform;
 
 	/** SPEC-035 — explicit i18n key override. By default the field's label
 	 *  resolves through the auto-derived key `{scope}.{block}.{fieldName}`;
@@ -295,11 +310,9 @@ export interface RuneConfig {
 	 *  Simple form: `{ columns: '--sb-columns' }` → `style="--sb-columns: 3"`
 	 *  Template form: `{ columns: { prop: 'grid-template-columns', template: 'repeat({}, 1fr)' } }`
 	 *    → `style="grid-template-columns: repeat(3, 1fr)"`
-	 *  Transform form: `{ ratio: { prop: '--split-ratio', transform: v => v.split(' ').map(n => n+'fr').join(' ') } }` */
-	styles?: Record<
-		string,
-		string | { prop: string; template?: string; transform?: (value: string) => string }
-	>;
+	 *  Transform form: `{ ratio: { prop: '--split-ratio', transform: 'fr' } }` → `"2 1"` becomes `2fr 1fr`
+	 *    (any `NamedTransform`; a function is not accepted, so the config stays plain data) */
+	styles?: Record<string, string | { prop: string; template?: string; transform?: NamedTransform }>;
 
 	/** Modifier class suffixes always applied (no meta source needed).
 	 *  E.g., `['featured']` → class includes `rf-tier--featured` */
@@ -571,7 +584,7 @@ export interface StructureEntry {
 	/** Extra attributes. String values are literal; objects reference modifiers or page data */
 	attrs?: Record<string, string | { fromModifier: string } | { fromPageData: string }>;
 	/** Transform applied to metaText value before injection */
-	transform?: 'duration' | 'uppercase' | 'capitalize';
+	transform?: NamedTransform;
 	/** Static text prepended to metaText value */
 	textPrefix?: string;
 	/** Static text appended to metaText value */

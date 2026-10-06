@@ -1,4 +1,4 @@
-import type { ThemeConfig, RuneConfig, StructureEntry } from './types.js';
+import type { ThemeConfig, RuneConfig, StructureEntry, NamedTransform } from './types.js';
 import { toKebabCase } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
 import {
@@ -69,7 +69,7 @@ export interface RuneContract {
 	>;
 	inlineStyles?: Record<
 		string,
-		string | { prop: string; template?: string; transform?: (value: string) => string }
+		string | { prop: string; template?: string; transform?: NamedTransform }
 	>;
 	childOrder: string[];
 	/** Child density imposed on nested runes */

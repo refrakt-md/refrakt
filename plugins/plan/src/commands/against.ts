@@ -156,3 +156,22 @@ export function collisionsFrom(
 	}
 	return collisions;
 }
+
+/**
+ * The base ref's claimants as `migrate ids` wants them (BUG-026): id →
+ * plan-dir-relative path. Same reading as `readRefIds`, so `validate --against`
+ * and `migrate ids --against` can never disagree about what the base holds.
+ */
+export function baseClaimants(
+	planDir: string,
+	ref: string,
+	cwd: string,
+): { ref: string; files: Map<string, string> } | { error: string } {
+	const index = readRefIds(planDir, ref, cwd);
+	if (index.error) return { error: index.error };
+	const files = new Map<string, string>();
+	for (const [id, path] of index.refIds) {
+		files.set(id, path.startsWith(`${planDir}/`) ? path.slice(planDir.length + 1) : path);
+	}
+	return { ref, files };
+}

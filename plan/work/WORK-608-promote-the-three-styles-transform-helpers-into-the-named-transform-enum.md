@@ -1,4 +1,4 @@
-{% work id="WORK-608" status="ready" priority="medium" complexity="simple" source="SPEC-143" milestone="v0.38.0" tags="config,serialisation,engine" %}
+{% work id="WORK-608" status="in-progress" priority="medium" complexity="simple" source="SPEC-143" milestone="v0.38.0" tags="config,serialisation,engine" %}
 
 # Promote the three styles transform helpers into the named-transform enum
 

@@ -33,6 +33,18 @@ export interface MigrateIdsOptions {
 	dir: string;
 	apply?: boolean;
 	useGit?: boolean;
+	/**
+	 * The base ref's claimants, which decide who keeps a colliding ID (BUG-026).
+	 * `files` maps id → plan-dir-relative path as the ref has it. Without it, a
+	 * collision cannot be resolved safely and is refused.
+	 */
+	base?: { ref: string; files: Map<string, string> };
+}
+
+/** Which claimant kept the ID, and why — stated on every renumber and refusal. */
+export interface KeptClaimant {
+	file: string;
+	why: string;
 }
 
 export interface PlannedRenumber {
@@ -46,6 +58,8 @@ export interface PlannedRenumber {
 	toFile: string;
 	/** The other file(s) keeping the original ID. */
 	collidesWith: string[];
+	/** The claimant that keeps the ID, and why it was the one treated as published. */
+	kept: KeptClaimant;
 }
 
 export interface RefusedRenumber {
@@ -56,6 +70,8 @@ export interface RefusedRenumber {
 	/** Files referencing the ambiguous ID, which a renumber would have to
 	 *  repoint without being able to prove which entity each one meant. */
 	ambiguousRefs: { file: string; line: number; text: string }[];
+	/** The claimant that was treated as published, when one could be established. */
+	kept?: KeptClaimant;
 }
 
 export interface MigrateIdsResult {
@@ -128,7 +144,7 @@ function nextFreeId(prefix: string, taken: Set<string>): string {
 }
 
 export function runMigrateIds(options: MigrateIdsOptions): MigrateIdsResult {
-	const { dir, apply = false, useGit = false } = options;
+	const { dir, apply = false, useGit = false, base } = options;
 	const root = resolve(dir);
 
 	const entities = scanPlanFiles(dir, { cache: false });
@@ -155,14 +171,26 @@ export function runMigrateIds(options: MigrateIdsOptions): MigrateIdsResult {
 
 		const prefix = id.includes('-') ? id.slice(0, id.lastIndexOf('-')) : id;
 
-		// Which claimant "should" keep the ID is not knowable from the files
-		// alone, so the choice is made deterministic (sorted by path) rather
-		// than left to scan order. It is also harmless: this only ever acts when
-		// *nothing* references the ID, so no reference is repointed either way
-		// and the entities keep their content. The refusal check below is what
-		// protects correctness — not which file happens to move.
+		// BUG-026 — who keeps the ID is decided by the base ref, not the files.
+		// An ID already on the base is distributed: merged commits, PR bodies,
+		// published CHANGELOGs, other branches. Renumbering it breaks references
+		// this tool never scans. An ID only on this branch has been seen by
+		// nobody, so it is the one that moves.
 		const sorted = [...group].sort((a, b) => a.file.localeCompare(b.file));
-		const [keep, ...movers] = sorted;
+		const decision = choosePublished(id, sorted, base);
+		if ('refuse' in decision) {
+			refused.push({
+				id,
+				file: sorted[0].file,
+				collidesWith: sorted.slice(1).map((e) => e.file),
+				reason: decision.refuse,
+				ambiguousRefs: [],
+			});
+			continue;
+		}
+		const keep = decision.keep;
+		const kept: KeptClaimant = { file: keep.file, why: decision.why };
+		const movers = sorted.filter((e) => e !== keep);
 
 		for (const mover of movers) {
 			// Every mention of the ID outside the entity being renumbered is
@@ -184,7 +212,8 @@ export function runMigrateIds(options: MigrateIdsOptions): MigrateIdsResult {
 				refused.push({
 					id,
 					file: mover.file,
-					collidesWith: [keep!.file],
+					collidesWith: [keep.file],
+					kept,
 					reason:
 						`${ambiguousRefs.length} reference(s) to ${id} exist outside the file being renumbered. ` +
 						'Which entity each one meant cannot be established, and repointing one at the wrong ' +
@@ -212,7 +241,8 @@ export function runMigrateIds(options: MigrateIdsOptions): MigrateIdsResult {
 				to,
 				file: mover.file,
 				toFile,
-				collidesWith: [keep!.file],
+				collidesWith: [keep.file],
+				kept,
 			};
 			planned.push(rename);
 
@@ -244,6 +274,59 @@ export function runMigrateIds(options: MigrateIdsOptions): MigrateIdsResult {
 		applied,
 		refused,
 		exitCode: refused.length > 0 ? EXIT_ERRORS : EXIT_SUCCESS,
+	};
+}
+
+type Claimant = { file: string };
+
+/**
+ * Which claimant is the published one — the one that must keep the ID.
+ *
+ * - On the base ref at exactly one claimant's path: that claimant.
+ * - On the base ref at a path no claimant holds (the base's file was renamed or
+ *   moved on this branch, and a second file took the ID): which of the two is
+ *   the base's entity cannot be told from paths, so refuse.
+ * - Not on the base ref: neither claimant has been seen by anyone, so either
+ *   may move; pick by path, deterministically.
+ * - No base ref: nothing establishes which one is published. Refuse rather than
+ *   pick by filename — a filename sort correlates with the slug, not with
+ *   which entity shipped.
+ */
+function choosePublished<T extends Claimant>(
+	id: string,
+	sorted: T[],
+	base: MigrateIdsOptions['base'],
+): { keep: T; why: string } | { refuse: string } {
+	if (!base) {
+		return {
+			refuse:
+				`${sorted.length} files claim ${id} and no base ref was given, so nothing establishes ` +
+				'which one is already published. Renumbering the published one would break references ' +
+				'outside plan/ (merged commits, CHANGELOGs) that this tool cannot see. Re-run with ' +
+				'`--against <ref>` (e.g. `--against origin/main`).',
+		};
+	}
+	const basePath = base.files.get(id);
+	if (basePath === undefined) {
+		return {
+			keep: sorted[0],
+			why:
+				`${id} is not on ${base.ref}, so no claimant is published; ` +
+				'the first by path keeps it and the others move.',
+		};
+	}
+	const onBase = sorted.find((e) => e.file === basePath);
+	if (!onBase) {
+		return {
+			refuse:
+				`${id} is on ${base.ref} at ${basePath}, which none of the claimants holds — the base's ` +
+				'entity was renamed or moved on this branch, so which claimant it became cannot be told ' +
+				'from paths. Resolve by hand.',
+		};
+	}
+	return {
+		keep: onBase,
+		why: `${onBase.file} holds ${id} on ${base.ref}, so it is published and keeps it.`,
 	};
 }
 
