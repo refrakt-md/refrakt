@@ -44,7 +44,7 @@ function collisions(ref: string) {
 	const index = readRefIds('plan', ref, repo);
 	if (index.error) return { error: index.error, collisions: [] };
 	const entities = scanPlanFiles(join(repo, 'plan'), { cache: false });
-	return { error: undefined, collisions: collisionsFrom(index.refIds, entities, 'plan') };
+	return { error: undefined, collisions: collisionsFrom(index.refIds, entities, 'plan', repo) };
 }
 
 describe('plan validate --against <ref> (SPEC-135 D8 / WORK-582)', () => {
@@ -58,8 +58,10 @@ describe('plan validate --against <ref> (SPEC-135 D8 / WORK-582)', () => {
 	// The case plain duplicate detection cannot see: only ONE file claims the ID
 	// in the working tree, so there is no local duplicate — the collision only
 	// exists relative to the base, and only becomes a duplicate on merge.
-	it('catches an ID the base spends on a different file', () => {
-		unlinkSync(join(repo, 'plan/work/WORK-001-alpha.md'));
+	//
+	// The base's file must still be there: two claimants surviving the merge is
+	// what makes a reference ambiguous, and is this check's whole contract.
+	it('catches an ID the base spends on a different surviving file', () => {
 		write('plan/work/WORK-001-something-else.md', work('WORK-001', 'Something else'));
 
 		const { collisions: found } = collisions('main');
@@ -72,6 +74,31 @@ describe('plan validate --against <ref> (SPEC-135 D8 / WORK-582)', () => {
 		});
 	});
 
+	// Previously flagged, and wrongly: the base's claimant is deleted, so the
+	// merge leaves one file holding the ID and no reference is ambiguous. The old
+	// rule compared slugs, so it fired on every title edit — the common case,
+	// since the slug is derived from the title — and on `plan migrate filenames`
+	// wholesale. Regression test for the real WORK-603 rename that hit it.
+	it('does not flag a rename that changes the slug', () => {
+		unlinkSync(join(repo, 'plan/work/WORK-001-alpha.md'));
+		write('plan/work/WORK-001-alpha-revised-title.md', work('WORK-001', 'Alpha, revised title'));
+
+		const { collisions: found } = collisions('main');
+		expect(found).toEqual([]);
+	});
+
+	// An ID reused for a different entity also leaves one claimant, so it is not
+	// a collision. It silently repoints every reference, which is a real hazard —
+	// but one needing content rather than paths to detect, and not a merge
+	// blocker. Pinned so the distinction is deliberate rather than incidental.
+	it('does not flag an ID reused for a different entity', () => {
+		unlinkSync(join(repo, 'plan/work/WORK-001-alpha.md'));
+		write('plan/work/WORK-001-unrelated-thing.md', work('WORK-001', 'An unrelated thing'));
+
+		const { collisions: found } = collisions('main');
+		expect(found).toEqual([]);
+	});
+
 	it('does not flag a file that merely changed content', () => {
 		write('plan/work/WORK-001-alpha.md', work('WORK-001', 'Alpha, revised'));
 
@@ -79,8 +106,8 @@ describe('plan validate --against <ref> (SPEC-135 D8 / WORK-582)', () => {
 		expect(found).toEqual([]);
 	});
 
-	// A slug rename is the same entity moving, not a second claimant. Flagging
-	// it would make the check cry wolf on ordinary editing.
+	// Subsumed by the base-path test above — kept because a directory move is a
+	// distinct shape from a slug change and both must stay quiet.
 	it('does not flag a renamed-but-same-slug file', () => {
 		unlinkSync(join(repo, 'plan/work/WORK-001-alpha.md'));
 		write('plan/specs/WORK-001-alpha.md', work('WORK-001', 'Alpha'));
@@ -107,7 +134,6 @@ describe('plan validate --against <ref> (SPEC-135 D8 / WORK-582)', () => {
 
 	it('compares against an arbitrary ref, not just a branch name', () => {
 		const sha = git('rev-parse', 'HEAD').trim();
-		unlinkSync(join(repo, 'plan/work/WORK-001-alpha.md'));
 		write('plan/work/WORK-001-other.md', work('WORK-001', 'Other'));
 
 		const { collisions: found } = collisions(sha);

@@ -661,7 +661,7 @@ function handleAgainst(dir: string, ref: string, formatJson: boolean): void {
 	}
 
 	const entities = scanPlanFiles(dir, { cache: false });
-	const collisions = collisionsFrom(index.refIds, entities, dir);
+	const collisions = collisionsFrom(index.refIds, entities, dir, cwd);
 
 	if (formatJson) {
 		console.log(JSON.stringify({ ref, collisions }, null, 2));
