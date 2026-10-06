@@ -1,4 +1,4 @@
-{% work id="WORK-606" status="in-progress" priority="medium" complexity="moderate" milestone="v0.38.0" source="SPEC-128" tags="runes,reference,docs,dx" %}
+{% work id="WORK-606" status="in-progress" priority="medium" complexity="moderate" milestone="v0.38.0" source="SPEC-128" tags="runes,reference,docs,dx" pr="refrakt-md/refrakt#658" %}
 
 # Project `itemModel` and render `emitTag` and `template` in the rune reference
 
@@ -14,13 +14,13 @@ are lost at two points:
 
 ## Acceptance Criteria
 
-- [ ] `SerializedContentField` carries a projection of `itemModel`, including each item field's `match`, `extract`, and `pattern` (regex source as a string, or the literal `'remainder'`)
-- [ ] `renderField` renders `emitTag`, so a dual-syntax field states both what an author writes and what it becomes
-- [ ] The item grammar is rendered in a form that leads with the authoring shape, matching how the sections branch already reads
-- [ ] `field.template` is either rendered or removed — a hand-written snippet that nothing displays does not stay
+- [x] `SerializedContentField` carries a projection of `itemModel`, including each item field's `match`, `extract`, and `pattern` (regex source as a string, or the literal `'remainder'`)
+- [x] `renderField` renders `emitTag`, so a dual-syntax field states both what an author writes and what it becomes
+- [x] The item grammar is rendered in a form that leads with the authoring shape, matching how the sections branch already reads
+- [x] `field.template` is either rendered or removed — a hand-written snippet that nothing displays does not stay
 - [ ] The loose `match: 'tag'` declarations that render as a bare "tag" are tightened to `match: 'tag:<name>'` where the rune accepts one specific tag
-- [ ] `refrakt reference playlist` and `refrakt reference cast` show enough to write a list item without reading the plugin source
-- [ ] The generated attribute tables (`site/content/_data/rune-attributes.json`) regenerate without unrelated drift
+- [x] `refrakt reference playlist` and `refrakt reference cast` show enough to write a list item without reading the plugin source
+- [x] The generated attribute tables (`site/content/_data/rune-attributes.json`) regenerate without unrelated drift
 
 ## Approach
 
