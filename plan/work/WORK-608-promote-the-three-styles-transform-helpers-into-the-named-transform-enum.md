@@ -1,4 +1,4 @@
-{% work id="WORK-608" status="in-progress" priority="medium" complexity="simple" source="SPEC-143" milestone="v0.38.0" tags="config,serialisation,engine" pr="refrakt-md/refrakt#659" %}
+{% work id="WORK-608" status="done" priority="medium" complexity="simple" source="SPEC-143" milestone="v0.38.0" tags="config,serialisation,engine" pr="refrakt-md/refrakt#659" %}
 
 # Promote the three styles transform helpers into the named-transform enum
 
@@ -51,7 +51,7 @@ files.
 - [x] All 11 function-form sites are converted to the string form
 - [x] The function form is removed from the `styles` type in `packages/transform/src/types.ts`, so it cannot come back
 - [x] `postTransform` is the only remaining function-typed field in `RuneConfig`, asserted by a test rather than by inspection
-- [ ] `npx refrakt contracts --check` reports no drift on either contract copy
+- [x] `npx refrakt contracts --check` reports no drift on either contract copy
 - [x] `npm run seo:baseline:check` reports no drift
 - [x] `npx vitest run packages/lumina/test/css-coverage.test.ts` passes unchanged
 - [x] A `RuneConfig` round-trips through `JSON.parse(JSON.stringify(…))` unchanged for every core and plugin rune
@@ -77,5 +77,24 @@ place means the next config to need a transform reaches for a closure again.
 - {% ref "SPEC-143" /%} — where the requirement surfaced: the engine config has to travel with a serialised rune
 - {% ref "SPEC-140" /%} — transform boilerplate consolidation; shares the serialisability goal
 - {% ref "SPEC-081" /%} — declarative structure assembly; why `postTransform` stays a function
+
+## Resolution
+
+Completed: 2026-10-06
+
+Branch: `claude/v0-37-post-release-plan-dc3va1`
+
+### What was done
+- `packages/transform/src/types.ts`: `NamedTransform` = `'duration' | 'uppercase' | 'capitalize' | 'align' | 'fr' | 'gap'`, shared by meta fields, structure entries and `styles`; `styles[…].transform` accepts only a name. Exported from `@refrakt-md/transform`.
+- `packages/transform/src/engine.ts`: `align` (`resolveValign`), `fr` (`ratioToFr`), `gap` (`resolveGap`) join the one transform table; `styles` dispatches through it. The helpers stay exported.
+- `packages/transform/src/contracts.ts`: the second copy of the `styles` type (`inlineStyles`) narrowed the same way — found by the build, not the survey.
+- 11 function sites → strings: `packages/runes/src/config.ts` (grid ×3, split), learning, marketing ×3, media, storytelling ×2; the now-unused helper imports dropped.
+- `packages/lumina/test/rune-config-serialisable.test.ts`: across 131 core + plugin rune configs, `postTransform` is the only function, and every config minus `postTransform` round-trips through JSON.
+- `site/content/extend/theme-authoring/config-api.md`: the transform form of `styles` and the shared vocabulary table.
+
+### Notes
+- **Contracts gained the transform names — accepted, not byte-identical.** The 14 `styles` entries now carry `"transform": "align" | "fr" | "gap"`; as functions they were silently dropped by `JSON.stringify`. Additive only; both copies regenerated and `--check` passes. Kept by decision on #659: the contract now records how each value is computed.
+- Rendered HTML is identical across every rune × variant on both sites (`inspect --json`, 3,890 outputs); the only diff is the same names in the config `inspect` echoes.
+- Breaking for a published type → `minor` changeset on `@refrakt-md/transform`.
 
 {% /work %}
