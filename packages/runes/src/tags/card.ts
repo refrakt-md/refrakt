@@ -93,8 +93,8 @@ export const card = createContentModelSchema({
 
 		// SPEC-089 cover knobs — emit as meta tags only when set; the engine reads
 		// them as fields (content-place → overlay anchor vars; height/aspect →
-		// intrinsic shape). They live in the children tree so the field channel
-		// finds them, and are marked via `properties` below.
+		// intrinsic shape). They are mapped via `properties` below, which carries
+		// their values in the field bag.
 		const contentPlace = attrs['content-place'] as string | undefined;
 		const height = attrs.height as string | undefined;
 		const aspect = attrs.aspect as string | undefined;
@@ -102,10 +102,11 @@ export const card = createContentModelSchema({
 		const heightMeta = height ? new Tag('meta', { content: height }) : undefined;
 		const aspectMeta = aspect ? new Tag('meta', { content: aspect }) : undefined;
 
-		const children: RenderableTreeNode[] = [...layoutChildren];
-		if (contentPlaceMeta) children.push(contentPlaceMeta);
-		if (heightMeta) children.push(heightMeta);
-		if (aspectMeta) children.push(aspectMeta);
+		// `media-position` is property-mapped below, so it lives in the field bag.
+		// The other layout metas are not mapped by card and still render.
+		const children: RenderableTreeNode[] = layoutChildren.filter(
+			(c) => c !== layoutMetas.mediaPosition,
+		);
 
 		// Media zone — unwrap a bare image; otherwise render arbitrary content.
 		if (mediaNodes.length > 0) {

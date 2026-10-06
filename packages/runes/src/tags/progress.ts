@@ -84,7 +84,7 @@ export const progress = createContentModelSchema({
 		const fillTag = new Tag('span', {}, []);
 		const trackTag = new Tag('span', {}, [fillTag]);
 		const refs: Record<string, InstanceType<typeof Tag>> = { track: trackTag, fill: fillTag };
-		const children: RenderableTreeNode[] = sentimentMeta ? [sentimentMeta] : [];
+		const children: RenderableTreeNode[] = [];
 
 		if (labelArr.length > 0) {
 			const labelTag = new Tag('span', {}, labelArr);

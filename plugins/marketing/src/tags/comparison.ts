@@ -122,7 +122,7 @@ const comparisonRow = createContentModelSchema({
 				body: body.tag('div'),
 				label: labelTag,
 			},
-			children: [labelTag, rowTypeMeta, body.next()],
+			children: [labelTag, body.next()],
 		});
 	},
 });
@@ -157,7 +157,7 @@ const comparisonColumn = createContentModelSchema({
 				body: body.tag('div'),
 				name: nameTag,
 			},
-			children: [nameTag, highlightedMeta, body.next()],
+			children: [nameTag, body.next()],
 		});
 	},
 });

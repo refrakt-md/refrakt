@@ -96,7 +96,6 @@ export const audio = createContentModelSchema({
 		const waveformMeta = waveform ? new Tag('meta', { content: 'true' }) : null;
 
 		const children: any[] = [];
-		if (waveformMeta) children.push(waveformMeta);
 
 		// Player element with JSON data
 		const audioEl = new Tag(

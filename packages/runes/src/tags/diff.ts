@@ -271,7 +271,7 @@ export const diff = createContentModelSchema({
 				mode: modeMeta,
 				language: languageMeta,
 			},
-			children: [modeMeta, languageMeta, ...header, ...expanded],
+			children: [...header, ...expanded],
 		});
 		// Opt in to the highlight transform's `theme.code.colorScheme` cascade:
 		// the override stamps `data-color-scheme` on `data-code-host` wrappers

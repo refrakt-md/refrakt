@@ -120,7 +120,7 @@ export const realm = createContentModelSchema({
 		const parentMeta = new Tag('meta', { content: attrs.parent ?? '' });
 
 		// Layout meta tags
-		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
+		const { metas: layoutMetas } = buildLayoutMetas(attrs);
 		const {
 			mediaPosition: mediaPositionMeta,
 			mediaRatio: mediaRatioMeta,
@@ -146,7 +146,6 @@ export const realm = createContentModelSchema({
 		// media-position="top".
 		const children: any[] = [];
 		if (sceneDiv) children.push(sceneDiv.next());
-		children.push(realmTypeMeta, scaleMeta, tagsMeta, parentMeta, ...layoutChildren);
 		children.push(nameTag);
 		if (bodyDiv) children.push(bodyDiv.next());
 		if (sectionsContainer) children.push(sectionsContainer.next());

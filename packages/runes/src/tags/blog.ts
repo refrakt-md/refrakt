@@ -77,15 +77,7 @@ export const blog = createContentModelSchema({
 		const sectionProps = pageSectionProperties(header);
 		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
 
-		const children: any[] = [
-			folderMeta,
-			sortMeta,
-			filterMeta,
-			limitMeta,
-			layoutMeta,
-			...headerContent,
-			postList,
-		];
+		const children: any[] = [...headerContent, postList];
 
 		return createComponentRenderable({
 			rune: 'blog',

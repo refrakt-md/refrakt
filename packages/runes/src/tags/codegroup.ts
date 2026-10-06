@@ -89,14 +89,12 @@ export const codegroup = createContentModelSchema({
 		if (attrs.title !== undefined) {
 			const titleMeta = new Tag('meta', { content: attrs.title });
 			properties.title = titleMeta;
-			children.push(titleMeta);
 		}
 
 		const overflow = attrs.overflow as string | undefined;
 		if (overflow && overflow !== 'scroll') {
 			const overflowMeta = new Tag('meta', { content: overflow });
 			properties.overflow = overflowMeta;
-			children.push(overflowMeta);
 		}
 
 		const panels = asNodes(resolved.panels);

@@ -103,7 +103,7 @@ export const organization = createContentModelSchema({
 				...sectionProps,
 				body: bodyDiv,
 			},
-			children: [typeMeta, header.wrap('header').next(), bodyDiv.next()],
+			children: [header.wrap('header').next(), bodyDiv.next()],
 		});
 	},
 });

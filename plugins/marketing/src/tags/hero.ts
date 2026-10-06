@@ -138,7 +138,7 @@ export const hero = createContentModelSchema({
 		// the media-first stacked rules for hero accordingly.
 		const align = (attrs.align as string) || 'center';
 		const alignMeta = new Tag('meta', { content: align });
-		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas({
+		const { metas: layoutMetas } = buildLayoutMetas({
 			...attrs,
 			'media-position': attrs['media-position'] ?? 'bottom',
 		});
@@ -156,9 +156,6 @@ export const hero = createContentModelSchema({
 		const contentPlaceMeta = contentPlace ? new Tag('meta', { content: contentPlace }) : undefined;
 		const heightMeta = heightAttr ? new Tag('meta', { content: heightAttr }) : undefined;
 		const aspectMeta = aspect ? new Tag('meta', { content: aspect }) : undefined;
-		const coverMetas = [contentPlaceMeta, heightMeta, aspectMeta].filter(Boolean) as InstanceType<
-			typeof Tag
-		>[];
 
 		// Structural wrapping
 		const actionsDiv = actions.wrap('div');
@@ -196,13 +193,7 @@ export const hero = createContentModelSchema({
 				action: actions.flatten().tags('li'),
 				command: actions.flatten().tags('div'),
 			},
-			children: [
-				alignMeta,
-				...layoutChildren,
-				...coverMetas,
-				mainContent.next(),
-				...(side.toArray().length > 0 ? [mediaDiv.next()] : []),
-			],
+			children: [mainContent.next(), ...(side.toArray().length > 0 ? [mediaDiv.next()] : [])],
 		});
 	},
 	deprecations: { justify: { newName: 'align' } },

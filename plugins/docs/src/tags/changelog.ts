@@ -95,7 +95,7 @@ export const changelog = createContentModelSchema({
 		const releases = sectionNodes.tag('section').typeof('ChangelogRelease');
 		const releasesDiv = new Tag('div', {}, releases.toArray());
 
-		const children: any[] = [projectMeta];
+		const children: any[] = [];
 		if (headerNodes.count() > 0) {
 			children.push(headerNodes.wrap('header').next());
 		}

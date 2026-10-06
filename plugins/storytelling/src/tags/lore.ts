@@ -64,7 +64,7 @@ export const lore = createContentModelSchema({
 				title: titleTag,
 				body: body.tag('div'),
 			},
-			children: [titleTag, categoryMeta, spoilerMeta, tagsMeta, body.next()],
+			children: [titleTag, body.next()],
 		});
 	},
 });

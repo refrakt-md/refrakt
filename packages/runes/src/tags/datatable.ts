@@ -86,7 +86,7 @@ export const datatable = createContentModelSchema({
 				scroll: scrollDiv,
 				table: tableTag,
 			},
-			children: [sortableMeta, searchableMeta, pageSizeMeta, defaultSortMeta, scrollDiv],
+			children: [scrollDiv],
 		});
 	},
 });

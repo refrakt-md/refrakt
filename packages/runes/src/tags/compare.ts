@@ -84,7 +84,7 @@ export const compare = createContentModelSchema({
 			refs: {
 				panels: panelsDiv,
 			},
-			children: [layoutMeta, ...header, panelsDiv],
+			children: [...header, panelsDiv],
 		});
 		// Opt in to the highlight transform's `theme.code.colorScheme` cascade —
 		// see comment in diff.ts.

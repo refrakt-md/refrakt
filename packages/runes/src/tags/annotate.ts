@@ -65,7 +65,7 @@ export const annotate = createContentModelSchema({
 				variant: variantMeta,
 			},
 			refs: { body: body.tag('div') },
-			children: [variantMeta, body.next()],
+			children: [body.next()],
 		});
 	},
 });

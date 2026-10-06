@@ -96,7 +96,7 @@ export const juxtapose = createContentModelSchema({
 				duration: durationMeta,
 			},
 			refs: { panels: panelsContainer },
-			children: [variantMeta, orientationMeta, positionMeta, durationMeta, panelsContainer.next()],
+			children: [panelsContainer.next()],
 		});
 	},
 });

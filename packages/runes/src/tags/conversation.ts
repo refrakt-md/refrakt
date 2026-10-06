@@ -30,7 +30,7 @@ export const conversationMessage = createContentModelSchema({
 			refs: {
 				body: body.tag('div'),
 			},
-			children: [speakerTag, alignMeta, body.next()],
+			children: [speakerTag, body.next()],
 		});
 	},
 });

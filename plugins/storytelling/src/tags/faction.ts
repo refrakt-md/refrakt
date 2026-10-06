@@ -123,7 +123,7 @@ export const faction = createContentModelSchema({
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 
 		// Layout meta tags
-		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
+		const { metas: layoutMetas } = buildLayoutMetas(attrs);
 		const {
 			mediaPosition: mediaPositionMeta,
 			mediaRatio: mediaRatioMeta,
@@ -149,7 +149,6 @@ export const faction = createContentModelSchema({
 		// media-position="top".
 		const children: any[] = [];
 		if (sceneDiv) children.push(sceneDiv.next());
-		children.push(factionTypeMeta, alignmentMeta, sizeMeta, tagsMeta, ...layoutChildren);
 		children.push(nameTag);
 		if (bodyDiv) children.push(bodyDiv.next());
 		if (sectionsContainer) children.push(sectionsContainer.next());

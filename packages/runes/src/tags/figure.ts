@@ -83,8 +83,6 @@ export const figure = createContentModelSchema({
 		const alignMeta = attrs.align ? new Tag('meta', { content: attrs.align }) : undefined;
 		const childNodes: any[] = [...imgs];
 		if (captionTag) childNodes.push(captionTag);
-		if (sizeMeta) childNodes.push(sizeMeta);
-		if (alignMeta) childNodes.push(alignMeta);
 
 		return createComponentRenderable({
 			rune: 'figure',

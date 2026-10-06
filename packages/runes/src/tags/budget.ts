@@ -267,7 +267,7 @@ export const budgetCategory = createContentModelSchema({
 			refs: {
 				'line-items': itemsList,
 			},
-			children: [labelTag, estimateMeta, subtotalTag, itemsList],
+			children: [itemsList],
 		});
 	},
 });
@@ -445,15 +445,7 @@ export const budget = createContentModelSchema({
 
 		// SPEC-081: emit flat header slots — `layout` builds the preamble
 		// <header>; the categories and footer append after it.
-		const children: any[] = [
-			currencyMeta,
-			durationMeta,
-			showPerDayMeta,
-			variantMeta,
-			...header.toArray(),
-			categoriesDiv,
-			footerDiv,
-		];
+		const children: any[] = [...header.toArray(), categoriesDiv, footerDiv];
 
 		return createComponentRenderable({
 			rune: 'budget',

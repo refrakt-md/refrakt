@@ -247,12 +247,7 @@ export const palette = createContentModelSchema({
 		}
 
 		// Title is rendered as a structural element — include conditionally
-		const topChildren: (string | InstanceType<typeof Tag>)[] = [
-			titleMeta,
-			showContrastMeta,
-			showA11yMeta,
-			columnsMeta,
-		];
+		const topChildren: (string | InstanceType<typeof Tag>)[] = [];
 		if (attrs.title) {
 			topChildren.push(new Tag('h3', { 'data-name': 'title' }, [attrs.title as string]));
 		}

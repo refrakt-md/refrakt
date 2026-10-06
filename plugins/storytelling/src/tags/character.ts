@@ -156,7 +156,6 @@ export const character = createContentModelSchema({
 		// sibling (character chrome) placed at the article root.
 		const children: any[] = [];
 		if (portraitDiv) children.push(portraitDiv.next());
-		children.push(roleMeta, statusMeta, aliasesMeta, tagsMeta);
 		children.push(nameTag);
 		if (bodyDiv) children.push(bodyDiv.next());
 		if (sectionsContainer) children.push(sectionsContainer.next());

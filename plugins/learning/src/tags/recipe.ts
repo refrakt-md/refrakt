@@ -200,7 +200,7 @@ export const recipe = createContentModelSchema({
 		}
 
 		// Layout meta tags
-		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
+		const { metas: layoutMetas } = buildLayoutMetas(attrs);
 		const {
 			mediaPosition: mediaPositionMeta,
 			mediaRatio: mediaRatioMeta,
@@ -231,12 +231,6 @@ export const recipe = createContentModelSchema({
 		// into the content column + preamble header. (The media column stays a
 		// single transform-built wrapper.)
 		const children: any[] = [
-			prepTimeMeta,
-			cookTimeMeta,
-			servingsMeta,
-			difficultyMeta,
-			...layoutChildren,
-			...(contentPlaceMeta ? [contentPlaceMeta] : []),
 			...(hasMedia ? [mediaDiv.next()] : []),
 			...header.toArray(),
 			ingredientsList,

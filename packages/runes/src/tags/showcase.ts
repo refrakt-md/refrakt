@@ -81,14 +81,12 @@ export const showcase = createContentModelSchema({
 		const place = attrs.place ?? '';
 
 		const properties: Record<string, any> = {};
-		const childNodes: any[] = [];
 		// Emit a frame facet meta the engine routes to the showcase root
 		// (frameTarget: 'self'). Routed through `properties` so it rides both the
 		// SPEC-082 field bag and the meta channel the engine reads.
 		const frameMeta = (field: string, value: string) => {
 			const meta = new Tag('meta', { content: value });
 			properties[field] = meta;
-			childNodes.push(meta);
 		};
 
 		if (shadow && shadow !== 'none') {
@@ -114,8 +112,6 @@ export const showcase = createContentModelSchema({
 
 		const viewport = new Tag('div', {}, children.toArray());
 
-		childNodes.push(viewport);
-
 		return createComponentRenderable({
 			rune: 'showcase',
 			tag: 'div',
@@ -123,7 +119,7 @@ export const showcase = createContentModelSchema({
 			refs: {
 				viewport,
 			},
-			children: childNodes,
+			children: [viewport],
 		});
 	},
 });

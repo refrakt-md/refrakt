@@ -101,7 +101,6 @@ export const bentoCell = createContentModelSchema({
 		const size = attrs.size ?? 'medium';
 		const sizeMeta = new Tag('meta', { content: size });
 		properties.size = sizeMeta;
-		children.push(sizeMeta);
 
 		const fallback = presetSpans(size, 6);
 		const cols = attrs.cols ? String(attrs.cols) : String(fallback.cols);
@@ -110,7 +109,6 @@ export const bentoCell = createContentModelSchema({
 		const rowsMeta = new Tag('meta', { content: rows });
 		properties.cols = colsMeta;
 		properties.rows = rowsMeta;
-		children.push(colsMeta, rowsMeta);
 
 		// Per-cell overrides of the grid's content-height / media-ratio defaults.
 		// Empty when unset → the cell inherits the grid-level var (or the theme
@@ -121,7 +119,6 @@ export const bentoCell = createContentModelSchema({
 		const mediaRatioMeta = new Tag('meta', { content: (attrs['media-ratio'] as string) ?? '' });
 		properties['content-height'] = contentHeightMeta;
 		properties['media-ratio'] = mediaRatioMeta;
-		children.push(contentHeightMeta, mediaRatioMeta);
 
 		// Media zone — clipped/sized by the shared media-zone selector (WORK-339);
 		// no bento-specific per-guest CSS.
@@ -470,14 +467,7 @@ export const bento = createContentModelSchema({
 		const cells = cellStream.tag('div').typeof('BentoCell');
 		const grid = cells.wrap('div');
 
-		const children: RenderableTreeNode[] = [
-			gapMeta,
-			columnsMeta,
-			rowHeightMeta,
-			contentHeightMeta,
-			mediaRatioMeta,
-			collapseMeta,
-		];
+		const children: RenderableTreeNode[] = [];
 		if (lead.count() > 0) children.push(...(lead.toArray() as RenderableTreeNode[]));
 		children.push(grid.next());
 

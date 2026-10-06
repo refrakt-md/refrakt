@@ -376,7 +376,7 @@ export const playlist = createContentModelSchema({
 		}
 
 		// Layout meta tags
-		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
+		const { metas: layoutMetas } = buildLayoutMetas(attrs);
 		const {
 			mediaPosition: mediaPositionMeta,
 			mediaRatio: mediaRatioMeta,
@@ -415,10 +415,8 @@ export const playlist = createContentModelSchema({
 		// Use the unwrapped image for SEO structured data
 		const seoImage = mediaImgTag;
 
-		const children: any[] = [typeMeta, ...layoutChildren];
+		const children: any[] = [];
 		if (hasPlayerMeta) children.push(hasPlayerMeta);
-		if (artistMeta) children.push(artistMeta);
-		if (idMeta) children.push(idMeta);
 
 		// Media before content so cover image appears at the top in stacked layout
 		if (hasMedia) children.push(mediaDiv.next());

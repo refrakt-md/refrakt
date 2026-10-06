@@ -59,7 +59,7 @@ export const beat = createContentModelSchema({
 				follows: followsMeta,
 			},
 			refs: { label: labelTag, body: body.tag('div') },
-			children: [labelTag, statusMeta, idMeta, trackMeta, followsMeta, body.next()],
+			children: [labelTag, body.next()],
 		});
 	},
 });
@@ -146,7 +146,7 @@ export const plot = createContentModelSchema({
 		const beats = itemStream.tag('li').typeof('Beat');
 		const beatsList = new Tag('ol', {}, beats.toArray());
 
-		const children: any[] = [titleTag, plotTypeMeta, structureMeta, tagsMeta];
+		const children: any[] = [titleTag];
 		if (descRendered.count() > 0) {
 			children.push(...descRendered.toArray());
 		}

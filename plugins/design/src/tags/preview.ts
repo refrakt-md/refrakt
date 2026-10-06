@@ -211,9 +211,6 @@ export const preview = createContentModelSchema({
 		const responsiveMeta = responsive ? new Tag('meta', { content: responsive }) : undefined;
 
 		const childNodes = [
-			...(titleMeta ? [titleMeta] : []),
-			themeMeta,
-			...(responsiveMeta ? [responsiveMeta] : []),
 			...(sourcePre ? [sourcePre] : []),
 			...(htmlSourcePre ? [htmlSourcePre] : []),
 			...children.toArray(),

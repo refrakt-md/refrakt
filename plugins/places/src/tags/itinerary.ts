@@ -80,7 +80,7 @@ export const itineraryStop = createContentModelSchema({
 			refs: {
 				body: body.tag('div'),
 			},
-			children: [timeTag, locationTag, durationMeta, activityMeta, latMeta, lngMeta, body.next()],
+			children: [timeTag, locationTag, body.next()],
 		});
 	},
 });
@@ -133,7 +133,7 @@ export const itineraryDay = createContentModelSchema({
 
 		const stopsList = new Tag('ol', {}, stopsStream.toArray());
 
-		const children: any[] = [labelTag, dateMeta];
+		const children: any[] = [labelTag];
 		if (headerNodes.count() > 0) {
 			children.push(headerNodes.wrap('div').next());
 		}
@@ -223,7 +223,7 @@ export const itinerary = createContentModelSchema({
 		const days = bodyStream.tag('article').typeof('ItineraryDay');
 		const daysContainer = new Tag('div', {}, days.toArray());
 
-		const children: any[] = [variantMeta, directionMeta];
+		const children: any[] = [];
 		if (headerNodes.count() > 0) {
 			children.push(headerNodes.wrap('header').next());
 		}

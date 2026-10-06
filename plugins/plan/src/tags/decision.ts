@@ -115,19 +115,7 @@ export const decision = createContentModelSchema({
 				blurb,
 				body: bodyDiv,
 			},
-			children: [
-				idMeta,
-				statusMeta,
-				dateMeta,
-				supersedesMeta,
-				sourceMeta,
-				tagsMeta,
-				createdMeta,
-				modifiedMeta,
-				title.next(),
-				...(blurb ? [blurb] : []),
-				bodyDiv,
-			],
+			children: [title.next(), ...(blurb ? [blurb] : []), bodyDiv],
 		});
 	},
 });

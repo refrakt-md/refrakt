@@ -252,7 +252,7 @@ export const feature = createContentModelSchema({
 		// Content-first DOM (header/definitions before media) → the truthful
 		// default placement is `bottom`, mirroring hero (BUG-001).
 		const resolvedMediaPosition = (attrs['media-position'] as string) ?? 'bottom';
-		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas({
+		const { metas: layoutMetas } = buildLayoutMetas({
 			...attrs,
 			'media-position': resolvedMediaPosition,
 		});
@@ -289,10 +289,6 @@ export const feature = createContentModelSchema({
 		const mediaContent = side.wrap('div');
 
 		const children = [
-			alignMeta,
-			layoutMeta,
-			...(collapseToMeta ? [collapseToMeta] : []),
-			...layoutChildren,
 			mainContent.next(),
 			...(side.toArray().length > 0 ? [mediaContent.next()] : []),
 		];

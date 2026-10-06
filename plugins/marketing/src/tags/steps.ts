@@ -60,7 +60,7 @@ export const step = createContentModelSchema({
 		const sideContent = side.wrap('div');
 
 		// Content-first DOM → the truthful stacked default is `bottom` (BUG-001).
-		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas({
+		const { metas: layoutMetas } = buildLayoutMetas({
 			...attrs,
 			'media-position': attrs['media-position'] ?? 'bottom',
 		});
@@ -72,7 +72,6 @@ export const step = createContentModelSchema({
 		} = layoutMetas;
 
 		const children = [
-			...layoutChildren,
 			mainContent.next(),
 			...(side.toArray().length > 0 ? [sideContent.next()] : []),
 		];

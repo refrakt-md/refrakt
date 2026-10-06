@@ -48,7 +48,7 @@ export const toc = createContentModelSchema({
 			refs: {
 				list,
 			},
-			children: [depthMeta, orderedMeta, list],
+			children: [list],
 		});
 	},
 });

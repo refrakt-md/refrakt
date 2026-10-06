@@ -134,7 +134,7 @@ export const embed = createContentModelSchema({
 		).wrap('div');
 		const fallbackDiv = fallback.tag('div');
 
-		const children: any[] = [urlMeta, titleMeta, embedUrlMeta];
+		const children: any[] = [];
 		let wrapperDiv: InstanceType<typeof Tag> | undefined;
 		if (detected.embedUrl) {
 			const iframe = new Tag(

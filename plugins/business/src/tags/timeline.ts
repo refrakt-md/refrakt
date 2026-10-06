@@ -134,7 +134,7 @@ export const timeline = createContentModelSchema({
 
 		const entriesList = new Tag('ol', {}, items.toArray());
 
-		const children: any[] = [directionMeta];
+		const children: any[] = [];
 		if (headerNodes.count() > 0) {
 			children.push(headerNodes.wrap('header').next());
 		}

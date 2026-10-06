@@ -958,7 +958,7 @@ function buildAutoBreadcrumb(
 		tag: 'nav',
 		properties: { separator: newSeparatorMeta },
 		refs: { items: itemsList },
-		children: [newSeparatorMeta, itemsList],
+		children: [itemsList],
 	});
 
 	// SPEC-130 D8 / WORK-571 — the hook calls the applier itself.
