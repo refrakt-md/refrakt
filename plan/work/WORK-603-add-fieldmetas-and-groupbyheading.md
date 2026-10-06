@@ -1,4 +1,4 @@
-{% work id="WORK-603" status="in-progress" priority="medium" complexity="moderate" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dx" %}
+{% work id="WORK-603" status="in-progress" priority="medium" complexity="moderate" milestone="v0.38.0" source="SPEC-140" tags="runes,transform,dx" pr="refrakt-md/refrakt#657" %}
 
 # Add `fieldMetas` and `groupByHeading`
 
@@ -77,17 +77,17 @@ running group; list items become entries" loop, written seven times:
 
 ## Acceptance Criteria
 
-- [ ] `fieldMetas`' spec is data: a bare string, or `{ from: [...], default }` — no entry accepts a function
-- [ ] The spec round-trips through `JSON.parse(JSON.stringify(...))` unchanged
-- [ ] `from` resolves only the declared roots (`attrs.*`, `file.*`); an unknown root is rejected at call time rather than resolving to empty
-- [ ] The five runes reading `config.variables.file` express their `created` / `modified` fallback without a closure
-- [ ] A property-and-ref name collision is still rejected with the {% ref "ADR-008" /%} error when the properties object comes from `fieldMetas`
-- [ ] `fieldMetas` is adopted where a rune's metas are all plain `attrs` reads mapped into `properties`; runes needing a meta outside `properties`, or conditionally, keep the explicit form
+- [x] `fieldMetas`' spec is data: a bare string, or `{ from: [...], default }` — no entry accepts a function
+- [x] The spec round-trips through `JSON.parse(JSON.stringify(...))` unchanged
+- [x] `from` resolves only the declared roots (`attrs.*`, `file.*`); an unknown root is rejected at call time rather than resolving to empty
+- [x] The five runes reading `config.variables.file` express their `created` / `modified` fallback without a closure
+- [x] A property-and-ref name collision is still rejected with the {% ref "ADR-008" /%} error when the properties object comes from `fieldMetas`
+- [x] `fieldMetas` is adopted where a rune's metas are all plain `attrs` reads mapped into `properties`; runes needing a meta outside `properties`, or conditionally, keep the explicit form
 - [ ] `groupByHeading` is adopted at the seven loop sites, with each rune's per-item parser left rune-specific
-- [ ] No lint rule or contract assertion makes either utility mandatory
-- [ ] The utility is named `fieldMetas`; nothing in the codebase or docs introduces a second `metaFields`, and `RuneConfig.metaFields` is unchanged
-- [ ] `refrakt contracts --check` and `npm run seo:baseline:check` report no drift
-- [ ] `npm test` passes unchanged
+- [x] No lint rule or contract assertion makes either utility mandatory
+- [x] The utility is named `fieldMetas`; nothing in the codebase or docs introduces a second `metaFields`, and `RuneConfig.metaFields` is unchanged
+- [x] `refrakt contracts --check` and `npm run seo:baseline:check` report no drift
+- [x] `npm test` passes unchanged
 
 ## Approach
 
