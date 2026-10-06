@@ -1,4 +1,4 @@
-{% bug id="BUG-028" status="confirmed" severity="major" source="SPEC-106" tags="runes,figure,content-loss,composition" %}
+{% bug id="BUG-028" status="confirmed" severity="major" source="SPEC-106" tags="runes,figure,content-loss,composition" milestone="v0.39.0" %}
 
 # `figure` silently drops every child that is not an image
 
@@ -67,6 +67,26 @@ a caption floating under nothing.
      contract and the `ImageObject` type, and makes the limit visible.
   The choice is a product decision about what `figure` *is*, so it belongs in a
   spec rather than being settled in the fix.
+
+## Decision
+
+**Fix 1: `figure` is a general captioned container.** Decided when scheduling
+v0.39.0. Non-media children are emitted in body order, and `imgs` stays the media
+slot. Together with {% ref "WORK-615" /%}, which removes snippet's own figure
+wrapper, this makes `{% figure %}` the documented way to give a snippet, table or
+diagram a caption.
+
+What the fix still has to settle, and record in its resolution:
+
+- **The schema.org type.** `typeof="ImageObject"` cannot stay unconditional once a
+  figure may hold a code fence. One option: keep `ImageObject` when the media slot is
+  the figure's only content, and emit no type otherwise. That choice belongs in the
+  schema table ({% ref "SPEC-130" /%}), and the baseline diff is reviewed, not
+  regenerated silently.
+- **Contracts and CSS.** The structure contract moves. Lumina's figure styles need to
+  hold up for non-media bodies.
+- **Docs.** The figure rune page states what it accepts, and SPEC-062's "reach for
+  codegroup instead" advice is revisited.
 
 ## References
 

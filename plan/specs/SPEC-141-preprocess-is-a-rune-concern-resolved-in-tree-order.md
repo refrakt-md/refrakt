@@ -1,4 +1,4 @@
-{% spec id="SPEC-141" status="draft" tags="runes, preprocess, architecture, composition, dx" %}
+{% spec id="SPEC-141" status="accepted" tags="runes, preprocess, architecture, composition, dx" %}
 
 # Preprocess is a rune concern, resolved in tree order
 

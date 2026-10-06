@@ -1,4 +1,4 @@
-{% bug id="BUG-025" status="confirmed" severity="major" source="SPEC-070" tags="runes,collection,aggregate,backlog,grouping" %}
+{% bug id="BUG-025" status="confirmed" severity="major" source="SPEC-070" tags="runes,collection,aggregate,backlog,grouping" milestone="v0.39.0" %}
 
 # Grouping by a multi-value field keys on the whole comma-string
 

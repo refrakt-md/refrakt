@@ -1,4 +1,4 @@
-{% spec id="SPEC-146" status="draft" tags="runes, schema, seo, correctness, architecture" %}
+{% spec id="SPEC-146" status="accepted" tags="runes, schema, seo, correctness, architecture" %}
 
 # Name resolution across rune boundaries
 
