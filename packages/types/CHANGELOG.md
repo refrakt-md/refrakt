@@ -1,5 +1,69 @@
 # @refrakt-md/types
 
+## 0.37.0
+
+### Minor Changes
+
+- f88f959: Fix `validateManifest` rejecting every theme the project produces.
+
+  ADR-024 made themes framework-agnostic — no `target`, and layouts declare
+  regions rather than pointing at framework components. `validateManifest` was
+  never updated, so it still demanded `target`, `designTokens` and
+  `layouts.*.component`, and therefore rejected **the manifest `create-refrakt`
+  scaffolds** and **the manifest Lumina ships**.
+
+  All three are now optional:
+
+  - `target` — `ThemeManifest.target` was already optional and deprecated, with a
+    doc comment naming the ADR. The validator simply hadn't caught up.
+  - `designTokens` and `layouts.*.component` — required by the type but read by no
+    runtime code. A field nothing reads is not a contract.
+
+  `name` and `version` remain required. Optional fields are still type-checked
+  when present, so a typo is caught without the field being mandatory, and a
+  framework theme that _does_ declare `target` and layout components still
+  validates.
+
+  `ThemeManifest.designTokens` and `LayoutDefinition.component` are now optional
+  in the types to match.
+
+  The test fixture was a pre-ADR-024 Svelte theme, which is how the check drifted
+  while its suite stayed green. It is now the manifest `create-refrakt` actually
+  emits, with Lumina's own manifest added as a case.
+
+- 172b29b: Rank documentation against the code it describes, and ask before the divergence
+  exists.
+
+  `refrakt stale` ranks every reference a content page makes by one measure —
+  commits touching the referenced file since the referring page itself last
+  changed — and prints the commit subjects alongside it. "11 commits" is a number,
+  but "generate breadcrumb positions from a declared index" is a person
+  recognising that the page they wrote is out of date.
+
+  **It ranks; it never fails.** Findings do not affect the exit code, and there is
+  no flag to make them. The cheapest way to turn any edge green is to edit the
+  referring page, so a gate would train people to make trivial documentation edits
+  to clear it — destroying the signal it measures. Being unable to measure at all
+  (a shallow clone, no config) is a different event and does exit non-zero.
+
+  Four kinds of reference are found: `snippet` / `file-ref` `path=` attributes,
+  internal links that carry an adjacent description, backticked repo paths in
+  prose, and a new `documents:` frontmatter field listing the repository paths a
+  page is about. A page's subject is often not in its words, and `documents:` says
+  it outright. Unlike an inferred reference, an entry that resolves to no file is
+  an error: the author asserted the relationship.
+
+  The `refrakt.stale` MCP tool answers the same survey, and one more question that
+  is better timed. Called as `refrakt.stale { touching: [paths] }` it names the
+  pages that document those files _before_ they change, which involves no commit
+  count and no git history at all — so it answers for a file created in the
+  working tree and never committed.
+
+  An optional `stale` section in `refrakt.config.json` narrows what is measured:
+  `archival` globs name referring pages that are historical records, `generated`
+  globs name targets that change by construction. Both default to empty, and
+  whatever they remove is counted in the report footer.
+
 ## 0.36.0
 
 ## 0.35.0

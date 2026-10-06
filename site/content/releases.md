@@ -6,7 +6,34 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.36.0
+## v0.37.0
+
+- Address embedded source by name, and record that a human read it.
+- `snippet`, `file-ref` and `expand` can now name the region they embed instead of counting its lines — `symbol="applyBemClasses"` for a declaration, or `match='"scripts"'` for an arbitrary line. A `lines=` range silently re-points at whatever moved into those line numbers; an anchor either resolves to the thing it names or refuses, and the refusal says which of the three termination rules fired, so a broken reference reads as broken rather than as a different function.
+- `extent=` picks how far the region runs: `auto` (delimiters), `dedent` (indentation), `section` (siblings up to the next heading of the same level), or `paired` (token pairs). `until=` and `through=` stop it early. Languages that have no delimiters to count — Python, YAML, tag-paired markup — make `auto` refuse rather than return a plausible-looking span.
+- `refrakt migrate snippets --fix` converts existing `lines=` invocations, verifying the output is byte-identical before rewriting, and names every one it will not convert.
+- Embedded source can also carry a review marker — a `reviewed=` attribute holding two content hashes, recording that a human read that exact slice. `refrakt snippet review` writes those markers, never a person: `--check` reports which ones the target has outgrown, and `--update --interactive` shows the diff between what the reviewer actually read and what is there now. A change proven to be formatting-only re-stamps silently, so a repo-wide formatter run does not cost fifty reviews.
+- Rank documentation against the code it describes, and ask before the divergence exists.
+- `refrakt stale` ranks every reference a content page makes by one measure — commits touching the referenced file since the referring page itself last changed — and prints the commit subjects alongside it. "11 commits" is a number, but "generate breadcrumb positions from a declared index" is a person recognising that the page they wrote is out of date.
+- **It ranks; it never fails.** Findings do not affect the exit code, and there is no flag to make them. The cheapest way to turn any edge green is to edit the referring page, so a gate would train people to make trivial documentation edits to clear it — destroying the signal it measures. Being unable to measure at all (a shallow clone, no config) is a different event and does exit non-zero.
+- Four kinds of reference are found: `snippet` / `file-ref` `path=` attributes, internal links that carry an adjacent description, backticked repo paths in prose, and a new `documents:` frontmatter field listing the repository paths a page is about. A page's subject is often not in its words, and `documents:` says it outright. Unlike an inferred reference, an entry that resolves to no file is an error: the author asserted the relationship.
+- The `refrakt.stale` MCP tool answers the same survey, and one more question that is better timed. Called as `refrakt.stale { touching: [paths] }` it names the pages that document those files _before_ they change, which involves no commit count and no git history at all — so it answers for a file created in the working tree and never committed.
+- An optional `stale` section in `refrakt.config.json` narrows what is measured: `archival` globs name referring pages that are historical records, `generated` globs name targets that change by construction. Both default to empty, and whatever they remove is counted in the report footer.
+- Fix `validateManifest` rejecting every theme the project produces.
+- ADR-024 made themes framework-agnostic — no `target`, and layouts declare regions rather than pointing at framework components. `validateManifest` was never updated, so it still demanded `target`, `designTokens` and `layouts.*.component`, and therefore rejected **the manifest `create-refrakt` scaffolds** and **the manifest Lumina ships**.
+- `target` — `ThemeManifest.target` was already optional and deprecated, with a doc comment naming the ADR. The validator simply hadn't caught up.
+- `designTokens` and `layouts.*.component` — required by the type but read by no runtime code. A field nothing reads is not a contract.
+- `name` and `version` remain required. Optional fields are still type-checked when present, so a typo is caught without the field being mandatory, and a framework theme that _does_ declare `target` and layout components still validates.
+- `ThemeManifest.designTokens` and `LayoutDefinition.component` are now optional in the types to match.
+- The test fixture was a pre-ADR-024 Svelte theme, which is how the check drifted while its suite stayed green. It is now the manifest `create-refrakt` actually emits, with Lumina's own manifest added as a case.
+- Fix `plan validate --against` reporting a renamed plan entity as an ID collision.
+- `collisionsFrom` compared the two sides' **slugs** with the ID prefix stripped, so it forgave only a rename that kept its slug and moved directory. A slug change — the ordinary rename, since the slug is derived from the title — was reported as a collision. That fires on any title edit to an existing entity, and on `plan validate --against` after `plan migrate filenames --apply` renames files wholesale.
+- The check now tests what its own contract describes: **a collision is two claimants surviving the merge.** If the base's path is absent from the working tree, the merge applies the deletion and one claimant remains, so it is not reported. `collisionsFrom` takes the repo root to make that test.
+- Nothing is weakened. A new file claiming an ID whose base file _survives_ is still flagged, and two files claiming one ID in the same tree is still an error from `checkDuplicateIds`, which runs before this.
+- What this deliberately does not catch is an ID _reused_ for a different entity — the base's file deleted, a new one written under the same ID. That also leaves one claimant, so it is not a collision, but it silently repoints every reference to it. Detecting that needs content rather than paths, and it is not a reason to block a merge; a test pins the distinction so it stays deliberate.
+- The misreport was also actively dangerous, because the error text advises `plan migrate ids --apply --git`. Run against a rename, that renumbers a legitimate entity and breaks every reference to it.
+
+## v0.36.0 - September 21, 2026
 
 - Pipeline diagnostics now print in the adapter dev server.
 - Previously a dev session showed **no pipeline diagnostics of any severity** — the data was there (`loadContent` runs in dev via `createRefraktLoader` and populates `site.pipelineWarnings`), but nothing read it. Content validation findings, including error-severity ones, were computed on every edit and discarded. They now appear on first load and again on each HMR reload, so a mistyped rune name or an undefined attribute surfaces while you are editing rather than at build time.
