@@ -140,29 +140,45 @@ Nothing here needs overriding — it needs naming.
 Tier 3 adds four. Each replaces a form counted in the table above; nothing is
 added speculatively.
 
-### `metaFields(attrs, spec)`
+### `fieldMetas(attrs, spec)`
 
 Returns a `Record<string, Tag>` suitable for `properties:` directly, collapsing
 the declare-and-name-twice cycle into one declaration. `work.ts`'s 36 lines of
 plumbing become:
 
 ```ts
-properties: metaFields(attrs, {
+properties: fieldMetas(attrs, config, {
   id: '', status: 'draft', priority: 'medium', complexity: 'unknown',
   assignee: '', milestone: '', source: '', supersedes: '', pr: '', tags: '',
-  created:  () => attrs.created  || fileVars?.created  || '',
-  modified: () => attrs.modified || fileVars?.modified || '',
+  created:  { from: ['attrs.created',  'file.created'],  default: '' },
+  modified: { from: ['attrs.modified', 'file.modified'], default: '' },
 }),
 ```
 
-A string value is the default for a missing attribute; a function is a computed
-default, which covers the 12 metas whose value is not a plain `attrs` read. The
-27 runes that need a meta *outside* `properties` keep building it by hand — the
-utility is for the bulk case, not a mandate.
+A string value is the default for a missing attribute of the same name, which
+covers 10 of the 12 entries. The two needing a fallback take an ordered list of
+sources and a literal default. **The spec is data, not code** — an earlier draft
+of this section wrote those two as closures
+(`created: () => attrs.created || fileVars?.created || ''`), which cannot cross a
+JSON boundary, and {% ref "WORK-603" /%} settled the data form instead so the
+channel {% ref "SPEC-143" /%} inherits stays inert. `from` draws on a closed set
+of roots (`attrs.*`, `file.*`), which is why the signature takes `config`.
+
+The 27 runes that need a meta *outside* `properties` keep building it by hand —
+the utility is for the bulk case, not a mandate.
 
 This is the one with real design risk, and it carries {% ref "ADR-008" /%}'s
-flat-namespace constraint: `metaFields` writes into the same key space as
+flat-namespace constraint: `fieldMetas` writes into the same key space as
 `refs`, so the collision check has to keep working on a computed object.
+
+**On the name.** This was `metaFields` in the first draft, which collides with
+`RuneConfig.metaFields` — {% ref "SPEC-080" /%}'s data manifest of meta-bearing
+fields that `blocks` projects and the engine resolves against modifier values.
+Different objects, different sides of the pipeline: this one builds `properties`
+metas in a transform, that one tells the engine how to render a field. The config
+key keeps its name, being the published surface referenced by SPEC-080,
+{% ref "SPEC-081" /%} and 20 rune configs; the utility is renamed, and
+`fieldMetas` says what it returns.
 
 ### `renderNodes(nodes, config)`
 
@@ -224,7 +240,7 @@ failure mode is invisible, which is the exact hazard SPEC-130 D5 identified for
 this channel. This is a breaking change to a published type and belongs in a
 minor release with a changeset.
 
-### D5 — `metaFields` does not become mandatory
+### D5 — `fieldMetas` does not become mandatory
 
 No lint rule, no contract assertion. Runes that need a meta in `children`, or
 conditionally, or with a non-`attrs` source, keep the explicit form. The
@@ -249,7 +265,7 @@ Six work items, three tiers, strictly ordered within a tier only where noted.
 | 3 | Drop redundant slot guards | 1 | 59 | none — output-identical |
 | 4 | One `extractText`; adopt `textContent` | 2 | 6 + 3 | D6 per-site review |
 | 5 | `renderNodes` + `bodyOnly` | 3 | 81 + 49 | mechanical |
-| 6 | `metaFields` + `groupByHeading` | 3 | 233 + 7 | design |
+| 6 | `fieldMetas` + `groupByHeading` | 3 | 233 + 7 | design |
 
 Item 2 should follow item 1: with the metas already out of the children, the
 `pureDataMetas` filter has less to do and the removal reads more clearly.
@@ -274,8 +290,8 @@ Item 2 should follow item 1: with the metas already out of the children, the
 - [ ] `refrakt contracts --check` reports no drift, on both committed copies (D3)
 - [ ] `npm run seo:baseline:check` reports no drift
 - [ ] `npm test` passes, and the CSS coverage test is unchanged
-- [ ] `metaFields` handles a computed default, so the 12 `fileVars`-derived metas are expressible
-- [ ] A property-and-ref name collision is still rejected with the {% ref "ADR-008" /%} error when the properties object comes from `metaFields`
+- [ ] `fieldMetas` expresses the 12 `fileVars`-derived metas as data — an ordered `from` list with a literal default, no function values ({% ref "WORK-603" /%})
+- [ ] A property-and-ref name collision is still rejected with the {% ref "ADR-008" /%} error when the properties object comes from `fieldMetas`
 - [ ] The rune authoring guide documents the four utilities, and the meta triple is no longer shown as the canonical form
 - [ ] Total `transform()` line count across the tag files is measurably reduced, recorded before and after
 

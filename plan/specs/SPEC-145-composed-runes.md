@@ -1,0 +1,2169 @@
+{% spec id="SPEC-145" status="draft" tags="runes, composition, markdoc, seo, hosted, architecture" %}
+
+# Composed runes
+
+## Summary
+
+A rune defined not by declaring its own output but by placing its authored content
+into slots of existing primitive runes, with a Markdoc template. It has no BEM
+block and ships no CSS: its appearance is whatever the installed theme already
+gives the primitives it is built from. It does carry its own identity — a
+`data-rune`, a schema.org row, and optionally a
+{% ref "SPEC-144" /%} registration — so the tree it produces means the domain type,
+not the primitives.
+
+This is the second of two authoring tiers. {% ref "SPEC-143" /%} covers a
+genuinely new atom that needs its own block and styles; this covers a domain type
+that is structurally a familiar shape, which is most of them.
+
+## Background — why this is the pressure valve
+
+A hosted refrakt cannot ship a plugin per domain, so users define runes. The
+temptation at every expressive gap is a richer language in the definition file;
+{% ref "ADR-036" /%} rules that out and names composition as the alternative. This
+spec is that alternative.
+
+**These are not two authoring tiers a user chooses between.** They share their whole
+declaration half — a composed rune's frontmatter declares `attributes`, `content`,
+`schema`, `metaFields`, `blocks` and `registers`, which is {% ref "SPEC-143" /%}'s and
+{% ref "SPEC-144" /%}'s vocabulary in full. They differ only in what *emits*, and
+{% ref "ADR-037" /%} assigns the two emit paths to different audiences:
+
+| | Declared emit path ({% ref "SPEC-143" /%}) | Composed emit path (this spec) |
+|---|---|---|
+| Audience | **Internal** — first-party runes shedding transforms | **Users** — the one way to author a rune outside this repo |
+| Output | Own block, own BEM classes | The primitives' blocks |
+| CSS | Ships with the theme | **None** — inherits whatever the theme gives the primitives |
+| Arrangement decided by | the theme, via `layout` | the rune author, in the template |
+| Contract | Derived from config, as today | Derived by expanding the composition |
+
+The arrangement row is why the split lands this way. A declared rune hands
+arrangement to the theme, which is full {% ref "ADR-028" /%} portability and exactly
+what `work`, `character` and the rest need. A user running one site with one theme
+cannot cash that benefit, and pays for it in the CSS column: "a declaratively-defined
+rune renders unstyled" is the sharpest authoring barrier SPEC-143 identifies, and
+composition dissolves rather than solves it — there is no new block to style. Hence
+users get this path, and only this path.
+
+## The mechanism mostly exists
+
+Two existing mechanisms supply most of it, and it matters which one does what.
+
+**AST substitution is a solved shape.** `{% include %}`
+(`packages/runes/src/tags/include.ts`, SPEC-129) clones a file's parsed AST and
+substitutes `variables` bindings into it. That is the substitution *technique* a
+template needs — cloning a parsed tree and filling named holes — and it is already
+written.
+
+**But the timing is a rune's transform, not preprocess.** `include` splices during
+preprocess so that `data` and `snippet` inside the pasted file get preprocessed; a
+composition cannot use that timing, because at preprocess the content model has not
+resolved and no slot has a value (D4). A template renders where `transform` would
+have, and calls `Markdoc.transform` on its result so the primitives inside it are
+transformed normally — exactly as `character.ts` already does with
+`resolved.items`. No new pipeline stage either way.
+
+Three things are missing.
+
+**1. Content slots, not just scalar variables.** `variables={q: "rune:card"}` binds
+strings. Composition needs to place authored *subtrees* into named positions — the
+body a user wrote under `{% character %}` has to land inside the template's
+`{% card %}`. That is substitution over node lists rather than over strings.
+
+**2. An outer identity.** After the splice the tree is the primitives': it carries
+`data-rune="card"`, and the cross-page pipeline, `extractTitle`, breadcrumbs and
+the editor all see a card. The composition needs a wrapper carrying the composed
+rune's own `data-rune`, with the inner runes demoted to implementation detail.
+
+**3. Cycle detection.** A composes B composes A. Cheap to detect, easy to omit.
+
+## SEO — the retyping works, the name resolution does not
+
+An earlier draft of this section claimed SEO was "the solved part" of composition.
+That was wrong in a way worth recording rather than quietly fixing, because the
+half-truth is seductive: the *retyping* mechanism does exist and does fit, but
+**name resolution does not cross a composition boundary**, and without that the
+retyping has nothing to retype. D9, D10 and D11 are what the corrected reading
+requires.
+
+### What does fit — retyping
+
+`applySchemaTable` (`packages/runes/src/lib/index.ts:463-500`) retypes children from
+the *parent's* row, and says why in its own comments:
+
+> Children are retyped by the parent, never by themselves (D9). Markdoc transforms
+> bottom-up, so by now the children carry their own `typeof` and this rewrites them
+> — and only the parent can supply the `property` that nests them.
+
+A parent's `row.children` is keyed by child name, and a `SCHEMA_TYPE_EXPLICIT`
+marker distinguishes a type the *author* stated — which survives — from one that
+came from the child's fallback row, which the parent may overrule, because
+"the parent is the better authority on what an unlabelled child is".
+
+That is exactly composition's requirement. A composed `character` declares `Person`
+and child rows keyed by slot name; the `card` and `deflist` primitives it is built
+from contribute structure while the outer rune owns the claim. And the explicit
+marker means composition cannot silently steal a type an author stated by hand.
+
+**The identity problem is the same problem one layer up.** The fix for SEO is
+already "the parent is the authority"; item 2 above is that principle applied to
+`data-rune` and cross-page registration rather than to `typeof`. Extending an
+existing principle is a much better position than inventing one.
+
+### What does not fit — reaching the values
+
+A schema row maps **names** to schema.org properties, and two different resolvers
+turn a name into nodes. They behave oppositely, and neither is composition-ready:
+
+| Resolver | Used by | Boundary | Matches |
+|---|---|---|---|
+| `findAllByName` (`schema-table.ts:235`) | `properties` via `stamp`, `text` via `findByName` | **Stops at any nested `data-rune`** | `data-name`, `data-field` (+ kebab) |
+| `findChildren` (`:528`) | `children` — retyping child runes | **Full subtree, no guard** | `data-name`, `data-field`, **and `data-rune`** |
+
+`findAllByName`'s own doc comment describes the bug the guard exists to prevent,
+and it is precisely the bug composition would reintroduce:
+
+> **The search stops at another rune's node.** {% ref "ADR-008" /%}'s flat namespace
+> is unique *per rune*, so the same name means different things in a parent and in a
+> child it contains: `character` names its title span `name`, and so does every
+> `character-section` inside it. Reaching across that boundary published a character
+> whose `name` was the character plus each of its section headings.
+
+**So for `properties`, the problem is not ambiguity — it is unreachability, and it
+is confined to properties whose source is a node rather than an attribute.** Take a
+table mapping a node, as `castMemberSchema` does (`{ name: 'name', role: 'jobTitle',
+portrait: 'image' }`), and a template that parks the portrait inside `{% card %}`:
+
+```html
+<article data-rune="member" data-rune-fields='{"name":"Veshra"}'>
+  <div data-rune="card">                                  <!-- boundary -->
+    <img data-name="portrait" data-owner="member" src="v.jpg">
+  </div>
+</article>
+```
+
+`findAllByName(root, 'portrait')` visits the `<article>` (exempt, it is `top`), then
+hits `div[data-rune="card"]` and returns. Nothing inside the card is ever visited.
+`stamp` falls back to the field bag (`:309-312`), which holds no image because an
+image is a node and not a scalar. Measured against today's applier, with the same
+table over both tree shapes:
+
+```json
+// composed — portrait slot-placed inside {% card %}
+{ "@type": "Person", "name": "Veshra", "@context": "https://schema.org" }
+
+// declared — portrait at the rune's own root
+{ "@type": "Person", "image": "v.jpg", "name": "Veshra", "@context": "https://schema.org" }
+```
+
+The `image` is gone, with no diagnostic. What survives is what the bag holds, so
+**attribute-derived properties work and node-derived ones vanish** — the worst
+possible split, because the simple case looks correct.
+
+**And for `children`, the problem is the opposite: over-matching.** `findChildren`
+has no boundary guard and also matches `data-rune === name`, because that is how
+`playlist` retypes its `track`s. Under composition, where the template deliberately
+places runes and slots hold arbitrary authored content, a `children` key named
+`figure` matches a `{% figure %}` the *author* wrote in the body — publishing an
+illustration of a location as the Person's own `image`. Every match is applied, not
+the first, and that is deliberate (`:300-303`, so a recipe's six ingredient `<li>`s
+all get stamped).
+
+So the mechanism that removes ambiguity removes reach, and the mechanism with reach
+has unbounded matching. Neither is usable as-is, which D10 addresses.
+
+## Worked examples
+
+A composed rune has two halves, and only one of them is the template. The body
+says where a slot's content *goes*; something still has to say how authored
+markdown *becomes* a slot with that name. That is the content model — which
+already exists and is exactly what {% ref "SPEC-143" /%}'s slot declaration names.
+So: **frontmatter is the input declaration, the body is the output template, and
+slot names are the join.** The rune's *name* is not in the frontmatter — it is the
+filename, per {% ref "SPEC-153" /%} D9, which also records why duplicating it in both
+places was not worth the drift. Frontmatter rather than the H2 sections a declared rune
+might use, because here the body is claimed by the template and the declaration has
+nowhere else to go.
+
+### The small end — `bond`
+
+```md
+---
+tag: aside
+attributes:
+  from:          { type: string, required: true }
+  to:            { type: string, required: true }
+  type:          { type: string, default: fellowship }
+  status:        { type: string, matches: [active, broken, strained], default: active }
+  bidirectional: { type: boolean, default: true }
+content:
+  type: sequence
+  fields:
+    body: { match: any, optional: true, greedy: true }
+registers:
+  edge: { from: from, to: to, kind: { field: type } }
+---
+
+{% hint type="note" %}
+**{% $attrs.from %}** {% if $attrs.bidirectional %}↔{% else /%}→{% /if %} **{% $attrs.to %}**
+
+{% slot name="body" /%}
+{% /hint %}
+```
+
+Seventeen lines replace `plugins/storytelling/src/tags/bond.ts` (88 lines) plus its
+slice of the registration pipeline. The `bidirectional` arrow is Markdoc's own
+`{% if %}`, not a conditional this spec invents — D1 holding up in practice.
+
+### The full case — `character`
+
+```md
+---
+tag: article
+base: taxonomy
+provides: [prose]
+attributes:
+  name:    { type: string, required: true, description: "Display name shown in the header." }
+  role:    { type: string, matches: [protagonist, antagonist, supporting, minor], default: supporting }
+  status:  { type: string, matches: [alive, dead, unknown, missing], default: alive }
+  aliases: { type: string, description: "Comma-separated alternate names." }
+content:
+  type: sections
+  sectionHeading: heading
+  preamble:
+    portrait:    { match: image, optional: true }
+    description: { match: paragraph, optional: true, greedy: true }
+schema:
+  type: Person
+  properties: { name: name, role: jobTitle }
+registers:
+  entity:
+    idFrom: name
+    data: [role, status, aliases, tags]
+    aliases: { from: aliases, separator: "," }
+---
+
+{% card %}
+{% slot name="portrait" /%}
+
+# {% $attrs.name %}
+
+{% badge tone=$attrs.role %}{% $attrs.role %}{% /badge %}
+{% badge tone=$attrs.status %}{% $attrs.status %}{% /badge %}
+
+{% slot name="description" /%}
+
+{% slot name="sections" each %}
+  {% details summary=$item.heading %}
+    {% slot /%}
+  {% /details %}
+{% /slot %}
+{% /card %}
+```
+
+**The comparison that makes the case.** `character.ts` is 184 lines, and it defines
+a *second* rune — `character-section` — for no reason other than to carry each H2
+section: its content model sets `emitTag: 'character-section'` and
+`emitAttributes: { name: '$heading' }`. The composed version does not need it. That
+child rune exists only because there was no way to say "wrap each section in
+something that already exists", which is precisely the gap this spec closes.
+Across the plugin, `character`, `realm` and `faction` share that shape exactly, so
+three child runes go with it.
+
+### What the two schema-bearing cases actually emit
+
+Both of these were built as trees and run through today's `applySchemaTable` +
+`collectJsonLd`. They work **without** {% ref "SPEC-146" /%}, which is worth knowing
+before reading its Problem 2 as a blanket veto on composed entities.
+
+**`character` — every property is an attribute.** `characterSchema` is
+`{ type: 'Person', properties: { name: 'name', role: 'jobTitle' } }`: it never maps
+the portrait. Both sources are attributes, so both sit in the field bag on the root,
+where nesting cannot reach them. With the definition above and this page:
+
+```md
+{% character name="Veshra" role="antagonist" status="alive" %}
+![portrait](veshra.jpg)
+
+A necromancer raised in the shadow of the Ashen Spire.
+
+## Backstory
+...
+{% /character %}
+```
+
+measured output:
+
+```json
+{ "@type": "Person", "name": "Veshra", "jobTitle": "antagonist",
+  "@context": "https://schema.org" }
+```
+
+**`children` retyping also crosses a composition today.** An Organization whose
+members are `Person`s, with the members placed inside a `{% grid %}`:
+
+```md
+---
+tag: section
+attributes:
+  name: { type: string, required: true }
+content:
+  type: sequence
+  fields:
+    member: { match: list-item, greedy: true }
+schema:
+  type: Organization
+  properties: { name: name }
+  children:
+    member: { type: Person, property: employee, text: { member: name }, textTag: span }
+---
+
+{% grid columns=3 %}
+{% slot name="member" each %}
+  {% card %}{% slot /%}{% /card %}
+{% /slot %}
+{% /grid %}
+```
+
+measured output:
+
+```json
+{ "@type": "Organization", "name": "The Bone Choir",
+  "@context": "https://schema.org",
+  "employee": [ { "@type": "Person", "name": "Veshra" },
+                { "@type": "Person", "name": "Kel" } ] }
+```
+
+This works because `findChildren` has no boundary guard and walks straight through
+the `grid` — which is exactly why it over-matches. The missing guard that gives it
+reach is {% ref "SPEC-146" /%}'s Problem 1.
+
+**So five resolution paths, and composition breaks one:**
+
+| Path | Resolver | Through a composition today |
+|---|---|---|
+| `properties` from an **attribute** | `stamp` → bag fallback | works |
+| `properties` from a **node** | `findAllByName` | **fails silently** |
+| `text` | `findByName` (same walk) | fails silently |
+| `entities` | `buildEntity` — node first, then bag (`:384-395`) | node source fails, attribute source works |
+| `children` | `findChildren` | works, and over-matches |
+
+**Which creates an authoring trade worth stating.** A composed rune can sidestep the
+gap entirely by declaring a schema-bearing value as an *attribute* —
+`image: { type: string }` mapped `{ image: image }` — which works today and reads
+less like markdown. Harvesting the author's `![portrait](…)` from a slot is the nicer
+authoring experience and needs SPEC-146. Both are legitimate; only one is available
+before that lands.
+
+### The loss case — `recipe` over `card`
+
+`bond` and `character` are the cases that work. `recipe` is the one that shows what
+composition costs when a rune's own structure is richer than the primitive it composes
+over, and it is worth working because it is the rune most often cited as an obvious
+candidate.
+
+**Today, measured** (`refrakt inspect recipe --site main`) — one node carries identity,
+schema, the field bag and every BEM part:
+
+```html
+<article data-rune="recipe" typeof="Recipe" class="rf-recipe rf-recipe--medium"
+         data-prep-time="PT15M" data-cook-time="PT30M" data-servings="4"
+         data-difficulty="medium" data-media-position="end"
+         data-elevation="flat" data-density="full">
+  <div data-name="media"   class="rf-recipe__media" data-section="media">…</div>
+  <div data-name="content" class="rf-recipe__content">
+    <header data-name="preamble" class="rf-recipe__preamble">…</header>
+    <dl  data-name="metadata"    class="rf-recipe__metadata">…</dl>
+    <ul  data-name="ingredients" class="rf-recipe__ingredients">…</ul>
+    <ol  data-name="steps"       class="rf-recipe__steps" data-sequence="numbered">…</ol>
+    <div data-name="tips"        class="rf-recipe__tips">…</div>
+  </div>
+  <meta property="prepTime" content="PT15M" />…
+</article>
+```
+
+**Composed** — two rune nodes, because `card` declares no schema and so cannot carry the
+type:
+
+```html
+<article data-rune="recipe" typeof="Recipe" class="rf-undefined"
+         data-rune-fields='{"prepTime":"PT15M",…}' data-difficulty="medium">
+  <div class="rf-card rf-card--in-recipe" data-rune="card" data-media-position="end">
+    <div data-name="media"   class="rf-card__media" data-section="media">…</div>
+    <div data-name="content" class="rf-card__content">
+      <div data-name="body"  class="rf-card__body">…</div>
+    </div>
+  </div>
+  <meta property="prepTime" content="PT15M" />…
+</article>
+```
+
+**The wrapper is not optional, and four things force it.** Recorded because "just put
+`typeof="Recipe"` on the card" is the obvious first instinct and D3 rules it out:
+
+1. **The type.** D9 permits composing only over runes that emit no type or a subordinate
+   one, and `card` declares no schema at all — so the type has nowhere else to go. Putting
+   it on the card would make one node both `data-rune="card"` and the recipe.
+2. **The field bag.** `data-rune-fields` is how attribute-sourced schema values resolve
+   ({% ref "SPEC-146" /%} path A). It is recipe's, not card's.
+3. **The position-dependent universals.** `width` / `spacing` / `inset` have zero unscoped
+   CSS rules — every one requires the direct-child-of-article position only the outer node
+   occupies (D14).
+4. **`data-rune="recipe"` itself**, which is what `contextModifiers` keys on
+   (`facets/modifiers.ts:84` reads `ctx.parentRune`) and therefore the only route by which a
+   theme reaches a composed rune at all (D16).
+
+**The wrapper is also malformed today.** `engine.ts:311` is
+`` const block = `${prefix}-${config.block}` ``, so a block-less rune emits
+`class="rf-undefined"`. D2 makes block-less the normal case for every composed rune, so
+this is on the critical path rather than a curiosity.
+
+**What is deleted: 176 lines of CSS and a 278-line transform.** `recipe.css` is 136 lines
+in Lumina plus 40 in skeleton, all keyed on `.rf-recipe*`; `tags/recipe.ts` is 278 lines.
+That is the payoff, and it is real.
+
+**What is lost: four of seven schema properties, silently.** `recipeSchema` maps
+`headline → name`, `blurb → description`, `prepTime`, `cookTime`, `servings → recipeYield`,
+`mediaImage → image` and `ingredient → recipeIngredient`:
+
+| Source | Path | After composition |
+|---|---|---|
+| `prepTime`, `cookTime`, `servings` | attribute → field bag | **survive** |
+| `headline`, `blurb`, `mediaImage`, `ingredient` | node | **lost** — inside `data-rune="card"`, where `findAllByName` stops |
+| `children: { step }` | `findChildren` | survive — it crosses boundaries by design |
+
+So `recipe` is close to the worst case for {% ref "SPEC-146" /%} Problem 2, and the
+clearest statement of why that spec is a prerequisite rather than a companion: a composed
+recipe publishes a `Recipe` with a yield and two durations and **no name, no description,
+no image and no ingredients**, with no diagnostic. {% ref "SPEC-154" /%} notes the
+additional constraint that `ingredient` is the first path-B property carrying a *set*, so
+the fix must preserve multiplicity rather than merely presence.
+
+**And the theme loses restructuring, not just styling.** This is the consequence least
+visible from the output above, so it is stated as a table of the two layouts as they ship:
+
+| | Declares | Slots a theme can place |
+|---|---|---|
+| `Recipe` | `root: [media, content]`, `content: [preamble, metadata, ingredients, steps, tips]`, `preamble: header > [eyebrow, headline, blurb]` | 8 |
+| `Card` | `root: [media, content]`, `content: [eyebrow, body, footer]` | 4 |
+
+`card` has `media`, `eyebrow`, `body` and `footer` placeable. Recipe's `headline`,
+`blurb`, `metadata`, `ingredients`, `steps` and `tips` — six parts — all have to land in
+`body`, where card's `layout` cannot address them, because `layout` places a rune's
+*declared slots* and not the content inside one. So their grouping stops being declarable by
+any theme, rather than becoming someone else's to declare.
+
+**One qualification, because the table undercounts what card already finds.** Card is not
+blind to the page-section pattern — its own comment calls it *"the page-section / recipe
+pattern"*. It promotes a leading paragraph before a heading to a flat `eyebrow` slot, and it
+names the body's first heading as `refs.title`, deliberately searching for the first heading
+rather than position 0 *"so a composed header (e.g. a `{% bar %}` before the title) doesn't
+leave the title with a prose-sized gap"* — written with composition in view. So `title`
+exists as a BEM hook (`data-name="title"`, `.rf-card__title`); what it is not is
+**placeable**, because it is nested inside `bodyDiv` rather than emitted as a flat slot, and
+`layout` cannot hoist it. D20 is that gap and is the smaller fix it implies.
+
+The sharpest casualty is concrete: `Recipe` carries a {% ref "SPEC-089" /%}
+`variants['media-position'].cover` that **restructures** the root into a `cover-band`
+grouping media with an overlaid preamble, with its own `rootAttributes` and
+`staticModifiers`. That is theme-owned restructuring, and D8 says a theme supplies no rune
+template — so nothing in the composed path reproduces it. The author may offer a `cover`
+template variant (D15), but a theme cannot add one, which means the capability moves to the
+author rather than changing hands between themes.
+
+**How much of the rest survives is an open question below, not a settled answer.** Whether
+a theme can even *style* recipe's six collapsed parts depends on what `{% slot %}` leaves
+behind: nothing, and there is no hook; a named boundary, and
+`[data-rune="recipe"] [data-name="ingredients"]` resolves. That question is listed in Open
+questions and this example is its most expensive instance.
+
+**The verdict this example supports.** `recipe` is a legal composition that is not yet a
+good one. It needs SPEC-146 for correctness and a `{% slot %}` boundary answer for
+styleability, and even with both it trades a theme's ability to restructure it — including
+a shipped cover variant — for 454 deleted lines. {% ref "SPEC-156" /%} D7 and D15 record
+the alternative: the **declared** path already does variant selection with shipping
+machinery, so a rune whose value is in being restructurable has a home that is not this
+one.
+
+### Repeated slots are the `collection` pattern, not iteration
+
+`{% slot name="sections" each %}` does not put a loop in the template. The engine
+iterates and the template describes *one* item with `$item` bound — the same
+arrangement `collection`, `data` and `relationships` item templates already use. A
+bare `{% slot /%}` inside an `each` means "this item's content", which avoids an
+`of=$item` argument.
+
+This matters because the constraint is already documented and deliberate.
+`site/content/runes/data.md:174`:
+
+> The binding is deliberately shallow — bind a row, render a block. `{% if %}`
+> works (`{% else /%}` is self-closing), but there is no iteration, and formatting
+> goes through the shared Markdoc functions, the same constraint `collection`
+> templates hold.
+
+Composition must hold that same line rather than quietly crossing it.
+
+### Smaller shape decisions the examples imply
+
+- **Fallback content.** `{% slot name="description" %}No description yet.{% /slot %}`
+  — cheap, and the difference between an unfilled optional slot rendering nothing
+  and rendering something sensible. Self-closing stays the common form.
+- **`$attrs` is a binding, not new syntax.** Markdoc's variable form already works
+  in content (`{% $attrs.name %}`) and in attribute position (`tone=$attrs.role`),
+  alongside the `$item` / `$row` bindings that exist.
+
+## The template vocabulary, in one place
+
+Scattered across the worked examples, D7, D17 and the repeated-slots section above, this
+spec introduces **two tags and three bindings** and never lists them together. Collected
+here because {% ref "SPEC-153" /%} D9 makes this file the user-facing authoring surface, so
+this list is the spine of its documentation rather than a summary of it. Nothing below is
+new; each row points at where it is decided.
+
+| Form | Means | Decided in |
+|---|---|---|
+| `{% slot name="x" /%}` | place resolved field `x` here | this spec's subject |
+| `{% slot name="x" %}…{% /slot %}` | the same, with fallback content when `x` is empty | "Smaller shape decisions" above |
+| `{% slot name="xs" each %}…{% /slot %}` | the engine iterates; the body describes **one** item with `$item` bound | "Repeated slots are the `collection` pattern" above |
+| `{% slot /%}` (bare, inside `each`) | this item's content — avoids an `of=$item` argument | same |
+| `{% metablock name="x" /%}` | place the rune's declared meta block `x` | D7 |
+| `{% if %}` / `{% else /%}` | Markdoc's own, with the content-model consequence D17 states | D17 |
+| `$attrs.name` | a resolved attribute, in content or attribute position | "Smaller shape decisions" above |
+| `$item` | the current item inside an `each` slot — **but see the shape collision below** | repeated-slots section |
+| `$row` | the existing `data` / `collection` row binding, unchanged | prior art, not added here |
+
+**There is no iteration tag and that is deliberate** — `each` is a slot modifier, not a
+loop, and `site/content/runes/data.md:174` already states the constraint this holds: *"bind
+a row, render a block… there is no iteration"*. A reader scanning for `{% for %}` should
+find this row and stop.
+
+**Every placed rune is ordinary rune vocabulary, not part of this surface.** `card`,
+`details`, `badge`, `grid`, `figure`, `bar` and `mediatext` appear throughout the examples
+because they are what compositions place; they are not additions, and D12 is what bounds
+which of them may be placed.
+
+**Four things on this list are not settled, and the list is where that becomes visible.**
+`metablock`'s name is still open against `{% fields %}` (D7's sub-questions); whether
+`sections` may be a slot name at all is an open question below; whether a slot may appear
+twice is another; and what a multi-node slot leaves behind is the third. Three of the four
+are about `{% slot %}` itself — which says the tag with one obvious meaning is carrying most
+of the undecided surface, and that the open questions below are load-bearing rather than
+tidying.
+
+**And a fifth, which collecting the list is what surfaced: `$item` would be one name for a
+third shape.** The repeated-slots section justifies `each` as *"the same arrangement
+`collection`, `data` and `relationships` item templates already use"* — but those two
+`$item`s are already different, and the documentation says so directly, two lines below the
+no-iteration limit this spec cites:
+
+> **`$item` is not an alias for `$row`.** A collection's `$item` is an entity (`id` / `type`
+> / `url` / `data`); a data row is flat. One name for two shapes is a trap, so reaching for
+> `$item.data.x` here is an error rather than a silent `undefined`.
+
+A composed rune's `each` iterates **resolved content** — node lists from the content model —
+which is neither an entity nor a flat row. So borrowing the name borrows a trap the project
+has already named once, and the arrangement being "the same" is true of the *iteration* and
+false of the *binding*. Either the binding gets its own name, or the composed case has to
+state what `$item` is for it in the same breath the others do. This is not an argument
+against `each`; it is the one unlabelled edge on it.
+
+## Authoring note — `{% metablock %}` versus placing `{% bar %}` or `{% deflist %}`
+
+Written out because the two produce **nearly identical HTML and mean completely different
+things**, and the convergence is a feature rather than an accident: both land on the shared row
+geometry {% ref "SPEC-156" /%} consolidates. Measured side by side:
+
+```html
+<!-- {% deflist %} placed in a template -->
+<dl data-zone-layout="definition-list" class="rf-deflist" data-rune="deflist">
+  <div data-name="row" class="rf-deflist__row">
+    <dt data-meta-label="">Priority</dt>
+    <dd><span class="rf-badge" data-meta-type="tag" data-meta-sentiment="caution">high</span></dd>
+```
+
+```html
+<!-- {% metablock name="metadata" /%} — a `blocks` zone -->
+<dl data-name="metadata" data-zone="metadata" data-zone-layout="definition-list">
+  <div data-name="row" data-field="prepTime">
+    <dt data-meta-label="">Prep</dt>
+    <dd data-meta-type="temporal">15m</dd>
+```
+
+| | `{% bar %}` / `{% deflist %}` | `{% metablock %}` |
+|---|---|---|
+| Value source | **authored content** — someone types it | **declared attributes**, via `metaFields` |
+| `data-rune` on the container | **yes** → a name-resolution boundary | **no** — an engine zone |
+| Row ↔ declaration link | none | `data-field="prepTime"` |
+| `data-meta-type` | always `tag`, from a nested `{% badge %}` | per field — `temporal`, `quantity`, `category`, `id`, `status` |
+| Formatting | whatever was typed | `transform: 'duration'` renders `PT15M` as `15m` |
+| Omitted when empty | no — an empty deflist renders empty | `condition: prepTime` |
+| Sentiment | hand-written per badge | `sentimentMap`, derived from the value |
+| i18n | literal text, and **no keying scheme reaches it** (D13) | labels keyed `{scope}.{block}.{ref}` |
+| Who picks bar vs definition-list | the **template author**, by choosing the tag | the **theme**, via `blocks[].layout` |
+| Who picks the position | the template author, frozen | the theme, via `layout` |
+
+**The rule: is the value in an attribute? Use a metablock. Is it content someone writes? Place
+the rune.** In a composed `recipe`, `prepTime="PT15M"` is an attribute and belongs in a
+metablock; a `deflist` the *content* author typed inside the body is content and stays a
+`deflist`.
+
+**Three things go wrong when a declared value is hand-placed as a rune**, in the order they
+bite:
+
+1. **It creates a schema boundary.** A placed `bar` or `deflist` is a `data-rune` node, so a
+   schema property sourced from a node inside it silently disappears
+   ({% ref "SPEC-146" /%} Problem 2). This is exactly what D19 and {% ref "SPEC-156" /%} D9 mean
+   by *group with an engine wrapper, never a placed rune, where schema is involved* — and the
+   metablock is the escape that rule assumes exists.
+2. **It takes a decision that belongs to the theme.** Choosing `deflist` over `bar` *is* choosing
+   the shape, and placing it fixes the position — the two things D23 assigns to the theme. The
+   metablock exists so a composition can say *"here is metadata"* without saying *"as a
+   definition list, there"*.
+3. **It discards an identity-guarded semantic.** A badge's `data-meta-type` is always `tag`,
+   while `metaFields` give `temporal` / `quantity` / `category`, and {% ref "SPEC-158" /%} D3
+   makes `metaFields.*.metaType` **identity** — not theme-overridable — precisely because it
+   states what the data *means*. Hand-rolled badges replace that with "this is a tag". The output
+   looks right and the semantics are gone, which is why this is the failure that gets found last.
+
+## What worries me, stated plainly
+
+**Contract derivation couples to the primitives' versions.**
+`contracts/structures.json` is derived from config per rune. A composed rune's
+structure is its expansion, so changing `card`'s structure diffs every composed
+rune's contract. That is arguably the feature — it surfaces breakage that would
+otherwise ship — but `contracts --check` becomes noisy in a way that needs a story
+before this lands, not after.
+
+**~~The editor's `editHints`~~ — answered in D11.** This was recorded as a live
+coupling (whose hints win, the composition's or the primitives'?). It is not one:
+the primitives' nodes are not content, so their hints are irrelevant, and the
+composed rune declares hints for its own slots. Left visible rather than deleted
+because the reasoning that dissolved it — editability follows `location.file` —
+is the same reasoning D11 rests on.
+
+**It makes a false schema.org claim easier to write.** Composition lowers the bar
+to asserting a type, which sharpens {% ref "SPEC-143" /%}'s open question about a
+user rune's schema row being published with no reviewer in the loop. Bad CSS is
+visible on the page; a wrong `Person` row is invisible by construction. This spec
+should not ship a composition path for `schema` before that question has an answer.
+
+**Slot substitution over node lists is where the complexity actually is.** Scalar
+`variables` substitution is a string replace. Node-list substitution has to decide
+what happens to a slot that is filled twice, a slot that is never filled, a slot
+filled with content the primitive's content model rejects, and a slot whose
+authored content contains another composed rune. Each has an obvious answer; none
+is free.
+
+## Decisions
+
+### D1 — the template is Markdoc, not a new syntax
+
+Per {% ref "ADR-036" /%}. Markdoc is already a template language, already parsed,
+already safe, and already spliced by `include`. A bespoke template DSL would be
+either a weaker vocabulary in worse clothing or a sandbox problem.
+
+### D2 — a composed rune has no block and ships no CSS
+
+If it needs its own styling it belongs on the declared emit path, which per
+{% ref "ADR-037" /%} means it is a first-party rune or a plugin — not a user
+definition.
+
+**This is load-bearing, not tidiness.** Because users author only composed runes, D2
+is what keeps untrusted CSS out of the hosted story entirely: no `style` fence, no
+sanitiser, no scope assertion over author-written selectors, no question about what a
+skin file may contain. The moment a user-facing rune could ship CSS, all of that
+returns. Which is also why a definition that tries to is rejected rather than ignored.
+
+**What D2 does not claim, corrected here rather than discovered later.** "Its appearance
+is whatever the installed theme already gives the primitives it is built from" is true
+only where that styling is **addressable without naming the rune**. Measured on `track`
+({% ref "SPEC-155" /%}): 98 lines in `lumina/styles/runes/track.css`, every selector
+keyed on `.rf-track` or `.rf-track__*` — the tabular-nums duration, the `·` separators
+before artist and meta, the name's ellipsis. Compose the rune and all of them stop
+matching. The primitives supply geometry; what vanishes is everything the theme said
+about *this* shape.
+
+Two routes close the gap, and they serve different audiences. D16's `contextModifiers`
+works for a first-party composition, because Lumina can name it. For a user-authored
+rune it cannot — Lumina has never heard of `wine-tasting-note` — so the only route is a
+contract the theme styles **without** knowing the rune: an arrangement
+({% ref "ADR-030" /%}), a layout token ({% ref "ADR-018" /%}), a `data-state`
+({% ref "ADR-038" /%}). So D2 is not "composed runes are styled"; it is **"composed runes
+are styleable to the extent the vocabulary is rune-agnostic"**, and today that vocabulary
+is three layout tokens adopted by three runes. The arrangement work is therefore a
+dependency of this spec's promise rather than a neighbouring nice-to-have.
+
+### D3 — the outer rune owns identity; inner runes are implementation detail
+
+`data-rune`, the schema row, and any {% ref "SPEC-144" /%} registration belong to
+the composition. An author-stated type on an inner rune survives, per
+`SCHEMA_TYPE_EXPLICIT`; an implicit one does not.
+
+### D4 — the template renders at transform time, where `transform` would have run
+
+An earlier draft put substitution at **preprocess**, through `include`'s splice path,
+on the grounds that the primitives' own transforms would then run on the spliced tree
+unmodified. That is wrong, and the reason is decisive: **at preprocess the content
+model has not resolved anything.** Field matching, `sections`, `emitAttributes` and
+`headingExtract` all run inside the rune's transform at stage 2, so a template spliced
+at preprocess has no `resolved.title`, no `$item`, no heading text — nothing to bind a
+slot to.
+
+So the template renders where a `transform` would have: **after field resolution, at
+the one call site {% ref "SPEC-143" /%} substitutes at** (`lib/index.ts:865`). A
+template is an alternative to `transform`, not to parsing. The generated transform
+resolves fields as usual, binds them, substitutes into a clone of the template AST, and
+calls `Markdoc.transform` on the result — which is not a new move:
+`plugins/storytelling/src/tags/character.ts` already does
+`Markdoc.transform(asNodes(resolved.items), config)`.
+
+**What the preprocess timing bought is real but narrow, and giving it up is the right
+trade.** `include` exists so that `data` and `snippet` inside a pasted file are
+preprocessed ({% ref "SPEC-129" /%}'s whole reason). A template containing only
+ordinary runes never needed it. So: **a composition template may not contain the
+preprocessor runes** — `data`, `snippet`, `include` — and one that does is rejected at
+definition load rather than failing mysteriously at render.
+
+**And the ban needs to point at its alternative, because otherwise it reads as a dead
+end.** It is not one: `{% include %}` is the supported route for a repeated block that
+*needs* a preprocessor rune, and its own `variables` doc comment describes exactly this
+case —
+
+> Bindings substituted into the pasted AST at paste time, e.g. `variables={q: "rune:card"}`
+> makes `$q` inside the file that string. Unlike `partial`, this is substitution rather
+> than a transform-time scope, **so bound values reach preprocessor attributes such as
+> `{% data where=$q %}`**.
+
+So a derived-data block is `{% include file="_intro.md" variables={query: "name:card"} /%}`,
+and the substitution also sidesteps `data`'s no-concatenation limit, since `variables` are
+bound before `where` is read. Note `partial` does **not** serve this: it is a transform-time
+scope, so its bindings never reach a preprocessor attribute.
+
+| | `{% include %}` | a composition |
+|---|---|---|
+| Stage | preprocess splice | transform (this decision) |
+| May contain `data` / `snippet` / `include` | **yes — its whole purpose** | **no, rejected at load** |
+| Content model, slots | none | yes |
+| Bindings | scalar, paste-time | `$attrs` plus slot values |
+
+**The rule: a repeated block containing a preprocessor rune is an `include`; a repeated
+block of ordinary runes with a content model is a composition.** Recorded because the ban
+above invites exactly one wrong inference — that a composition could wrap `{% data %}` to
+give a docs site derived content without writing code. It cannot, and the walk into that
+inference is what prompted this paragraph.
+
+**Runes that resolve at `postProcess` are not affected, and saying so prevents the same
+question being asked of them.** `collection`, `aggregate`, `expand` and `file-ref` emit a
+sentinel at transform and are resolved in phase 4, so a template may place them freely —
+the sentinel survives by design, exactly as `breadcrumb auto` does. The preprocess ban is
+about a stage a template comes *after*; postProcess is a stage it comes *before*. The only
+other constraint on what a template may place is D12's intersection, and no aggregation
+rune is in it.
+
+**Two places the `include` route cannot be hoisted to, measured, because both look like the
+obvious way to avoid repeating it per page.**
+
+**`_layout.md` cannot hold an `{% include %}`, and it fails loudly.** Three independent
+reasons, any one sufficient. Layouts get **no preprocess pass**: `parseLayout` runs
+`Markdoc.parse` then `Markdoc.transform` directly (`content/src/layout.ts:66-80`), while
+preprocess is a *page* phase by construction (`site.ts:482`, *"so the preprocess phase can run
+during page processing"*; `:512`, *"Per-page preprocess context"*). So the tag reaches transform
+unresolved and `include`'s own transform throws — *"{% include %} reached the transform phase
+unresolved — its preprocess hook was not wired through."* Second, a layout's variable scope is
+the **layout's**, not the page's: `path: layoutPage.relativePath`, `__source`, `__sourcePath`,
+`__icons` — no page frontmatter and no page name, so there would be nothing to key a query on
+even with a preprocess pass. Third, `mergeRegions` parses each layout **once per layout file**
+and wraps every page in the tree with the result, so one resolution would serve every page
+identically.
+
+The rule that follows: **a layout carries chrome that is identical across its subtree; per-page
+derived content belongs on the page.** Nav, pagination and a toc qualify; "this page's own
+record" never can.
+
+**`entityRoutes` gives `$item` for free and cannot carry prose.** It is the one mechanism that
+injects a page-scoped *object* (`entity-routes.ts:103`, `variables: { item: project(entity) }`),
+which makes `{% $item.plugin %}` work with no `data` tag at all — genuinely nicer, and the wrong
+trade for a document. Two reasons:
+
+1. **`content` is computed once per *rule*, outside the entity loop** — `let content = inline ??
+   ''`, then one `resolvePartial(templateName)` — and the same string is handed to every page the
+   rule generates. Only `url`, `title`, `frontmatter` and `variables.item` vary per entity. There
+   is no per-page body, not because prose is discarded but because there is nowhere to put it.
+2. **Substitution is not parsing.** `project()` spreads the entity's `data`, so a long markdown
+   string could ride along as a field — but a Markdoc variable interpolates a *value*. A body
+   containing headings, lists and `{% preview %}` blocks would render as literal text. This is the
+   same line as `include` versus `partial`: pasting an AST parses, binding a variable does not.
+
+So `entityRoutes` fits pages whose body genuinely *is* their fields — plan items, a listing, an
+event. It does not fit a document whose value is its prose, and reaching for it to obtain `$item`
+trades the body for the metadata.
+
+**Which is why the plan site is the shape that keeps both:** real `.md` files with authored prose
+bodies, each wrapped in a page-level rune. The body is per file; only the structure is shared.
+
+This also simplifies D7: a `{% metablock %}` placeholder placed at transform time is
+consumed by the engine immediately afterwards, rather than having to survive three
+stages as a marker.
+
+### D4a — a node-sourced value becomes an attribute through the content model, not the template
+
+The asymmetry is worth stating because it is the first thing an author will hit.
+Attribute → anywhere is free: `{% $attrs.name %}` in content, `tone=$attrs.role` in an
+attribute, `{% if $attrs.bidirectional %}` in a conditional — all ordinary Markdoc
+variables. The reverse, a heading's text used as a child rune's attribute, needs the
+value flattened, and **the content model already does that**:
+
+```yaml
+content:
+  type: sections
+  sectionHeading: heading
+  emitAttributes: { heading: $heading }     # heading text, as a string
+```
+
+```md
+{% slot name="sections" each %}
+  {% details summary=$item.heading %}{% slot /%}{% /details %}
+{% /slot %}
+```
+
+`$heading` resolves to flattened heading text (`packages/runes/src/lib/resolver.ts:491-492`),
+`$field` to a `headingExtract` field (`:493-494`), and `'$a|$b'` gives an ordered
+fallback (`:204-207`). `character` already relies on this, via
+`emitTag: 'character-section'` with `emitAttributes: { name: '$heading' }`.
+
+**The template must not do the extraction itself.** An attribute is a scalar and a
+heading can be rich — `## The **Bone** Witch` — so flattening discards the emphasis.
+Declaring it in the content model makes that loss a choice the rune author made;
+inferring it from an attribute position would make it a surprise. There is no
+non-lossy alternative, since a node list cannot live in an attribute at all.
+
+### D5 — exactly one of: a slot declaration, a composition template, or a `transform`
+
+The same mutual exclusion {% ref "SPEC-143" /%} D8 establishes, extended to three
+options. Declaring two is rejected at schema construction, naming the rune.
+
+Under {% ref "ADR-037" /%} this gains a second job: it is also the line between the
+internal and user-facing paths. A user definition carrying a slot declaration instead
+of a template is rejected rather than quietly accepted onto a path it was not offered.
+
+### D6 — a composed rune's contract is its expansion, not an opaque marker
+
+Recording it opaquely would lose the drift check that makes contracts worth
+having. The cost is the version coupling named above, accepted deliberately — but
+the noise story is an acceptance criterion, not an afterthought.
+
+### D7 — a composed rune places declared meta blocks; `layout` cannot reach into primitives
+
+{% ref "SPEC-080" /%}'s `metaFields` + `blocks` is already the metadata primitive,
+and it is better factored than a `meta` rune would be: `metaFields` is a pure data
+manifest of field semantics (`metaType`, label, sentiment, condition, plus `href` /
+`rating` / `icon`), and `blocks` groups those fields under a `LayoutPrimitive` —
+a closed two-member vocabulary, `'definition-list' | 'bar'`. Field *shape* is
+intrinsic to `metaType`, so the same field renders as a chip in a `<dd>` and as bare
+text in an eyebrow with no per-field config change.
+
+**But blocks are placed by `layout`, whose keys are container `data-name`s, and a
+composed rune does not own its containers** — they belong to `card`, `details` or
+whatever the template reached for. A composed rune's `layout` would be addressing
+inside a primitive it does not own, which is exactly what this spec's sibling
+forbids for authored regions: a region's children carry no `data-name`, so neither
+`layout` nor `projection` can address inside them.
+
+So the projection path assumes the rune owns its tree, and composition breaks that
+assumption. The resolution is a template-side placement tag — spelled
+`{% metablock name="…" /%}` below, though see the naming sub-question — giving one
+`blocks` declaration two consumers:
+
+- the **engine** projects it, for runes that own their tree (today's mechanism,
+  untouched)
+- a **template** places it, for composed runes
+
+The theme keeps the same authority in both: `blocks` is not an identity field, so
+which fields, their order and which primitive renders them stay theme-overridable.
+One declaration, one authority model, two placement paths.
+
+Half of this already exists: `bar` and `deflist` ship *twice* — as `LayoutPrimitive`
+values the engine projects into, and as author-callable runes ("Block-level wrapper
+that renders the SPEC-080 `bar` layout primitive over author-written content"). The
+missing piece is a binding, not a primitive.
+
+#### It is a placeholder, not a renderer
+
+Timing forces this, and it is the reason the tag is cheap. `metaFields` resolve
+against the engine's `modifierValues` —
+`resolveField(fieldName, metaFields, modifierValues, locale)` at `engine.ts:1395`,
+**stage 4**. A template renders at the rune's transform, **stage 2** (D4). So even
+with the corrected timing the tag still precedes its values by two stages: it cannot
+render metadata, only mark where metadata goes, and the engine substitutes it. That
+is idiomatic here — the engine already consumes and strips meta tags, and deferred
+sentinels (`breadcrumb auto`) work this way.
+
+The correction to D4 shortens the marker's life from three stages to one hop —
+transform to engine, the same distance any meta tag travels — which is a smaller
+thing to get right than a marker surviving preprocess as well.
+
+**Which makes this decision's first acceptance criterion true by construction rather
+than by test.** `renderBlock` at `engine.ts:1388` is already a named, on-demand
+closure returning `SerializedTag | null`:
+
+```ts
+const renderBlock = (name: string): SerializedTag | null => {
+  const def: BlockDef | undefined = blocks[name];
+  if (!def) return null;
+  … resolveField per field …
+  if (items.length === 0) return null;
+  if (def.layout === 'bar') return renderBarLayout(name, items, def.wrap ?? true, locale, config);
+  return renderDefListBlock(name, items.map((i) => i.resolved), locale, config);
+};
+```
+
+`layout` placement calls it at `engine.ts:1563`. The tag is a *second trigger for the
+same closure* — same code, same output, different placement source. Anything that
+re-rendered metadata for composed runes would have to be kept in step by hand.
+
+#### Worked example — `realm`, projected and composed
+
+`Realm` today (`plugins/storytelling/src/config.ts:102-118`):
+
+```ts
+metaFields: {
+  realmType: { metaType: 'category', label: 'Type' },
+  scale:     { metaType: 'category', label: 'Scale', condition: 'scale' },
+},
+blocks: {
+  metadata: { fields: ['realmType', 'scale'], layout: 'definition-list' },
+},
+layout: {
+  root:     ['scene', 'content'],
+  content:  { tag: 'div', children: ['preamble', 'metadata', 'body', 'sections'] },
+  preamble: { tag: 'header', children: ['name'] },
+},
+```
+
+`'metadata'` sits in `content.children` beside `preamble`, `body` and `sections`,
+which are transform slots — **block names and slot names share one namespace in
+`layout`**, with blocks resolved first (`engine.ts:1562-1571`). That is precisely why
+a tag is needed: a composed rune has no `layout` to write the name into.
+
+The composed form keeps `metaFields` and `blocks` verbatim and drops `layout`:
+
+```md
+---
+tag: article
+attributes:
+  name:      { type: string, required: true }
+  realmType: { type: string }
+  scale:     { type: string }
+content:
+  type: sections
+  sectionHeading: heading
+  preamble:
+    scene: { match: image, optional: true }
+metaFields:
+  realmType: { metaType: category, label: Type }
+  scale:     { metaType: category, label: Scale, condition: scale }
+blocks:
+  metadata: { fields: [realmType, scale], layout: definition-list }
+---
+
+{% mediatext %}
+{% slot name="scene" /%}
+---
+# {% $attrs.name %}
+
+{% metablock name="metadata" /%}
+
+{% slot name="body" /%}
+
+{% slot name="sections" each %}
+  {% details summary=$item.heading %}{% slot /%}{% /details %}
+{% /slot %}
+{% /mediatext %}
+```
+
+What lands is the DOM the projection already produces: a `<dl>` of
+`<dt data-meta-label>` / `<dd>` pairs, each `<dd>` a chip or bare text chosen from the
+field's `metaType` (`engine.ts:1330-1356`); a `bar` block would land as
+`<div data-name="{block}" data-zone="{block}" data-zone-layout="bar">`
+(`engine.ts:1318-1324`). Lumina styles both through `[data-zone-layout]` and
+`[data-meta-type]` without knowing composed runes exist.
+
+#### Whose config resolves the marker
+
+The marker sits inside `{% mediatext %}`, but the block belongs to `realm`.
+`assembleWithBlocks` is called per-rune with *that* rune's config and
+`modifierValues`, so the outer rune's pass must scan its whole subtree for markers —
+not only its direct children, which is all `layout` addresses.
+
+That reads like a breach of {% ref "SPEC-143" /%}'s rule that `layout` may not address
+inside a region, and it is not, but the distinction has to be stated or it will be
+read as one: **the template is the rune's own output, so the rune may address inside
+it. Authored content is what it may not reach into.** Same rule, different material.
+
+#### The failure this prevents
+
+`engine.ts:1408-1409` — *"No `layout` → render the transform tree verbatim (no
+projection)."* A rune with `blocks` and no `layout` renders **no blocks at all**,
+silently. Every composed rune has no `layout`. So without this tag a composed rune
+could declare `metaFields` and `blocks` in full and get nothing, with no diagnostic,
+which is the worst available outcome.
+
+#### Sub-questions on the tag
+
+- **It must not be called `meta`.** `meta` already means two other things here — HTML
+  `<meta>`, and refrakt's "meta tags", the properties channel `createComponentRenderable`
+  emits. With one `metaFields` collision already being untangled, a third `meta` is a
+  mistake. `{% metablock %}` is the placeholder used above; `{% fields %}` is a
+  candidate. `{% block %}` is out — it collides with `RuneConfig.block`, the BEM name.
+- **Empty and undefined need different handling.** `renderBlock` returns null both for
+  an undefined block and for one whose every field resolved empty. Empty is legitimate
+  — `condition` exists for exactly that — so the marker is removed silently. An
+  undefined name is an authoring error and should be rejected at schema construction,
+  naming the block.
+- **Placing one block twice is an error.** `renderBlock` sets `'data-name': blockName`
+  (`engine.ts:1319`), so two placements produce duplicate `data-name`s, which SPEC-143
+  forbids and `mapDataNames` silently collapses.
+- **May a tree-owning rune use the tag instead of `layout`?** Mechanically yes, which
+  would leave one rune with two placement mechanisms. Wants a stated preference rather
+  than both being left open.
+
+### D8 — a theme supplies no rune template
+
+Tempting, for symmetry: if a composed rune assembles itself with a template, why not
+let a theme do the same and retire `layout`/`blocks` projection? Because the two
+mechanisms are not the same power, and the difference is exactly the one
+{% ref "ADR-028" /%} exists to police.
+
+`layout` is a **permutation with wrappers** over content the transform emitted. It
+can reorder, create a container (`{ tag, children }`), and inject structural
+elements. It cannot fabricate content, and it cannot drop any: "Transform-built
+children a list doesn't name are appended in transform order (rune content is never
+dropped)" (`packages/transform/src/types.ts:236`).
+
+A template is a **free function producing a tree**. It can fabricate — the
+`{% badge %}{% $attrs.role %}{% /badge %}` in the `character` example is a badge no
+transform emitted — and it can omit, by not placing a slot. Fabrication would let a
+theme add claims the author never made; omission would let it silently swallow
+authored content. ADR-028's own reasoning applies directly: a theme that could
+rewrite structural facts "could change what the same markdown *means*, which is the
+portability premise the project rests on."
+
+So this is not a slope toward violating ADR-028. Creating the tree *is* the act of
+defining the rune, and a template is a tree-creating device.
+
+**The asymmetry is not an inconsistency — it tracks the portability boundary.**
+refrakt already has both mechanisms, split by scope:
+
+| Scope | Mechanism | Why |
+|---|---|---|
+| Page | template — `{% layout %}` / `{% region %}` in `_layout.md`, cascading, with `region`'s `mode: replace \| prepend \| append` | A page's arrangement is not portable content; nobody moves a layout between sites expecting meaning preserved |
+| Rune | config — `blocks` / `layout` projection | The same markdown must mean the same thing under any theme |
+
+This spec moves the template mechanism *down* to rune scope. The theme does not
+follow it down, because at rune scope the portability guarantee starts applying.
+
+A theme that genuinely needs more already has a route, and an appropriately
+heavyweight one: a Svelte component override in `packages/svelte/src/registry.ts`,
+or `postTransform`. Both are code, shipped in a package, reviewed as code. Nothing
+is being denied — only a cheap path to an expensive capability.
+
+**This costs a documentation obligation, not nothing.** Two assembly mechanisms at
+two scopes invites "when do I reach for `layout` versus a template?", and both will
+grow features under pressure from the same use cases. The answer — *`layout` when
+the rune owns its tree, a template when you are creating one* — belongs in the
+theme-authoring guide beside ADR-028 rather than left to be inferred.
+
+### D9 — compose only from runes that emit no schema type, or a subordinate one
+
+A composed rune owns the claim (D3). A rune it composes *from* must therefore not
+make a competing one.
+
+**The worked counter-example is `recipe` from `howto`,** which looks ideal — in
+schema.org, `Recipe` *is* a subtype of `HowTo` — and fails three ways:
+
+1. **The property is renamed.** `howToSchema` attaches its steps as
+   `step`; `recipeSchema` attaches the same `HowToStep` children as
+   `recipeInstructions`. And `recipeIngredient` has no HowTo analogue at all — its
+   list vocabulary is `supply` / `tool`, so typing flour as a `HowToTool` would be a
+   lie in the graph.
+2. **RDFa captures them at the wrong resource.** The inner `{% howto %}` carries
+   `typeof="HowTo"`, and RDFa Core 1.1 §7.5 step 11 resolves a property's object to
+   the typed resource when `@typeof` is present and `@about` absent
+   ({% ref "SPEC-130" /%} records this). So the steps attach to the nested HowTo,
+   not the Recipe: a Recipe with no instructions containing a HowTo that has them,
+   rendering pixel-identically.
+3. **The escape is worse than the problem.** `schema="none"` suppresses it, but
+   deliberately for the *whole subtree* — "a child rune declares its own type
+   independently, so stripping only the root would leave orphan typed nodes with no
+   container (WORK-552)". The outer row must then re-declare every child type the
+   inner would have emitted, which is re-specifying the schema while borrowing
+   markup, with total coupling and nothing to catch the drift.
+
+**The line this yields is clean, and the catalog already draws it.** Of 126 runes,
+30 emit structured data (the seo-baseline's fixture set). The composable primitives
+are, with near-perfect correspondence, the ones that emit nothing:
+
+| | Runes |
+|---|---|
+| Emit no schema | `card`, `section`, `bar`, `deflist`, `details`, `badge`, `hint`, `mediatext`, `hero`, `grid`, `textblock`, `steps`, `feature`, `tabs`, `progress` |
+| Emit a type | `howto`, `recipe`, `character`, `realm`, `faction`, `event`, `organization`, `playlist`, `cast`, `timeline`, `pricing`, `symbol`, `budget`, `plot`, `lore`, … |
+
+That is not coincidence — it is the same division as everywhere else in this spec:
+primitives carry presentation, entities carry claims. **Compose into a type, never
+from one.**
+
+One refinement: `figure` and `gallery` do emit, and composing from them is fine,
+because an `ImageObject` becoming the outer entity's `image` is legitimate
+**subordinate** nesting rather than a peer entity. So the rule is: compose from runes
+whose schema contribution is absent or subordinate; never from one declaring a peer
+top-level entity.
+
+This is mechanically checkable — both the contract generator and the composition
+expander know which runes carry schema tables — so it is a build diagnostic rather
+than something a reviewer must notice.
+
+#### The rule is relational, and the common case it permits is easy to misread as banned
+
+*"Never from one"* and the two-column table above read, on a quick pass, as **a schema-
+emitting rune may not be placed at all**. That is not what this decision says. The forbidden
+thing is a **peer** — two competing top-level entities in one subtree — which is why the
+counter-example is an outer `Recipe` over an inner `HowTo` and why `figure`'s subordinate
+`ImageObject` is fine. A rune's schema is only a peer *relative to a claim the outer rune
+makes.*
+
+**So a wrapper composition that declares no schema of its own may place an entity rune.**
+The worked case is the one an author will actually hit — a cooking blog wanting one standard
+shape for every recipe post:
+
+```md
+{% cooking-post rating="4" %}
+…the author's whole recipe body…
+{% /cooking-post %}
+```
+
+`cooking-post` places `{% recipe %}` plus the blogger's furniture — a byline, a rating, a
+"jump to recipe" link — and declares **no `schema:` block**. Exactly one type then exists in
+the subtree, `recipe`'s own `Recipe`: no peer, no renamed property, no RDFa capture at the
+wrong resource. D9 is satisfied on its terms rather than by exception, and the semantics are
+right — in a recipe blog post the entity *is* the recipe, and the wrapper is page furniture
+that should claim nothing.
+
+**What remains genuinely forbidden is the other reading of the same wish:** a composition
+that wants to *be* the recipe, declaring `Recipe` itself while borrowing `recipe`'s markup.
+That is composing from a peer, and `schema="none"` is explicitly the worse escape above. The
+answer there is to compose a **sibling**, not a wrapper — a composition over `card` / `grid`
+/ `deflist` carrying its own `schema: { type: Recipe, … }`, which is the worked example this
+spec already contains. Such an author is writing their own recipe rune rather than extending
+ours, and that is the supported shape.
+
+#### A wrapper passes the body through intact, and this is the part that fails silently
+
+A wrapper over an entity rune **must take one greedy body slot and place it whole, outside
+any conditional.** Two reasons, and the second is invisible when crossed:
+
+1. **Parsing consumes the inner rune's grammar.** If the outer's content model splits the
+   author's markdown into fields, it has eaten the structure the inner rune depends on —
+   `recipe`'s zone delimiters above all. The inner would receive pre-split pieces and parse
+   them wrongly.
+2. **A conditional hides structure from the inner content model.** D17 is this exact failure:
+   content models match AST children *before* transformation, so anything a template wraps in
+   `{% if %}` is invisible to the structural matching of the rune it sits inside. Its worked
+   case is an `hr` nested in an `{% if %}` that `splitMediaBodyFooter` never sees, leaving a
+   card with one zone instead of two.
+
+So the wrapper adds chrome *around* the inner rune and never reaches inside it. Stated here
+rather than only in D17 because the wrapper pattern is where an author meets it first, and
+because "my recipe lost its media zone" is not a diagnosis anyone reaches unaided.
+
+**And a wrapper may be more machinery than the job needs.** Where the want is only consistent
+furniture around every page in a section, the layout cascade already does that —
+`_layout.md` with regions, scoped to a directory tree. Worth asking which is meant before
+reaching for a rune at all.
+
+### D10 — name resolution across boundaries is {% ref "SPEC-146" /%}'s, not this spec's
+
+Composition cannot make a correct structured-data claim until two resolvers change:
+`findAllByName` must be able to cross a nested rune's boundary to reach content placed
+on the composing rune's behalf, and `findChildren` must stop matching content it was
+never about. The mechanism is an ownership marker declared on the node instead of
+inferred from ancestry, used to *admit* in one resolver and *reject* in the other.
+
+**That is split out, for a reason worth stating.** One half of it is a present-tense
+defect with no connection to composition: `findChildren` matches `data-rune === name`
+across the whole subtree, and `howto`/`recipe`'s `children: { step }` collides with
+the real `step` rune, so a `{% steps %}` block an author nests inside a `{% recipe %}`
+gets stamped as one of its instructions. That is reproduced in SPEC-146 and is worth
+fixing whether or not composition ships.
+
+The other half — reaching placed content — is inert until this spec places any, so
+the sequencing is: land the resolver change, prove it inert against the seo-baseline,
+then build composition on a verified foundation. Changing the resolver and adding
+composition in one diff would leave a baseline diff that cannot be attributed.
+
+**This spec therefore depends on {% ref "SPEC-146" /%}** and its slot substitution
+must set the marker that spec defines. Nothing else here changes.
+
+### D11 — editability follows the source file, not the tree
+
+The editor edits the page, not the rendered tree — `packages/editor/src/stamp-on-insert.ts`
+states it plainly: "The first point at which the invocation names a real region is
+when the page is written, so that is where this runs." So a composed rune's editable
+surface is its **attributes and slot content**: the author's own markdown. The
+template is implementation, like a component's internals.
+
+**The line is drawn by `location.file`, and {% ref "ADR-034" /%} already decided the
+mechanism** — a file-qualified `(file, start, end)` from Markdoc's own `location`,
+with the relevant consequence stated outright: "a spliced partial reports the
+partial." Because composition rides `include`'s splice (D4), template nodes report
+the template file and slot content reports the author's page:
+
+| Node | `location.file` | Editable |
+|---|---|---|
+| `<img data-name="portrait">`, `<p data-name="description">`, section content | the author's page | **yes** |
+| `{% card %}` / `{% badge %}` / `{% details %}` wrappers | the rune definition | no |
+| `<h1>{% $attrs.name %}</h1>` | the rune definition | no — see below |
+
+**Composition therefore lands in an existing category, not a new one.** Content
+spliced from another file is what a `{% partial %}` already is, and its body is
+already not editable in place from the including page. The editor needs that rule
+regardless.
+
+**A template node interpolating an attribute is a read-only projection.** The `<h1>`
+displays the name but is not its source; inline editing there has nowhere to write,
+and rewriting the template would change the rune for every page. Its edit affordance
+routes to the **attribute**. This is arguably better than a declared rune manages,
+since the composed rune's frontmatter declares `role` and `status` with `matches`
+enums, so the editor can offer selects rather than free text.
+
+**The `editHints` ownership question is answered, not deferred.** A composed rune
+declares hints for its own slots, keyed by slot name; the primitives' hints are
+irrelevant because the primitives' nodes are not content. There is also little to
+break — `editHints` has exactly one consumer,
+`packages/editor/app/src/lib/components/BlockCard.svelte`.
+
+**Structural editing is unrestricted where it matters.** Adding, removing and
+reordering sections works, because sections come from the content model parsing the
+author's H2 headings and the template's `each` renders however many exist. What an
+author cannot do is add content for a slot the template does not place — identical to
+a declared rune, where the slot declaration fixes the set, so no regression.
+
+**And one guarantee to carry over.** If the content model declares a field that *no
+slot places*, the author's content parses and then silently does not render: it stays
+in their source and vanishes from the page. That contradicts a promise the project
+already makes — `packages/transform/src/types.ts:236`: "Transform-built children a
+list doesn't name are appended in transform order (**rune content is never
+dropped**)." `layout` is designed not to do this; a template would. So an unplaced
+declared field is a build error, naming the field. Both sets are known at schema
+construction, so the check is free.
+
+**ADR-034 is a dependency, not a nicety.** It is `proposed`, and nothing in the tree
+carries a source range yet — verified. Composition is its sixth consumer and the
+first that cannot be served another way, so SPEC-145's editor story does not land
+before it does.
+
+### D12 — the placeable set is the intersection of two exclusions, stated in one place
+
+Two separate rules shrink what a template may place, and nobody will derive the
+intersection from two decisions in different sections.
+
+**D9 excludes runes that emit a peer schema type.** **`requiresParent` excludes runes
+that need a specific ancestor** — SPEC-084's hard nesting requirement, validated by the
+engine "when the rune appears without that parent as its **nearest ancestor**". A
+composition's own rune is the nearest ancestor of anything its template places, so a
+parent-requiring rune placed directly always fails the check. Thirteen runes declare
+one:
+
+| Rune | Requires | |
+|---|---|---|
+| `AccordionItem` | `Accordion` | core |
+| `BreadcrumbItem` | `Breadcrumb` | core |
+| `Tab`, `TabPanel` | `TabGroup` | core |
+| `JuxtaposePanel` | `Juxtapose` | core |
+| `BentoCell` | `Bento` | marketing |
+| `Definition` | `Feature` | marketing |
+| `Step` | `Steps` | marketing |
+| `Tier`, `FeaturedTier` | `Pricing` | marketing |
+| `ItineraryDay`, `ItineraryStop` | `Itinerary` | places |
+| `MapPin` | `Map` | places |
+
+The two lists overlap but are not the same: `Step` and `Tier` fail both rules, `Tab` and
+`BentoCell` only this one. **The placeable set is the intersection**, and the authoring
+guide must state it as one list rather than leaving an author to compute it.
+
+**The workable pattern is to place the parent.** A template reaches for
+`{% steps %}` or `{% pricing %}` and lets that rune's own content model produce its
+children from the slot content — which is also the arrangement that keeps the child
+runes' schema rows correct, since the parent is their declared retyper (D9). So this is
+a constraint on *how* to compose a list, not a bar on composing one.
+
+### D13 — a composed rune's strings need a keying name, or they are untranslatable
+
+i18n keys are auto-derived as `{scope}.{block}.{ref}`
+(`packages/transform/src/types.ts:123`, `:145`, `:591`), with `scope` defaulting to
+`core` and set per plugin. A composed rune has **no block** — that is D2, and it is
+load-bearing for the CSS story. So its `metaFields` labels have no derivable key, and a
+user rune has no plugin to supply a scope either.
+
+Literal text in the template is worse: `{% badge %}antagonist{% /badge %}`, or a
+`summary=` label, is not in `metaFields` at all, so no keying scheme reaches it.
+
+**This is a genuine tension between D2 and {% ref "SPEC-035" /%}, and it wants deciding
+rather than discovering.** Three candidates, none obviously right:
+
+1. **A keying name that is not a BEM block.** The rune has a name; use it as the i18n
+   scope without introducing a block. Preserves D2, costs one more identifier.
+2. **Require an explicit `i18nKey`** on anything translatable, and treat an unkeyed
+   label as single-locale by declaration.
+3. **State that composed runes are single-locale** — honest, and probably unacceptable
+   for a hosted product with international users.
+
+Option 1 is the one I would pursue, because it separates "a name for keying" from "a
+name for CSS", which were only ever conflated by convenience. Literal template text
+needs its own answer under any of the three.
+
+**Measured, and the three options cost very different amounts — plus the status quo is
+worse than option 3.** Two functions derive the key, and they do not agree about a
+missing block:
+
+| Site | Expression | Block-less result |
+|---|---|---|
+| `engine.ts:933` (`localizedLabel`, the lookup) | `` `${scope ?? 'core'}.${config?.block ?? ''}.${ref}` `` | `core..status` |
+| `i18n-extract.ts:33` (`labelKey`, the extractor) | `` `${config.scope ?? 'core'}.${config.block}.${ref}` `` | `core.undefined.status` |
+
+So a composed rune would not be *untranslated*; it would be **mis-keyed in two different
+ways**. The extractor would hand a translator `core.undefined.status`, the runtime would
+look up `core..status`, and the label would silently fall back to English however
+faithfully the locale file was filled in. That is strictly worse than option 3's honest
+"single-locale", because it looks like translation is wired up.
+
+**Which reprices the options:**
+
+- **Option 2 works today with no code change.** Both functions are `override ?? …`, so an
+  explicit `i18nKey` short-circuits before `block` is read. That makes it the available
+  fallback rather than a design to build, and it is what makes declaring composed runes
+  translatable-by-declaration cheap.
+- **Option 1 is a coordinated two-site change**, and the two sites must move *together* —
+  changing only the engine leaves the extractor emitting keys nothing resolves, which is
+  the present bug with a different spelling. Still the right end state for the reason
+  above; the cost is simply named now.
+- **Option 3 is not the status quo** and should not be chosen on the grounds that it is
+  already how things behave. It is not.
+
+**A latent defect, not reachable today.** `RuneConfig.block` is typed `block: string` and
+required, so no shipping rune hits either branch — the `?? ''` and the bare interpolation
+are both dead code until a block-less rune exists. D2 makes block-less the normal case for
+every composed rune, so this spec is what makes them reachable, and whichever option is
+chosen has to close both.
+
+**Literal template text remains unanswered**, and the measurement does not touch it: a
+`{% badge %}antagonist{% /badge %}` has no `metaFields` entry, so neither `labelKey` nor
+`localizedLabel` is ever called for it. Options 1 and 2 both key *declared labels*; neither
+reaches a string the template spells out. That gap is the same shape as
+{% ref "SPEC-035" /%}'s Zone 6 enum-as-text problem, which solved it by requiring the rune
+to *declare* the values it wants substituted (`i18nEnums`, `localizedEnumValue` at
+`engine.ts:941`) — and that precedent is the obvious starting point rather than a new
+mechanism.
+
+### D14 — universal attributes apply to a nominated chrome carrier, not the empty root
+
+A composed rune gets the universal attribute surface — `width`, `spacing`, `inset`,
+`elevation`, `substrate`, `scrim`, `reveal`, `tint` — and its *applicability* resolves
+correctly, because that derives from `sections` / `mediaSlots` / `frameTarget`, which a
+composed rune declares (`packages/runes/src/schema-universals.ts`; applicability is rune
+identity per {% ref "ADR-028" /%}).
+
+The problem is where they land. The engine applies them to the rune's own root, and a
+composed rune's root is a semantically necessary but **visually empty** wrapper around a
+primitive that already carries chrome. `width="wide"` plausibly behaves: the outer box
+widens and the card follows. `elevation="raised"` plausibly produces a shadow around a
+shadow, and `substrate` / `scrim` decorate a wrapper no theme designed.
+
+**Verified, and the prediction was right but understated.** This decision read *"not yet
+verified — confirming it is the first task here rather than an assumption to build on"*.
+Read against Lumina's and skeleton's dimension CSS, the universals do not behave as one
+set. They behave as three, and the groups have **opposite** requirements:
+
+| Group | Universals | Selector form | On a composed rune's empty root |
+|---|---|---|---|
+| Position-dependent | `width`, `spacing`, `inset` | **zero** unscoped rules; every one requires `.rf-page-content > article > …` (or the docs equivalent) | **correct** — the root is the thing in page flow |
+| Position-independent | `elevation`, `substrate`, `reveal` | 10 / 8 / 7 unscoped `[data-*]` rules | **double-paints** |
+| Context-coupled | `scrim` | zero unscoped rules; every one requires `[data-media-position="cover"]` or `[data-name="scrim"]` | **inert** — does nothing at all |
+
+`tint` straddles: 9 unscoped rules project its tokens anywhere, while its spacing and
+background interactions are position-scoped like the first group.
+
+**`elevation` is worse than "a shadow around a shadow".** `surfaces.css:49` groups
+`flat`, `sunken`, `raised`, `floating` and `overlay` under one block that sets
+`background`, `border: 1px`, `border-radius` and `padding` — the shadow is added
+afterwards, per rung. So `elevation="raised"` on a root wrapping a `card` draws a
+**complete second surface** around the first: two fills, two borders, two radii, two
+paddings, two shadows.
+
+**One thing works correctly for a reason worth keeping.** `surfaces.css:33` gives
+`margin: var(--rf-spacing-md) 0` to `[data-rune]:not([data-rune] [data-rune])` — top-level
+runes only. A composed rune's root is that top-level `[data-rune]` and its placed card is
+nested, so vertical rhythm lands on the wrapper and not on the primitive, which is right.
+The wrapper is not visually empty by accident; it is the box in page flow.
+
+**So the fix is not one carrier.** This decision proposed that a composition *nominates a
+chrome carrier* — "the placed rune that universal attributes apply to" — which is right for
+the position-independent group and **wrong for the other two**. Moving `width`, `spacing` or
+`inset` to a nested carrier silently no-ops them, because their CSS requires the
+direct-child-of-article position the carrier does not occupy. And `scrim` needs the rune
+that owns the media slot, which is not necessarily the nominated carrier.
+
+The split that follows the measurement:
+
+- **`width`, `spacing`, `inset`** stay on the root. No change, no declaration.
+- **`elevation`, `substrate`, `reveal`, and `tint`'s paint half** go to a nominated chrome
+  carrier, defaulting to the single top-level placed rune where the template has exactly
+  one and required where it has several.
+- **`scrim`** resolves to whichever placed rune carries the media slot, or is rejected at
+  construction when none does — an attribute that silently does nothing is the failure this
+  spec is trying to avoid, and it is already doing nothing today.
+
+Stating it as one carrier would have shipped three regressions dressed as a fix, which is
+why the verification was worth doing before building on it rather than after.
+
+### D15 — a rune may declare several templates, selected by a declared attribute
+
+One rune, several assemblies of the same slots, still entirely declarative. This is the
+largest capability increase available for the cost — and an earlier draft got both its
+mechanism and its name wrong, so both corrections are recorded.
+
+**A second worked case, and a caution about credit.** Displaying a `track` as a name with a
+byline underneath rather than as one row is a second assembly of identical parts, and
+{% ref "SPEC-156" /%} establishes that the **declared** path already does it with shipping
+machinery: `metaFields` + `blocks` for the group, two `layout` values, and a
+{% ref "SPEC-091" /%} `variants` axis to select. What is missing there is adoption — `Track`
+declares no `metaFields` — not mechanism. D15's value is therefore specifically the *composed*
+path, where there is no config to put a variant delta in; it should not be credited with
+capability the declared path has.
+
+#### It is not {% ref "SPEC-091" /%}'s `variants`, because of when each runs
+
+`variants` is `Record<axis, Record<value, Partial<RuneConfig>>>`, and selection "rides
+the modifier system": the **engine** resolves each axis's modifier value and merges the
+delta over base *before layout assembly* — stage 4. A template renders at the rune's
+transform, stage 2 (D4). By the time the engine merges a delta, the template is already
+a tree. So a `variants` delta cannot select a template; the earlier draft claiming it
+could was the D4 error repeated.
+
+**What survives is the selection input.** A variant axis is a declared attribute, and a
+transform has `attrs` — so template selection is a transform-time switch on an attribute,
+needing no engine involvement at all. It borrows `variants`' conventions (a closed value
+set, the attribute's own `default` supplying the active value, no cross-axis compounds)
+without claiming its machinery.
+
+**And the two then compose, at their own stages, with their own owners:**
+
+| | Stage | Decides | Theme-overridable |
+|---|---|---|---|
+| Template selection | transform | which **assembly** of the slots | **no** — it is the rune's own output |
+| `variants` deltas | engine | which **decoration** of that assembly | yes — not an identity field |
+
+That is D8's authority split one level down: the author composes, the theme decorates.
+Both may apply to the same rune on the same axis.
+
+#### It is not an "arrangement" either, by {% ref "ADR-030" /%}'s own test
+
+ADR-030 draws a deliberate line between two words, and a whole-rune template sits outside
+both:
+
+- **Rule 1** — an arrangement names a *topology*, "the shape of the relationship between
+  a container and its children": `stack`, `row`, `grid`, `split`, `ladder`, `rail`. It is
+  explicit that `timeline`, `steps` and `playlist` are **not** arrangements, they are
+  "runes that use one". **Rule 5b** requires an enabling topology to have "a contract
+  statable **without naming any rune**". A `character`'s compact assembly is
+  rune-specific by construction and fails that test outright.
+- **Rule 2** — "variants are modifiers, not names": direction, marker, wrap, density.
+  A template is not a modifier on a topology.
+
+So this is a **third thing**, and naming it either would break a distinction someone
+thought carefully about. It is a named alternative assembly of *one rune's own* slots, and
+`template` is what it actually is.
+
+**Rule 2's combinatorial-explosion argument does not bite, and it is worth saying why.**
+That rule guards a *shared* vocabulary — naming `timeline` "immediately owes
+`timeline-horizontal`, `timeline-grouped`". A template name is **rune-local**:
+`character`'s `compact` obliges nothing of `realm`, so there is no shared namespace to
+explode. Rune-locality is the property that makes names safe here and unsafe there.
+
+#### Several templates in one file, keyed by value
+
+Keeps {% ref "ADR-037" /%}'s one-file-per-rune shape. With one assembly the body *is* the
+template; with several it is a sectioned document — the same `sections` pattern refrakt
+uses everywhere, so the definition format eats its own dog food.
+
+```md
+---
+tag: article
+attributes:
+  name:   { type: string, required: true }
+  role:   { type: string, matches: [protagonist, antagonist, supporting, minor], default: supporting }
+  layout: { type: string, matches: [full, compact], default: full }
+content:
+  type: sections
+  sectionHeading: heading
+  preamble:
+    portrait:    { match: image, optional: true }
+    description: { match: paragraph, optional: true, greedy: true }
+schema:
+  type: Person
+  properties: { name: name, role: jobTitle }
+templates: { by: layout }
+---
+
+## full
+
+{% card %}
+{% slot name="portrait" /%}
+
+# {% $attrs.name %}
+
+{% slot name="description" /%}
+
+{% slot name="sections" each %}
+  {% details summary=$item.heading %}{% slot /%}{% /details %}
+{% /slot %}
+{% /card %}
+
+## compact
+
+{% bar %}
+{% slot name="portrait" /%}
+**{% $attrs.name %}** — {% slot name="description" /%}
+---
+{% details summary="Details" %}
+  {% slot name="sections" each %}{% slot /%}{% /slot %}
+{% /details %}
+{% /bar %}
+```
+
+`{% character name="Veshra" %}` renders `full` (the attribute's `default`);
+`layout="compact"` renders the other. Same content, same schema row, different assembly.
+
+#### Why keyed sections rather than `{% if %}` inside one template
+
+`{% if %}` already works, so this is a real choice, and the deciding factor is tooling
+visibility. **Contracts already model this shape**: `packages/transform/src/contracts.ts:98-99`
+declares `variants?: Record<string, Record<string, RuneContract>>` and `:372-379` expands
+each axis value into its own `RuneContract`. A keyed declaration maps straight onto that,
+with no new contract shape. Conditional branches inside one template hide the arity from
+`contracts`, `inspect` and the generated reference, all of which would report one assembly
+where three exist.
+
+#### Three constraints, each mechanically checkable
+
+1. **The selecting attribute must declare `matches`.** Without a closed value set there is
+   nothing to check coverage against. A `default` is wanted too, mirroring `variants`'
+   "the modifier's own `default` already provides the active value".
+2. **Section names and `matches` values correspond exactly, both directions** — a value
+   with no section is an error, a section with no value is an error. The same bidirectional
+   shape the config-schema drift test already uses.
+3. **Every declared content-model field is placed by every template.** D11 makes an
+   unplaced field a build error because content is never silently dropped; with several
+   templates that check runs per template. A compact assembly that wants less prominence
+   therefore *places the content differently* — inside a `{% details %}`, as above — rather
+   than omitting it.
+
+Cost: N templates means N contract expansions, N chrome carriers to nominate (D14), and
+probably a fixture per assembly, which {% ref "SPEC-102" /%}'s `<rune>.<scenario>.md`
+already accommodates.
+
+### D17 — a template's `{% if %}` hides what it wraps from a nested rune's content model
+
+Slot-presence conditionals are useful for content and for wrappers, and they have a hard
+limit that is silent when crossed.
+
+Content models match **AST children, before transformation**, and `{% if %}` is still an
+unresolved tag node at that point. So anything a template wraps in a conditional is
+invisible to the structural matching of the rune it sits inside.
+
+**The worked case is `card`'s media zone.** `splitMediaBodyFooter`
+(`packages/runes/src/tags/common.ts:160-173`) iterates a flat AST node list checking
+`n.type === 'hr'`, and does not recurse. So this does not work:
+
+```md
+{% card %}
+{% if $slots.image %}
+{% slot name="image" /%}
+---
+{% /if %}
+…body…
+{% /card %}
+```
+
+The `hr` is nested inside the `if` and the split never sees it — the card silently gets
+one zone instead of two. The correct form emits both unconditionally and relies on the
+consuming rune's empty-zone guard, which `card` has at `card.ts:111`
+(`if (mediaNodes.length > 0)`):
+
+```md
+{% card %}
+{% slot name="image" /%}
+---
+…body…
+{% /card %}
+```
+
+An absent optional image yields an empty media zone, and `card` omits the media div.
+
+**The rule:** use `{% if %}` around whole rune invocations and around content; never
+around anything a nested rune matches structurally — delimiters, and positional
+`sequence` fields alike. Where a conditional is genuinely needed inside a nested rune's
+body, the consuming rune's empty-input guard is the mechanism, not the conditional.
+
+This bounds the slot-presence conditional rather than removing it, and the bound is worth
+a diagnostic: a template placing a conditional that contains a delimiter, inside a rune
+whose content model reads one, is checkable at definition load.
+
+### D16 — the theme can already style a composed rune in context
+
+Worth recording because it materially softens D2 and requires **no new mechanism**.
+`contextModifiers` keys on the parent's kebab-case `data-rune` and adds a BEM modifier
+when a rune is nested inside it. A composed rune sets its own `data-rune` (D3), so a
+theme can write `contextModifiers: { character: 'in-character' }` on `card` and get
+`.rf-card--in-character` today.
+
+So a composed rune is not unstyleable — it is **theme-styleable in context**, which is
+the same authority split the rest of this spec argues for: the author composes, the theme
+decorates. This is a documentation obligation, not work.
+
+**Its reach stops at first-party compositions, which is the half D2 now states.**
+`contextModifiers` keys on a *named* parent rune, so it requires the theme to know the
+composition exists. That covers everything in this repo and covers nothing a user writes.
+D16 therefore answers "can a theme style a composed rune" and not "can a composed rune be
+styled", and the second question is the one {% ref "ADR-037" /%}'s audience asks.
+
+### D19 — a template groups with an engine wrapper, never a placed rune, where schema is involved
+
+A sibling of D17's delimiter rule, and silent in the same way. Grouping parts is ordinary
+template work — a byline holding artist, date and duration — and there are two devices for
+it. An engine-made group (a {% ref "SPEC-080" /%} `blocks` zone, or {% ref "SPEC-081" /%}'s
+`{ tag, children }` wrapper) carries `data-name` and no `data-rune`. A group made by
+**placing a rune**, `{% bar %}…{% /bar %}`, carries `data-rune="bar"` — a name-resolution
+boundary. `findAllByName` stops there (D10, {% ref "SPEC-146" /%} Problem 2), so any schema
+property sourced from a node inside that group vanishes with no diagnostic.
+
+`track` would survive it by luck: every property in `trackSchema` is attribute-sourced, so
+they ride the field bag. A rune harvesting its meta from authored content would not.
+
+So: **group with an engine wrapper where the rune emits schema; either device is safe where
+it emits none.** {% ref "SPEC-156" /%} carries the arrangement half of this, since a created
+wrapper cannot yet declare a geometry.
+
+### D18 — `card` is the canonical media-split primitive, and composing over it deletes work
+
+The split-layout *vocabulary* is already unified and the *mechanism* is not, which is the
+largest single duplication the plugin audits found.
+
+`SplitLayoutModel` is `splitLayoutAttributes` — `media-position`
+(`top | bottom | start | end | cover`), `media-ratio` (`1/3 … 2/3`), `valign` — and its
+own comment states the intent: *"Shared layout attributes for media+content runes — same
+vocabulary as `bento-cell`, so **every media-bearing surface (card, recipe, hero, feature,
+step, realm, faction, playlist) speaks one language**."* Eight runes declare
+`base: SplitLayoutModel`. Each still implements its own split.
+
+**`card` is the one that embodies it.** It carries `base: SplitLayoutModel`
+(`packages/runes/src/tags/card.ts:49`), splits media / body / footer on `---`, and is
+described as *"usable standalone or inside a collection body template"*. `mediatext` is a
+narrower second **in purpose only** — it does not carry `SplitLayoutModel` and is not one of
+the eight; its `wrap` attribute floats text around media rather than splitting a row, which
+D20's scope limit records as the reason it inherits nothing from this line of work.
+
+So a composition wanting a media-first layout places `{% card %}` and passes the split
+attributes through — which makes `card` the {% ref "SPEC-151" /%}-era answer to "what
+primitive gives me a split?" and D14's chrome carrier in the common case.
+
+**And composing over it deletes imperative work rather than reproducing it.** `recipe`
+hand-rolls three helpers that `card` already performs:
+
+| `recipe` does | `card` already does |
+|---|---|
+| `extractMediaImage` — unwrap `<p><img>` to a bare `<img>` | `extractMediaImage(mediaCursor)` at `card.ts:115` |
+| `buildLayoutMetas(attrs)` — split attributes into metas | carries `splitLayoutAttributes` itself |
+| `pageSectionProperties(header)` — harvest headline/blurb | replaced by naming them as content-model fields |
+
+**Which makes `recipe` and `howto` composable, blocked only on {% ref "SPEC-146" /%}.**
+Neither has a custom content model, a `postTransform`, a behaviour or a pipeline hook;
+recipe's `delimited`/zoned model and howto's flat `sequence` are both declarable in
+frontmatter. The only gap is `headline` / `blurb`, which is
+{% ref "SPEC-151" /%} D3's six-rune case.
+
+This corrects a claim that reached {% ref "SPEC-151" /%}: {% ref "SPEC-143" /%} D4 gates
+the *declared* emit path, not composability, so its exclusion of `recipe` and `howto` says
+nothing about this path.
+
+**A consequence worth stating, because it closes an earlier question.** If both are
+compositions, neither needs a `by`/`rows` variant schema to merge them —
+`{% howto type="recipe" %}` was floated as a way to share one rune between two
+schema.org types, and two composition files with different schema tables cost less while
+keeping both rune names findable. The variant form stays right for its actual case: *one
+authored shape, several schema.org types*, which is `playlist`'s five and
+`organization`'s org types. `recipe` and `howto` are two shapes sharing a layout, which is
+a different thing.
+
+### D20 — the canonical primitive owes its composers a placeable preamble
+
+`card` is D18's canonical media-split primitive and **the only split-layout rune without the
+page-section anatomy.** Measured across every rune declaring `base: SplitLayoutModel`:
+
+| Rune | Declared sections |
+|---|---|
+| `recipe`, `feature`, `hero` | `preamble`, `headline: 'title'`, `blurb: 'description'`, `media` |
+| `playlist` | the same four, plus `body` |
+| `steps` | `preamble`, `headline: 'title'`, `blurb: 'description'` (no media) |
+| `realm`, `faction` | `body` only — domain runes with no header of their own |
+| **`card`** | **`media`, `body`** |
+
+Five of the eight declare the identical `preamble` / `title` / `description` triple. The
+primitive everything is supposed to compose over declares the least of all of them, which is
+backwards for its role and is the root of the collapse the `recipe` example measures. The
+wider vocabulary agrees: **23 runes declare `preamble`, 29 declare `blurb: 'description'`,
+21 declare `headline: 'title'`.**
+
+**The gap is narrower than "card lacks an anatomy", and stating it precisely is what makes
+the fix small.** Card already *detects* the pattern (see the qualification in the worked
+example): it promotes an eyebrow to a flat slot and names the body's first heading as
+`refs.title`. Two things are missing:
+
+1. **`title` is nested, not placeable.** It lives inside `bodyDiv`, so card's
+   `layout: { content: ['eyebrow', 'body', 'footer'] }` cannot list it and no theme can group
+   it with the eyebrow. `projection`'s `relocate` — the only thing that could hoist it — is
+   deprecated as subsumed by recursive `layout` (D1 of {% ref "SPEC-143" /%}).
+2. **No `description` slot at all**, and no `data-section` semantics: `cardSections` is
+   `{ media, body }`, so card's `title` is a BEM ref but not a *section*, and the shared
+   section-anatomy CSS keys on `data-section`.
+
+**Decision: `card` emits `title` and `blurb` as flat slots and declares them in
+`cardSections`.** The preamble then falls out of `layout` — `preamble: { tag: 'header',
+children: ['eyebrow', 'title', 'blurb'] }` — which puts the grouping in the theme's hands,
+where {% ref "ADR-028" /%} says presentation belongs, rather than requiring a new mechanism.
+Nothing in this decision adds a knob; it adds parts.
+
+**A third slot, `meta`, joins them — but it is a different kind of slot and the difference
+matters.** `title` and `blurb` have a source in card's *own* content model: card detects them
+in authored markdown. `meta` has none — card declares no `metaFields` and has no attributes to
+project, so it would never fill the slot itself. What it reserves is a **position** for a meta
+block a composition declares and emits (D7), which D21 establishes is the entity's metadata
+rather than the media's. A `layout` entry naming a child that nothing emits is simply absent,
+so the slot is inert when unused and costs nothing. It is listed here rather than separately
+because card's slot vocabulary should be decided once; it is flagged as distinct because a
+reader would otherwise expect card to grow a metadata channel of its own, which it must not.
+
+**What it unlocks, in order of size:**
+
+- **`cover-scope="header"` becomes expressible on `card`.** The cover dimension is already
+  rune-agnostic — `skeleton/styles/dimensions/cover.css` keys on
+  `[data-cover-scope="header"] > [data-name="cover-band"] > [data-section="media"]`,
+  `[data-name="preamble"]`, with no rune name anywhere. What blocked it was the missing
+  `preamble`, not the missing switch. Today `header` scope has **exactly one consumer** —
+  `recipe` sets it; `card` and `hero` both set `full` — so a one-instance capability becomes a
+  shared one, which is rule 5a's argument rather than a new mechanism.
+- **Every composition gets somewhere to put a headline and a blurb**, instead of dumping them
+  into `body` as undifferentiated prose.
+- **{% ref "SPEC-151" /%} D3's six runes are the same population.** The runes that fail on
+  `headline` / `blurb` under {% ref "SPEC-146" /%} Problem 2 are the runes that have nowhere
+  to put them under composition. One gap, measured twice from two directions.
+
+**Three things interlock here, and they are complements rather than alternatives.** Worth
+stating because solving any one alone leaves the case broken:
+
+| Question | Governs | Status |
+|---|---|---|
+| What `{% slot %}` leaves behind | whether the placed value is *named* at all | open question, below |
+| {% ref "SPEC-146" /%} Problem 2 | whether a named value is *reachable* across the boundary | specced |
+| This decision | whether a reachable value has a *declared place* a theme can position | here |
+
+So SPEC-146 alone is insufficient: it makes `headline` resolvable, and card's anatomy is what
+gives it a position. A headline that resolves into prose inside `rf-card__body` is published
+correctly and unstyleable.
+
+**Consequences for the planned migrations, which is why this is not recipe-specific.**
+{% ref "SPEC-151" /%} nominates `hero`, `cta` and `steps` as *"the largest set of unblocked
+runes"* and the first marketing migrations. `hero` and `steps` both declare the full
+preamble triple, so the first planned compositions hit this gap before `recipe` ever does.
+`playlist` ({% ref "SPEC-155" /%}) carries the triple plus `body`. `realm` and `faction`
+({% ref "SPEC-147" /%}) are body-only and unaffected, which is the useful negative: this is
+a need of header-bearing runes, not of composition in general.
+
+**The cost, stated rather than discovered.** Card's output structure changes, so
+`refrakt contracts --check` diffs on both committed copies and the change is reviewed, not
+regenerated. Card's `body` loses its leading heading, so `.rf-card__body`'s prose rules want
+re-reading. No structured-data movement: `card` declares no schema. And `card` is placed by
+many existing pages, so this is a {% ref "SPEC-143" /%} D7-style no-drift migration on
+everything that already uses it — the one part of this that is not cheap.
+
+**Scope limit, and it is a decision rather than a deferral.** This covers `card`.
+**`mediatext` is out, measured:** `mediatextSections` is `{ body, media }` — media and text,
+no header of its own — and it does **not** carry `base: SplitLayoutModel`, so it was never
+one of the eight above. Its own attributes say why it is a different thing: `side`, a width
+ratio, and `wrap` — *"Wrap text around the media"* — which is prose float rather than a
+two-column split. A rune whose job is to run text around an image has no preamble to place,
+so giving it one would be adding parts nothing asks for, which is the opposite of this
+decision's argument.
+
+### D21 — the subject of a metadatum decides its owner; the desired position never does
+
+The question this settles: when a composition wants metadata near the media, does the author
+declare it **as part of the media zone** and the theme comply, or declare it **as the entity's
+metadata** and the theme decide where it goes?
+
+**It is the second, and the fork dissolves once the question becomes "what is this metadatum
+*about*?"** Two categories had been conflated:
+
+| Category | Subject | Owner of placement | Home today |
+|---|---|---|---|
+| Entity metadata — `prepTime`, `servings`, `difficulty`, a date, an author | the rune's subject | **the theme** | `metaFields` + `blocks` + `layout` |
+| Media metadata — a caption, a credit, a licence, a duration | the media asset | travels with the media | `figure`'s `caption: 'description'` — and nothing else |
+
+The second category is nearly empty, measured: `figure` declares `caption`, and there is **no
+credit, licence or duration concept anywhere in the catalog**. So the author-declares-position
+option would be inventing a channel for a category with one member, to carry data that already
+has a complete one.
+
+**The rule: the subject decides the owner. A desired position never does.** This is
+{% ref "ADR-028" /%}'s line on this case — *"these four fields are metadata about the recipe"*
+is identity, *"it sits over the image"* is presentation.
+
+**Why author-declared position fails for entity metadata**, in increasing order of severity:
+
+1. It duplicates a shipped mechanism. `metaFields` / `blocks` / `layout` already assigns the
+   declaration to the author and the shape and position to the theme, and both `blocks` and
+   `layout` sit outside `IDENTITY_FIELDS`.
+2. It crosses ADR-028 in the forbidden direction, by having the author assert a position.
+3. It does not survive a theme switch — the same failure {% ref "SPEC-159" /%} records for
+   `polaroid` against `materiality: object`. A theme with no media overlay, whether print,
+   text-first or a narrow viewport, either ignores the declaration, in which case it was never
+   a guarantee, or honours it badly.
+4. **It is self-defeating under composition, which is the decisive reason.** If "in the media
+   zone" is the author's declaration, the template freezes it — and a template's placement is
+   precisely what a theme cannot reach (D8, and the `recipe` worked example). So this option
+   would convert a theme-owned decision into an author-frozen one *by construction*. Declaring
+   a named **zone** survives composition, because a zone is something a theme can place.
+
+**The overlay case is served by this, with no author involvement.** A theme wanting entity
+metadata over the media moves `'metadata'` from `content.children` into `'cover-band'.children`
+in `Recipe`'s existing cover variant — one array edit, no code. The author said which fields are
+metadata; the theme said where metadata goes.
+
+**The test for the genuine edge case**, so it does not have to be re-argued per rune: a badge on
+an image — "15 min" as a visual device on the photo — could be read either way. **Would it still
+make sense with no image?** If yes, it is entity metadata and belongs to the theme's placement.
+If no, it is media metadata, and the next question is whether it is a caption, which has a home,
+or a new category, which does not and would need {% ref "ADR-030" /%} rule 5b evidence rather
+than one design's wish.
+
+**What this does not settle.** A composition still cannot *aim* a meta block at a host rune's
+named slot — the gap D20's `meta` slot shares with `title` and the `cover-band` grouping. D21
+settles whose decision the placement is; it does not supply the mechanism that carries it.
+
+### D22 — two routing channels: prose by position, declared blocks by role
+
+{% ref "ADR-028" /%} and D21 settle *who* places a part. This settles *how a host rune works
+out what it has been handed*, which is the mechanism D21 deliberately left out.
+
+**A host rune routes by two channels, and position governs only one:**
+
+| Channel | What it is | Role comes from | Placement decided by |
+|---|---|---|---|
+| **Prose** | what an author (or a template) types | **position**, per the host's own grammar | the theme, via the zone it lands in |
+| **Declared block** | `metaFields` + `blocks`, or a composition's `{% metablock %}` | the **declaration** — it is self-identifying | the theme, wherever it places the zone |
+
+**The prose channel is card's existing grammar, written down.** Position maps to role: the media
+group (before the first `---`) is the media and anything about it; a leading paragraph before a
+heading is the eyebrow; the first heading is the title; what follows is body; after the second
+`---` is footer. Nothing new — card already does all of this, and its own comment calls it *"the
+page-section / recipe pattern"*.
+
+**Position in the *source* declaring a *role* is not the thing D21 forbids.** Worth stating
+plainly, because the two read alike. Declaring a role by position is refrakt's founding idea —
+*a heading inside `{% nav %}` becomes a group title*. Declaring a *rendered position* is what
+belongs to the theme. The first is grammar; the second is presentation.
+
+**And under composition the grammar's author changes.** The content author's markdown is parsed
+by the composition's own `content:` declaration into named fields. The **template** then arranges
+those fields inside the host, and the host's positional grammar reads *the template's*
+arrangement, not the original markdown. Two parses, two authors — the single most confusable
+thing about the `recipe` example above.
+
+**A declared block carries its role, so its source position must carry nothing.** This is what
+makes D21 implementable: the host routes a meta block to its `meta` slot (D20) because of *what
+it is*, exactly as it routes prose by *where it is*. Both are the host's content model sorting
+its input. No new template syntax is needed, and an explicit `into="…"` target is the inferior
+alternative because it would hand placement back to the template author — the thing D21 rules
+out.
+
+**Measured consequence, which is the test an author can apply:** entity metadata is **always
+declared, never authored as body prose.** `metaFields` project *attributes* — across the catalog
+they are `date`, `endDate`, `location`, `register`, `method`, `path`, `auth`, `kind`, `lang`,
+`since`, `deprecated`, `source`, `duration`, `currency` — which is what
+{% ref "ADR-030" /%} means by *"fields projected from `metaFields`"*. So if an author types
+"Prep 15 min · Serves 4" as body text, that is **not** entity metadata; it is a byline. Entity
+metadata would be `prepTime="PT15M" servings="4"`.
+
+**The gap this names.** {% ref "ADR-030" /%} rule 6 proposes `byline` in its conventional group
+vocabulary, and **`byline` appears nowhere in the codebase or CSS** — confirming rule 6's own
+description of itself as *"a documentation page and an agreed list"*. So the multi-item case
+before the title is unbuilt rather than disallowed: today that position holds one eyebrow line.
+
+### D23 — structure resolves once; responsive variation is CSS's work
+
+Two questions arrive together and have one answer. Can a theme put bar-shaped metadata in a cover
+band but def-list metadata in the body? And can it put a def-list over the media at one breakpoint
+and in the body at another?
+
+**The first question's premise is inverted: the theme never branches on shape, because the theme
+*chose* the shape.** `blocks[].layout` is outside `IDENTITY_FIELDS`, so a theme owns it. Shape and
+position are therefore one decision, not a condition on one another — band pairs with
+`layout: 'bar'`, body pairs with `definition-list`. A conditional would be circular.
+
+Where variation is genuinely wanted, both routes already ship:
+
+- **Per rune** — config is already per-rune. `Recipe.blocks.metadata.layout: 'bar'` with `meta` in
+  the band; `Event`'s as a definition list in content. Two entries, no branching.
+- **Per instance** — a {% ref "SPEC-091" /%} `variants` axis, and a delta may carry **both**
+  `blocks` and `layout`: `VARIANT_DELTA_RESERVED_FIELDS` is `[...IDENTITY_FIELDS, 'variants']`,
+  so neither is reserved. `Recipe`'s cover variant already ships a `layout` delta, making this a
+  proven pattern rather than a proposal. The axis keys on an author-visible modifier, which is the
+  right division: the author says which *kind* of thing this is; the theme says what that looks
+  like.
+
+**The second question: supported in the form that matters, correctly impossible in the form that
+does not.** The cover overlay is not a wrapper trick — it is a one-cell grid with overlapping
+siblings (`skeleton/styles/dimensions/cover.css`):
+
+```css
+[data-media-position="cover"]:not([data-cover-scope="header"]) {
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+}
+… > [data-section="media"], … > [data-name="content"] { grid-area: 1 / 1; }
+```
+
+and that file already carries `@media (max-width: 40rem)` and
+`@container (min-aspect-ratio: 1 / 1)`. So a `meta` node that is a **grid sibling** moves
+responsively with no new mechanism — `grid-area: 1 / 1` to overlay, `grid-area: auto` under a
+query to stack below. One node, one DOM position, two visual placements.
+
+**What is declined: moving a node between different parents at a breakpoint.** CSS cannot
+reparent, and both workarounds are worse than the limitation. Emitting it twice and hiding one
+violates {% ref "SPEC-143" /%}'s one-node-per-`data-name` rule and regresses accessibility, since
+assistive technology sees both copies. A client-side move contradicts the static-first model.
+
+**So: structure resolves once, at build; responsive variation is CSS's job.** That is already how
+`collapse` and `cover` behave, so this names existing practice rather than adding a rule.
+
+**The trade this exposes, which is the part worth writing down.** It looks like a styling choice
+and is really a structural commitment:
+
+| `meta` placed… | Buys | Forfeits |
+|---|---|---|
+| **inside** the cover band (a wrapper) | scoped tokens — the band carries `data-color-scheme: 'dark'`, so overlaid text reads light against scrimmed media | responsive movement; nothing can lift it out of the wrapper |
+| as a **grid sibling** (flat) | responsive movement via `grid-area` | the band's scoped colour scheme; contrast needs a scrim or a token on the node |
+
+`Recipe`'s cover variant chose the wrapper deliberately, for exactly that scoping. Both options
+are legitimate; what is not legitimate is expecting both at once. This belongs in the
+theme-authoring surfaces documentation beside the cover scopes, because it is discovered late and
+expensively otherwise.
+
+**Neither question needs anything built.** Recorded because "can the theme do X?" was answered
+twice by measurement, and the answers are only obvious once the ownership of `blocks[].layout` and
+the grid-sibling shape of the overlay are both in view.
+
+### D24 — carrier resolution descends through compositions, and nomination delegates
+
+D14 defaults the paint group's chrome carrier to *"the single top-level placed rune"*. Nesting
+breaks that default without breaking the decision: when the single top-level placed rune is
+itself a **composition**, it is another block-less, visually empty wrapper, so painting there
+reproduces exactly the double-paint failure D14 exists to prevent — one level down, and harder
+to see.
+
+**A composition is transparent for carrier resolution.** This is not a special case; it
+follows from D2. A composed rune has no block and ships no CSS, so there is nothing on it to
+paint. Resolution therefore **descends through composition boundaries and stops at the first
+rune that declares a `block`.** `RuneConfig.block` is typed required, so only compositions are
+block-less and the search terminates at a painted rune or at nothing.
+
+The three groups then behave as follows under nesting:
+
+| Group | Under nesting |
+|---|---|
+| `width`, `spacing`, `inset` | unchanged — the **outer** root, which is the only node in the article's direct-child position |
+| `elevation`, `substrate`, `reveal`, `tint`'s paint half | descend to the first blocked rune |
+| `scrim` | descend to the rune owning the media slot, which a composition never does |
+
+**Nomination delegates; it does not reach through.** An outer composition's template names only
+what it places, so it nominates the inner *composition* — never something inside it. That inner
+composition's own declaration then decides where the chrome lands within it. Each composition
+stays responsible for its own carrier and neither knows the other's internals, which keeps D3
+("inner runes are implementation detail") intact and needs no ability to address a host rune's
+slots. Nomination composes down the chain the same way resolution does.
+
+**The correctness test is equivalence with the direct case.** Whatever rune the descent lands
+on must receive the attribute exactly as if an author had written it on that rune directly. So
+a chain bottoming out in `grid` paints the grid — which is what `{% grid elevation="raised" %}`
+does anyway, and consistency with the unnested case is the bar rather than a judgement about
+whether painting a grid is wise.
+
+**Two failure modes, both resolved by existing precedent:**
+
+- **A composition whose template places no rune at all** — only engine wrappers and slots — has
+  no carrier. Warn and drop the chrome, following `frameTarget`'s posture
+  (`facets/frame.ts:105`: *"has no frame target — set `frameTarget` or give the rune a media
+  section. Frame chrome ignored."*). Silently painting the empty root is the outcome this
+  decision exists to prevent, so it must not be the fallback.
+- **A cycle** needs nothing new: it is caught at schema construction by the cycle detection this
+  spec already owes, before any carrier is resolved.
+
+No depth limit is needed. Cycles are the only unbounded case, and they are already rejected.
+
+**One practical note, because it will be written by mistake.** Do not forward a
+position-dependent universal into a template — `width=$attrs.width` on a placed rune sets
+`data-width` on a node that is not in the article's direct-child position, where none of its CSS
+matches. It is inert rather than wrong, but it reads as working and will be copied.
+
+## Non-goals
+
+- Replacing {% ref "SPEC-143" /%}'s declared tier — the two tiers coexist, and D5 keeps them distinct
+- A template language of refrakt's own (D1, {% ref "ADR-036" /%})
+- Letting a composed rune style itself (D2)
+- Composing *across* sites, or composing a layout rather than a rune
+- Resolving the dormant editor's `editHints` ownership question — recorded, not answered
+- Answering {% ref "SPEC-143" /%}'s open question on unreviewed schema.org claims; this spec must not ship a `schema` composition path ahead of it
+- Letting a theme supply a rune template, or retiring `layout` / `blocks` projection in favour of templates (D8)
+- Adding a `meta` rune — {% ref "SPEC-080" /%} already is that primitive (D7); what is missing is a template-side placement for a block it already defines
+- Changing the schema-table resolvers — that is {% ref "SPEC-146" /%} (D10)
+- Widening `LayoutPrimitive` beyond `'definition-list' | 'bar'` — a vocabulary extension governed by {% ref "ADR-036" /%}, decided on its own evidence rather than here
+
+## Open questions
+
+Four that the worked examples surfaced. Each is a shape decision that changes what
+the template may contain, so they want answering before the format is fixed.
+
+**Is `sections` a slot name, or a special case?** The `character` example treats it
+as a slot with `each`. But `sections` is the content model's *arrival mode*, which
+{% ref "SPEC-143" /%} D5 says to read rather than restate — so a template naming it
+as a slot may be restating it by another route. The alternative is a distinct form
+for "the thing the sections mode produced", which is uglier and more honest.
+
+**May a template name a slot the content model does not produce?** It should be an
+error, caught at schema construction with the slot named — the same unresolvable-
+source check a schema table already gets and {% ref "SPEC-144" /%} asks for. Worth
+confirming rather than assuming, because a silently-empty slot is the failure mode
+that wastes an author's afternoon.
+
+**May a slot appear twice in one template?** Instinct says no, for the same
+one-node-per-`data-name` reason SPEC-143 already asserts. But composition makes the
+temptation concrete — a portrait in the header *and* the footer — so the answer needs
+to be stated rather than inherited.
+
+**What does `{% slot %}` leave behind?** Ideally nothing: it is a placeholder and the
+primitives supply the structure. But a slot filled with several block nodes may need
+a boundary, which is the `value` vs `region` question SPEC-143 settled for declared
+runes. The answer here should almost certainly be the same one, and saying so
+explicitly is cheaper than rediscovering it.
+
+## Acceptance Criteria
+
+- [ ] A rune can be defined by a Markdoc template that places named slots into other runes
+- [ ] Authored content reaches a named slot as a node list, not a string
+- [ ] The template renders at the rune's transform, after field resolution, at the call site {% ref "SPEC-143" /%} substitutes at — not at preprocess (D4)
+- [ ] A template containing `data`, `snippet` or `include` is rejected at definition load, naming the rune and the offending tag (D4)
+- [ ] Runes placed by a template are transformed normally, verified by composing from a behaviour-driven primitive and confirming its markup and behavior binding are unchanged (D4)
+- [ ] A node-sourced value reaches a child rune's attribute only through the content model's `emitAttributes`; a template cannot flatten a node itself (D4a)
+- [ ] `emitAttributes`' existing `$heading`, `$field` and `'$a|$b'` forms all work from a composition template, asserted per form (D4a)
+
+- [ ] A slot filled twice, never filled, or filled with content the target primitive's content model rejects each has a defined, tested outcome
+- [ ] A composition cycle is detected and reported by rune name, at schema construction rather than at render
+- [ ] Carrier resolution descends through a nested composition to the first rune declaring a `block`, asserted on a two-level chain where the paint attribute lands identically to the same attribute written on that rune directly (D24)
+- [ ] A composition placing no rune warns and drops the paint group rather than painting its own root (D24)
+- [ ] A wrapper composition declaring no `schema:` block may place a schema-emitting rune, asserted on a `recipe` wrapper whose graph contains exactly one `Recipe` and no second entity (D9)
+- [ ] A composition declaring its own type *and* placing a peer-emitting rune is rejected at definition load, naming both types (D9)
+- [ ] The emitted tree carries the composed rune's `data-rune`; the primitives' markers remain but do not claim the rune's identity (D3)
+- [ ] A composed rune's schema.org row retypes its slots via the existing `applySchemaTable` child mechanism, with no new schema code path
+- [ ] An author-stated `typeof` on content inside a slot survives the parent's row (`SCHEMA_TYPE_EXPLICIT`)
+- [ ] `extractTitle`, breadcrumb resolution and the cross-page registry read the composed rune, not its primitives
+- [ ] A composed rune ships no CSS, and a definition that tries to is rejected naming the rune (D2)
+- [ ] `refrakt contracts` derives a composed rune's structure by expansion, and the spec states how a primitive's change is reviewed when it diffs many composed contracts (D6)
+- [ ] Declaring more than one of slot declaration / template / `transform` is rejected at schema construction (D5)
+- [ ] A composed rune can place a declared `blocks` entry from its template, and the rendered result is identical to what the engine's `layout` projection produces for a tree-owning rune with the same block (D7)
+- [ ] A composed rune declaring `layout` keys that name a primitive's containers is rejected, naming the key — the projection path is not silently half-applied (D7)
+- [ ] The placement tag reuses the engine's existing `renderBlock` closure; no second block-rendering path exists (D7)
+- [ ] The tag is resolved in the declaring rune's config and `modifierValues`, from anywhere in its own template's subtree — not only its direct children (D7)
+- [ ] A block whose fields all resolve empty removes the marker and emits nothing; a tag naming an undefined block is rejected at schema construction, naming the block (D7)
+- [ ] Placing the same block twice is rejected rather than collapsed by `mapDataNames` (D7)
+- [ ] The tag is not named `meta`, and the chosen name collides with neither `RuneConfig.block` nor the properties-channel meta tags (D7)
+- [ ] A `blocks` theme override reaches a composed rune's placed block exactly as it reaches a projected one, so the theme's authority is unchanged by which placement path is used (D7)
+- [ ] The theme-authoring guide states the `layout`-versus-template rule beside {% ref "ADR-028" /%} (D8)
+- [ ] A composition template placing a rune that declares a top-level schema `type` is rejected at build, naming both runes; a subordinate emitter (`figure`, `gallery`) is allowed (D9)
+- [ ] `recipe` composed from `howto` is covered by a test asserting the rejection, so the counter-example cannot regress into a supported path (D9)
+- [ ] Slot substitution sets the ownership marker {% ref "SPEC-146" /%} defines, on both slot-placed and template-placed nodes (D10)
+- [ ] A composed rune's content-derived `properties` resolve — the `image` from a slot-placed portrait reaches the entity, asserted against the graph and not just the attributes (D10)
+- [ ] An author's nested rune inside a slot is never retyped as part of the composed entity (D10)
+- [ ] A composed rune nested inside another cannot reach the inner one's names, and vice versa (D10)
+- [ ] {% ref "SPEC-146" /%} has landed and its baseline gates are green before any composed rune declares a `schema` row (D10)
+- [ ] The editor offers edits only where `location.file` is the page being edited; template nodes are not editable in place (D11)
+- [ ] A template node interpolating an attribute routes its edit affordance to that attribute rather than offering inline text editing (D11)
+- [ ] A content-model field that no slot places is a build error naming the field — content is never silently dropped (D11)
+- [ ] {% ref "ADR-034" /%} is landed before the editor story; the spec records it as a dependency rather than an assumption (D11)
+- [ ] `refrakt inspect` shows both the composition and its expansion
+- [ ] One storytelling rune is reimplemented as a composed rune in a spike, and the emitted tree is compared against today's — not necessarily identical, but every difference explained
+- [ ] A template placing a rune that declares `requiresParent` is rejected at definition load, naming both runes and the required parent (D12)
+- [ ] The authoring guide states the placeable set as one list — the intersection of the no-peer-schema and no-required-parent exclusions — not as two rules to combine (D12)
+- [ ] A composed rune's `metaFields` labels resolve through a keying scheme that does not require a BEM block, or an unkeyed label is rejected rather than silently untranslated (D13)
+- [ ] Literal text in a template has a stated translation story, even if that story is "it has none" (D13)
+- [ ] Whether universal attributes on a composed root produce double chrome is verified against Lumina before the carrier mechanism is designed (D14)
+- [ ] Universal attributes apply to the nominated chrome carrier; a template with several top-level placed runes and no nomination is rejected (D14)
+- [ ] A rune may declare several templates in one file, keyed by the values of a declared attribute, selected at transform time (D15)
+- [ ] The selecting attribute must declare `matches`; one without it is rejected, naming the rune (D15)
+- [ ] Template section names and the attribute's `matches` values correspond exactly in both directions, each mismatch reported by name (D15)
+- [ ] Every declared content-model field is placed by every template; one that omits a field is the same build error as a single template omitting it (D15)
+- [ ] Templates and `variants` deltas both apply to the same rune on the same axis, at their own stages, with the theme able to override the delta and not the template (D15)
+- [ ] `refrakt contracts` records one expansion per template under the existing `variants` contract shape, adding no new shape (D15)
+- [ ] `{% if $slots.<name> %}` tests whether a slot is filled, so an optional slot's wrapper can be omitted rather than rendered empty
+- [ ] A conditional containing a structural delimiter, placed inside a rune whose content model reads one, is reported at definition load (D17)
+- [ ] An optional slot placed into `card`'s media zone renders the card without a media div when unfilled, and with one when filled — the D17 worked case, asserted both ways
+- [ ] The theme-authoring guide documents `contextModifiers` keyed on a composed rune as the supported way to style a primitive inside one (D16)
+- [ ] A composition placing `{% card %}` and passing the split attributes through renders the same media split as a rune declaring `base: SplitLayoutModel` itself, asserted for `start`, `end` and `cover` (D18)
+- [ ] A composed rune placing `{% card %}` inherits `extractMediaImage`'s unwrapping, so `![x](y)` in a media slot emits a bare `<img>` and not `<p><img>` (D18)
+- [ ] `recipe` and `howto` are confirmed composable once {% ref "SPEC-146" /%} lands, or the reason either is not is recorded against D18's claim
+- [ ] The rune authoring guide documents which tier to reach for, with the table from this spec
+- [ ] The rune authoring guide carries the `{% metablock %}` versus placed-`{% bar %}`/`{% deflist %}` note, including the attribute-or-content rule and all three failure modes — the schema boundary, the usurped theme decision, and the lost `metaType`
+
+## References
+
+- {% ref "SPEC-143" /%} — the declared tier, and the open question this spec must not outrun
+- {% ref "SPEC-144" /%} — where a composed rune's cross-page identity comes from
+- {% ref "ADR-036" /%} — why the template is Markdoc and not a DSL
+- {% ref "ADR-035" /%} — the skin format, `rejected` once this spec removed its premise
+- {% ref "SPEC-129" /%} — `include`'s AST substitution technique, which this reuses at a different stage (D4)
+- {% ref "SPEC-130" /%} — the schema.org table, parent-retypes-children, and the D5 trade
+- {% ref "SPEC-063" /%} — file roots and partial resolution; where a template file would live
+- {% ref "SPEC-080" /%} — `metaFields` / `blocks` / `LayoutPrimitive`: the metadata primitive D7 places rather than replaces
+- {% ref "SPEC-081" /%} — `layout` projection, and the `{ tag, children }` creating form D8 contrasts against a template
+- {% ref "ADR-028" /%} — a theme restructures a rune, never redefines it; the rule D8 turns on
+- {% ref "ADR-037" /%} — users author composed runes only; why this path is the user-facing one and the declared path is internal
+- {% ref "ADR-034" /%} — file-qualified source location; D11's dependency, and what draws the editable line
+- {% ref "SPEC-084" /%} — `requiresParent`, the nearest-ancestor check D12 turns on
+- {% ref "SPEC-091" /%} — `variants`; D15 borrows its conventions but not its machinery, which runs two stages later
+- {% ref "ADR-030" /%} — arrangements name topologies, variants are modifiers; the distinction D15 sits outside of, and why rule 2 does not bite
+- {% ref "SPEC-147" /%} — replacing the storytelling plugin; the first substantial exercise of this mechanism, and where its gaps were measured
+- {% ref "SPEC-148" /%} — the places audit; the per-property method, and where D17 was found
+- {% ref "SPEC-151" /%} — the marketing audit; where the six-rune `pageSectionProperties` count and D18's correction are recorded
+- {% ref "SPEC-035" /%} — i18n keying, and the tension D13 records
+- {% ref "SPEC-125" /%} — universal attribute applicability, which D14 leaves intact while moving where they apply
+- {% ref "ADR-008" /%} — the flat per-rune namespace whose boundary name resolution has to cross safely
+- {% ref "SPEC-152" /%} — the plan audit; `section` as the document counterpart to D18's `card`, and four runes already hand-rolling this mechanism
+- {% ref "SPEC-153" /%} — how a composed rune is delivered, from a project directory and from a plugin package
+- {% ref "SPEC-154" /%} — the learning audit; `recipe`'s `cover` variant is D15's measured case, and four planned runes are dispositioned rather than built
+- {% ref "SPEC-155" /%} — the media audit; the place / promote / rebuild distinction, and the measured CSS gap D2 now states
+- {% ref "ADR-038" /%} — a behavior binds on a data contract; what makes a composed rune interactive, and the answer to D2's state-styling half
+- {% ref "ADR-018" /%} — the canonical layout vocabulary; one of the two rune-agnostic routes D2 depends on
+- {% ref "SPEC-156" /%} — the ladder and row arrangements; what makes D2's inheritance real, and the arrangement half of D19
+- {% ref "SPEC-157" /%} — the docs audit; the last of the nine, and `api` as the first composition to build
+- {% ref "ADR-039" /%} — where a rune lives; the taxonomy the nine audits produced, and the cost collapse D2 causes
+- {% ref "SPEC-146" /%} — name resolution across rune boundaries; split out of D10, and a dependency of this spec
+
+{% /spec %}

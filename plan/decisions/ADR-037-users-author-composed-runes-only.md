@@ -1,0 +1,187 @@
+{% decision id="ADR-037" status="proposed" date="2026-09-29" source="SPEC-145" tags="runes, composition, hosted, dx, api-design, css" %}
+
+# Users author composed runes only
+
+## Context
+
+Two mechanisms came out of the same design conversation. {% ref "SPEC-143" /%} lets a
+rune declare its slots instead of writing a `transform`, emitting its own BEM block.
+{% ref "SPEC-145" /%} lets a rune place its content into other runes with a Markdoc
+template, emitting no block of its own. Both were drafted as *authoring tiers*, with
+a table telling an author which to reach for.
+
+Presented with that table, the obvious objection is that two ways to author a rune is
+one too many — and it is correct, for a reason the tier framing obscured.
+
+**The tiers share their entire declaration half.** The composed `realm` example in
+SPEC-145 D7 declares `attributes`, `content`, `schema`, `metaFields`, `blocks` and
+`registers` — every one of them a SPEC-143 or {% ref "SPEC-144" /%} declaration. The
+two paths do not differ in how a rune is declared. They differ only in what fills the
+**output** half: a slot declaration plus a block, or a template.
+
+So there was never a second authoring system. There is one declaration and two emit
+paths, and the real question is which emit paths a user gets.
+
+## Decision
+
+**Users author composed runes. The declared emit path is internal — it is how
+first-party runes shed their imperative transforms, not an authoring mode offered to
+anyone outside this repo.** A user who needs more than composition writes a plugin,
+which is the graduation path {% ref "ADR-036" /%} already documents.
+
+The deciding axis is **who owns arrangement**:
+
+| Emit path | Arrangement decided by | Portability |
+|---|---|---|
+| Declared (internal) | the theme, via `layout` | Full {% ref "ADR-028" /%} strength — each theme arranges the labelled parts |
+| Composed (user-facing) | the rune author, in the template | Appearance follows the theme; arrangement does not |
+
+A user defining a domain type — `wine-tasting-note`, `property-listing`, `case-study`
+— runs one site with one theme. Cross-theme structural portability is a benefit they
+cannot cash, so the declared path's principal advantage is worthless to precisely the
+audience it was being offered to.
+
+The catalog supports this empirically, and the evidence is now measured rather than
+estimated. An earlier revision of this paragraph read *"of 126 runes, nearly every
+domain rune is structurally a card / section / deflist / details shape"* and named
+`storyboard`, `map`, `chart`, `juxtapose` and `gallery` as the novel forms needing a
+plugin regardless. Nine plugin audits have since answered it per rune:
+
+| Plugin | Everything composes? | What does not, and why |
+|---|---|---|
+| storytelling | **yes** | — |
+| business | **yes** | — |
+| places | all but one | `map` — a client lifecycle |
+| media | all but one | `audio` — a custom element |
+| design | no | `design-context` computes tokens from its children's output |
+| marketing | no | `comparison` computes over the whole child set |
+| learning | no | `quiz` (a behavior), `glossary` (a cross-page prose rewrite) |
+| plan | yes, but | a filesystem scan outside any content tree, plus a CLI |
+| docs | yes, but | 73% of the package is a source-code extractor |
+
+So the claim holds and is stronger than the estimate: in two plugins *everything*
+composes, and what survives elsewhere is a **capability**, never a shape.
+{% ref "ADR-039" /%} rule 2 lists the five blocker categories with their instance
+counts and is the canonical statement; it is not restated here.
+
+**Two of the five named forms were wrong, and the correction sharpens the argument.**
+`gallery` is a *core* rune, so citing it as a form that "needs a plugin regardless"
+cited something already in core. And `storyboard` needs no behavior at all — it is a
+`grid` of `figure`s with CSS chrome, 79 lines across both layers, with no component, no
+lifecycle and no schema of its own. `map`, `chart` and `juxtapose` stand.
+
+The declared path's unique niche for a user is therefore "a novel *static* visual form
+with no interactivity": real, but narrower than the original list implied, and already
+routed to a plugin.
+
+## Consequences
+
+**The CSS problem for rune authors disappears.** This is the largest consequence and
+the reason this decision is worth making early. A declared rune with no styles renders
+unstyled, which SPEC-143 identifies as the sharpest authoring barrier — and which
+dragged in a `style` fence, sanitisation of untrusted CSS, a scope assertion over
+author selectors, and the question of what a skin file contains. A composed rune ships
+no CSS at all (SPEC-145 D2). None of that applies to a rune author any more.
+
+{% ref "ADR-035" /%} is **unaffected**: skin files target *theme* authors, a different
+audience with a different job. The scope of the skin format does not change; only the
+claim that rune authors would use one goes away.
+
+**Revisited, and wrong: ADR-035 is now `rejected`.** That paragraph assumed the remaining
+audience — a leaf theme styling a few self-contained runes — survives this decision. It does
+not. After composition a theme styles tokens, primitives and dimensions, all cross-cutting by
+construction, which is ADR-035's own *package* row rather than its *skin* row; and a
+capability package shipping CSS for a rune it owns is likewise a package. ADR-035's rejected
+third alternative — *"user runes reference existing BEM blocks instead of shipping CSS"* — is
+precisely what this decision chose, so its premise is gone rather than narrowed. Its full
+reasoning is preserved in place.
+
+**The hosted validation surface barely grows.** A user rune becomes frontmatter plus a
+Markdoc template. Markdoc is already parsed and already safe. What remains is the
+schema.org claims question (SPEC-143's open question) and `itemModel`'s regex
+(ADR-036's one exception) — both already recorded, neither made worse by this.
+
+**SPEC-143 is unchanged in substance and clearer in purpose.** Its job was always
+removing ~135 imperative transforms from this repo; every acceptance criterion is a
+first-party migration. Its role becomes "the internal emit path, and the foundation the
+shared declaration rests on", which is more defensible than being one of two options a
+user picks between.
+
+**A user's composed rune keeps its arrangement across a theme change.** Appearance
+follows the theme, because the primitives are themed; arrangement does not, because it
+is in the template. That is a reasonable contract for someone who wrote a template, and
+it belongs in the authoring documentation rather than being discovered.
+
+**A composed rune is a poor basis for a redistributable rune package.** Anyone wanting
+`@acme/wine-runes` to work under any theme is constrained by a baked arrangement — and
+is writing a plugin anyway, so the constraint bites only if they try to avoid that.
+
+**Qualified: the observation survives, the conclusion does not.** A baked arrangement is
+still a real constraint, but {% ref "ADR-039" /%} rule 4 names a **pack** — compositions
+plus curated knowledge, no code — as one of three legitimate package kinds, and
+{% ref "SPEC-153" /%} D1 makes a plugin-shipped composition byte-identical to a
+user-authored one. So a redistributable package of composed runes is not a misuse; it is
+the expected shape wherever the value being distributed is a curated schema mapping or a
+format rather than cross-theme portability. `@refrakt-md/media` is the worked case
+({% ref "SPEC-155" /%} D6): two compositions, no code for them, and a five-row
+schema.org table nothing validates.
+
+**D5's mutual exclusion still holds**, and gains a second job: it is now also the line
+between the internal and user-facing paths, so a user definition carrying a slot
+declaration instead of a template is rejected rather than quietly accepted.
+
+**`runes.local` is not an exception to this, and the reason should be stated rather
+than assumed.** It takes a JS module path and registers a rune with a hand-written
+transform, which reads like the declared path offered to users. Its documentation scopes
+it otherwise — *"Referencing Your Package → During Development (Local Files)"* — so its
+audience is a plugin author's inner loop before publishing, which is the code path this
+decision assigns the declared emit path to. Nothing in the mechanism *enforces* that
+scope, and a composed rune cannot travel through it at all, since a `.rune.md` is not a
+module. {% ref "SPEC-153" /%} D7 records the scope explicitly.
+
+## Alternatives considered
+
+**Offer both tiers, with documentation explaining when to use which.** Rejected — this
+is what prompted the objection. The choice is not one an author is equipped to make on
+first contact, the two differ on an axis (who owns arrangement) that only matters to
+people shipping across themes, and every user-facing declared rune drags the entire CSS
+sanitisation problem back in.
+
+**Offer only the declared path, and keep composition internal.** Rejected on the
+opposite grounds: the declared path costs a user the authoring barrier that matters most
+(their rune renders unstyled until they write CSS), and it hands them portability they
+have no use for.
+
+**Collapse the two into one mechanism.** Rejected: they are genuinely different in what
+they emit, and the declared path is load-bearing for first-party runes precisely because
+a theme must be able to rearrange `work`, `character` and the rest. Removing it would
+trade SPEC-143's whole payoff for symmetry.
+
+**Let users write plugins only, with no rune definitions at all.** Rejected: that is
+today's situation, and it is the gap a hosted refrakt cannot ship around — no plugin
+authoring inside a hosted renderer means no domain coverage beyond what ships.
+
+## Checked while scoping
+
+- SPEC-145 D7's composed `realm` example — the declaration half is entirely SPEC-143 /
+  SPEC-144 vocabulary, which is what revealed there is one declaration rather than two
+- `npx refrakt inspect --list --site main` — 126 runes; the structural survey behind the
+  "nearly every domain rune is a familiar shape" claim
+- `packages/behaviors/src/index.ts` — which runes need behaviors, and therefore a plugin
+- `packages/transform/src/identity-fields.ts` — ADR-028's guarded fields, the portability
+  premise the arrangement axis turns on
+
+## References
+
+- {% ref "SPEC-145" /%} — composed runes; the user-facing emit path
+- {% ref "SPEC-143" /%} — declarative slot labelling; the internal emit path and the shared declaration
+- {% ref "SPEC-144" /%} — entity and edge registration; part of the shared declaration half
+- {% ref "ADR-036" /%} — name the pattern, do not open a language; owns the plugin graduation path
+- {% ref "ADR-035" /%} — the skin format, which targets theme authors and is untouched by this
+- {% ref "ADR-028" /%} — a theme restructures a rune, never redefines it; the portability premise
+- {% ref "SPEC-153" /%} — delivery for the path this decision gives users, and where `runes.local`'s scope is recorded
+- {% ref "ADR-039" /%} — where a rune lives; the empty code/project cell is this decision, the three package kinds are its consequence, and rule 2 is the canonical blocker list
+- {% ref "SPEC-155" /%} — the media audit; the worked case for a pack of composed runes
+- {% ref "SPEC-147" /%} — the storytelling audit; one of the two plugins where everything composes
+
+{% /decision %}

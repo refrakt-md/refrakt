@@ -14,7 +14,8 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { basename } from 'node:path';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 export interface AgainstCollision {
 	id: string;
@@ -104,14 +105,36 @@ export function readRefIds(planDir: string, ref: string, cwd: string): RefIdInde
  * Given the base ref's ID→path map and the working tree's entities, report the
  * IDs that collide.
  *
- * Paths are compared by basename-less ID prefix rather than raw path, because a
- * file legitimately renamed on the branch (`WORK-583-old-slug.md` →
- * `WORK-583-new-slug.md`) is the same entity, not a collision.
+ * **A collision is two claimants surviving the merge**, which is this function's
+ * contract and the only thing it can establish from paths. The branch adds the ID
+ * in one file, the base already spends it on another, and *both files are still
+ * there afterwards* — so every `{% ref %}` to that ID becomes ambiguous.
+ *
+ * It follows that a base file the branch no longer has is **not** a collision: the
+ * merge applies the deletion and one claimant remains. That covers the ordinary
+ * rename, where an edited title changes the slug
+ * (`WORK-603-add-metafields-….md` → `WORK-603-add-fieldmetas-….md`), and it is
+ * why the test is the base path's presence rather than a slug comparison.
+ *
+ * An earlier revision compared slugs, so it forgave only a rename that kept its
+ * slug and moved directory — and fired on every title edit, which is the common
+ * case, and on `plan migrate filenames` wholesale.
+ *
+ * **What this deliberately does not catch**: an ID *reused* for a different entity
+ * (the base's file deleted, a new one written under the same ID). That also leaves
+ * one claimant, so it is not a collision, but it silently repoints every reference
+ * — a real hazard, needing content rather than paths to detect, and not a reason to
+ * block a merge. In-tree duplicates are a separate matter and already reported at
+ * error severity by `checkDuplicateIds`, which runs before this.
+ *
+ * @param planDir Plan directory, relative to the repo root.
+ * @param cwd     Repo root — needed to test whether the base's path still exists.
  */
 export function collisionsFrom(
 	refIds: Map<string, string>,
 	entities: { file: string; attributes: { id?: string } }[],
 	planDir: string,
+	cwd = process.cwd(),
 ): AgainstCollision[] {
 	const collisions: AgainstCollision[] = [];
 	for (const e of entities) {
@@ -124,15 +147,12 @@ export function collisionsFrom(
 		const refRel = refPath.startsWith(`${planDir}/`) ? refPath.slice(planDir.length + 1) : refPath;
 		if (refRel === e.file) continue;
 
-		// Same ID, same slug, different directory or prefix — a rename of the
-		// same entity, not a second claimant.
-		if (stripId(basename(refRel), id) === stripId(basename(e.file), id)) continue;
+		// The base's claimant is gone from the branch, so the merge leaves one
+		// file holding the ID. A rename, a move, or a deliberate replacement —
+		// none of them produce the ambiguity this check exists to prevent.
+		if (!existsSync(join(cwd, refPath))) continue;
 
 		collisions.push({ id, file: e.file, refFile: refRel });
 	}
 	return collisions;
-}
-
-function stripId(name: string, id: string): string {
-	return name.startsWith(`${id}-`) ? name.slice(id.length + 1) : name;
 }
