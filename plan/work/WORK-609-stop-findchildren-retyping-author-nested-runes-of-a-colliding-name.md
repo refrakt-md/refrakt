@@ -1,4 +1,4 @@
-{% work id="WORK-609" status="in-progress" priority="high" complexity="moderate" source="SPEC-146" milestone="v0.39.0" tags="runes,schema,seo,correctness" %}
+{% work id="WORK-609" status="done" priority="high" complexity="moderate" source="SPEC-146" milestone="v0.39.0" tags="runes,schema,seo,correctness" pr="refrakt-md/refrakt#661" %}
 
 # Stop `findChildren` retyping author-nested runes of a colliding name
 
@@ -48,5 +48,32 @@ of it.
 - {% ref "SPEC-146" /%} — Problem 1, D1–D4
 - {% ref "SPEC-130" /%} — the schema table, its applier and the record-defects-too baseline
 - {% ref "ADR-008" /%} — the flat per-rune namespace
+
+## Resolution
+
+Completed: 2026-10-07
+
+Branch: `claude/post-v0.38-roadmap-jb7pie`
+
+### What was done
+- `packages/runes/src/lib/schema-table.ts`: `findChildren` now crosses another rune's boundary only in foreign mode, where just nodes marked `data-owner="<this rune>"` count; a matched child is a boundary too. New `isMine`, `OWNER_ATTR` (`data-owner`) and `releaseOwnedNodes`.
+- `packages/runes/src/lib/index.ts`: the schema wrapper calls `releaseOwnedNodes` after the table is applied, for every rune, table or not (D4).
+- `contracts/seo-baseline/fixtures/`: three edge-case fixtures — `playlist.foreign-track`, `recipe.foreign-steps`, `pricing.foreign-tier` — recorded pre-fix in their own commit (`83e86f6`) so the fix commit's baseline diff is the evidence.
+- Tests: 9 in `packages/runes/test/schema-table.test.ts` (6 fail against the pre-fix resolver); per-rune tests in the media, learning and marketing `seo.test.ts` files.
+- `site/content/extend/plugin-authoring/authoring.md`: section on how a `children` key matches.
+- Changeset: `@refrakt-md/runes` patch.
+
+### Baseline diff, reviewed (D3)
+Exactly the three new fixtures move; the other 48 are byte-identical.
+- `playlist.foreign-track`: before, the `{% track %}` in the `{% hint %}` was the album's third `track` (`name: "Echoes"`). After, the album lists its two own tracks and Echoes is a separate top-level `MusicRecording`.
+- `recipe.foreign-steps`: before, `recipeInstructions` held four `HowToStep`s, two of them from the author's `{% steps %}` in a tip. After, the recipe's own two. The `rendered` harvest drops the two stray `HowToStep` annotations the same way.
+- `pricing.foreign-tier`: before, Enterprise was nested as an `offers` of the Pro offer. After, the product offers Pro alone and Enterprise is a separate top-level `Offer`.
+Structure contracts: no drift on either copy.
+
+### Notes
+- Corrects SPEC-146's measurement: recipe and pricing reach the JSON-LD graph, not only RDFa. `howto` is unreachable because its transform discards nested runes before the table runs; the howto test pins its own steps only.
+- The cross-plugin recipe case (`{% steps %}` is a marketing rune) is covered by the baseline fixture rather than a learning test, which cannot load marketing.
+- Nothing sets `data-owner` yet; `findAllByName`'s use of it is WORK-610.
+- `releaseOwnedNodes` walks each rune's subtree once; no measurable cost in the full suite.
 
 {% /work %}
