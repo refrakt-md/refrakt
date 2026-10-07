@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { describe, it, expect } from 'vitest';
-import { corePipelineHooks } from '../src/config.js';
+import { corePipelineHooks, resolveCoreSentinels } from '../src/config.js';
+import { parse, findTag, findAllTags } from './helpers.js';
 import { matchesFilterExpr } from '../src/field-match.js';
 import { EntityRegistryImpl } from '../../content/src/registry.js';
 import type { TransformedPage } from '@refrakt-md/types';
@@ -42,10 +43,11 @@ describe('corePipelineHooks.register', () => {
 		const registry = new EntityRegistryImpl();
 		const { ctx } = makeCtx();
 
+		// Router-shaped URLs: no trailing slash except the root (BUG-018).
 		const pages = [
 			makePage('/', 'Home'),
-			makePage('/docs/', 'Docs'),
-			makePage('/docs/guide/', 'Guide'),
+			makePage('/docs', 'Docs'),
+			makePage('/docs/guide', 'Guide'),
 		];
 
 		corePipelineHooks.register!(pages, registry, ctx);
@@ -53,12 +55,35 @@ describe('corePipelineHooks.register', () => {
 		const pageEntities = registry.getAll('page');
 		expect(pageEntities).toHaveLength(3);
 
-		const docsEntity = registry.getById('page', '/docs/');
+		const docsEntity = registry.getById('page', '/docs');
 		expect(docsEntity?.data.title).toBe('Docs');
 		expect(docsEntity?.data.parentUrl).toBe('/');
 
-		const guideEntity = registry.getById('page', '/docs/guide/');
-		expect(guideEntity?.data.parentUrl).toBe('/docs/');
+		// `parentUrl` is spelled as the parent page's `url` is — `/docs`, not the
+		// `/docs/` that missed every lookup.
+		const guideEntity = registry.getById('page', '/docs/guide');
+		expect(guideEntity?.data.parentUrl).toBe('/docs');
+	});
+
+	it('spells parentUrl as the parent is registered, slash or not (BUG-018)', () => {
+		const registry = new EntityRegistryImpl();
+		const { ctx } = makeCtx();
+
+		// A base path makes the router spell its root `/en/`; a `slug` override
+		// can carry a trailing slash too. The parent's own key wins either way.
+		const pages = [
+			makePage('/en/', 'Home'),
+			makePage('/en/docs', 'Docs'),
+			makePage('/legacy/', 'Legacy'),
+			makePage('/legacy/page', 'Page'),
+			makePage('/orphan/child', 'Child'),
+		];
+		corePipelineHooks.register!(pages, registry, ctx);
+
+		expect(registry.getById('page', '/en/docs')?.data.parentUrl).toBe('/en/');
+		expect(registry.getById('page', '/legacy/page')?.data.parentUrl).toBe('/legacy/');
+		// No page at the parent path: the router's shape.
+		expect(registry.getById('page', '/orphan/child')?.data.parentUrl).toBe('/orphan');
 	});
 
 	it('registers heading entities for each heading', () => {
@@ -139,40 +164,53 @@ describe('corePipelineHooks.aggregate', () => {
 		const registry = new EntityRegistryImpl();
 		const { ctx } = makeCtx();
 
+		// Router-shaped URLs. These fixtures used to read `/docs/`, `/docs/guide/`
+		// — a shape the router never produces, and the one shape under which
+		// BUG-018's trailing-slash `parentUrl` happened to match.
 		const pages = [
 			makePage('/', 'Home'),
-			makePage('/docs/', 'Docs'),
-			makePage('/docs/guide/', 'Guide'),
-			makePage('/docs/guide/advanced/', 'Advanced'),
+			makePage('/docs', 'Docs'),
+			makePage('/docs/guide', 'Guide'),
+			makePage('/docs/guide/advanced', 'Advanced'),
 		];
 
 		corePipelineHooks.register!(pages, registry, ctx);
 		const result = corePipelineHooks.aggregate!(registry, ctx) as any;
 
 		expect(result.breadcrumbPaths).toBeDefined();
-
-		// Root has no ancestors
 		expect(result.breadcrumbPaths.get('/')).toEqual([]);
-
-		// /docs/ has root as ancestor
-		expect(result.breadcrumbPaths.get('/docs/')).toEqual(['/']);
-
-		// /docs/guide/ has root and /docs/ as ancestors
-		expect(result.breadcrumbPaths.get('/docs/guide/')).toEqual(['/', '/docs/']);
-
-		// /docs/guide/advanced/ has full chain
-		expect(result.breadcrumbPaths.get('/docs/guide/advanced/')).toEqual([
+		expect(result.breadcrumbPaths.get('/docs')).toEqual(['/']);
+		expect(result.breadcrumbPaths.get('/docs/guide')).toEqual(['/', '/docs']);
+		expect(result.breadcrumbPaths.get('/docs/guide/advanced')).toEqual([
 			'/',
-			'/docs/',
-			'/docs/guide/',
+			'/docs',
+			'/docs/guide',
 		]);
+	});
+
+	it('steps over a directory with no index page in breadcrumb paths', () => {
+		const registry = new EntityRegistryImpl();
+		const { ctx } = makeCtx();
+
+		const pages = [makePage('/', 'Home'), makePage('/docs/guide/advanced', 'Advanced')];
+		corePipelineHooks.register!(pages, registry, ctx);
+		const result = corePipelineHooks.aggregate!(registry, ctx) as any;
+
+		// Neither `/docs` nor `/docs/guide` is a page: the path names only real
+		// pages, and still reaches the root.
+		expect(result.breadcrumbPaths.get('/docs/guide/advanced')).toEqual(['/']);
 	});
 
 	it('builds a page tree', () => {
 		const registry = new EntityRegistryImpl();
 		const { ctx } = makeCtx();
 
-		const pages = [makePage('/', 'Home'), makePage('/docs/', 'Docs'), makePage('/about/', 'About')];
+		const pages = [
+			makePage('/', 'Home'),
+			makePage('/docs', 'Docs'),
+			makePage('/docs/guide', 'Guide'),
+			makePage('/about', 'About'),
+		];
 
 		corePipelineHooks.register!(pages, registry, ctx);
 		const result = corePipelineHooks.aggregate!(registry, ctx) as any;
@@ -182,7 +220,11 @@ describe('corePipelineHooks.aggregate', () => {
 		expect(result.pageTree.children).toHaveLength(2);
 
 		const childUrls = result.pageTree.children.map((c: any) => c.url).sort();
-		expect(childUrls).toEqual(['/about/', '/docs/']);
+		expect(childUrls).toEqual(['/about', '/docs']);
+
+		// Depth 2 nests under its section rather than flattening onto the root.
+		const docs = result.pageTree.children.find((c: any) => c.url === '/docs');
+		expect(docs.children.map((c: any) => c.url)).toEqual(['/docs/guide']);
 	});
 
 	it('builds a pagesByUrl map', () => {
@@ -249,5 +291,34 @@ describe('corePipelineHooks validations', () => {
 		corePipelineHooks.register!([makePage('/', 'Home'), makePage('/docs/', 'Docs')], registry, ctx);
 
 		expect(warnings).toHaveLength(0);
+	});
+
+	it('warns when a breadcrumb ancestor has no page entry, instead of dropping it silently (BUG-018)', () => {
+		const registry = new EntityRegistryImpl();
+		const { ctx, warnings } = makeCtx();
+		const pagesByUrl = new Map([
+			['/', { url: '/', title: 'Home', parentUrl: '/' }],
+			['/docs/guide', { url: '/docs/guide', title: 'Guide', parentUrl: '/docs' }],
+		]);
+		// The path names `/docs/` — the old trailing-slash key — which no page
+		// entry answers to. That is exactly how BUG-018 lost its ancestors.
+		const breadcrumbPaths = new Map([['/docs/guide', ['/', '/docs/']]]);
+
+		const resolved = resolveCoreSentinels(
+			parse('{% breadcrumb auto=true /%}'),
+			'/docs/guide',
+			{ breadcrumbPaths, pagesByUrl, allPosts: [], registry },
+			ctx,
+		);
+
+		const items = findAllTags(
+			findTag(resolved as any, (t) => t.attributes['data-rune'] === 'breadcrumb')!,
+			(t) => t.attributes['data-rune'] === 'breadcrumb-item',
+		);
+		expect(items).toHaveLength(2); // Home + Guide; the unresolvable level is left out
+		expect(warnings).toHaveLength(1);
+		expect(warnings[0].severity).toBe('warning');
+		expect(warnings[0].message).toContain('"/docs/"');
+		expect(warnings[0].url).toBe('/docs/guide');
 	});
 });

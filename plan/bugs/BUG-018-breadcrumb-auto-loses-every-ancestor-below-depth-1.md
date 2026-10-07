@@ -1,4 +1,4 @@
-{% bug id="BUG-018" status="confirmed" severity="major" tags="runes,pipeline,breadcrumb,navigation" milestone="v0.39.0" %}
+{% bug id="BUG-018" status="in-progress" severity="major" tags="runes,pipeline,breadcrumb,navigation" milestone="v0.39.0" %}
 
 # `breadcrumb auto` loses every ancestor below depth 1
 

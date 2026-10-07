@@ -807,10 +807,15 @@ function buildPageTree(
 	return root;
 }
 
-/** Build breadcrumb paths: url → ordered ancestor urls (root first, parent last) */
+/** Build breadcrumb paths: url → ordered ancestor urls (root first, parent last).
+ *
+ *  Only registered pages appear in a path. A directory with no index page is a
+ *  gap, not a dead end: the walk steps over it by path and carries on, so
+ *  `/docs/guide` with no `/docs` page still reaches `/`. */
 function buildBreadcrumbPaths(
 	pages: Array<{ url: string; parentUrl: string }>,
 ): Map<string, string[]> {
+	const registered = new Set(pages.map((p) => p.url));
 	const parentOf = new Map<string, string>();
 	for (const p of pages) {
 		if (p.url !== '/') {
@@ -821,10 +826,16 @@ function buildBreadcrumbPaths(
 	const paths = new Map<string, string[]>();
 	for (const p of pages) {
 		const ancestors: string[] = [];
+		const seen = new Set<string>([p.url]);
 		let current = parentOf.get(p.url);
-		while (current !== undefined) {
-			ancestors.unshift(current);
-			current = parentOf.get(current);
+		while (current !== undefined && !seen.has(current)) {
+			seen.add(current);
+			if (registered.has(current)) {
+				ancestors.unshift(current);
+				current = parentOf.get(current);
+			} else {
+				current = current === '/' ? undefined : resolveParentUrl(current, registered);
+			}
 		}
 		paths.set(p.url, ancestors);
 	}
@@ -832,13 +843,31 @@ function buildBreadcrumbPaths(
 	return paths;
 }
 
-/** Derive the parent url by stripping the last path segment */
+/** Derive the parent url by stripping the last path segment, in the router's
+ *  shape: no trailing slash, except the root `/`.
+ *
+ *  BUG-018 — this used to keep the trailing slash (`/docs/guide` → `/docs/`)
+ *  while the router registers `/docs`, so every lookup keyed on `parentUrl`
+ *  missed below depth 1. */
 function deriveParentUrl(url: string): string {
 	if (url === '/' || !url.includes('/')) return '/';
-	// '/docs/guide/' → strip trailing slash, then strip last segment
 	const trimmed = url.endsWith('/') ? url.slice(0, -1) : url;
 	const parent = trimmed.lastIndexOf('/');
-	return parent <= 0 ? '/' : trimmed.slice(0, parent + 1);
+	return parent <= 0 ? '/' : trimmed.slice(0, parent);
+}
+
+/** Resolve a page's `parentUrl` to the key its parent is actually registered
+ *  under. Every consumer of `parentUrl` — `buildPageTree`, the breadcrumb walk,
+ *  `nav auto`, auto-pagination — compares it against a page `url`, so it must
+ *  be spelled exactly as that page's `url` is. The router never emits a
+ *  trailing slash, but a base path makes its root `/base/`, and a `slug`
+ *  override can carry one, so both spellings are tried. When no page sits at
+ *  the parent path, the router's shape is returned. */
+function resolveParentUrl(url: string, registered: ReadonlySet<string>): string {
+	const derived = deriveParentUrl(url);
+	if (registered.has(derived)) return derived;
+	if (derived !== '/' && registered.has(`${derived}/`)) return `${derived}/`;
+	return derived;
 }
 
 /** Walk a Markdoc renderable tree, resolving any auto-breadcrumb placeholders */
@@ -919,7 +948,17 @@ function buildAutoBreadcrumb(
 
 	for (const ancestorUrl of ancestorUrls) {
 		const ancestorPage = pagesByUrl.get(ancestorUrl);
-		if (!ancestorPage) continue;
+		if (!ancestorPage) {
+			// BUG-018 — a short trail used to be the only symptom of this. The
+			// breadcrumb paths name only registered pages, so a miss here means the
+			// two indexes disagree about a page's key: say so instead of quietly
+			// dropping a level.
+			ctx.warn(
+				`Breadcrumb auto: ancestor "${ancestorUrl}" of page "${pageUrl}" is on the breadcrumb path but has no page entry; it was left out of the trail`,
+				pageUrl,
+			);
+			continue;
+		}
 
 		const nameSpan = new Tag('span', { hidden: true }, [ancestorPage.title]);
 		const urlLink = new Tag('a', { href: ancestorUrl }, [ancestorPage.title]);
@@ -2470,8 +2509,9 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			registry: EntityRegistry,
 			ctx: PipelineContext,
 		): void {
+			const registeredUrls = new Set(pages.map((p) => p.url));
 			for (const page of pages) {
-				const parentUrl = deriveParentUrl(page.url);
+				const parentUrl = resolveParentUrl(page.url, registeredUrls);
 
 				const existingPage = registry.getById('page', page.url);
 				if (existingPage && existingPage.sourceUrl !== page.url) {

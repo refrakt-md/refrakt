@@ -19,8 +19,8 @@ const AUTO = '{% breadcrumb auto=true /%}';
 
 const PAGES = new Map<string, string>([
 	['content/index.md', '---\ntitle: Home\n---\n\n# Home\n\nThe root page.\n'],
-	// Depth 1 — the one depth at which the ancestor walk works today, so this is
-	// the page that can carry a genuinely multi-item trail. See BUG-018.
+	// Depth 1 — the one depth at which the ancestor walk worked before BUG-018
+	// was fixed; the `/guide/intro` page below now carries a full trail too.
 	['content/about.md', `---\ntitle: About\n---\n\n${AUTO}\n\n# About\n\nOne level deep.\n`],
 	['content/guide/index.md', '---\ntitle: Guide\n---\n\n# Guide\n\nSection index.\n'],
 	[
@@ -102,22 +102,20 @@ describe('seo is harvested after the pipeline (WORK-563)', () => {
 		expect(rendered).toContain('About');
 	});
 
-	it('publishes a truncated trail faithfully (BUG-018)', async () => {
-		// `deriveParentUrl` returns `/guide/` while the router registers `/guide`,
-		// so the ancestor walk stops dead below depth 1 and an auto breadcrumb
-		// renders only the current page. That is BUG-018, a rendering defect, and
-		// deliberately not fixed here — WORK-563 moves *where* the harvest happens.
-		//
-		// What this item does guarantee is that whatever is rendered is what gets
-		// published. Pinned so the fix for BUG-018 shows up here as a diff rather
-		// than landing unnoticed.
+	it('publishes the full trail of a nested page (BUG-018)', async () => {
+		// Pinned at one item (`Intro`) while BUG-018 stood: `deriveParentUrl`
+		// returned `/guide/` while the router registers `/guide`, so the ancestor
+		// walk stopped dead below depth 1. The fix shows up here as this diff.
+		// Depths 1–3 are covered in breadcrumb-auto-depth.test.ts.
 		const site = await build();
 		const intro = site.pages.find((p) => p.route.url === '/guide/intro')!;
 		const list = entitiesOfType(intro.seo.jsonLd, 'BreadcrumbList')[0] as Record<string, unknown>;
 		expect(list, 'no BreadcrumbList on the nested page').toBeDefined();
-		// An array even at one item, since WORK-571 declared `itemListElement` a
-		// list (D6) — the shape no longer varies with how deep the page sits.
-		expect(list.itemListElement).toMatchObject([{ name: 'Intro', position: '1' }]);
+		expect(list.itemListElement).toMatchObject([
+			{ name: 'Home', position: '1' },
+			{ name: 'Guide', position: '2' },
+			{ name: 'Intro', position: '3' },
+		]);
 	});
 
 	it('agrees at both harvest points, page-level, through runPipeline', async () => {
