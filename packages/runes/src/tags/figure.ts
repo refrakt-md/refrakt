@@ -22,9 +22,23 @@ export const figureFrameTarget = 'self' as const;
 // `<figcaption>` its text. The image is the node WORK-561 gave a name to —
 // before that, the schema reached it only as an anonymous `imgs[0]`, and a
 // reordering of the transform would have silently repointed `contentUrl`.
+//
+// BUG-028 — a figure is a general captioned container, so `ImageObject` holds
+// only while the media slot is the figure's whole body. The transform records
+// `body: 'mixed'` when anything else is there; that row asserts nothing. No
+// type at all, rather than a more general one: the figure's caption describes
+// the image *and* the code beside it, and `ImageObject` with that caption is a
+// wrong claim, while the alternatives (`CreativeWork`, `SoftwareSourceCode`)
+// would describe a code block nobody marked up as a work. The properties go with
+// the type: stamping `caption` with no `typeof` here would hand it to whatever
+// typed ancestor the page has.
 export const figureSchema = {
-	type: 'ImageObject',
-	properties: { image: 'contentUrl', caption: 'caption' },
+	byField: 'body',
+	rows: { mixed: {} },
+	fallback: {
+		type: 'ImageObject',
+		properties: { image: 'contentUrl', caption: 'caption' },
+	},
 } as const;
 
 export const figure = createContentModelSchema({
@@ -52,34 +66,63 @@ export const figure = createContentModelSchema({
 	},
 	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
-		const children = renderNodes(resolved.body, config);
+		const children = renderNodes(resolved.body, config).toArray();
 
-		// Media is an <img> or a scheme-resolved <svg> (placeholder:/icon:) — both
-		// count as the figure's image (SPEC-106).
-		const imgs = children
-			.flatten()
-			.toArray()
-			.filter((n) => isMediaNode(n)) as InstanceType<typeof Tag>[];
+		// BUG-028 — every body child is kept, in body order. Media — an <img>, a
+		// <video>, or a scheme-resolved <svg> (SPEC-106) — standing on its own,
+		// or in a paragraph holding nothing else, is the figure's media slot and
+		// is emitted unwrapped, as it always was. Anything else is emitted as
+		// written: before this, all of it was resolved and then dropped.
+		const mediaOnly = (p: any): any[] | undefined => {
+			if (!Markdoc.Tag.isTag(p) || p.name !== 'p') return undefined;
+			const kids = p.children ?? [];
+			const media = kids.filter((c: any) => isMediaNode(c));
+			const rest = kids.filter(
+				(c: any) => !isMediaNode(c) && !(typeof c === 'string' && c.trim() === ''),
+			);
+			return media.length > 0 && rest.length === 0 ? media : undefined;
+		};
+		const holdsMedia = (n: any): boolean =>
+			isMediaNode(n) || (Markdoc.Tag.isTag(n) && (n.children ?? []).some(holdsMedia));
 
-		// For caption fallback, skip paragraphs that only contain a media node
-		const textParagraphs = children
-			.tag('p')
-			.toArray()
-			.filter((p) => {
-				const kids = (p.children || []).filter((c: any) => Markdoc.Tag.isTag(c));
-				return !(kids.length === 1 && isMediaNode(kids[0]));
-			});
-
+		// Caption fallback: the first paragraph with no media in it.
 		const captionContent = attrs.caption || undefined;
+		const captionParagraph = captionContent
+			? undefined
+			: children.find((n: any) => Markdoc.Tag.isTag(n) && n.name === 'p' && !holdsMedia(n));
 		const captionTag = captionContent
 			? new Tag('figcaption', {}, [captionContent])
-			: textParagraphs.length > 0
-				? new Tag('figcaption', {}, [textParagraphs[0]])
+			: captionParagraph
+				? new Tag('figcaption', {}, [captionParagraph])
 				: undefined;
+
+		const imgs: InstanceType<typeof Tag>[] = [];
+		const body: any[] = [];
+		let mixed = false;
+		for (const node of children) {
+			if (node === captionParagraph) continue;
+			if (isMediaNode(node)) {
+				imgs.push(node as InstanceType<typeof Tag>);
+				body.push(node);
+				continue;
+			}
+			const media = mediaOnly(node);
+			if (media) {
+				imgs.push(...media);
+				body.push(...media);
+				continue;
+			}
+			if (typeof node === 'string' && node.trim() === '') continue;
+			body.push(node);
+			mixed = true;
+		}
 
 		const sizeMeta = attrs.size ? new Tag('meta', { content: attrs.size }) : undefined;
 		const alignMeta = attrs.align ? new Tag('meta', { content: attrs.align }) : undefined;
-		const childNodes: any[] = [...imgs];
+		// A content fact, not a type: the schema table decides what it means.
+		const bodyMeta = mixed ? new Tag('meta', { content: 'mixed' }) : undefined;
+		const childNodes: any[] = [...body];
+		if (bodyMeta) childNodes.push(bodyMeta);
 		if (captionTag) childNodes.push(captionTag);
 
 		return createComponentRenderable({
@@ -88,6 +131,7 @@ export const figure = createContentModelSchema({
 			properties: {
 				size: sizeMeta,
 				align: alignMeta,
+				body: bodyMeta,
 			},
 			refs: {
 				caption: captionTag,

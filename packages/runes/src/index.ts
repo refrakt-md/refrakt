@@ -544,7 +544,7 @@ export const runes = {
 	figure: defineRune({
 		name: 'figure',
 		schema: figure,
-		description: 'Enhanced image with caption, attribution, and sizing',
+		description: 'Captioned container for images, code, tables and diagrams, with sizing',
 		seoType: 'ImageObject',
 		typeName: 'Figure',
 		category: 'Content',

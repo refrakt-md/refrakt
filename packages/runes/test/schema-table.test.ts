@@ -217,6 +217,47 @@ describe('by: selects a row from an attribute', () => {
 	});
 });
 
+// BUG-028 — a type that depends on what the content is, not on what the author
+// said. The transform records the fact in the field bag; the table decides.
+describe('byField: selects a row from the field bag', () => {
+	const table: SchemaTable = {
+		byField: 'body',
+		rows: { mixed: {} },
+		fallback: { type: 'ImageObject', properties: { caption: 'caption' } },
+	};
+
+	it('falls back when the field is absent, and with no bag at all', () => {
+		expect(selectRow(table, {}, {}).type).toBe('ImageObject');
+		expect(selectRow(table, {}).type).toBe('ImageObject');
+	});
+
+	it('picks the row the field names, ignoring attributes', () => {
+		expect(selectRow(table, { body: 'mixed' }).type).toBe('ImageObject');
+		expect(selectRow(table, {}, { body: 'mixed' }).type).toBeUndefined();
+	});
+
+	it('an empty row emits neither the type nor the properties', () => {
+		const tree = applySchemaTable(
+			root({ body: 'mixed' }, [named('caption', 'Reef')]),
+			table,
+			{},
+		) as any;
+		expect(tree.attributes.typeof).toBeUndefined();
+		expect(tree.children[0].attributes.property).toBeUndefined();
+		expect(graph(tree)).toEqual([]);
+	});
+
+	it('the fallback row applies when the bag says nothing', () => {
+		const tree = applySchemaTable(root({}, [named('caption', 'Reef')]), table, {});
+		expect(first(tree)).toMatchObject({ '@type': 'ImageObject', caption: 'Reef' });
+	});
+
+	it('is exclusive with `by`, and needs rows', () => {
+		const issues = validateSchemaTable({ by: 'type', byField: 'body', fallback: {} }, ['type']);
+		expect(issues.map((i) => i.path)).toEqual(expect.arrayContaining(['byField', 'rows']));
+	});
+});
+
 describe('validateSchemaTable', () => {
 	it('rejects a child entity declared without the property that holds it', () => {
 		// `collectJsonLd` nests a typed node only when it also carries `property`,

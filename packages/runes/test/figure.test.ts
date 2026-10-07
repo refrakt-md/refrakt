@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import Markdoc from '@markdoc/markdoc';
 import { parse, findTag, fields } from './helpers.js';
 
 describe('figure tag', () => {
@@ -417,5 +418,110 @@ Steam rising from volcanic hot springs.
 			  "name": "figure",
 			}
 		`);
+	});
+});
+
+// BUG-028 — figure is a general captioned container. Before the fix every child
+// that was not media was resolved, transformed and then dropped without a word,
+// and the figure still asserted `ImageObject`.
+describe('figure — non-media children survive (BUG-028)', () => {
+	const figureOf = (src: string) =>
+		findTag(parse(src) as any, (t) => t.attributes['data-rune'] === 'figure')!;
+	// A fence and a table render inside wrapper `<div>`s, so name each child by
+	// what it holds: its rune, else the first `pre`/`table` in it, else itself.
+	const shape = (fig: any) =>
+		(fig.children as any[])
+			.filter((c) => Markdoc.Tag.isTag(c))
+			.map(
+				(c) =>
+					c.attributes['data-rune'] ??
+					findTag(c, (t) => t.name === 'pre' || t.name === 'table')?.name ??
+					c.name,
+			);
+
+	it('keeps a code fence, a table and a nested rune, in body order, with the caption', () => {
+		const fig = figureOf(`{% figure caption="The handler" %}
+\`\`\`ts
+export const x = 1;
+\`\`\`
+
+| Option | Default |
+|--------|---------|
+| retry  | 3       |
+
+{% hint type="note" %}
+Retries are idempotent.
+{% /hint %}
+{% /figure %}`);
+
+		expect(shape(fig)).toEqual(['pre', 'table', 'hint', 'figcaption']);
+		const caption = findTag(fig, (t) => t.name === 'figcaption')!;
+		expect(caption.children).toEqual(['The handler']);
+		expect(findTag(fig, (t) => t.name === 'code')).toBeDefined();
+		expect(findTag(fig, (t) => t.name === 'td')).toBeDefined();
+	});
+
+	it('keeps media and non-media in body order', () => {
+		const fig = figureOf(`{% figure caption="Before and after" %}
+\`\`\`sql
+select 1;
+\`\`\`
+
+![Result](/images/result.png)
+
+| a |
+|---|
+| 1 |
+{% /figure %}`);
+		expect(shape(fig)).toEqual(['pre', 'img', 'table', 'figcaption']);
+	});
+
+	it('keeps a paragraph the caption attribute leaves unused', () => {
+		const fig = figureOf(`{% figure caption="Caption" %}
+![Photo](/images/photo.jpg)
+
+Shot at dawn.
+{% /figure %}`);
+		expect(shape(fig)).toEqual(['img', 'p', 'figcaption']);
+	});
+
+	it('takes the first media-free paragraph as the caption and keeps later ones', () => {
+		const fig = figureOf(`{% figure %}
+Steam rising.
+
+\`\`\`sh
+ls
+\`\`\`
+
+More detail.
+{% /figure %}`);
+		expect(shape(fig)).toEqual(['pre', 'p', 'figcaption']);
+		const caption = findTag(fig, (t) => t.name === 'figcaption')!;
+		expect(findTag(caption, (t) => t.name === 'p')!.children).toEqual(['Steam rising.']);
+	});
+
+	it('asserts no schema.org type once the body holds more than media', () => {
+		const fig = figureOf(`{% figure caption="Reef and query" %}
+![Coral reef](/images/reef.jpg)
+
+\`\`\`sql
+select 1;
+\`\`\`
+{% /figure %}`);
+		expect(fig.attributes.typeof).toBeUndefined();
+		// Nor the properties: with no type on the figure they would attach to
+		// whatever typed ancestor the page has.
+		expect(findTag(fig, (t) => t.attributes.property !== undefined)).toBeUndefined();
+		// The content fact is data, not output: it lives in the field bag only.
+		expect(fields(fig).body).toBe('mixed');
+		expect(findTag(fig, (t) => t.name === 'meta')).toBeUndefined();
+	});
+
+	it('keeps ImageObject when the media slot is the whole body', () => {
+		const fig = figureOf(`{% figure caption="Reef" %}
+![Coral reef](/images/reef.jpg)
+{% /figure %}`);
+		expect(fig.attributes.typeof).toBe('ImageObject');
+		expect(fields(fig).body).toBeUndefined();
 	});
 });

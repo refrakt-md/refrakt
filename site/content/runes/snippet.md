@@ -110,7 +110,25 @@ Several of these also slice mid-construct — opening on a blank line, or in the
 
 ## Captions and titles
 
-Snippet itself has no `title` attribute — it's structurally a `fence` by the time the transform runs, and fences don't carry titles. For a labelled chrome, wrap the snippet in `{% codegroup %}`, which produces title-bar chrome around a single fence:
+Snippet itself has no `title` attribute — it's structurally a `fence` by the time the transform runs, and fences don't carry titles. Label it by wrapping it in a container rune. Two fit, and they look different.
+
+### A caption below: `figure`
+
+`{% figure caption="…" %}` captions the code the way it captions an image, below it. Use it when the label describes the excerpt.
+
+```markdoc
+{% figure caption="The language used when no extension matches" %}
+{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
+{% /figure %}
+```
+
+{% figure caption="The language used when no extension matches" %}
+{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
+{% /figure %}
+
+### A title bar above: `codegroup`
+
+`{% codegroup title="…" %}` puts title-bar chrome around a single fence, the way an editor tab names a file. Use it when the label is a filename or a heading.
 
 ```markdoc
 {% codegroup title="FALLBACK_LANG constant" %}
@@ -276,7 +294,7 @@ If `--check` is noisy after a marking pass, the remedy is **unmarking pages**, n
 
 {% include file="rune-attributes.md" variables={r: "rune:snippet"} /%}
 
-No `title` attribute. Snippet's output is a fence; for a labelled chrome wrap in `{% codegroup title="..." %}`.
+No `title` attribute. Snippet's output is a fence; to label it, wrap it in `{% figure caption="..." %}` (a caption below) or `{% codegroup title="..." %}` (a title bar above).
 
 ## View source — recursively
 
@@ -293,5 +311,6 @@ Renders as the snippet block below — at build time it reads the page you're lo
 ## See also
 
 - [Codegroup](/runes/codegroup) — tabbed code blocks; consumes snippet children transparently.
+- [Figure](/runes/figure) — a captioned container; captions a snippet below the code.
 - [Diff](/runes/diff) — before/after code comparison; consumes snippet children transparently.
 - [Content variables](/docs/authoring/variables) — `$file.path` for the view-source-of-current-page pattern.

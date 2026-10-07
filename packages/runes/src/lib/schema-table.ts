@@ -129,9 +129,21 @@ export interface SchemaTable extends SchemaRow {
 	 * the ambiguity cannot ship silently.
 	 */
 	by?: string;
-	/** Rows keyed by attribute value, used with `by`. */
+	/**
+	 * Selects a row by the value of the named **field** in the rune's own field
+	 * bag (`data-rune-fields`), for a type that depends on what the content *is*
+	 * rather than on anything the author stated (BUG-028).
+	 *
+	 * The transform records a fact about its content as an ordinary property —
+	 * `figure` records `body: 'mixed'` when it holds more than media — and the
+	 * table decides what that fact means for the type. The transform still never
+	 * writes a type. Exclusive with `by`: a row is picked by one axis, and two
+	 * would need a precedence rule nobody could see in the table.
+	 */
+	byField?: string;
+	/** Rows keyed by attribute (`by`) or field (`byField`) value. */
 	rows?: Record<string, SchemaRow>;
-	/** The row for when the `by` attribute is absent or unmatched. */
+	/** The row for when the selecting value is absent or unmatched. */
 	fallback?: SchemaRow;
 }
 
@@ -176,6 +188,18 @@ export function validateSchemaTable(
 		}
 	}
 
+	if (table.byField !== undefined) {
+		if (table.by !== undefined) {
+			issues.push({
+				path: 'byField',
+				message: '`by` and `byField` are exclusive: a row is selected on one axis.',
+			});
+		}
+		if (!table.rows || Object.keys(table.rows).length === 0) {
+			issues.push({ path: 'rows', message: '`byField` needs `rows` to select from.' });
+		}
+	}
+
 	const checkEntities = (rows: Record<string, EntityRow> | undefined, path: string) => {
 		for (const [name, row] of Object.entries(rows ?? {})) {
 			if (!row.property) {
@@ -202,10 +226,23 @@ export function validateSchemaTable(
 	return issues;
 }
 
-/** Pick the row a set of attributes selects. */
-export function selectRow(table: SchemaTable, attrs: Record<string, unknown>): SchemaRow {
-	if (!table.by) return table;
-	const value = attrs[table.by];
+/**
+ * Pick the row a set of attributes — or, for a `byField` table, the rune's
+ * field bag — selects. With no bag (the static views: `inspect`, `contracts`,
+ * `reference`) a `byField` table describes its fallback row.
+ */
+export function selectRow(
+	table: SchemaTable,
+	attrs: Record<string, unknown>,
+	fields: Record<string, unknown> = {},
+): SchemaRow {
+	const value =
+		table.by !== undefined
+			? attrs[table.by]
+			: table.byField !== undefined
+				? fields[table.byField]
+				: undefined;
+	if (table.by === undefined && table.byField === undefined) return table;
 	const row = value === undefined ? undefined : table.rows?.[String(value)];
 	return row ?? table.fallback ?? table;
 }
@@ -472,8 +509,8 @@ export function applySchemaTable(
 	if (attrs.schema === 'none') return output;
 
 	const root = output as AnyTag;
-	const row = selectRow(table, attrs);
 	const bag = readBag(root);
+	const row = selectRow(table, attrs, bag);
 
 	applyRow(root, row, bag);
 
