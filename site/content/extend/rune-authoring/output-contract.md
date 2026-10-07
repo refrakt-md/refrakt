@@ -202,21 +202,21 @@ return createComponentRenderable({
   rune: 'hint',
   tag: 'section',
   properties: {
-    hintType,    // gets data-field="hint-type" added
+    hintType,    // its content lands in the rune's field bag
   },
-  children: [hintType, children.next()],
-  //         ^^^^^^^^ must be in children array too
+  children: [children.next()],
 });
 ```
 
-The engine:
-1. Finds `<meta data-field="hint-type" content="warning">`
-2. Reads the value `"warning"`
-3. Adds modifier class `rf-hint--warning`
-4. Stores `data-hint-type="warning"` on root
-5. Removes the meta tag from the output
+`createComponentRenderable` copies each property meta's `content` into the root's `data-rune-fields` attribute, keyed by the property name: `{"hintType":"warning"}`. The meta itself is dropped from the output, so it does not need to be in `children`, and is filtered out if it is.
 
-Meta tags must appear in both `properties` and `children`. The `properties` entry adds the `data-field` attribute; the `children` array ensures the tag is in the tree for the engine to find.
+The engine:
+1. Reads `hintType: "warning"` from `data-rune-fields`
+2. Adds modifier class `rf-hint--warning`
+3. Stores `data-hint-type="warning"` on root
+4. Strips `data-rune-fields` from the rendered output
+
+When every property is an attribute read, `fieldMetas` builds the whole `properties` map from one declaration. A bare string is the default for the attribute of the same name, and `from` reads a differently named one: `fieldMetas(attrs, config, { hintType: { from: ['attrs.type'], default: 'note' } })`.
 
 ## The data-rune marker
 

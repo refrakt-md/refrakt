@@ -1,6 +1,6 @@
 ---
 title: Include
-description: Paste a partial's content into the page before the preprocess phase, so data and snippet inside it resolve
+description: Paste a partial's content into the page during the preprocess phase, so data and snippet inside it resolve
 category: "Code & Data"
 plugin: core
 status: stable

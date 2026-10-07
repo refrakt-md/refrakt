@@ -169,7 +169,7 @@ refrakt resolves `{% data %}` and `{% snippet %}` in a **preprocess** phase that
 If this file is pulled in with {% partial %}: use {% include %} instead.
 ```
 
-[`{% include %}`](/runes/include) is refrakt's answer. It pastes the file's content into the page ahead of the preprocess phase, so `data` and `snippet` inside it resolve. It reads the same `_partials/` directory and the same file roots, and takes the same `variables` — only the tag name changes.
+[`{% include %}`](/runes/include) is refrakt's answer. It resolves in the preprocess phase too, pasting the file's content where the tag was, and the phase continues into what it pasted, so `data` and `snippet` inside it resolve. It reads the same `_partials/` directory and the same file roots, and takes the same `variables` — only the tag name changes.
 
 **Reach for `{% partial %}` first.** It is Markdoc's, it behaves the same way in every Markdoc project, and it covers the common case. **Reach for `{% include %}` when the file contains `{% data %}` or `{% snippet %}`.**
 

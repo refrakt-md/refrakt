@@ -791,7 +791,7 @@ export const runes = {
 		name: 'include',
 		schema: include,
 		description:
-			"Paste a partial's AST into the page before the preprocess phase, so `data` and `snippet` inside it resolve — the case `{% partial %}` cannot serve. Reads the same `_partials/` and file roots (SPEC-129).",
+			"Paste a partial's AST into the page during the preprocess phase, so `data` and `snippet` inside it resolve — the case `{% partial %}` cannot serve. Reads the same `_partials/` and file roots (SPEC-129).",
 		typeName: 'Include',
 		category: 'Code & Data',
 		snippet: ['{% include file="${1:shared-block.md}" /%}'],
