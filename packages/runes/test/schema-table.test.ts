@@ -558,3 +558,118 @@ describe('the ownership marker is bookkeeping, not output (SPEC-146 D4)', () => 
 		expect(placed.attributes.src).toBe('v.jpg');
 	});
 });
+
+describe('findAllByName resolves owner-marked nodes past a boundary (SPEC-146 Problem 2, WORK-610)', () => {
+	// Node-sourced values — `properties` from a node, `text`, the node half of
+	// `entities` — are the ones nesting can hide. The marker is set by hand here,
+	// as nothing sets it in production yet (SPEC-145 will).
+	const mine = <T extends InstanceType<typeof Tag>>(node: T): T => {
+		node.attributes[OWNER_ATTR] = 'probe';
+		return node;
+	};
+	const card = (...children: unknown[]) =>
+		new Tag('div', { 'data-rune': 'card' }, children as never);
+
+	const table: SchemaTable = {
+		type: 'Product',
+		properties: { name: 'name', sku: 'sku' },
+	};
+
+	it('resolves both sources on a declared tree', () => {
+		const tree = applySchemaTable(root({ sku: 'A1' }, [named('name', 'Widget')]), table, {});
+		expect(first(tree)).toMatchObject({ name: 'Widget', sku: 'A1' });
+	});
+
+	it('resolves both sources on a composed tree, the node-sourced one only via the marker', () => {
+		// Fails before WORK-610: `name` sits inside `card` and the walk stopped
+		// there, so only the attribute-sourced `sku` published.
+		const tree = applySchemaTable(
+			root({ sku: 'A1' }, [card(mine(named('name', 'Widget')))]),
+			table,
+			{},
+		);
+		expect(first(tree)).toMatchObject({ name: 'Widget', sku: 'A1' });
+	});
+
+	it('publishes a composed entity whose values are all attributes', () => {
+		// The narrower scope of Problem 2: the field bag is untouched by nesting,
+		// so this held before WORK-610 and must keep holding.
+		const attrsOnly: SchemaTable = { type: 'Product', properties: { sku: 'sku', brand: 'brand' } };
+		const tree = applySchemaTable(
+			root({ sku: 'A1', brand: 'Acme' }, [card(named('caption', 'Inside a card'))]),
+			attrsOnly,
+			{},
+		);
+		expect(first(tree)).toMatchObject({ '@type': 'Product', sku: 'A1', brand: 'Acme' });
+	});
+
+	it('keeps every member of a set past the boundary', () => {
+		// `recipe`'s shape (SPEC-154): each ingredient `<li>` wears the same name.
+		const ingredients: SchemaTable = {
+			type: 'Recipe',
+			properties: { ingredient: 'recipeIngredient' },
+		};
+		const li = (text: string) => new Tag('li', { 'data-name': 'ingredient' }, [text]);
+		const tree = applySchemaTable(
+			root({}, [li('Flour'), card(mine(li('Sugar')), mine(li('Eggs')))]),
+			ingredients,
+			{},
+		);
+		expect(first(tree).recipeIngredient).toEqual(['Flour', 'Sugar', 'Eggs']);
+	});
+
+	it('resolves a `text` source past the boundary', () => {
+		const textTable: SchemaTable = { type: 'Article', text: { body: 'articleBody' } };
+		const tree = applySchemaTable(root({}, [card(mine(named('body', 'Hello')))]), textTable, {});
+		expect(first(tree).articleBody).toBe('Hello');
+	});
+
+	it('resolves the node half of an entity past the boundary', () => {
+		const entityTable: SchemaTable = {
+			type: 'Product',
+			entities: {
+				brand: { type: 'Brand', property: 'brand', properties: { maker: 'name' } },
+			},
+		};
+		const tree = applySchemaTable(root({}, [card(mine(named('maker', 'Acme')))]), entityTable, {});
+		expect(first(tree).brand).toEqual({ '@type': 'Brand', name: 'Acme' });
+	});
+
+	it('ignores an unmarked node past the boundary, and one marked for another rune', () => {
+		const theirs = named('name', 'Theirs');
+		theirs.attributes[OWNER_ATTR] = 'card';
+		const tree = applySchemaTable(
+			root({}, [named('name', 'Mine'), card(named('name', 'Unmarked'), theirs)]),
+			{ type: 'Thing', properties: { name: 'name' } },
+			{},
+		);
+		expect(first(tree).name).toBe('Mine');
+	});
+
+	it('keeps the character / character-section collision suppressed', () => {
+		// The history the boundary guard was added for: `character` names its title
+		// span `name`, and so does every `character-section` inside it. Reaching
+		// into the sections published a character named after every heading.
+		const section = (heading: string) =>
+			new Tag('section', { 'data-rune': 'character-section' }, [named('name', heading)] as never);
+		const tree = applySchemaTable(
+			new Tag('article', { 'data-rune': 'character' }, [
+				named('name', 'Aria'),
+				section('Backstory'),
+				section('Abilities'),
+			] as never),
+			{ type: 'Person', properties: { name: 'name' } },
+			{},
+		);
+		expect(first(tree).name).toBe('Aria');
+	});
+
+	it('answers the CLI audit as before on a released tree', () => {
+		// `packages/cli/src/lib/schema-row.ts` calls `findByName` on a rendered rune
+		// tree, where `releaseOwnedNodes` has already stripped every mark — so a
+		// nested rune's names stay out of reach, exactly as before WORK-610.
+		const tree = root({}, [named('caption', 'Own'), card(named('name', 'Nested'))]);
+		expect(findByName(tree, 'caption')).toBeDefined();
+		expect(findByName(tree, 'name')).toBeUndefined();
+	});
+});

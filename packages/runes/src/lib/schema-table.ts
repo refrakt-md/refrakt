@@ -226,40 +226,45 @@ const isTag = (n: unknown): n is AnyTag => Markdoc.Tag.isTag(n as never);
 /**
  * Every node bearing a name, in document order, within one rune.
  *
- * **The search stops at another rune's node.** ADR-008's flat namespace is
- * unique *per rune*, so the same name means different things in a parent and in
- * a child it contains: `character` names its title span `name`, and so does
- * every `character-section` inside it. Reaching across that boundary published a
- * character whose `name` was the character plus each of its section headings.
+ * **Past another rune's node, only nodes marked for this rune count.** ADR-008's
+ * flat namespace is unique *per rune*, so the same name means different things
+ * in a parent and in a child it contains: `character` names its title span
+ * `name`, and so does every `character-section` inside it. Reaching across that
+ * boundary published a character whose `name` was the character plus each of
+ * its section headings. So the walk keeps descending in foreign mode, where just
+ * the nodes placed on this rune's behalf (`OWNER_ATTR`) are admitted — the same
+ * rule `findChildren` applies (SPEC-146 Problem 2).
  */
 export function findAllByName(
 	root: RenderableTreeNode | RenderableTreeNode[],
 	name: string,
 ): AnyTag[] {
 	const kebab = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+	const owner = isTag(root) ? root.attributes?.['data-rune'] : undefined;
 	const out: AnyTag[] = [];
-	const visit = (node: unknown, top: boolean): void => {
+	const visit = (node: unknown, top: boolean, foreign: boolean): void => {
 		if (Array.isArray(node)) {
-			for (const c of node) visit(c, top);
+			for (const c of node) visit(c, top, foreign);
 			return;
 		}
 		if (!isTag(node)) return;
 		const attrs = node.attributes ?? {};
-		if (!top && attrs['data-rune'] !== undefined) return;
+		// A nested rune's own node is already on its side of the boundary.
+		const inner = foreign || (!top && attrs['data-rune'] !== undefined);
 		const named =
 			attrs['data-name'] === name ||
 			attrs['data-name'] === kebab ||
 			attrs['data-field'] === name ||
 			attrs['data-field'] === kebab;
-		if (named) {
+		if (named && isMine(attrs, owner, inner)) {
 			out.push(node);
 			// A name marks one node, not a subtree: descending into a match would
 			// find nothing new and risks a nested re-use of the same name.
 			return;
 		}
-		for (const c of node.children ?? []) visit(c, false);
+		for (const c of node.children ?? []) visit(c, false, inner);
 	};
-	visit(root, true);
+	visit(root, true, false);
 	return out;
 }
 

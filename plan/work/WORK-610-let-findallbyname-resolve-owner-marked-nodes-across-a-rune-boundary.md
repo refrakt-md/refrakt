@@ -1,4 +1,4 @@
-{% work id="WORK-610" status="ready" priority="medium" complexity="simple" source="SPEC-146" milestone="v0.39.0" tags="runes,schema,seo,composition" %}
+{% work id="WORK-610" status="in-progress" priority="medium" complexity="simple" source="SPEC-146" milestone="v0.39.0" tags="runes,schema,seo,composition" %}
 
 # Let `findAllByName` resolve owner-marked nodes across a rune boundary
 
