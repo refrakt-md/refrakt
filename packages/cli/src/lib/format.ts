@@ -194,6 +194,8 @@ export function buildJsonOutput(opts: {
 	selectors: string[];
 	/** The rune's resolved schema.org row (WORK-566), when it declares a table. */
 	schema?: unknown;
+	/** The rune's declared output slots (SPEC-143), when it has no hand-written transform. */
+	slots?: unknown;
 	/** The rune's `registers` block and its unresolvable sources (WORK-611). */
 	registers?: unknown;
 }): object {
@@ -221,6 +223,8 @@ export function buildJsonOutput(opts: {
 		// fact a consumer wants, and distinguishable from an older payload that
 		// predates the field.
 		schema: opts.schema ?? null,
+		// SPEC-143 — `null` for a rune built by a transform, for the same reason.
+		slots: opts.slots ?? null,
 		// `null` for the same reason: "registers nothing" is a fact.
 		registers: opts.registers ?? null,
 	};

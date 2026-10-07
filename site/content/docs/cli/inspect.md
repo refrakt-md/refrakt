@@ -25,6 +25,10 @@ refrakt inspect hint --type=all
 
 This expands the `type` attribute across all its allowed values (note, warning, tip, etc.), so you can see the full set of BEM modifier classes and data attributes your CSS needs to cover.
 
+## Declared slots
+
+For a rune that declares its output with `emits` rather than a transform (SPEC-143), `inspect` adds a **Slots (declared)** section after the selectors: each slot, the field or attribute it comes from, and the element it is. Every `data-name` in the output above traces to one of those lines. In `--json` output the same list is `slots`; it is `null` for a rune built by a transform.
+
 ## Setting multiple attributes
 
 Pass any rune attribute as a flag:

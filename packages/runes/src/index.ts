@@ -111,12 +111,26 @@ export {
 	extractText,
 	groupByHeading,
 	fieldMetas,
+	schemaEmits,
+	makeSlotTransform,
+	slotSections,
+	validateEmits,
+	describeSlots,
+	formatSlotLine,
 	preprocessTree,
 } from './lib/index.js';
 export type {
 	GroupByHeadingHandlers,
 	RunePreprocess,
 	RunePreprocessContext,
+} from './lib/index.js';
+export type {
+	DescribedSlot,
+	EmitsDeclaration,
+	SlotDeclaration,
+	SlotEntry,
+	SlotKind,
+	SlotRole,
 } from './lib/index.js';
 export type { FieldMetaSpec, FieldMetaEntry, FieldMetaSource } from './lib/index.js';
 export type { RuneStructure, SectionRole } from './lib/index.js';

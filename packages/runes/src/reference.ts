@@ -14,9 +14,11 @@ import {
 	schemaBasePresets,
 } from './attribute-presets.js';
 import { AXIS_ATTRIBUTES } from './universal-attributes.js';
-import { schemaContentModels, schemaTables } from './lib/index.js';
+import { schemaContentModels, schemaTables, schemaEmits } from './lib/index.js';
 import { describeRegisters, registersFor } from './lib/registers.js';
 import type { RegistersDeclaration } from './lib/registers.js';
+import { describeSlots, formatSlotLine } from './lib/slots.js';
+import type { DescribedSlot } from './lib/slots.js';
 import { describeSchemaRow, bySchemaProperty } from './schema-row.js';
 import { describeSchemaUniversals } from './schema-universals.js';
 
@@ -308,6 +310,16 @@ export function describeRune(rune: RuneInfo): string {
 
 	if (rune.contentModel) {
 		lines.push(renderContentModel(rune.contentModel));
+	}
+
+	// SPEC-143 — a declaratively-labelled rune states its output slots as data,
+	// so the reference can say what a hand-written transform never let it: which
+	// field becomes which named node.
+	const emits = schemaEmits.get(rune.schema as Schema);
+	if (emits) {
+		const slots = describeSlots(emits, schemaContentModels.get(rune.schema as Schema));
+		lines.push(`Output slots (<${emits.tag} data-rune="${emits.rune}">, in this order):`);
+		for (const slot of slots) lines.push(`  - ${formatSlotLine(slot)}`);
 	}
 
 	// SPEC-144 / WORK-611 — what the rune puts in the cross-page registry.
@@ -818,6 +830,17 @@ export interface SerializedRune {
 		universalUnavailable: Array<{ axis: string; reason: string; attributes: string[] }>;
 	};
 	contentModel?: SerializedContentModel;
+	/**
+	 * The rune's output, when it is declared rather than built by a transform —
+	 * SPEC-143. Defaults made explicit, so a consumer need not know them.
+	 */
+	emits?: {
+		rune: string;
+		tag: string;
+		property?: string;
+		properties: string[];
+		slots: DescribedSlot[];
+	};
 	example?: string;
 }
 
@@ -875,6 +898,7 @@ export function serializeRune(info: RuneInfo, pluginName?: string): SerializedRu
 	// rather than by authoring order. The review question is "what does this rune
 	// claim about its content", which is answered property-first; the authoring
 	// view is source-first, and the two need not agree.
+	const emits = schemaEmits.get(info.schema as Schema);
 	const table = schemaTables.get(info.schema as Schema);
 	const described = table ? describeSchemaRow(table) : undefined;
 	const schemaOrg: SerializedSchemaOrg | undefined = described
@@ -938,6 +962,17 @@ export function serializeRune(info: RuneInfo, pluginName?: string): SerializedRu
 		...(info.contentModel ? { contentModel: info.contentModel } : {}),
 		...(info.example ? { example: info.example } : {}),
 		...(schemaOrg ? { schemaOrg } : {}),
+		...(emits
+			? {
+					emits: {
+						rune: emits.rune,
+						tag: emits.tag,
+						...(emits.property ? { property: emits.property } : {}),
+						properties: Object.keys(emits.properties ?? {}),
+						slots: describeSlots(emits, schemaContentModels.get(info.schema as Schema)),
+					},
+				}
+			: {}),
 		...(registersFor(info.schema) ? { registers: registersFor(info.schema) } : {}),
 	};
 }

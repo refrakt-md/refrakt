@@ -40,6 +40,19 @@ Not applicable to this rune:
 
 Both halves are read from the rune's schema, so they match what Markdoc validation accepts and what editor completion offers. `--format json` carries the same information as `attributes.universal` and `attributes.universalUnavailable`.
 
+### Declared output slots
+
+A rune that declares its output instead of building it in a transform (`emits`, SPEC-143) also lists its slots — which field becomes which named node, with every default spelled out:
+
+```
+Output slots (<article data-rune="work">, in this order):
+  - title <- title  (region, <header>, role: title)
+  - blurb <- description  (region, <div>, omitted when empty, role: description)
+  - body <- sections  (region, <div>, role: body, sections arrive as entries)
+```
+
+`--format json` carries the same as `emits`. A rune with a hand-written transform has no such section.
+
 ### Options
 
 | Flag | Description |

@@ -51,6 +51,74 @@ return createComponentRenderable({
 
 It never sets `typeof` or `property`. Structured data is declared once, as a table on `createContentModelSchema({ schema })`, and applied after the transform — see *Declaring schema.org output* in [Building a Custom Plugin](/extend/plugin-authoring/authoring).
 
+## Declaring slots instead of a transform
+
+Most runes do one thing in their transform: take each resolved field, give it a name, and hand the lot to `createComponentRenderable`. When that is *all* a rune does, it declares it with `emits` and writes no `transform` at all (SPEC-143):
+
+```typescript
+export const work = createContentModelSchema({
+  attributes: { /* … */ },
+  contentModel: () => ({
+    type: 'sections',
+    sectionHeading: 'heading:2',
+    fields: [
+      { name: 'title', match: 'heading', optional: false },
+      { name: 'description', match: 'paragraph', optional: true, greedy: true },
+    ],
+    sectionModel: { type: 'sequence', fields: [{ name: 'body', match: 'any', optional: true, greedy: true }] },
+  }),
+  emits: {
+    rune: 'work',
+    tag: 'article',
+    properties: {
+      status: 'draft',
+      created: { from: ['attrs.created', 'file.created'], default: '' },
+    },
+    slots: {
+      title: { as: 'region', el: 'header' },
+      blurb: { from: 'description', as: 'region', omitWhenEmpty: true },
+      body: { from: 'sections', as: 'region' },
+    },
+  },
+});
+```
+
+`createContentModelSchema` builds the transform from the declaration once, when the module loads, and calls it exactly where it would call a hand-written one. Nothing downstream — the schema.org table, serialization, the engine, `layout`, contracts — can tell the difference, so moving a rune to `emits` is proved by its output not changing.
+
+### The declaration
+
+| Field | Description |
+|-------|-------------|
+| `rune`, `tag`, `property` | The renderable's identity — what `createComponentRenderable` would have been given. |
+| `properties` | Property metas, in the data form of `fieldMetas`: a default string reads the attribute of the same name; `{ from: ['attrs.x', 'file.x'], default }` takes the first non-empty source. |
+| `slots` | The named content slots, emitted in declaration order. |
+
+Each slot is `'value'`, `'region'`, or an object:
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `from` | the slot's name | The content field it comes from, or `attrs.<name>` for an attribute. A slot named after its field needs only its kind: `body: 'region'`. |
+| `as` | — | `value`: the field is already one node, and that node gets the name (an attribute value is rendered as text in a `span`). `region`: the field's nodes go inside one boundary element, which gets the name. |
+| `el` | `div` (region), `span` (attribute value) | The boundary element. State it only when it means something — `header` for a heading group. |
+| `omitWhenEmpty` | `false` | Emit nothing when the field resolved to nothing, instead of an empty boundary. |
+| `role` | derived | The slot's [section role](/extend/theme-authoring/config-api#sections). Defaults to the slot name when that is a role, else to the field's name when that is one — `title`, `body` and `blurb ← description` need nothing. |
+
+The rune's `sections` join table is derived from the slots, so it is not written a second time. A `sections` option beside `emits` may only add roles for names `layout` creates (a `preamble` header), never restate a slot's.
+
+A region's children carry **no** `data-name` of their own: the boundary is what `layout`, `projection` and the editor address, and it is what keeps an authored body opaque to a theme.
+
+**Sections.** A slot reading the `sections` field of a `sections` content model renders them the way the model delivers them — the declaration does not say it again. Without `emitTag`, each resolved entry becomes a `<section data-name="{slug}">` holding its heading and body (the slug is a known section's canonical slug, else the heading text; a known section's heading carries `data-known-section`; a top-level `---` inside the body is a separator and is dropped). With `emitTag`, the emitted child runes render as themselves.
+
+### What it cannot say
+
+The declaration names slots. It cannot nest one slot in another, order slots other than by listing them, or create containers — those are `layout`'s. Every value is data: no function, no computed default, no predicate, so a declaration survives `JSON.parse(JSON.stringify(…))` unchanged. A declaration that tries any of these is rejected when the schema is constructed, naming the rune and the slot — never applied in part. So is one that would put a `data-name` on two nodes (a `value` read from a greedy field), a slot sharing a name with a property, a `from` naming no field of the content model, and a rune with both `transform` and `emits`, or neither.
+
+### The family test: does this rune need a transform?
+
+> **Does every output slot come from exactly one resolved field, wrapped but not restructured?**
+
+If yes, declare it with `emits`. If the rune **unwraps** a rendered node to take its children, **filters** rendered output (keep only the `img`, only the child runes of one type), **reorders** or **merges** fields into one slot, splits one field into several slots by inspecting it, or reads the raw AST node, it keeps a `transform` — that is what the escape hatch is for, and `recipe` is the standing example. Do not grow the declaration to fit one more rune; the test is the boundary.
+
 ## Properties vs Refs
 
 ### The rule

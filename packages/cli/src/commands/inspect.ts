@@ -7,6 +7,10 @@ import { getFixture, applyFixtureOverrides } from '../lib/fixtures.js';
 import {
 	tableFor,
 	describeSchemaRow,
+	schemaEmits,
+	schemaContentModels,
+	describeSlots,
+	formatSlotLine,
 	registersFor,
 	auditRegistersSources,
 	describeRegisters,
@@ -323,7 +327,14 @@ function inspectSingle(
 		html,
 		selectors,
 		schema: table ? describeSchemaRow(table, flags) : undefined,
+		slots: slotsOf(rune),
 	});
+}
+
+/** A declaratively-labelled rune's slots, defaults explicit (SPEC-143). */
+function slotsOf(rune: Rune) {
+	const emits = rune.schema ? schemaEmits.get(rune.schema) : undefined;
+	return emits ? describeSlots(emits, schemaContentModels.get(rune.schema)) : undefined;
 }
 
 /** Run the full pipeline and output formatted text */
@@ -351,6 +362,14 @@ function outputFormatted(
 
 	console.log(heading('Selectors'));
 	console.log(formatSelectors(selectors));
+
+	// SPEC-143 — for a rune with no transform, the declaration is the source of
+	// every `data-name` above; show it, so the output can be traced to it.
+	const slots = slotsOf(rune);
+	if (slots) {
+		console.log(heading('Slots (declared)'));
+		console.log(slots.map((s) => `  ${formatSlotLine(s)}`).join('\n'));
+	}
 
 	// WORK-566 — the review surface. SPEC-130 D5 dispenses with validating a
 	// table against schema.org (refrakt ships no ontology), on the grounds that a
