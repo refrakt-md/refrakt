@@ -1,4 +1,4 @@
-{% bug id="BUG-028" status="confirmed" severity="major" source="SPEC-106" tags="runes,figure,content-loss,composition" milestone="v0.39.0" %}
+{% bug id="BUG-028" status="in-progress" severity="major" source="SPEC-106" tags="runes,figure,content-loss,composition" milestone="v0.39.0" %}
 
 # `figure` silently drops every child that is not an image
 
