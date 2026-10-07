@@ -1,4 +1,4 @@
-{% bug id="BUG-025" status="in-progress" severity="major" source="SPEC-070" tags="runes,collection,aggregate,backlog,grouping" milestone="v0.39.0" %}
+{% bug id="BUG-025" status="fixed" severity="major" source="SPEC-070" tags="runes,collection,aggregate,backlog,grouping" milestone="v0.39.0" pr="refrakt-md/refrakt#666" %}
 
 # Grouping by a multi-value field keys on the whole comma-string
 
@@ -120,5 +120,31 @@ One group per distinct combination, ordered and labelled by the joined string.
   (`spike/query-engines`); MongoDB's `$unwind` is the general form of this
   operation, and its single most compelling use case turned out to be a defect
   in core rather than a reason to reach for a plugin.
+
+## Resolution
+
+Completed: 2026-10-07
+
+Branch: `claude/v039-bug-025-grouping`
+PR: refrakt-md/refrakt#666
+
+### What was done
+- `packages/runes/src/collection-helpers.ts`: new `fieldMembers(e, field)`, which applies the filter side's split (`candidates()`: comma-separated, trimmed, an array split by element) and also drops empty members and de-duplicates. New `groupKeys(e, field)` returns `fieldMembers`, or `['(none)']` when empty. `groupEntities` fans each entity out over its `groupKeys` and ranks a group by its key. `fieldValue` stays the display join. All three call sites (`collection-resolve.ts`, `aggregate-resolve.ts` ×2) and `backlog`, which lowers to collection, pick this up.
+- `sortEntities` rule for a multi-value field (MongoDB's array rule): ascending sorts by the smallest member and descending by the largest. With a declared order it uses the best or worst ranked member, and ranked members are preferred over unranked ones. Single-valued fields are unchanged.
+- `fieldMembers` and `groupKeys` are exported from `@refrakt-md/runes`.
+- Docs: `collection.md` (new "Grouping by a multi-value field" section, plus the sort, group and limit bullets), `aggregate.md` (fan-out, per-group counts mean "entities carrying this value" and can sum past `total`), `backlog.md` (a "Grouped by tag" example). The `backlog` `group` description was updated and `rune-attributes.json` regenerated.
+- Tests: `packages/runes/test/collection-grouping.test.ts` (15 tests; 13 fail on the old code, and the other 2 are guards that single-valued grouping and the display join are unchanged). Also a `backlog group="tags"` test in `plugins/plan/test/backlog.test.ts`, which fails on the old dist.
+
+### Measured (spike/query-engines, 803 entities; real groupEntities before → after)
+- tags: 719 → 430 groups (singletons 672 → 175)
+- source: 146 → 137 (singletons 39 → 28)
+- pr: 43 → 44
+- work per spec: SPEC-008 16 → 19, SPEC-051 10 → 11, SPEC-094 15 → 15
+- Every member group's count after the fix equals the spike's `$unwind` count (0 mismatches on all three fields).
+
+### Notes
+- An empty member of a comma-string (`"a, , b"`) joins no group. An all-empty value (`" , "`) is `(none)`.
+- The SEO baseline and both structure contracts have no diff; grouping emits no structured data.
+- The bug's figures (742 entities, 659 tag groups) came from an earlier snapshot. The spike's own "today" column (717) normalises `a,b` against `a, b`, which the real code did not, so the real "before" was 719.
 
 {% /bug %}
