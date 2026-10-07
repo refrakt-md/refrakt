@@ -22,6 +22,7 @@ import type {
 	HeadingExtract,
 	KnownSectionDefinition,
 	ResolvedContent,
+	StructuralContentModel,
 } from '@refrakt-md/types';
 
 // ---------------------------------------------------------------------------
@@ -780,6 +781,29 @@ export function resolve(
  * Full resolution entry point: extracts special tags (tint, bg), then
  * resolves the content model.
  */
+/**
+ * The structural model `resolveContentModel` would resolve these children
+ * against: a conditional model's matching branch (followed through nested
+ * conditionals), or the model itself. Evaluated over the same filtered children,
+ * so a `tint` / `bg` child cannot tip a `hasChild` condition here when it does
+ * not there.
+ */
+export function selectStructuralModel(
+	children: Node[],
+	model: ContentModel,
+	attributes?: Record<string, unknown>,
+): StructuralContentModel {
+	const { filtered } = extractSpecialTags(children);
+	let current = model;
+	while (isConditional(current)) {
+		const branch = current.when.find((b) =>
+			evaluateCondition(b.condition, filtered, attributes ?? {}),
+		);
+		current = branch ? branch.model : current.default;
+	}
+	return current;
+}
+
 export function resolveContentModel(
 	children: Node[],
 	model: ContentModel,

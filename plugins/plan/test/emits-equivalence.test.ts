@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
+import type { Schema } from '@markdoc/markdoc';
+import { schemaEmits } from '@refrakt-md/runes';
 import { parse } from './helpers.js';
+import { plan } from '../src/index.js';
+import { workEmits } from '../src/tags/work.js';
+import { bugEmits } from '../src/tags/bug.js';
+import { decisionEmits } from '../src/tags/decision.js';
 
 /**
  * SPEC-143 D7 — `work`, `bug` and `decision` move from a hand-written
@@ -134,6 +140,26 @@ describe('plan entity runes: output is pinned across the slot-declaration migrat
 					});
 				}
 			}
+		});
+	}
+});
+
+describe('plan entity runes: declared, not transformed (SPEC-143)', () => {
+	const declared = { work: workEmits, bug: bugEmits, decision: decisionEmits };
+	for (const [name, emits] of Object.entries(declared)) {
+		it(`${name}: the declaration round-trips through JSON unchanged`, () => {
+			expect(JSON.parse(JSON.stringify(emits))).toEqual(emits);
+		});
+		it(`${name}: the schema carries the declaration and no hand-written transform`, () => {
+			const schema = plan.runes[name].transform as Schema;
+			expect(schemaEmits.get(schema)).toBe(emits);
+		});
+		it(`${name}: the sections join table is the one derived from the slots`, () => {
+			expect(plan.theme?.runes?.[name[0].toUpperCase() + name.slice(1)]?.sections).toEqual({
+				title: 'title',
+				blurb: 'description',
+				body: 'body',
+			});
 		});
 	}
 });

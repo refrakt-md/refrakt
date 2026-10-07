@@ -1,21 +1,38 @@
-import Markdoc from '@markdoc/markdoc';
-const { Tag } = Markdoc;
-import {
-	createContentModelSchema,
-	createComponentRenderable,
-	renderNodes,
-	fieldMetas,
-} from '@refrakt-md/runes';
-import { buildSections } from '../util.js';
+import { createContentModelSchema, slotSections } from '@refrakt-md/runes';
+import type { EmitsDeclaration } from '@refrakt-md/runes';
 import { VALID_STATUS } from '../commands/enums.js';
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
-export const decisionSections = { title: 'title', blurb: 'description', body: 'body' } as const;
+// SPEC-143 — the rune labels its resolved fields and nothing more, so it
+// declares its slots instead of writing a transform: the heading group becomes
+// the `title` header, the lead paragraphs the `blurb` (only when authored), and
+// the sections the `body`. Everything else it renders — the eyebrow, the
+// metadata rows, the content column — is `metaFields`, `blocks` and `layout`.
+export const decisionEmits = {
+	rune: 'decision',
+	tag: 'article',
+	properties: {
+		id: '',
+		status: 'proposed',
+		date: '',
+		supersedes: '',
+		source: '',
+		tags: '',
+		created: { from: ['attrs.created', 'file.created'], default: '' },
+		modified: { from: ['attrs.modified', 'file.modified'], default: '' },
+	},
+	slots: {
+		title: { as: 'region', el: 'header' },
+		blurb: { from: 'description', as: 'region', omitWhenEmpty: true },
+		body: { from: 'sections', as: 'region' },
+	},
+} satisfies EmitsDeclaration;
+
+// SPEC-125 Phase 2 — the join table the rune declares about itself, referenced
+// from the theme config rather than owned by it (ADR-028). Derived from the
+// slot declaration (SPEC-143), so the roles are stated once.
+export const decisionSections = slotSections(decisionEmits);
 
 export const decision = createContentModelSchema({
-	sections: decisionSections,
 	provides: ['prose'],
 	attributes: {
 		id: { type: String, required: true, description: 'Identifier (e.g., "ADR-007").' },
@@ -71,36 +88,5 @@ export const decision = createContentModelSchema({
 			},
 		},
 	}),
-	transform(resolved, attrs, config) {
-		const titleNodes = renderNodes(resolved.title, config);
-		const descNodes = renderNodes(resolved.description, config);
-
-		const title = titleNodes.wrap('header');
-		const blurb = descNodes.count() > 0 ? descNodes.wrap('div').next() : undefined;
-
-		const sections = resolved.sections as any[];
-		const contentChildren = buildSections(sections, config);
-		const bodyDiv = new Tag('div', {}, contentChildren);
-
-		return createComponentRenderable({
-			rune: 'decision',
-			tag: 'article',
-			properties: fieldMetas(attrs, config, {
-				id: '',
-				status: 'proposed',
-				date: '',
-				supersedes: '',
-				source: '',
-				tags: '',
-				created: { from: ['attrs.created', 'file.created'], default: '' },
-				modified: { from: ['attrs.modified', 'file.modified'], default: '' },
-			}),
-			refs: {
-				title: title.tag('header'),
-				blurb,
-				body: bodyDiv,
-			},
-			children: [title.next(), ...(blurb ? [blurb] : []), bodyDiv],
-		});
-	},
+	emits: decisionEmits,
 });

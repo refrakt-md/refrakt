@@ -102,6 +102,8 @@ Key points:
 - `properties` carry metadata (consumed by engine for modifiers; each becomes a `data-field` on the wrapped tag)
 - `refs` label structural elements (engine adds BEM element classes via `data-name`)
 
+Hint's transform only names its one field. A rune whose every output slot comes from exactly one resolved field, wrapped but not restructured, can say so as data instead — `emits: { rune: 'hint', tag: 'section', property: 'contentSection', properties: { hintType: { from: ['attrs.type'], default: 'note' } }, slots: { body: 'region' } }` — and write no `transform`. See [Declaring slots instead of a transform](/extend/rune-authoring/output-contract#declaring-slots-instead-of-a-transform) for the declaration and the family test that decides which form a rune takes.
+
 ### 2. Engine config entry
 
 `packages/runes/src/config.ts`

@@ -194,6 +194,8 @@ export function buildJsonOutput(opts: {
 	selectors: string[];
 	/** The rune's resolved schema.org row (WORK-566), when it declares a table. */
 	schema?: unknown;
+	/** The rune's declared output slots (SPEC-143), when it has no hand-written transform. */
+	slots?: unknown;
 }): object {
 	return {
 		rune: opts.rune,
@@ -219,6 +221,8 @@ export function buildJsonOutput(opts: {
 		// fact a consumer wants, and distinguishable from an older payload that
 		// predates the field.
 		schema: opts.schema ?? null,
+		// SPEC-143 — `null` for a rune built by a transform, for the same reason.
+		slots: opts.slots ?? null,
 	};
 }
 

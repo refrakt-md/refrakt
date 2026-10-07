@@ -12,6 +12,8 @@ import type {
 } from '@markdoc/markdoc';
 
 import { resolveContentModel } from './resolver.js';
+import { makeSlotTransform, slotSections } from './slots.js';
+import type { EmitsDeclaration } from './slots.js';
 import { schemaBasePresets } from '../attribute-presets.js';
 import { resolveUniversalAttributes } from '../universal-attributes.js';
 import type { UniversalAttributePosture } from '../universal-attributes.js';
@@ -44,6 +46,21 @@ export { sanitizeSandboxContent } from './sanitize.js';
 export { extractText, groupByHeading } from './node.js';
 export type { GroupByHeadingHandlers } from './node.js';
 export { fieldMetas } from './field-metas.js';
+export {
+	makeSlotTransform,
+	slotSections,
+	validateEmits,
+	describeSlots,
+	formatSlotLine,
+} from './slots.js';
+export type {
+	DescribedSlot,
+	EmitsDeclaration,
+	SlotDeclaration,
+	SlotEntry,
+	SlotKind,
+	SlotRole,
+} from './slots.js';
 export type { FieldMetaSpec, FieldMetaEntry, FieldMetaSource } from './field-metas.js';
 
 /**
@@ -112,6 +129,14 @@ export const schemaRuneStructures = new WeakMap<Schema, RuneStructure>();
  * table here is what lets the review surface D5 depends on exist at all.
  */
 export const schemaTables = new WeakMap<Schema, SchemaTable>();
+
+/**
+ * A declaratively-labelled rune's slot declaration, keyed by its Markdoc schema
+ * — SPEC-143. Same shape and purpose as `schemaTables`: the declaration lives in
+ * the tag module, and `inspect` and `reference` have only the schema to read.
+ * Absent for a rune that keeps a hand-written transform.
+ */
+export const schemaEmits = new WeakMap<Schema, EmitsDeclaration>();
 
 /**
  * Record a hand-written schema's universal-attribute posture.
@@ -711,13 +736,26 @@ export interface ContentModelSchemaOptions {
 	 * Transform function that receives resolved content, the rune's
 	 * attributes, the Markdoc config, and optionally the AST node.
 	 * Returns the renderable output.
+	 *
+	 * Exactly one of `transform` and `emits` (SPEC-143 D8). Keep a transform
+	 * when the rune unwraps, filters, reorders or merges what the content model
+	 * resolved — the family test (D4).
 	 */
-	transform: (
+	transform?: (
 		resolved: ResolvedContent,
 		attrs: Record<string, any>,
 		config: Config,
 		node: Node,
 	) => RenderableTreeNodes;
+
+	/**
+	 * SPEC-143 — the slot declaration: the renderable's identity, its property
+	 * metas, and its named content slots, as data. When present the schema
+	 * builds the transform from it once, here, and calls it where it would call
+	 * `transform`. Also supplies the rune's `sections` join table, so that is not
+	 * authored a second time beside it.
+	 */
+	emits?: EmitsDeclaration;
 
 	/**
 	 * SPEC-130 / WORK-565 — the rune's declarative schema.org table.
@@ -788,6 +826,41 @@ export interface ContentModelSchemaOptions {
  * that receives the resolver's output.
  */
 export function createContentModelSchema(options: ContentModelSchemaOptions): Schema {
+	// SPEC-143 D8 — exactly one of the two. A rune that declared some slots and
+	// patched the rest in a transform would leave neither half able to say what
+	// the output is.
+	if (options.transform && options.emits) {
+		throw new Error(
+			`Rune "${options.emits.rune}": declares both \`transform\` and \`emits\`. Use exactly one (SPEC-143 D8) — the declaration for a rune that only labels its fields, the transform for one that restructures them.`,
+		);
+	}
+	if (!options.transform && !options.emits) {
+		const attrNames = Object.keys(options.attributes ?? {});
+		throw new Error(
+			`A rune${attrNames.length ? ` (attributes: ${attrNames.join(', ')})` : ''} declares neither \`transform\` nor \`emits\`. It needs exactly one (SPEC-143 D8).`,
+		);
+	}
+	// Built once, at construction — not per page, not per instance.
+	const transform = options.transform ?? makeSlotTransform(options.emits!, options.contentModel);
+
+	// The `sections` join table follows from the declaration. A rune may still
+	// state roles for names `layout` creates (a `preamble` header), but not
+	// restate a slot's — that would be the identity authored twice.
+	let sections = options.sections;
+	if (options.emits) {
+		const derived = slotSections(options.emits);
+		const restated = Object.keys(options.sections ?? {}).filter((k) => k in options.emits!.slots);
+		if (restated.length > 0) {
+			throw new Error(
+				`Rune "${options.emits.rune}": \`sections\` restates the role of slot(s) ${restated.join(', ')}, which the \`emits\` declaration already gives. Declare it on the slot (\`role\`) instead.`,
+			);
+		}
+		sections =
+			options.sections || Object.keys(derived).length > 0
+				? { ...derived, ...options.sections }
+				: undefined;
+	}
+
 	const attributes: Record<string, SchemaAttribute> = {};
 
 	// Merge base attributes
@@ -810,7 +883,7 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 	const { available: applicableUniversals } = resolveUniversalAttributes({
 		posture: options.universalAttributes,
 		structure: {
-			...(options.sections && { sections: options.sections }),
+			...(sections && { sections }),
 			...(options.mediaSlots && { mediaSlots: options.mediaSlots }),
 			...(options.frameTarget && { frameTarget: options.frameTarget }),
 			...(options.provides && { provides: options.provides }),
@@ -890,8 +963,9 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 				attrs,
 			);
 
-			// Call the user's transform function
-			let result = options.transform(content, attrs, config, node);
+			// Call the rune's transform — hand-written, or built from `emits`
+			// (SPEC-143). The one call site either way.
+			let result = transform(content, attrs, config, node);
 
 			// SPEC-130 / WORK-565 — realise the rune's schema table against its own
 			// output. Here, not in the engine: `site.ts` harvests `extractSeo` from
@@ -967,6 +1041,7 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 	}
 
 	if (options.schema) schemaTables.set(schema, options.schema);
+	if (options.emits) schemaEmits.set(schema, options.emits);
 
 	// Register content model for introspection by editor / language server
 	schemaContentModels.set(schema, options.contentModel);
@@ -977,7 +1052,7 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 	// is the `auto` default, so a consumer can tell "this rune was built through
 	// the schema builder and is structurally gated" from "nothing is known".
 	schemaRuneStructures.set(schema, {
-		...(options.sections && { sections: options.sections }),
+		...(sections && { sections }),
 		...(options.mediaSlots && { mediaSlots: options.mediaSlots }),
 		...(options.frameTarget && { frameTarget: options.frameTarget }),
 		universalAttributes: options.universalAttributes ?? 'auto',

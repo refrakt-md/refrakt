@@ -1,4 +1,4 @@
-{% work id="WORK-616" status="ready" priority="medium" complexity="moderate" source="SPEC-143" milestone="v0.39.0" tags="plan,runes,transform,declarative" %}
+{% work id="WORK-616" status="in-progress" priority="medium" complexity="moderate" source="SPEC-143" milestone="v0.39.0" tags="plan,runes,transform,declarative" %}
 
 # `work`, `bug` and `decision` drop their transforms for the slot declaration
 
