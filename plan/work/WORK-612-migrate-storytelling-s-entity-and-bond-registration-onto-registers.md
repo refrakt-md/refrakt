@@ -1,4 +1,4 @@
-{% work id="WORK-612" status="ready" priority="medium" complexity="moderate" source="SPEC-144" milestone="v0.39.0" tags="storytelling,pipeline,registry,declarative" %}
+{% work id="WORK-612" status="in-progress" priority="medium" complexity="moderate" source="SPEC-144" milestone="v0.39.0" tags="storytelling,pipeline,registry,declarative" %}
 
 # Migrate storytelling's entity and bond registration onto `registers`
 

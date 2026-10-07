@@ -1,0 +1,176 @@
+{
+  "types": ["bond", "character", "faction", "lore", "plot", "realm"],
+  "registrations": [
+    {
+      "type": "bond",
+      "id": "Veshra→Aria",
+      "sourceUrl": "/",
+      "data": {
+        "from": "Veshra",
+        "to": "Aria",
+        "bondType": "rival",
+        "status": "strained",
+        "bidirectional": "true",
+        "name": "Veshra → Aria"
+      }
+    },
+    {
+      "type": "bond",
+      "id": "The Bone Witch→King Edric",
+      "sourceUrl": "/",
+      "data": {
+        "from": "The Bone Witch",
+        "to": "King Edric",
+        "bondType": "enemy",
+        "status": "active",
+        "bidirectional": "false",
+        "name": "The Bone Witch → King Edric"
+      }
+    },
+    {
+      "type": "bond",
+      "id": "Aria→Nobody",
+      "sourceUrl": "/",
+      "data": {
+        "from": "Aria",
+        "to": "Nobody",
+        "bondType": "",
+        "status": "active",
+        "bidirectional": "true",
+        "name": "Aria → Nobody"
+      }
+    },
+    {
+      "type": "character",
+      "id": "Aria",
+      "sourceUrl": "/characters/aria",
+      "data": {
+        "role": "protagonist",
+        "status": "alive",
+        "aliases": "Witch,  The Wanderer ,,",
+        "tags": "",
+        "name": "Aria"
+      }
+    },
+    {
+      "type": "character",
+      "id": "Old Tom",
+      "sourceUrl": "/characters/old-tom",
+      "data": {
+        "role": "minor",
+        "status": "unknown",
+        "aliases": "",
+        "tags": "",
+        "name": "Old Tom"
+      }
+    },
+    {
+      "type": "character",
+      "id": "Veshra",
+      "sourceUrl": "/characters/veshra-again",
+      "data": {
+        "role": "supporting",
+        "status": "dead",
+        "aliases": "",
+        "tags": "",
+        "name": "Veshra"
+      }
+    },
+    {
+      "type": "character",
+      "id": "Veshra",
+      "sourceUrl": "/characters/veshra",
+      "data": {
+        "role": "antagonist",
+        "status": "alive",
+        "aliases": "The Bone Witch, Witch, Aldermere",
+        "tags": "magic-user",
+        "name": "Veshra"
+      }
+    },
+    {
+      "type": "faction",
+      "id": "The Silver Order",
+      "sourceUrl": "/factions/silver",
+      "data": {
+        "factionType": "knightly order",
+        "alignment": "lawful",
+        "size": "large",
+        "tags": "knights",
+        "name": "The Silver Order"
+      }
+    },
+    {
+      "type": "lore",
+      "id": "The Prophecy of the Chosen One",
+      "sourceUrl": "/lore/prophecy",
+      "data": {
+        "category": "prophecy",
+        "spoiler": "true",
+        "tags": "ancient",
+        "name": "The Prophecy of the Chosen One"
+      }
+    },
+    {
+      "type": "plot",
+      "id": "The Long Winter",
+      "sourceUrl": "/lore/prophecy",
+      "data": {
+        "plotType": "quest",
+        "structure": "linear",
+        "tags": "main",
+        "name": "The Long Winter"
+      }
+    },
+    {
+      "type": "realm",
+      "id": "Aldermere",
+      "sourceUrl": "/realms/aldermere",
+      "data": {
+        "realmType": "kingdom",
+        "scale": "region",
+        "tags": "northern",
+        "parent": "The Known World",
+        "name": "Aldermere"
+      }
+    },
+    {
+      "type": "character",
+      "id": "King Edric",
+      "sourceUrl": "/realms/aldermere",
+      "data": {
+        "role": "supporting",
+        "status": "alive",
+        "aliases": "",
+        "tags": "",
+        "name": "King Edric"
+      }
+    }
+  ],
+  "entityByName": [
+    ["Aria", "character", "Aria", "/characters/aria"],
+    ["Witch", "character", "Aria", "/characters/aria"],
+    ["The Wanderer", "character", "Aria", "/characters/aria"],
+    ["Old Tom", "character", "Old Tom", "/characters/old-tom"],
+    ["Veshra", "character", "Veshra", "/characters/veshra"],
+    ["The Bone Witch", "character", "Veshra", "/characters/veshra"],
+    ["Aldermere", "realm", "Aldermere", "/realms/aldermere"],
+    ["King Edric", "character", "King Edric", "/realms/aldermere"],
+    ["The Silver Order", "faction", "The Silver Order", "/factions/silver"],
+    ["The Prophecy of the Chosen One", "lore", "The Prophecy of the Chosen One", "/lore/prophecy"],
+    ["The Long Winter", "plot", "The Long Winter", "/lore/prophecy"]
+  ],
+  "links": {
+    "/": [
+      "Veshra -> /characters/veshra",
+      "Witch -> /characters/aria",
+      "Aldermere -> /realms/aldermere",
+      "Old Tom -> /characters/old-tom"
+    ],
+    "/characters/aria": ["Veshra -> /characters/veshra"],
+    "/characters/old-tom": ["Aldermere -> /realms/aldermere"],
+    "/factions/silver": ["King Edric -> /realms/aldermere"],
+    "/lore/prophecy": ["Witch -> /characters/aria"]
+  },
+  "warnings": ["aggregate warning /: Bond references unknown entity \"Nobody\""]
+}

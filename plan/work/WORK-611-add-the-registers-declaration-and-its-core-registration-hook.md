@@ -1,4 +1,4 @@
-{% work id="WORK-611" status="ready" priority="high" complexity="complex" source="SPEC-144" milestone="v0.39.0" tags="runes,pipeline,registry,declarative" %}
+{% work id="WORK-611" status="in-progress" priority="high" complexity="complex" source="SPEC-144" milestone="v0.39.0" tags="runes,pipeline,registry,declarative" %}
 
 # Add the `registers` declaration and its core registration hook
 

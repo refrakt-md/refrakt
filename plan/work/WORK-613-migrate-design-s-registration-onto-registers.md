@@ -1,4 +1,4 @@
-{% work id="WORK-613" status="ready" priority="low" complexity="simple" source="SPEC-144" milestone="v0.39.0" tags="design,pipeline,registry,declarative" %}
+{% work id="WORK-613" status="in-progress" priority="low" complexity="simple" source="SPEC-144" milestone="v0.39.0" tags="design,pipeline,registry,declarative" %}
 
 # Migrate design's registration onto `registers`
 

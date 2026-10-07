@@ -1,0 +1,82 @@
+{
+  "registrations": [
+    {
+      "type": "design-context",
+      "id": "default",
+      "sourceUrl": "/brand",
+      "data": {
+        "fonts": [
+          {
+            "role": "heading",
+            "family": "Inter",
+            "weights": [400, 600, 700],
+            "category": "sans-serif"
+          },
+          {
+            "role": "body",
+            "family": "Source Sans Pro",
+            "weights": [400, 600],
+            "category": "sans-serif"
+          }
+        ],
+        "colors": [
+          {
+            "name": "Primary",
+            "value": "#2563EB",
+            "group": "Brand"
+          },
+          {
+            "name": "Accent",
+            "value": "#F59E0B",
+            "group": "Brand"
+          }
+        ],
+        "spacing": {
+          "unit": "4px",
+          "scale": ["4", "8", "16"]
+        }
+      }
+    },
+    {
+      "type": "design-context",
+      "id": "dark",
+      "sourceUrl": "/dark-again",
+      "data": {
+        "colors": [
+          {
+            "name": "Background",
+            "value": "#000000",
+            "group": "Dark"
+          }
+        ]
+      }
+    },
+    {
+      "type": "design-context",
+      "id": "dark",
+      "sourceUrl": "/dark",
+      "data": {
+        "colors": [
+          {
+            "name": "Background",
+            "value": "#111827",
+            "group": "Dark"
+          },
+          {
+            "name": "Text",
+            "value": "#F9FAFB",
+            "group": "Dark"
+          }
+        ]
+      }
+    }
+  ],
+  "injected": {
+    "/usage": [
+      "{\"fonts\":[{\"role\":\"heading\",\"family\":\"Inter\",\"weights\":[400,600,700],\"category\":\"sans-serif\"},{\"role\":\"body\",\"family\":\"Source Sans Pro\",\"weights\":[400,600],\"category\":\"sans-serif\"}],\"colors\":[{\"name\":\"Primary\",\"value\":\"#2563EB\",\"group\":\"Brand\"},{\"name\":\"Accent\",\"value\":\"#F59E0B\",\"group\":\"Brand\"}],\"spacing\":{\"unit\":\"4px\",\"scale\":[\"4\",\"8\",\"16\"]}}",
+      "{\"fonts\":[{\"role\":\"heading\",\"family\":\"Inter\",\"weights\":[400,600,700],\"category\":\"sans-serif\"},{\"role\":\"body\",\"family\":\"Source Sans Pro\",\"weights\":[400,600],\"category\":\"sans-serif\"}],\"colors\":[{\"name\":\"Primary\",\"value\":\"#2563EB\",\"group\":\"Brand\"},{\"name\":\"Accent\",\"value\":\"#F59E0B\",\"group\":\"Brand\"}],\"spacing\":{\"unit\":\"4px\",\"scale\":[\"4\",\"8\",\"16\"]}}",
+      "{\"fonts\":[{\"role\":\"heading\",\"family\":\"Inter\",\"weights\":[400,600,700],\"category\":\"sans-serif\"},{\"role\":\"body\",\"family\":\"Source Sans Pro\",\"weights\":[400,600],\"category\":\"sans-serif\"}],\"colors\":[{\"name\":\"Primary\",\"value\":\"#2563EB\",\"group\":\"Brand\"},{\"name\":\"Accent\",\"value\":\"#F59E0B\",\"group\":\"Brand\"}],\"spacing\":{\"unit\":\"4px\",\"scale\":[\"4\",\"8\",\"16\"]}}"
+    ]
+  },
+  "warnings": []
+}
