@@ -1,265 +1,30 @@
 import Markdoc from '@markdoc/markdoc';
-import { readField as readNodeField } from '@refrakt-md/transform';
 import { textContent } from '@refrakt-md/runes';
-import type { PluginPipelineHooks, EntityRegistration } from '@refrakt-md/types';
+import type { RegistersIndex } from '@refrakt-md/runes';
+import type { PluginPipelineHooks } from '@refrakt-md/types';
 
 const { Tag } = Markdoc;
-
-const STORYTELLING_ENTITY_TYPES = new Set([
-	'character',
-	'realm',
-	'faction',
-	'lore',
-	'plot',
-	'bond',
-]);
 
 /** Tags where cross-links should not resolve */
 const EXCLUDED_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre', 'code']);
 
-function walkTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => void): void {
-	if (Markdoc.Tag.isTag(node)) {
-		fn(node);
-		for (const child of node.children) walkTags(child, fn);
-	} else if (Array.isArray(node)) {
-		node.forEach((n) => walkTags(n, fn));
-	}
-}
+/**
+ * What `postProcess` reads from this plugin's `aggregated` slot.
+ *
+ * SPEC-144 / WORK-612 — `character`, `realm`, `faction`, `lore`, `plot` and
+ * `bond` declare what they register (`registers` in each tag module), and the
+ * core participant performs it: Phase 2 registers them, Phase 3 builds this name
+ * index (ids, then `character` aliases, first alias wins) into the slot the
+ * deleted `aggregate` hook used to fill, and contributes `bond` edges to the
+ * relationship graph, where `getRelated` answers for them.
+ */
+export type StorytellingAggregatedData = RegistersIndex;
 
-function readField(tag: InstanceType<typeof Tag>, field: string): string {
-	// SPEC-082: bag-first (data-rune-fields), legacy <meta data-field> fallback.
-	return readNodeField(tag, field) ?? '';
-}
-
-/** Depth-first search for the first descendant carrying `data-name=name`.
- *  Pre-order returns the entity's own title (e.g. in `content > header`)
- *  before any nested section name, so it works whether the title is a direct
- *  child (realm/character) or nested in the content column (faction). */
-function findByName(
-	tag: InstanceType<typeof Tag>,
-	name: string,
-): InstanceType<typeof Tag> | undefined {
-	for (const c of tag.children) {
-		if (!Markdoc.Tag.isTag(c)) continue;
-		if (c.attributes['data-name'] === name) return c;
-		const found = findByName(c, name);
-		if (found) return found;
-	}
-	return undefined;
-}
-
-function readRefText(tag: InstanceType<typeof Tag>, name: string): string {
-	const ref = findByName(tag, name);
-	return ref ? textContent(ref) : '';
-}
-
-/** Extract the display name for a storytelling entity based on rune type */
-function extractEntityName(tag: InstanceType<typeof Tag>, runeType: string): string {
-	switch (runeType) {
-		case 'character':
-		case 'realm':
-		case 'faction':
-			return readRefText(tag, 'name');
-		case 'lore':
-		case 'plot':
-			return readRefText(tag, 'title');
-		default:
-			return '';
-	}
-}
-
-/** Extract type-specific metadata for a storytelling entity */
-function extractEntityData(
-	tag: InstanceType<typeof Tag>,
-	runeType: string,
-): Record<string, unknown> {
-	const data: Record<string, unknown> = {};
-	switch (runeType) {
-		case 'character':
-			data.role = readField(tag, 'role');
-			data.status = readField(tag, 'status');
-			data.aliases = readField(tag, 'aliases');
-			data.tags = readField(tag, 'tags');
-			break;
-		case 'realm':
-			data.realmType = readField(tag, 'realmType');
-			data.scale = readField(tag, 'scale');
-			data.tags = readField(tag, 'tags');
-			data.parent = readField(tag, 'parent');
-			break;
-		case 'faction':
-			data.factionType = readField(tag, 'factionType');
-			data.alignment = readField(tag, 'alignment');
-			data.size = readField(tag, 'size');
-			data.tags = readField(tag, 'tags');
-			break;
-		case 'lore':
-			data.category = readField(tag, 'category');
-			data.spoiler = readField(tag, 'spoiler');
-			data.tags = readField(tag, 'tags');
-			break;
-		case 'plot':
-			data.plotType = readField(tag, 'plotType');
-			data.structure = readField(tag, 'structure');
-			data.tags = readField(tag, 'tags');
-			break;
-		case 'bond':
-			data.from = readRefText(tag, 'from');
-			data.to = readRefText(tag, 'to');
-			data.bondType = readField(tag, 'bondType');
-			data.status = readField(tag, 'status');
-			data.bidirectional = readField(tag, 'bidirectional');
-			break;
-	}
-	return data;
-}
-
-export interface BondRelationship {
-	target: string;
-	bondType: string;
-	status: string;
-	bidirectional: boolean;
-	sourceUrl: string;
-}
-
-export interface StorytellingAggregatedData {
-	/** All registered entities by name for cross-link lookup */
-	entityByName: Map<string, EntityRegistration>;
-	/** Relationship graph from bonds: entityName → relationships */
-	relationships: Map<string, BondRelationship[]>;
-	/** Bond validation warnings (orphaned from/to references) */
-	orphanedBonds: string[];
-}
-
+/**
+ * Cross-linking stays a plugin hook: it rewrites `**Name**` in prose this
+ * plugin's runes did not emit, which SPEC-144 D2 keeps imperative.
+ */
 export const storytellingPipelineHooks: PluginPipelineHooks = {
-	register(pages, registry, ctx) {
-		for (const page of pages) {
-			walkTags(page.renderable, (tag) => {
-				const runeType = tag.attributes['data-rune'] as string;
-				if (!STORYTELLING_ENTITY_TYPES.has(runeType)) return;
-
-				if (runeType === 'bond') {
-					const from = readRefText(tag, 'from');
-					const to = readRefText(tag, 'to');
-					if (!from || !to) {
-						ctx.warn(`Bond missing from or to attribute`, page.url);
-						return;
-					}
-					const data = extractEntityData(tag, runeType);
-					data.name = `${from} → ${to}`;
-					registry.register({
-						type: 'bond',
-						id: `${from}→${to}`,
-						sourceUrl: page.url,
-						data,
-					});
-					return;
-				}
-
-				const name = extractEntityName(tag, runeType);
-				if (!name) {
-					ctx.warn(`Storytelling ${runeType} missing name/title`, page.url);
-					return;
-				}
-
-				const data = extractEntityData(tag, runeType);
-				data.name = name;
-
-				registry.register({
-					type: runeType,
-					id: name,
-					sourceUrl: page.url,
-					data,
-				});
-			});
-		}
-	},
-
-	aggregate(registry, ctx) {
-		// Build entity lookup by name (for cross-link resolution)
-		const entityByName = new Map<string, EntityRegistration>();
-		const entityTypes = ['character', 'realm', 'faction', 'lore', 'plot'];
-		for (const type of entityTypes) {
-			for (const entity of registry.getAll(type)) {
-				entityByName.set(entity.id, entity);
-				// Also register character aliases
-				if (type === 'character') {
-					const aliases = String(entity.data.aliases ?? '');
-					if (aliases) {
-						for (const alias of aliases
-							.split(',')
-							.map((a) => a.trim())
-							.filter(Boolean)) {
-							if (!entityByName.has(alias)) {
-								entityByName.set(alias, entity);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		// Build relationship graph from bonds
-		const relationships = new Map<string, BondRelationship[]>();
-		const orphanedBonds: string[] = [];
-
-		function addRelationship(from: string, rel: BondRelationship) {
-			if (!relationships.has(from)) relationships.set(from, []);
-			relationships.get(from)!.push(rel);
-		}
-
-		for (const bond of registry.getAll('bond')) {
-			const from = String(bond.data.from ?? '');
-			const to = String(bond.data.to ?? '');
-			const bondType = String(bond.data.bondType ?? '');
-			const status = String(bond.data.status ?? 'active');
-			const bidirectional = String(bond.data.bidirectional ?? 'true') === 'true';
-
-			// Validate references
-			const fromExists = entityByName.has(from);
-			const toExists = entityByName.has(to);
-
-			if (!fromExists) {
-				ctx.warn(`Bond references unknown entity "${from}"`, bond.sourceUrl);
-				orphanedBonds.push(`${from} → ${to}`);
-			}
-			if (!toExists) {
-				ctx.warn(`Bond references unknown entity "${to}"`, bond.sourceUrl);
-				if (!orphanedBonds.includes(`${from} → ${to}`)) {
-					orphanedBonds.push(`${from} → ${to}`);
-				}
-			}
-
-			// `bond.sourceUrl` is optional on EntityRegistration (since the
-			// SPEC-064 / WORK-253 change to allow plan entities without a URL),
-			// but the storytelling register hook above always sets it from
-			// `page.url`, so bond entities reaching this loop always carry one.
-			const bondSourceUrl = bond.sourceUrl ?? '';
-			addRelationship(from, {
-				target: to,
-				bondType,
-				status,
-				bidirectional,
-				sourceUrl: bondSourceUrl,
-			});
-			if (bidirectional) {
-				addRelationship(to, {
-					target: from,
-					bondType,
-					status,
-					bidirectional,
-					sourceUrl: bondSourceUrl,
-				});
-			}
-		}
-
-		return {
-			entityByName,
-			relationships,
-			orphanedBonds,
-		} satisfies StorytellingAggregatedData;
-	},
-
 	postProcess(page, aggregated) {
 		const maybeStoryData = aggregated['storytelling'] as StorytellingAggregatedData | undefined;
 		if (!maybeStoryData || !maybeStoryData.entityByName || maybeStoryData.entityByName.size === 0)

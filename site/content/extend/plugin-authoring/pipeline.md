@@ -78,6 +78,10 @@ register(
 
 Called once with all pages after Phase 1 is complete. Walk the pages and register named entities. Entities are typed and identifiable by a unique `id` within that type.
 
+{% hint type="note" %}
+**Check whether you need this hook at all.** If your `register` walks the pages, picks out your runes, reads an id and a list of fields and calls `registry.register`, a [`registers` block](/extend/rune-authoring/registration) on the rune does the same with no code, including aliases and relationship edges. Storytelling and design register that way. Keep a hook for registration with logic in it: reading prose, scanning files, computing ids.
+{% /hint %}
+
 ```typescript
 register(pages, registry, ctx) {
   for (const page of pages) {

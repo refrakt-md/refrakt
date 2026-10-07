@@ -226,4 +226,6 @@ For domain-specific runes (marketing, storytelling, API docs, games, etc.) that 
 | `plugins/{package}/test/{name}.test.ts` | Tests — output structure verification |
 | `site/content/runes/{name}.md` | User docs — usage guide with preview examples |
 
+If the rune names something other pages should find (an entity, or an edge between two), declare it with a [`registers` block](/extend/rune-authoring/registration) on the schema rather than writing a `register` pipeline hook.
+
 Plugin runes use `Plugin.runes` (a `Record<string, PluginRune>` from `@refrakt-md/types`) rather than `defineRune`, but the per-rune fields (`description`, `aliases`, `snippet`, `category`, `seoType`, …) are the same. Engine config (BEM blocks, structure, icons) lives in `Plugin.theme.runes` instead of `packages/runes/src/config.ts`. See [Building a Custom Plugin](/extend/plugin-authoring/authoring) for the full authoring guide.

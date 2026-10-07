@@ -15,6 +15,8 @@ import {
 } from './attribute-presets.js';
 import { AXIS_ATTRIBUTES } from './universal-attributes.js';
 import { schemaContentModels, schemaTables, schemaEmits } from './lib/index.js';
+import { describeRegisters, registersFor } from './lib/registers.js';
+import type { RegistersDeclaration } from './lib/registers.js';
 import { describeSlots, formatSlotLine } from './lib/slots.js';
 import type { DescribedSlot } from './lib/slots.js';
 import { describeSchemaRow, bySchemaProperty } from './schema-row.js';
@@ -318,6 +320,13 @@ export function describeRune(rune: RuneInfo): string {
 		const slots = describeSlots(emits, schemaContentModels.get(rune.schema as Schema));
 		lines.push(`Output slots (<${emits.tag} data-rune="${emits.rune}">, in this order):`);
 		for (const slot of slots) lines.push(`  - ${formatSlotLine(slot)}`);
+	}
+
+	// SPEC-144 / WORK-611 — what the rune puts in the cross-page registry.
+	const registers = registersFor(rune.schema);
+	if (registers) {
+		lines.push('Registers (cross-page registry):');
+		for (const line of describeRegisters(registers, rune.name)) lines.push(`  ${line}`);
 	}
 
 	const example = rune.example ?? RUNE_EXAMPLES[rune.name];
@@ -793,6 +802,9 @@ export interface SerializedRune {
 	 * Documenting it *is* the control, which is why it is here.
 	 */
 	schemaOrg?: SerializedSchemaOrg;
+	/** What the rune registers in the cross-page registry — SPEC-144. The
+	 *  declaration verbatim: it is inert JSON by construction (ADR-036). */
+	registers?: RegistersDeclaration;
 	attributes: {
 		own: Record<string, SerializedAttribute>;
 		base?: { name: string; description: string; attributes: Record<string, SerializedAttribute> };
@@ -961,6 +973,7 @@ export function serializeRune(info: RuneInfo, pluginName?: string): SerializedRu
 					},
 				}
 			: {}),
+		...(registersFor(info.schema) ? { registers: registersFor(info.schema) } : {}),
 	};
 }
 

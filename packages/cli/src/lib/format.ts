@@ -196,6 +196,8 @@ export function buildJsonOutput(opts: {
 	schema?: unknown;
 	/** The rune's declared output slots (SPEC-143), when it has no hand-written transform. */
 	slots?: unknown;
+	/** The rune's `registers` block and its unresolvable sources (WORK-611). */
+	registers?: unknown;
 }): object {
 	return {
 		rune: opts.rune,
@@ -223,6 +225,8 @@ export function buildJsonOutput(opts: {
 		schema: opts.schema ?? null,
 		// SPEC-143 — `null` for a rune built by a transform, for the same reason.
 		slots: opts.slots ?? null,
+		// `null` for the same reason: "registers nothing" is a fact.
+		registers: opts.registers ?? null,
 	};
 }
 

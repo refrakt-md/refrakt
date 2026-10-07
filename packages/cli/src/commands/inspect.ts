@@ -11,7 +11,11 @@ import {
 	schemaContentModels,
 	describeSlots,
 	formatSlotLine,
+	registersFor,
+	auditRegistersSources,
+	describeRegisters,
 } from '@refrakt-md/runes';
+import type { RegistersDeclaration } from '@refrakt-md/runes';
 import type { ResolvedSchemaRow } from '@refrakt-md/runes';
 import { auditSchemaSources } from '../lib/schema-row.js';
 import { discoverVariants } from '../lib/variants.js';
@@ -297,14 +301,25 @@ function inspectSingle(
 	flags: Record<string, string>,
 	deps: InspectDeps,
 ) {
-	const { tree, source } = runPipeline(rune, config, flags, deps);
+	const { tree, source, transformed } = runPipeline(rune, config, flags, deps);
 	const html = deps.renderToHtml(tree, { pretty: true });
 	const selectors = deps.extractSelectors(tree, config.prefix);
 	const runeTypeof = rune.typeName;
 	const runeConfig = runeTypeof ? config.runes[runeTypeof] : undefined;
 
 	const table = tableFor(rune);
+	const registers = registersFor(rune.schema);
 	return buildJsonOutput({
+		registers: registers
+			? {
+					declaration: registers,
+					unresolved: auditRegistersSources(
+						registers,
+						transformed,
+						Object.keys(rune.schema?.attributes ?? {}),
+					),
+				}
+			: undefined,
 		rune: rune.name,
 		theme: 'base',
 		input: source,
@@ -329,7 +344,7 @@ function outputFormatted(
 	flags: Record<string, string>,
 	deps: InspectDeps,
 ): void {
-	const { tree, source } = runPipeline(rune, config, flags, deps);
+	const { tree, source, transformed } = runPipeline(rune, config, flags, deps);
 	const html = deps.renderToHtml(tree, { pretty: true });
 	const selectors = deps.extractSelectors(tree, config.prefix);
 	const runeTypeof = rune.typeName;
@@ -366,6 +381,37 @@ function outputFormatted(
 		console.log(heading('Structured Data'));
 		console.log(formatSchemaRow(row, auditSchemaSources(row, tree, declared)));
 	}
+
+	// SPEC-144 / WORK-611 — what the rune puts in the cross-page registry, with
+	// the same source audit `validate` runs.
+	const registers = registersFor(rune.schema);
+	if (registers) {
+		const declared = Object.keys(rune.schema?.attributes ?? {});
+		console.log(heading('Registers'));
+		console.log(
+			formatRegisters(
+				registers,
+				rune.name,
+				auditRegistersSources(registers, transformed, declared),
+			),
+		);
+	}
+}
+
+/** Render a `registers` block, with any unresolvable source called out. */
+function formatRegisters(
+	decl: RegistersDeclaration,
+	rune: string,
+	unresolved: ReturnType<typeof auditRegistersSources>,
+): string {
+	const lines = describeRegisters(decl, rune).map((l) => `  ${l}`);
+	if (unresolved.length > 0) {
+		lines.push('');
+		for (const u of unresolved) lines.push(`  ${u.role} <- ${u.source}  ← UNRESOLVABLE`);
+		lines.push(`  ${unresolved.length} source(s) match no emitted node, no field-bag entry and no`);
+		lines.push('  declared attribute, so every instance registers them empty.');
+	}
+	return lines.join('\n');
 }
 
 /** Render a resolved schema row, with any unresolvable source called out. */
@@ -425,7 +471,7 @@ function runPipeline(
 	config: ThemeConfig,
 	flags: Record<string, string>,
 	deps: InspectDeps,
-): { tree: any; source: string } {
+): { tree: any; source: string; transformed: unknown } {
 	const base = deps.packageFixtures?.[rune.name];
 	const source =
 		base !== undefined
@@ -451,7 +497,9 @@ function runPipeline(
 	const identityTransform = deps.createTransform(config);
 	const tree = identityTransform(serialized);
 
-	return { tree, source };
+	// `transformed` is returned too: the registers audit reads the field bag,
+	// which the identity transform consumes.
+	return { tree, source, transformed };
 }
 
 /** List all available runes */
