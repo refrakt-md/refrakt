@@ -1,4 +1,4 @@
-{% bug id="BUG-028" status="in-progress" severity="major" source="SPEC-106" tags="runes,figure,content-loss,composition" milestone="v0.39.0" %}
+{% bug id="BUG-028" status="fixed" severity="major" source="SPEC-106" tags="runes,figure,content-loss,composition" milestone="v0.39.0" pr="refrakt-md/refrakt#665" %}
 
 # `figure` silently drops every child that is not an image
 
@@ -93,5 +93,28 @@ What the fix still has to settle, and record in its resolution:
 - {% ref "SPEC-106" /%} — image `src` scheme sugar; where `isMediaNode`'s admitted set comes from
 - {% ref "SPEC-062" /%} — the snippet rune, whose standalone chrome this interacts with
 - {% ref "SPEC-141" /%} — removes snippet's own figure wrapper, which makes this the recommended path
+
+## Resolution
+
+Completed: 2026-10-07
+
+Branch: `claude/v039-bug-028-figure`
+PR: refrakt-md/refrakt#665
+
+### What was done
+- `packages/runes/src/tags/figure.ts`: every body child is kept, in body order. Media standing alone, or alone in a paragraph, is the media slot and is unwrapped as before. Anything else is emitted as written. The caption comes from `caption=` or the first paragraph with no media in it, and renders last. The transform records `body: 'mixed'` (pure data, field bag only) when the body holds more than media.
+- Schema type, decided in the table: the table could only select a row by attribute, so `SchemaTable` gains `byField`, which selects a row from the rune's field bag (`lib/schema-table.ts`; exclusive with `by`, validated). Figure's table is `byField: 'body'`, `rows: { mixed: {} }`, with fallback `ImageObject {image→contentUrl, caption→caption}`. A mixed figure publishes no type and no properties. The properties go with the type, because a caption stamped with no `typeof` would attach to the page's typed ancestor. `schema-row.ts`, `reference.ts` and `inspect` surface `byField`.
+- CSS: figure's image rules in Lumina and the skeleton, and Lumina's figcaption rule, now target direct children only, so images inside a nested rune keep their own styling. Checked in a rendered Chromium page: fence, table and nested card render in order with the caption below.
+- Docs: `runes/figure.md` (what it accepts, a code/table example, structured data), `runes/snippet.md` (caption with figure *or* title with codegroup; codegroup kept as an option), and the plugin-authoring table reference (`byField`). Catalog description and VS Code snippet updated.
+- Tests: 6 inline snapshots of image-only figures recorded against the old code (commit edc0608) and unchanged by the fix, which shows the output is byte-identical. 6 behaviour tests, 5 of which fail on the old code (fence + table + nested rune in order with caption, interleaved media, spare paragraph, caption fallback, no type when mixed). `byField` unit tests in runes and cli.
+
+### Reviewed baseline / contract diff
+- The new fixtures `figure.code` and `figure.mixed` were recorded pre-fix in edc0608 (both `ImageObject`, children dropped). After the fix both are `jsonLd: []` with no rendered annotations. That is the intended change: a captioned code block is not an image. The canonical `figure` fixture and every other fixture are unchanged. `SILENT_FIXTURES` in `scripts/generate-seo-baseline.mjs` records these two as deliberately silent rows of an emitting rune.
+- Structure contracts (both copies): figure's `schemaOrg` gains `"byField": "body"`. Nothing else moved.
+
+### Notes / follow-ups (not done here)
+- `packages/lumina/styles/runes/snippet.css`'s header comment and SPEC-062 §"Post-transform wrap" still say labelled chrome is delegated to codegroup. I left them alone because the snippet CSS belongs to WORK-615 (`claude/v039-tree-order-preprocess`), which removes snippet's figure wrapper. Until WORK-615 lands, a snippet in a figure renders `figure > figure.rf-snippet > pre`.
+- Pre-existing and kept: a figure with no media and only a caption paragraph still publishes a bare `ImageObject {caption}`. It could map to the empty row too; that is left as a separate decision.
+- Old quirk removed: a paragraph holding two images used to qualify as the caption fallback, so the images were duplicated into the figcaption. Media-only paragraphs are no longer caption candidates.
 
 {% /bug %}
