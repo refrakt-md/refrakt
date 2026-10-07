@@ -6,7 +6,6 @@ import { join } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { tags, nodes, createCorePipelineHooks } from '../src/index.js';
-import { preprocessSnippets } from '../src/snippet-pipeline.js';
 import { EntityRegistryImpl } from '../../content/src/registry.js';
 import { fsProjectFiles, memoryProjectFiles } from '@refrakt-md/types/project-files';
 import type {
@@ -15,6 +14,7 @@ import type {
 	AggregatedData,
 	PipelineContext,
 } from '@refrakt-md/types';
+import { preprocess } from './helpers.js';
 
 /** Build a preprocess context that captures diagnostics into a list. The
  *  sandbox provider (SPEC-113) is rooted at `projectRoot`; snippet reads (and
@@ -52,7 +52,7 @@ function makePage(
 function pipeline(source: string, opts: { projectRoot: string; pageFilePath?: string }) {
 	const ast = Markdoc.parse(source);
 	const { ctx, warnings } = makePreprocessCtx(opts.projectRoot);
-	const next = preprocessSnippets(ast, makePage(opts.pageFilePath ?? '/tmp/page.md'), ctx);
+	const next = preprocess(ast, makePage(opts.pageFilePath ?? '/tmp/page.md'), ctx);
 	const finalAst = next ?? ast;
 	const renderable = Markdoc.transform(finalAst, { tags, nodes });
 	return { renderable, warnings };
@@ -114,7 +114,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		writeFileSync(join(tmpRoot, 'foo.ts'), 'const x = 1;\nconst y = 2;\n');
 		const ast = Markdoc.parse('{% snippet path="foo.ts" /%}\n');
 		const { ctx } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 
 		// First child of the document should now be a fence (not a tag).
 		expect(ast.children[0].type).toBe('fence');
@@ -127,7 +127,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		writeFileSync(join(tmpRoot, 'config.unknown'), 'foo = bar\n');
 		const ast = Markdoc.parse('{% snippet path="config.unknown" lang="toml" /%}\n');
 		const { ctx } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 
 		expect(ast.children[0].attributes.language).toBe('toml');
 	});
@@ -139,7 +139,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		);
 		const ast = Markdoc.parse('{% snippet path="big.ts" lines="5-10" /%}\n');
 		const { ctx } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 
 		expect(ast.children[0].attributes.lines).toBe('5-10');
 		// 5-10 inclusive = lines 5 through 10 = 6 lines.
@@ -157,7 +157,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 			'{% snippet path="big.ts" lines="5-10" linenumbers=true highlight="7-8" /%}\n',
 		);
 		const { ctx } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 
 		expect(ast.children[0].type).toBe('fence');
 		expect(ast.children[0].attributes.linenumbers).toBe(true);
@@ -168,7 +168,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		writeFileSync(join(tmpRoot, 'foo.ts'), 'const x = 1;\n');
 		const ast = Markdoc.parse('{% snippet path="foo.ts" /%}\n');
 		const { ctx } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 
 		expect(ast.children[0].attributes.linenumbers).toBeUndefined();
 		expect(ast.children[0].attributes.highlight).toBeUndefined();
@@ -177,7 +177,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 	it('rejects absolute paths with a build error and replaces with an error fence', () => {
 		const ast = Markdoc.parse('{% snippet path="/etc/passwd" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 
 		// Tag IS replaced — with a fence carrying `data-snippet-error` so the
 		// schema's `transform` never fires (it would throw and crash the build).
@@ -195,7 +195,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 	it('rejects traversal escapes with a build error', () => {
 		const ast = Markdoc.parse('{% snippet path="../../etc/passwd" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 		expect(
 			warnings.some((w) => w.severity === 'error' && /cannot be resolved/.test(w.message)),
 		).toBe(true);
@@ -204,7 +204,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 	it('rejects missing files with a build error', () => {
 		const ast = Markdoc.parse('{% snippet path="ghost.ts" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 		expect(
 			warnings.some((w) => w.severity === 'error' && /cannot be resolved/.test(w.message)),
 		).toBe(true);
@@ -214,7 +214,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		mkdirSync(join(tmpRoot, 'subdir'));
 		const ast = Markdoc.parse('{% snippet path="subdir" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 		// A directory is not a regular file → the provider returns null → the
 		// consolidated "cannot be resolved" error.
 		expect(
@@ -228,7 +228,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		symlinkSync(join(outside, 'real.ts'), join(tmpRoot, 'leak.ts'));
 		const ast = Markdoc.parse('{% snippet path="leak.ts" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 		// The provider's realpath check denies the symlink escape; the snippet
 		// surfaces it as the consolidated error and never reads the target.
 		const errored = warnings.some(
@@ -243,7 +243,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		writeFileSync(join(tmpRoot, 'short.ts'), 'a\nb\nc\n'); // 4 lines total (trailing newline = empty 4th)
 		const ast = Markdoc.parse('{% snippet path="short.ts" lines="2-20" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 		expect(warnings.some((w) => w.severity === 'warning' && /clamped/.test(w.message))).toBe(true);
 		// Content includes lines 2..end of file.
 		expect(ast.children[0].attributes.content).toContain('b');
@@ -253,7 +253,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		writeFileSync(join(tmpRoot, 'tiny.ts'), 'just one line\n');
 		const ast = Markdoc.parse('{% snippet path="tiny.ts" lines="50-60" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 		expect(warnings.some((w) => w.severity === 'error' && /past end of file/.test(w.message))).toBe(
 			true,
 		);
@@ -263,7 +263,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		writeFileSync(join(tmpRoot, 'foo.ts'), Array.from({ length: 30 }, () => 'x').join('\n'));
 		const ast = Markdoc.parse('{% snippet path="foo.ts" lines="25-10" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 		expect(warnings.some((w) => w.severity === 'error' && /inverted/.test(w.message))).toBe(true);
 	});
 
@@ -271,7 +271,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		writeFileSync(join(tmpRoot, 'foo.ts'), 'x\n');
 		const ast = Markdoc.parse('{% snippet path="foo.ts" lines="not-a-range" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 		expect(
 			warnings.some(
 				(w) =>
@@ -294,7 +294,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 			sandbox: fsProjectFiles(tmpRoot),
 			variables: { file: { path: 'foo.ts' } },
 		};
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 
 		expect(warnings.filter((w) => w.severity === 'error')).toHaveLength(0);
 		expect(ast.children[0].type).toBe('fence');
@@ -315,7 +315,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 				/* no `missing` */
 			},
 		};
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 
 		// Replaced with an error fence — critically, NOT left as a `tag` node
 		// (the schema's transform would throw if it reached the snippet tag).
@@ -328,7 +328,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		writeFileSync(join(tmpRoot, 'foo.ts'), 'a\nb\nc\nd\n');
 		const ast = Markdoc.parse('{% snippet path="foo.ts" lines="3" /%}\n');
 		const { ctx } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 		expect(ast.children[0].attributes.content).toBe('c');
 	});
 
@@ -337,12 +337,12 @@ describe('snippet preprocess (SPEC-062)', () => {
 		// "2-" → from 2 to end
 		const ast1 = Markdoc.parse('{% snippet path="foo.ts" lines="2-" /%}\n');
 		const { ctx: ctx1 } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast1, makePage('/tmp/page.md'), ctx1);
+		preprocess(ast1, makePage('/tmp/page.md'), ctx1);
 		expect(ast1.children[0].attributes.content).toBe('b\nc\nd\n');
 		// "-2" → from start to 2
 		const ast2 = Markdoc.parse('{% snippet path="foo.ts" lines="-2" /%}\n');
 		const { ctx: ctx2 } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast2, makePage('/tmp/page.md'), ctx2);
+		preprocess(ast2, makePage('/tmp/page.md'), ctx2);
 		expect(ast2.children[0].attributes.content).toBe('a\nb');
 	});
 
@@ -353,7 +353,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 			'{% codegroup %}\n{% snippet path="a.ts" /%}\n{% snippet path="b.py" /%}\n{% /codegroup %}\n',
 		);
 		const { ctx } = makePreprocessCtx(tmpRoot);
-		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+		preprocess(ast, makePage('/tmp/page.md'), ctx);
 
 		// The codegroup tag should now have fence children, not snippet tags.
 		const codegroup = ast.children[0];
@@ -382,7 +382,7 @@ describe('snippet via memoryProjectFiles (SPEC-113, fs-free)', () => {
 			sandbox: files,
 		};
 		const ast = Markdoc.parse('{% snippet path="src/foo.ts" lines="1-2" /%}\n');
-		preprocessSnippets(ast, makePage('/page.md'), ctx);
+		preprocess(ast, makePage('/page.md'), ctx);
 
 		expect(warnings.filter((w) => w.severity === 'error')).toHaveLength(0);
 		expect(ast.children[0].type).toBe('fence');
@@ -402,7 +402,7 @@ describe('snippet via memoryProjectFiles (SPEC-113, fs-free)', () => {
 			sandbox: files,
 		};
 		const ast = Markdoc.parse('{% snippet path="../../etc/passwd" /%}\n');
-		preprocessSnippets(ast, makePage('/page.md'), ctx);
+		preprocess(ast, makePage('/page.md'), ctx);
 		expect(
 			warnings.some((w) => w.severity === 'error' && /cannot be resolved/.test(w.message)),
 		).toBe(true);

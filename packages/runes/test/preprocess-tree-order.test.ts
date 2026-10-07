@@ -2,7 +2,14 @@ import 'reflect-metadata';
 import { describe, it, expect } from 'vitest';
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
-import { tags, nodes, createCorePipelineHooks } from '../src/index.js';
+import {
+	tags,
+	nodes,
+	createCorePipelineHooks,
+	createContentModelSchema,
+	preprocessTree,
+} from '../src/index.js';
+const { Ast } = Markdoc;
 import { memoryProjectFiles } from '@refrakt-md/types/project-files';
 import { findAllTags } from './helpers.js';
 import type { PreprocessContext } from '@refrakt-md/types';
@@ -104,5 +111,70 @@ describe('preprocessors resolve in tree order (SPEC-141)', () => {
 		});
 		expect(errors).toEqual([]);
 		expect(fences(ast).map((f) => f.attributes.source)).toEqual(['src/a.ts', 'src/b.ts']);
+	});
+});
+
+describe('a rune-level `preprocess` hook (SPEC-141 D1)', () => {
+	const page = { url: '/page', relativePath: 'page.md', filePath: '/project/page.md' };
+	const ctx: PreprocessContext = { info: () => {}, warn: () => {}, error: () => {} };
+
+	/** A plugin-style rune whose hook records what it saw and does `fn`. */
+	function rune(fn: (node: Node, ancestors: readonly Node[]) => Node | Node[] | void) {
+		return createContentModelSchema({
+			contentModel: { type: 'sequence', fields: [] },
+			preprocess: (node, _page, hookCtx) => fn(node, hookCtx.ancestors),
+			transform: () => null as never,
+		});
+	}
+
+	it('is dispatched from a merged tag table, so a plugin rune takes part', () => {
+		const hooks = createCorePipelineHooks({
+			embedConfig: {
+				tags: { ...tags, stamp: rune(() => new Ast.Node('paragraph', {}, [])) },
+				nodes: {},
+			},
+		});
+		const ast = Markdoc.parse('{% stamp /%}\n');
+		expect(hooks.preprocess!(ast, page, ctx)).toBe(ast);
+		expect(ast.children.map((c) => c.type)).toEqual(['paragraph']);
+	});
+
+	it('receives the ancestor chain, outermost first', () => {
+		let seen: string[] = [];
+		const ast = Markdoc.parse('{% outer %}\n{% probe /%}\n{% /outer %}\n');
+		preprocessTree(ast, page, ctx, {
+			probe: rune((_node, ancestors) => {
+				seen = ancestors.map((a) => a.tag ?? a.type);
+			}),
+		});
+		expect(seen).toEqual(['document', 'outer']);
+	});
+
+	it('splices an array in place, and descends into what it returned', () => {
+		const ast = Markdoc.parse('Before.\n\n{% twice /%}\n\nAfter.\n');
+		const leaf = rune(() => new Ast.Node('hr'));
+		const twice = rune(() => [
+			new Ast.Node('tag', {}, [], 'leaf'),
+			new Ast.Node('tag', {}, [], 'leaf'),
+		]);
+		preprocessTree(ast, page, ctx, { twice, leaf });
+		expect(ast.children.map((c) => c.type)).toEqual(['paragraph', 'hr', 'hr', 'paragraph']);
+	});
+
+	it('leaves the tag alone, and descends into it, when the hook returns nothing or the node itself', () => {
+		const ast = Markdoc.parse('{% keep %}\n{% inner /%}\n{% /keep %}\n\n{% same /%}\n');
+		const result = preprocessTree(ast, page, ctx, {
+			keep: rune(() => undefined),
+			same: rune((node) => node),
+			inner: rune(() => []),
+		});
+		expect(result).toBe(ast); // `inner` was removed
+		expect(ast.children.map((c) => c.tag)).toEqual(['keep', 'same']);
+		expect(ast.children[0].children.filter((c) => c.tag === 'inner')).toEqual([]);
+	});
+
+	it('returns nothing when no rune changed the tree', () => {
+		const ast = Markdoc.parse('# Plain\n');
+		expect(preprocessTree(ast, page, ctx, tags)).toBeUndefined();
 	});
 });

@@ -2,16 +2,14 @@ import 'reflect-metadata';
 import { describe, it, expect } from 'vitest';
 import Markdoc from '@markdoc/markdoc';
 import { tags, nodes } from '../src/index.js';
-import { preprocessIncludes, MAX_INCLUDE_DEPTH } from '../src/include-pipeline.js';
-import { preprocessData } from '../src/data-pipeline.js';
-import { preprocessSnippets } from '../src/snippet-pipeline.js';
 import { memoryProjectFiles } from '@refrakt-md/types/project-files';
-import { findTag, findAllTags } from './helpers.js';
+import { preprocess, findTag, findAllTags } from './helpers.js';
+import { MAX_INCLUDE_DEPTH } from '../src/tags/include.js';
 import type { PreprocessContext } from '@refrakt-md/types';
 
 /**
- * Run the core preprocess phase in its real order — include, then snippet, then
- * data — over a page, with a set of partials and a set of project files.
+ * Run the core preprocess phase — one walk, in tree order (SPEC-141) — over a
+ * page, with a set of partials and a set of project files.
  *
  * `variables` defaults to empty on purpose: several assertions below turn on a
  * value having reached a preprocessor attribute *from the include* and not from
@@ -45,9 +43,7 @@ function run(
 		partials: parsedPartials,
 	};
 	const page = { url: '/page', relativePath: 'page.md', filePath: '/project/page.md' };
-	preprocessIncludes(ast, page, ctx);
-	preprocessSnippets(ast, page, ctx);
-	preprocessData(ast, page, ctx);
+	preprocess(ast, page, ctx);
 	return {
 		ast,
 		rendered: Markdoc.transform(ast, { tags, nodes, partials: parsedPartials }),
@@ -200,7 +196,7 @@ describe('include rune (SPEC-129)', () => {
 				variables: {},
 				partials: { 'where.md': Markdoc.parse('Page: {% $page.slug %}\n') },
 			};
-			preprocessIncludes(ast, { url: '/page', relativePath: 'page.md', filePath: '/page.md' }, ctx);
+			preprocess(ast, { url: '/page', relativePath: 'page.md', filePath: '/page.md' }, ctx);
 			const rendered = Markdoc.transform(ast, {
 				tags,
 				nodes,
@@ -309,7 +305,7 @@ describe('include rune (SPEC-129)', () => {
 			variables: {},
 		};
 		expect(
-			preprocessIncludes(ast, { url: '/p', relativePath: 'p.md', filePath: '/p.md' }, ctx),
+			preprocess(ast, { url: '/p', relativePath: 'p.md', filePath: '/p.md' }, ctx),
 		).toBeUndefined();
 		expect(() => Markdoc.transform(ast, { tags, nodes })).toThrow(/preprocess hook was not wired/);
 	});

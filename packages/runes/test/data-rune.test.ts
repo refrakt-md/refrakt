@@ -3,9 +3,8 @@ import { describe, it, expect } from 'vitest';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { tags, nodes } from '../src/index.js';
-import { preprocessData } from '../src/data-pipeline.js';
 import { memoryProjectFiles } from '@refrakt-md/types/project-files';
-import { findTag, findAllTags } from './helpers.js';
+import { preprocess, findTag, findAllTags } from './helpers.js';
 import type { PreprocessContext } from '@refrakt-md/types';
 
 /** Parse → run the data preprocess against an in-memory provider → transform. */
@@ -24,7 +23,7 @@ function runData(
 		sandbox: memoryProjectFiles(new Map(Object.entries(files))),
 		variables,
 	};
-	preprocessData(ast, { url: '/page', relativePath: 'page.md', filePath: '/project/page.md' }, ctx);
+	preprocess(ast, { url: '/page', relativePath: 'page.md', filePath: '/project/page.md' }, ctx);
 	const rendered = Markdoc.transform(ast, { tags, nodes });
 	return { rendered, warnings };
 }
@@ -337,7 +336,7 @@ describe('data rune — error path (SPEC-103)', () => {
 			sandbox: undefined,
 			variables: {},
 		} as unknown as PreprocessContext;
-		const result = preprocessData(
+		const result = preprocess(
 			ast,
 			{ url: '/p', relativePath: 'p.md', filePath: '/project/p.md' },
 			ctx,

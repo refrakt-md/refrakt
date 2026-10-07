@@ -25,9 +25,10 @@ import { PAGINATION_AUTO_SENTINEL } from './tags/pagination.js';
 import { XREF_RUNE_MARKER } from './tags/xref.js';
 import { resolveXrefs } from './xref-resolve.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
-import { preprocessSnippets } from './snippet-pipeline.js';
-import { preprocessData } from './data-pipeline.js';
-import { preprocessIncludes } from './include-pipeline.js';
+import { preprocessTree } from './lib/preprocess.js';
+import { snippet } from './tags/snippet.js';
+import { data } from './tags/data.js';
+import { include } from './tags/include.js';
 import {
 	registerDrawers,
 	resolveAutoDrawerTitleLevels,
@@ -2446,22 +2447,21 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 	const embedConfig = opts.embedConfig;
 	const repoUrl = opts.repoUrl;
 	const repoBranch = opts.repoBranch;
+	// The page's merged tag table when the loader passes one (core + plugins),
+	// else core's own preprocessing runes — enough for a caller with no plugins.
+	const preprocessSchemas: Record<string, unknown> = opts.embedConfig?.tags ?? {
+		include,
+		snippet,
+		data,
+	};
 
 	return {
-		// Compose the core preprocess steps: include (→ pasted AST), then snippet
-		// (→ fence), then data (→ table). All three mutate the AST in place, so a
-		// single pass over the same tree applies them; any one mutating means the
-		// caller takes the returned AST.
-		//
-		// **Include runs first, and the order is load-bearing** (SPEC-129): the
-		// whole point of the rune is that the pasted content is in the tree when the
-		// later preprocessors walk it. Anything added to this phase that authors may
-		// want inside an included file belongs after include, not before.
+		// SPEC-141 — every rune that declares `preprocess` on its schema resolves
+		// here, in one walk over the page in tree order. Which runes take part is
+		// read off the tag table, so a plugin rune's hook runs exactly as a core
+		// one does; the order between them is where they sit in the tree.
 		preprocess(ast, page, ctx) {
-			const includeChanged = preprocessIncludes(ast, page, ctx);
-			const snippetChanged = preprocessSnippets(ast, page, ctx);
-			const dataChanged = preprocessData(ast, page, ctx);
-			return includeChanged || snippetChanged || dataChanged ? ast : undefined;
+			return preprocessTree(ast, page, ctx, preprocessSchemas);
 		},
 
 		register(
