@@ -199,6 +199,8 @@ export {
 	entityUrl,
 	entityTitle,
 	fieldValue,
+	fieldMembers,
+	groupKeys,
 	titleLink,
 	projectItem,
 	renderItemTemplate,

@@ -54,10 +54,18 @@ Rules:
 {% collection type="work" sort="priority" group="status" limit=20 /%}
 ```
 
-- **`sort`** — a field name. Prefix `-` (or suffix `-desc`) for descending: `sort="-date"` or `sort="date-desc"`. Numeric values sort numerically, otherwise lexically (ISO dates sort chronologically as strings).
-- **`group`** — a field name; items are grouped under a heading per distinct value (empty values group under `(none)`).
+- **`sort`** — a field name. Prefix `-` (or suffix `-desc`) for descending: `sort="-date"` or `sort="date-desc"`. Numeric values sort numerically, otherwise lexically (ISO dates sort chronologically as strings). A multi-value field (`tags="runes, data"`) sorts each item by one of its values — the smallest ascending, the largest descending — never by the joined string.
+- **`group`** — a field name; items are grouped under a heading per distinct value (empty values group under `(none)`). A multi-value field fans out: an item tagged `runes, data, csv` appears under each of `runes`, `data` and `csv` — the same split `filter` applies (comma-separated, each value trimmed, empty values ignored). See [Grouping by a multi-value field](#grouping-by-a-multi-value-field).
 - **`group-display`** — how groups are presented: `headings` (default) or `accordion`. See [Group display](#group-display-headings-or-accordion).
-- **`limit`** — a positive integer cap, applied after sort. With `group`, the cap is on the total item count.
+- **`limit`** — a positive integer cap, applied after sort. With `group`, the cap is on the total item count (entities, not group memberships).
+
+### Grouping by a multi-value field
+
+```markdoc
+{% collection type="work" group="tags" /%}
+```
+
+Fields such as `tags`, `source` and `pr` hold several comma-separated values. Grouping by one gives one group per value, and an item appears in every group whose value it carries. A group's size therefore means **entities carrying this value**, and the sizes add up to more than the number of items whenever an item carries more than one value.
 
 ### Group display — headings or accordion
 
