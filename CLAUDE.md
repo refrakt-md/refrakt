@@ -157,7 +157,7 @@ Five per-page stages from content to output:
 1. **Parse**: Markdoc turns `.md` files into AST nodes
 2. **Schema Transform**: Rune models (`packages/runes/src/tags/*.ts` + plugins) interpret children, emit `typeof` markers and meta tags
 3. **Serialize**: Markdoc Tag class instances → plain `{$$mdtype:'Tag'}` objects (required for SvelteKit server→client boundary)
-4. **Identity Transform**: Engine (`packages/transform/src/engine.ts`) reads meta tags, adds BEM classes, injects structural elements, strips consumed metadata
+4. **Identity Transform**: Engine (`packages/transform/src/engine.ts`) reads the rune's field bag (`data-rune-fields`), adds BEM classes, injects structural elements, strips consumed metadata
 5. **Render**: Svelte Renderer dispatches on `typeof` attribute — registered component or generic HTML element
 
 ### Cross-Page Pipeline
@@ -179,7 +179,7 @@ Runes are Markdoc tags that **reinterpret** standard Markdown. A heading inside 
 
 ### Two-Layer Theme System
 
-**Layer 1 — Identity Transform** (framework-agnostic): The engine in `packages/transform/src/engine.ts` walks the serialized tree and applies BEM classes, reads modifiers from meta tags, injects structural elements (headers, icons, badges), and wraps content. Configured declaratively in `packages/runes/src/config.ts`. Most runes (~75%) need only this layer.
+**Layer 1 — Identity Transform** (framework-agnostic): The engine in `packages/transform/src/engine.ts` walks the serialized tree and applies BEM classes, reads modifiers from the rune's `data-rune-fields` bag, injects structural elements (headers, icons, badges), and wraps content. Configured declaratively in `packages/runes/src/config.ts`. Most runes (~75%) need only this layer.
 
 **Layer 2 — Svelte Components** (`packages/svelte/src/elements/`): Element overrides for HTML elements (Table, Pre) plus a component registry for custom rune renderers. Registered in `packages/svelte/src/registry.ts`. The Renderer looks up `data-rune` → component in the registry. Behavior-driven runes (Tabs, Accordion, DataTable, Form) use Layer 1 + `@refrakt-md/behaviors` for progressive enhancement instead.
 
@@ -226,7 +226,7 @@ Use `[data-*]` attribute selectors for variant styling, not BEM modifier classes
 
 - `createContentModelSchema({ attributes, contentModel, transform })` — defines a rune with declarative attributes and content model (sequence/delimited/sections/custom). Receives resolved fields in `transform(resolved, attrs, config)`
 - `createComponentRenderable({ rune, tag, property, properties, refs, children })` — wraps output with a `data-rune` marker. The `rune` field is the kebab-case rune name and matches the kebab-cased key in `coreConfig`/`Plugin.theme.runes`
-- `properties` values are meta Tags — `createComponentRenderable` sets `data-field` (kebab-cased) on them; the engine reads these for modifier values and consumes the tags
+- `properties` values are meta Tags — `createComponentRenderable` sets `data-field` (kebab-cased) on them and copies each meta's `content` into the root's `data-rune-fields` bag, which the engine reads for modifier values. The metas themselves are dropped from the output, so don't also list them in `children`. `fieldMetas()` builds the map from one declaration
 - `refs` values are Tags that get `data-name` attribute set on them — the engine adds `rf-{block}__{key}` BEM element classes
 - Rune schemas should produce structurally complete renderables, not raw data blobs that components re-parse
 
