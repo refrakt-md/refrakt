@@ -17,7 +17,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { fsProjectFiles } from '@refrakt-md/types/project-files';
 import type { PreprocessContext } from '@refrakt-md/types';
 import { nodes, tags } from '../src/index.js';
-import { preprocessSnippets } from '../src/snippet-pipeline.js';
+import { preprocess } from './helpers.js';
 
 const { Tag } = Markdoc;
 
@@ -49,7 +49,7 @@ function run(source: string): {
 	} as PreprocessContext;
 
 	const ast = Markdoc.parse(source);
-	const next = preprocessSnippets(
+	const next = preprocess(
 		ast,
 		{ url: '/page', relativePath: 'page.md', filePath: join(root, 'page.md') },
 		ctx,

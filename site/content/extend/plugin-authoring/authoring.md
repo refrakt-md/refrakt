@@ -183,11 +183,12 @@ Sources resolve three ways, in order: a node that survives into the output is st
 | `generated` | A value that exists nowhere in the content. `index` is the only generator. |
 | `lists` | Properties that always serialise as an array, however many items. |
 | `by` / `rows` / `fallback` | Select a row by the value of a **declared attribute**. |
+| `byField` / `rows` / `fallback` | Select a row by a value in the rune's own **field bag**, for a type that depends on what the content is. Your transform records the fact as a property; the table decides what it means. `figure` asserts `ImageObject` only while its body is media, recording `body: 'mixed'` otherwise and mapping that to an empty row. |
 
 Three rules the table enforces, because getting them wrong fails silently:
 
 - **A nested entity must declare the `property` that holds it.** `collectJsonLd` nests a typed node only when the same node carries both `typeof` and `property` — so a type without a property publishes a detached top-level entity related to nothing.
-- **`by` names an attribute your rune declares**, not a modifier. Modifiers are read by the engine, which has no part in this path.
+- **`by` names an attribute your rune declares**, not a modifier. Modifiers are read by the engine, which has no part in this path. `by` and `byField` are exclusive.
 - **An entity resolving to a bare `@type` emits nothing.** If you want an entity, give it at least one property.
 
 Declare `lists` for any collection. Without it a one-item collection serialises as an object and a two-item one as an array, so every consumer has to handle both shapes.

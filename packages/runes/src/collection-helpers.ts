@@ -118,10 +118,30 @@ export function entityTitle(e: EntityRegistration): string {
 	return String(d.title ?? d.name ?? e.id);
 }
 
+/** A field rendered for display — an array is joined with `, `. Not a
+ *  grouping or sorting key: a multi-value field reads as one combined string
+ *  here (BUG-025); use {@link fieldMembers} / {@link groupKeys} for that. */
 export function fieldValue(e: EntityRegistration, field: string): string {
 	const v = resolveEntityField(e as MatchableEntity, field);
 	if (Array.isArray(v)) return v.join(', ');
 	return String(v ?? '');
+}
+
+/** A field's individual values — the split the filter side applies
+ *  (`candidates()` in `field-match.ts`): a genuine array fans out by element, a
+ *  comma-string by member, each trimmed. Empty members are dropped and repeats
+ *  collapse, so `"a, , a, b"` is `['a', 'b']` and a missing value is `[]`. */
+export function fieldMembers(e: EntityRegistration, field: string): string[] {
+	const v = resolveEntityField(e as MatchableEntity, field);
+	const raw = Array.isArray(v) ? v.map((x) => String(x ?? '')) : String(v ?? '').split(',');
+	return [...new Set(raw.map((m) => m.trim()).filter(Boolean))];
+}
+
+/** The groups an entity joins under `group="<field>"` — one per member of a
+ *  multi-value field (BUG-025), or `(none)` when it carries no value. */
+export function groupKeys(e: EntityRegistration, field: string): string[] {
+	const members = fieldMembers(e, field);
+	return members.length ? members : ['(none)'];
 }
 
 /** A title link to an entity, or a plain span when it has no URL. The BEM
@@ -170,10 +190,24 @@ export function projectItem(
 	};
 }
 
+/** Order two scalar field values: numeric when both are finite numbers,
+ *  lexical otherwise. */
+function compareScalar(av: string, bv: string): number {
+	const an = Number(av);
+	const bn = Number(bv);
+	if (av !== '' && bv !== '' && Number.isFinite(an) && Number.isFinite(bn)) return an - bn;
+	return av.localeCompare(bv);
+}
+
 /** Sort entities by a `sort` expression (`field`, `-field`, `field-desc`).
  *  With an {@link Ordering}, enum fields sort by domain rank (each entity ranked
  *  within its *own* `(type, field)` order — so mixed-type sets compose); ranked
- *  items come before unranked, which then fall back to numeric/lexical. */
+ *  items come before unranked, which then fall back to numeric/lexical.
+ *
+ *  A multi-value field sorts each entity by one representative member, never by
+ *  the joined string (BUG-025): its smallest member ascending, its largest
+ *  descending — MongoDB's rule for sorting on an array. With an ordering, a
+ *  ranked member is preferred over an unranked one. */
 export function sortEntities(
 	entities: EntityRegistration[],
 	sortExpr: string,
@@ -192,23 +226,35 @@ export function sortEntities(
 		field = field.slice(0, -4);
 	}
 	const ranked = ordering && entities.some((e) => ordering.order(e.type, field));
+	const rankOf = (e: EntityRegistration, v: string) =>
+		ranked ? ordering!.rank(e.type, field, v) : -1;
+	// The value each entity sorts by — its own value when single-valued, else
+	// the member that sorts first in this direction.
+	const keyOf = (e: EntityRegistration): string => {
+		const members = fieldMembers(e, field);
+		if (members.length < 2) return fieldValue(e, field);
+		return members.reduce((best, m) => {
+			const rm = rankOf(e, m);
+			const rb = rankOf(e, best);
+			if (rm >= 0 !== rb >= 0) return rm >= 0 ? m : best;
+			const c = rm >= 0 ? rm - rb : compareScalar(m, best);
+			return c * dir < 0 ? m : best;
+		});
+	};
+	const keys = new Map(entities.map((e) => [e, keyOf(e)]));
 	return [...entities].sort((a, b) => {
+		const av = keys.get(a)!;
+		const bv = keys.get(b)!;
 		if (ranked) {
-			const ra = ordering!.rank(a.type, field, fieldValue(a, field));
-			const rb = ordering!.rank(b.type, field, fieldValue(b, field));
+			const ra = rankOf(a, av);
+			const rb = rankOf(b, bv);
 			const aR = ra >= 0,
 				bR = rb >= 0;
 			if (aR && bR) {
 				if (ra !== rb) return (ra - rb) * dir;
 			} else if (aR !== bR) return aR ? -1 : 1; // ranked before unranked, dir-independent
 		}
-		const av = fieldValue(a, field);
-		const bv = fieldValue(b, field);
-		const an = Number(av);
-		const bn = Number(bv);
-		if (av !== '' && bv !== '' && Number.isFinite(an) && Number.isFinite(bn))
-			return (an - bn) * dir;
-		return av.localeCompare(bv) * dir;
+		return compareScalar(av, bv) * dir;
 	});
 }
 
@@ -224,7 +270,10 @@ export function groupBy<T>(items: T[], keyOf: (item: T) => string): Map<string, 
 	return groups;
 }
 
-/** Group entities by one of their fields (empty → `(none)`). With an
+/** Group entities by one of their fields (empty → `(none)`). A multi-value
+ *  field fans out (BUG-025): an entity tagged `runes, data` joins both the
+ *  `runes` and the `data` group, so group sizes can sum past the entity count —
+ *  a group's size is the number of entities *carrying* that value. With an
  *  {@link Ordering}, groups are emitted in domain order — each group's
  *  representative (minimum) rank across its members, ranked groups first. */
 export function groupEntities(
@@ -232,17 +281,24 @@ export function groupEntities(
 	field: string,
 	ordering?: Ordering,
 ): Map<string, EntityRegistration[]> {
-	const groups = groupBy(entities, (e) => fieldValue(e, field) || '(none)');
+	const groups = new Map<string, EntityRegistration[]>();
+	for (const e of entities) {
+		for (const key of groupKeys(e, field)) {
+			const arr = groups.get(key);
+			if (arr) arr.push(e);
+			else groups.set(key, [e]);
+		}
+	}
 	if (!ordering || ![...entities].some((e) => ordering.order(e.type, field))) return groups;
-	const repRank = (members: EntityRegistration[]): number => {
+	const repRank = (key: string, members: EntityRegistration[]): number => {
 		let min = Infinity;
 		for (const m of members) {
-			const r = ordering.rank(m.type, field, fieldValue(m, field));
+			const r = ordering.rank(m.type, field, key);
 			if (r >= 0 && r < min) min = r;
 		}
 		return min;
 	};
-	const sorted = [...groups.entries()].sort((a, b) => repRank(a[1]) - repRank(b[1]));
+	const sorted = [...groups.entries()].sort((a, b) => repRank(...a) - repRank(...b));
 	return new Map(sorted);
 }
 

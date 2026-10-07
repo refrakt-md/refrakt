@@ -129,9 +129,21 @@ export interface SchemaTable extends SchemaRow {
 	 * the ambiguity cannot ship silently.
 	 */
 	by?: string;
-	/** Rows keyed by attribute value, used with `by`. */
+	/**
+	 * Selects a row by the value of the named **field** in the rune's own field
+	 * bag (`data-rune-fields`), for a type that depends on what the content *is*
+	 * rather than on anything the author stated (BUG-028).
+	 *
+	 * The transform records a fact about its content as an ordinary property —
+	 * `figure` records `body: 'mixed'` when it holds more than media — and the
+	 * table decides what that fact means for the type. The transform still never
+	 * writes a type. Exclusive with `by`: a row is picked by one axis, and two
+	 * would need a precedence rule nobody could see in the table.
+	 */
+	byField?: string;
+	/** Rows keyed by attribute (`by`) or field (`byField`) value. */
 	rows?: Record<string, SchemaRow>;
-	/** The row for when the `by` attribute is absent or unmatched. */
+	/** The row for when the selecting value is absent or unmatched. */
 	fallback?: SchemaRow;
 }
 
@@ -176,6 +188,18 @@ export function validateSchemaTable(
 		}
 	}
 
+	if (table.byField !== undefined) {
+		if (table.by !== undefined) {
+			issues.push({
+				path: 'byField',
+				message: '`by` and `byField` are exclusive: a row is selected on one axis.',
+			});
+		}
+		if (!table.rows || Object.keys(table.rows).length === 0) {
+			issues.push({ path: 'rows', message: '`byField` needs `rows` to select from.' });
+		}
+	}
+
 	const checkEntities = (rows: Record<string, EntityRow> | undefined, path: string) => {
 		for (const [name, row] of Object.entries(rows ?? {})) {
 			if (!row.property) {
@@ -202,10 +226,23 @@ export function validateSchemaTable(
 	return issues;
 }
 
-/** Pick the row a set of attributes selects. */
-export function selectRow(table: SchemaTable, attrs: Record<string, unknown>): SchemaRow {
-	if (!table.by) return table;
-	const value = attrs[table.by];
+/**
+ * Pick the row a set of attributes — or, for a `byField` table, the rune's
+ * field bag — selects. With no bag (the static views: `inspect`, `contracts`,
+ * `reference`) a `byField` table describes its fallback row.
+ */
+export function selectRow(
+	table: SchemaTable,
+	attrs: Record<string, unknown>,
+	fields: Record<string, unknown> = {},
+): SchemaRow {
+	const value =
+		table.by !== undefined
+			? attrs[table.by]
+			: table.byField !== undefined
+				? fields[table.byField]
+				: undefined;
+	if (table.by === undefined && table.byField === undefined) return table;
 	const row = value === undefined ? undefined : table.rows?.[String(value)];
 	return row ?? table.fallback ?? table;
 }
@@ -226,40 +263,45 @@ const isTag = (n: unknown): n is AnyTag => Markdoc.Tag.isTag(n as never);
 /**
  * Every node bearing a name, in document order, within one rune.
  *
- * **The search stops at another rune's node.** ADR-008's flat namespace is
- * unique *per rune*, so the same name means different things in a parent and in
- * a child it contains: `character` names its title span `name`, and so does
- * every `character-section` inside it. Reaching across that boundary published a
- * character whose `name` was the character plus each of its section headings.
+ * **Past another rune's node, only nodes marked for this rune count.** ADR-008's
+ * flat namespace is unique *per rune*, so the same name means different things
+ * in a parent and in a child it contains: `character` names its title span
+ * `name`, and so does every `character-section` inside it. Reaching across that
+ * boundary published a character whose `name` was the character plus each of
+ * its section headings. So the walk keeps descending in foreign mode, where just
+ * the nodes placed on this rune's behalf (`OWNER_ATTR`) are admitted — the same
+ * rule `findChildren` applies (SPEC-146 Problem 2).
  */
 export function findAllByName(
 	root: RenderableTreeNode | RenderableTreeNode[],
 	name: string,
 ): AnyTag[] {
 	const kebab = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+	const owner = isTag(root) ? root.attributes?.['data-rune'] : undefined;
 	const out: AnyTag[] = [];
-	const visit = (node: unknown, top: boolean): void => {
+	const visit = (node: unknown, top: boolean, foreign: boolean): void => {
 		if (Array.isArray(node)) {
-			for (const c of node) visit(c, top);
+			for (const c of node) visit(c, top, foreign);
 			return;
 		}
 		if (!isTag(node)) return;
 		const attrs = node.attributes ?? {};
-		if (!top && attrs['data-rune'] !== undefined) return;
+		// A nested rune's own node is already on its side of the boundary.
+		const inner = foreign || (!top && attrs['data-rune'] !== undefined);
 		const named =
 			attrs['data-name'] === name ||
 			attrs['data-name'] === kebab ||
 			attrs['data-field'] === name ||
 			attrs['data-field'] === kebab;
-		if (named) {
+		if (named && isMine(attrs, owner, inner)) {
 			out.push(node);
 			// A name marks one node, not a subtree: descending into a match would
 			// find nothing new and risks a nested re-use of the same name.
 			return;
 		}
-		for (const c of node.children ?? []) visit(c, false);
+		for (const c of node.children ?? []) visit(c, false, inner);
 	};
-	visit(root, true);
+	visit(root, true, false);
 	return out;
 }
 
@@ -472,8 +514,8 @@ export function applySchemaTable(
 	if (attrs.schema === 'none') return output;
 
 	const root = output as AnyTag;
-	const row = selectRow(table, attrs);
 	const bag = readBag(root);
+	const row = selectRow(table, attrs, bag);
 
 	applyRow(root, row, bag);
 

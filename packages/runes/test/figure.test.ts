@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import Markdoc from '@markdoc/markdoc';
 import { parse, findTag, fields } from './helpers.js';
 
 describe('figure tag', () => {
@@ -57,5 +58,470 @@ A beautiful sunset over the ocean.
 		);
 		expect(svg).toBeDefined();
 		expect(svg!.attributes['data-shape']).toBe('cover');
+	});
+});
+
+// BUG-028 — an image-only figure is the case that worked, and making figure a
+// general captioned container must not move it by a byte. These snapshots were
+// recorded against the pre-fix transform; the fix commit leaves them untouched.
+describe('figure — image-only output is unchanged (BUG-028)', () => {
+	const figureOf = (src: string) => {
+		const fig = findTag(parse(src) as any, (t) => t.attributes['data-rune'] === 'figure');
+		return JSON.parse(JSON.stringify(fig));
+	};
+
+	it('caption attribute', () => {
+		expect(
+			figureOf(`{% figure caption="A sunset" size="large" align="center" %}
+![Sunset](/images/sunset.jpg)
+{% /figure %}`),
+		).toMatchInlineSnapshot(`
+			{
+			  "$$mdtype": "Tag",
+			  "attributes": {
+			    "data-rune": "figure",
+			    "data-rune-fields": "{"size":"large","align":"center"}",
+			    "typeof": "ImageObject",
+			  },
+			  "children": [
+			    {
+			      "$$mdtype": "Tag",
+			      "attributes": {
+			        "alt": "Sunset",
+			        "data-name": "image",
+			        "property": "contentUrl",
+			        "src": "/images/sunset.jpg",
+			      },
+			      "children": [],
+			      "name": "img",
+			    },
+			    {
+			      "$$mdtype": "Tag",
+			      "attributes": {
+			        "data-name": "caption",
+			        "property": "caption",
+			      },
+			      "children": [
+			        "A sunset",
+			      ],
+			      "name": "figcaption",
+			    },
+			  ],
+			  "name": "figure",
+			}
+		`);
+	});
+
+	it('paragraph caption, written after the image', () => {
+		expect(
+			figureOf(`{% figure size="medium" %}
+![Hot springs](/images/springs.jpg)
+
+Steam rising from volcanic hot springs.
+{% /figure %}`),
+		).toMatchInlineSnapshot(`
+			{
+			  "$$mdtype": "Tag",
+			  "attributes": {
+			    "data-rune": "figure",
+			    "data-rune-fields": "{"size":"medium"}",
+			    "typeof": "ImageObject",
+			  },
+			  "children": [
+			    {
+			      "$$mdtype": "Tag",
+			      "attributes": {
+			        "alt": "Hot springs",
+			        "data-name": "image",
+			        "property": "contentUrl",
+			        "src": "/images/springs.jpg",
+			      },
+			      "children": [],
+			      "name": "img",
+			    },
+			    {
+			      "$$mdtype": "Tag",
+			      "attributes": {
+			        "data-name": "caption",
+			        "property": "caption",
+			      },
+			      "children": [
+			        {
+			          "$$mdtype": "Tag",
+			          "attributes": {},
+			          "children": [
+			            "Steam rising from volcanic hot springs.",
+			          ],
+			          "name": "p",
+			        },
+			      ],
+			      "name": "figcaption",
+			    },
+			  ],
+			  "name": "figure",
+			}
+		`);
+	});
+
+	it('paragraph caption, written before the image', () => {
+		expect(
+			figureOf(`{% figure %}
+Steam rising from volcanic hot springs.
+
+![Hot springs](/images/springs.jpg)
+{% /figure %}`),
+		).toMatchInlineSnapshot(`
+			{
+			  "$$mdtype": "Tag",
+			  "attributes": {
+			    "data-rune": "figure",
+			    "typeof": "ImageObject",
+			  },
+			  "children": [
+			    {
+			      "$$mdtype": "Tag",
+			      "attributes": {
+			        "alt": "Hot springs",
+			        "data-name": "image",
+			        "property": "contentUrl",
+			        "src": "/images/springs.jpg",
+			      },
+			      "children": [],
+			      "name": "img",
+			    },
+			    {
+			      "$$mdtype": "Tag",
+			      "attributes": {
+			        "data-name": "caption",
+			        "property": "caption",
+			      },
+			      "children": [
+			        {
+			          "$$mdtype": "Tag",
+			          "attributes": {},
+			          "children": [
+			            "Steam rising from volcanic hot springs.",
+			          ],
+			          "name": "p",
+			        },
+			      ],
+			      "name": "figcaption",
+			    },
+			  ],
+			  "name": "figure",
+			}
+		`);
+	});
+
+	it('two images, one per paragraph and two in one paragraph', () => {
+		expect(
+			figureOf(`{% figure caption="Three views" %}
+![One](/images/1.jpg)
+
+![Two](/images/2.jpg)
+![Three](/images/3.jpg)
+{% /figure %}`),
+		).toMatchInlineSnapshot(`
+			{
+			  "$$mdtype": "Tag",
+			  "attributes": {
+			    "data-rune": "figure",
+			    "typeof": "ImageObject",
+			  },
+			  "children": [
+			    {
+			      "$$mdtype": "Tag",
+			      "attributes": {
+			        "alt": "One",
+			        "data-name": "image",
+			        "property": "contentUrl",
+			        "src": "/images/1.jpg",
+			      },
+			      "children": [],
+			      "name": "img",
+			    },
+			    {
+			      "$$mdtype": "Tag",
+			      "attributes": {
+			        "alt": "Two",
+			        "src": "/images/2.jpg",
+			      },
+			      "children": [],
+			      "name": "img",
+			    },
+			    {
+			      "$$mdtype": "Tag",
+			      "attributes": {
+			        "alt": "Three",
+			        "src": "/images/3.jpg",
+			      },
+			      "children": [],
+			      "name": "img",
+			    },
+			    {
+			      "$$mdtype": "Tag",
+			      "attributes": {
+			        "data-name": "caption",
+			        "property": "caption",
+			      },
+			      "children": [
+			        "Three views",
+			      ],
+			      "name": "figcaption",
+			    },
+			  ],
+			  "name": "figure",
+			}
+		`);
+	});
+
+	it('scheme-resolved placeholder', () => {
+		expect(
+			figureOf(`{% figure caption="Dashboard overview" %}
+![Dashboard](placeholder:cover)
+{% /figure %}`),
+		).toMatchInlineSnapshot(`
+			{
+			  "$$mdtype": "Tag",
+			  "attributes": {
+			    "data-rune": "figure",
+			    "typeof": "ImageObject",
+			  },
+			  "children": [
+			    {
+			      "$$mdtype": "Tag",
+			      "attributes": {
+			        "aria-label": "Dashboard",
+			        "class": "rf-placeholder",
+			        "data-name": "image",
+			        "data-shape": "cover",
+			        "fill": "none",
+			        "preserveAspectRatio": "xMidYMid slice",
+			        "property": "contentUrl",
+			        "role": "img",
+			        "viewBox": "0 0 1600 900",
+			        "width": "100%",
+			      },
+			      "children": [
+			        {
+			          "$$mdtype": "Tag",
+			          "attributes": {
+			            "fill": "var(--rf-color-surface)",
+			            "height": 900,
+			            "width": 1600,
+			            "x": 0,
+			            "y": 0,
+			          },
+			          "children": [],
+			          "name": "rect",
+			        },
+			        {
+			          "$$mdtype": "Tag",
+			          "attributes": {
+			            "cx": 1216,
+			            "cy": 270,
+			            "fill": "var(--rf-color-border)",
+			            "r": 90,
+			          },
+			          "children": [],
+			          "name": "circle",
+			        },
+			        {
+			          "$$mdtype": "Tag",
+			          "attributes": {
+			            "d": "M0 648 Q 448 495 800 630 T 1600 576 L 1600 900 L 0 900 Z",
+			            "fill": "var(--rf-color-muted)",
+			          },
+			          "children": [],
+			          "name": "path",
+			        },
+			        {
+			          "$$mdtype": "Tag",
+			          "attributes": {
+			            "fill": "none",
+			            "height": 893,
+			            "stroke": "var(--rf-color-border)",
+			            "stroke-width": 7,
+			            "width": 1593,
+			            "x": 4,
+			            "y": 4,
+			          },
+			          "children": [],
+			          "name": "rect",
+			        },
+			      ],
+			      "name": "svg",
+			    },
+			    {
+			      "$$mdtype": "Tag",
+			      "attributes": {
+			        "data-name": "caption",
+			        "property": "caption",
+			      },
+			      "children": [
+			        "Dashboard overview",
+			      ],
+			      "name": "figcaption",
+			    },
+			  ],
+			  "name": "figure",
+			}
+		`);
+	});
+
+	it('frame-aspect and elevation', () => {
+		expect(
+			figureOf(`{% figure elevation="floating" frame-aspect="4/3" caption="Framed" %}
+![Coral reef](/images/reef.jpg)
+{% /figure %}`),
+		).toMatchInlineSnapshot(`
+			{
+			  "$$mdtype": "Tag",
+			  "attributes": {
+			    "data-rune": "figure",
+			    "elevation": "floating",
+			    "typeof": "ImageObject",
+			  },
+			  "children": [
+			    {
+			      "$$mdtype": "Tag",
+			      "attributes": {
+			        "alt": "Coral reef",
+			        "data-name": "image",
+			        "property": "contentUrl",
+			        "src": "/images/reef.jpg",
+			      },
+			      "children": [],
+			      "name": "img",
+			    },
+			    {
+			      "$$mdtype": "Tag",
+			      "attributes": {
+			        "data-name": "caption",
+			        "property": "caption",
+			      },
+			      "children": [
+			        "Framed",
+			      ],
+			      "name": "figcaption",
+			    },
+			    {
+			      "$$mdtype": "Tag",
+			      "attributes": {
+			        "content": "4/3",
+			        "data-field": "frame-aspect",
+			      },
+			      "children": [],
+			      "name": "meta",
+			    },
+			  ],
+			  "name": "figure",
+			}
+		`);
+	});
+});
+
+// BUG-028 — figure is a general captioned container. Before the fix every child
+// that was not media was resolved, transformed and then dropped without a word,
+// and the figure still asserted `ImageObject`.
+describe('figure — non-media children survive (BUG-028)', () => {
+	const figureOf = (src: string) =>
+		findTag(parse(src) as any, (t) => t.attributes['data-rune'] === 'figure')!;
+	// A fence and a table render inside wrapper `<div>`s, so name each child by
+	// what it holds: its rune, else the first `pre`/`table` in it, else itself.
+	const shape = (fig: any) =>
+		(fig.children as any[])
+			.filter((c) => Markdoc.Tag.isTag(c))
+			.map(
+				(c) =>
+					c.attributes['data-rune'] ??
+					findTag(c, (t) => t.name === 'pre' || t.name === 'table')?.name ??
+					c.name,
+			);
+
+	it('keeps a code fence, a table and a nested rune, in body order, with the caption', () => {
+		const fig = figureOf(`{% figure caption="The handler" %}
+\`\`\`ts
+export const x = 1;
+\`\`\`
+
+| Option | Default |
+|--------|---------|
+| retry  | 3       |
+
+{% hint type="note" %}
+Retries are idempotent.
+{% /hint %}
+{% /figure %}`);
+
+		expect(shape(fig)).toEqual(['pre', 'table', 'hint', 'figcaption']);
+		const caption = findTag(fig, (t) => t.name === 'figcaption')!;
+		expect(caption.children).toEqual(['The handler']);
+		expect(findTag(fig, (t) => t.name === 'code')).toBeDefined();
+		expect(findTag(fig, (t) => t.name === 'td')).toBeDefined();
+	});
+
+	it('keeps media and non-media in body order', () => {
+		const fig = figureOf(`{% figure caption="Before and after" %}
+\`\`\`sql
+select 1;
+\`\`\`
+
+![Result](/images/result.png)
+
+| a |
+|---|
+| 1 |
+{% /figure %}`);
+		expect(shape(fig)).toEqual(['pre', 'img', 'table', 'figcaption']);
+	});
+
+	it('keeps a paragraph the caption attribute leaves unused', () => {
+		const fig = figureOf(`{% figure caption="Caption" %}
+![Photo](/images/photo.jpg)
+
+Shot at dawn.
+{% /figure %}`);
+		expect(shape(fig)).toEqual(['img', 'p', 'figcaption']);
+	});
+
+	it('takes the first media-free paragraph as the caption and keeps later ones', () => {
+		const fig = figureOf(`{% figure %}
+Steam rising.
+
+\`\`\`sh
+ls
+\`\`\`
+
+More detail.
+{% /figure %}`);
+		expect(shape(fig)).toEqual(['pre', 'p', 'figcaption']);
+		const caption = findTag(fig, (t) => t.name === 'figcaption')!;
+		expect(findTag(caption, (t) => t.name === 'p')!.children).toEqual(['Steam rising.']);
+	});
+
+	it('asserts no schema.org type once the body holds more than media', () => {
+		const fig = figureOf(`{% figure caption="Reef and query" %}
+![Coral reef](/images/reef.jpg)
+
+\`\`\`sql
+select 1;
+\`\`\`
+{% /figure %}`);
+		expect(fig.attributes.typeof).toBeUndefined();
+		// Nor the properties: with no type on the figure they would attach to
+		// whatever typed ancestor the page has.
+		expect(findTag(fig, (t) => t.attributes.property !== undefined)).toBeUndefined();
+		// The content fact is data, not output: it lives in the field bag only.
+		expect(fields(fig).body).toBe('mixed');
+		expect(findTag(fig, (t) => t.name === 'meta')).toBeUndefined();
+	});
+
+	it('keeps ImageObject when the media slot is the whole body', () => {
+		const fig = figureOf(`{% figure caption="Reef" %}
+![Coral reef](/images/reef.jpg)
+{% /figure %}`);
+		expect(fig.attributes.typeof).toBe('ImageObject');
+		expect(fields(fig).body).toBeUndefined();
 	});
 });

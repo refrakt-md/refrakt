@@ -4,6 +4,7 @@ description: Mental model, transformation pipeline, and anatomy of a rune
 documents:
   - packages/runes/src/config.ts
   - packages/runes/src/index.ts
+  - packages/runes/src/lib/preprocess.ts
   - packages/transform/src/engine.ts
 ---
 
@@ -153,6 +154,44 @@ The `typeName` (e.g. `'Hint'`) connects the rune to its config key in `packages/
 `packages/runes/test/hint.test.ts`
 
 Tests verify that the schema transform produces the expected output structure. See the [Patterns](/extend/rune-authoring/patterns) page for testing guidelines.
+
+## Resolving before the transform — `preprocess`
+
+Most runes only interpret their children during the transform. A few have to act **before** it, because what they produce is input the transform should see as if the author had typed it: `include` pastes a partial's syntax tree, `snippet` turns a file into a code fence, `data` turns a CSV into a table or into its body repeated once per row. Those declare a `preprocess` hook on the schema, beside `transform`:
+
+```typescript
+import Markdoc from '@markdoc/markdoc';
+import { createContentModelSchema } from '@refrakt-md/runes';
+const { Ast } = Markdoc;
+
+export const stamp = createContentModelSchema({
+  attributes: { text: { type: String, required: true } },
+  contentModel: { type: 'sequence', fields: [] },
+  preprocess(node, page, ctx) {
+    // Return a replacement, an array to splice in its place, or nothing.
+    return new Ast.Node('paragraph', {}, [
+      new Ast.Node('inline', {}, [new Ast.Node('text', { content: String(node.attributes.text) })]),
+    ]);
+  },
+  transform() {
+    throw new Error('{% stamp %} reached the transform unresolved.');
+  },
+});
+```
+
+The hook receives **its own tag node**, not the page:
+
+- Return a `Node` to replace the tag, a `Node[]` to splice several nodes in its place (an empty array removes it), or nothing to leave it alone.
+- `ctx` is the page's `PreprocessContext` — `ctx.sandbox` for project files, `ctx.variables` for the page-variable surface, `ctx.warn` / `ctx.error` for diagnostics — plus `ctx.ancestors`, the enclosing nodes from the `document` down to the direct parent. `data` reads it to refuse a per-row body inside `{% chart %}`.
+- Attribute values arrive unevaluated. A `$variable` is a `Variable` node to resolve against `ctx.variables`, and a function call has not run yet.
+
+One walk visits the page and calls each rune's hook where it meets the tag. **The walk then continues into whatever the hook returned**, so a hook never resolves the runes its own output contains. The order between preprocessing runes is tree order, not a list anyone maintains. A `{% snippet path=$row.path %}` inside a `{% data %}` body is reached after `data` has bound the row. A `{% data %}` inside an included file is reached after `include` has pasted it. A rune added later composes the same way, with no registration step.
+
+A rune with a `preprocess` hook normally never reaches its own `transform`. Keep the schema anyway: `refrakt inspect`, the contracts generator, attribute validation and the rune reference all read it. Make the `transform` throw an error that names the likely cause. For the core preprocessing runes that cause is a `{% partial %}`, which Markdoc expands during the transform, after preprocess has run.
+
+### Rune hook or plugin hook?
+
+A plugin can also declare `pipeline.preprocess`, which receives the **whole page AST** and runs once per page. Reach for the rune-level hook when the job is "find my tag and replace it" — that is every preprocessing rune in core, and the narrower hook gets tree-order composition for free. Keep the plugin-level hook for work that is genuinely cross-cutting: rewriting nodes that are not your own tag, or a decision that needs to see the page as a whole. Plugin hooks run after the core walk, in plugin order.
 
 ## Rune checklist
 

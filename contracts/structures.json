@@ -1861,6 +1861,7 @@
 			},
 			"schemaOrg": {
 				"type": "ImageObject",
+				"byField": "body",
 				"properties": [
 					{
 						"source": "image",

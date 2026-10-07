@@ -79,6 +79,16 @@ Filters combine with AND logic. Multiple values for the same field combine with 
 
 `limit=N` caps the rendered set after sort and before group. Useful for "top N by priority" dashboards.
 
+## Grouped by tag
+
+`group` accepts a multi-value field. `group="tags"` gives one group per tag, and an item tagged `runes, data` appears under both. A group's size is the number of entities carrying that tag, so the sizes can add up to more than the number of items shown.
+
+{% preview source=true %}
+
+{% backlog show="work" filter="status:ready" group="tags" limit=5 /%}
+
+{% /preview %}
+
 {% preview source=true %}
 
 {% backlog filter="status:ready" sort="priority" limit=3 /%}

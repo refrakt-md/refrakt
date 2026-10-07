@@ -123,7 +123,7 @@
       "${4:Caption text}",
       "{% /figure %}"
     ],
-    "description": "Enhanced image with caption, attribution, and sizing"
+    "description": "Captioned container for images, code, tables and diagrams, with sizing"
   },
   "Gallery": {
     "prefix": "rune:gallery",

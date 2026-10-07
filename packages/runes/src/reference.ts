@@ -769,6 +769,8 @@ export interface SerializedSchemaOrg {
 	type?: string;
 	/** The attribute a multi-row table selects on. */
 	by?: string;
+	/** The field-bag entry a content-dependent table selects on (BUG-028). */
+	byField?: string;
 	/** Every schema.org property, with the source name that supplies it. */
 	properties: Array<{ property: string; source: string; kind: string; entity?: string }>;
 	entities: Array<{ name: string; type: string; property: string }>;
@@ -891,6 +893,7 @@ export function serializeRune(info: RuneInfo, pluginName?: string): SerializedRu
 		? {
 				...(described.type ? { type: described.type } : {}),
 				...(described.by ? { by: described.by } : {}),
+				...(described.byField ? { byField: described.byField } : {}),
 				properties: bySchemaProperty(described.properties).map((p) => ({
 					property: p.property,
 					source: p.source,

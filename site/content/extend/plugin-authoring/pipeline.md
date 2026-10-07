@@ -99,7 +99,7 @@ register(pages, registry, ctx) {
 },
 ```
 
-Core always registers `page` entities (with `url`, `title`, `parentUrl`, `draft`, `description`, `date`, `order`) and `heading` entities (with `level`, `text`, `id`, `url`). File-derived timestamps (`$file.created` and `$file.modified`) are available as Markdoc variables on every page before registration runs — rune schemas can consume them as attribute defaults.
+Core always registers `page` entities (with `url`, `title`, `parentUrl`, `draft`, `description`, `date`, `order`) and `heading` entities (with `level`, `text`, `id`, `url`). A page's `parentUrl` is spelled exactly as its parent page's `url` is, so it can be used directly as a key: `/docs/guide` has `parentUrl: '/docs'`. When no page sits at the parent path, it is that path in the router's shape (no trailing slash; the root is `/`). File-derived timestamps (`$file.created` and `$file.modified`) are available as Markdoc variables on every page before registration runs — rune schemas can consume them as attribute defaults.
 
 ### Phase 2.5 — contributePages
 
