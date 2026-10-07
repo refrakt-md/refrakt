@@ -149,6 +149,43 @@ and a composed rune sets its own, so Lumina keeps the CSS and re-keys it:
 a loss, and no new mechanism. This is the strongest practical evidence that D16 was worth
 recording.
 
+## Finding 6 — two behaviours of the entity runes have no composed equivalent
+
+Found when {% ref "WORK-617" /%} tried to move `character`, `realm` and `faction` onto
+SPEC-143's slot declaration and was cancelled. Most of what blocked that attempt is
+answered here already: the nested scene image is `{% mediatext %}`'s ordinary shape;
+`extractScene`'s image-or-prose split is the split `mediatext`'s own transform makes;
+and the section-type filter is `{% section %}`. Two behaviours were not covered. All
+three runes share them through `buildStoryContent`
+(`plugins/storytelling/src/tags/common.ts:85`).
+
+**Body content is kept only when there are no sections.** `buildStoryContent` collects
+the rune's leftover body nodes. If no child is a section rune, they are appended to
+`body`. If any child is one, every non-section leftover is discarded:
+
+```ts
+if (!hasSections) bodyNodes.push(...sectionNodes.toArray());
+```
+
+So a paragraph an author writes between two `{% character-section %}` blocks renders
+without sections and vanishes with them. That is silent content loss of the kind
+{% ref "BUG-028" /%} fixed in `figure`, not a design. A Markdoc template cannot
+express it either way, because it is a conditional over the content. The composed
+runes will render that content. That is the correct behaviour and a recorded
+difference, not a regression to preserve.
+
+**Sections are also published as `data-field="section"`.** Each rune passes its
+section runes through `properties` as well as `refs`
+(`...(hasSections ? { section: sections } : {})`), so `createComponentRenderable` stamps
+`data-field="section"` on every child section rune. Nothing in the repository reads
+it: no schema row maps `section`, and neither the engine, Lumina's CSS nor the editor
+selects on it. The composed runes have no reason to reproduce it, but "nothing in the
+repo reads it" is not "nothing reads it". Downstream themes or tooling may select on
+it, so dropping it is a difference to state, not to skip.
+
+Neither needs a new primitive. Both are differences under D2, and they are named here
+so they are explained rather than rediscovered.
+
 ## Decisions
 
 ### D1 — replace alongside, delete separately
@@ -181,6 +218,15 @@ exists is the failure mode this audit hit twice before catching itself.
 
 Not reimplemented per-composition and not dropped. It is domain-agnostic already, and
 `xref` gives it a name as the implicit counterpart to the explicit form.
+
+### D6 — the composed runes keep all authored body content, and drop the `section` field stamp
+
+Finding 6's two behaviours are not reproduced. Content written alongside sections
+renders in the composed runes, where the plugin discards it. The plugin is not patched
+to match: D1 keeps it unchanged, and its baseline records today's output. The
+`data-field="section"` stamp is not emitted. Both are differences explained under D2.
+The stamp's removal is also named in the changeset that ships the composed runes,
+because it is the one difference a downstream consumer could notice in markup.
 
 ## Implementation notes, deliberately not yet work items
 
@@ -219,6 +265,8 @@ Plus the dependency chain this spec sits on: {% ref "SPEC-146" /%} →
 - [ ] Entity auto-linking works for a non-storytelling entity type, proving it is domain-agnostic (D5)
 - [ ] `storyboard` renders from core with its existing fixture unchanged (D3)
 - [ ] Lumina's storytelling CSS is re-keyed through `contextModifiers` and the composed runes render with no unstyled regressions, or each accepted visual change is listed
+- [ ] A composed `character`, `realm` and `faction` with both sections and other body content renders that content, and the plugin's discarding of it is recorded as an explained difference (Finding 6, D6)
+- [ ] The composed runes emit no `data-field="section"` on their sections, and the changeset shipping them names the removal (Finding 6, D6)
 - [ ] The `sequence` adoption count is re-measured after the work — six runes today; a seventh that still hand-rolls it is a finding, not a detail
 - [ ] The rune authoring guide states the standing rule: measure adoption of an existing primitive before proposing a new one (D4)
 
@@ -239,6 +287,8 @@ Plus the dependency chain this spec sits on: {% ref "SPEC-146" /%} →
 
 - {% ref "SPEC-154" /%} — the learning audit; `glossary` is the unbounded `postProcess` case, against this spec's bounded one
 - {% ref "SPEC-158" /%} — the identity guard's granularity, settled alongside SPEC-144 D2's revision
+- {% ref "WORK-617" /%} — cancelled; the slot-declaration attempt on the entity runes whose evidence is Finding 6
+- {% ref "BUG-028" /%} — `figure`'s silent content loss, the same kind as Finding 6's first behaviour
 - {% ref "SPEC-159" /%} — chrome as intent; `storyboard`'s `variant` is removed there, and its chrome is measured to survive composition regardless
 
 {% /spec %}
