@@ -6,7 +6,8 @@ import { join } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { tags, nodes, createCorePipelineHooks } from '../src/index.js';
-import { preprocessSnippets, wrapStandaloneSnippets } from '../src/snippet-pipeline.js';
+import { preprocessSnippets } from '../src/snippet-pipeline.js';
+import { EntityRegistryImpl } from '../../content/src/registry.js';
 import { fsProjectFiles, memoryProjectFiles } from '@refrakt-md/types/project-files';
 import type {
 	PreprocessContext,
@@ -487,7 +488,7 @@ describe('snippet composition (SPEC-062)', () => {
 	});
 });
 
-describe('snippet standalone wrap (SPEC-062)', () => {
+describe('snippet standalone output (SPEC-141 D5)', () => {
 	let tmpRoot: string;
 
 	beforeEach(() => {
@@ -498,74 +499,36 @@ describe('snippet standalone wrap (SPEC-062)', () => {
 		rmSync(tmpRoot, { recursive: true, force: true });
 	});
 
-	it('wraps a standalone snippet-derived <pre> in <figure class="rf-snippet">', () => {
+	/** Run the core cross-page phases over one page and return its final tree. */
+	function postProcess(renderable: unknown): unknown {
+		const core = createCorePipelineHooks();
+		const ctx: PipelineContext = { info: () => {}, warn: () => {}, error: () => {} };
+		const page: TransformedPage = {
+			url: '/page',
+			title: '',
+			headings: [],
+			frontmatter: {},
+			renderable: renderable as TransformedPage['renderable'],
+		};
+		const registry = new EntityRegistryImpl();
+		core.register!([page], registry, ctx);
+		const aggregated: AggregatedData = { __core__: core.aggregate!(registry, ctx) };
+		return core.postProcess!(page, aggregated, ctx).renderable;
+	}
+
+	it('renders a standalone snippet as a bare <pre data-source>, with no <figure> wrapper', () => {
 		writeFileSync(join(tmpRoot, 'foo.ts'), 'const x = 1;\n');
-		const { renderable } = pipeline('{% snippet path="foo.ts" /%}\n', { projectRoot: tmpRoot });
+		const { renderable } = pipeline('{% snippet path="foo.ts" lines="1" /%}\n', {
+			projectRoot: tmpRoot,
+		});
+		const final = postProcess(renderable);
 
-		const ctx: PipelineContext = { info: () => {}, warn: () => {}, error: () => {} };
-		const page: TransformedPage = {
-			url: '/page',
-			title: '',
-			headings: [],
-			frontmatter: {},
-			renderable,
-		};
-		const wrapped = wrapStandaloneSnippets(page, {} as AggregatedData, ctx);
-
-		const figure = findTag(
-			wrapped.renderable,
-			(t) => t.name === 'figure' && (t.attributes as any)?.class === 'rf-snippet',
-		);
-		expect(figure).toBeDefined();
-		expect((figure!.attributes as any)['data-rune']).toBe('snippet');
-		expect((figure!.attributes as any)['data-source-path']).toBe('foo.ts');
-
-		// No figcaption — snippet doesn't have a `title` attribute. Authors
-		// who want a labelled chrome wrap the snippet in `{% codegroup
-		// title="..." %}` (codegroup's single-fence path produces chrome
-		// without tabs).
-		const caption = findTag(figure!, (t) => t.name === 'figcaption');
-		expect(caption).toBeUndefined();
-	});
-
-	it("doesn't wrap a snippet-derived <pre> inside a codegroup output", () => {
-		writeFileSync(join(tmpRoot, 'a.ts'), 'const x = 1;\n');
-		writeFileSync(join(tmpRoot, 'b.py'), 'x = 1\n');
-		const { renderable } = pipeline(
-			'{% codegroup %}\n{% snippet path="a.ts" /%}\n{% snippet path="b.py" /%}\n{% /codegroup %}\n',
-			{ projectRoot: tmpRoot },
-		);
-		const ctx: PipelineContext = { info: () => {}, warn: () => {}, error: () => {} };
-		const page: TransformedPage = {
-			url: '/page',
-			title: '',
-			headings: [],
-			frontmatter: {},
-			renderable,
-		};
-		const wrapped = wrapStandaloneSnippets(page, {} as AggregatedData, ctx);
-
-		// No figures applied — codegroup is on the allowlist.
-		const figures = findAllTags(
-			wrapped.renderable,
-			(t) => t.name === 'figure' && (t.attributes as any)?.class === 'rf-snippet',
-		);
-		expect(figures).toHaveLength(0);
-	});
-
-	it('is a no-op when there are no snippet-derived pres', () => {
-		const { renderable } = pipeline('# Hello\n\nA paragraph.\n', { projectRoot: tmpRoot });
-		const ctx: PipelineContext = { info: () => {}, warn: () => {}, error: () => {} };
-		const page: TransformedPage = {
-			url: '/page',
-			title: '',
-			headings: [],
-			frontmatter: {},
-			renderable,
-		};
-		const wrapped = wrapStandaloneSnippets(page, {} as AggregatedData, ctx);
-		// Returns the same reference when nothing changed.
-		expect(wrapped.renderable).toBe(renderable);
+		expect(findTag(final, (t) => t.name === 'figure')).toBeUndefined();
+		expect(findTag(final, (t) => (t.attributes as any)?.class === 'rf-snippet')).toBeUndefined();
+		const pre = findTag(final, (t) => t.name === 'pre');
+		expect(pre).toBeDefined();
+		expect((pre!.attributes as any)['data-source']).toBe('foo.ts');
+		expect((pre!.attributes as any)['data-lines']).toBe('1');
 	});
 });
 

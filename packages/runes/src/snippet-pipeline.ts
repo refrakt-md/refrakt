@@ -10,30 +10,17 @@
  *   renders them as `data-source` / `data-lines` / `data-linenumbers` /
  *   `data-highlight-lines` on the output `<pre>` + `<code>`.
  *
- * - **PostProcess** walks the rendered renderable tree, finds every `<pre>`
- *   element carrying `data-source`, and — when not nested under a
- *   fence-consuming container (`data-rune="code-group"`, `data-rune="diff"`)
- *   — wraps it in `<figure class="rf-snippet">` so themes can style snippet
- *   blocks distinctly from regular code blocks (and tooling can find
- *   `data-source-path` on the figure).
- *
- * This separation is the SPEC-062 composition story: container runes see
- * snippet output as a regular fence (because preprocess made it one) and
- * consume it transparently; standalone snippets get the figure chrome via
- * the wrap step. Captions / titles are intentionally not provided — wrap
- * a snippet in `{% codegroup title="..." %}` if you want a labelled chrome.
+ * That is the whole rune: there is no postProcess step (SPEC-141 D5). A
+ * standalone snippet renders as the `<pre data-source>` the fence produces —
+ * `pre[data-source]` is the selector for snippet-derived code — and container
+ * runes see it as a regular fence and consume it transparently. Captions /
+ * titles are intentionally not provided — wrap a snippet in
+ * `{% codegroup title="..." %}` if you want a labelled chrome.
  */
 
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
-import type {
-	ProjectFiles,
-	PreprocessContext,
-	PreprocessPage,
-	PipelineContext,
-	TransformedPage,
-	AggregatedData,
-} from '@refrakt-md/types';
+import type { ProjectFiles, PreprocessContext, PreprocessPage } from '@refrakt-md/types';
 import type { AnchorOptions } from './lib/anchor.js';
 import {
 	formatHighlight,
@@ -46,7 +33,7 @@ import { readSnippetFile, SnippetSandboxError } from './lib/read-file.js';
 import { compareMarker, parseMarker } from './lib/review-marker.js';
 import { inferLanguage } from './lang-map.js';
 
-const { Ast, Tag } = Markdoc;
+const { Ast } = Markdoc;
 
 /** Resolve a Markdoc attribute value to a string. Handles literal strings
  *  and Markdoc `Variable` AST nodes (e.g. `path=$file.path` parses as a
@@ -73,10 +60,6 @@ function resolveAttributeValue(
 	}
 	return '';
 }
-
-/** Containers whose output consumes their fence children — wrapping a
- *  snippet-derived `<pre>` inside them would be duplicate chrome. */
-const FENCE_CONSUMING_CONTAINERS = new Set(['code-group', 'diff']);
 
 /**
  * Preprocess: replace every `{% snippet %}` tag in the AST with a `fence`
@@ -298,78 +281,4 @@ function resolveSnippetToFence(
 	// Construct a fence Ast.Node. Markdoc parses ``` blocks as
 	// new Ast.Node('fence', { content, language }) — same shape here.
 	return new Ast.Node('fence', fenceAttrs);
-}
-
-/**
- * PostProcess: wrap standalone snippet-derived `<pre>` elements in the
- * snippet figure chrome. Run as part of `corePipelineHooks.postProcess`.
- *
- * Container-nested snippets (inside `<div data-rune="code-group">` or
- * `<div data-rune="diff">` outputs) are left alone — the container's chrome
- * is already there and the figure would be duplicate.
- */
-export function wrapStandaloneSnippets(
-	page: TransformedPage,
-	_aggregated: AggregatedData,
-	_ctx: PipelineContext,
-): TransformedPage {
-	const wrapped = walkAndWrap(page.renderable, /* containerAncestors */ false);
-	if (wrapped === page.renderable) return page;
-	return { ...page, renderable: wrapped };
-}
-
-function walkAndWrap(node: unknown, insideFenceContainer: boolean): unknown {
-	if (Array.isArray(node)) {
-		let mutated = false;
-		const next = node.map((c) => {
-			const w = walkAndWrap(c, insideFenceContainer);
-			if (w !== c) mutated = true;
-			return w;
-		});
-		return mutated ? next : node;
-	}
-
-	if (!Tag.isTag(node as never)) return node;
-	const tag = node as InstanceType<typeof Tag>;
-
-	const dataRune = (tag.attributes as Record<string, unknown> | undefined)?.['data-rune'];
-	const enteredFenceContainer =
-		typeof dataRune === 'string' && FENCE_CONSUMING_CONTAINERS.has(dataRune);
-	const childAncestor = insideFenceContainer || enteredFenceContainer;
-
-	// Wrap matching <pre> elements that aren't inside a fence-consuming container.
-	if (
-		tag.name === 'pre' &&
-		(tag.attributes as Record<string, unknown> | undefined)?.['data-source'] !== undefined &&
-		!insideFenceContainer
-	) {
-		return wrapPreInFigure(tag);
-	}
-
-	if (!tag.children || tag.children.length === 0) return tag;
-
-	let mutated = false;
-	const newChildren = tag.children.map((c) => {
-		const w = walkAndWrap(c, childAncestor);
-		if (w !== c) mutated = true;
-		return w;
-	});
-	if (!mutated) return tag;
-
-	return new Tag(tag.name, tag.attributes, newChildren as any[]);
-}
-
-function wrapPreInFigure(preTag: InstanceType<typeof Tag>): InstanceType<typeof Tag> {
-	const attrs = preTag.attributes as Record<string, unknown>;
-	const source = String(attrs['data-source'] ?? '');
-	const linesAttr = attrs['data-lines'] !== undefined ? String(attrs['data-lines']) : undefined;
-
-	const figureAttrs: Record<string, unknown> = {
-		class: 'rf-snippet',
-		'data-rune': 'snippet',
-		'data-source-path': source,
-	};
-	if (linesAttr) figureAttrs['data-lines'] = linesAttr;
-
-	return new Tag('figure', figureAttrs, [preTag] as any[]);
 }

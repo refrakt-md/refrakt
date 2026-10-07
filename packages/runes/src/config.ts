@@ -25,7 +25,7 @@ import { PAGINATION_AUTO_SENTINEL } from './tags/pagination.js';
 import { XREF_RUNE_MARKER } from './tags/xref.js';
 import { resolveXrefs } from './xref-resolve.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
-import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.js';
+import { preprocessSnippets } from './snippet-pipeline.js';
 import { preprocessData } from './data-pipeline.js';
 import { preprocessIncludes } from './include-pipeline.js';
 import {
@@ -187,11 +187,10 @@ export const coreConfig: ThemeConfig = {
 		PageSection: { block: 'page-section' },
 		TableOfContents: { block: 'toc', defaultElevation: 'flush' },
 		/* Snippet doesn't have a normal schema transform — its preprocess
-		 * hook replaces the tag with a `fence` node, and the standalone
-		 * wrap step adds `<figure class="rf-snippet">` post-transform.
-		 * The engine never sees a `Snippet` tag, but we still need an
-		 * entry in the theme config so `computeUsedCssBlocks` includes
-		 * `snippet.css` in CSS tree-shaking when the figure is rendered. */
+		 * hook replaces the tag with a `fence` node, which renders as a
+		 * `<pre data-source>` (SPEC-141 D5: no wrapper, no `snippet` block CSS).
+		 * The engine never sees a `Snippet` tag; the entry exists so the rune
+		 * is known to inspect/contracts tooling, like Data and Include below. */
 		Snippet: { block: 'snippet' },
 		/* Data, like Snippet, has no normal schema transform — its preprocess
 		 * hook replaces the `{% data %}` tag with a Markdoc `table` node before
@@ -2733,22 +2732,14 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 				ctx,
 			);
 
-			// SPEC-062 standalone snippet wrap: turn `<pre data-snippet-source>`
-			// into `<figure class="rf-snippet">` when not inside a fence-consuming
-			// container (codegroup, diff). The wrap is a no-op when the page
-			// has no snippet-derived fences.
-			const wrappedPage = wrapStandaloneSnippets(
-				renderable === page.renderable ? page : { ...page, renderable },
-				aggregated,
-				ctx,
-			);
+			const finalPage = renderable === page.renderable ? page : { ...page, renderable };
 
 			// SPEC-066 outline-scope walkers: prefix heading IDs and drop TOC
 			// items inside any `data-outline-scope` subtree. Generic — any rune
 			// can set the attribute and get the behaviour. Runs last so it can
 			// see the final tree (including expand-substituted content once
 			// that lands in v0.15.0).
-			applyOutlineScopeWalkers(wrappedPage.renderable);
+			applyOutlineScopeWalkers(finalPage.renderable);
 
 			// Refresh `page.headings` from the final renderable. Parse-time
 			// `extractHeadings` only saw the raw AST — anything inlined by
@@ -2756,12 +2747,12 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			// it into the parse-time list, leaving the page TOC blind to those
 			// headings. Skips `data-outline-scope` subtrees so peer-document
 			// embeds stay isolated, matching the TOC walker.
-			const harvested = harvestHeadingsFromRenderable(wrappedPage.renderable);
-			if (harvested.length > 0 || wrappedPage.headings.length > 0) {
-				return { ...wrappedPage, headings: harvested };
+			const harvested = harvestHeadingsFromRenderable(finalPage.renderable);
+			if (harvested.length > 0 || finalPage.headings.length > 0) {
+				return { ...finalPage, headings: harvested };
 			}
 
-			return wrappedPage;
+			return finalPage;
 		},
 	};
 }

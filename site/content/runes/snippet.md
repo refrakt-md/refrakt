@@ -278,6 +278,18 @@ If `--check` is noisy after a marking pass, the remedy is **unmarking pages**, n
 
 No `title` attribute. Snippet's output is a fence; for a labelled chrome wrap in `{% codegroup title="..." %}`.
 
+## Output
+
+A snippet renders as exactly what a fenced code block renders: a `<pre>`, with nothing wrapped around it. What sets it apart is provenance on the `<pre>` itself — `data-source` carries the project-relative path and `data-lines` the resolved range — so `pre[data-source]` is the selector for snippet-derived code, in a theme or in tooling that wants an "edit this file" link.
+
+```html
+<pre data-language="typescript" data-source="packages/runes/src/lang-map.ts" data-lines="74-78">
+  <code data-language="typescript">…</code>
+</pre>
+```
+
+There is no `.rf-snippet` element. Releases before v0.39.0 wrapped a standalone snippet in `<figure class="rf-snippet" data-source-path="…">`; the figure carried nothing the `<pre>` did not already, so it was removed. Move selectors on `.rf-snippet` or `[data-source-path]` to `pre[data-source]`. For chrome around a snippet, compose it — `{% codegroup title="..." %}` adds a title bar.
+
 ## View source — recursively
 
 Snippet's killer trick: feed it `$file.path` from the page-variable surface ({% xref "/docs/authoring/variables" /%}) to embed the page's own source.
