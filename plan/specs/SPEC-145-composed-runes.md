@@ -1203,6 +1203,60 @@ composition in one diff would leave a baseline diff that cannot be attributed.
 **This spec therefore depends on {% ref "SPEC-146" /%}** and its slot substitution
 must set the marker that spec defines. Nothing else here changes.
 
+### D10a — how the marker reaches a placed node: declared once, carried by Markdoc
+
+*Decided 2026-10-07, after SPEC-146 shipped in v0.39.0.* D10 says substitution sets
+the marker, but not how the marker survives what comes after substitution. Two
+things stand in the way, both measured:
+
+**Markdoc keeps only declared attributes.** Substitution works on the AST, before
+`Markdoc.transform`. A node's transform keeps the attributes its schema declares and
+drops every other one. With `data-owner` set on every AST node of
+`![v](v.jpg)\n\nSome **text**.`, the rendered tree carried it nowhere. With the
+paragraph schema declaring it, the `<p>` kept it and the `<img>` (undeclared) did
+not.
+
+**The composing rune's names compete with the primitive's.** The schema row of the
+composed rune reads its own names (`{ portrait: 'image' }`), but the node it means
+sits inside a primitive that may give the same node a `data-name` of its own for
+styling. One attribute cannot carry both.
+
+**Decision:**
+
+1. **Substitution sets two attributes on every node it places,** slot-placed and
+   template-placed alike: `data-owner="<composed rune>"` (whose content this is) and
+   `data-slot="<slot name>"` (what the composed rune calls it). `data-slot` is
+   separate from `data-name` so a primitive's own naming is never overwritten.
+2. **Both are declared once, centrally.** When the Markdoc config is assembled (core
+   nodes plus every plugin's runes), both attributes are added to every node and tag
+   schema. No rune declares them, and a new rune is covered automatically.
+3. **The resolvers match `data-slot` only together with `data-owner`.** Past a
+   boundary, `findAllByName` and `findChildren` admit a node for name *n* when
+   `data-owner` is the resolving rune and `data-slot` is *n*. Inside a rune's own
+   nodes, nothing changes. This extends SPEC-146's `isMine`; it does not replace it.
+4. **Both are stripped** by the existing release step once the owning rune's table
+   has run (SPEC-146 D4, `releaseOwnedNodes`), so neither reaches the HTML.
+5. **A survival test gates placement.** It runs a marked node through every rune a
+   composition may place into (D12's set) and fails if either attribute is missing
+   from the output. A rune that rebuilds a node instead of passing it through, so
+   that it drops the marker, is either fixed or kept out of D12's set until it is.
+   The failure this guards against is silent by nature: a property absent from the
+   JSON-LD looks exactly like an optional property left empty.
+
+**Measured before deciding.** With both attributes declared on the `image` and
+`paragraph` schemas, a marked image placed in the real `{% figure %}`, and a marked
+image and paragraph placed in the real `{% mediatext %}`, all came out carrying
+`data-owner` and `data-slot` on the rendered `<img>` and `<p>`. Undeclared, none did.
+A scan for runes that rebuild image tags rather than passing them through found one,
+`cast`'s fallback portrait (`plugins/business/src/tags/cast.ts:46`), which builds a
+tag from an attribute rather than from placed content and is not affected.
+
+**Considered and rejected.** Wrapping slot content in a marked boundary element hides
+the content's node types from the primitive's content model, so the primitive can no
+longer interpret what it was given, which is the reason for placing it there.
+Marking after the transform needs a link from AST node to rendered tag, which Markdoc
+does not provide, so it would rest on matching content heuristically.
+
 ### D11 — editability follows the source file, not the tree
 
 The editor edits the page, not the rendered tree — `packages/editor/src/stamp-on-insert.ts`
@@ -2100,6 +2154,9 @@ explicitly is cheaper than rediscovering it.
 - [ ] A composition template placing a rune that declares a top-level schema `type` is rejected at build, naming both runes; a subordinate emitter (`figure`, `gallery`) is allowed (D9)
 - [ ] `recipe` composed from `howto` is covered by a test asserting the rejection, so the counter-example cannot regress into a supported path (D9)
 - [ ] Slot substitution sets the ownership marker {% ref "SPEC-146" /%} defines, on both slot-placed and template-placed nodes (D10)
+- [ ] `data-owner` and `data-slot` are declared once at config assembly on every node and tag schema, not per rune, and a placed node keeps both through the primitive's transform (D10a)
+- [ ] The resolvers admit a node past a boundary by `data-owner` plus `data-slot`, and a primitive's own `data-name` on the same node is left untouched (D10a)
+- [ ] A survival test runs a marked node through every rune in D12's placement set and fails naming any rune that drops either attribute (D10a)
 - [ ] A composed rune's content-derived `properties` resolve — the `image` from a slot-placed portrait reaches the entity, asserted against the graph and not just the attributes (D10)
 - [ ] An author's nested rune inside a slot is never retyped as part of the composed entity (D10)
 - [ ] A composed rune nested inside another cannot reach the inner one's names, and vice versa (D10)
