@@ -1780,13 +1780,14 @@
 							"byArtist": "Pink Floyd",
 							"duration": "PT163S",
 							"name": "Breathe"
-						},
-						{
-							"@type": "MusicRecording",
-							"byArtist": "Pink Floyd",
-							"name": "Echoes"
 						}
 					]
+				},
+				{
+					"@context": "https://schema.org",
+					"@type": "MusicRecording",
+					"byArtist": "Pink Floyd",
+					"name": "Echoes"
 				}
 			],
 			"rendered": {
@@ -1808,13 +1809,14 @@
 								"byArtist": "Pink Floyd",
 								"duration": "PT163S",
 								"name": "Breathe"
-							},
-							{
-								"@type": "MusicRecording",
-								"byArtist": "Pink Floyd",
-								"name": "Echoes"
 							}
 						]
+					},
+					{
+						"@context": "https://schema.org",
+						"@type": "MusicRecording",
+						"byArtist": "Pink Floyd",
+						"name": "Echoes"
 					}
 				],
 				"annotations": [
@@ -1877,13 +1879,12 @@
 										"text": "Echoes"
 									},
 									{
-										"element": "span",
-										"property": "byArtist",
-										"text": "Pink Floyd"
+										"content": "Pink Floyd",
+										"element": "meta",
+										"property": "byArtist"
 									}
 								],
 								"element": "li",
-								"property": "track",
 								"typeof": "MusicRecording"
 							},
 							{
@@ -2362,16 +2363,17 @@
 						{
 							"@type": "Offer",
 							"name": "Pro",
-							"offers": {
-								"@type": "Offer",
-								"name": "Enterprise",
-								"price": "99",
-								"priceCurrency": "USD"
-							},
 							"price": "10",
 							"priceCurrency": "USD"
 						}
 					]
+				},
+				{
+					"@context": "https://schema.org",
+					"@type": "Offer",
+					"name": "Enterprise",
+					"price": "99",
+					"priceCurrency": "USD"
 				}
 			],
 			"rendered": {
@@ -2384,16 +2386,17 @@
 							{
 								"@type": "Offer",
 								"name": "Pro",
-								"offers": {
-									"@type": "Offer",
-									"name": "Enterprise",
-									"price": "99",
-									"priceCurrency": "USD"
-								},
 								"price": "10",
 								"priceCurrency": "USD"
 							}
 						]
+					},
+					{
+						"@context": "https://schema.org",
+						"@type": "Offer",
+						"name": "Enterprise",
+						"price": "99",
+						"priceCurrency": "USD"
 					}
 				],
 				"annotations": [
@@ -2430,7 +2433,6 @@
 											}
 										],
 										"element": "li",
-										"property": "offers",
 										"typeof": "Offer"
 									},
 									{
@@ -2823,14 +2825,6 @@
 						{
 							"@type": "HowToStep",
 							"text": "Toss hot pasta with pancetta, then stir in egg mixture off the heat"
-						},
-						{
-							"@type": "HowToStep",
-							"text": "Clear the bench"
-						},
-						{
-							"@type": "HowToStep",
-							"text": "Wash up as you go"
 						}
 					],
 					"recipeYield": "4"
@@ -2857,14 +2851,6 @@
 							{
 								"@type": "HowToStep",
 								"text": "Toss hot pasta with pancetta, then stir in egg mixture off the heat"
-							},
-							{
-								"@type": "HowToStep",
-								"text": "Clear the bench"
-							},
-							{
-								"@type": "HowToStep",
-								"text": "Wash up as you go"
 							}
 						],
 						"recipeYield": "4"
@@ -2911,30 +2897,6 @@
 										"element": "p",
 										"property": "text",
 										"text": "Toss hot pasta with pancetta, then stir in egg mixture off the heat"
-									}
-								],
-								"element": "li",
-								"property": "recipeInstructions",
-								"typeof": "HowToStep"
-							},
-							{
-								"children": [
-									{
-										"element": "p",
-										"property": "text",
-										"text": "Clear the bench"
-									}
-								],
-								"element": "li",
-								"property": "recipeInstructions",
-								"typeof": "HowToStep"
-							},
-							{
-								"children": [
-									{
-										"element": "p",
-										"property": "text",
-										"text": "Wash up as you go"
 									}
 								],
 								"element": "li",

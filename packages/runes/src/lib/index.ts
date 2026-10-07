@@ -19,7 +19,7 @@ import type { UniversalAttributePosture } from '../universal-attributes.js';
 export { createComponentRenderable, stripSchemaOrg } from './component.js';
 import { stripSchemaOrg } from './component.js';
 import { RenderableNodeCursor } from './renderable.js';
-import { applySchemaTable, validateSchemaTable } from './schema-table.js';
+import { applySchemaTable, releaseOwnedNodes, validateSchemaTable } from './schema-table.js';
 import type { SchemaTable } from './schema-table.js';
 export {
 	applySchemaTable,
@@ -901,6 +901,8 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 			if (options.schema) {
 				result = applySchemaTable(result as never, options.schema, attrs) as never;
 			}
+			// SPEC-146 D4 — this rune is the last that could read its ownership marks.
+			releaseOwnedNodes(result as never);
 			// `schema="none"` strips the whole subtree, not just the root: a child
 			// rune declares its own type independently, so stripping only the root
 			// would leave orphan typed nodes with no container (WORK-552).

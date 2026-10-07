@@ -524,20 +524,82 @@ export function applySchemaTable(
  * the rest as authored child tags — `playlist` does exactly that, with markdown
  * list items beside `{% track %}` children. Both populations belong to one
  * collection and must take one row, or half of it would go unmapped.
+ *
+ * **Matching on `data-rune` is what makes the boundary necessary** (SPEC-146
+ * Problem 1). A child key that is also a rune name — `track`, `step`, `tier`,
+ * `breadcrumb-item` — would otherwise match that rune anywhere below, including
+ * inside a rune the *author* nested, which the row was never about: a `{% track %}`
+ * in a `{% hint %}` inside a playlist was published as one of the playlist's
+ * tracks. So the walk crosses another rune's boundary only in foreign mode, where
+ * just the nodes placed on this rune's behalf (`OWNER_ATTR`) count. A child the
+ * row matches is itself a boundary: its own content is its own.
  */
 function findChildren(root: AnyTag, name: string): AnyTag[] {
+	const owner = root.attributes?.['data-rune'];
 	const out: AnyTag[] = [];
+	const visit = (node: unknown, foreign: boolean): void => {
+		if (Array.isArray(node)) {
+			for (const c of node) visit(c, foreign);
+			return;
+		}
+		if (!isTag(node)) return;
+		const attrs = node.attributes ?? {};
+		const named =
+			attrs['data-rune'] === name || attrs['data-name'] === name || attrs['data-field'] === name;
+		if (named && isMine(attrs, owner, foreign)) out.push(node as AnyTag);
+		const crossing = attrs['data-rune'] !== undefined;
+		for (const c of node.children ?? []) visit(c, foreign || crossing);
+	};
+	for (const c of root.children ?? []) visit(c, false);
+	return out;
+}
+
+/**
+ * Does a node belong to the rune resolving it? SPEC-146 D1/D2 — ownership is
+ * declared on the node rather than inferred from ancestry.
+ *
+ * Inside the rune's own nodes a name needs no marker, but a node marked for
+ * another rune is that rune's. Past another rune's boundary only a node marked
+ * for this rune counts: whatever else is down there belongs to the rune whose
+ * boundary it is.
+ */
+function isMine(attrs: Record<string, unknown>, owner: unknown, foreign: boolean): boolean {
+	const marked = attrs[OWNER_ATTR];
+	if (foreign) return owner !== undefined && marked === owner;
+	return marked === undefined || marked === owner;
+}
+
+/**
+ * Marks a node placed inside another rune on behalf of the rune named — the
+ * value is that rune's `data-rune`. SPEC-146 D1.
+ *
+ * Nothing sets it yet: no rune places its content inside another rune until
+ * SPEC-145's composition does. What it changes today is what an *unmarked* node
+ * past a boundary means — not this rune's — which is the fix for Problem 1.
+ */
+export const OWNER_ATTR = 'data-owner';
+
+/**
+ * Strip the ownership marks a rune has finished resolving. SPEC-146 D4: the
+ * marker answers a resolution question during the transform, so it is
+ * bookkeeping, not output, and nothing downstream reads it.
+ *
+ * Runs once the owning rune's table has been applied. Markdoc transforms
+ * bottom-up, so no rune that could still need the mark runs later.
+ */
+export function releaseOwnedNodes(output: RenderableTreeNode): void {
+	if (!isTag(output)) return;
+	const owner = (output as AnyTag).attributes?.['data-rune'];
+	if (owner === undefined) return;
 	const visit = (node: unknown): void => {
 		if (Array.isArray(node)) {
 			for (const c of node) visit(c);
 			return;
 		}
 		if (!isTag(node)) return;
-		const attrs = node.attributes ?? {};
-		if (attrs['data-rune'] === name || attrs['data-name'] === name || attrs['data-field'] === name)
-			out.push(node as AnyTag);
-		for (const c of node.children ?? []) visit(c);
+		const attrs = (node as AnyTag).attributes;
+		if (attrs?.[OWNER_ATTR] === owner) delete attrs[OWNER_ATTR];
+		for (const c of (node as AnyTag).children ?? []) visit(c);
 	};
-	for (const c of root.children ?? []) visit(c);
-	return out;
+	visit(output);
 }

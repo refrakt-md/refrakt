@@ -64,3 +64,42 @@ describe('SEO: Review from testimonial', () => {
 		expect(review.reviewRating).toBeUndefined();
 	});
 });
+
+// SPEC-146 Problem 1 / WORK-609. `tier` is both `pricing`'s child key and a
+// rune name, so a `{% tier %}` the author nested inside another tier's body
+// used to be published as one of the table's offers.
+describe('SEO: pricing resolves only its own tiers', () => {
+	it('publishes each of its own tiers as an offer', () => {
+		const product = seo(`{% pricing %}
+# Plans
+
+{% tier name="Starter" price="0" %}
+Free forever.
+{% /tier %}
+
+{% tier name="Pro" price="10" %}
+Everything you need.
+{% /tier %}
+{% /pricing %}`).jsonLd[0] as any;
+		expect(product.offers.map((o: any) => o.name)).toEqual(['Starter', 'Pro']);
+	});
+
+	it('does not claim a tier nested inside another tier’s body', () => {
+		const [product, ...rest] = seo(`{% pricing %}
+# Plans
+
+{% tier name="Pro" price="10" %}
+Everything you need.
+
+{% hint type="note" %}
+{% tier name="Enterprise" price="99" %}
+Custom terms.
+{% /tier %}
+{% /hint %}
+{% /tier %}
+{% /pricing %}`).jsonLd as any[];
+		expect(product.offers).toEqual([expect.objectContaining({ name: 'Pro', price: '10' })]);
+		expect(product.offers[0].offers).toBeUndefined();
+		expect(rest).toEqual([expect.objectContaining({ '@type': 'Offer', name: 'Enterprise' })]);
+	});
+});

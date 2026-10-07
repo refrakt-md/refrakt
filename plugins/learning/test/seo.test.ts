@@ -79,3 +79,39 @@ A simple guide to building a wooden birdhouse.
 		expect(howto.step[0]['@type']).toBe('HowToStep');
 	});
 });
+
+// SPEC-146 / WORK-609 — `step` is the child key of both rows and a rune name
+// (`{% steps %}` emits `data-rune="step"`). The resolver no longer reaches into
+// a nested rune for it; these pin that each rune still resolves the steps it
+// builds itself. The cross-plugin case — a `{% steps %}` block inside a recipe —
+// is the `recipe.foreign-steps` fixture in `contracts/seo-baseline`, because
+// `steps` lives in the marketing plugin.
+describe('SEO: recipe and howto resolve their own steps', () => {
+	it('recipe publishes exactly its own ordered list as instructions', () => {
+		const recipe = seo(`{% recipe %}
+# Carbonara
+
+- 200g spaghetti
+
+1. Cook pasta al dente
+2. Combine with egg mixture
+{% /recipe %}`).jsonLd[0] as any;
+		expect(recipe.recipeInstructions).toEqual([
+			{ '@type': 'HowToStep', text: 'Cook pasta al dente' },
+			{ '@type': 'HowToStep', text: 'Combine with egg mixture' },
+		]);
+	});
+
+	it('howto publishes exactly its own ordered list as steps', () => {
+		const howto = seo(`{% howto %}
+# Birdhouse
+
+- Hammer
+
+1. Cut the wood
+2. Attach the roof
+{% /howto %}`).jsonLd[0] as any;
+		expect(howto.step.map((s: any) => s.text)).toEqual(['Cut the wood', 'Attach the roof']);
+		expect(howto.tool).toEqual({ '@type': 'HowToTool', name: 'Hammer' });
+	});
+});

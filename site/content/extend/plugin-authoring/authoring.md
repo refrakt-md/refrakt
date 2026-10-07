@@ -192,6 +192,14 @@ Three rules the table enforces, because getting them wrong fails silently:
 
 Declare `lists` for any collection. Without it a one-item collection serialises as an object and a two-item one as an array, so every consumer has to handle both shapes.
 
+### A `children` key matches your own children only
+
+A `children` key matches a node by `data-name`, `data-field` **or `data-rune`**. That is how `playlist` gives one row to the tracks it builds from list items and to the `{% track %}` tags an author writes. It also means a key can be the name of a real rune: `track`, `step`, `tier` and `breadcrumb-item` all are.
+
+So the match stops at another rune's boundary. A child your rune placed itself is yours, but a rune of the same name that an author nested inside some other rune is not. For example, a `{% track %}` in a `{% hint %}` inside a playlist is the author's own track, published as its own entity. It is not one of the playlist's tracks. A matched child is a boundary too: whatever it contains belongs to that child, so your row never reaches inside it.
+
+You can name a `children` key after a rune without the row claiming that rune wherever it turns up in the content.
+
 ### It is curation, not validation
 
 Nothing checks your mapping against schema.org — refrakt ships no ontology. The table is human judgement recorded in config, and should be reviewed as such. What *is* checked is the structural consistency above, at build time.
