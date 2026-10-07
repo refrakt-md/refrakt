@@ -13,7 +13,7 @@
 		"@refrakt-md/plan"
 	],
 	"runeCount": 30,
-	"fixtureCount": 48,
+	"fixtureCount": 51,
 	"coverageGaps": [],
 	"fixtures": [
 		{
@@ -1758,6 +1758,147 @@
 			}
 		},
 		{
+			"fixture": "playlist.foreign-track",
+			"rune": "playlist",
+			"group": "C",
+			"notes": "SPEC-146 Problem 1 / WORK-609. The `{% track %}` inside the `{% hint %}` is the author's own rune, not one of the playlist's tracks. `playlist`'s schema row names its children `track`, which is also a rune name, so before WORK-609 `findChildren` matched it through the hint and published it as a third track of the album — in the JSON-LD graph, with readable values. The playlist should publish exactly its own two tracks.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "MusicAlbum",
+					"byArtist": "Pink Floyd",
+					"name": "The Dark Side of the Moon",
+					"track": [
+						{
+							"@type": "MusicRecording",
+							"byArtist": "Pink Floyd",
+							"duration": "PT73S",
+							"name": "Speak to Me"
+						},
+						{
+							"@type": "MusicRecording",
+							"byArtist": "Pink Floyd",
+							"duration": "PT163S",
+							"name": "Breathe"
+						},
+						{
+							"@type": "MusicRecording",
+							"byArtist": "Pink Floyd",
+							"name": "Echoes"
+						}
+					]
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "MusicAlbum",
+						"byArtist": "Pink Floyd",
+						"name": "The Dark Side of the Moon",
+						"track": [
+							{
+								"@type": "MusicRecording",
+								"byArtist": "Pink Floyd",
+								"duration": "PT73S",
+								"name": "Speak to Me"
+							},
+							{
+								"@type": "MusicRecording",
+								"byArtist": "Pink Floyd",
+								"duration": "PT163S",
+								"name": "Breathe"
+							},
+							{
+								"@type": "MusicRecording",
+								"byArtist": "Pink Floyd",
+								"name": "Echoes"
+							}
+						]
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "The Dark Side of the Moon"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Speak to Me"
+									},
+									{
+										"element": "span",
+										"property": "byArtist",
+										"text": "Pink Floyd"
+									},
+									{
+										"content": "PT73S",
+										"element": "meta",
+										"property": "duration"
+									}
+								],
+								"element": "li",
+								"property": "track",
+								"typeof": "MusicRecording"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Breathe"
+									},
+									{
+										"element": "span",
+										"property": "byArtist",
+										"text": "Pink Floyd"
+									},
+									{
+										"content": "PT163S",
+										"element": "meta",
+										"property": "duration"
+									}
+								],
+								"element": "li",
+								"property": "track",
+								"typeof": "MusicRecording"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Echoes"
+									},
+									{
+										"element": "span",
+										"property": "byArtist",
+										"text": "Pink Floyd"
+									}
+								],
+								"element": "li",
+								"property": "track",
+								"typeof": "MusicRecording"
+							},
+							{
+								"content": "Pink Floyd",
+								"element": "meta",
+								"property": "byArtist"
+							}
+						],
+						"element": "section",
+						"typeof": "MusicAlbum"
+					}
+				]
+			}
+		},
+		{
 			"fixture": "playlist.mix",
 			"rune": "playlist",
 			"group": "C",
@@ -2208,6 +2349,113 @@
 			}
 		},
 		{
+			"fixture": "pricing.foreign-tier",
+			"rune": "pricing",
+			"group": "B",
+			"notes": "SPEC-146 Problem 1 / WORK-609. `pricing`'s schema row names its children `tier`, which is also a rune name. Before WORK-609 `findChildren` matched the `{% tier %}` inside the Pro tier's body and published it as one of the pricing table's offers, nested inside Pro by tree position. The table offers Pro alone; the nested tier is the author's own Offer.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Product",
+					"name": "Plans",
+					"offers": [
+						{
+							"@type": "Offer",
+							"name": "Pro",
+							"offers": {
+								"@type": "Offer",
+								"name": "Enterprise",
+								"price": "99",
+								"priceCurrency": "USD"
+							},
+							"price": "10",
+							"priceCurrency": "USD"
+						}
+					]
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Product",
+						"name": "Plans",
+						"offers": [
+							{
+								"@type": "Offer",
+								"name": "Pro",
+								"offers": {
+									"@type": "Offer",
+									"name": "Enterprise",
+									"price": "99",
+									"priceCurrency": "USD"
+								},
+								"price": "10",
+								"priceCurrency": "USD"
+							}
+						]
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "Plans"
+							},
+							{
+								"children": [
+									{
+										"element": "h1",
+										"property": "name",
+										"text": "Pro"
+									},
+									{
+										"children": [
+											{
+												"element": "h1",
+												"property": "name",
+												"text": "Enterprise"
+											},
+											{
+												"content": "99",
+												"element": "meta",
+												"property": "price"
+											},
+											{
+												"content": "USD",
+												"element": "meta",
+												"property": "priceCurrency"
+											}
+										],
+										"element": "li",
+										"property": "offers",
+										"typeof": "Offer"
+									},
+									{
+										"content": "10",
+										"element": "meta",
+										"property": "price"
+									},
+									{
+										"content": "USD",
+										"element": "meta",
+										"property": "priceCurrency"
+									}
+								],
+								"element": "li",
+								"property": "offers",
+								"typeof": "Offer"
+							}
+						],
+						"element": "section",
+						"typeof": "Product"
+					}
+				]
+			}
+		},
+		{
 			"fixture": "pricing",
 			"rune": "pricing",
 			"group": "B",
@@ -2546,6 +2794,171 @@
 						],
 						"element": "article",
 						"typeof": "Place"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "recipe.foreign-steps",
+			"rune": "recipe",
+			"group": "C",
+			"notes": "SPEC-146 Problem 1 / WORK-609. `recipe`'s schema row names its children `step`, which is also a rune name (`{% steps %}` emits `data-rune=\"step\"`). Before WORK-609 `findChildren` reached through the author's `{% steps %}` block inside the tip and published each of its steps as one of the recipe's `recipeInstructions`, readable text included. The recipe's instructions are its own ordered list, and nothing else.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Recipe",
+					"cookTime": "PT30M",
+					"description": "A rich and creamy Italian pasta dish.",
+					"name": "Classic Pasta Carbonara",
+					"prepTime": "PT15M",
+					"recipeIngredient": [
+						"400g spaghetti",
+						"200g pancetta"
+					],
+					"recipeInstructions": [
+						{
+							"@type": "HowToStep",
+							"text": "Cook pasta in salted boiling water until al dente"
+						},
+						{
+							"@type": "HowToStep",
+							"text": "Toss hot pasta with pancetta, then stir in egg mixture off the heat"
+						},
+						{
+							"@type": "HowToStep",
+							"text": "Clear the bench"
+						},
+						{
+							"@type": "HowToStep",
+							"text": "Wash up as you go"
+						}
+					],
+					"recipeYield": "4"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Recipe",
+						"cookTime": "PT30M",
+						"description": "A rich and creamy Italian pasta dish.",
+						"name": "Classic Pasta Carbonara",
+						"prepTime": "PT15M",
+						"recipeIngredient": [
+							"400g spaghetti",
+							"200g pancetta"
+						],
+						"recipeInstructions": [
+							{
+								"@type": "HowToStep",
+								"text": "Cook pasta in salted boiling water until al dente"
+							},
+							{
+								"@type": "HowToStep",
+								"text": "Toss hot pasta with pancetta, then stir in egg mixture off the heat"
+							},
+							{
+								"@type": "HowToStep",
+								"text": "Clear the bench"
+							},
+							{
+								"@type": "HowToStep",
+								"text": "Wash up as you go"
+							}
+						],
+						"recipeYield": "4"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "Classic Pasta Carbonara"
+							},
+							{
+								"element": "p",
+								"property": "description",
+								"text": "A rich and creamy Italian pasta dish."
+							},
+							{
+								"element": "li",
+								"property": "recipeIngredient",
+								"text": "400g spaghetti"
+							},
+							{
+								"element": "li",
+								"property": "recipeIngredient",
+								"text": "200g pancetta"
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "text",
+										"text": "Cook pasta in salted boiling water until al dente"
+									}
+								],
+								"element": "li",
+								"property": "recipeInstructions",
+								"typeof": "HowToStep"
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "text",
+										"text": "Toss hot pasta with pancetta, then stir in egg mixture off the heat"
+									}
+								],
+								"element": "li",
+								"property": "recipeInstructions",
+								"typeof": "HowToStep"
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "text",
+										"text": "Clear the bench"
+									}
+								],
+								"element": "li",
+								"property": "recipeInstructions",
+								"typeof": "HowToStep"
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "text",
+										"text": "Wash up as you go"
+									}
+								],
+								"element": "li",
+								"property": "recipeInstructions",
+								"typeof": "HowToStep"
+							},
+							{
+								"content": "PT15M",
+								"element": "meta",
+								"property": "prepTime"
+							},
+							{
+								"content": "PT30M",
+								"element": "meta",
+								"property": "cookTime"
+							},
+							{
+								"content": "4",
+								"element": "meta",
+								"property": "recipeYield"
+							}
+						],
+						"element": "article",
+						"typeof": "Recipe"
 					}
 				]
 			}
