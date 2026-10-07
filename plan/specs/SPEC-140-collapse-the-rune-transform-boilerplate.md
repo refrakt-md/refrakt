@@ -1,4 +1,4 @@
-{% spec id="SPEC-140" status="implemented" tags="runes, transform, architecture, dx" %}
+{% spec id="SPEC-140" status="shipped" tags="runes, transform, architecture, dx" released-in="v0.38.0" %}
 
 # Collapse the rune transform boilerplate
 

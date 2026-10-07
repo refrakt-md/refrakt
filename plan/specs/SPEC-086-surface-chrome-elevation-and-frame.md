@@ -1,4 +1,4 @@
-{% spec id="SPEC-086" status="implemented" tags="chrome,runes,engine,lumina,dx" %}
+{% spec id="SPEC-086" status="shipped" tags="chrome,runes,engine,lumina,dx" released-in="v0.37.0" %}
 
 # Surface chrome: elevation and frame presets
 

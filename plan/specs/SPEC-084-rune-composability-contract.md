@@ -1,4 +1,4 @@
-{% spec id="SPEC-084" status="implemented" tags="composability,engine,runes,dx" %}
+{% spec id="SPEC-084" status="shipped" tags="composability,engine,runes,dx" released-in="v0.37.0" %}
 
 # Rune composability contract
 
