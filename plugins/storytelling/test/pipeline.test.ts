@@ -1,6 +1,17 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { parse, findTag, findAllTags } from './helpers.js';
+import { collectRegistrations, composeRegistersHooks } from '@refrakt-md/runes';
+import { EntityRegistryImpl } from '@refrakt-md/content';
 import { storytellingPipelineHooks } from '../src/pipeline.js';
+import { storytelling } from '../src/index.js';
+
+// SPEC-144 / WORK-612 — registration is declared on the runes and performed by
+// the core participant, composed into the plugin's hook set exactly as the
+// content loader composes it.
+const hooks = composeRegistersHooks(
+	storytellingPipelineHooks,
+	collectRegistrations(storytelling.runes),
+)!;
 import type {
 	TransformedPage,
 	EntityRegistry,
@@ -58,9 +69,9 @@ function makeCtx() {
 function runPipeline(pages: TransformedPage[]) {
 	const { registry } = makeRegistry();
 	const { ctx } = makeCtx();
-	storytellingPipelineHooks.register!(pages, registry, ctx);
-	const aggregated = { storytelling: storytellingPipelineHooks.aggregate!(registry, ctx) };
-	return pages.map((page) => storytellingPipelineHooks.postProcess!(page, aggregated, ctx));
+	hooks.register!(pages, registry, ctx);
+	const aggregated = { storytelling: hooks.aggregate!(registry, ctx) };
+	return pages.map((page) => hooks.postProcess!(page, aggregated, ctx));
 }
 
 describe('storytellingPipelineHooks.register', () => {
@@ -83,7 +94,7 @@ Raised in the shadow of the Ashen Spire.
 {% /character %}`,
 		);
 
-		storytellingPipelineHooks.register!([page], registry, ctx);
+		hooks.register!([page], registry, ctx);
 
 		expect(entries).toHaveLength(1);
 		expect(entries[0].type).toBe('character');
@@ -104,7 +115,7 @@ A hidden valley.
 {% /realm %}`,
 		);
 
-		storytellingPipelineHooks.register!([page], registry, ctx);
+		hooks.register!([page], registry, ctx);
 
 		expect(entries).toHaveLength(1);
 		expect(entries[0].type).toBe('realm');
@@ -121,7 +132,7 @@ A prestigious order of knights.
 {% /faction %}`,
 		);
 
-		storytellingPipelineHooks.register!([page], registry, ctx);
+		hooks.register!([page], registry, ctx);
 
 		expect(entries).toHaveLength(1);
 		expect(entries[0].type).toBe('faction');
@@ -139,7 +150,7 @@ An ancient text found in the ruins.
 {% /lore %}`,
 		);
 
-		storytellingPipelineHooks.register!([page], registry, ctx);
+		hooks.register!([page], registry, ctx);
 
 		expect(entries).toHaveLength(1);
 		expect(entries[0].type).toBe('lore');
@@ -159,7 +170,7 @@ The heroes must recover the lost crown.
 {% /plot %}`,
 		);
 
-		storytellingPipelineHooks.register!([page], registry, ctx);
+		hooks.register!([page], registry, ctx);
 
 		expect(entries).toHaveLength(1);
 		expect(entries[0].type).toBe('plot');
@@ -176,7 +187,7 @@ Forged during the Council of Elrond.
 {% /bond %}`,
 		);
 
-		storytellingPipelineHooks.register!([page], registry, ctx);
+		hooks.register!([page], registry, ctx);
 
 		expect(entries).toHaveLength(1);
 		expect(entries[0].type).toBe('bond');
@@ -203,7 +214,7 @@ A hidden valley.
 			),
 		];
 
-		storytellingPipelineHooks.register!(pages, registry, ctx);
+		hooks.register!(pages, registry, ctx);
 
 		expect(entries).toHaveLength(2);
 		expect(entries[0].type).toBe('character');
@@ -218,14 +229,15 @@ A hidden valley.
 Just a normal page.`,
 		);
 
-		storytellingPipelineHooks.register!([page], registry, ctx);
+		hooks.register!([page], registry, ctx);
 		expect(entries).toHaveLength(0);
 	});
 });
 
 describe('storytellingPipelineHooks.aggregate', () => {
-	it('builds relationship graph from bonds', () => {
-		const { registry } = makeRegistry();
+	it('contributes bonds to the relationship graph', () => {
+		// The real registry: the minimal one above carries no graph.
+		const registry = new EntityRegistryImpl();
 		const { ctx } = makeCtx();
 
 		const pages = [
@@ -249,14 +261,16 @@ Their bond.
 			),
 		];
 
-		storytellingPipelineHooks.register!(pages, registry, ctx);
-		const result = storytellingPipelineHooks.aggregate!(registry, ctx) as any;
+		hooks.register!(pages, registry, ctx);
+		hooks.aggregate!(registry, ctx);
 
-		// Bidirectional by default
-		expect(result.relationships.get('Aragorn')).toBeDefined();
-		expect(result.relationships.get('Aragorn')[0].target).toBe('Legolas');
-		expect(result.relationships.get('Legolas')).toBeDefined();
-		expect(result.relationships.get('Legolas')[0].target).toBe('Aragorn');
+		// Bidirectional by default, with the bond's type as the edge kind
+		expect(registry.getRelated('Aragorn').map((e) => [e.kind, e.target.id])).toEqual([
+			['fellowship', 'Legolas'],
+		]);
+		expect(registry.getRelated('Legolas').map((e) => [e.kind, e.target.id])).toEqual([
+			['fellowship', 'Aragorn'],
+		]);
 	});
 
 	it('warns on orphaned bonds (from entity not registered)', () => {
@@ -278,8 +292,8 @@ Description.
 			),
 		];
 
-		storytellingPipelineHooks.register!(pages, registry, ctx);
-		storytellingPipelineHooks.aggregate!(registry, ctx);
+		hooks.register!(pages, registry, ctx);
+		hooks.aggregate!(registry, ctx);
 
 		expect(warnings.some((w) => w.includes('UnknownCharacter'))).toBe(true);
 	});
@@ -303,8 +317,8 @@ Description.
 			),
 		];
 
-		storytellingPipelineHooks.register!(pages, registry, ctx);
-		storytellingPipelineHooks.aggregate!(registry, ctx);
+		hooks.register!(pages, registry, ctx);
+		hooks.aggregate!(registry, ctx);
 
 		expect(warnings.some((w) => w.includes('GhostCharacter'))).toBe(true);
 	});
@@ -322,8 +336,8 @@ Content.
 			),
 		];
 
-		storytellingPipelineHooks.register!(pages, registry, ctx);
-		const result = storytellingPipelineHooks.aggregate!(registry, ctx) as any;
+		hooks.register!(pages, registry, ctx);
+		const result = hooks.aggregate!(registry, ctx) as any;
 
 		expect(result.entityByName.get('Aragorn')).toBeDefined();
 		expect(result.entityByName.get('Strider')).toBeDefined();

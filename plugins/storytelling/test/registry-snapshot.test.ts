@@ -141,20 +141,32 @@ describe('storytelling registry snapshot (SPEC-144 D4)', () => {
 		expect(JSON.stringify(snapshot)).toBe(committed(snapshotPath));
 	});
 
-	// SPEC-144: `bond` edges must resolve as they did. Before the migration the
-	// bond graph lived in the plugin's own aggregate output; this records it.
-	it('records the bond relationships the aggregate hook derived', async () => {
-		const { aggregated } = await capture();
-		const rels = (
-			aggregated.storytelling as {
-				relationships: Map<string, Array<{ target: string; bidirectional: boolean }>>;
-			}
-		).relationships;
-		const flat = [...rels].flatMap(([from, list]) => list.map((r) => [from, r.target]));
-		const serialised = `${JSON.stringify(flat, null, 2)}\n`;
-		if (process.env.REFRAKT_WRITE_REGISTRY_SNAPSHOT === '1') {
-			writeFileSync(relationshipsPath, serialised);
-		}
-		expect(JSON.stringify(flat)).toBe(committed(relationshipsPath));
+	// SPEC-144: `bond` edges resolve as they did. Before the migration the bond
+	// graph lived in the plugin's own aggregate output, keyed by the raw strings
+	// a bond was written with; `bond-relationships.json` is that graph, captured
+	// then. It now lives in the registry's relationship graph, keyed by entity
+	// id. Every recorded edge whose endpoints name an entity (by id or alias)
+	// must come back from `getRelated`, and nothing else may.
+	it('resolves the recorded bond relationships through getRelated', async () => {
+		const { registry, aggregated } = await capture();
+		const index = (aggregated.storytelling as { entityByName: Map<string, EntityRegistration> })
+			.entityByName;
+		const recorded = JSON.parse(readFileSync(relationshipsPath, 'utf-8')) as [string, string][];
+
+		const expected = recorded
+			.filter(([from, to]) => index.has(from) && index.has(to))
+			.map(([from, to]) => `${index.get(from)!.id} -> ${index.get(to)!.id}`)
+			.sort();
+		const actual = [...new Set([...index.values()].map((e) => e.id))]
+			.flatMap((id) => registry.getRelated(id).map((edge) => `${edge.fromId} -> ${edge.toId}`))
+			.sort();
+
+		expect(actual).toEqual(expected);
+		// The alias-written bond lands on the entity it names.
+		expect(registry.getRelated('Veshra', { kind: 'enemy' }).map((e) => e.target.id)).toEqual([
+			'King Edric',
+		]);
+		// The edge kind is the bond's `type`.
+		expect(registry.getRelated('Veshra').map((e) => e.kind)).toEqual(['rival', 'enemy']);
 	});
 });

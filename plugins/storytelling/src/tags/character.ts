@@ -63,6 +63,15 @@ export const characterSchema = {
 } as const;
 
 export const character = createContentModelSchema({
+	// SPEC-144 — what this rune registers. Replaces the hand-written
+	// `register` / `aggregate` hooks in `pipeline.ts` (WORK-612).
+	registers: {
+		entity: {
+			idFrom: 'name',
+			data: ['role', 'status', 'aliases', 'tags', 'name'],
+			aliases: { from: 'aliases', separator: ',' },
+		},
+	},
 	schema: characterSchema,
 	sections: characterSections,
 	provides: ['prose'],

@@ -116,6 +116,30 @@ export type { GroupByHeadingHandlers } from './lib/index.js';
 export type { FieldMetaSpec, FieldMetaEntry, FieldMetaSource } from './lib/index.js';
 export type { RuneStructure, SectionRole } from './lib/index.js';
 export { describeSchemaRow, bySchemaProperty, collectSchemaRows, tableFor } from './schema-row.js';
+// SPEC-144 / WORK-611 — declarative entity and edge registration
+export {
+	schemaRegisters,
+	registersFor,
+	registersSources,
+	readRegistersSource,
+	auditRegistersSources,
+	describeRegisters,
+	validateRegistersDeclaration,
+} from './lib/registers.js';
+export type {
+	RegistersDeclaration,
+	RegistersEntity,
+	RegistersEdge,
+	RegistersData,
+	RegistersDataEntry,
+	RegistersIndex,
+} from './lib/registers.js';
+export {
+	createRegistersHooks,
+	composeRegistersHooks,
+	collectRegistrations,
+} from './registers-pipeline.js';
+export type { DeclaredRegistration } from './registers-pipeline.js';
 export type { ResolvedSchemaRow, SchemaPropertyRow } from './schema-row.js';
 export type { SchemaTable, SchemaRow, EntityRow, PropertyMap } from './lib/index.js';
 

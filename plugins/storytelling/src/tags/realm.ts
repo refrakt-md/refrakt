@@ -59,6 +59,10 @@ export const realmSchema = {
 } as const;
 
 export const realm = createContentModelSchema({
+	// SPEC-144 — what this rune registers (WORK-612).
+	registers: {
+		entity: { idFrom: 'name', data: ['realmType', 'scale', 'tags', 'parent', 'name'] },
+	},
 	schema: realmSchema,
 	sections: realmSections,
 	provides: ['prose'],

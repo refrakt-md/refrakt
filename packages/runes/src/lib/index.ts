@@ -21,6 +21,13 @@ import { stripSchemaOrg } from './component.js';
 import { RenderableNodeCursor } from './renderable.js';
 import { applySchemaTable, releaseOwnedNodes, validateSchemaTable } from './schema-table.js';
 import type { SchemaTable } from './schema-table.js';
+import {
+	auditRegistersSources,
+	registersSources,
+	schemaRegisters,
+	validateRegistersDeclaration,
+} from './registers.js';
+import type { RegistersDeclaration } from './registers.js';
 export {
 	applySchemaTable,
 	validateSchemaTable,
@@ -730,6 +737,14 @@ export interface ContentModelSchemaOptions {
 	 */
 	schema?: SchemaTable;
 
+	/**
+	 * SPEC-144 / WORK-611 — the entity or edge this rune registers in the
+	 * cross-page registry. Inert data in a closed vocabulary (ADR-036), checked
+	 * here at construction; the core participant in `registers-pipeline.ts`
+	 * does the registering. See `lib/registers.ts`.
+	 */
+	registers?: RegistersDeclaration;
+
 	/** Deprecated attribute mappings. */
 	deprecations?: Record<string, DeprecationRule>;
 
@@ -779,6 +794,62 @@ export interface ContentModelSchemaOptions {
 	 * which schema narrowing makes visible rather than silent.
 	 */
 	provides?: readonly string[];
+}
+
+/** Sources each registering schema has been seen to provide. A source the rune
+ *  emits structurally is emitted by every instance, so once seen it needs no
+ *  second transform — which keeps the audit at one extra transform per rune
+ *  per process rather than one per instance. */
+const resolvedRegistersSources = new WeakMap<Schema, Set<string>>();
+
+/**
+ * The validate-time audit of a `registers` block — WORK-611.
+ *
+ * A source that resolves to nothing registers an empty id or an empty data
+ * field on every instance, silently. Reported as `registers-source-unresolved`
+ * against the instance's own line, by the rule `auditRegistersSources` shares
+ * with `inspect`. Declared attributes resolve without a transform; anything
+ * else needs the rune's output, which is produced here against a copy of the
+ * page's variables so the audit cannot disturb the real transform (generated
+ * heading ids, chiefly).
+ */
+function auditRegistersOnValidate(
+	schema: Schema,
+	decl: RegistersDeclaration,
+	node: Node,
+	config: Config,
+): ValidationError[] {
+	const seen = resolvedRegistersSources.get(schema) ?? new Set<string>();
+	resolvedRegistersSources.set(schema, seen);
+	const declared = Object.keys(schema.attributes ?? {});
+	const pending = auditRegistersSources(decl, [], declared).filter((s) => !seen.has(s.source));
+	if (pending.length === 0) return [];
+
+	let tree: unknown;
+	try {
+		const variables = config.variables ?? {};
+		tree = Markdoc.transform(node, {
+			...config,
+			variables: {
+				...variables,
+				generatedIds: new Set((variables.generatedIds as Set<string> | undefined) ?? []),
+			},
+		});
+	} catch {
+		// A rune that cannot transform here reports that through its own path.
+		return [];
+	}
+	const unresolved = auditRegistersSources(decl, tree, declared);
+	const missing = new Set(unresolved.map((u) => u.source));
+	for (const { source } of registersSources(decl)) if (!missing.has(source)) seen.add(source);
+
+	return unresolved.map(({ source, role }) => ({
+		id: 'registers-source-unresolved',
+		level: 'warning' as const,
+		message:
+			`registers ${role} reads "${source}", which matches no emitted node, no field-bag entry ` +
+			`and no declared attribute of {% ${node.tag} %} — it would always be empty`,
+	}));
 }
 
 /**
@@ -967,6 +1038,18 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 	}
 
 	if (options.schema) schemaTables.set(schema, options.schema);
+
+	// SPEC-144 / WORK-611 — record the registration declaration, and audit its
+	// sources at validate time, where Markdoc attaches file and line.
+	if (options.registers) {
+		validateRegistersDeclaration(options.registers);
+		schemaRegisters.set(schema, options.registers);
+		const ownValidate = schema.validate;
+		schema.validate = (node, config) => [
+			...((ownValidate?.(node, config) as ValidationError[] | undefined) ?? []),
+			...auditRegistersOnValidate(schema, options.registers!, node, config),
+		];
+	}
 
 	// Register content model for introspection by editor / language server
 	schemaContentModels.set(schema, options.contentModel);

@@ -80,6 +80,10 @@ export const plotSchema = {
 } as const;
 
 export const plot = createContentModelSchema({
+	// SPEC-144 — what this rune registers (WORK-612).
+	registers: {
+		entity: { idFrom: 'title', data: ['plotType', 'structure', 'tags', { name: 'title' }] },
+	},
 	schema: plotSchema,
 	sections: plotSections,
 	base: taxonomyAttributes,
