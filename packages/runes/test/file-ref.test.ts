@@ -150,13 +150,12 @@ describe('file-ref rune (SPEC-078)', () => {
 			const drawer = drawers[0];
 			expect((drawer.attributes.id as string).startsWith('drawer-')).toBe(true);
 
-			// Snippet body inside the drawer.
-			const figures = findAll(
-				drawer,
-				(t) => t.name === 'figure' && t.attributes['data-rune'] === 'snippet',
-			);
-			expect(figures).toHaveLength(1);
-			expect(figures[0].attributes['data-source-path']).toBe('package.json');
+			// Snippet body inside the drawer — a bare `<pre data-source>`, the
+			// same shape a standalone snippet renders as (SPEC-141 D5).
+			expect(findAll(drawer, (t) => t.name === 'figure')).toHaveLength(0);
+			const pres = findAll(drawer, (t) => t.name === 'pre');
+			expect(pres).toHaveLength(1);
+			expect(pres[0].attributes['data-source']).toBe('package.json');
 
 			// Footer with View source on GitHub →.
 			const footers = findAll(drawer, (t) => t.name === 'footer');

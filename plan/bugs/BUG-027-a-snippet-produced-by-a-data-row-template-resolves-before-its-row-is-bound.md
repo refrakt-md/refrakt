@@ -1,4 +1,4 @@
-{% bug id="BUG-027" status="confirmed" severity="major" source="SPEC-127" tags="runes,snippet,data,preprocess,composition" milestone="v0.39.0" %}
+{% bug id="BUG-027" status="fixed" severity="major" source="SPEC-127" tags="runes,snippet,data,preprocess,composition" milestone="v0.39.0" pr="refrakt-md/refrakt#667" %}
 
 # A `{% snippet %}` produced by a `{% data %}` row template resolves before its row is bound
 
@@ -83,5 +83,20 @@ a nested `data` works and a nested `snippet` does not.
 - {% ref "SPEC-129" /%} — the include rune and the ordering constraint this generalises
 - {% ref "SPEC-062" /%} — the snippet rune and its preprocess design
 - {% ref "SPEC-141" /%} — tree-order preprocessing, the proposed fix
+
+## Resolution
+
+Completed: 2026-10-07
+
+Branch: `claude/v039-tree-order-preprocess`
+PR: refrakt-md/refrakt#667
+
+### What was done
+- Fixed by WORK-618's tree-order walk, with no special case: the walk reaches `{% data %}`, binds the rows, splices in a `{% snippet %}` whose `path` is now a literal, descends and resolves it.
+- Regression tests in `packages/runes/test/preprocess-tree-order.test.ts`, driven through `createCorePipelineHooks().preprocess`: snippet in a row template (the reported case), the same inside an included file, and `{% include file=$row.card %}` in a row template. All three were committed failing first (commit b77900b) with the reported "`path` attribute is required" error (and the include equivalent), and pass after WORK-618.
+- `runes/data.md` documents that preprocessor runes in a row body see the bound row.
+
+### Notes
+- Contracts and SEO baseline unchanged.
 
 {% /bug %}

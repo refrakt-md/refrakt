@@ -1,10 +1,11 @@
 /**
- * Data pipeline hook (SPEC-103).
+ * Data's preprocess hook (SPEC-103), declared on the rune in `tags/data.ts`.
  *
- * A preprocess sibling to `preprocessSnippets`: walk the parsed AST, and for
- * every `{% data %}` tag resolve its `src` through the SPEC-113 `ProjectFiles`
- * seam (whole-file, project-root bounded), run the format adapter + shared
- * projection + typing, and replace the tag with a Markdoc `table` AST node. The
+ * A preprocess sibling to `snippet`: for a `{% data %}` tag, resolve its `src`
+ * through the SPEC-113 `ProjectFiles` seam (whole-file, project-root bounded),
+ * run the format adapter + shared projection + typing, and replace the tag with
+ * a Markdoc `table` AST node — or, with a body, with the body bound once per row
+ * (SPEC-127). The
  * emitted table is consumed by `chart`/`datatable` with no structural edits and
  * is the honest no-JS fallback on a bare page.
  *
@@ -24,6 +25,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 const { Ast } = Markdoc;
 import type { ProjectFiles, PreprocessContext, PreprocessPage } from '@refrakt-md/types';
+import type { RunePreprocessContext } from './lib/preprocess.js';
 import {
 	delimitedAdapter,
 	jsonAdapter,
@@ -135,73 +137,43 @@ function splitList(raw: string): string[] {
 		.filter((s) => s.length > 0);
 }
 
-/**
- * Preprocess: replace every `{% data %}` tag with a resolved `table` node (or an
- * error callout). No-op when no provider is available (tree mode without a wired
- * `ProjectFiles`), matching snippet.
- */
-export function preprocessData(
-	ast: Node,
-	page: PreprocessPage,
-	ctx: PreprocessContext,
-): Node | void {
-	if (!ctx.sandbox) return;
-	let mutated = false;
-	walkAndReplaceData(ast, page, ctx, ctx.sandbox, () => {
-		mutated = true;
-	});
-	return mutated ? ast : undefined;
-}
-
 /** Runes that consume a `<table>` child directly, so a per-row body inside them
  *  would render as a silently empty chart rather than an error (SPEC-127). */
 const TABLE_CONSUMERS = new Set(['chart', 'datatable']);
 
-function walkAndReplaceData(
-	node: Node,
+/**
+ * Preprocess: replace a `{% data %}` tag with a resolved `table` node, its
+ * bound per-row body, or an error callout. No-op when no provider is available
+ * (tree mode without a wired `ProjectFiles`), matching snippet.
+ *
+ * **Splice, never wrap.** One `data` tag may produce N nodes, and they have to
+ * land as direct siblings: a container node to keep the replacement 1:1 breaks
+ * composition invisibly, and how badly depends on the parent. Measured against
+ * `accordion`, a `{% div %}` wrapper is harmless while `{% section %}` and
+ * `{% grid %}` consume their children — the `accordion-item` tags and their body
+ * text vanish with no error or warning (SPEC-127).
+ *
+ * A `data` inside the body — a subquery, one copy per outer row with its
+ * `where` already bound (WORK-553) — is not resolved here. The preprocess walk
+ * descends into this replacement and resolves it like any other tag (SPEC-141
+ * D3), as it does a `snippet` whose `path` came from the row (BUG-027).
+ */
+export function preprocessDataTag(
+	tag: Node,
 	page: PreprocessPage,
-	ctx: PreprocessContext,
-	files: ProjectFiles,
-	onReplaced: () => void,
-	enclosing?: string,
-): void {
-	if (!node.children) return;
-	for (let i = 0; i < node.children.length; i++) {
-		const child = node.children[i];
-		if (child.type === 'tag' && child.tag === 'data') {
-			// **Splice, never wrap.** One `data` tag may now produce N nodes, and
-			// they have to land as direct siblings: a container node to keep the
-			// replacement 1:1 breaks composition invisibly, and how badly depends
-			// on the parent. Measured against `accordion`, a `{% div %}` wrapper is
-			// harmless while `{% section %}` and `{% grid %}` consume their
-			// children — the `accordion-item` tags and their body text vanish with
-			// no error or warning (SPEC-127).
-			let replacement = resolveData(child, page, ctx, files, enclosing);
-			// Resolve any `data` the replacement carries — a subquery, one copy
-			// per outer row, each with its `where` already bound (WORK-553).
-			//
-			// Walked through a throwaway container because a subquery can be a
-			// *direct* child of the body, in which case it is the replacement
-			// node itself: `walkAndReplaceData` only ever replaces children, so
-			// handing it the node would walk past the very tag that needs
-			// resolving.
-			//
-			// This terminates without a depth limit: the tags come from the
-			// authored body and each pass consumes one level of it. A row value
-			// cannot synthesise a new `data` tag — rows are text, and `bindRow`
-			// only substitutes into slots that already exist.
-			if (replacement.length > 0) {
-				const container = new Ast.Node('document', {}, replacement);
-				walkAndReplaceData(container, page, ctx, files, onReplaced, enclosing);
-				replacement = container.children;
-			}
-			node.children.splice(i, 1, ...replacement);
-			i += replacement.length - 1;
-			onReplaced();
-			continue;
+	ctx: RunePreprocessContext,
+): Node[] | void {
+	if (!ctx.sandbox) return;
+	// The nearest enclosing tag, read off the walk's ancestor chain (SPEC-141 D4).
+	let enclosing: string | undefined;
+	for (let i = ctx.ancestors.length - 1; i >= 0; i--) {
+		const ancestor = ctx.ancestors[i];
+		if (ancestor.type === 'tag' && ancestor.tag) {
+			enclosing = ancestor.tag;
+			break;
 		}
-		walkAndReplaceData(child, page, ctx, files, onReplaced, child.tag ?? enclosing);
 	}
+	return resolveData(tag, page, ctx, ctx.sandbox, enclosing);
 }
 
 /**
@@ -241,7 +213,7 @@ function bindRow(node: Node, row: Record<string, unknown>): Node {
 	// validated — and then 6,609 `tag-placement-invalid` findings the moment
 	// SPEC-132 pointed Markdoc's validator at the content, because `{% code %}`
 	// declares `inline: true` and the rune-attribute tables bind it per row.
-	// `cloneWithBindings` in include-pipeline.ts had it right all along.
+	// `cloneWithBindings` in include's preprocessor had it right all along.
 	copy.inline = node.inline;
 	if (node.annotations?.length) copy.annotations = node.annotations;
 	return copy;

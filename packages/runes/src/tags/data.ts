@@ -1,4 +1,5 @@
 import { createContentModelSchema } from '../lib/index.js';
+import { preprocessDataTag } from '../data-pipeline.js';
 
 /**
  * The `data` rune — ingest an external tabular source (CSV/TSV/JSON/NDJSON) and
@@ -8,8 +9,8 @@ import { createContentModelSchema } from '../lib/index.js';
  * Like `snippet`, `data` is implemented as an **AST preprocessor**: every
  * `{% data %}` tag is resolved (read through the SPEC-113 `ProjectFiles` seam,
  * adapted, projected, typed) and replaced with a `table` AST node before the
- * schema-driven transform runs (see `corePipelineHooks.preprocess` in
- * `../config.ts`). By the time the transform reaches the AST, no `data` tags
+ * schema-driven transform runs — its `preprocess` hook, `preprocessDataTag` in
+ * `../data-pipeline.ts`, dispatched by the tree-order walk (SPEC-141). By the time the transform reaches the AST, no `data` tags
  * remain — so this schema's `transform` is **unreachable in normal operation**.
  *
  * The schema still exists for tooling: `refrakt inspect data`, the contracts
@@ -102,11 +103,12 @@ export const data = createContentModelSchema({
 	// row with `$row` bound, in place of the `<table>` the bodyless form emits.
 	// With `headers` set it is instead one `---`-delimited table *row* (WORK-550).
 	// The content model stays empty because the body never reaches the transform
-	// — `preprocessData` binds and splices it at parse time — but it must be
+	// — the `preprocess` hook binds and splices it at parse time — but it must be
 	// *allowed* here or Markdoc rejects the tag before the preprocessor sees it.
 	contentModel: { type: 'sequence', fields: [] },
+	preprocess: preprocessDataTag,
 	transform(_resolved, _attrs) {
-		// Unreachable in normal operation — corePipelineHooks.preprocess replaces
+		// Unreachable in normal operation — the `preprocess` hook replaces
 		// `data` tags with `table` nodes before the transform runs.
 		//
 		// For a *content* author there is exactly one way to get here, and it is

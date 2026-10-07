@@ -3,9 +3,8 @@ import { describe, it, expect } from 'vitest';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { tags, nodes } from '../src/index.js';
-import { preprocessData } from '../src/data-pipeline.js';
 import { memoryProjectFiles } from '@refrakt-md/types/project-files';
-import { findTag, findAllTags } from './helpers.js';
+import { preprocess, findTag, findAllTags } from './helpers.js';
 import type { PreprocessContext } from '@refrakt-md/types';
 
 function runData(src: string, files: Record<string, string>) {
@@ -19,7 +18,7 @@ function runData(src: string, files: Record<string, string>) {
 		sandbox: memoryProjectFiles(new Map(Object.entries(files))),
 		variables: {},
 	};
-	preprocessData(ast, { url: '/page', relativePath: 'page.md', filePath: '/project/page.md' }, ctx);
+	preprocess(ast, { url: '/page', relativePath: 'page.md', filePath: '/project/page.md' }, ctx);
 	return { ast, rendered: Markdoc.transform(ast, { tags, nodes }), messages };
 }
 

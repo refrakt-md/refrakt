@@ -104,6 +104,18 @@ The rendered rows are spliced in as **siblings**, landing exactly where hand-wri
 {% /accordion %}
 ```
 
+### Other preprocessor runes see the bound row
+
+The body is bound to a row before anything inside it is resolved, so a `{% snippet %}`, `{% include %}` or nested `{% data %}` in the body can take its attributes from `$row`:
+
+```markdoc
+{% data src="examples.csv" %}
+{% snippet path=$row.path /%}
+{% /data %}
+```
+
+Each row gets its own code block, read from the file that row names. Before v0.39.0 the snippet was resolved before any row was bound, so every row rendered the same "`path` attribute is required" error.
+
 ### A variable inside backticks is literal
 
 Markdoc does not interpolate inside inline code, so this renders the text `{% $row.name %}` rather than the value:
