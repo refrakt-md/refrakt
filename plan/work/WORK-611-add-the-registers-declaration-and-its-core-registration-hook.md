@@ -35,15 +35,15 @@ in this item's resolution, informed by it.
 
 ## Acceptance Criteria
 
-- [ ] A rune can declare `registers.entity` with `type`, `idFrom`, `scope`, `data` and `aliases`
-- [ ] A rune can declare `registers.edge` with `from`, `to` and `kind`
-- [ ] The declaration contains no function values and round-trips through `JSON.parse(JSON.stringify(…))`
-- [ ] One core hook performs the registration for every rune carrying the block, in the existing Phase 2 / Phase 3 slots, beside — not replacing — `PluginPipelineHooks`
-- [ ] A declaration naming a field that no emitted node, field-bag entry or attribute provides is reported at validate time, with file and line — the same treatment a schema-table source already gets
-- [ ] `refrakt inspect` shows a rune's registration declaration
-- [ ] The generated reference documents `registers` for every rune that carries one
-- [ ] The plan plugin's pipeline is unchanged, and the authoring guide states SPEC-144's reach table — storytelling and design are reachable, plan is not, and why (D5)
-- [ ] D3 (channel explicitness) is decided and the decision recorded in the resolution
+- [x] A rune can declare `registers.entity` with `type`, `idFrom`, `scope`, `data` and `aliases`
+- [x] A rune can declare `registers.edge` with `from`, `to` and `kind`
+- [x] The declaration contains no function values and round-trips through `JSON.parse(JSON.stringify(…))`
+- [x] One core hook performs the registration for every rune carrying the block, in the existing Phase 2 / Phase 3 slots, beside — not replacing — `PluginPipelineHooks`
+- [x] A declaration naming a field that no emitted node, field-bag entry or attribute provides is reported at validate time, with file and line — the same treatment a schema-table source already gets
+- [x] `refrakt inspect` shows a rune's registration declaration
+- [x] The generated reference documents `registers` for every rune that carries one
+- [x] The plan plugin's pipeline is unchanged, and the authoring guide states SPEC-144's reach table — storytelling and design are reachable, plan is not, and why (D5)
+- [x] D3 (channel explicitness) is decided and the decision recorded in the resolution
 
 ## References
 

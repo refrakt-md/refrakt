@@ -26,12 +26,12 @@ rather than on parallel branches.
 
 ## Acceptance Criteria
 
-- [ ] A registry snapshot over the storytelling fixtures is captured before the migration and asserted after it — types, ids, scopes, `sourceUrl`s, `data` bags and registration order
-- [ ] `character`, `realm`, `faction`, `lore` and `plot` register through `registers.entity`
-- [ ] `bond` registers through `registers.edge`, and `bond` edges resolve through `getRelated` identically to today
-- [ ] `character` alias lookup resolves identically, including "first registration wins" for a duplicate alias
-- [ ] The plugin's `register` and `aggregate` hooks are deleted, not merely unused, and `extractEntityName` / `extractEntityData` go with them
-- [ ] The plugin's `postProcess` is untouched
+- [x] A registry snapshot over the storytelling fixtures is captured before the migration and asserted after it — types, ids, scopes, `sourceUrl`s, `data` bags and registration order
+- [x] `character`, `realm`, `faction`, `lore` and `plot` register through `registers.entity`
+- [x] `bond` registers through `registers.edge`, and `bond` edges resolve through `getRelated` identically to today
+- [x] `character` alias lookup resolves identically, including "first registration wins" for a duplicate alias
+- [x] The plugin's `register` and `aggregate` hooks are deleted, not merely unused, and `extractEntityName` / `extractEntityData` go with them
+- [x] The plugin's `postProcess` is untouched
 
 ## Blocked by
 

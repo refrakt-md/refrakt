@@ -12,9 +12,9 @@ asserted after, with order included.
 
 ## Acceptance Criteria
 
-- [ ] A registry snapshot over the design fixtures is captured before the migration and asserted after it — types, ids, scopes, `sourceUrl`s, `data` bags and registration order
-- [ ] design's `register` and `aggregate` hooks are deleted, not merely unused
-- [ ] Anything left in `plugins/design/src/pipeline.ts` is code the declaration genuinely cannot express, and the resolution says what it is
+- [x] A registry snapshot over the design fixtures is captured before the migration and asserted after it — types, ids, scopes, `sourceUrl`s, `data` bags and registration order
+- [x] design's `register` and `aggregate` hooks are deleted, not merely unused
+- [x] Anything left in `plugins/design/src/pipeline.ts` is code the declaration genuinely cannot express, and the resolution says what it is
 
 ## Blocked by
 
