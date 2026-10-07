@@ -43,7 +43,7 @@ Ten work items in four groups, plus four bug riders:
 
 - **Name resolution** (2) — {% ref "WORK-609" /%} fixes the `findChildren` over-match and introduces the ownership marker; {% ref "WORK-610" /%} uses the marker so `findAllByName` can see owner-marked content across a boundary, and must be inert today.
 - **Declarative registration** (3) — {% ref "WORK-611" /%} adds `registers.entity` / `registers.edge` and the core hook; {% ref "WORK-612" /%} and {% ref "WORK-613" /%} migrate storytelling and design.
-- **Declarative slot labelling** (3) — {% ref "WORK-614" /%} adds the slot declaration and the generated transform; {% ref "WORK-616" /%} (`work`, `bug`, `decision`) and {% ref "WORK-617" /%} (`character`, `realm`, `faction`) prove it on both sides of the `emitTag` split.
+- **Declarative slot labelling** (3) — {% ref "WORK-614" /%} adds the slot declaration and the generated transform; {% ref "WORK-616" /%} (`work`, `bug`, `decision`) proves it on the resolved-entry side of the `emitTag` split. {% ref "WORK-617" /%} (`character`, `realm`, `faction`) is **cancelled**: on contact all three failed SPEC-143's D4 family test (nested named nodes, pick-by-node-kind, filtering rendered output, a merge across two slots), so they are deferred to the composed-runes work ({% ref "SPEC-145" /%} / {% ref "SPEC-147" /%}), which replaces them rather than declaring their current transforms. The `emitTag` side is covered by the mechanism's own tests.
 - **Tree-order preprocess** (2) — {% ref "WORK-615" /%} removes snippet's figure wrapper (breaking output change, changeset); {% ref "WORK-618" /%} replaces the three passes with one walk.
 - **Riders** (4) — all `major`:
   - {% ref "BUG-027" /%} — closed by WORK-618.
@@ -60,7 +60,7 @@ expectations is the main risk in this milestone:
 | Item | Contracts | SEO baseline |
 |---|---|---|
 | WORK-609 | none | **a reviewed diff** — the fix is supposed to move it (SPEC-146 D3) |
-| WORK-610, WORK-614/616/617, WORK-618 | none | none |
+| WORK-610, WORK-614/616, WORK-618 (WORK-617 cancelled) | none | none |
 | WORK-611/612/613 | none | none — plus a byte-identical **registry** snapshot, order included (SPEC-144 D4) |
 | WORK-615 | the wrapper removal only | none |
 | BUG-018, BUG-028 | expected to move; reviewed | expected to move; reviewed |
@@ -71,9 +71,9 @@ A refactor row that moves either file has changed behaviour, whatever the intent
 
 - WORK-609 → WORK-610: the marker is introduced by the first.
 - WORK-611 → WORK-612, WORK-613.
-- WORK-614 → WORK-616, WORK-617.
+- WORK-614 → WORK-616. (WORK-617 was cancelled — see above.)
 - WORK-615 → WORK-618 → BUG-027 (SPEC-141 D5: the wrapper goes first, separately).
-- WORK-612 and WORK-617 both rewrite the storytelling plugin. They are independent, but land them one after the other.
+- WORK-612 and WORK-617 both rewrote the storytelling plugin, so they were to land one after the other. With WORK-617 cancelled, WORK-612 has the plugin to itself.
 
 The four groups are independent of one another and can run in parallel.
 
