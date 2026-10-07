@@ -65,3 +65,37 @@ describe('SEO: MusicPlaylist (legacy)', () => {
 		expect(playlist.name).toBe('Summer Vibes');
 	});
 });
+
+// SPEC-146 Problem 1 / WORK-609. `track` is both the playlist row's child key
+// and a rune name, so a `{% track %}` the author nested in unrelated content used
+// to be published as one of the playlist's tracks.
+describe('SEO: a playlist resolves only its own tracks', () => {
+	const result = () =>
+		seo(`{% playlist type="album" artist="Pink Floyd" %}
+# The Dark Side of the Moon
+
+- **Speak to Me** (1:13)
+
+{% track artist="Pink Floyd" %}
+Breathe
+{% /track %}
+
+{% hint type="note" %}
+{% track artist="Pink Floyd" %}
+Echoes
+{% /track %}
+{% /hint %}
+{% /playlist %}`);
+
+	it('keeps both of its own populations — list items and track tags', () => {
+		const album = result().jsonLd[0] as any;
+		expect(album['@type']).toBe('MusicAlbum');
+		expect(album.track.map((t: any) => t.name)).toEqual(['Speak to Me', 'Breathe']);
+	});
+
+	it('leaves a track nested in a hint as the author’s own entity', () => {
+		const [album, ...rest] = result().jsonLd as any[];
+		expect(album.track.some((t: any) => t.name === 'Echoes')).toBe(false);
+		expect(rest).toEqual([expect.objectContaining({ '@type': 'MusicRecording', name: 'Echoes' })]);
+	});
+});

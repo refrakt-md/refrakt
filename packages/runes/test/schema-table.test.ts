@@ -8,6 +8,9 @@ import {
 	collectJsonLd,
 	type SchemaTable,
 } from '../src/index.js';
+import { OWNER_ATTR, releaseOwnedNodes } from '../src/lib/schema-table.js';
+import { breadcrumbSchema } from '../src/tags/breadcrumb.js';
+import { createContentModelSchema } from '../src/lib/index.js';
 
 const { Tag } = Markdoc;
 
@@ -371,5 +374,187 @@ describe('schema="none"', () => {
 		);
 		expect((tree as any).attributes.typeof).toBeUndefined();
 		expect(graph(tree)).toEqual([]);
+	});
+});
+
+// SPEC-146 Problem 1 / WORK-609 — a `children` key that is also a rune name
+// (`track`, `step`, `tier`, `breadcrumb-item`) used to match that rune anywhere
+// below the parent, including inside a rune the *author* nested. These were
+// written against the pre-fix resolver first, and failed on every assertion
+// about the author's node.
+describe('a child key naming a rune matches only the parent’s own children', () => {
+	/** `playlist`'s music row: the child row carries its own `properties`. */
+	const playlistTable: SchemaTable = {
+		type: 'MusicAlbum',
+		lists: ['track'],
+		children: {
+			track: {
+				type: 'MusicRecording',
+				property: 'track',
+				properties: { 'track-name': 'name', 'track-artist': 'byArtist' },
+			},
+		},
+	};
+
+	const track = (name: string, artist: string) =>
+		new Tag('li', { 'data-rune': 'track', typeof: 'MusicRecording' }, [
+			new Tag('span', { 'data-name': 'track-name' }, [name]),
+			new Tag('span', { 'data-name': 'track-artist' }, [artist]),
+		] as never);
+
+	/** A playlist with one own track and one an author put inside a `hint`. */
+	const playlistWithForeignTrack = () => {
+		const own = track('Own Song', 'Own Artist');
+		const authors = track('Unrelated', 'Someone Else');
+		// Its own table has already run — Markdoc transforms bottom-up.
+		authors.children.forEach((c: any, i: number) => {
+			c.attributes.property = ['name', 'byArtist'][i];
+		});
+		const hint = new Tag('section', { 'data-rune': 'hint' }, [
+			new Tag('div', { 'data-name': 'body' }, [authors]),
+		] as never);
+		const tree = new Tag('section', { 'data-rune': 'playlist' }, [
+			new Tag('ol', { 'data-name': 'tracks' }, [own]),
+			new Tag('div', { 'data-name': 'body' }, [hint]),
+		] as never);
+		return { tree: applySchemaTable(tree, playlistTable, {}), own, authors };
+	};
+
+	it('does not stamp an author-nested rune as one of the parent’s children', () => {
+		const { authors } = playlistWithForeignTrack();
+		// Before the fix: `typeof` stayed `MusicRecording` but `property` was
+		// `track` — the parent claimed it.
+		expect(authors.attributes.property).toBeUndefined();
+		expect(authors.attributes.typeof).toBe('MusicRecording');
+	});
+
+	it('publishes exactly one track in the graph, not two', () => {
+		const { tree } = playlistWithForeignTrack();
+		const [album, ...rest] = graph(tree) as Record<string, any>[];
+		expect(album['@type']).toBe('MusicAlbum');
+		// D6 keeps a declared list an array at any length.
+		expect(album.track).toEqual([
+			{ '@type': 'MusicRecording', name: 'Own Song', byArtist: 'Own Artist' },
+		]);
+		// The author's track is its own entity, as it would be anywhere else.
+		expect(rest).toHaveLength(1);
+		expect(rest[0]).toMatchObject({ '@type': 'MusicRecording', byArtist: 'Someone Else' });
+	});
+
+	it('leaves the author’s rune its own property map', () => {
+		// The second-order effect: retyping an over-matched child ran
+		// `clearProperties` on the author's node first, stripping what its own
+		// table had stamped wherever the parent's row maps it differently.
+		const authors = track('Unrelated', 'Someone Else');
+		const artist = authors.children[1] as InstanceType<typeof Tag>;
+		artist.attributes.property = 'creator';
+		applySchemaTable(
+			new Tag('section', { 'data-rune': 'playlist' }, [
+				new Tag('section', { 'data-rune': 'hint' }, [authors]),
+			] as never),
+			playlistTable,
+			{},
+		);
+		expect(artist.attributes.property).toBe('creator');
+	});
+
+	it('covers breadcrumb’s `breadcrumb-item` row the same way', () => {
+		const item = (name: string, url: string) =>
+			new Tag('li', { 'data-rune': 'breadcrumb-item' }, [
+				new Tag('a', { 'data-name': 'url', href: url, 'data-field': 'url' }, [
+					new Tag('span', { 'data-name': 'name' }, [name]),
+				]),
+			] as never);
+		const foreign = item('Elsewhere', '/elsewhere');
+		const tree = applySchemaTable(
+			new Tag('nav', { 'data-rune': 'breadcrumb' }, [
+				new Tag('ol', { 'data-name': 'items' }, [item('Home', '/'), item('Docs', '/docs')]),
+				new Tag('aside', { 'data-rune': 'hint' }, [foreign]),
+			] as never),
+			breadcrumbSchema,
+			{},
+		);
+		expect(foreign.attributes.property).toBeUndefined();
+		const trail = first(tree);
+		expect(trail.itemListElement.map((i: any) => i.name)).toEqual(['Home', 'Docs']);
+		expect(trail.itemListElement.map((i: any) => i.position)).toEqual(['1', '2']);
+	});
+
+	it('still matches a child the parent placed itself, by name or by rune', () => {
+		// `playlist` builds some tracks from list items and receives others as
+		// `{% track %}` tags; both are its own and take one row.
+		const listed = new Tag('li', { 'data-name': 'track' }, [
+			new Tag('span', { 'data-name': 'track-name' }, ['Listed']),
+		] as never);
+		const tagged = track('Tagged', 'Artist');
+		const tree = applySchemaTable(
+			new Tag('section', { 'data-rune': 'playlist' }, [
+				new Tag('ol', { 'data-name': 'tracks' }, [listed, tagged]),
+			] as never),
+			playlistTable,
+			{},
+		);
+		expect(first(tree).track.map((t: any) => t.name)).toEqual(['Listed', 'Tagged']);
+	});
+
+	it('rejects a match marked for another rune, even among its own nodes', () => {
+		const theirs = track('Placed for someone else', 'X');
+		theirs.attributes[OWNER_ATTR] = 'mixtape';
+		const tree = applySchemaTable(
+			new Tag('section', { 'data-rune': 'playlist' }, [theirs] as never),
+			playlistTable,
+			{},
+		);
+		expect(theirs.attributes.property).toBeUndefined();
+		expect(graph(tree).some((e: any) => e.track !== undefined)).toBe(false);
+	});
+
+	it('admits a match past a boundary when it is marked for this rune', () => {
+		// Nothing sets the marker yet — SPEC-145's composition will. This is the
+		// one way past a boundary, and the reason the marker exists.
+		const placed = track('Placed for me', 'Y');
+		placed.attributes[OWNER_ATTR] = 'playlist';
+		const tree = applySchemaTable(
+			new Tag('section', { 'data-rune': 'playlist' }, [
+				new Tag('div', { 'data-rune': 'card' }, [placed]),
+			] as never),
+			playlistTable,
+			{},
+		);
+		expect(first(tree).track).toEqual([
+			{ '@type': 'MusicRecording', name: 'Placed for me', byArtist: 'Y' },
+		]);
+	});
+});
+
+describe('the ownership marker is bookkeeping, not output (SPEC-146 D4)', () => {
+	it('is stripped from the nodes the finishing rune owns', () => {
+		const mine = new Tag('img', { [OWNER_ATTR]: 'character' });
+		const theirs = new Tag('img', { [OWNER_ATTR]: 'faction' });
+		const tree = new Tag('article', { 'data-rune': 'character' }, [
+			new Tag('div', { 'data-rune': 'card' }, [mine, theirs]),
+		] as never);
+		releaseOwnedNodes(tree);
+		expect(mine.attributes[OWNER_ATTR]).toBeUndefined();
+		// Another rune's mark is left for that rune, which may still run.
+		expect(theirs.attributes[OWNER_ATTR]).toBe('faction');
+	});
+
+	it('never leaves a rune’s transform, table or no table', () => {
+		// The strip is in the schema wrapper, not the table applier, so a rune
+		// with no schema row cannot leak a mark into the HTML either.
+		const placed = new Tag('img', { [OWNER_ATTR]: 'probe-rune', src: 'v.jpg' });
+		const schema = createContentModelSchema({
+			attributes: {},
+			contentModel: { type: 'sequence', fields: [] },
+			transform: () =>
+				new Tag('article', { 'data-rune': 'probe-rune' }, [
+					new Tag('div', { 'data-rune': 'card' }, [placed]),
+				] as never),
+		});
+		const ast = Markdoc.parse('{% probe-rune %}{% /probe-rune %}');
+		Markdoc.transform(ast, { tags: { 'probe-rune': schema } } as never);
+		expect(placed.attributes[OWNER_ATTR]).toBeUndefined();
+		expect(placed.attributes.src).toBe('v.jpg');
 	});
 });
