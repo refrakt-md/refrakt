@@ -1,4 +1,4 @@
-{% work id="WORK-614" status="ready" priority="high" complexity="complex" source="SPEC-143" milestone="v0.39.0" tags="runes,transform,declarative,dx" %}
+{% work id="WORK-614" status="in-progress" priority="high" complexity="complex" source="SPEC-143" milestone="v0.39.0" tags="runes,transform,declarative,dx" %}
 
 # Add the slot declaration and generate a rune's transform from it
 
