@@ -1257,6 +1257,43 @@ longer interpret what it was given, which is the reason for placing it there.
 Marking after the transform needs a link from AST node to rendered tag, which Markdoc
 does not provide, so it would rest on matching content heuristically.
 
+### D10b — registration reads a node-sourced value from a copy taken at transform time
+
+*Decided 2026-10-07.* A composed rune may carry a `registers` block (SPEC-144), and
+its `idFrom`, `data`, `from` and `to` sources may name a node rather than an
+attribute: a character's id taken from the heading its author wrote, say. Under
+composition that node sits inside a primitive, and registration cannot reach it, for
+two independent reasons:
+
+- **`findRef` stops at nested runes** (`lib/registers.ts:305`) and does not consult the
+  marker.
+- **The marker is gone by the time registration runs.** It is stripped when the
+  composed rune's transform finishes (D10a, SPEC-146 D4), and registration runs in
+  Phase 2, after every page has been transformed. A marker-aware `findRef` would
+  find nothing.
+
+**Decision: the composed rune copies each node-sourced `registers` value into its own
+field bag at transform time, before its markers are stripped.** At that moment D10a's
+resolvers can still reach the placed node. The value is stored as text under the
+source's name, which is what `findRef` returns today. Phase 2 then reads it through
+the fallback `readRegistersSource` already has (a named node first, then the field
+bag), with no change to `findRef`, to Phase 2 or to the strip timing.
+
+- **An attribute source needs nothing.** It is in the bag already.
+- **An unresolvable source still fails loudly.** The existing
+  `registers-source-unresolved` validate check reports a source that names no slot,
+  no attribute and no field, with file and line.
+- **The copy is the composed rune's, so it stays in its own bag** and never reaches a
+  primitive's. The flat namespace (ADR-008) keeps a copied name from colliding with
+  an attribute of the same rune.
+
+**Considered and rejected.** Attribute-only registration for composed runes would
+make authors state a name twice, as an attribute and as the heading. SPEC-147's
+storytelling replacement would depend on exactly that. Keeping the marker until
+Phase 2 would stretch its lifetime across stages and page caching, which is the
+"one hop" lifetime D4 deliberately shortened, and a marker that leaks into HTML
+fails silently.
+
 ### D11 — editability follows the source file, not the tree
 
 The editor edits the page, not the rendered tree — `packages/editor/src/stamp-on-insert.ts`
@@ -2157,6 +2194,7 @@ explicitly is cheaper than rediscovering it.
 - [ ] `data-owner` and `data-slot` are declared once at config assembly on every node and tag schema, not per rune, and a placed node keeps both through the primitive's transform (D10a)
 - [ ] The resolvers admit a node past a boundary by `data-owner` plus `data-slot`, and a primitive's own `data-name` on the same node is left untouched (D10a)
 - [ ] A survival test runs a marked node through every rune in D12's placement set and fails naming any rune that drops either attribute (D10a)
+- [ ] A composed rune whose `registers` source is a placed node registers the same id and data as one whose source is an attribute, read from the field bag in Phase 2; `findRef` and the strip timing are unchanged (D10b)
 - [ ] A composed rune's content-derived `properties` resolve — the `image` from a slot-placed portrait reaches the entity, asserted against the graph and not just the attributes (D10)
 - [ ] An author's nested rune inside a slot is never retyped as part of the composed entity (D10)
 - [ ] A composed rune nested inside another cannot reach the inner one's names, and vice versa (D10)
