@@ -7,7 +7,7 @@ import { config } from './config.js';
 export const business: Plugin = {
 	name: 'business',
 	displayName: 'Business',
-	version: '0.38.0',
+	version: '0.39.0',
 	runes: {
 		cast: {
 			transform: cast,

@@ -1,5 +1,71 @@
 # @refrakt-md/lumina
 
+## 0.39.0
+
+### Minor Changes
+
+- 651e4c4: A standalone snippet renders as a bare `<pre data-source>` (WORK-615)
+
+  **Breaking output change.** `{% snippet %}` used to wrap a standalone code block
+  in `<figure class="rf-snippet" data-rune="snippet" data-source-path="…">`. The
+  wrapper is gone: a standalone snippet now renders as the `<pre>` a fenced code
+  block produces, with nothing around it. The figure carried nothing the `<pre>`
+  did not already have. `data-source` (the project-relative path) and
+  `data-lines` (the resolved range) are on the `<pre>` itself.
+
+  CSS or tooling that selects `.rf-snippet` or `[data-source-path]` must move to
+  `pre[data-source]`. A snippet inside `{% codegroup %}` or `{% diff %}` is
+  unchanged, because it was never wrapped. For chrome around a single snippet,
+  compose it with `{% codegroup title="…" %}`.
+
+  Lumina drops its `.rf-snippet` rules. They only reset the margins the figure
+  introduced. The `file-ref` preview drawer used the same figure for its body, so
+  the drawer now holds the same bare `<pre data-source>`. Structure contracts and
+  the SEO baseline are unchanged.
+
+### Patch Changes
+
+- 8a272a4: `{% figure %}` keeps everything in its body and captions it (BUG-028)
+
+  A figure used to emit only its images and its caption. Any other child, such as
+  a fenced code block, a table, a nested rune, or a second paragraph, was
+  transformed and then dropped without a warning, so a figure wrapping a code
+  block rendered a caption under nothing. Figure is now a general captioned
+  container. Every child is kept in the order it was written. Media (an image, a
+  video, a `placeholder:` or `icon:` image) is still the figure's media slot and
+  is unwrapped from its paragraph as before. The caption still comes from the
+  `caption` attribute or the first paragraph without an image, and still renders
+  last. A figure holding only images renders exactly as it did.
+
+  The structured data follows the content. A figure whose body is only media is
+  still an `ImageObject` with `contentUrl` and `caption`. A figure holding
+  anything else now publishes no schema.org type and no properties, where it used
+  to claim `ImageObject` regardless, even with no image in it. Calling a captioned
+  code block an image was a false statement in the page's JSON-LD and RDFa.
+
+  The rule lives in figure's schema table. Tables gain `byField`, which selects a
+  row from a value the rune's transform records in its field bag, for a type that
+  depends on what the content is rather than on an attribute. `refrakt inspect`,
+  `refrakt contracts` and `refrakt reference` show it.
+
+  Lumina's and the skeleton's figure image and caption rules now apply only to the
+  figure's own children. An image inside a nested rune in a figure body keeps its
+  own styling.
+
+- Updated dependencies [377b95c]
+- Updated dependencies [0d6f027]
+- Updated dependencies [44bd72d]
+- Updated dependencies [8a272a4]
+- Updated dependencies [1607dfe]
+- Updated dependencies [ad3edde]
+- Updated dependencies [ab22ead]
+- Updated dependencies [ed2b992]
+- Updated dependencies [651e4c4]
+  - @refrakt-md/runes@0.39.0
+  - @refrakt-md/skeleton@0.39.0
+  - @refrakt-md/transform@0.39.0
+  - @refrakt-md/types@0.39.0
+
 ## 0.38.0
 
 ### Patch Changes

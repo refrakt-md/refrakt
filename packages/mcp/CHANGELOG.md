@@ -1,5 +1,24 @@
 # @refrakt-md/mcp
 
+## 0.39.0
+
+### Patch Changes
+
+- Updated dependencies [377b95c]
+- Updated dependencies [0d6f027]
+- Updated dependencies [44bd72d]
+- Updated dependencies [8a272a4]
+- Updated dependencies [1607dfe]
+- Updated dependencies [ad3edde]
+- Updated dependencies [ab22ead]
+- Updated dependencies [ed2b992]
+- Updated dependencies [651e4c4]
+  - @refrakt-md/runes@0.39.0
+  - @refrakt-md/content@0.39.0
+  - @refrakt-md/cli@0.39.0
+  - @refrakt-md/transform@0.39.0
+  - @refrakt-md/types@0.39.0
+
 ## 0.38.0
 
 ### Patch Changes
