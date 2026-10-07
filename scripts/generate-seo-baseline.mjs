@@ -150,6 +150,14 @@ export const COVERED_BY_PARENT = { 'breadcrumb-item': 'breadcrumb' };
  */
 export const DELIBERATELY_SILENT = ['blog', 'budget', 'datatable', 'gallery', 'itinerary', 'map'];
 
+/**
+ * Fixtures of an *emitting* rune whose content selects a row that says nothing
+ * — BUG-028. `figure` is an `ImageObject` only while its body is media; a
+ * figure holding code publishes no type. The rune still emits, so it cannot sit
+ * in `DELIBERATELY_SILENT`; these fixtures record the silent row instead.
+ */
+export const SILENT_FIXTURES = ['figure.code', 'figure.mixed'];
+
 /** Every rune in the three groups, flat. */
 export function allEmittingRunes() {
 	return [...EMITTING_RUNES.A, ...EMITTING_RUNES.B, ...EMITTING_RUNES.C];

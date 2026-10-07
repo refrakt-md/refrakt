@@ -47,6 +47,11 @@ export interface ResolvedSchemaRow {
 	type?: string;
 	/** The attribute a multi-row table selects on, if any. */
 	by?: string;
+	/**
+	 * The field-bag entry a content-dependent table selects on, if any. The row
+	 * described is the fallback; the content can select another.
+	 */
+	byField?: string;
 	/** The attribute value this row was selected for, if any. */
 	selectedFor?: string;
 	/** Every property mapping, parent and nested. */
@@ -117,6 +122,7 @@ export function describeSchemaRow(
 	return {
 		type: row.type,
 		by: table.by,
+		...(table.byField !== undefined ? { byField: table.byField } : {}),
 		selectedFor: selected,
 		properties,
 		entities,

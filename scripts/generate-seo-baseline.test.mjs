@@ -6,6 +6,7 @@ import {
 	EMITTING_RUNES,
 	COVERED_BY_PARENT,
 	DELIBERATELY_SILENT,
+	SILENT_FIXTURES,
 	allEmittingRunes,
 	groupOf,
 	pluginsForSite,
@@ -209,7 +210,7 @@ describe('against the real corpus', () => {
 
 	it('emits at least one entity per fixture, bar the runes that say nothing on purpose', () => {
 		for (const f of artifact.fixtures) {
-			if (DELIBERATELY_SILENT.includes(f.rune)) {
+			if (DELIBERATELY_SILENT.includes(f.rune) || SILENT_FIXTURES.includes(f.fixture)) {
 				expect(f.jsonLd, `${f.fixture} should publish nothing`).toEqual([]);
 				continue;
 			}
@@ -311,7 +312,8 @@ describe('against the real corpus', () => {
 			// A rune that publishes nothing stamps nothing: dropping the type also
 			// removed the `typeof` from the HTML, so the RDFa channel goes quiet
 			// with the JSON-LD rather than keeping a bare assertion in the markup.
-			const expected = DELIBERATELY_SILENT.includes(f.rune) ? 0 : 1;
+			const silent = DELIBERATELY_SILENT.includes(f.rune) || SILENT_FIXTURES.includes(f.fixture);
+			const expected = silent ? 0 : 1;
 			expect(
 				f.rendered.annotations.length,
 				`${f.fixture} rendered ${f.rendered.annotations.length} RDFa nodes`,

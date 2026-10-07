@@ -1,14 +1,18 @@
 /* figure — structure. The image box (block + responsive max-width + centering),
  * the frame-aspect fill, the named size max-widths, and the alignment auto-margins.
- * The image radius and the caption type are skin (Lumina's styles/runes/figure.css). */
+ * The image radius and the caption type are skin (Lumina's styles/runes/figure.css).
+ *
+ * The image rules take the figure's own media only — a direct child. Since
+ * BUG-028 a figure's body may hold a code block, a table or a nested rune, and
+ * an image inside one of those belongs to it, not to the figure. */
 
-.rf-figure :is(img, .rf-placeholder) {
+.rf-figure > :is(img, .rf-placeholder) {
 	display: block;
 	max-width: 100%;
 	height: auto;
 	margin-inline: auto;
 }
-.rf-figure[style*="--frame-aspect"] :is(img, .rf-placeholder) {
+.rf-figure[style*="--frame-aspect"] > :is(img, .rf-placeholder) {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
