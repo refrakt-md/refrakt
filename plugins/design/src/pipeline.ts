@@ -1,17 +1,9 @@
 import Markdoc from '@markdoc/markdoc';
+import type { RegistersIndex } from '@refrakt-md/runes';
 import { readField as readNodeField } from '@refrakt-md/transform';
 import type { PluginPipelineHooks, DesignTokens } from '@refrakt-md/types';
 
 const { Tag } = Markdoc;
-
-function walkTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => void): void {
-	if (Markdoc.Tag.isTag(node)) {
-		fn(node);
-		for (const child of node.children) walkTags(child, fn);
-	} else if (Array.isArray(node)) {
-		node.forEach((n) => walkTags(n, fn));
-	}
-}
 
 function mapTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => unknown): unknown {
 	if (Markdoc.Tag.isTag(node)) {
@@ -25,50 +17,24 @@ function mapTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => unknown):
 	return node;
 }
 
+/**
+ * SPEC-144 / WORK-613 — `design-context` declares what it registers (its
+ * `registers` block), and the core participant registers it and fills this
+ * plugin's `aggregated` slot with the name index. What stays is the part a
+ * declaration cannot express: writing the tokens into each `sandbox`, a rune
+ * this plugin does not own (SPEC-144 D2 — resolution, not registration).
+ */
 export const designPipelineHooks: PluginPipelineHooks = {
-	register(pages, registry, ctx) {
-		for (const page of pages) {
-			walkTags(page.renderable, (tag) => {
-				if (tag.attributes['data-rune'] !== 'design-context') return;
-				// SPEC-082: bag-first (data-rune-fields), legacy <meta data-field> fallback.
-				const tokensRaw = readNodeField(tag, 'tokens');
-				if (!tokensRaw) return;
-				const scope = readNodeField(tag, 'scope') || 'default';
-				try {
-					const tokens = JSON.parse(tokensRaw) as DesignTokens;
-					registry.register({
-						type: 'design-context',
-						id: scope,
-						sourceUrl: page.url,
-						data: tokens as Record<string, unknown>,
-					});
-				} catch {
-					ctx.warn(`Failed to parse design tokens`, page.url);
-				}
-			});
-		}
-	},
-
-	aggregate(registry) {
-		const contexts: Record<string, DesignTokens> = {};
-		for (const entity of registry.getAll('design-context')) {
-			contexts[entity.id] = entity.data as DesignTokens;
-		}
-		return { contexts };
-	},
-
 	postProcess(page, aggregated, ctx) {
-		const designData = aggregated['design'] as
-			| { contexts: Record<string, DesignTokens> }
-			| undefined;
-		if (!designData?.contexts || Object.keys(designData.contexts).length === 0) return page;
+		const designData = aggregated['design'] as RegistersIndex | undefined;
+		if (!designData?.entityByName || designData.entityByName.size === 0) return page;
 
 		let modified = false;
 		const newRenderable = mapTags(page.renderable, (tag) => {
 			if (tag.attributes['data-rune'] !== 'sandbox') return tag;
 			// SPEC-082: bag-first (data-rune-fields), legacy <meta data-field> fallback.
 			const scope = readNodeField(tag, 'context') || 'default';
-			const tokens = designData.contexts[scope];
+			const tokens = designData.entityByName.get(scope)?.data as DesignTokens | undefined;
 			if (!tokens) {
 				if (scope !== 'default') {
 					ctx.warn(

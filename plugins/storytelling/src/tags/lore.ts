@@ -20,6 +20,10 @@ export const loreSchema = {
 } as const;
 
 export const lore = createContentModelSchema({
+	// SPEC-144 — what this rune registers (WORK-612).
+	registers: {
+		entity: { idFrom: 'title', data: ['category', 'spoiler', 'tags', { name: 'title' }] },
+	},
 	schema: loreSchema,
 	sections: loreSections,
 	provides: ['prose'],

@@ -13,6 +13,17 @@ import {
 export const bondSections = { body: 'body' } as const;
 
 export const bond = createContentModelSchema({
+	// SPEC-144 — a bond is an edge between two entities, registered as a `bond`
+	// entry (id `from→to`) and contributed to the relationship graph (WORK-612).
+	registers: {
+		edge: {
+			from: 'from',
+			to: 'to',
+			kind: { field: 'bondType' },
+			bidirectional: { field: 'bidirectional' },
+			data: ['bondType', 'status', 'bidirectional'],
+		},
+	},
 	sections: bondSections,
 	provides: ['prose'],
 	attributes: {

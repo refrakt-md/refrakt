@@ -12,6 +12,9 @@ import {
 	resolveCoreSentinels,
 	captureDeferredBodies,
 	functions,
+	runes as coreRunes,
+	collectRegistrations,
+	composeRegistersHooks,
 } from '@refrakt-md/runes';
 import type { CompiledXrefPattern } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
@@ -200,10 +203,21 @@ export function buildPreprocessHookSets(
 			projectFiles: opts.sandbox,
 		},
 	} as Parameters<typeof createCorePipelineHooks>[0]);
-	const hookSets: HookSet[] = [{ pluginName: '__core__', hooks: coreHooks }];
+	// SPEC-144 / WORK-611 — a rune's `registers` block is performed by the core
+	// participant, composed into the hook set of the package that declares the
+	// rune: same slot, same order, same plugin name as the hand-written
+	// `register` / `aggregate` it replaces, and beside any hooks the package
+	// still writes. A package with declarations and no pipeline gets a hook set.
+	const hookSets: HookSet[] = [
+		{
+			pluginName: '__core__',
+			hooks: composeRegistersHooks(coreHooks, collectRegistrations(coreRunes)) ?? coreHooks,
+		},
+	];
 	for (const pkg of opts.plugins ?? []) {
-		if (pkg.pipeline) {
-			hookSets.push({ pluginName: pkg.name, hooks: pkg.pipeline });
+		const hooks = composeRegistersHooks(pkg.pipeline, collectRegistrations(pkg.runes ?? {}));
+		if (hooks) {
+			hookSets.push({ pluginName: pkg.name, hooks });
 		}
 	}
 	return hookSets;

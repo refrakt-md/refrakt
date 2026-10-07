@@ -120,6 +120,22 @@ function checkIsRuntimeOnly(node: RendererNode): boolean {
 }
 
 /**
+ * The design plugin's registered token sets, by scope. Since SPEC-144 the
+ * plugin's `aggregated` slot is the core registers participant's name index,
+ * which `/api/aggregated` sends with its Map flattened to an object.
+ */
+function designContexts(aggregated: AggregatedData): Record<string, unknown> {
+	const design = aggregated['design'] as
+		| { entityByName?: Record<string, { data?: unknown }> }
+		| undefined;
+	const out: Record<string, unknown> = {};
+	for (const [scope, entity] of Object.entries(design?.entityByName ?? {})) {
+		if (entity?.data) out[scope] = entity.data;
+	}
+	return out;
+}
+
+/**
  * Client-side equivalent of the design package's Phase 4 postProcess.
  * Walks the serialized tree and injects design-tokens meta into Sandbox nodes
  * based on their context attribute and the cached aggregated data.
@@ -135,8 +151,7 @@ function injectSandboxDesignTokens(node: RendererNode, aggregated: AggregatedDat
 
 	const tag = node as SerializedTag;
 	if (tag.attributes?.['data-rune'] === 'sandbox') {
-		const design = aggregated['design'] as { contexts?: Record<string, unknown> } | undefined;
-		const contexts = design?.contexts ?? {};
+		const contexts = designContexts(aggregated);
 		const contextChild = tag.children?.find(
 			(c) => (c as SerializedTag)?.attributes?.['data-field'] === 'context',
 		) as SerializedTag | undefined;

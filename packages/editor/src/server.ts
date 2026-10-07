@@ -341,7 +341,12 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 			} else if (method === 'POST' && url.pathname === '/api/preview-data') {
 				await handlePreviewData(req, res, layoutResolver, identityTransform, highlightTransform);
 			} else if (method === 'GET' && url.pathname === '/api/aggregated') {
-				serveJson(res, cachedAggregated);
+				// A `Map` serialises as `{}`. The name index the core registers
+				// participant puts in a declaring plugin's slot (SPEC-144) is one,
+				// so send Maps as plain objects keyed the same way.
+				serveJson(res, cachedAggregated, (_key, value) =>
+					value instanceof Map ? Object.fromEntries(value) : value,
+				);
 			} else if (method === 'GET' && url.pathname === '/api/events') {
 				// SSE endpoint — keep connection open for file-change push events
 				res.writeHead(200, {
@@ -1129,9 +1134,13 @@ function directoryToJson(
 	return node;
 }
 
-function serveJson(res: import('node:http').ServerResponse, data: unknown): void {
+function serveJson(
+	res: import('node:http').ServerResponse,
+	data: unknown,
+	replacer?: (key: string, value: unknown) => unknown,
+): void {
 	res.writeHead(200, { 'Content-Type': 'application/json' });
-	res.end(JSON.stringify(data, null, 2));
+	res.end(JSON.stringify(data, replacer, 2));
 }
 
 function serveHtml(res: import('node:http').ServerResponse, html: string): void {

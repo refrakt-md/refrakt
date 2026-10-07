@@ -47,6 +47,11 @@ export const DEFAULT_VALIDATION_IDS: readonly string[] = [
 	'attribute-value-invalid',
 	'attribute-missing-required',
 	'attribute-type-invalid',
+	// SPEC-144 / WORK-611 — a `registers` block naming a source the rune never
+	// provides, so every instance registers an empty id or field. Raised by the
+	// declaring rune's own schema `validate`, so it never fires for content that
+	// uses no registering rune.
+	'registers-source-unresolved',
 ];
 
 /** How a finding's Markdoc level maps onto `PipelineWarning.severity`.

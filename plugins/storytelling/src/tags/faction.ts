@@ -58,6 +58,10 @@ export const factionSchema = {
 } as const;
 
 export const faction = createContentModelSchema({
+	// SPEC-144 — what this rune registers (WORK-612).
+	registers: {
+		entity: { idFrom: 'name', data: ['factionType', 'alignment', 'size', 'tags', 'name'] },
+	},
 	schema: factionSchema,
 	sections: factionSections,
 	provides: ['prose'],

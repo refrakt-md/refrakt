@@ -55,9 +55,11 @@ function findTagContext(
  *   - design-context.scope → existing scope names (to warn of collisions)
  */
 function getDynamicValues(tagName: string, attrName: string, aggregated: AggregatedData): string[] {
-	const design = aggregated['design'] as { contexts?: Record<string, unknown> } | undefined;
-	if (!design?.contexts) return [];
-	const scopes = Object.keys(design.contexts);
+	// SPEC-144 — the design slot is the registers name index, flattened to an
+	// object by `/api/aggregated`.
+	const design = aggregated['design'] as { entityByName?: Record<string, unknown> } | undefined;
+	if (!design?.entityByName) return [];
+	const scopes = Object.keys(design.entityByName);
 	if (
 		(tagName === 'sandbox' && attrName === 'context') ||
 		(tagName === 'design-context' && attrName === 'scope')

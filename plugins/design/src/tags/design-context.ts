@@ -19,6 +19,9 @@ import type { DesignTokens } from '@refrakt-md/types';
 export const designContextSections = { title: 'title' } as const;
 
 export const designContext = createContentModelSchema({
+	// SPEC-144 — registers the token set under its scope; the bag is the tokens
+	// object itself. Replaces the hand-written hooks in `pipeline.ts` (WORK-613).
+	registers: { entity: { idFrom: 'scope', data: { json: 'tokens' } } },
 	sections: designContextSections,
 	attributes: {
 		title: {

@@ -203,3 +203,46 @@ describe('validateContent (SPEC-135 D14 / WORK-577)', () => {
 		});
 	});
 });
+
+// SPEC-144 / WORK-611 — a `registers` block naming a source the rune never
+// provides is reported by the fast tier with file and line, like any other
+// validation finding, and the build agrees.
+describe('the registers source audit', () => {
+	it('reports an unresolvable source at the rune’s file and line', async () => {
+		const { mkdtempSync, writeFileSync } = await import('node:fs');
+		const { tmpdir } = await import('node:os');
+		const { createContentModelSchema, bodyOnly, createComponentRenderable } = await import(
+			'@refrakt-md/runes'
+		);
+		const Markdoc = (await import('@markdoc/markdoc')).default;
+		const pet = createContentModelSchema({
+			registers: { entity: { idFrom: 'name', data: ['species', 'speceis'] } },
+			attributes: {
+				name: { type: String, required: true },
+				species: { type: String, required: false },
+			},
+			contentModel: bodyOnly(),
+			transform(_resolved, attrs) {
+				const name = new Markdoc.Tag('span', {}, [attrs.name ?? '']);
+				return createComponentRenderable({
+					rune: 'pet',
+					tag: 'div',
+					refs: { name },
+					children: [name],
+				});
+			},
+		});
+		const dir = mkdtempSync(path.join(tmpdir(), 'refrakt-registers-'));
+		writeFileSync(path.join(dir, 'pets.md'), '# Pets\n\nSome text.\n\n{% pet name="Rex" /%}\n');
+
+		const findings = await validateContent(dir, { additionalTags: { pet } });
+		const hit = findings.filter((f) => f.id === 'registers-source-unresolved');
+		expect(hit).toEqual([
+			expect.objectContaining({ file: 'pets.md', line: 5, severity: 'warning' }),
+		]);
+		expect(hit[0].message).toContain('"speceis"');
+
+		const site = await loadContent(dir, { additionalTags: { pet } });
+		expect(cliFindings(findings)).toEqual(buildFindings(site.pipelineWarnings));
+	});
+});
