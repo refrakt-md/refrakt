@@ -1,4 +1,4 @@
-{% work id="WORK-615" status="ready" priority="medium" complexity="simple" source="SPEC-141" milestone="v0.39.0" tags="runes,snippet,lumina,breaking" %}
+{% work id="WORK-615" status="in-progress" priority="medium" complexity="simple" source="SPEC-141" milestone="v0.39.0" tags="runes,snippet,lumina,breaking" %}
 
 # Remove snippet's standalone figure wrapper
 

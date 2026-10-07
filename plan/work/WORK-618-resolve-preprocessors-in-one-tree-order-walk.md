@@ -1,4 +1,4 @@
-{% work id="WORK-618" status="ready" priority="high" complexity="complex" source="SPEC-141" milestone="v0.39.0" tags="runes,preprocess,architecture,composition" %}
+{% work id="WORK-618" status="in-progress" priority="high" complexity="complex" source="SPEC-141" milestone="v0.39.0" tags="runes,preprocess,architecture,composition" %}
 
 # Resolve preprocessors in one tree-order walk
 
