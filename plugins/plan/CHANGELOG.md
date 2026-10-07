@@ -1,5 +1,68 @@
 # @refrakt-md/plan
 
+## 0.39.0
+
+### Patch Changes
+
+- 44bd72d: A rune can declare its output slots instead of writing a transform (WORK-614, WORK-616)
+
+  `createContentModelSchema` takes an `emits` declaration as the alternative to
+  `transform`: the renderable's identity (`rune`, `tag`, `property`), its property
+  metas in `fieldMetas`' data form, and its named content `slots`, each a `value`
+  or a `region` read from one resolved field or attribute. The schema builds the
+  transform from it once, at construction, and calls it where it would call a
+  hand-written one, so the output is the same either way. The declaration is
+  plain data: functions, nesting, ordering and containers are rejected when the
+  schema is built, as are a slot that would put one `data-name` on two nodes and a
+  rune that declares both `transform` and `emits`, or neither. The rune's
+  `sections` join table is derived from its slots.
+
+  `work`, `bug` and `decision` in `@refrakt-md/plan` now use it. Their rendered
+  output is unchanged.
+
+  `refrakt inspect` and `refrakt reference` list a declared rune's slots, with
+  every default spelled out (`slots` and `emits` in JSON output).
+
+- 1607dfe: Grouping by a multi-value field puts an entity in one group per value (BUG-025)
+
+  `collection`, `aggregate` and `backlog` all accept `group="<field>"`. For a
+  field holding several comma-separated values, such as `tags`, `source` or `pr`,
+  the group key used to be the whole string, so an entity tagged
+  `runes, data, csv` landed in a group called `runes, data, csv`. Against this
+  repository's own plan, `group="tags"` gave 719 groups for 803 entities, and
+  counting work items per spec read SPEC-008 as 16 when it has 19.
+
+  Grouping now splits the value the same way `filter` already did. The value is
+  split on commas, each member is trimmed, empty members are ignored, and an
+  array is split by element. The entity joins every group whose value it carries.
+  A group's size now means "entities carrying this value", so per-group counts
+  can add up to more than the entity count. `aggregate`'s `total` still counts
+  each entity once. Grouping by a single-valued field such as `status` or
+  `priority` is unchanged, and an entity with no value still groups under
+  `(none)`.
+
+  `sort` on a multi-value field no longer orders by the joined string either. An
+  entity sorts by its smallest value ascending and its largest descending. With a
+  declared order, it sorts by its best-ranked value ascending and its
+  worst-ranked value descending. Sorting by a single-valued field is unchanged.
+
+  `@refrakt-md/runes` also exports `fieldMembers` and `groupKeys`, the split used
+  for grouping, next to the display helper `fieldValue`.
+
+- Updated dependencies [377b95c]
+- Updated dependencies [0d6f027]
+- Updated dependencies [44bd72d]
+- Updated dependencies [8a272a4]
+- Updated dependencies [1607dfe]
+- Updated dependencies [ad3edde]
+- Updated dependencies [ab22ead]
+- Updated dependencies [ed2b992]
+- Updated dependencies [651e4c4]
+  - @refrakt-md/runes@0.39.0
+  - @refrakt-md/content@0.39.0
+  - @refrakt-md/transform@0.39.0
+  - @refrakt-md/types@0.39.0
+
 ## 0.38.0
 
 ### Minor Changes

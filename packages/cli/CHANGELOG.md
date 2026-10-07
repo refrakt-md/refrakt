@@ -1,5 +1,107 @@
 # @refrakt-md/cli
 
+## 0.39.0
+
+### Minor Changes
+
+- 0d6f027: A rune can declare what it registers in the cross-page registry (WORK-611, WORK-612, WORK-613)
+
+  `createContentModelSchema` takes a `registers` block: an `entity` (with `type`,
+  `idFrom`, `scope`, `data` and `aliases`) or an `edge` (with `from`, `to`, `kind`,
+  `bidirectional` and `data`). The block is plain data. It is checked when the
+  module loads, and a function, an unknown key or a class instance is an error. One
+  core participant does the registering in the same Phase 2 and Phase 3 slots a
+  plugin's `register` and `aggregate` hooks use. It runs inside the declaring
+  plugin's hook set, beside any hooks the plugin still writes. A plugin that writes
+  no `aggregate` of its own gets the participant's name index in its `aggregated`
+  slot, as `{ entityByName }`. Declared edges are added to the relationship graph,
+  so `getRelated` and the `relationships` rune can find them.
+
+  A source that the rune never provides is reported by `refrakt validate` as
+  `registers-source-unresolved`, with the file and line of the rune instance. That
+  id is now on by default. `refrakt inspect` shows the block, and its JSON output
+  has a new `registers` field. `refrakt reference` documents it.
+
+  Storytelling and design now register this way, and their `register` and
+  `aggregate` hooks have been removed. Their registries are unchanged: the same
+  entries in the same order, with the same data. Snapshot tests captured before
+  the migration enforce this. Two outputs did change:
+
+  - `bond` edges are now in the relationship graph, with the bond's `type` as the
+    edge kind. An endpoint written as an alias resolves to the character's id.
+    Storytelling's `aggregated` slot no longer has `relationships` or
+    `orphanedBonds`. Nothing in this repository read them, and the
+    unknown-endpoint warnings are still reported.
+  - Design's `aggregated` slot is now `{ entityByName }` instead of `{ contexts }`.
+    The editor's sandbox preview and its `context=` autocomplete read the new
+    shape, and `/api/aggregated` now sends Maps as plain objects.
+
+  Structure contracts and the SEO baseline are unchanged.
+
+- 44bd72d: A rune can declare its output slots instead of writing a transform (WORK-614, WORK-616)
+
+  `createContentModelSchema` takes an `emits` declaration as the alternative to
+  `transform`: the renderable's identity (`rune`, `tag`, `property`), its property
+  metas in `fieldMetas`' data form, and its named content `slots`, each a `value`
+  or a `region` read from one resolved field or attribute. The schema builds the
+  transform from it once, at construction, and calls it where it would call a
+  hand-written one, so the output is the same either way. The declaration is
+  plain data: functions, nesting, ordering and containers are rejected when the
+  schema is built, as are a slot that would put one `data-name` on two nodes and a
+  rune that declares both `transform` and `emits`, or neither. The rune's
+  `sections` join table is derived from its slots.
+
+  `work`, `bug` and `decision` in `@refrakt-md/plan` now use it. Their rendered
+  output is unchanged.
+
+  `refrakt inspect` and `refrakt reference` list a declared rune's slots, with
+  every default spelled out (`slots` and `emits` in JSON output).
+
+### Patch Changes
+
+- 8a272a4: `{% figure %}` keeps everything in its body and captions it (BUG-028)
+
+  A figure used to emit only its images and its caption. Any other child, such as
+  a fenced code block, a table, a nested rune, or a second paragraph, was
+  transformed and then dropped without a warning, so a figure wrapping a code
+  block rendered a caption under nothing. Figure is now a general captioned
+  container. Every child is kept in the order it was written. Media (an image, a
+  video, a `placeholder:` or `icon:` image) is still the figure's media slot and
+  is unwrapped from its paragraph as before. The caption still comes from the
+  `caption` attribute or the first paragraph without an image, and still renders
+  last. A figure holding only images renders exactly as it did.
+
+  The structured data follows the content. A figure whose body is only media is
+  still an `ImageObject` with `contentUrl` and `caption`. A figure holding
+  anything else now publishes no schema.org type and no properties, where it used
+  to claim `ImageObject` regardless, even with no image in it. Calling a captioned
+  code block an image was a false statement in the page's JSON-LD and RDFa.
+
+  The rule lives in figure's schema table. Tables gain `byField`, which selects a
+  row from a value the rune's transform records in its field bag, for a type that
+  depends on what the content is rather than on an attribute. `refrakt inspect`,
+  `refrakt contracts` and `refrakt reference` show it.
+
+  Lumina's and the skeleton's figure image and caption rules now apply only to the
+  figure's own children. An image inside a nested rune in a figure body keeps its
+  own styling.
+
+- Updated dependencies [377b95c]
+- Updated dependencies [0d6f027]
+- Updated dependencies [44bd72d]
+- Updated dependencies [8a272a4]
+- Updated dependencies [1607dfe]
+- Updated dependencies [ad3edde]
+- Updated dependencies [ab22ead]
+- Updated dependencies [ed2b992]
+- Updated dependencies [651e4c4]
+  - @refrakt-md/runes@0.39.0
+  - @refrakt-md/content@0.39.0
+  - @refrakt-md/editor@0.39.0
+  - @refrakt-md/ai@0.39.0
+  - @refrakt-md/html@0.39.0
+  - @refrakt-md/transform@0.39.0
+
 ## 0.38.0
 
 ### Patch Changes

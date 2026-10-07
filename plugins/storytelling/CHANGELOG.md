@@ -1,5 +1,58 @@
 # @refrakt-md/storytelling
 
+## 0.39.0
+
+### Minor Changes
+
+- 0d6f027: A rune can declare what it registers in the cross-page registry (WORK-611, WORK-612, WORK-613)
+
+  `createContentModelSchema` takes a `registers` block: an `entity` (with `type`,
+  `idFrom`, `scope`, `data` and `aliases`) or an `edge` (with `from`, `to`, `kind`,
+  `bidirectional` and `data`). The block is plain data. It is checked when the
+  module loads, and a function, an unknown key or a class instance is an error. One
+  core participant does the registering in the same Phase 2 and Phase 3 slots a
+  plugin's `register` and `aggregate` hooks use. It runs inside the declaring
+  plugin's hook set, beside any hooks the plugin still writes. A plugin that writes
+  no `aggregate` of its own gets the participant's name index in its `aggregated`
+  slot, as `{ entityByName }`. Declared edges are added to the relationship graph,
+  so `getRelated` and the `relationships` rune can find them.
+
+  A source that the rune never provides is reported by `refrakt validate` as
+  `registers-source-unresolved`, with the file and line of the rune instance. That
+  id is now on by default. `refrakt inspect` shows the block, and its JSON output
+  has a new `registers` field. `refrakt reference` documents it.
+
+  Storytelling and design now register this way, and their `register` and
+  `aggregate` hooks have been removed. Their registries are unchanged: the same
+  entries in the same order, with the same data. Snapshot tests captured before
+  the migration enforce this. Two outputs did change:
+
+  - `bond` edges are now in the relationship graph, with the bond's `type` as the
+    edge kind. An endpoint written as an alias resolves to the character's id.
+    Storytelling's `aggregated` slot no longer has `relationships` or
+    `orphanedBonds`. Nothing in this repository read them, and the
+    unknown-endpoint warnings are still reported.
+  - Design's `aggregated` slot is now `{ entityByName }` instead of `{ contexts }`.
+    The editor's sandbox preview and its `context=` autocomplete read the new
+    shape, and `/api/aggregated` now sends Maps as plain objects.
+
+  Structure contracts and the SEO baseline are unchanged.
+
+### Patch Changes
+
+- Updated dependencies [377b95c]
+- Updated dependencies [0d6f027]
+- Updated dependencies [44bd72d]
+- Updated dependencies [8a272a4]
+- Updated dependencies [1607dfe]
+- Updated dependencies [ad3edde]
+- Updated dependencies [ab22ead]
+- Updated dependencies [ed2b992]
+- Updated dependencies [651e4c4]
+  - @refrakt-md/runes@0.39.0
+  - @refrakt-md/transform@0.39.0
+  - @refrakt-md/types@0.39.0
+
 ## 0.38.0
 
 ### Patch Changes
