@@ -6,7 +6,39 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.37.0
+## v0.38.0
+
+- New rune-authoring helpers in `@refrakt-md/runes` (WORK-602, WORK-603)
+- `renderNodes(value, config)` returns a `RenderableNodeCursor` over the transformed content. It replaces `new RenderableNodeCursor(Markdoc.transform(asNodes(x), config) as RenderableTreeNode[])`.
+- `bodyOnly()` is the content model of a rune whose children are all body. It returns a fresh object per call.
+- `fieldMetas(attrs, config, spec)` builds a rune's property metas from one declaration. A bare string is the default for the attribute of the same name. `{ from: ['attrs.x', 'file.x'], default }` takes the first non-empty source. The spec is plain data and round-trips through JSON. Any root other than `attrs` or `file` is rejected.
+- `groupByHeading(nodes, { initial, heading, item, other? })` is the shared walk where a heading sets the running group and list items become entries.
+- The built-in runes now use these helpers: 78 cursor constructions, 49 content models, 12 property maps (including the five plan runes' `created` / `modified` fallback to file dates) and six heading-grouped list parsers. Neither helper is mandatory. Rendered output is unchanged.
+- **Breaking:** remove the imperative schema.org channel from `createComponentRenderable` (WORK-599)
+- `TransformResult.schema`, `TransformResult.typeof` and `InlineTransformResult.schemaOrgType` are gone, along with the unused `schemaOrgType` fields on `AccordionProps` and `AccordionItemProps`.
+- SPEC-130 moved every rune to the declarative table on `createContentModelSchema({ schema })`. The imperative fields kept type-checking but were no longer what the appliers and the structured-data pipeline are built around, and no rune in this repository passed them. A surface that still compiles but no longer does what its docs say is worse than none.
+- **Migrating a third-party plugin:** move the type and property mappings into a schema table on the rune's `createContentModelSchema` call. See "Declaring schema.org output" in the plugin authoring guide.
+- Rendered output is unchanged for every built-in rune.
+- Keep authored tags in a mixed `emitTag` field, and show the list-item grammar in `refrakt reference` (WORK-604, WORK-606)
+- **Fixes silent content loss.** A field declared `match: 'list|tag:x'` with `emitTag` converted the list items and dropped every tag the author wrote (BUG-030). Authored tags now keep their place, so the field resolves to one document-ordered array of tags. A `list`-only field behaves as before. No built-in rune declared this combination, so rendered output is unchanged.
+- **`refrakt reference` now shows how a list item is read** (BUG-031). A field with an `itemModel` lists each item field: bold, italic, a link and its `href`, text matching a pattern, the remaining text, a nested list. Where a field has them, it also shows the `template` snippet ("Written as") and the tag each item becomes (`emitTag`). A pattern with a non-ASCII character names it, so playlist's date field now says its `—` is U+2014 and a typed `-` will not match.
+- `SerializedContentField` gains an `itemModel` projection: regex source and flags as strings, `'remainder'` as a literal.
+- Stop emitting property-mapped meta tags into rune `children`.
+- Every rune that mapped a meta under `properties` and also listed it in `children` had it filtered straight back out by `createComponentRenderable`; the value already lives in the `data-rune-fields` bag. The emission is removed from 62 tag files and the auto-breadcrumb builder. Rendered output is unchanged: structure contracts, the structured-data baseline, and `refrakt inspect` across every rune and variant are identical before and after.
+- The one exception is content that is already invalid. A `blog` with no `folder` (a required attribute) no longer renders an empty `<meta data-field="folder">`.
+- Rune configs are now plain data, and `plan migrate ids` keeps the published claimant (WORK-608, WORK-607)
+- **Breaking: `styles[…].transform` takes a name, not a function** (WORK-608). Use one of the named transforms already used by meta fields and structure entries. That vocabulary now has three more entries:
+- `align`: an alignment keyword becomes a CSS `align-*` value (was `resolveValign`).
+- `fr`: `"2 1"` becomes `2fr 1fr` (was `ratioToFr`).
+- `gap`: a gap preset becomes a spacing token (was `resolveGap`).
+- The type is exported as `NamedTransform`. Replace `transform: resolveValign` with `transform: 'align'`. The helpers stay exported. After this change `postTransform` is the only function a `RuneConfig` carries, so a rune config can cross a JSON boundary. A test checks every core and plugin rune for this. Structure contracts now record these transform names; before, `JSON.stringify` silently dropped them because they were functions. Rendered output is unchanged.
+- **`plan migrate ids --against <ref>`** (WORK-607, BUG-026). When two files claim one ID, the one already on the base ref keeps it, and the branch-local claimant is renumbered. Before this, the claimant that moved was picked by sorting filenames, which could renumber the entity already referenced from merged commits and published CHANGELOGs. Without `--against`, a collision is now refused rather than resolved by filename. Every renumber and refusal names the claimant that kept the ID and why. `plan validate --against` now suggests the matching `migrate ids --against` command.
+- Simplify rune transforms: optional slots and shared text helpers (WORK-600, WORK-601)
+- `properties` and `refs` on `createComponentRenderable` now accept `null` as well as `undefined`; both are skipped. The 52 `...(x ? { k: x } : {})` guards inside slot literals are now plain `k: x`.
+- `extractText(node)` (concatenated text of an AST node) is exported from `@refrakt-md/runes` and replaces six identical local copies. Three plugin-local text helpers on rendered trees now use the exported `textContent`.
+- Rendered output is unchanged.
+
+## v0.37.0 - October 6, 2026
 
 - Address embedded source by name, and record that a human read it.
 - `snippet`, `file-ref` and `expand` can now name the region they embed instead of counting its lines — `symbol="applyBemClasses"` for a declaration, or `match='"scripts"'` for an arbitrary line. A `lines=` range silently re-points at whatever moved into those line numbers; an anchor either resolves to the thing it names or refuses, and the refusal says which of the three termination rules fired, so a broken reference reads as broken rather than as a different function.

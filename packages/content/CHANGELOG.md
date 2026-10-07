@@ -1,5 +1,20 @@
 # @refrakt-md/content
 
+## 0.38.0
+
+### Patch Changes
+
+- Updated dependencies [a798a2c]
+- Updated dependencies [68a8864]
+- Updated dependencies [11b89a1]
+- Updated dependencies [15b13a9]
+- Updated dependencies [66dae35]
+- Updated dependencies [66dae35]
+  - @refrakt-md/runes@0.38.0
+  - @refrakt-md/transform@0.38.0
+  - @refrakt-md/highlight@0.38.0
+  - @refrakt-md/types@0.38.0
+
 ## 0.37.0
 
 ### Minor Changes

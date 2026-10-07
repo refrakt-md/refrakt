@@ -1,5 +1,62 @@
 # @refrakt-md/design
 
+## 0.38.0
+
+### Patch Changes
+
+- 68a8864: Stop emitting property-mapped meta tags into rune `children`.
+
+  Every rune that mapped a meta under `properties` and also listed it in `children`
+  had it filtered straight back out by `createComponentRenderable`; the value
+  already lives in the `data-rune-fields` bag. The emission is removed from 62 tag
+  files and the auto-breadcrumb builder. Rendered output is unchanged: structure
+  contracts, the structured-data baseline, and `refrakt inspect` across every rune
+  and variant are identical before and after.
+
+  The one exception is content that is already invalid. A `blog` with no `folder`
+  (a required attribute) no longer renders an empty `<meta data-field="folder">`.
+
+- 15b13a9: New rune-authoring helpers in `@refrakt-md/runes` (WORK-602, WORK-603)
+
+  - `renderNodes(value, config)` returns a `RenderableNodeCursor` over the
+    transformed content. It replaces
+    `new RenderableNodeCursor(Markdoc.transform(asNodes(x), config) as RenderableTreeNode[])`.
+  - `bodyOnly()` is the content model of a rune whose children are all body. It
+    returns a fresh object per call.
+  - `fieldMetas(attrs, config, spec)` builds a rune's property metas from one
+    declaration. A bare string is the default for the attribute of the same name.
+    `{ from: ['attrs.x', 'file.x'], default }` takes the first non-empty source.
+    The spec is plain data and round-trips through JSON. Any root other than
+    `attrs` or `file` is rejected.
+  - `groupByHeading(nodes, { initial, heading, item, other? })` is the shared walk
+    where a heading sets the running group and list items become entries.
+
+  The built-in runes now use these helpers: 78 cursor constructions, 49 content
+  models, 12 property maps (including the five plan runes' `created` / `modified`
+  fallback to file dates) and six heading-grouped list parsers. Neither helper is
+  mandatory. Rendered output is unchanged.
+
+- 66dae35: Simplify rune transforms: optional slots and shared text helpers (WORK-600, WORK-601)
+
+  - `properties` and `refs` on `createComponentRenderable` now accept `null` as well
+    as `undefined`; both are skipped. The 52 `...(x ? { k: x } : {})` guards inside
+    slot literals are now plain `k: x`.
+  - `extractText(node)` (concatenated text of an AST node) is exported from
+    `@refrakt-md/runes` and replaces six identical local copies. Three plugin-local
+    text helpers on rendered trees now use the exported `textContent`.
+
+  Rendered output is unchanged.
+
+- Updated dependencies [a798a2c]
+- Updated dependencies [68a8864]
+- Updated dependencies [11b89a1]
+- Updated dependencies [15b13a9]
+- Updated dependencies [66dae35]
+- Updated dependencies [66dae35]
+  - @refrakt-md/runes@0.38.0
+  - @refrakt-md/transform@0.38.0
+  - @refrakt-md/types@0.38.0
+
 ## 0.37.0
 
 ### Patch Changes
