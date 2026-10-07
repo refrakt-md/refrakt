@@ -1,4 +1,4 @@
-{% bug id="BUG-018" status="in-progress" severity="major" tags="runes,pipeline,breadcrumb,navigation" milestone="v0.39.0" %}
+{% bug id="BUG-018" status="fixed" severity="major" tags="runes,pipeline,breadcrumb,navigation" milestone="v0.39.0" pr="refrakt-md/refrakt#663" %}
 
 # `breadcrumb auto` loses every ancestor below depth 1
 
@@ -97,5 +97,52 @@ since a fix in `deriveParentUrl` would move `pageTree` with it.
 
 - {% ref "WORK-563" /%} — where this surfaced; the page-level assertion that found it
 - `packages/runes/src/config.ts` — `deriveParentUrl`, `buildBreadcrumbPaths`, `buildAutoBreadcrumb`, `buildPageTree`
+
+## Resolution
+
+Completed: 2026-10-07
+
+Branch: `claude/v039-bug-018-breadcrumb`
+PR: refrakt-md/refrakt#663
+
+### Blast radius (answered first, through a real `loadContentFromTree` build)
+Site: `/`, `/about`, `/docs`, `/docs/guide`, `/docs/api`, `/docs/api/ref`. On the old code:
+- `pageTree` was **completely flat**: all five pages were direct children of `/`. The suspicion was right.
+- `nav auto` on `/docs` found no children and warned "has no registered child pages".
+- auto `pagination` on the nested section index `/docs/api` rendered a `next` link instead of being suppressed.
+- `getSiblingPages` `scope="section"` stopped its walk at the first miss.
+- Breadcrumb trails: `/docs/guide` → `Guide`, `/docs/api/ref` → `Ref`.
+- With `basePath: '/en'` (router root `/en/`), the trail broke at depth 2 as well.
+
+Correction to the bug text: no in-repo code reads `pageTree`. `collection` and `drawer` don't, and auto-pagination and `nav auto` read `pagesByUrl` and compare `parentUrl` directly. They broke for the same reason, but not through the tree.
+
+### What was done
+- `packages/runes/src/config.ts`:
+  - `deriveParentUrl` returns the router's shape (`/docs`).
+  - New `resolveParentUrl` gives the key the parent page is actually registered under, trying both spellings (base-path root `/en/`, a slug override with a slash). `register` uses it.
+  - `buildBreadcrumbPaths` lists only registered pages and steps over index-less directories by path, with a cycle guard.
+  - `buildAutoBreadcrumb` raises a `ctx.warn` instead of a silent `continue` when a path ancestor has no page entry. It stays imperative.
+- New `packages/content/test/breadcrumb-auto-depth.test.ts`, a real build with router-shaped URLs. Covers depths 1, 2 and 3, rendered (names and hrefs) and JSON-LD, no diagnostics on a well-formed tree, an index-less directory, base path, `pageTree` nesting, `nav auto`, and pagination suppression.
+- `packages/content/test/seo-harvest.test.ts`: the WORK-563 truncated-trail pin now asserts `[Home, Guide, Intro]`.
+- `packages/runes/test/pipeline-hooks.test.ts`: the register, breadcrumb-path and page-tree fixtures moved to router-shaped URLs (they used `/docs/`, `/docs/guide/`). Added tests for parent spelling (base path, slug with slash, orphan), an index-less directory in paths, depth-2 nesting, and the unresolvable-ancestor warning.
+- `site/content/extend/plugin-authoring/pipeline.md`: defines `parentUrl`'s spelling.
+- Changeset `breadcrumb-auto-full-ancestor-chain.md` (runes patch).
+
+### Why the fix is at the source, not at the lookup sites
+All five consumers compare `parentUrl` with a page `url`: `buildPageTree`, the `parentOf` walk, the `nav auto` and pagination equality checks, and the section walk. `data-resolve` already strips slashes on both sides. Fixing the derivation fixes them all, and the next consumer can't repeat the bug. The invariant: `parentUrl` is the `url` of a registered page, or a path with no page.
+
+Cost: the queryable page-entity `parentUrl` changes from `/docs/` to `/docs`. A `parentUrl:/docs/` filter would need updating; nothing in this repo uses one. The changeset says so.
+
+### Tests
+15 tests fail on the old code: 8 of 9 in the new file (depth 1 passes, as expected), the updated seo-harvest pin, and 6 in pipeline-hooks. All 29 pass on the fix. The full suite gave 5122 passed and 2 failed (plan dogfood and plan pipeline). Both pass when rerun alone; they are contention timeouts unrelated to this change.
+
+### Baseline / contracts
+`seo:baseline:check` and both contract checks are up to date, with **no diff**. No baseline fixture was added: `generate-seo-baseline.mjs` `harvest()` runs `Markdoc.transform` per fixture with no site and no cross-page pipeline, so a `breadcrumb auto` fixture would record only the unresolved sentinel, identical before and after. The real-build regression test covers this instead.
+
+What moves in output: rendered breadcrumb HTML and `BreadcrumbList` JSON-LD for `breadcrumb auto` pages below depth 1. Beyond that, `pageTree` nesting, `nav auto` children on nested section indexes, and auto-pagination on nested section indexes (now suppressed, as designed).
+
+### Notes / follow-ups (not filed, to avoid ID collisions)
+- `pageTree` still attaches a page under an index-less directory to the root rather than to its nearest registered ancestor. That is unchanged and out of scope here.
+- The baseline harness cannot capture pipeline-resolved runes (`breadcrumb auto`, `nav auto`, `pagination auto`). Giving it a site-level mode would make this class of change reviewable as a baseline diff.
 
 {% /bug %}
