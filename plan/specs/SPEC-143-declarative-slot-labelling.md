@@ -1,4 +1,4 @@
-{% spec id="SPEC-143" status="draft" tags="runes, transform, declarative, architecture, dx" %}
+{% spec id="SPEC-143" status="accepted" tags="runes, transform, declarative, architecture, dx" %}
 
 # Declarative slot labelling
 

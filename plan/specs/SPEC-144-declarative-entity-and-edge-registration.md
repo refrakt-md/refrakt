@@ -1,4 +1,4 @@
-{% spec id="SPEC-144" status="draft" tags="runes, pipeline, registry, declarative, plugins, hosted" %}
+{% spec id="SPEC-144" status="accepted" tags="runes, pipeline, registry, declarative, plugins, hosted" %}
 
 # Declarative entity and edge registration
 
@@ -220,12 +220,22 @@ what runs.
 ## Non-goals
 
 - Replacing `PluginPipelineHooks` — this adds a generic participant beside them
-- Declaring `postProcess` sentinel resolution
+- Declaring *unbounded* `postProcess` rewriting — a rune changing content it did not emit (D2, revised). The *bounded* case is in scope, phased below
 - Declaring the `configure` hook, or anything that reads the filesystem
 - Changing `EntityRegistry`, the relationship graph, or any query rune
 - Making the plan plugin declarative (D5)
 - Cross-page *validation* of declared entities — a dangling edge target is the
   registry's existing concern, unchanged here
+
+## Phasing
+
+Accepted for v0.39.0 as **registration only**: `registers.entity` / `registers.edge`, the
+core hook, and the storytelling and design migrations ({% ref "WORK-611" /%},
+{% ref "WORK-612" /%}, {% ref "WORK-613" /%}). The last two criteria below, which make
+bounded sentinel resolution declarable and migrate the five first-party instances, are a
+follow-up. One of those instances is `buildAutoBreadcrumb`, which {% ref "BUG-018" /%}
+changes in the same milestone. Migrating a function while its output is being corrected
+would leave D4's identical-output gate with nothing stable to compare against.
 
 ## Acceptance Criteria
 

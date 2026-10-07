@@ -1,4 +1,4 @@
-{% bug id="BUG-027" status="confirmed" severity="major" source="SPEC-127" tags="runes,snippet,data,preprocess,composition" %}
+{% bug id="BUG-027" status="confirmed" severity="major" source="SPEC-127" tags="runes,snippet,data,preprocess,composition" milestone="v0.39.0" %}
 
 # A `{% snippet %}` produced by a `{% data %}` row template resolves before its row is bound
 
