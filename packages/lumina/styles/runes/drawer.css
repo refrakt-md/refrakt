@@ -159,9 +159,9 @@
 	/* Collapse the vertical margins of first / last children inside the body
  * so the drawer's own padding is what spaces content from the chrome —
  * otherwise a `<figure>` or `<p>` with its own top/bottom margin stacks
- * on top of the body's padding and the content looks adrift. A snippet
- * inside a drawer compiles to `body > .rf-codeblock > .rf-snippet > <pre>`,
- * so the margin-zero walk reaches two levels deep to catch the figure. */
+ * on top of the body's padding and the content looks adrift. A code block
+ * inside a drawer can sit one wrapper deep (`body > .rf-codeblock > <pre>`),
+ * so the margin-zero walk reaches two levels deep to catch it. */
 	dialog.rf-drawer .rf-drawer__body > :first-child,
 	dialog.rf-drawer .rf-drawer__body > :first-child > :first-child {
 		margin-top: 0;

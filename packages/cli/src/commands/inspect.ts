@@ -407,6 +407,9 @@ function formatSchemaRow(
 	if (row.by) {
 		lines.push(`  by     ${row.by}${row.selectedFor ? ` = ${row.selectedFor}` : ' (fallback)'}`);
 	}
+	if (row.byField) {
+		lines.push(`  by     field ${row.byField} (fallback row shown; content selects)`);
+	}
 	if (row.lists.length > 0) lines.push(`  lists  ${row.lists.join(', ')}`);
 
 	if (row.entities.length > 0) {

@@ -25,9 +25,10 @@ import { PAGINATION_AUTO_SENTINEL } from './tags/pagination.js';
 import { XREF_RUNE_MARKER } from './tags/xref.js';
 import { resolveXrefs } from './xref-resolve.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
-import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.js';
-import { preprocessData } from './data-pipeline.js';
-import { preprocessIncludes } from './include-pipeline.js';
+import { preprocessTree } from './lib/preprocess.js';
+import { snippet } from './tags/snippet.js';
+import { data } from './tags/data.js';
+import { include } from './tags/include.js';
 import {
 	registerDrawers,
 	resolveAutoDrawerTitleLevels,
@@ -187,11 +188,10 @@ export const coreConfig: ThemeConfig = {
 		PageSection: { block: 'page-section' },
 		TableOfContents: { block: 'toc', defaultElevation: 'flush' },
 		/* Snippet doesn't have a normal schema transform — its preprocess
-		 * hook replaces the tag with a `fence` node, and the standalone
-		 * wrap step adds `<figure class="rf-snippet">` post-transform.
-		 * The engine never sees a `Snippet` tag, but we still need an
-		 * entry in the theme config so `computeUsedCssBlocks` includes
-		 * `snippet.css` in CSS tree-shaking when the figure is rendered. */
+		 * hook replaces the tag with a `fence` node, which renders as a
+		 * `<pre data-source>` (SPEC-141 D5: no wrapper, no `snippet` block CSS).
+		 * The engine never sees a `Snippet` tag; the entry exists so the rune
+		 * is known to inspect/contracts tooling, like Data and Include below. */
 		Snippet: { block: 'snippet' },
 		/* Data, like Snippet, has no normal schema transform — its preprocess
 		 * hook replaces the `{% data %}` tag with a Markdoc `table` node before
@@ -807,10 +807,15 @@ function buildPageTree(
 	return root;
 }
 
-/** Build breadcrumb paths: url → ordered ancestor urls (root first, parent last) */
+/** Build breadcrumb paths: url → ordered ancestor urls (root first, parent last).
+ *
+ *  Only registered pages appear in a path. A directory with no index page is a
+ *  gap, not a dead end: the walk steps over it by path and carries on, so
+ *  `/docs/guide` with no `/docs` page still reaches `/`. */
 function buildBreadcrumbPaths(
 	pages: Array<{ url: string; parentUrl: string }>,
 ): Map<string, string[]> {
+	const registered = new Set(pages.map((p) => p.url));
 	const parentOf = new Map<string, string>();
 	for (const p of pages) {
 		if (p.url !== '/') {
@@ -821,10 +826,16 @@ function buildBreadcrumbPaths(
 	const paths = new Map<string, string[]>();
 	for (const p of pages) {
 		const ancestors: string[] = [];
+		const seen = new Set<string>([p.url]);
 		let current = parentOf.get(p.url);
-		while (current !== undefined) {
-			ancestors.unshift(current);
-			current = parentOf.get(current);
+		while (current !== undefined && !seen.has(current)) {
+			seen.add(current);
+			if (registered.has(current)) {
+				ancestors.unshift(current);
+				current = parentOf.get(current);
+			} else {
+				current = current === '/' ? undefined : resolveParentUrl(current, registered);
+			}
 		}
 		paths.set(p.url, ancestors);
 	}
@@ -832,13 +843,31 @@ function buildBreadcrumbPaths(
 	return paths;
 }
 
-/** Derive the parent url by stripping the last path segment */
+/** Derive the parent url by stripping the last path segment, in the router's
+ *  shape: no trailing slash, except the root `/`.
+ *
+ *  BUG-018 — this used to keep the trailing slash (`/docs/guide` → `/docs/`)
+ *  while the router registers `/docs`, so every lookup keyed on `parentUrl`
+ *  missed below depth 1. */
 function deriveParentUrl(url: string): string {
 	if (url === '/' || !url.includes('/')) return '/';
-	// '/docs/guide/' → strip trailing slash, then strip last segment
 	const trimmed = url.endsWith('/') ? url.slice(0, -1) : url;
 	const parent = trimmed.lastIndexOf('/');
-	return parent <= 0 ? '/' : trimmed.slice(0, parent + 1);
+	return parent <= 0 ? '/' : trimmed.slice(0, parent);
+}
+
+/** Resolve a page's `parentUrl` to the key its parent is actually registered
+ *  under. Every consumer of `parentUrl` — `buildPageTree`, the breadcrumb walk,
+ *  `nav auto`, auto-pagination — compares it against a page `url`, so it must
+ *  be spelled exactly as that page's `url` is. The router never emits a
+ *  trailing slash, but a base path makes its root `/base/`, and a `slug`
+ *  override can carry one, so both spellings are tried. When no page sits at
+ *  the parent path, the router's shape is returned. */
+function resolveParentUrl(url: string, registered: ReadonlySet<string>): string {
+	const derived = deriveParentUrl(url);
+	if (registered.has(derived)) return derived;
+	if (derived !== '/' && registered.has(`${derived}/`)) return `${derived}/`;
+	return derived;
 }
 
 /** Walk a Markdoc renderable tree, resolving any auto-breadcrumb placeholders */
@@ -919,7 +948,17 @@ function buildAutoBreadcrumb(
 
 	for (const ancestorUrl of ancestorUrls) {
 		const ancestorPage = pagesByUrl.get(ancestorUrl);
-		if (!ancestorPage) continue;
+		if (!ancestorPage) {
+			// BUG-018 — a short trail used to be the only symptom of this. The
+			// breadcrumb paths name only registered pages, so a miss here means the
+			// two indexes disagree about a page's key: say so instead of quietly
+			// dropping a level.
+			ctx.warn(
+				`Breadcrumb auto: ancestor "${ancestorUrl}" of page "${pageUrl}" is on the breadcrumb path but has no page entry; it was left out of the trail`,
+				pageUrl,
+			);
+			continue;
+		}
 
 		const nameSpan = new Tag('span', { hidden: true }, [ancestorPage.title]);
 		const urlLink = new Tag('a', { href: ancestorUrl }, [ancestorPage.title]);
@@ -2447,22 +2486,21 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 	const embedConfig = opts.embedConfig;
 	const repoUrl = opts.repoUrl;
 	const repoBranch = opts.repoBranch;
+	// The page's merged tag table when the loader passes one (core + plugins),
+	// else core's own preprocessing runes — enough for a caller with no plugins.
+	const preprocessSchemas: Record<string, unknown> = opts.embedConfig?.tags ?? {
+		include,
+		snippet,
+		data,
+	};
 
 	return {
-		// Compose the core preprocess steps: include (→ pasted AST), then snippet
-		// (→ fence), then data (→ table). All three mutate the AST in place, so a
-		// single pass over the same tree applies them; any one mutating means the
-		// caller takes the returned AST.
-		//
-		// **Include runs first, and the order is load-bearing** (SPEC-129): the
-		// whole point of the rune is that the pasted content is in the tree when the
-		// later preprocessors walk it. Anything added to this phase that authors may
-		// want inside an included file belongs after include, not before.
+		// SPEC-141 — every rune that declares `preprocess` on its schema resolves
+		// here, in one walk over the page in tree order. Which runes take part is
+		// read off the tag table, so a plugin rune's hook runs exactly as a core
+		// one does; the order between them is where they sit in the tree.
 		preprocess(ast, page, ctx) {
-			const includeChanged = preprocessIncludes(ast, page, ctx);
-			const snippetChanged = preprocessSnippets(ast, page, ctx);
-			const dataChanged = preprocessData(ast, page, ctx);
-			return includeChanged || snippetChanged || dataChanged ? ast : undefined;
+			return preprocessTree(ast, page, ctx, preprocessSchemas);
 		},
 
 		register(
@@ -2470,8 +2508,9 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			registry: EntityRegistry,
 			ctx: PipelineContext,
 		): void {
+			const registeredUrls = new Set(pages.map((p) => p.url));
 			for (const page of pages) {
-				const parentUrl = deriveParentUrl(page.url);
+				const parentUrl = resolveParentUrl(page.url, registeredUrls);
 
 				const existingPage = registry.getById('page', page.url);
 				if (existingPage && existingPage.sourceUrl !== page.url) {
@@ -2733,22 +2772,14 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 				ctx,
 			);
 
-			// SPEC-062 standalone snippet wrap: turn `<pre data-snippet-source>`
-			// into `<figure class="rf-snippet">` when not inside a fence-consuming
-			// container (codegroup, diff). The wrap is a no-op when the page
-			// has no snippet-derived fences.
-			const wrappedPage = wrapStandaloneSnippets(
-				renderable === page.renderable ? page : { ...page, renderable },
-				aggregated,
-				ctx,
-			);
+			const finalPage = renderable === page.renderable ? page : { ...page, renderable };
 
 			// SPEC-066 outline-scope walkers: prefix heading IDs and drop TOC
 			// items inside any `data-outline-scope` subtree. Generic — any rune
 			// can set the attribute and get the behaviour. Runs last so it can
 			// see the final tree (including expand-substituted content once
 			// that lands in v0.15.0).
-			applyOutlineScopeWalkers(wrappedPage.renderable);
+			applyOutlineScopeWalkers(finalPage.renderable);
 
 			// Refresh `page.headings` from the final renderable. Parse-time
 			// `extractHeadings` only saw the raw AST — anything inlined by
@@ -2756,12 +2787,12 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			// it into the parse-time list, leaving the page TOC blind to those
 			// headings. Skips `data-outline-scope` subtrees so peer-document
 			// embeds stay isolated, matching the TOC walker.
-			const harvested = harvestHeadingsFromRenderable(wrappedPage.renderable);
-			if (harvested.length > 0 || wrappedPage.headings.length > 0) {
-				return { ...wrappedPage, headings: harvested };
+			const harvested = harvestHeadingsFromRenderable(finalPage.renderable);
+			if (harvested.length > 0 || finalPage.headings.length > 0) {
+				return { ...finalPage, headings: harvested };
 			}
 
-			return wrappedPage;
+			return finalPage;
 		},
 	};
 }

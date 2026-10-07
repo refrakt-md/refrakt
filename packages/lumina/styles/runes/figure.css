@@ -1,10 +1,15 @@
 @layer skin {
 	/* Figure — skin. The image box, frame-aspect fill, size max-widths, and alignment
- * auto-margins live in @refrakt-md/skeleton (styles/runes/figure.css). */
-	.rf-figure :is(img, .rf-placeholder) {
+ * auto-margins live in @refrakt-md/skeleton (styles/runes/figure.css).
+ *
+ * Direct children only: since BUG-028 a figure's body may hold code, a table or
+ * a nested rune, whose own images and captions are not the figure's. A non-media
+ * body needs nothing else here — a code block or table keeps its own styling,
+ * and the caption sits below it as it does below an image. */
+	.rf-figure > :is(img, .rf-placeholder) {
 		border-radius: var(--rf-radius-media);
 	}
-	.rf-figure figcaption {
+	.rf-figure > figcaption {
 		margin-top: 0.625rem;
 		font-size: var(--rf-text-sm);
 		color: var(--rf-color-muted);

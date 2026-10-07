@@ -70,7 +70,7 @@ The zone positioning is the same as `collection`: **1 zone → template**, **2 �
 | `count` | ✓ | ✓ | `0` | entities in this zone's context (preamble: the whole primary set; template: this group) |
 | `value` | ✓ | ✓ | `0` | entities matching both `filter` *and* `value` (see below); falls back to `count` when `value` is unset |
 | `percent` | ✓ | ✓ | `0` | `(value / count) × 100`, integer 0–100; `100` when `value` is unset |
-| `total` | ✓ | ✓ | `0` | the **all-groups** total — equal to `count` in the preamble, constant across template iterations |
+| `total` | ✓ | ✓ | `0` | the **all-groups** total (distinct entities) — equal to `count` in the preamble, constant across template iterations |
 | `key` | — | ✓ | `''` | the group field value (template only) |
 | `shown` | — | ✓ | `0` | post-`limit` group count (template only) |
 
@@ -109,6 +109,17 @@ Set `group` and the template is rendered once per distinct value of that field, 
 {% /aggregate %}
 
 {% /preview %}
+
+A multi-value field (`tags`, `source`, `pr`, any comma-separated value) fans out: an entity tagged `runes, data` is counted in both the `runes` and the `data` group, using the same split `filter` applies (each value trimmed, empty values ignored). Each group's `count` then means **entities carrying this value**, so per-group counts can sum to more than `total`, which still counts each entity once. Counting work items per spec is the typical case:
+
+```markdoc
+{% aggregate type="work" value="status:done" group="source" %}
+---
+{% $item.key %}: {% $item.value %}/{% $item.count %} done
+{% /aggregate %}
+```
+
+A work item that lists two specs counts toward both.
 
 Group order follows the same [domain-aware ordering](/runes/collection#domain-aware-ordering) `collection` uses — enum fields like `status` come out in their declared order, not alphabetically. Across mixed types (`type="work,bug"`), each entity is ranked within its own type's ordering, so the groups still compose.
 

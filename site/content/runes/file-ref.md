@@ -138,9 +138,7 @@ With `preview="drawer"`:
 <section class="rf-drawer" id="drawer-path-to-file-ts-L42-L58" data-rune="drawer">
   <header class="rf-drawer__header">…</header>
   <div class="rf-drawer__body">
-    <figure class="rf-snippet" data-source-path="path/to/file.ts" data-lines="42-58">
-      <pre data-language="typescript"><code>…</code></pre>
-    </figure>
+    <pre data-language="typescript" data-source="path/to/file.ts" data-lines="42-58"><code>…</code></pre>
   </div>
   <footer class="rf-drawer__footer">
     <a href="https://github.com/.../#L42-L58">View source on GitHub →</a>

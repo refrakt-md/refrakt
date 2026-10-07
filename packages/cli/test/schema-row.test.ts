@@ -63,6 +63,18 @@ describe('describeSchemaRow', () => {
 		expect(describeSchemaRow(table, {}).selectedFor).toBeUndefined();
 	});
 
+	it('describes a content-selected table by its fallback, naming the field (BUG-028)', () => {
+		const table: SchemaTable = {
+			byField: 'body',
+			rows: { mixed: {} },
+			fallback: { type: 'ImageObject', properties: { caption: 'caption' } },
+		};
+		const row = describeSchemaRow(table);
+		expect(row.type).toBe('ImageObject');
+		expect(row.byField).toBe('body');
+		expect(row.by).toBeUndefined();
+	});
+
 	it('reports generated values with no source to resolve', () => {
 		const row = describeSchemaRow({ type: 'ListItem', generated: { position: 'index' } });
 		expect(row.properties).toEqual([

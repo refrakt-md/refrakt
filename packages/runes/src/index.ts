@@ -111,8 +111,13 @@ export {
 	extractText,
 	groupByHeading,
 	fieldMetas,
+	preprocessTree,
 } from './lib/index.js';
-export type { GroupByHeadingHandlers } from './lib/index.js';
+export type {
+	GroupByHeadingHandlers,
+	RunePreprocess,
+	RunePreprocessContext,
+} from './lib/index.js';
 export type { FieldMetaSpec, FieldMetaEntry, FieldMetaSource } from './lib/index.js';
 export type { RuneStructure, SectionRole } from './lib/index.js';
 export { describeSchemaRow, bySchemaProperty, collectSchemaRows, tableFor } from './schema-row.js';
@@ -223,6 +228,8 @@ export {
 	entityUrl,
 	entityTitle,
 	fieldValue,
+	fieldMembers,
+	groupKeys,
 	titleLink,
 	projectItem,
 	renderItemTemplate,
@@ -568,7 +575,7 @@ export const runes = {
 	figure: defineRune({
 		name: 'figure',
 		schema: figure,
-		description: 'Enhanced image with caption, attribution, and sizing',
+		description: 'Captioned container for images, code, tables and diagrams, with sizing',
 		seoType: 'ImageObject',
 		typeName: 'Figure',
 		category: 'Content',

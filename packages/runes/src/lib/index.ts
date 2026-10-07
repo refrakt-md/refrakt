@@ -48,6 +48,10 @@ export {
 	matchesType,
 } from './resolver.js';
 export { sanitizeSandboxContent } from './sanitize.js';
+export { preprocessTree, schemaPreprocessors } from './preprocess.js';
+export type { RunePreprocess, RunePreprocessContext } from './preprocess.js';
+import { schemaPreprocessors } from './preprocess.js';
+import type { RunePreprocess } from './preprocess.js';
 export { extractText, groupByHeading } from './node.js';
 export type { GroupByHeadingHandlers } from './node.js';
 export { fieldMetas } from './field-metas.js';
@@ -745,6 +749,20 @@ export interface ContentModelSchemaOptions {
 	 */
 	registers?: RegistersDeclaration;
 
+	/**
+	 * SPEC-141 — resolve this rune before the transform. Receives the rune's
+	 * own tag node and returns a replacement, several (spliced in its place),
+	 * or nothing (left alone). One walk over the page dispatches to it in tree
+	 * order and descends into what it returns, so the hook never resolves the
+	 * runes its own output contains. See {@link RunePreprocess}.
+	 *
+	 * Whether a rune resolves itself before the transform is rune identity, so
+	 * it is declared here rather than wired from config. A rune that sets it
+	 * normally never reaches its own `transform`, which then exists to explain
+	 * an unresolved tag (SPEC-141 D7).
+	 */
+	preprocess?: RunePreprocess;
+
 	/** Deprecated attribute mappings. */
 	deprecations?: Record<string, DeprecationRule>;
 
@@ -1072,6 +1090,8 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 	if (options.base) {
 		schemaBasePresets.set(schema, options.base);
 	}
+
+	if (options.preprocess) schemaPreprocessors.set(schema, options.preprocess);
 
 	return schema;
 }

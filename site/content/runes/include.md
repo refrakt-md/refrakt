@@ -41,7 +41,7 @@ Markdoc expands `{% partial %}` during the **transform** phase. refrakt resolves
 If this file is pulled in with {% partial %}: use {% include %} instead.
 ```
 
-`include` runs first in the preprocess phase and splices the file's content into the page, so everything that follows sees it as ordinary page content.
+`include` resolves in the preprocess phase too, and splices the file's content into the page where the tag was. The phase walks the page in tree order and continues into what was just pasted, so a `data` or `snippet` in the file resolves exactly as if it had been typed on the page.
 
 ## Setup
 

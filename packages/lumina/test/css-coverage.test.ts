@@ -26,6 +26,7 @@ const UNSTYLED_BLOCKS = new Set([
 	'definition', // child of feature — styled inline within feature.css
 	'deflist', // styled via shared [data-zone-layout="definition-list"] selectors
 	'data', // preprocess rune (SPEC-103) — emits a plain `table` node; styled by the shared table CSS, no own `.rf-data` element
+	'snippet', // preprocess rune (SPEC-062) — renders as a bare `<pre data-source>` with no wrapper (SPEC-141 D5); styled by the shared code-block CSS, no `.rf-snippet` element
 	'include', // preprocess rune (SPEC-129) — splices the partial's content in and leaves nothing behind; there is no `.rf-include` element to style
 	'code', // inline rune (WORK-551) — renders a bare `<code>` on purpose, styled by global.css's element rule so it is indistinguishable from a backtick span
 ]);

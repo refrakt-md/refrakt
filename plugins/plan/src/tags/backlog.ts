@@ -88,7 +88,7 @@ export const backlog = createContentModelSchema({
 			required: false,
 			default: 'status',
 			description:
-				'Group by field: status, priority, assignee, milestone, type, tags. Default: status.',
+				'Group by field: status, priority, assignee, milestone, type, tags. A multi-value field such as tags puts an item in one group per value. Default: status.',
 		},
 		show: {
 			type: String,
