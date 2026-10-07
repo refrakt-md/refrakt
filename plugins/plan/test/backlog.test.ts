@@ -170,4 +170,28 @@ describe('backlog resolves through collection (WORK-342)', () => {
 		// identifier falls back to `name` for a milestone (no id)
 		expect(textOf(findAllTags(out, (t: any) => t.name === 'tbody')[0])).toContain('v1.0.0');
 	});
+
+	// BUG-025 — `tags` is a documented group field; each tag is its own group.
+	it('group="tags" puts an item under each of its tags', () => {
+		const reg = mk([
+			{
+				type: 'work',
+				id: 'WORK-1',
+				sourceUrl: '/w/1/',
+				data: { title: 'A', status: 'ready', tags: 'runes, data, csv' },
+			},
+			{ type: 'work', id: 'WORK-2', sourceUrl: '/w/2/', data: { title: 'B', tags: 'runes' } },
+		]);
+		const out = resolve('{% backlog show="work" group="tags" /%}', reg);
+		const groups = findAllTags(out, (t: any) => t.attributes?.class === 'rf-collection__group');
+		const byKey = Object.fromEntries(
+			groups.map((g: any) => [
+				g.attributes['data-group'],
+				findAllTags(g, (t: any) => t.attributes?.['data-entity-id'] !== undefined).map(
+					(t: any) => t.attributes['data-entity-id'],
+				),
+			]),
+		);
+		expect(byKey).toEqual({ runes: ['WORK-1', 'WORK-2'], data: ['WORK-1'], csv: ['WORK-1'] });
+	});
 });

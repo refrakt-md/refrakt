@@ -257,7 +257,7 @@
 			"name": "group",
 			"type": "string",
 			"required": false,
-			"description": "Group by field: status, priority, assignee, milestone, type, tags. Default: status.",
+			"description": "Group by field: status, priority, assignee, milestone, type, tags. A multi-value field such as tags puts an item in one group per value. Default: status.",
 			"page": "backlog"
 		},
 		{
