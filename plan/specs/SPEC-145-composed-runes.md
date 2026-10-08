@@ -193,15 +193,21 @@ tag: aside
 attributes:
   from:          { type: string, required: true }
   to:            { type: string, required: true }
-  type:          { type: string, default: fellowship }
+  type:          { type: string }
   status:        { type: string, matches: [active, broken, strained], default: active }
   bidirectional: { type: boolean, default: true }
+provides: [prose]
 content:
   type: sequence
   fields:
     body: { match: any, optional: true, greedy: true }
 registers:
-  edge: { from: from, to: to, kind: { field: type } }
+  edge:
+    from: from
+    to: to
+    kind: { field: bondType }
+    bidirectional: { field: bidirectional }
+    data: [{ bondType: type }, status, bidirectional]
 ---
 
 {% hint type="note" %}
@@ -211,9 +217,27 @@ registers:
 {% /hint %}
 ```
 
-Seventeen lines replace `plugins/storytelling/src/tags/bond.ts` (88 lines) plus its
+About thirty lines replace `plugins/storytelling/src/tags/bond.ts` (88 lines) plus its
 slice of the registration pipeline. The `bidirectional` arrow is Markdoc's own
 `{% if %}`, not a conditional this spec invents — D1 holding up in practice.
+
+*Corrected 2026-10-08, after {% ref "WORK-624" /%} (refrakt-md/refrakt#684).* An earlier
+version of this example was seventeen lines and did not construct. Four things changed:
+
+- **`kind` is read from a `data` key.** `kind: { field: type }` was rejected by SPEC-144:
+  a `{ field }` must name a key of the edge's data bag, which holds only `from`, `to`,
+  `name` and the declared `data`. The alias `{ bondType: type }` also keeps the plugin's
+  bag key.
+- **`bidirectional` is declared.** Omitted, it is `false`, and the reverse edges the plugin
+  registers were lost.
+- **`type` has no default.** `fellowship` would have changed the data bag and the edge kind
+  of every untyped bond. The plugin's unset type registers `bondType: ""`, and the kind
+  falls back to `bond`.
+- **`provides: [prose]` is declared.** Without it the composed rune stopped accepting the
+  `reading` and `dropcap` attributes that the plugin's `bond` accepts.
+
+The definition as stored, with its fixtures and its comparison against the plugin, is in
+`packages/content/test/fixtures/composed-storytelling/`.
 
 ### The full case — `character`
 
@@ -543,8 +567,9 @@ because they are what compositions place; they are not additions, and D12 is wha
 which of them may be placed.
 
 **Four things on this list were not settled when it was collected, and the list is where that
-became visible.** `metablock`'s name is still open against `{% fields %}` (D7's sub-questions).
-The other three were about `{% slot %}` itself and are now answered: `sections` is an ordinary
+became visible.** All four are now answered. `metablock` is the name, over `{% fields %}`
+(D7's sub-questions, settled by {% ref "WORK-630" /%}). The other three were about
+`{% slot %}` itself: `sections` is an ordinary
 slot name (D26), a slot may not appear twice (D26), and a slot leaves no element (D10c).
 
 **And a fifth, which collecting the list is what surfaced: `$item` would be one name for a
@@ -914,7 +939,7 @@ forbids for authored regions: a region's children carry no `data-name`, so neith
 
 So the projection path assumes the rune owns its tree, and composition breaks that
 assumption. The resolution is a template-side placement tag — spelled
-`{% metablock name="…" /%}` below, though see the naming sub-question — giving one
+`{% metablock name="…" /%}` (the name is settled in the sub-questions below) — giving one
 `blocks` declaration two consumers:
 
 - the **engine** projects it, for runes that own their tree (today's mechanism,
@@ -1053,22 +1078,47 @@ which is the worst available outcome.
 
 #### Sub-questions on the tag
 
-- **It must not be called `meta`.** `meta` already means two other things here — HTML
-  `<meta>`, and refrakt's "meta tags", the properties channel `createComponentRenderable`
-  emits. With one `metaFields` collision already being untangled, a third `meta` is a
-  mistake. `{% metablock %}` is the placeholder used above; `{% fields %}` is a
-  candidate. `{% block %}` is out — it collides with `RuneConfig.block`, the BEM name.
-- **Empty and undefined need different handling.** `renderBlock` returns null both for
-  an undefined block and for one whose every field resolved empty. Empty is legitimate
-  — `condition` exists for exactly that — so the marker is removed silently. An
-  undefined name is an authoring error and should be rejected at schema construction,
-  naming the block.
-- **Placing one block twice is an error.** `renderBlock` sets `'data-name': blockName`
-  (`engine.ts:1319`), so two placements produce duplicate `data-name`s, which SPEC-143
-  forbids and `mapDataNames` silently collapses.
-- **May a tree-owning rune use the tag instead of `layout`?** Mechanically yes, which
-  would leave one rune with two placement mechanisms. Wants a stated preference rather
-  than both being left open.
+*Settled 2026-10-08 by {% ref "WORK-630" /%}, which built the tag.*
+
+- **The name is `metablock`.** `meta` is out: it already means two other things here, HTML
+  `<meta>` and refrakt's "meta tags", the properties channel `createComponentRenderable`
+  emits. `{% block %}` is out: it collides with `RuneConfig.block`, the BEM name.
+  `{% fields %}` is out too: a composition template already uses "field" for content-model
+  fields, the things slots place (D26), so `{% fields name="metadata" /%}` would read as
+  placing content. `metablock` names the two declarations it reads, `metaFields` and
+  `blocks`.
+- **Empty and undefined are handled differently.** `renderBlock` returns null both for an
+  undefined block and for one whose every field resolved empty. Empty is legitimate
+  (`condition` exists for exactly that), so the marker is removed silently and nothing is
+  emitted. An undefined name is an authoring error and is rejected at schema construction,
+  naming the block and listing the declared ones.
+- **Placing one block twice is an error**, rejected at schema construction. `renderBlock`
+  sets `'data-name': blockName`, so two placements would produce duplicate `data-name`s,
+  which SPEC-143 forbids and `mapDataNames` silently collapses. So is a placement inside an
+  `each` slot, which would place the block once per item.
+- **A tree-owning rune does not use the tag.** It keeps `layout` as its one placement
+  mechanism. `metablock` is template vocabulary, like `{% slot %}`: it is never registered as
+  a page tag, so on a page it is an undefined tag (`tag-undefined`, naming it). The marker
+  it renders to is transformed under a key no authored tag can name, so a `{% metablock %}`
+  an author writes inside a slot is not resolved as the template's either.
+
+**How it is built.** The template renders the tag to a marker carrying the block's name and
+its owner. In the engine, the owner's pass replaces the marker with the block, before the
+placed primitives are processed, from anywhere in the owner's subtree. The search does not
+enter a nested instance of the same rune. The replacement is made by the closure `layout`
+projection calls, so there is one block renderer.
+
+Two consequences were measured in WORK-630:
+
+- **A placed primitive's BEM pass reaches the block.** The engine applies a rune's BEM
+  element classes to every `data-name` descendant of its named children. So a block placed
+  inside `{% card %}`'s body gets `rf-card__metadata` and `rf-card__row` from card. A
+  projected block gets the owner's `rf-{block}__metadata` instead. The block as `renderBlock`
+  emits it is identical either way.
+- **`metaFields` resolve against modifier values**, so every attribute a field reads (the
+  field itself, its `condition`, `href` or `rating.total`) is a modifier of the generated
+  config (D2a). It therefore also renders as a `data-*` attribute on the root, exactly as on
+  a tree-owning rune that declares the same block.
 
 ### D8 — a theme supplies no rune template
 

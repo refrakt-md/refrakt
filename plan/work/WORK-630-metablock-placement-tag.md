@@ -1,4 +1,4 @@
-{% work id="WORK-630" status="ready" priority="high" complexity="moderate" source="SPEC-145" milestone="v0.40.0" tags="runes,composition,engine,blocks" %}
+{% work id="WORK-630" status="in-progress" priority="high" complexity="moderate" source="SPEC-145" milestone="v0.40.0" tags="runes,composition,engine,blocks" %}
 
 # A composition template places a declared meta block with `{% metablock %}`
 

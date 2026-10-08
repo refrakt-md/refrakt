@@ -78,6 +78,7 @@ import type {
 	StructuralContentModel,
 } from '@refrakt-md/types';
 import type { RuneConfig } from '@refrakt-md/transform';
+import { METABLOCK_ATTR, METABLOCK_OWNER_ATTR } from '@refrakt-md/transform';
 import { createComponentRenderable } from './component.js';
 import { resolveEmitReference, sectionLookup } from './resolver.js';
 import { OWNER_ATTR, SLOT_ATTR, findAllByName } from './schema-table.js';
@@ -106,6 +107,8 @@ export interface CompositionTemplate {
 	aliases?: readonly string[];
 	/** The Markdoc template body. */
 	body: string;
+	/** The `blocks` the rune declares — what `{% metablock %}` may name (D7). */
+	blocks?: readonly string[];
 }
 
 /** One node of a composition's expansion, as the contract records it (D6). */
@@ -122,6 +125,8 @@ export interface CompositionOutlineNode {
 	node?: string;
 	/** `if` — a branch the template takes on an attribute. */
 	conditional?: true;
+	/** A declared meta block placed with `{% metablock %}` (D7). */
+	metablock?: string;
 	children?: CompositionOutlineNode[];
 }
 
@@ -160,6 +165,33 @@ const PREPROCESSOR_TAGS = new Set(['data', 'snippet', 'include']);
 
 /** Markdoc's own tags, which are template vocabulary rather than placed runes. */
 const MARKDOC_TAGS = new Set(['if', 'else']);
+
+/**
+ * The tag a template writes to place one of the rune's declared meta blocks
+ * (D7). It is template vocabulary, like `{% slot %}`: it is never registered as
+ * a page tag, so on a page it is an undefined tag, and authored slot content
+ * cannot reach the marker it renders to.
+ */
+const METABLOCK_TAG = 'metablock';
+
+/**
+ * The key the expanded marker is transformed under. `:` cannot appear in a
+ * Markdoc tag name, so no authored `{% … %}` — in a slot or anywhere else —
+ * resolves to it: only a template's own `{% metablock %}` becomes a marker.
+ */
+const METABLOCK_MARKER = 'refrakt:metablock';
+
+/** Renders a `{% metablock %}` to the marker the engine fills (D7). It carries
+ *  the block's name and its owner, and nothing else. */
+const metablockMarkerSchema: Schema = {
+	attributes: { name: { type: String, required: true }, owner: { type: String, required: true } },
+	transform(node) {
+		return new MarkdocTag('div', {
+			[METABLOCK_ATTR]: node.attributes.name,
+			[METABLOCK_OWNER_ATTR]: node.attributes.owner,
+		});
+	},
+};
 
 /** Schema types a placed rune may emit under a composed type: a media object
  *  that becomes a property of the outer entity, not a peer of it (D9). */
@@ -412,6 +444,7 @@ export function compileComposition(
 		checkVariables(n, scope);
 
 		if (isSlotTag(n)) return [checkSlot(n, scope)];
+		if (n.type === 'tag' && n.tag === METABLOCK_TAG) return [checkMetablock(n, scope)];
 
 		if (n.type === 'tag' && n.tag) {
 			if (PREPROCESSOR_TAGS.has(n.tag)) {
@@ -503,6 +536,48 @@ export function compileComposition(
 		};
 	};
 
+	const declaredBlocks = new Set(template.blocks ?? []);
+	const placedBlocks = new Set<string>();
+
+	/** D7 — a meta block placement: a declared block, placed once, standing on
+	 *  its own line. Its values resolve two stages later, in the engine. */
+	function checkMetablock(n: Node, scope: Scope): CompositionOutlineNode {
+		for (const key of Object.keys(n.attributes)) {
+			if (key !== 'name') {
+				fail(`a \`{% metablock %}\` takes \`name\` only, not \`${key}\`.`);
+			}
+		}
+		const name = n.attributes.name;
+		if (typeof name !== 'string' || name === '') {
+			fail('a `{% metablock %}` needs a `name`: the declared block it places.');
+		}
+		if (n.children.length > 0) {
+			fail(`\`{% metablock name="${name}" %}\` takes no content; write it self-closing.`);
+		}
+		if (n.inline) {
+			fail(
+				`\`{% metablock name="${name}" /%}\` sits inside a line of text. A meta block is a block; place it on its own line.`,
+			);
+		}
+		if (scope.each) {
+			fail(
+				`\`{% metablock name="${name}" /%}\` is placed inside the \`each\` slot \`${scope.each.slot}\`, which would place it once per item. Place it outside (D7).`,
+			);
+		}
+		if (!declaredBlocks.has(name as string)) {
+			fail(
+				`\`{% metablock name="${name}" /%}\` names no declared block (declared: ${[...declaredBlocks].join(', ') || 'none'}). Declare it under \`blocks\` (D7).`,
+			);
+		}
+		if (placedBlocks.has(name as string)) {
+			fail(
+				`meta block \`${name}\` is placed twice. A block is placed exactly once: two placements would give two nodes one \`data-name\` (D7).`,
+			);
+		}
+		placedBlocks.add(name as string);
+		return { metablock: name as string };
+	}
+
 	const outline = outlineOf(ast.children, {});
 
 	// D11 — a field no slot places parses and then silently does not render.
@@ -545,7 +620,7 @@ export function compileComposition(
 			if (n.attributes[OWNER_ATTR] === undefined) n.attributes[OWNER_ATTR] = rune;
 		}
 
-		const children = Markdoc.transform(placed, markerConfig(config)) as RenderableTreeNode[];
+		const children = Markdoc.transform(placed, templateConfig(config)) as RenderableTreeNode[];
 
 		// The field bag holds every attribute the author set (or that defaulted):
 		// it is what `modifiers`, the schema row's attribute sources and
@@ -733,6 +808,12 @@ function expand(nodes: Node[], ctx: ExpandContext): Node[] {
 			out.push(...expandSlot(n, ctx, !!n.inline, !n.inline));
 			continue;
 		}
+		if (n.type === 'tag' && n.tag === METABLOCK_TAG) {
+			out.push(
+				new Ast.Node('tag', { name: n.attributes.name, owner: ctx.rune }, [], METABLOCK_MARKER),
+			);
+			continue;
+		}
 		const sole = soleSlot(n);
 		if (sole) {
 			out.push(...expandSlot(sole, ctx, false, true));
@@ -765,6 +846,14 @@ function markerConfig(config: Config): Config {
 		tags: declareSlotMarkers(tags),
 		nodes: declareSlotMarkersOnNodes(nodes),
 	};
+}
+
+/** The config a template renders against: the slot markers declared, and the
+ *  meta block marker resolvable — for the template's own `{% metablock %}`
+ *  only, since nothing authored can name its key. */
+function templateConfig(config: Config): Config {
+	const marked = markerConfig(config);
+	return { ...marked, tags: { ...marked.tags, [METABLOCK_MARKER]: metablockMarkerSchema } };
 }
 
 /** The `registers` sources that name a slot rather than an attribute (D10b). */
@@ -1175,13 +1264,31 @@ function parseContentModel(raw: unknown, fail: (msg: string) => never): ContentM
 
 /**
  * The generated, block-less engine config of a composed rune (D2a). Not
- * hand-written beside the definition: modifiers come from its enum attributes,
- * and `metaFields` / `blocks` are carried as declared.
+ * hand-written beside the definition: modifiers come from its enum attributes
+ * and from every attribute a `metaFields` entry reads, and `metaFields` /
+ * `blocks` are carried as declared.
+ *
+ * The second source is what lets a placed meta block render (D7): the engine
+ * resolves a field against the rune's modifier values, exactly as it does for a
+ * tree-owning rune — which must declare the same attributes as modifiers for
+ * its own blocks to fill.
  */
 export function composedRuneConfig(def: CompositionDefinition): RuneConfig {
+	const read = new Set<string>();
+	for (const [name, field] of Object.entries(def.metaFields ?? {})) {
+		read.add(name);
+		const f = (field ?? {}) as {
+			condition?: unknown;
+			href?: unknown;
+			rating?: { total?: unknown };
+		};
+		for (const ref of [f.condition, f.href, f.rating?.total]) {
+			if (typeof ref === 'string') read.add(ref);
+		}
+	}
 	const modifiers: Record<string, { source: 'meta'; default?: string }> = {};
 	for (const [name, attr] of Object.entries(def.attributes)) {
-		if (!attr.matches) continue;
+		if (!attr.matches && !read.has(name)) continue;
 		modifiers[name] = {
 			source: 'meta',
 			...(attr.default !== undefined ? { default: String(attr.default) } : {}),
