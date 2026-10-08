@@ -1,4 +1,4 @@
-{% work id="WORK-625" status="ready" priority="high" complexity="complex" source="SPEC-145,SPEC-147" milestone="v0.40.0" tags="composition,storytelling,seo,spike" %}
+{% work id="WORK-625" status="in-progress" priority="high" complexity="complex" source="SPEC-145,SPEC-147" milestone="v0.40.0" tags="composition,storytelling,seo,spike" %}
 
 # Slice 2 — `character` as a composed rune, against the SEO baseline
 

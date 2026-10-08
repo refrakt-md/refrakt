@@ -244,46 +244,100 @@ The definition as stored, with its fixtures and its comparison against the plugi
 ```md
 ---
 tag: article
-base: taxonomy
-provides: [prose]
+aliases: [npc, pc]
 attributes:
-  name:    { type: string, required: true, description: "Display name shown in the header." }
-  role:    { type: string, matches: [protagonist, antagonist, supporting, minor], default: supporting }
-  status:  { type: string, matches: [alive, dead, unknown, missing], default: alive }
-  aliases: { type: string, description: "Comma-separated alternate names." }
+  name:    { type: string, required: true, description: "Display name shown in the character header." }
+  role:    { type: string, matches: [protagonist, antagonist, supporting, minor], default: supporting, description: "Narrative importance." }
+  status:  { type: string, matches: [alive, dead, unknown, missing], default: alive, description: "Whether the character is alive, dead, unknown, or missing." }
+  aliases: { type: string, description: "Comma-separated alternate names or titles for this character." }
+  tags:    { type: string, description: "Comma-separated keywords for filtering and cross-referencing." }
+provides: [prose]
 content:
   type: sections
   sectionHeading: heading
+  emitAttributes: { heading: $heading }
   preamble:
     portrait:    { match: image, optional: true }
     description: { match: paragraph, optional: true, greedy: true }
+    body:        { match: any, optional: true, greedy: true }
+metaFields:
+  role:   { metaType: category, label: Role }
+  status:
+    metaType: status
+    label: Status
+    sentimentMap: { alive: positive, dead: negative, unknown: neutral, missing: caution }
+blocks:
+  metadata: { fields: [role, status], layout: definition-list }
 schema:
   type: Person
-  properties: { name: name, role: jobTitle }
+  properties: { name: name, role: jobTitle, portrait: image }
 registers:
   entity:
     idFrom: name
-    data: [role, status, aliases, tags]
+    data: [role, status, aliases, tags, name]
     aliases: { from: aliases, separator: "," }
 ---
 
 {% card %}
 {% slot name="portrait" /%}
 
+---
+
 # {% $attrs.name %}
 
-{% badge tone=$attrs.role %}{% $attrs.role %}{% /badge %}
-{% badge tone=$attrs.status %}{% $attrs.status %}{% /badge %}
+{% metablock name="metadata" /%}
 
 {% slot name="description" /%}
 
+{% slot name="body" /%}
+
 {% slot name="sections" each %}
-  {% details summary=$each.heading %}
-    {% slot /%}
-  {% /details %}
+{% details summary=$each.heading %}
+{% slot /%}
+{% /details %}
 {% /slot %}
 {% /card %}
 ```
+
+*Corrected 2026-10-08, after {% ref "WORK-625" /%}.* The earlier version of this example did not
+construct, and as a definition it would have lost content and registrations. The form above is
+the definition WORK-625 stores and measures, in
+`packages/content/test/fixtures/composed-storytelling/runes/character.md`. Each change has a
+reason:
+
+- **`emitAttributes: { heading: $heading }` is declared.** Without it `$each.heading` is
+  rejected at construction: `$each` exposes exactly the content model's `emitAttributes`, and
+  there were none (D26).
+- **Role and status are a placed meta block, not badges.** `{% metablock name="metadata" /%}`
+  places the declared `blocks.metadata` (D7, {% ref "WORK-630" /%}). Two `{% badge %}`s were
+  the placed-rune channel that the authoring note rules out for attribute values. They rendered
+  every value as a `tag`, where `metaFields` gives `category` and `status`, with a sentiment.
+- **`tags` is declared, and `base: taxonomy` is gone.** `base` is not a definition key. The
+  registry bag carries `tags`, so it has to be an attribute.
+- **`aliases: [npc, pc]` is declared.** The plugin's `character` answers to both, and a page
+  written with `{% npc %}` registered nothing until it was.
+- **A catch-all `body` preamble field is placed.** Without it, a `{% hint %}` written before
+  the first section is matched by no field and dropped, with no error and no warning. That is
+  the silent loss D11 promises against, by another route: D11 checks that every *field* is
+  placed, not that every authored node is matched by a field. With the field, the content
+  renders. Finding 6's plugin behaviour, discarding it, is recorded as a difference rather than
+  reproduced (SPEC-147 D6).
+- **`portrait: image` is mapped, and the portrait sits in `card`'s media zone (`---`).** The
+  slot-placed `<img>` reaches the entity's `image` at both harvest points (D10). With no
+  portrait, card omits the media zone (D17's empty-zone guard).
+- **`name` joins the registered `data`**, matching the plugin's bag.
+
+Measured against the plugin and the SEO baseline (WORK-625):
+
+- **JSON-LD:** the baseline's `character` fixture publishes the recorded graph exactly.
+- **RDFa:** `name` is published on a `<meta>` instead of the title `<span>`, because the title
+  is template text and the value rides the field bag.
+- **Registry:** the storytelling registry snapshot's registrations, name index, types and
+  warnings are reproduced exactly.
+- **Cross-links:** the cross-links *inside* a character page are lost. The plugin's
+  auto-linking `postProcess` skips nested runes, and the author's prose now sits inside
+  `{% card %}`. That is a constraint on SPEC-147 D5's promotion of auto-linking, which has to
+  see through a composition's placed primitives.
 
 **The comparison that makes the case.** `character.ts` is 184 lines, and it defines
 a *second* rune — `character-section` — for no reason other than to carry each H2
@@ -303,7 +357,8 @@ before reading its Problem 2 as a blanket veto on composed entities.
 **`character` — every property is an attribute.** `characterSchema` is
 `{ type: 'Person', properties: { name: 'name', role: 'jobTitle' } }`: it never maps
 the portrait. Both sources are attributes, so both sit in the field bag on the root,
-where nesting cannot reach them. With the definition above and this page:
+where nesting cannot reach them. With the definition above, minus its `portrait: image`, and
+this page:
 
 ```md
 {% character name="Veshra" role="antagonist" status="alive" %}
@@ -322,6 +377,11 @@ measured output:
 { "@type": "Person", "name": "Veshra", "jobTitle": "antagonist",
   "@context": "https://schema.org" }
 ```
+
+*Measured again for {% ref "WORK-625" /%}, after {% ref "SPEC-146" /%} and D10a landed.* With
+`portrait: image` in the row, as the definition above now carries, the same page publishes
+`"image": "veshra.jpg"` as well, at both harvest points. The node-sourced property this section
+could not reach before is reached through the slot.
 
 **`children` retyping also crosses a composition today.** An Organization whose
 members are `Person`s, with the members placed inside a `{% grid %}`:
