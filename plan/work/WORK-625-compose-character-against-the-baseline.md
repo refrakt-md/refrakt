@@ -27,6 +27,7 @@ working around it here.
 ## Blocked by
 
 - {% ref "WORK-624" /%}
+- {% ref "WORK-630" /%}
 
 ## Acceptance Criteria
 
