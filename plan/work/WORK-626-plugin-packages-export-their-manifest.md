@@ -1,4 +1,4 @@
-{% work id="WORK-626" status="ready" priority="medium" complexity="simple" source="SPEC-153" milestone="v0.40.0" tags="packaging,plugins,composition" %}
+{% work id="WORK-626" status="in-progress" priority="medium" complexity="simple" source="SPEC-153" milestone="v0.40.0" tags="packaging,plugins,composition" %}
 
 # Every plugin package exports its manifest and publishes what it declares
 

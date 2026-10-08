@@ -50,11 +50,11 @@
     "./render": {
       "types": "./dist/render.d.ts",
       "default": "./dist/render.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
-    "dist",
-    "styles"
+    "dist"
   ],
   "scripts": {
     "build": "tsc"

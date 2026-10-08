@@ -22,7 +22,8 @@
     "./cli-plugin": {
       "types": "./dist/cli-plugin.d.ts",
       "default": "./dist/cli-plugin.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist"
