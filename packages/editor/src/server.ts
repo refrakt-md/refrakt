@@ -944,7 +944,8 @@ function deriveChildRunes(config?: ThemeConfig): Set<string> {
 	const children = new Set<string>();
 	if (!config?.runes) return children;
 	for (const runeConfig of Object.values(config.runes)) {
-		if (runeConfig.parent) children.add(runeConfig.block);
+		// A block-less config (SPEC-145 D2a) has no block to name it by.
+		if (runeConfig.parent && runeConfig.block) children.add(runeConfig.block);
 	}
 	return children;
 }

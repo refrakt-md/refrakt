@@ -30,6 +30,8 @@ export function scaffoldCssCommand(opts: ScaffoldCssOptions): void {
 	const blockMap = new Map<string, MergedBlockContract>();
 
 	for (const [runeName, runeContract] of Object.entries(contract.runes)) {
+		// A block-less rune (SPEC-145 D2a) ships no CSS — nothing to scaffold.
+		if (!runeContract.block) continue;
 		const existing = blockMap.get(runeContract.block);
 		if (existing) {
 			existing.runeNames.push(runeName);

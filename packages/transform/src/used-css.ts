@@ -44,7 +44,8 @@ export async function computeUsedCssBlocks(
 	for (const typeName of usedRuneTypes) {
 		const configKey = runeKeyMap.get(typeName);
 		const runeConfig = configKey ? themeConfig.runes[configKey] : undefined;
-		if (runeConfig && existsSync(join(stylesDir, `${runeConfig.block}.css`))) {
+		// A block-less rune (SPEC-145 D2a) ships no CSS of its own.
+		if (runeConfig?.block && existsSync(join(stylesDir, `${runeConfig.block}.css`))) {
 			usedBlocks.add(runeConfig.block);
 		}
 	}

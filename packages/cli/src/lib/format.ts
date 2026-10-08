@@ -19,7 +19,7 @@ export function formatConfig(runeTypeof: string, config: ThemeConfig): string {
 	}
 
 	const lines: string[] = [];
-	lines.push(`  ${DIM}block:${RESET}            ${runeConfig.block}`);
+	lines.push(`  ${DIM}block:${RESET}            ${runeConfig.block ?? '(none — block-less)'}`);
 
 	// Modifiers
 	if (runeConfig.modifiers && Object.keys(runeConfig.modifiers).length > 0) {

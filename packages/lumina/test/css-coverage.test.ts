@@ -314,7 +314,9 @@ const fullConfig: ThemeConfig = { ...baseConfig, runes: fullRunes };
 
 const allCssSelectors = parseAllCssSelectors();
 const { prefix } = fullConfig;
-const runes = fullRunes;
+// A block-less config (SPEC-145 D2a) emits no BEM selectors and ships no CSS,
+// so it has nothing to cover.
+const runes = Object.fromEntries(Object.entries(fullRunes).filter(([, config]) => config.block));
 
 // Build test entries: [runeName, blockName, config]
 const runeEntries = Object.entries(runes).map(

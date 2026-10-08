@@ -38,6 +38,7 @@ for (const plugin of Object.values(plugins)) {
 function titleSelectors(): Array<{ rune: string; selector: string }> {
 	const out: Array<{ rune: string; selector: string }> = [];
 	for (const [rune, config] of Object.entries(allRunes)) {
+		if (!config.block) continue; // block-less (SPEC-145 D2a): no BEM selectors
 		for (const [slot, role] of Object.entries(config.sections ?? {})) {
 			if (role === 'title') out.push({ rune, selector: `.rf-${config.block}__${slot}` });
 		}

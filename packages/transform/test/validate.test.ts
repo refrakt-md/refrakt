@@ -62,10 +62,18 @@ describe('validateThemeConfig', () => {
 		expect(result.errors.some((e) => e.path === 'runes')).toBe(true);
 	});
 
-	it('fails when a rune has no block', () => {
+	it('accepts a rune with no block (SPEC-145 D2a)', () => {
 		const result = validateThemeConfig({
 			...validConfig,
-			runes: { Bad: {} },
+			runes: { Blockless: { modifiers: { tone: { source: 'meta' } } } },
+		});
+		expect(result.errors.filter((e) => e.path.startsWith('runes.Blockless'))).toEqual([]);
+	});
+
+	it('fails when a rune has an empty block', () => {
+		const result = validateThemeConfig({
+			...validConfig,
+			runes: { Bad: { block: '' } },
 		});
 		expect(result.valid).toBe(false);
 		expect(result.errors.some((e) => e.path === 'runes.Bad.block')).toBe(true);

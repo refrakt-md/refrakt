@@ -315,8 +315,13 @@ function transformRune(
 	warnings: WarningCollector,
 	parentRune?: string,
 ): SerializedTag {
-	const block = `${prefix}-${config.block}`;
+	// SPEC-145 D2a — a block-less config gets no `rf-*` classes. `block` is
+	// empty then, and every class built from it below is skipped; everything
+	// else the engine does still applies.
+	const block = config.block ? `${prefix}-${config.block}` : '';
 	const dataRune = tag.attributes?.['data-rune'];
+	// The rune's name in diagnostics: its authored name, else its block.
+	const runeName = dataRune ?? config.block ?? '';
 
 	// SPEC-084 (WORK-337) — validate the self-declared hard nesting requirement.
 	// A rune that opts in via `requiresParent` must have that parent as its
@@ -324,9 +329,7 @@ function transformRune(
 	if (config.requiresParent && config.requiresParent !== '*') {
 		const requiredRune = toKebabCase(config.requiresParent);
 		if (parentRune !== requiredRune) {
-			warnings.emit(
-				requiresParentViolation(dataRune ?? config.block, config.requiresParent, parentRune),
-			);
+			warnings.emit(requiresParentViolation(runeName, config.requiresParent, parentRune));
 		}
 	}
 
@@ -364,7 +367,8 @@ function transformRune(
 	};
 	const facetResolution = runFacets(ORDERED_FACETS, facetInput, warnings);
 	Object.assign(modifierValues, facetResolution.axes);
-	modifierClasses.push(...facetResolution.classes);
+	// Facet classes are BEM modifiers on the block; a block-less rune has none.
+	if (block) modifierClasses.push(...facetResolution.classes);
 
 	// Axes whose emission point the engine owns rather than the axis channel:
 	// `reading` / `dropcap` are applied to the body section during child
@@ -505,7 +509,7 @@ function transformRune(
 			mediaZone.attributes = { ...mediaZone.attributes, 'data-guest-posture': 'presentational' };
 			if (hasLink) {
 				const guest = findInteractiveGuest(mediaZone, allRunes, runeKeyMap);
-				if (guest) warnings.emit(interactiveGuestInLink(dataRune ?? config.block, guest));
+				if (guest) warnings.emit(interactiveGuestInLink(runeName, guest));
 			}
 			// SPEC-101 — a sandbox serving as the cover backdrop fills the well:
 			// switch an auto-height sandbox to `fill` (the element pins the iframe
@@ -519,7 +523,7 @@ function transformRune(
 					}
 					const activation = sandbox.attributes?.['data-activation'];
 					if (activation === 'visible' || activation === 'click') {
-						warnings.emit(nonEagerCoverSandbox(dataRune ?? config.block, String(activation)));
+						warnings.emit(nonEagerCoverSandbox(runeName, String(activation)));
 					}
 				}
 			}
@@ -600,7 +604,9 @@ function transformRune(
 		attributes: {
 			...passAttrs,
 			...modDataAttrs,
-			class: bemClass,
+			// Always present on a rune with a block; a block-less rune with no
+			// author class gets none rather than an empty `class=""`.
+			...(bemClass ? { class: bemClass } : {}),
 			'data-rune': dataRune,
 			'data-density': resolvedDensity,
 			...(config.rootAttributes || {}),
@@ -653,8 +659,11 @@ function applyBemClasses(
 ): SerializedTag {
 	const dataName = child.attributes['data-name'];
 	if (dataName) {
-		const elementClass = `${block}__${dataName}`;
+		// No BEM element class without a block (SPEC-145 D2a); the section
+		// anatomy and media slots below still apply.
+		const elementClass = block ? `${block}__${dataName}` : '';
 		const childExistingClass = child.attributes.class || '';
+		const childClass = [elementClass, childExistingClass].filter(Boolean).join(' ');
 		// Recursively apply BEM to nested data-name children (e.g., icon/title inside header)
 		const nestedChildren = child.children.map((c) => {
 			if (!isTag(c)) return c;
@@ -666,7 +675,7 @@ function applyBemClasses(
 			...child,
 			attributes: {
 				...child.attributes,
-				class: [elementClass, childExistingClass].filter(Boolean).join(' '),
+				...(childClass ? { class: childClass } : {}),
 				...(sectionRole ? { 'data-section': sectionRole } : {}),
 				// SPEC-108: refine the body section with its reading register, suppressed
 				// at the `ui` default (so unmarked bodies stay byte-identical).

@@ -6,11 +6,16 @@ import {
 	UNIVERSAL_AXIS_FACETS,
 	UNIVERSAL_POSTURE_REASONS,
 } from './facets/index.js';
+import { modifiersDescribe } from './facets/modifiers.js';
 import type { UniversalAxisContract, RuneAxisContract } from './facets/describe.js';
 
 /** Structure contract for a single rune */
 export interface RuneContract {
-	block: string;
+	/** The BEM block, without prefix. Absent for a block-less config (SPEC-145
+	 *  D2a): the rune then carries no `rf-*` class, `root` addresses it by
+	 *  `data-rune`, and the contract lists only what is addressable without a
+	 *  class — its `data-*` modifiers, inline styles and universal axes. */
+	block?: string;
 	root: string;
 	dataRune: string;
 	parent?: string;
@@ -169,6 +174,7 @@ function generateRuneContract(
 	prefix: string,
 	expandVariants = true,
 ): RuneContract {
+	if (!config.block) return generateBlocklessContract(runeName, config, expandVariants);
 	const block = `${prefix}-${config.block}`;
 	const contract: RuneContract = {
 		block: config.block,
@@ -377,6 +383,84 @@ function generateRuneContract(
 			for (const [value, delta] of Object.entries(byValue)) {
 				const merged = mergeRuneConfig(config, delta);
 				variants[axis][value] = generateRuneContract(runeName, merged, prefix, false);
+			}
+		}
+		contract.variants = variants;
+	}
+
+	return contract;
+}
+
+/**
+ * The contract for a block-less config — SPEC-145 D2a(4).
+ *
+ * A block-less rune emits no `rf-*` class, so everything the full contract
+ * states as a BEM selector is absent rather than restated: no `classPattern`
+ * on its modifiers, no `contextModifiers` or `staticModifiers` (both are
+ * class-only, so the engine emits nothing for them), no element selectors, and
+ * no block-substituted universal-axis selectors. What remains is what a theme
+ * can still address: the root by `data-rune`, the `data-*` modifiers, inline
+ * styles and the universal axes. Slot names join it with WORK-622.
+ */
+function generateBlocklessContract(
+	runeName: string,
+	config: RuneConfig,
+	expandVariants: boolean,
+): RuneContract {
+	const dataRune = toKebabCase(runeName);
+	const contract: RuneContract = {
+		root: `[data-rune="${dataRune}"]`,
+		dataRune,
+		...(config.parent ? { parent: config.parent } : {}),
+		childOrder: [],
+	};
+
+	const described = modifiersDescribe.describe(config, '');
+	if (described?.modifiers) {
+		contract.modifiers = Object.fromEntries(
+			Object.entries(described.modifiers).map(([name, { classPattern: _c, ...mod }]) => [
+				name,
+				mod,
+			]),
+		);
+	}
+
+	const runeAxes: Record<string, RuneAxisContract> = {};
+	const unavailable: Record<string, string> = {};
+	const posture = config.universalAttributes ?? 'auto';
+	if (posture !== 'auto') {
+		for (const facet of UNIVERSAL_AXIS_FACETS)
+			unavailable[facet.axis] = UNIVERSAL_POSTURE_REASONS[posture];
+	} else {
+		for (const facet of UNIVERSAL_AXIS_FACETS) {
+			const described = facet.describeForRune(config, '');
+			if (typeof described === 'string') unavailable[facet.axis] = described;
+			else if (described) {
+				const { selectors: _s, ...axis } = described;
+				if (Object.keys(axis).length > 0) runeAxes[facet.axis] = axis;
+			}
+		}
+	}
+	if (Object.keys(runeAxes).length > 0 || Object.keys(unavailable).length > 0) {
+		contract.universalAxes = {
+			...(Object.keys(runeAxes).length > 0 ? { axes: runeAxes } : {}),
+			...(Object.keys(unavailable).length > 0 ? { unavailable } : {}),
+		};
+	}
+
+	if (config.styles && Object.keys(config.styles).length > 0) {
+		contract.inlineStyles = { ...config.styles };
+	}
+	contract.childOrder = computeChildOrder(config);
+	if (config.childDensity) contract.childDensity = config.childDensity;
+
+	if (expandVariants && config.variants) {
+		const variants: Record<string, Record<string, RuneContract>> = {};
+		for (const [axis, byValue] of Object.entries(config.variants)) {
+			variants[axis] = {};
+			for (const [value, delta] of Object.entries(byValue)) {
+				const merged = mergeRuneConfig(config, delta);
+				variants[axis][value] = generateBlocklessContract(runeName, merged, false);
 			}
 		}
 		contract.variants = variants;

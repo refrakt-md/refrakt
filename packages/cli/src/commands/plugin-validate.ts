@@ -150,10 +150,12 @@ async function validatePlugin(pluginDir: string): Promise<PluginValidationResult
 				continue;
 			}
 			const rc = config as Record<string, unknown>;
-			if (!rc.block || typeof rc.block !== 'string') {
+			// `block` is optional (SPEC-145 D2a — a block-less config emits no BEM
+			// classes), but when present it must name a block.
+			if (rc.block !== undefined && (!rc.block || typeof rc.block !== 'string')) {
 				errors.push({
 					path: `theme.runes.${typeofName}.block`,
-					message: 'Required and must be a non-empty string',
+					message: 'Must be a non-empty string when present',
 				});
 			}
 		}

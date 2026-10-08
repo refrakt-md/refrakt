@@ -103,7 +103,8 @@ export interface FacetResult {
 export interface FacetContext {
 	readonly tag: SerializedTag;
 	readonly config: RuneConfig;
-	/** Prefixed BEM block, e.g. `rf-hero`. */
+	/** Prefixed BEM block, e.g. `rf-hero`. Empty for a block-less config
+	 *  (SPEC-145 D2a); the engine then drops the `classes` a facet returns. */
 	readonly block: string;
 	/** The rune's authored name (`data-rune`), falling back to `block`. Used in
 	 *  diagnostics so messages name what the author wrote. */

@@ -141,9 +141,10 @@ function validateRuneConfig(
 
 	const rune = config as Record<string, unknown>;
 
-	// block (required)
-	if (typeof rune.block !== 'string' || !rune.block) {
-		errors.push({ path: `${prefix}.block`, message: 'Required and must be a non-empty string' });
+	// block (optional since SPEC-145 D2a — a block-less config emits no BEM
+	// classes), but when present it must name a block.
+	if (rune.block !== undefined && (typeof rune.block !== 'string' || !rune.block)) {
+		errors.push({ path: `${prefix}.block`, message: 'Must be a non-empty string when present' });
 	}
 
 	// Collect modifier names for cross-validation
