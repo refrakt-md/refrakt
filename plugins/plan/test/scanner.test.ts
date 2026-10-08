@@ -22,6 +22,16 @@ afterEach(() => {
 });
 
 describe('scanPlanFiles', () => {
+	it('skips dot-directories such as .git', () => {
+		writeMd('work/task.md', '{% work id="WORK-001" status="ready" %}\n\n# Task\n\n{% /work %}');
+		writeMd(
+			'.git/objects/stray.md',
+			'{% work id="WORK-999" status="ready" %}\n\n# Stray\n\n{% /work %}',
+		);
+
+		expect(scanPlanFiles(TMP).map((e) => e.attributes.id)).toEqual(['WORK-001']);
+	});
+
 	it('should scan a directory recursively and find plan runes', () => {
 		writeMd(
 			'work/task.md',
