@@ -693,6 +693,48 @@ are styleable to the extent the vocabulary is rune-agnostic"**, and today that v
 is three layout tokens adopted by three runes. The arrangement work is therefore a
 dependency of this spec's promise rather than a neighbouring nice-to-have.
 
+### D2a — "no block" means a block-less engine config, not no config
+
+*Decided 2026-10-08.* D2 says a composed rune has no BEM block. Read literally, that
+leaves it no `RuneConfig` at all, and the engine then treats its root as a plain
+element. Measured, that output is wrong in two ways:
+
+```
+in:  <article data-rune="member" data-rune-fields='{"name":"Veshra"}' data-tint="warm">
+out: <article data-rune="member" data-rune-fields='{"name":"Veshra"}' data-tint="warm">
+```
+
+The internal field bag reaches the HTML, and the universal attributes (`tint`, `bg`,
+`width`, `spacing`) are not applied. A config-less root would also have nowhere to
+put the `metaFields` and `blocks` that D7's placed meta blocks need. The opposite fix,
+a config with `block` left out, produces `rf-undefined`, because the engine builds the
+class name from `config.block` unconditionally (`packages/transform/src/engine.ts:318`).
+
+**Decision:**
+
+1. **A composed rune gets a `RuneConfig`, generated from its definition**: modifiers
+   from its attributes, its `metaFields` and `blocks`, and its identity fields. It is
+   not hand-written alongside the definition.
+2. **`block` becomes optional on `RuneConfig`.** With no block, the engine runs every
+   step it runs for any rune *except* emitting BEM classes: modifiers still become
+   `data-*` attributes, universal attributes apply, metadata renders, internal
+   attributes (`data-rune-fields`) are stripped. No `rf-*` class is produced, so
+   nothing can target a composed rune by class name, which is what D2 protects.
+3. **Theming a composed rune goes through what is already addressable:** its `data-*`
+   modifiers, D16's context modifiers on the primitives, and D10c's `data-slot`.
+4. **Contracts accept a block-less entry.** It lists the rune's `data-*` modifiers
+   and slot names instead of BEM selectors, which is D6's "the contract is its
+   expansion".
+5. **Engine messages that name `config.block`** (`requiresParent`, interactive-guest
+   and cover-sandbox warnings) name the rune instead when there is no block, as they
+   already do when `data-rune` is present.
+
+**Considered and rejected.** No config at all, with the engine merely taught to strip
+the field bag: it would lose the universal attributes, modifiers and D7's blocks that
+this spec promises composed runes. Deriving a block from the rune name: it
+contradicts D2, re-opens class-based selectors on user runes, and collides with
+existing CSS (`rf-character` already belongs to the storytelling plugin).
+
 ### D3 — the outer rune owns identity; inner runes are implementation detail
 
 `data-rune`, the schema row, and any {% ref "SPEC-144" /%} registration belong to
@@ -2225,6 +2267,8 @@ placed content's node types from that primitive's content model.
 - [ ] `data-owner` and `data-slot` are declared once at config assembly on every node and tag schema, not per rune, and a placed node keeps both through the primitive's transform (D10a)
 - [ ] The resolvers admit a node past a boundary by `data-owner` plus `data-slot`, and a primitive's own `data-name` on the same node is left untouched (D10a)
 - [ ] A survival test runs a marked node through every rune in D12's placement set and fails naming any rune that drops either attribute (D10a)
+- [ ] A composed rune has a generated, block-less `RuneConfig`: its root carries no `rf-*` class and no `data-rune-fields`, and its modifiers, universal attributes and meta blocks render (D2a)
+- [ ] `RuneConfig.block` is optional; no config without a block ever emits `rf-undefined`, and contracts describe a block-less entry by its `data-*` modifiers and slot names (D2a)
 - [ ] A slot emits no element; every top-level node it places carries `data-slot` in the rendered HTML, `data-owner` does not, and the composed rune's contract lists its slot names (D10c)
 - [ ] A composed rune whose `registers` source is a placed node registers the same id and data as one whose source is an attribute, read from the field bag in Phase 2; `findRef` and the strip timing are unchanged (D10b)
 - [ ] A composed rune's content-derived `properties` resolve — the `image` from a slot-placed portrait reaches the entity, asserted against the graph and not just the attributes (D10)
