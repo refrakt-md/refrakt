@@ -320,7 +320,8 @@ reason:
   the first section is matched by no field and dropped, with no error and no warning. That is
   the silent loss D11 promises against, by another route: D11 checks that every *field* is
   placed, not that every authored node is matched by a field. With the field, the content
-  renders. Finding 6's plugin behaviour, discarding it, is recorded as a difference rather than
+  renders. Without it, the node is still dropped, but since {% ref "WORK-631" /%} validation
+  reports it as `content-unmatched`, so the loss is no longer silent. Finding 6's plugin behaviour, discarding it, is recorded as a difference rather than
   reproduced (SPEC-147 D6).
 - **`portrait: image` is mapped, and the portrait sits in `card`'s media zone (`---`).** The
   slot-placed `<img>` reaches the entity's `image` at both harvest points (D10). With no

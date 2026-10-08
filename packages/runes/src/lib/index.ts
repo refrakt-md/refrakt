@@ -11,7 +11,7 @@ import type {
 	ValidationError,
 } from '@markdoc/markdoc';
 
-import { resolveContentModel } from './resolver.js';
+import { findUnmatchedContent, resolveContentModel } from './resolver.js';
 import { makeSlotTransform, slotSections } from './slots.js';
 import type { EmitsDeclaration } from './slots.js';
 import { schemaBasePresets } from '../attribute-presets.js';
@@ -848,6 +848,15 @@ export interface ContentModelSchemaOptions {
 	deferBody?: boolean;
 
 	/**
+	 * The transform reads the rune's body as raw source (`__source` sliced by the
+	 * node's lines) rather than through the content model — `sandbox`'s HTML is
+	 * one example. The content model is then not what reads the children, so the
+	 * unmatched-content audit (WORK-631) does not run. Implied by `deferBody`,
+	 * whose body is captured as source the same way.
+	 */
+	rawBody?: boolean;
+
+	/**
 	 * SPEC-125 Phase 2 — the rune's own join tables: which of its emitted slots
 	 * carry which section role, which are media slots, and which surface `frame`
 	 * chrome decorates. Declared here (and referenced from `ThemeConfig.runes`)
@@ -939,6 +948,68 @@ function auditRegistersOnValidate(
 			`registers ${role} reads "${source}", which matches no emitted node, no field-bag entry ` +
 			`and no declared attribute of {% ${node.tag} %} — it would always be empty`,
 	}));
+}
+
+/** Severity of `content-unmatched`, chosen from WORK-631's measurement. */
+export const CONTENT_UNMATCHED_LEVEL: 'warning' | 'error' = 'warning';
+
+/** How a dropped node is named in a finding: a rune by its tag, a heading by
+ *  its level, anything else by its node type. */
+function describeNode(node: Node): string {
+	if (node.type === 'tag') return `{% ${node.tag} %}`;
+	if (node.type === 'heading') return `heading (h${node.attributes?.level ?? '?'})`;
+	return node.type;
+}
+
+/**
+ * The validate-time audit of unmatched content — WORK-631.
+ *
+ * Resolves the instance's children against its content model exactly as the
+ * transform does, and reports each authored node no field matched — one
+ * `content-unmatched` finding per node, naming the rune, the node and the
+ * node's own line (the finding's line is the rune's, which is where Markdoc
+ * anchors a schema's findings). SPEC-145 D11 checks that every declared field
+ * is placed; this is the other direction, and it applies to every content
+ * model, not only compositions.
+ */
+function auditUnmatchedContent(
+	options: ContentModelSchemaOptions,
+	node: Node,
+	config: Config,
+): ValidationError[] {
+	let unmatched: Node[];
+	try {
+		// The attributes the transform resolves against, deprecated names mapped
+		// the same way — without mutating the node, which the transform still reads.
+		const attrs: Record<string, any> = { ...node.transformAttributes(config) };
+		for (const [oldName, rule] of Object.entries(options.deprecations ?? {})) {
+			if (attrs[oldName] !== undefined && attrs[rule.newName] === undefined) {
+				attrs[rule.newName] = rule.transform
+					? rule.transform(attrs[oldName], attrs)
+					: attrs[oldName];
+			}
+		}
+		const model =
+			typeof options.contentModel === 'function'
+				? options.contentModel(attrs)
+				: options.contentModel;
+		unmatched = findUnmatchedContent(node.children, model, attrs);
+	} catch {
+		// A rune whose attributes cannot resolve here reports that through its own path.
+		return [];
+	}
+
+	return unmatched.map((child) => {
+		const line = child.lines?.[0];
+		const at = typeof line === 'number' ? ` at line ${line + 1}` : '';
+		return {
+			id: 'content-unmatched',
+			level: CONTENT_UNMATCHED_LEVEL,
+			message:
+				`${describeNode(child)}${at} matches no content-model field of {% ${node.tag} %} ` +
+				`and is dropped from the output`,
+		};
+	});
 }
 
 /**
@@ -1172,6 +1243,18 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 			}
 			return errors;
 		};
+	}
+
+	// WORK-631 — report authored content no content-model field matches. The
+	// transform drops it silently; here, at validate time, Markdoc attaches the
+	// page and line, so it reaches `refrakt validate` and the build summary.
+	// Not for a rune that reads its body as source: nothing is dropped there.
+	if (!options.rawBody && !options.deferBody) {
+		const ownValidate = schema.validate;
+		schema.validate = (node, config) => [
+			...((ownValidate?.(node, config) as ValidationError[] | undefined) ?? []),
+			...auditUnmatchedContent(options, node, config),
+		];
 	}
 
 	// Mark deferBody so the content loader captures the body pre-transform.

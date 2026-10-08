@@ -405,17 +405,48 @@ describe("SPEC-145's character example as written", () => {
 		);
 	});
 
-	it('without a catch-all preamble field, content no field matches is dropped silently', () => {
+	it('without a catch-all preamble field, content no field matches is dropped — and reported (WORK-631)', () => {
 		const withoutBody = CHARACTER.replace(
 			'    body:        { match: any, optional: true, greedy: true }\n',
 			'',
 		).replace('{% slot name="body" /%}\n\n', '');
-		const out = html(
-			render(composedWith({ character: withoutBody }), fixture('body-and-sections')),
-		);
-		// No construction error, no warning: D11 checks that every *field* is
-		// placed, not that every node a field could have held is matched.
+		const pkg = composedWith({ character: withoutBody });
+		const out = html(render(pkg, fixture('body-and-sections')));
+		// D11 checks that every *field* is placed, not that every node a field
+		// could have held is matched — so the hint still does not render…
 		expect(out).not.toContain("Aria's story begins after the fall of Aldermere.");
 		expect(out).toContain('She left home at sixteen.');
+		// …but it no longer vanishes silently.
+		expect(unmatched(pkg, fixture('body-and-sections'))).toEqual([
+			{
+				line: 1,
+				level: 'warning',
+				message:
+					'{% hint %} at line 4 matches no content-model field of {% character %} and is dropped from the output',
+			},
+		]);
 	});
 });
+
+describe('unmatched content (WORK-631)', () => {
+	it('the stored definition, with its catch-all `body` field, reports nothing', () => {
+		for (const scenario of ['canonical', 'portrait', 'body-and-sections']) {
+			expect(unmatched(composedStorytelling(), fixture(scenario)), scenario).toEqual([]);
+		}
+	});
+});
+
+/** The `content-unmatched` findings `Markdoc.validate` raises for one page. */
+function unmatched(pkg: Plugin, source: string) {
+	const { schemas } = pageContext(pkg);
+	return Markdoc.validate(Markdoc.parse(source), {
+		...schemas,
+		variables: { generatedIds: new Set<string>(), path: '/p', headings: [] },
+	} as never)
+		.filter((f) => f.error.id === 'content-unmatched')
+		.map((f) => ({
+			line: (f.lines?.[0] ?? -1) + 1,
+			level: f.error.level,
+			message: f.error.message,
+		}));
+}

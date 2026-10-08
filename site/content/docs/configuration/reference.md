@@ -101,7 +101,7 @@ Locale selection and string overrides — see [i18n](/docs/configuration/i18n) f
 
 Which authoring mistakes the build reports, and how to narrow that.
 
-Six ids are enabled out of the box:
+Seven ids are enabled out of the box:
 
 | id | what it catches |
 |---|---|
@@ -111,6 +111,7 @@ Six ids are enabled out of the box:
 | `attribute-missing-required` | A `required` attribute you did not supply. |
 | `attribute-type-invalid` | A value of the wrong type — most often a quoted boolean or number, which is truthy and so appears to work. |
 | `registers-source-unresolved` | A rune's [`registers`](/extend/rune-authoring/registration) block reads a source the rune never provides, so every use of it registers an empty id or field. Reported at warning severity, on the line of the rune that triggered it. Only fires for runes that declare `registers`. |
+| `content-unmatched` | Content inside a rune that no field of its [content model](/extend/rune-authoring/content-models) matches — a block written before the first section of a rune whose preamble does not take it, or a `---` zone the rune does not read. The rune drops it from the page. Reported at warning severity on the rune's line, naming the dropped node and its own line. |
 
 Everything else Markdoc can report is off. `variable-undefined` in particular is not something to switch on: Markdoc validates the full variable path and has no scope model, so every `$item` inside a `{% collection %}` template and every `$row` inside a `{% data %}` per-row template is reported as undefined.
 

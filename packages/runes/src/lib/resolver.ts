@@ -68,6 +68,29 @@ function extractSpecialTags(children: Node[]): {
 }
 
 // ---------------------------------------------------------------------------
+// Unmatched content (WORK-631)
+// ---------------------------------------------------------------------------
+
+/**
+ * Where a resolver puts an authored node that no field matched. Optional and
+ * threaded through every resolver: the transform passes none and resolves
+ * exactly as before, the validate-time audit passes one and reads it back.
+ */
+export type UnmatchedSink = Node[];
+
+/** A node that carries no authored content, so dropping it loses nothing —
+ *  inter-block whitespace, a soft break, a comment. */
+function isInsignificant(node: Node): boolean {
+	if (node.type === 'softbreak' || node.type === 'comment') return true;
+	return node.type === 'text' && String(node.attributes?.content ?? '').trim() === '';
+}
+
+function reportUnmatched(nodes: Node[], sink: UnmatchedSink | undefined): void {
+	if (!sink) return;
+	for (const node of nodes) if (!isInsignificant(node)) sink.push(node);
+}
+
+// ---------------------------------------------------------------------------
 // Type matching
 // ---------------------------------------------------------------------------
 
@@ -152,6 +175,7 @@ export function imageInParagraph(node: Node): Node | null {
 export function resolveSequence(
 	children: Node[],
 	fields: ContentFieldDefinition[],
+	unmatched?: UnmatchedSink,
 ): ResolvedContent {
 	const result: ResolvedContent = {};
 	let childIndex = 0;
@@ -239,11 +263,16 @@ export function resolveSequence(
 				}
 			}
 		} else if (!field.optional) {
-			// Required field didn't match — skip the child and move on
+			// Required field didn't match — skip the child and move on. The child
+			// is dropped, so it is reported.
+			reportUnmatched([child], unmatched);
 			childIndex++;
 		}
 		// If optional and doesn't match, just skip the field (don't advance child)
 	}
+
+	// Whatever the fields ran out before reaching is dropped too.
+	reportUnmatched(children.slice(childIndex), unmatched);
 
 	return result;
 }
@@ -256,7 +285,11 @@ export function resolveSequence(
  * Resolve a delimited model: split children by delimiter nodes, then
  * resolve each zone's content.
  */
-export function resolveDelimited(children: Node[], model: DelimitedModel): ResolvedContent {
+export function resolveDelimited(
+	children: Node[],
+	model: DelimitedModel,
+	unmatched?: UnmatchedSink,
+): ResolvedContent {
 	// Split children into groups at each delimiter
 	const groups: Node[][] = [[]];
 
@@ -270,7 +303,9 @@ export function resolveDelimited(children: Node[], model: DelimitedModel): Resol
 
 	if (model.dynamicZones && model.zoneModel) {
 		return {
-			zones: groups.map((group) => resolve(group, model.zoneModel!)),
+			zones: groups.map((group) =>
+				resolve(group, model.zoneModel!, undefined, undefined, unmatched),
+			),
 		};
 	}
 
@@ -290,8 +325,11 @@ export function resolveDelimited(children: Node[], model: DelimitedModel): Resol
 			} else {
 				group = i < groups.length ? groups[i] : [];
 			}
-			result[zone.name] = resolveSequence(group, zone.fields);
+			result[zone.name] = resolveSequence(group, zone.fields, unmatched);
 		}
+		// A `---` beyond the declared zones opens a group no zone reads.
+		const read = primaryIdx >= 0 ? 1 : model.zones.length;
+		for (const group of groups.slice(read)) reportUnmatched(group, unmatched);
 	}
 
 	return result;
@@ -424,7 +462,16 @@ export function resolveSections(
 	children: Node[],
 	model: SectionsModel,
 	locale?: string,
+	unmatched?: UnmatchedSink,
 ): ResolvedContent {
+	// Preamble content is read by `fields`; a model that declares none reads no
+	// preamble at all, so every node of it is dropped.
+	const resolvePreamble = (nodes: Node[]): ResolvedContent => {
+		if (model.fields) return resolveSequence(nodes, model.fields, unmatched);
+		reportUnmatched(nodes, unmatched);
+		return {};
+	};
+
 	// 1. Determine heading level
 	const headingSpec = model.sectionHeading;
 	let level: number | undefined;
@@ -467,7 +514,7 @@ export function resolveSections(
 			return { ...preamble, sections: [tagNode] };
 		}
 
-		const preamble = model.fields ? resolveSequence(children, model.fields) : {};
+		const preamble = resolvePreamble(children);
 		return { ...preamble, sections: [] };
 	}
 
@@ -501,7 +548,7 @@ export function resolveSections(
 	}
 
 	// 3. Resolve preamble fields
-	const preamble = model.fields ? resolveSequence(preambleNodes, model.fields) : {};
+	const preamble = resolvePreamble(preambleNodes);
 
 	// 4. Process each section
 	if (model.emitTag) {
@@ -537,7 +584,7 @@ export function resolveSections(
 			? matchKnownSection(headingText, model.knownSections, locale)
 			: undefined;
 		const sectionModel = knownMatch?.definition.model ?? model.sectionModel;
-		const bodyResolved = resolve(section.body, sectionModel);
+		const bodyResolved = resolve(section.body, sectionModel, undefined, locale, unmatched);
 
 		// SPEC-035 Zone 7 — attach the language-stable slug for the section
 		// wrapper's `data-name`: an explicit `canonicalSlug` if declared, else the
@@ -765,24 +812,27 @@ export function resolve(
 	model: ContentModel,
 	attributes?: Record<string, unknown>,
 	locale?: string,
+	unmatched?: UnmatchedSink,
 ): ResolvedContent {
 	// Handle conditional models
 	if (isConditional(model)) {
 		for (const branch of model.when) {
 			if (evaluateCondition(branch.condition, children, attributes ?? {})) {
-				return resolve(children, branch.model, attributes, locale);
+				return resolve(children, branch.model, attributes, locale, unmatched);
 			}
 		}
-		return resolve(children, model.default, attributes, locale);
+		return resolve(children, model.default, attributes, locale, unmatched);
 	}
 
 	switch (model.type) {
 		case 'sequence':
-			return resolveSequence(children, (model as SequenceModel).fields);
+			return resolveSequence(children, (model as SequenceModel).fields, unmatched);
 		case 'sections':
-			return resolveSections(children, model as SectionsModel, locale);
+			return resolveSections(children, model as SectionsModel, locale, unmatched);
 		case 'delimited':
-			return resolveDelimited(children, model as DelimitedModel);
+			return resolveDelimited(children, model as DelimitedModel, unmatched);
+		// A custom model hands every child to its own code, which owns what it
+		// keeps — nothing here can say a node was dropped.
 		case 'custom':
 			return { children: (model as CustomModel).processChildren(children, attributes ?? {}) };
 		default:
@@ -826,4 +876,25 @@ export function resolveContentModel(
 	const { filtered, tintNode, bgNode } = extractSpecialTags(children);
 	const content = resolve(filtered, model, attributes, locale);
 	return { content, tintNode, bgNode };
+}
+
+/**
+ * The authored nodes `resolveContentModel` would drop: children no field of the
+ * model matches (WORK-631). SPEC-145 D11 checks the other direction — that every
+ * declared field is placed — so without this a node could still vanish between
+ * the author's file and the content model.
+ *
+ * Runs the same resolution as the transform, over the same filtered children,
+ * so the two cannot disagree about what matched.
+ */
+export function findUnmatchedContent(
+	children: Node[],
+	model: ContentModel,
+	attributes?: Record<string, unknown>,
+	locale?: string,
+): Node[] {
+	const { filtered } = extractSpecialTags(children);
+	const unmatched: UnmatchedSink = [];
+	resolve(filtered, model, attributes, locale, unmatched);
+	return unmatched;
 }

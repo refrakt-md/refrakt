@@ -10,6 +10,7 @@ import {
 	resolveContentModel,
 	resolveListItems,
 	evaluateCondition,
+	findUnmatchedContent,
 } from '../src/lib/resolver.js';
 import type {
 	ContentFieldDefinition,
@@ -1530,5 +1531,132 @@ describe('emitTag on a mixed list|tag field', () => {
 		];
 
 		expect(names(resolveSequence(ast.children, fields).tracks)).toEqual(['track:Solo']);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// Unmatched content (WORK-631)
+// ---------------------------------------------------------------------------
+
+describe('findUnmatchedContent', () => {
+	it('reports nothing when every node is matched', () => {
+		const model: SequenceModel = {
+			type: 'sequence',
+			fields: [
+				{ name: 'title', match: 'heading' },
+				{ name: 'body', match: 'any', optional: true, greedy: true },
+			],
+		};
+		expect(findUnmatchedContent([heading(1), paragraph(), list()], model)).toEqual([]);
+	});
+
+	it('reports nodes left over after the last sequence field', () => {
+		const model: SequenceModel = {
+			type: 'sequence',
+			fields: [{ name: 'title', match: 'heading', optional: true }],
+		};
+		const p = paragraph('dropped');
+		const l = list();
+		expect(findUnmatchedContent([heading(1), p, l], model)).toEqual([p, l]);
+	});
+
+	it('reports a node a required field skips', () => {
+		const model: SequenceModel = {
+			type: 'sequence',
+			fields: [
+				{ name: 'title', match: 'heading' },
+				{ name: 'body', match: 'paragraph', greedy: true },
+			],
+		};
+		const f = fence();
+		expect(findUnmatchedContent([f, paragraph()], model)).toEqual([f]);
+	});
+
+	it('ignores whitespace, soft breaks and comments', () => {
+		const model: SequenceModel = { type: 'sequence', fields: [] };
+		const blank = node('text', { content: '  ' });
+		expect(findUnmatchedContent([blank, node('softbreak'), node('comment')], model)).toEqual([]);
+	});
+
+	it('does not report tint and bg children, which are extracted first', () => {
+		const model: SequenceModel = { type: 'sequence', fields: [] };
+		const tint = new Ast.Node('tag', {}, [], 'tint');
+		const bg = new Ast.Node('tag', {}, [], 'bg');
+		expect(findUnmatchedContent([tint, bg], model)).toEqual([]);
+	});
+
+	it('reports preamble content no sections field matches', () => {
+		const model: SectionsModel = {
+			type: 'sections',
+			sectionHeading: 'heading:2',
+			fields: [{ name: 'intro', match: 'paragraph', optional: true }],
+			sectionModel: { type: 'sequence', fields: [{ name: 'body', match: 'any', greedy: true }] },
+		};
+		const hint = new Ast.Node('tag', {}, [], 'hint');
+		expect(findUnmatchedContent([hint, heading(2), paragraph()], model)).toEqual([hint]);
+	});
+
+	it('reports all preamble content when a sections model declares no fields', () => {
+		const model: SectionsModel = {
+			type: 'sections',
+			sectionHeading: 'heading:2',
+			sectionModel: { type: 'sequence', fields: [{ name: 'body', match: 'any', greedy: true }] },
+		};
+		const p = paragraph();
+		expect(findUnmatchedContent([p, heading(2), paragraph()], model)).toEqual([p]);
+	});
+
+	it('reports unmatched section bodies against the section model', () => {
+		const model: SectionsModel = {
+			type: 'sections',
+			sectionHeading: 'heading:2',
+			sectionModel: { type: 'sequence', fields: [{ name: 'body', match: 'paragraph' }] },
+		};
+		const f = fence();
+		expect(findUnmatchedContent([heading(2), paragraph(), f], model)).toEqual([f]);
+	});
+
+	it('reports nothing for emitted sections, which keep their whole body', () => {
+		const model: SectionsModel = {
+			type: 'sections',
+			sectionHeading: 'heading:2',
+			emitTag: 'step',
+		};
+		expect(findUnmatchedContent([heading(2), paragraph(), fence()], model)).toEqual([]);
+	});
+
+	it('reports a delimited group beyond the declared zones', () => {
+		const model: DelimitedModel = {
+			type: 'delimited',
+			delimiter: 'hr',
+			zones: [
+				{ name: 'a', type: 'sequence', fields: [{ name: 'x', match: 'any', greedy: true }] },
+				{ name: 'b', type: 'sequence', fields: [{ name: 'y', match: 'any', greedy: true }] },
+			],
+		} as DelimitedModel;
+		const extra = paragraph('third');
+		expect(findUnmatchedContent([paragraph(), hr(), paragraph(), hr(), extra], model)).toEqual([
+			extra,
+		]);
+	});
+
+	it('reports nothing for a custom model, which owns its children', () => {
+		const model: CustomModel = { type: 'custom', processChildren: (c) => c };
+		expect(findUnmatchedContent([paragraph(), fence()], model)).toEqual([]);
+	});
+
+	it('follows the selected branch of a conditional model', () => {
+		const model: ConditionalContentModel = {
+			when: [
+				{
+					condition: { hasChild: 'fence' },
+					model: { type: 'sequence', fields: [{ name: 'code', match: 'fence' }] },
+				},
+			],
+			default: { type: 'sequence', fields: [{ name: 'all', match: 'any', greedy: true }] },
+		};
+		const p = paragraph();
+		expect(findUnmatchedContent([fence(), p], model)).toEqual([p]);
+		expect(findUnmatchedContent([paragraph()], model)).toEqual([]);
 	});
 });

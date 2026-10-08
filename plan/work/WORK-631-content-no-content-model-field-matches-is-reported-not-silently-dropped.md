@@ -1,4 +1,4 @@
-{% work id="WORK-631" status="ready" priority="high" complexity="moderate" source="SPEC-145" tags="runes,content-model,composition,dx,correctness" milestone="v0.41.0" %}
+{% work id="WORK-631" status="in-progress" priority="high" complexity="moderate" source="SPEC-145" tags="runes,content-model,composition,dx,correctness" milestone="v0.41.0" %}
 
 # Content no content-model field matches is reported, not silently dropped
 
