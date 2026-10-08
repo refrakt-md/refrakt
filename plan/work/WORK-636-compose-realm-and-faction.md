@@ -1,4 +1,4 @@
-{% work id="WORK-636" status="ready" priority="medium" complexity="moderate" source="SPEC-147" milestone="v0.41.0" tags="composition,storytelling,seo" %}
+{% work id="WORK-636" status="in-progress" priority="medium" complexity="moderate" source="SPEC-147" milestone="v0.41.0" tags="composition,storytelling,seo" %}
 
 # `realm` and `faction` as composed runes
 
