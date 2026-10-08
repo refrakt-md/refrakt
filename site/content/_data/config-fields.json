@@ -150,7 +150,7 @@
 			"name": "runes",
 			"type": "RunesConfig",
 			"required": false,
-			"description": "Rune resolution — which package wins when several define the same rune name, extra tag names for existing runes, and runes loaded from local files."
+			"description": "Rune resolution — which package wins when several define the same rune name, extra tag names for existing runes, runes loaded from local files, and the project's own composed rune definitions."
 		},
 		{
 			"group": "runes-plugins",

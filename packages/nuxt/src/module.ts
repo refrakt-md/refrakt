@@ -91,7 +91,10 @@ export default defineNuxtModule<RefraktNuxtOptions>({
 		const contentHmrPlugin = {
 			name: 'refrakt-md:content-hmr',
 			configureServer(server: any) {
-				setupContentHmr(server, contentDir, examplesDir);
+				// SPEC-153 D10 — rune definitions reload the page too.
+				setupContentHmr(server, contentDir, examplesDir, undefined, {
+					runesDir: resolve(dirname(resolve(configPath)), site.runes?.dir ?? 'runes'),
+				});
 			},
 		};
 

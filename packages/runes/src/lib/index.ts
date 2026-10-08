@@ -52,6 +52,8 @@ export {
 	composedTypeName,
 	checkCompositions,
 	SUBORDINATE_SCHEMA_TYPES,
+	CompositionError,
+	frontmatterKeyLine,
 } from './composition.js';
 export type {
 	CompositionTemplate,

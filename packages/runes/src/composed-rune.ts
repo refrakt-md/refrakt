@@ -12,6 +12,8 @@ import type { RuneConfig } from '@refrakt-md/transform';
 import { toKebabCase } from '@refrakt-md/transform';
 import { createContentModelSchema, schemaTables } from './lib/index.js';
 import {
+	CompositionError,
+	frontmatterKeyLine,
 	checkCompositions,
 	composedRuneConfig,
 	composedTypeName,
@@ -61,11 +63,7 @@ export function defineComposedRune(name: string, source: string): ComposedRune {
 			...(definition.provides ? { provides: definition.provides } : {}),
 		});
 	} catch (e) {
-		// The schema table's and the registration's own checks report the path
-		// inside the declaration; say whose declaration it is.
-		const message = (e as Error).message;
-		if (message.startsWith(`Rune "${name}"`)) throw e;
-		throw new Error(`Rune "${name}": ${message}`);
+		throw locate(e as Error, name, definition);
 	}
 
 	const config = composedRuneConfig(definition);
@@ -82,6 +80,31 @@ export function defineComposedRune(name: string, source: string): ComposedRune {
 		description: definition.description ?? `Composed rune "${name}"`,
 	});
 	return { rune, config, typeName, definition };
+}
+
+/**
+ * A construction error, named for the rune and located in its source. A
+ * template error is at the node it names; the schema table's and the
+ * registration's own checks report a path inside their declaration, so they
+ * are located at that key; anything else at the template's first line.
+ */
+function locate(e: Error, name: string, definition: CompositionDefinition): CompositionError {
+	const message = e.message.startsWith(`Rune "${name}"`)
+		? e.message
+		: `Rune "${name}": ${e.message}`;
+	const err = new CompositionError(message);
+	err.stack = e.stack;
+	const bodyLine = (e as CompositionError).bodyLine;
+	if (typeof bodyLine === 'number') {
+		err.line = definition.templateLine + bodyLine;
+		return err;
+	}
+	const section = ['registers', 'schema', 'provides'].find((key) =>
+		new RegExp(`\\b${key}\\b`).test(e.message),
+	);
+	const index = section ? frontmatterKeyLine(definition.frontmatter, [section]) : undefined;
+	err.line = index !== undefined ? index + 2 : definition.templateLine;
+	return err;
 }
 
 const composedEntries = new WeakMap<object, Map<string, ComposedRune>>();
@@ -129,6 +152,11 @@ export function registerCoreCatalog(
 	configs: Record<string, RuneConfig>,
 ): void {
 	coreCatalog = { runes, configs };
+}
+
+/** The core runes, as registered by the package entry; empty before it runs. */
+export function coreCatalogRunes(): Record<string, Rune> {
+	return coreCatalog?.runes ?? {};
 }
 
 /**

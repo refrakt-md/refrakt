@@ -178,6 +178,8 @@ export {
 	composedTypeName,
 	checkCompositions,
 	SUBORDINATE_SCHEMA_TYPES,
+	CompositionError,
+	frontmatterKeyLine,
 } from './lib/index.js';
 export type {
 	CompositionTemplate,
@@ -423,7 +425,14 @@ export {
 	runeEntriesOf,
 	runeNameOfFile,
 	withRuneDefinitions,
+	PROJECT_RUNES,
 } from './rune-dir.js';
+export {
+	checkProjectRunes,
+	loadProjectRunes,
+	DEFAULT_PROJECT_RUNE_DIR,
+} from './project-runes.js';
+export type { ProjectRuneFinding, ProjectRunesResult } from './project-runes.js';
 export type { RuneDirReader, RuneDefinitionFile } from './rune-dir.js';
 // SPEC-145 — composed runes: a definition (frontmatter + Markdoc template) as a rune
 export {

@@ -161,6 +161,47 @@ export function compositionFor(schema: unknown): CompositionInfo | undefined {
 /** Tags a template may not contain: they resolve at preprocess, a stage a
  *  template comes after (D4). `include` is the route for a repeated block that
  *  needs one. */
+/**
+ * A definition or template the compiler rejects. `line` is the 1-based line in
+ * the definition's source where the problem is, when it can be located: the
+ * template node it names, or the frontmatter key it is about. `refrakt validate`
+ * reports it with the file (SPEC-153, WORK-634).
+ */
+export class CompositionError extends Error {
+	line?: number;
+	/** 0-based line within the template body; mapped to `line` by the caller
+	 *  that knows where the body starts in the file. */
+	bodyLine?: number;
+}
+
+/**
+ * The 0-based line, within a YAML frontmatter block, of the key at `path` —
+ * each key searched for after the line its parent was found on. A best-effort
+ * locator for error reporting, not a YAML parser: `undefined` when not found.
+ */
+export function frontmatterKeyLine(
+	frontmatter: string,
+	path: readonly string[],
+): number | undefined {
+	const lines = frontmatter.split(/\r?\n/);
+	let from = 0;
+	let hit: number | undefined;
+	for (const key of path) {
+		const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		const re = new RegExp(`^\\s*(?:-\\s+)?["']?${escaped}["']?\\s*:`);
+		hit = undefined;
+		for (let i = from; i < lines.length; i++) {
+			if (re.test(lines[i])) {
+				hit = i;
+				break;
+			}
+		}
+		if (hit === undefined) return undefined;
+		from = hit + 1;
+	}
+	return hit;
+}
+
 const PREPROCESSOR_TAGS = new Set(['data', 'snippet', 'include']);
 
 /** Markdoc's own tags, which are template vocabulary rather than placed runes. */
@@ -374,8 +415,13 @@ export function compileComposition(
 	options: CompileCompositionOptions,
 ): CompiledComposition {
 	const { rune, tag, body } = template;
+	/** The template node being checked, so a failure can say where it is. */
+	let current: Node | undefined;
 	const fail = (msg: string): never => {
-		throw new Error(`Rune "${rune}": invalid composition template — ${msg}`);
+		const err = new CompositionError(`Rune "${rune}": invalid composition template — ${msg}`);
+		const line = current?.lines?.[0];
+		if (typeof line === 'number') err.bodyLine = line;
+		throw err;
 	};
 	if (typeof body !== 'string') fail('the template body must be a string.');
 	if (typeof tag !== 'string' || !/^[a-z][a-z0-9]*$/.test(tag)) {
@@ -435,6 +481,15 @@ export function compileComposition(
 
 	/** Check one template node and return its outline entries. */
 	const check = (n: Node, scope: Scope): CompositionOutlineNode[] | undefined => {
+		const parent = current;
+		current = n.lines?.length ? n : current;
+		try {
+			return checkNode(n, scope);
+		} finally {
+			current = parent;
+		}
+	};
+	const checkNode = (n: Node, scope: Scope): CompositionOutlineNode[] | undefined => {
 		if (n.type === 'error') {
 			const errors = (n as unknown as { errors?: Array<{ message?: string }> }).errors ?? [];
 			fail(
@@ -923,6 +978,10 @@ export interface CompositionDefinition {
 	blocks?: Record<string, unknown>;
 	provides?: string[];
 	template: string;
+	/** 1-based line of the source on which the template body starts. */
+	templateLine: number;
+	/** The frontmatter block's text, for locating a key in error reports. */
+	frontmatter: string;
 }
 
 const DEFINITION_KEYS = new Set([
@@ -983,8 +1042,15 @@ const kebab = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCas
  * silently preferred.
  */
 export function parseCompositionDefinition(rune: string, source: string): CompositionDefinition {
-	const fail = (msg: string): never => {
-		throw new Error(`Rune "${rune}": invalid composition definition — ${msg}`);
+	let frontmatter = '';
+	/** Throw, located at the frontmatter key `at` names when it is given. */
+	const fail = (msg: string, at?: readonly string[] | number): never => {
+		const err = new CompositionError(`Rune "${rune}": invalid composition definition — ${msg}`);
+		const index =
+			typeof at === 'number' ? at : at ? frontmatterKeyLine(frontmatter, at) : undefined;
+		// The frontmatter's first line is the source's second, after `---`.
+		err.line = index === undefined ? 1 : index + 2;
+		throw err;
 	};
 	if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(rune)) {
 		fail('the rune name must be kebab-case.');
@@ -992,11 +1058,16 @@ export function parseCompositionDefinition(rune: string, source: string): Compos
 	if (typeof source !== 'string') fail('the definition must be a string.');
 	const match = /^﻿?---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)([\s\S]*)$/.exec(source);
 	if (!match) fail('it has no frontmatter block (`---` … `---`) declaring its input.');
+	frontmatter = match![1];
 	let front: unknown;
 	try {
-		front = yaml.parse(match![1]) ?? {};
+		front = yaml.parse(frontmatter) ?? {};
 	} catch (e) {
-		fail(`its frontmatter is not valid YAML: ${(e as Error).message}`);
+		const pos = (e as { linePos?: Array<{ line: number }> }).linePos?.[0]?.line;
+		fail(
+			`its frontmatter is not valid YAML: ${(e as Error).message}`,
+			typeof pos === 'number' ? pos - 1 : undefined,
+		);
 	}
 	if (!front || typeof front !== 'object' || Array.isArray(front)) {
 		fail('its frontmatter must be a mapping.');
@@ -1008,55 +1079,65 @@ export function parseCompositionDefinition(rune: string, source: string): Compos
 		if (key === 'rune' || key === 'name') {
 			fail(
 				`frontmatter key \`${key}\` restates the rune's name, which is the file's name. Remove it (SPEC-153 D9).`,
+				[key],
 			);
 		}
 		if (STYLE_KEYS.has(key)) {
 			fail(
 				`frontmatter key \`${key}\` would ship styles. A composed rune has no block and ships no CSS: its appearance is the primitives' (D2). A rune that needs its own styling is a declared rune in a plugin.`,
+				[key],
 			);
 		}
 		if (EMIT_KEYS.has(key)) {
 			fail(
 				`frontmatter key \`${key}\` declares a second emit path. A definition's template is its emit path; exactly one of a slot declaration, a template or a \`transform\` (D5).`,
+				[key],
 			);
 		}
 		if (key === 'layout') {
 			fail(
 				"frontmatter key `layout` cannot apply: `layout` places a rune's own containers, and a composed rune's containers belong to the primitives it places (D7). Arrange them in the template.",
+				[key],
 			);
 		}
-		fail(`unknown frontmatter key \`${key}\` (expected ${[...DEFINITION_KEYS].join(', ')}).`);
+		fail(`unknown frontmatter key \`${key}\` (expected ${[...DEFINITION_KEYS].join(', ')}).`, [
+			key,
+		]);
 	}
 
 	const tag = (fm.tag ?? 'div') as string;
 	if (typeof tag !== 'string' || !/^[a-z][a-z0-9]*$/.test(tag))
-		fail('`tag` must be an element name.');
+		fail('`tag` must be an element name.', ['tag']);
 
 	let aliases: string[] | undefined;
 	if (fm.aliases !== undefined) {
 		if (!Array.isArray(fm.aliases) || !fm.aliases.every((a) => typeof a === 'string')) {
-			fail('`aliases` must be a list of names.');
+			fail('`aliases` must be a list of names.', ['aliases']);
 		}
 		aliases = fm.aliases as string[];
 	}
 	if (fm.description !== undefined && typeof fm.description !== 'string') {
-		fail('`description` must be a string.');
+		fail('`description` must be a string.', ['description']);
 	}
 
-	const attributes = parseAttributes(fm.attributes, fail);
-	const contentModel = parseContentModel(fm.content, fail);
+	const attributes = parseAttributes(fm.attributes, (msg, at) =>
+		fail(msg, ['attributes', ...(at ?? [])]),
+	);
+	const contentModel = parseContentModel(fm.content, (msg, at) =>
+		fail(msg, ['content', ...(at ?? [])]),
+	);
 
 	for (const key of ['schema', 'registers', 'metaFields', 'blocks'] as const) {
 		const v = fm[key];
 		if (v !== undefined && (!v || typeof v !== 'object' || Array.isArray(v))) {
-			fail(`\`${key}\` must be a mapping.`);
+			fail(`\`${key}\` must be a mapping.`, [key]);
 		}
 	}
 	if (
 		fm.provides !== undefined &&
 		(!Array.isArray(fm.provides) || !fm.provides.every((p) => typeof p === 'string'))
 	) {
-		fail('`provides` must be a list of names.');
+		fail('`provides` must be a list of names.', ['provides']);
 	}
 
 	return {
@@ -1072,38 +1153,42 @@ export function parseCompositionDefinition(rune: string, source: string): Compos
 		...(fm.blocks ? { blocks: fm.blocks as Record<string, unknown> } : {}),
 		...(fm.provides ? { provides: fm.provides as string[] } : {}),
 		template: match![2],
+		// `---`, the frontmatter's lines, `---`: the body starts on the next.
+		templateLine: frontmatter.split(/\r?\n/).length + 3,
+		frontmatter,
 	};
 }
 
-function parseAttributes(
-	raw: unknown,
-	fail: (msg: string) => never,
-): Record<string, SchemaAttribute> {
+/** Locates a failure inside a frontmatter section: the key path under it. */
+type SectionFail = (msg: string, at?: readonly string[]) => never;
+
+function parseAttributes(raw: unknown, sectionFail: SectionFail): Record<string, SchemaAttribute> {
+	const fail = (msg: string) => sectionFail(msg);
 	if (raw === undefined) return {};
 	if (!raw || typeof raw !== 'object' || Array.isArray(raw))
 		fail('`attributes` must be a mapping.');
 	const out: Record<string, SchemaAttribute> = {};
 	for (const [name, decl] of Object.entries(raw as Record<string, unknown>)) {
 		const where = `attribute \`${name}\``;
-		if (!/^[a-z][a-zA-Z0-9]*(-[a-z0-9]+)*$/.test(name))
-			fail(`${where}: not a valid attribute name.`);
+		const at = (msg: string) => sectionFail(msg, [name]);
+		if (!/^[a-z][a-zA-Z0-9]*(-[a-z0-9]+)*$/.test(name)) at(`${where}: not a valid attribute name.`);
 		if (!decl || typeof decl !== 'object' || Array.isArray(decl)) {
-			fail(`${where} must be a mapping such as \`{ type: string }\`.`);
+			at(`${where} must be a mapping such as \`{ type: string }\`.`);
 		}
 		const d = decl as Record<string, unknown>;
 		for (const key of Object.keys(d)) {
 			if (!ATTRIBUTE_KEYS.has(key)) {
-				fail(`${where}: unknown key \`${key}\` (expected ${[...ATTRIBUTE_KEYS].join(', ')}).`);
+				at(`${where}: unknown key \`${key}\` (expected ${[...ATTRIBUTE_KEYS].join(', ')}).`);
 			}
 		}
 		const type = ATTRIBUTE_TYPES[String(d.type ?? 'string')];
-		if (!type) fail(`${where}: \`type\` must be string, number or boolean.`);
+		if (!type) at(`${where}: \`type\` must be string, number or boolean.`);
 		if (d.matches !== undefined) {
 			if (!Array.isArray(d.matches) || d.matches.length === 0) {
-				fail(`${where}: \`matches\` must be a non-empty list.`);
+				at(`${where}: \`matches\` must be a non-empty list.`);
 			}
 			if (RESERVED_MODIFIERS.has(kebab(name))) {
-				fail(
+				at(
 					`${where} declares \`matches\`, so it would render as \`data-${kebab(name)}\` — an attribute the engine writes itself. Rename it (D2a).`,
 				);
 			}
@@ -1130,11 +1215,8 @@ const FIELD_KEYS = new Set([
 ]);
 
 /** A field list as YAML writes it: a mapping keyed by name, or a list with `name`. */
-function parseFields(
-	raw: unknown,
-	where: string,
-	fail: (msg: string) => never,
-): ContentFieldDefinition[] {
+function parseFields(raw: unknown, where: string, fail: SectionFail): ContentFieldDefinition[] {
+	const section = where.split('.').pop()!;
 	if (raw === undefined) return [];
 	const entries: Array<[string, unknown]> = Array.isArray(raw)
 		? raw.map((f) => [String((f as Record<string, unknown>)?.name ?? ''), f])
@@ -1142,25 +1224,27 @@ function parseFields(
 			? Object.entries(raw)
 			: fail(`\`${where}\` must be a mapping of fields.`);
 	return entries.map(([name, f]) => {
+		const at = (msg: string) => fail(msg, [section, name]);
 		if (!/^[a-z][a-zA-Z0-9]*(-[a-zA-Z0-9]+)*$/.test(name)) {
-			fail(`\`${where}\`: \`${name}\` is not a valid field name.`);
+			at(`\`${where}\`: \`${name}\` is not a valid field name.`);
 		}
-		if (!f || typeof f !== 'object') fail(`\`${where}.${name}\` must be a mapping.`);
+		if (!f || typeof f !== 'object') at(`\`${where}.${name}\` must be a mapping.`);
 		const def = { ...(f as Record<string, unknown>) };
 		delete def.name;
 		for (const key of Object.keys(def)) {
 			if (!FIELD_KEYS.has(key)) {
-				fail(
+				at(
 					`\`${where}.${name}\`: unknown key \`${key}\` (expected ${[...FIELD_KEYS].join(', ')}).`,
 				);
 			}
 		}
-		if (typeof def.match !== 'string') fail(`\`${where}.${name}\` needs a \`match\`.`);
+		if (typeof def.match !== 'string') at(`\`${where}.${name}\` needs a \`match\`.`);
 		return { name, ...def } as unknown as ContentFieldDefinition;
 	});
 }
 
-function parseHeadingExtract(raw: unknown, fail: (msg: string) => never): HeadingExtract {
+function parseHeadingExtract(raw: unknown, sectionFail: SectionFail): HeadingExtract {
+	const fail = (msg: string) => sectionFail(msg, ['headingExtract']);
 	const fields = (raw as { fields?: unknown })?.fields;
 	if (!Array.isArray(fields)) fail('`content.headingExtract.fields` must be a list.');
 	return {
@@ -1201,7 +1285,7 @@ const SECTIONS_KEYS = new Set([
 	'knownSections',
 ]);
 
-function parseContentModel(raw: unknown, fail: (msg: string) => never): ContentModel {
+function parseContentModel(raw: unknown, fail: SectionFail): ContentModel {
 	if (raw === undefined) return { type: 'sequence', fields: [] };
 	if (!raw || typeof raw !== 'object' || Array.isArray(raw)) fail('`content` must be a mapping.');
 	const c = raw as Record<string, unknown>;
@@ -1214,7 +1298,7 @@ function parseContentModel(raw: unknown, fail: (msg: string) => never): ContentM
 	}
 	for (const key of Object.keys(c)) {
 		if (!allowed!.has(key)) {
-			fail(`\`content\`: unknown key \`${key}\` for a ${String(c.type)} model.`);
+			fail(`\`content\`: unknown key \`${key}\` for a ${String(c.type)} model.`, [key]);
 		}
 	}
 	if (c.type === 'sequence') {
@@ -1232,7 +1316,7 @@ function parseContentModel(raw: unknown, fail: (msg: string) => never): ContentM
 					type: 'sequence',
 					fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 				} as SequenceModel)
-			: parseContentModel(c.sectionModel, fail);
+			: parseContentModel(c.sectionModel, (msg, at) => fail(msg, ['sectionModel', ...(at ?? [])]));
 	if (c.emitAttributes !== undefined) {
 		const ea = c.emitAttributes;
 		if (
@@ -1241,7 +1325,9 @@ function parseContentModel(raw: unknown, fail: (msg: string) => never): ContentM
 			Array.isArray(ea) ||
 			!Object.values(ea).every((v) => typeof v === 'string')
 		) {
-			fail('`content.emitAttributes` must map names to `$heading`, `$<field>` or a literal.');
+			fail('`content.emitAttributes` must map names to `$heading`, `$<field>` or a literal.', [
+				'emitAttributes',
+			]);
 		}
 	}
 	return {

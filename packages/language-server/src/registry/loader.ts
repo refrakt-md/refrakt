@@ -7,6 +7,7 @@ import {
 	defineRune,
 	runeTagMap,
 	pluginRune,
+	checkProjectRunes,
 	readRuneDefinitions,
 	withRuneDefinitions,
 } from '@refrakt-md/runes';
@@ -17,6 +18,7 @@ import Markdoc from '@markdoc/markdoc';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, dirname, isAbsolute, resolve } from 'node:path';
 import { createRequire } from 'node:module';
+import { fsProjectFiles } from '@refrakt-md/types/project-files';
 
 export interface RuneInfo {
 	/** Primary rune name */
@@ -228,7 +230,11 @@ export async function initializeRegistry(workspaceRoot?: string): Promise<void> 
 		scanPartialsDir(resolvedPartialsDir);
 
 		const pluginNames: string[] = site.plugins ?? [];
-		if (pluginNames.length === 0) return;
+		// SPEC-153 D4 — the project's own composed runes. A definition that does
+		// not build is left out here; `refrakt validate` reports it.
+		const projectRunes = checkProjectRunes(fsProjectFiles(configDir), site.runes?.dir).loaded;
+		const project = Object.keys(projectRunes.runes).length > 0 ? projectRunes : undefined;
+		if (pluginNames.length === 0 && !project) return;
 
 		// Use createRequire rooted at the config's directory so packages resolve
 		// from the project's node_modules, not the bundled server's location
@@ -243,10 +249,10 @@ export async function initializeRegistry(workspaceRoot?: string): Promise<void> 
 			}
 		}
 
-		if (loaded.length === 0) return;
+		if (loaded.length === 0 && !project) return;
 
 		const coreRuneNames = new Set(Object.keys(runes));
-		const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer);
+		const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer, project);
 
 		// Index community runes
 		indexRunes(Object.values(merged.runes) as Rune[]);

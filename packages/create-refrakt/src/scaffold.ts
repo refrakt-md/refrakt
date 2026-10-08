@@ -344,6 +344,9 @@ function generateRefraktConfig(theme: string, target: string = 'svelte'): string
 				theme,
 				target,
 				plugins: ['@refrakt-md/marketing'],
+				// SPEC-153 D4 — the project's own composed runes: each
+				// `runes/<rune>.md` defines the rune `<rune>`.
+				runes: { dir: 'runes' },
 				routeRules: [{ pattern: '**', layout: 'default' }],
 			},
 		},
@@ -1361,6 +1364,7 @@ function generatePlanSiteRefraktConfig(target: string): string {
 				theme: '@refrakt-md/lumina',
 				target,
 				plugins: ['@refrakt-md/plan'],
+				runes: { dir: 'runes' },
 				routeRules: [{ pattern: '**', layout: 'docs' }],
 				entityRoutes: [
 					{ type: 'spec', url: '/specs/{id}/', title: '{title}', render: '{% expand $item.id /%}' },
