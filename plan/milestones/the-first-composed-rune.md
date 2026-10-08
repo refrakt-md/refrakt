@@ -26,7 +26,7 @@ baseline.
 
 ## What lands
 
-Ten work items in four groups, plus one bug rider:
+Eleven work items in four groups, plus one bug rider:
 
 - **Prerequisite** (1). {% ref "WORK-619" /%}: the identity guard becomes path-granular
   ({% ref "SPEC-158" /%}). It is a pure tightening, inert today, and SPEC-158 D7 puts it
@@ -37,7 +37,9 @@ Ten work items in four groups, plus one bug rider:
     transform.
 
   Then {% ref "WORK-622" /%} renders the template, and {% ref "WORK-623" /%} rejects bad
-  definitions at construction, each by name.
+  definitions at construction, each by name. {% ref "WORK-630" /%} adds `{% metablock %}`
+  (D7). It was pulled in on 2026-10-08, when WORK-622 showed that a composed rune's declared
+  meta blocks cannot render without it and `character` needs its `blocks.metadata`.
 - **The slices** (2), both beside the plugin, not in place of it ({% ref "SPEC-147" /%} D1):
   - {% ref "WORK-624" /%} composes `bond`: attributes, one slot, an edge, no schema;
   - {% ref "WORK-625" /%} composes `character`: `Person` schema, `sections` with `each`,
@@ -56,7 +58,7 @@ Ten work items in four groups, plus one bug rider:
 | Item | Contracts | SEO baseline |
 |---|---|---|
 | WORK-619, WORK-620, WORK-621 | none | none — each is inert today |
-| WORK-622, WORK-623 | none | none — no shipped rune is composed |
+| WORK-622, WORK-623, WORK-630 | none | none — no shipped rune is composed |
 | WORK-624, WORK-625 | none | none — the slices ship beside the plugin, and are *compared* with its baseline in their own fixtures |
 | WORK-626, WORK-627, WORK-628 | none | none |
 | BUG-032 | expected to move; reviewed | expected to move; reviewed |
@@ -67,7 +69,7 @@ explained, not eliminated (SPEC-147 D2).
 
 ## Sequencing inside the milestone
 
-- WORK-620 and WORK-621 → WORK-622 → WORK-623 → WORK-624 → WORK-625.
+- WORK-620 and WORK-621 → WORK-622 → WORK-623 → WORK-624 → WORK-625, with WORK-630 → WORK-625.
 - WORK-619 is first by SPEC-158 D7 but blocks nothing here, so it can run in parallel with
   WORK-620/621.
 - WORK-626 → WORK-627.
@@ -85,7 +87,6 @@ because no user path exists.
 
 **The rest of SPEC-145's surface.** None of these is needed by `bond` or `character`:
 
-- `{% metablock %}` (D7)
 - multiple templates (D15)
 - the chrome carrier (D14, D24)
 - the i18n keying (D13)

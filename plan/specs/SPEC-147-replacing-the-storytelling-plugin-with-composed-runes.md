@@ -132,6 +132,13 @@ core, opt-in per entity type or per site. `xref` already exists as the **explici
 which gives this a natural name and home as the implicit one. Promoting it removes the
 blocker and gives every plugin a capability only storytelling has today.
 
+*Measured by {% ref "WORK-625" /%} (2026-10-08).* The promotion has a constraint the plugin's
+walk does not meet. Today's walk skips nested runes and lets only the page's top-level rune
+through. A composed `character` places its author's prose inside `{% card %}`, which is nested,
+so the two cross-links the registry snapshot records inside character pages are not made. The
+core form has to treat a composition's placed primitives as part of the composed rune: for
+example, by keying on the slot markers (`data-slot`) rather than on `data-rune` depth.
+
 ## Finding 5 — the CSS has an answer, and it is {% ref "ADR-035" /%}'s companion
 
 Lumina carries **413 lines** across `character`, `realm`, `faction`, `lore`, `plot`,

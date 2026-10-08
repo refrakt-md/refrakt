@@ -66,7 +66,7 @@ Grid: { block: 'grid' }
 
 The engine produces the block class (`.rf-grid`) and sets `data-rune="grid"` on the root element.
 
-A config may leave `block` out. That is how a composed rune is configured ({% ref "SPEC-145" /%} D2a): it has no BEM block and ships no CSS, but its modifiers, universal attributes and metadata blocks still have to render. With no block, the engine runs every step it runs for any rune *except* emitting `rf-*` classes. Modifiers become `data-*` attributes, universal attributes apply, metadata renders and the internal field bag is stripped, but neither the root nor its named children get a class. Such a rune is addressable only by `[data-rune]`, its `data-*` modifiers and the primitives it contains, and `refrakt contracts` describes it that way, with no BEM selectors.
+A config may leave `block` out. That is how a composed rune is configured ({% ref "SPEC-145" /%} D2a): it has no BEM block and ships no CSS, but its modifiers, universal attributes and metadata blocks still have to render. With no block, the engine runs every step it runs for any rune *except* emitting `rf-*` classes. Modifiers become `data-*` attributes, universal attributes apply, metadata renders (a composed rune has no `layout`, so its template places each block with `{% metablock %}`, and a theme's `blocks` override reaches it as it reaches a projected block) and the internal field bag is stripped, but neither the root nor its named children get a class. Such a rune is addressable only by `[data-rune]`, its `data-*` modifiers and the primitives it contains, and `refrakt contracts` describes it that way, with no BEM selectors.
 
 **Rune identity** (ADR-028) — not theme-overridable.
 

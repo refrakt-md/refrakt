@@ -1,5 +1,5 @@
 // The engine
-export { createTransform } from './engine.js';
+export { createTransform, METABLOCK_ATTR, METABLOCK_OWNER_ATTR } from './engine.js';
 
 // Layout transform
 export { layoutTransform, LAYOUT_STRINGS } from './layout.js';

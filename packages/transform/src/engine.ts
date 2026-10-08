@@ -41,6 +41,14 @@ import {
 } from './facets/index.js';
 import type { FacetWarning } from './facets/index.js';
 
+/**
+ * SPEC-145 D7 — the marker a composition template's `{% metablock %}` leaves:
+ * which declared block goes here, and whose. The engine replaces it with the
+ * owner's rendered block (or with nothing); it never reaches HTML.
+ */
+export const METABLOCK_ATTR = 'data-metablock';
+export const METABLOCK_OWNER_ATTR = 'data-metablock-owner';
+
 /** Pure text transforms for metaText values */
 const transforms: Record<NamedTransform, (v: string) => string> = {
 	duration(iso: string): string {
@@ -410,6 +418,18 @@ function transformRune(
 		: tag.children;
 	if (config.autoLabel) {
 		children = applyAutoLabel(children, config.autoLabel);
+	}
+
+	// 4b. SPEC-145 D7 — a composed rune's template places its declared blocks
+	//     with `{% metablock %}`. Those markers are filled here, from this
+	//     rune's config and modifier values, by the same closure `layout`
+	//     projection uses. Only a block-less rune (a composition) owns any.
+	if (dataRune && !config.block) {
+		children = placeMetablocks(
+			children,
+			dataRune,
+			makeBlockRenderer(config, modifierValues, locale),
+		);
 	}
 
 	// 5. SPEC-080: block-and-layout assembly (metaFields + blocks + layout).
@@ -1386,22 +1406,17 @@ function renderDefListBlock(
 	);
 }
 
-/** SPEC-080 main assembler — projects named metadata blocks and places them,
- *  plus the rune's own transform blocks, into the tree per `layout`. */
-function assembleWithBlocks(
+/** Render a named metadata block on demand; null if undefined or empty. The
+ *  one block renderer: `layout` projection and a composition's
+ *  `{% metablock %}` placement (SPEC-145 D7) are two triggers for it. */
+function makeBlockRenderer(
 	config: RuneConfig,
-	_block: string,
-	contentChildren: RendererNode[],
 	modifierValues: Record<string, string>,
 	locale: LocaleContext,
-	warnings: WarningCollector,
-): RendererNode[] {
+): (name: string) => SerializedTag | null {
 	const blocks = config.blocks ?? {};
-	const layout = config.layout ?? {};
 	const metaFields = config.metaFields ?? {};
-
-	/** Render a named metadata block on demand; null if undefined or empty. */
-	const renderBlock = (name: string): SerializedTag | null => {
+	return (name: string): SerializedTag | null => {
 		const def: BlockDef | undefined = blocks[name];
 		if (!def) return null;
 		const items: BarItem[] = [];
@@ -1420,6 +1435,61 @@ function assembleWithBlocks(
 			config,
 		);
 	};
+}
+
+/**
+ * SPEC-145 D7 — fill the `{% metablock %}` markers a composed rune's template
+ * left, anywhere in its own subtree rather than only among its direct children
+ * (the template is the rune's own output, so it may address inside it). A marker
+ * names its owner; the search does not enter a nested instance of the same rune,
+ * whose markers are that instance's to fill. A block that renders empty — or that
+ * a theme has removed — takes its marker with it, so a marker never reaches HTML.
+ */
+function placeMetablocks(
+	children: RendererNode[],
+	rune: string,
+	renderBlock: (name: string) => SerializedTag | null,
+): RendererNode[] {
+	let changed = false;
+	const walk = (nodes: RendererNode[]): RendererNode[] => {
+		const out: RendererNode[] = [];
+		for (const n of nodes) {
+			if (!isTag(n)) {
+				out.push(n);
+				continue;
+			}
+			const name = n.attributes[METABLOCK_ATTR];
+			if (name !== undefined && n.attributes[METABLOCK_OWNER_ATTR] === rune) {
+				changed = true;
+				const rendered = renderBlock(name);
+				if (rendered) out.push(rendered);
+				continue;
+			}
+			if (n.attributes['data-rune'] === rune) {
+				out.push(n);
+				continue;
+			}
+			const kids = walk(n.children);
+			out.push(kids === n.children ? n : { ...n, children: kids });
+		}
+		return out.length === nodes.length && out.every((n, i) => n === nodes[i]) ? nodes : out;
+	};
+	const result = walk(children);
+	return changed ? result : children;
+}
+
+/** SPEC-080 main assembler — projects named metadata blocks and places them,
+ *  plus the rune's own transform blocks, into the tree per `layout`. */
+function assembleWithBlocks(
+	config: RuneConfig,
+	_block: string,
+	contentChildren: RendererNode[],
+	modifierValues: Record<string, string>,
+	locale: LocaleContext,
+	warnings: WarningCollector,
+): RendererNode[] {
+	const layout = config.layout ?? {};
+	const renderBlock = makeBlockRenderer(config, modifierValues, locale);
 
 	// No `layout` → render the transform tree verbatim (no projection).
 	if (Object.keys(layout).length === 0) return contentChildren;

@@ -54,6 +54,7 @@ export function defineComposedRune(name: string, source: string): ComposedRune {
 				tag: definition.tag,
 				...(definition.aliases ? { aliases: definition.aliases } : {}),
 				body: definition.template,
+				...(definition.blocks ? { blocks: Object.keys(definition.blocks) } : {}),
 			},
 			...(definition.schema ? { schema: definition.schema } : {}),
 			...(definition.registers ? { registers: definition.registers } : {}),

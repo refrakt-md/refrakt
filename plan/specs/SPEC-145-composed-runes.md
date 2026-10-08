@@ -193,15 +193,21 @@ tag: aside
 attributes:
   from:          { type: string, required: true }
   to:            { type: string, required: true }
-  type:          { type: string, default: fellowship }
+  type:          { type: string }
   status:        { type: string, matches: [active, broken, strained], default: active }
   bidirectional: { type: boolean, default: true }
+provides: [prose]
 content:
   type: sequence
   fields:
     body: { match: any, optional: true, greedy: true }
 registers:
-  edge: { from: from, to: to, kind: { field: type } }
+  edge:
+    from: from
+    to: to
+    kind: { field: bondType }
+    bidirectional: { field: bidirectional }
+    data: [{ bondType: type }, status, bidirectional]
 ---
 
 {% hint type="note" %}
@@ -211,55 +217,127 @@ registers:
 {% /hint %}
 ```
 
-Seventeen lines replace `plugins/storytelling/src/tags/bond.ts` (88 lines) plus its
+About thirty lines replace `plugins/storytelling/src/tags/bond.ts` (88 lines) plus its
 slice of the registration pipeline. The `bidirectional` arrow is Markdoc's own
 `{% if %}`, not a conditional this spec invents — D1 holding up in practice.
+
+*Corrected 2026-10-08, after {% ref "WORK-624" /%} (refrakt-md/refrakt#684).* An earlier
+version of this example was seventeen lines and did not construct. Four things changed:
+
+- **`kind` is read from a `data` key.** `kind: { field: type }` was rejected by SPEC-144:
+  a `{ field }` must name a key of the edge's data bag, which holds only `from`, `to`,
+  `name` and the declared `data`. The alias `{ bondType: type }` also keeps the plugin's
+  bag key.
+- **`bidirectional` is declared.** Omitted, it is `false`, and the reverse edges the plugin
+  registers were lost.
+- **`type` has no default.** `fellowship` would have changed the data bag and the edge kind
+  of every untyped bond. The plugin's unset type registers `bondType: ""`, and the kind
+  falls back to `bond`.
+- **`provides: [prose]` is declared.** Without it the composed rune stopped accepting the
+  `reading` and `dropcap` attributes that the plugin's `bond` accepts.
+
+The definition as stored, with its fixtures and its comparison against the plugin, is in
+`packages/content/test/fixtures/composed-storytelling/`.
 
 ### The full case — `character`
 
 ```md
 ---
 tag: article
-base: taxonomy
-provides: [prose]
+aliases: [npc, pc]
 attributes:
-  name:    { type: string, required: true, description: "Display name shown in the header." }
-  role:    { type: string, matches: [protagonist, antagonist, supporting, minor], default: supporting }
-  status:  { type: string, matches: [alive, dead, unknown, missing], default: alive }
-  aliases: { type: string, description: "Comma-separated alternate names." }
+  name:    { type: string, required: true, description: "Display name shown in the character header." }
+  role:    { type: string, matches: [protagonist, antagonist, supporting, minor], default: supporting, description: "Narrative importance." }
+  status:  { type: string, matches: [alive, dead, unknown, missing], default: alive, description: "Whether the character is alive, dead, unknown, or missing." }
+  aliases: { type: string, description: "Comma-separated alternate names or titles for this character." }
+  tags:    { type: string, description: "Comma-separated keywords for filtering and cross-referencing." }
+provides: [prose]
 content:
   type: sections
   sectionHeading: heading
+  emitAttributes: { heading: $heading }
   preamble:
     portrait:    { match: image, optional: true }
     description: { match: paragraph, optional: true, greedy: true }
+    body:        { match: any, optional: true, greedy: true }
+metaFields:
+  role:   { metaType: category, label: Role }
+  status:
+    metaType: status
+    label: Status
+    sentimentMap: { alive: positive, dead: negative, unknown: neutral, missing: caution }
+blocks:
+  metadata: { fields: [role, status], layout: definition-list }
 schema:
   type: Person
-  properties: { name: name, role: jobTitle }
+  properties: { name: name, role: jobTitle, portrait: image }
 registers:
   entity:
     idFrom: name
-    data: [role, status, aliases, tags]
+    data: [role, status, aliases, tags, name]
     aliases: { from: aliases, separator: "," }
 ---
 
 {% card %}
 {% slot name="portrait" /%}
 
+---
+
 # {% $attrs.name %}
 
-{% badge tone=$attrs.role %}{% $attrs.role %}{% /badge %}
-{% badge tone=$attrs.status %}{% $attrs.status %}{% /badge %}
+{% metablock name="metadata" /%}
 
 {% slot name="description" /%}
 
+{% slot name="body" /%}
+
 {% slot name="sections" each %}
-  {% details summary=$each.heading %}
-    {% slot /%}
-  {% /details %}
+{% details summary=$each.heading %}
+{% slot /%}
+{% /details %}
 {% /slot %}
 {% /card %}
 ```
+
+*Corrected 2026-10-08, after {% ref "WORK-625" /%}.* The earlier version of this example did not
+construct, and as a definition it would have lost content and registrations. The form above is
+the definition WORK-625 stores and measures, in
+`packages/content/test/fixtures/composed-storytelling/runes/character.md`. Each change has a
+reason:
+
+- **`emitAttributes: { heading: $heading }` is declared.** Without it `$each.heading` is
+  rejected at construction: `$each` exposes exactly the content model's `emitAttributes`, and
+  there were none (D26).
+- **Role and status are a placed meta block, not badges.** `{% metablock name="metadata" /%}`
+  places the declared `blocks.metadata` (D7, {% ref "WORK-630" /%}). Two `{% badge %}`s were
+  the placed-rune channel that the authoring note rules out for attribute values. They rendered
+  every value as a `tag`, where `metaFields` gives `category` and `status`, with a sentiment.
+- **`tags` is declared, and `base: taxonomy` is gone.** `base` is not a definition key. The
+  registry bag carries `tags`, so it has to be an attribute.
+- **`aliases: [npc, pc]` is declared.** The plugin's `character` answers to both, and a page
+  written with `{% npc %}` registered nothing until it was.
+- **A catch-all `body` preamble field is placed.** Without it, a `{% hint %}` written before
+  the first section is matched by no field and dropped, with no error and no warning. That is
+  the silent loss D11 promises against, by another route: D11 checks that every *field* is
+  placed, not that every authored node is matched by a field. With the field, the content
+  renders. Finding 6's plugin behaviour, discarding it, is recorded as a difference rather than
+  reproduced (SPEC-147 D6).
+- **`portrait: image` is mapped, and the portrait sits in `card`'s media zone (`---`).** The
+  slot-placed `<img>` reaches the entity's `image` at both harvest points (D10). With no
+  portrait, card omits the media zone (D17's empty-zone guard).
+- **`name` joins the registered `data`**, matching the plugin's bag.
+
+Measured against the plugin and the SEO baseline (WORK-625):
+
+- **JSON-LD:** the baseline's `character` fixture publishes the recorded graph exactly.
+- **RDFa:** `name` is published on a `<meta>` instead of the title `<span>`, because the title
+  is template text and the value rides the field bag.
+- **Registry:** the storytelling registry snapshot's registrations, name index, types and
+  warnings are reproduced exactly.
+- **Cross-links:** the cross-links *inside* a character page are lost. The plugin's
+  auto-linking `postProcess` skips nested runes, and the author's prose now sits inside
+  `{% card %}`. That is a constraint on SPEC-147 D5's promotion of auto-linking, which has to
+  see through a composition's placed primitives.
 
 **The comparison that makes the case.** `character.ts` is 184 lines, and it defines
 a *second* rune — `character-section` — for no reason other than to carry each H2
@@ -279,7 +357,8 @@ before reading its Problem 2 as a blanket veto on composed entities.
 **`character` — every property is an attribute.** `characterSchema` is
 `{ type: 'Person', properties: { name: 'name', role: 'jobTitle' } }`: it never maps
 the portrait. Both sources are attributes, so both sit in the field bag on the root,
-where nesting cannot reach them. With the definition above and this page:
+where nesting cannot reach them. With the definition above, minus its `portrait: image`, and
+this page:
 
 ```md
 {% character name="Veshra" role="antagonist" status="alive" %}
@@ -298,6 +377,11 @@ measured output:
 { "@type": "Person", "name": "Veshra", "jobTitle": "antagonist",
   "@context": "https://schema.org" }
 ```
+
+*Measured again for {% ref "WORK-625" /%}, after {% ref "SPEC-146" /%} and D10a landed.* With
+`portrait: image` in the row, as the definition above now carries, the same page publishes
+`"image": "veshra.jpg"` as well, at both harvest points. The node-sourced property this section
+could not reach before is reached through the slot.
 
 **`children` retyping also crosses a composition today.** An Organization whose
 members are `Person`s, with the members placed inside a `{% grid %}`:
@@ -543,8 +627,9 @@ because they are what compositions place; they are not additions, and D12 is wha
 which of them may be placed.
 
 **Four things on this list were not settled when it was collected, and the list is where that
-became visible.** `metablock`'s name is still open against `{% fields %}` (D7's sub-questions).
-The other three were about `{% slot %}` itself and are now answered: `sections` is an ordinary
+became visible.** All four are now answered. `metablock` is the name, over `{% fields %}`
+(D7's sub-questions, settled by {% ref "WORK-630" /%}). The other three were about
+`{% slot %}` itself: `sections` is an ordinary
 slot name (D26), a slot may not appear twice (D26), and a slot leaves no element (D10c).
 
 **And a fifth, which collecting the list is what surfaced: `$item` would be one name for a
@@ -914,7 +999,7 @@ forbids for authored regions: a region's children carry no `data-name`, so neith
 
 So the projection path assumes the rune owns its tree, and composition breaks that
 assumption. The resolution is a template-side placement tag — spelled
-`{% metablock name="…" /%}` below, though see the naming sub-question — giving one
+`{% metablock name="…" /%}` (the name is settled in the sub-questions below) — giving one
 `blocks` declaration two consumers:
 
 - the **engine** projects it, for runes that own their tree (today's mechanism,
@@ -1053,22 +1138,47 @@ which is the worst available outcome.
 
 #### Sub-questions on the tag
 
-- **It must not be called `meta`.** `meta` already means two other things here — HTML
-  `<meta>`, and refrakt's "meta tags", the properties channel `createComponentRenderable`
-  emits. With one `metaFields` collision already being untangled, a third `meta` is a
-  mistake. `{% metablock %}` is the placeholder used above; `{% fields %}` is a
-  candidate. `{% block %}` is out — it collides with `RuneConfig.block`, the BEM name.
-- **Empty and undefined need different handling.** `renderBlock` returns null both for
-  an undefined block and for one whose every field resolved empty. Empty is legitimate
-  — `condition` exists for exactly that — so the marker is removed silently. An
-  undefined name is an authoring error and should be rejected at schema construction,
-  naming the block.
-- **Placing one block twice is an error.** `renderBlock` sets `'data-name': blockName`
-  (`engine.ts:1319`), so two placements produce duplicate `data-name`s, which SPEC-143
-  forbids and `mapDataNames` silently collapses.
-- **May a tree-owning rune use the tag instead of `layout`?** Mechanically yes, which
-  would leave one rune with two placement mechanisms. Wants a stated preference rather
-  than both being left open.
+*Settled 2026-10-08 by {% ref "WORK-630" /%}, which built the tag.*
+
+- **The name is `metablock`.** `meta` is out: it already means two other things here, HTML
+  `<meta>` and refrakt's "meta tags", the properties channel `createComponentRenderable`
+  emits. `{% block %}` is out: it collides with `RuneConfig.block`, the BEM name.
+  `{% fields %}` is out too: a composition template already uses "field" for content-model
+  fields, the things slots place (D26), so `{% fields name="metadata" /%}` would read as
+  placing content. `metablock` names the two declarations it reads, `metaFields` and
+  `blocks`.
+- **Empty and undefined are handled differently.** `renderBlock` returns null both for an
+  undefined block and for one whose every field resolved empty. Empty is legitimate
+  (`condition` exists for exactly that), so the marker is removed silently and nothing is
+  emitted. An undefined name is an authoring error and is rejected at schema construction,
+  naming the block and listing the declared ones.
+- **Placing one block twice is an error**, rejected at schema construction. `renderBlock`
+  sets `'data-name': blockName`, so two placements would produce duplicate `data-name`s,
+  which SPEC-143 forbids and `mapDataNames` silently collapses. So is a placement inside an
+  `each` slot, which would place the block once per item.
+- **A tree-owning rune does not use the tag.** It keeps `layout` as its one placement
+  mechanism. `metablock` is template vocabulary, like `{% slot %}`: it is never registered as
+  a page tag, so on a page it is an undefined tag (`tag-undefined`, naming it). The marker
+  it renders to is transformed under a key no authored tag can name, so a `{% metablock %}`
+  an author writes inside a slot is not resolved as the template's either.
+
+**How it is built.** The template renders the tag to a marker carrying the block's name and
+its owner. In the engine, the owner's pass replaces the marker with the block, before the
+placed primitives are processed, from anywhere in the owner's subtree. The search does not
+enter a nested instance of the same rune. The replacement is made by the closure `layout`
+projection calls, so there is one block renderer.
+
+Two consequences were measured in WORK-630:
+
+- **A placed primitive's BEM pass reaches the block.** The engine applies a rune's BEM
+  element classes to every `data-name` descendant of its named children. So a block placed
+  inside `{% card %}`'s body gets `rf-card__metadata` and `rf-card__row` from card. A
+  projected block gets the owner's `rf-{block}__metadata` instead. The block as `renderBlock`
+  emits it is identical either way.
+- **`metaFields` resolve against modifier values**, so every attribute a field reads (the
+  field itself, its `condition`, `href` or `rating.total`) is a modifier of the generated
+  config (D2a). It therefore also renders as a `data-*` attribute on the root, exactly as on
+  a tree-owning rune that declares the same block.
 
 ### D8 — a theme supplies no rune template
 
