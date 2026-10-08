@@ -1,4 +1,4 @@
-{% work id="WORK-624" status="ready" priority="high" complexity="moderate" source="SPEC-145,SPEC-147" milestone="v0.40.0" tags="composition,storytelling,registry" %}
+{% work id="WORK-624" status="in-progress" priority="high" complexity="moderate" source="SPEC-145,SPEC-147" milestone="v0.40.0" tags="composition,storytelling,registry" %}
 
 # Slice 1 — `bond` as a composed rune
 
