@@ -95,6 +95,13 @@ const definition = (rune: string) =>
 	readFileSync(join(fixturePlugin, 'runes', `${rune}.md`), 'utf-8');
 const fixture = (file: string) => readFileSync(join(fixturePlugin, 'fixtures', file), 'utf-8');
 
+/** Every definition the fixture plugin ships — read from its directory, so a
+ *  definition added beside `bond` and `character` is covered without an edit. */
+const shipped = readdirSync(join(fixturePlugin, 'runes'))
+	.filter((f) => f.endsWith('.md'))
+	.map((f) => f.slice(0, -'.md'.length))
+	.sort();
+
 async function loadFixturePlugin() {
 	const p = project();
 	p.add(FIXTURE_NAME, fixturePlugin);
@@ -125,8 +132,9 @@ function render(runes: Record<string, Rune>, source: string): string {
 describe('a plugin rune directory (SPEC-153 D2)', () => {
 	it('loads every `<rune>.md` in the declared directory as a composed rune', async () => {
 		const loaded = await loadFixturePlugin();
-		expect(Object.keys(loaded.runes).sort()).toEqual(['bond', 'character']);
-		for (const name of ['bond', 'character']) {
+		expect(shipped).toEqual(expect.arrayContaining(['bond', 'character']));
+		expect(Object.keys(loaded.runes).sort()).toEqual(shipped);
+		for (const name of shipped) {
 			expect(loaded.pkg.runes[name]).toEqual({ template: definition(name) });
 			expect(compositionFor(loaded.runes[name].schema)?.rune).toBe(name);
 		}
@@ -144,7 +152,9 @@ describe('a plugin rune directory (SPEC-153 D2)', () => {
 	it('generates the block-less config and passes the catalog checks at merge', async () => {
 		const loaded = await loadFixturePlugin();
 		const merged = mergePlugins([loaded], new Set(Object.keys(coreRunes)));
-		expect(Object.keys(merged.themeRunes).sort()).toEqual(['Bond', 'Character']);
+		expect(Object.keys(merged.themeRunes).sort()).toEqual(
+			shipped.map((r) => r.charAt(0).toUpperCase() + r.slice(1)).sort(),
+		);
 		expect(merged.themeRunes.Bond.block).toBeUndefined();
 		expect(merged.tags.npc).toBe(merged.tags.character);
 	});
@@ -155,10 +165,16 @@ describe('a plugin rune directory (SPEC-153 D2)', () => {
 			r.rune,
 			Object.keys(r.registers),
 		]);
-		expect(found).toEqual([
-			['bond', ['edge']],
-			['character', ['entity']],
-		]);
+		expect(found).toEqual(
+			expect.arrayContaining([
+				['bond', ['edge']],
+				['character', ['entity']],
+			]),
+		);
+		// One per definition that declares `registers`, and no other.
+		expect(found.map(([rune]) => rune)).toEqual(
+			shipped.filter((r) => /^registers:/m.test(definition(r))),
+		);
 	});
 });
 
@@ -184,7 +200,7 @@ describe('one file format, two read paths, one in-memory shape (SPEC-153 D1)', (
 			]),
 		);
 
-		for (const name of ['bond', 'character']) {
+		for (const name of shipped) {
 			const a = fromPlugin.runes[name];
 			const b = project[name];
 			// Everything the Rune carries, bar the schema object's identity.
