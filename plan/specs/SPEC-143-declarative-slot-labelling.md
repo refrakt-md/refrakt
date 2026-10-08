@@ -711,6 +711,12 @@ types, or shipping the ontology D5 declined. This is not the CSS-sanitisation
 question in another costume: bad CSS is visible on the page, a bad schema.org row
 is invisible by construction.
 
+*Interim answer, 2026-10-08 ({% ref "SPEC-145" /%} D25):* user definitions may not
+declare `schema` yet; first-party ones may, because they are reviewed. The intended
+full answer is a mechanical check using `@adobe/structured-data-validator` against
+schema.org's published vocabulary, rather than an ontology refrakt maintains, pending
+a spike over the SEO baseline.
+
 **Answered — is `metaFields` identity or presentation?** {% ref "SPEC-158" /%} D3 splits it
 by sub-key: `metaFields.*.metaType` **is** identity and a theme override of it is dropped,
 while `label`, `sentimentMap` and `transform` merge normally. The reasoning below is kept

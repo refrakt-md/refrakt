@@ -1,4 +1,4 @@
-{% milestone name="v0.39.0" status="active" %}
+{% milestone name="v0.39.0" status="complete" %}
 
 # v0.39.0 — Declarations, part two
 

@@ -237,6 +237,12 @@ follow-up. One of those instances is `buildAutoBreadcrumb`, which {% ref "BUG-01
 changes in the same milestone. Migrating a function while its output is being corrected
 would leave D4's identical-output gate with nothing stable to compare against.
 
+**Status after v0.39.0.** Registration shipped in v0.39.0 (refrakt-md/refrakt#670), and
+BUG-018 is fixed, so `buildAutoBreadcrumb` is stable again. The spec stays `accepted`,
+not `implemented`, because the sentinel-resolution half is still outstanding. `plan status`
+suggests the flip because every linked work item is done, but those items cover only the
+registration half.
+
 ## Acceptance Criteria
 
 - [ ] A rune can declare `registers.entity` with `type`, `idFrom`, `scope`, `data` and `aliases`

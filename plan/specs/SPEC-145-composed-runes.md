@@ -254,7 +254,7 @@ registers:
 {% slot name="description" /%}
 
 {% slot name="sections" each %}
-  {% details summary=$item.heading %}
+  {% details summary=$each.heading %}
     {% slot /%}
   {% /details %}
 {% /slot %}
@@ -488,10 +488,10 @@ one.
 ### Repeated slots are the `collection` pattern, not iteration
 
 `{% slot name="sections" each %}` does not put a loop in the template. The engine
-iterates and the template describes *one* item with `$item` bound — the same
+iterates and the template describes *one* item with `$each` bound — the same
 arrangement `collection`, `data` and `relationships` item templates already use. A
 bare `{% slot /%}` inside an `each` means "this item's content", which avoids an
-`of=$item` argument.
+`of=$each` argument.
 
 This matters because the constraint is already documented and deliberate.
 `site/content/runes/data.md:174`:
@@ -510,7 +510,7 @@ Composition must hold that same line rather than quietly crossing it.
   and rendering something sensible. Self-closing stays the common form.
 - **`$attrs` is a binding, not new syntax.** Markdoc's variable form already works
   in content (`{% $attrs.name %}`) and in attribute position (`tone=$attrs.role`),
-  alongside the `$item` / `$row` bindings that exist.
+  alongside the `$each` binding (D26) and the `$item` / `$row` bindings that exist.
 
 ## The template vocabulary, in one place
 
@@ -524,12 +524,12 @@ new; each row points at where it is decided.
 |---|---|---|
 | `{% slot name="x" /%}` | place resolved field `x` here | this spec's subject |
 | `{% slot name="x" %}…{% /slot %}` | the same, with fallback content when `x` is empty | "Smaller shape decisions" above |
-| `{% slot name="xs" each %}…{% /slot %}` | the engine iterates; the body describes **one** item with `$item` bound | "Repeated slots are the `collection` pattern" above |
-| `{% slot /%}` (bare, inside `each`) | this item's content — avoids an `of=$item` argument | same |
+| `{% slot name="xs" each %}…{% /slot %}` | the engine iterates; the body describes **one** item with `$each` bound | "Repeated slots are the `collection` pattern" above |
+| `{% slot /%}` (bare, inside `each`) | this item's content — avoids an `of=$each` argument | same |
 | `{% metablock name="x" /%}` | place the rune's declared meta block `x` | D7 |
 | `{% if %}` / `{% else /%}` | Markdoc's own, with the content-model consequence D17 states | D17 |
 | `$attrs.name` | a resolved attribute, in content or attribute position | "Smaller shape decisions" above |
-| `$item` | the current item inside an `each` slot — **but see the shape collision below** | repeated-slots section |
+| `$each` | the current item inside an `each` slot; its fields are exactly the content model's `emitAttributes` | D26 |
 | `$row` | the existing `data` / `collection` row binding, unchanged | prior art, not added here |
 
 **There is no iteration tag and that is deliberate** — `each` is a slot modifier, not a
@@ -542,13 +542,10 @@ find this row and stop.
 because they are what compositions place; they are not additions, and D12 is what bounds
 which of them may be placed.
 
-**Four things on this list are not settled, and the list is where that becomes visible.**
-`metablock`'s name is still open against `{% fields %}` (D7's sub-questions); whether
-`sections` may be a slot name at all is an open question below; whether a slot may appear
-twice is another; and what a multi-node slot leaves behind is the third. Three of the four
-are about `{% slot %}` itself — which says the tag with one obvious meaning is carrying most
-of the undecided surface, and that the open questions below are load-bearing rather than
-tidying.
+**Four things on this list were not settled when it was collected, and the list is where that
+became visible.** `metablock`'s name is still open against `{% fields %}` (D7's sub-questions).
+The other three were about `{% slot %}` itself and are now answered: `sections` is an ordinary
+slot name (D26), a slot may not appear twice (D26), and a slot leaves no element (D10c).
 
 **And a fifth, which collecting the list is what surfaced: `$item` would be one name for a
 third shape.** The repeated-slots section justifies `each` as *"the same arrangement
@@ -566,6 +563,9 @@ has already named once, and the arrangement being "the same" is true of the *ite
 false of the *binding*. Either the binding gets its own name, or the composed case has to
 state what `$item` is for it in the same breath the others do. This is not an argument
 against `each`; it is the one unlabelled edge on it.
+
+*Answered by D26 (2026-10-08):* the binding gets its own name, `$each`, and its shape is
+stated: exactly the content model's `emitAttributes`.
 
 ## Authoring note — `{% metablock %}` versus placing `{% bar %}` or `{% deflist %}`
 
@@ -644,8 +644,9 @@ is the same reasoning D11 rests on.
 **It makes a false schema.org claim easier to write.** Composition lowers the bar
 to asserting a type, which sharpens {% ref "SPEC-143" /%}'s open question about a
 user rune's schema row being published with no reviewer in the loop. Bad CSS is
-visible on the page; a wrong `Person` row is invisible by construction. This spec
-should not ship a composition path for `schema` before that question has an answer.
+visible on the page; a wrong `Person` row is invisible by construction. *D25
+(2026-10-08) settles the interim:* first-party compositions may declare `schema`, user
+definitions may not until a mechanical check exists.
 
 **Slot substitution over node lists is where the complexity actually is.** Scalar
 `variables` substitution is a string replace. Node-list substitution has to decide
@@ -693,6 +694,48 @@ are styleable to the extent the vocabulary is rune-agnostic"**, and today that v
 is three layout tokens adopted by three runes. The arrangement work is therefore a
 dependency of this spec's promise rather than a neighbouring nice-to-have.
 
+### D2a — "no block" means a block-less engine config, not no config
+
+*Decided 2026-10-08.* D2 says a composed rune has no BEM block. Read literally, that
+leaves it no `RuneConfig` at all, and the engine then treats its root as a plain
+element. Measured, that output is wrong in two ways:
+
+```
+in:  <article data-rune="member" data-rune-fields='{"name":"Veshra"}' data-tint="warm">
+out: <article data-rune="member" data-rune-fields='{"name":"Veshra"}' data-tint="warm">
+```
+
+The internal field bag reaches the HTML, and the universal attributes (`tint`, `bg`,
+`width`, `spacing`) are not applied. A config-less root would also have nowhere to
+put the `metaFields` and `blocks` that D7's placed meta blocks need. The opposite fix,
+a config with `block` left out, produces `rf-undefined`, because the engine builds the
+class name from `config.block` unconditionally (`packages/transform/src/engine.ts:318`).
+
+**Decision:**
+
+1. **A composed rune gets a `RuneConfig`, generated from its definition**: modifiers
+   from its attributes, its `metaFields` and `blocks`, and its identity fields. It is
+   not hand-written alongside the definition.
+2. **`block` becomes optional on `RuneConfig`.** With no block, the engine runs every
+   step it runs for any rune *except* emitting BEM classes: modifiers still become
+   `data-*` attributes, universal attributes apply, metadata renders, internal
+   attributes (`data-rune-fields`) are stripped. No `rf-*` class is produced, so
+   nothing can target a composed rune by class name, which is what D2 protects.
+3. **Theming a composed rune goes through what is already addressable:** its `data-*`
+   modifiers, D16's context modifiers on the primitives, and D10c's `data-slot`.
+4. **Contracts accept a block-less entry.** It lists the rune's `data-*` modifiers
+   and slot names instead of BEM selectors, which is D6's "the contract is its
+   expansion".
+5. **Engine messages that name `config.block`** (`requiresParent`, interactive-guest
+   and cover-sandbox warnings) name the rune instead when there is no block, as they
+   already do when `data-rune` is present.
+
+**Considered and rejected.** No config at all, with the engine merely taught to strip
+the field bag: it would lose the universal attributes, modifiers and D7's blocks that
+this spec promises composed runes. Deriving a block from the rune name: it
+contradicts D2, re-opens class-based selectors on user runes, and collides with
+existing CSS (`rf-character` already belongs to the storytelling plugin).
+
 ### D3 — the outer rune owns identity; inner runes are implementation detail
 
 `data-rune`, the schema row, and any {% ref "SPEC-144" /%} registration belong to
@@ -706,7 +749,7 @@ on the grounds that the primitives' own transforms would then run on the spliced
 unmodified. That is wrong, and the reason is decisive: **at preprocess the content
 model has not resolved anything.** Field matching, `sections`, `emitAttributes` and
 `headingExtract` all run inside the rune's transform at stage 2, so a template spliced
-at preprocess has no `resolved.title`, no `$item`, no heading text — nothing to bind a
+at preprocess has no `resolved.title`, no `$each`, no heading text — nothing to bind a
 slot to.
 
 So the template renders where a `transform` would have: **after field resolution, at
@@ -822,7 +865,7 @@ content:
 
 ```md
 {% slot name="sections" each %}
-  {% details summary=$item.heading %}{% slot /%}{% /details %}
+  {% details summary=$each.heading %}{% slot /%}{% /details %}
 {% /slot %}
 ```
 
@@ -976,7 +1019,7 @@ blocks:
 {% slot name="body" /%}
 
 {% slot name="sections" each %}
-  {% details summary=$item.heading %}{% slot /%}{% /details %}
+  {% details summary=$each.heading %}{% slot /%}{% /details %}
 {% /slot %}
 {% /mediatext %}
 ```
@@ -1202,6 +1245,129 @@ composition in one diff would leave a baseline diff that cannot be attributed.
 
 **This spec therefore depends on {% ref "SPEC-146" /%}** and its slot substitution
 must set the marker that spec defines. Nothing else here changes.
+
+### D10a — how the marker reaches a placed node: declared once, carried by Markdoc
+
+*Decided 2026-10-07, after SPEC-146 shipped in v0.39.0.* D10 says substitution sets
+the marker, but not how the marker survives what comes after substitution. Two
+things stand in the way, both measured:
+
+**Markdoc keeps only declared attributes.** Substitution works on the AST, before
+`Markdoc.transform`. A node's transform keeps the attributes its schema declares and
+drops every other one. With `data-owner` set on every AST node of
+`![v](v.jpg)\n\nSome **text**.`, the rendered tree carried it nowhere. With the
+paragraph schema declaring it, the `<p>` kept it and the `<img>` (undeclared) did
+not.
+
+**The composing rune's names compete with the primitive's.** The schema row of the
+composed rune reads its own names (`{ portrait: 'image' }`), but the node it means
+sits inside a primitive that may give the same node a `data-name` of its own for
+styling. One attribute cannot carry both.
+
+**Decision:**
+
+1. **Substitution sets two attributes on every node it places,** slot-placed and
+   template-placed alike: `data-owner="<composed rune>"` (whose content this is) and
+   `data-slot="<slot name>"` (what the composed rune calls it). `data-slot` is
+   separate from `data-name` so a primitive's own naming is never overwritten.
+2. **Both are declared once, centrally.** When the Markdoc config is assembled (core
+   nodes plus every plugin's runes), both attributes are added to every node and tag
+   schema. No rune declares them, and a new rune is covered automatically.
+3. **The resolvers match `data-slot` only together with `data-owner`.** Past a
+   boundary, `findAllByName` and `findChildren` admit a node for name *n* when
+   `data-owner` is the resolving rune and `data-slot` is *n*. Inside a rune's own
+   nodes, nothing changes. This extends SPEC-146's `isMine`; it does not replace it.
+4. **`data-owner` is stripped; `data-slot` stays.** The existing release step
+   (SPEC-146 D4, `releaseOwnedNodes`) removes `data-owner` once the owning rune's
+   table has run, because ownership is only bookkeeping. `data-slot` is the composed
+   rune's published name for its parts and remains in the output (D10c).
+5. **A survival test gates placement.** It runs a marked node through every rune a
+   composition may place into (D12's set) and fails if either attribute is missing
+   from the output. A rune that rebuilds a node instead of passing it through, so
+   that it drops the marker, is either fixed or kept out of D12's set until it is.
+   The failure this guards against is silent by nature: a property absent from the
+   JSON-LD looks exactly like an optional property left empty.
+
+**Measured before deciding.** With both attributes declared on the `image` and
+`paragraph` schemas, a marked image placed in the real `{% figure %}`, and a marked
+image and paragraph placed in the real `{% mediatext %}`, all came out carrying
+`data-owner` and `data-slot` on the rendered `<img>` and `<p>`. Undeclared, none did.
+A scan for runes that rebuild image tags rather than passing them through found one,
+`cast`'s fallback portrait (`plugins/business/src/tags/cast.ts:46`), which builds a
+tag from an attribute rather than from placed content and is not affected.
+
+**Considered and rejected.** Wrapping slot content in a marked boundary element hides
+the content's node types from the primitive's content model, so the primitive can no
+longer interpret what it was given, which is the reason for placing it there.
+Marking after the transform needs a link from AST node to rendered tag, which Markdoc
+does not provide, so it would rest on matching content heuristically.
+
+### D10b — registration reads a node-sourced value from a copy taken at transform time
+
+*Decided 2026-10-07.* A composed rune may carry a `registers` block (SPEC-144), and
+its `idFrom`, `data`, `from` and `to` sources may name a node rather than an
+attribute: a character's id taken from the heading its author wrote, say. Under
+composition that node sits inside a primitive, and registration cannot reach it, for
+two independent reasons:
+
+- **`findRef` stops at nested runes** (`lib/registers.ts:305`) and does not consult the
+  marker.
+- **The marker is gone by the time registration runs.** It is stripped when the
+  composed rune's transform finishes (D10a, SPEC-146 D4), and registration runs in
+  Phase 2, after every page has been transformed. A marker-aware `findRef` would
+  find nothing.
+
+**Decision: the composed rune copies each node-sourced `registers` value into its own
+field bag at transform time, before its markers are stripped.** At that moment D10a's
+resolvers can still reach the placed node. The value is stored as text under the
+source's name, which is what `findRef` returns today. Phase 2 then reads it through
+the fallback `readRegistersSource` already has (a named node first, then the field
+bag), with no change to `findRef`, to Phase 2 or to the strip timing.
+
+- **An attribute source needs nothing.** It is in the bag already.
+- **An unresolvable source still fails loudly.** The existing
+  `registers-source-unresolved` validate check reports a source that names no slot,
+  no attribute and no field, with file and line.
+- **The copy is the composed rune's, so it stays in its own bag** and never reaches a
+  primitive's. The flat namespace (ADR-008) keeps a copied name from colliding with
+  an attribute of the same rune.
+
+**Considered and rejected.** Attribute-only registration for composed runes would
+make authors state a name twice, as an attribute and as the heading. SPEC-147's
+storytelling replacement would depend on exactly that. Keeping the marker until
+Phase 2 would stretch its lifetime across stages and page caching, which is the
+"one hop" lifetime D4 deliberately shortened, and a marker that leaks into HTML
+fails silently.
+
+### D10c — a slot leaves no element, only its name
+
+*Decided 2026-10-08. Answers the open question "What does `{% slot %}` leave behind?"*
+
+**A slot adds no element to the output. Each top-level node it places keeps
+`data-slot="<slot name>"` in the rendered HTML.** The primitives supply all of the
+structure, and the name makes the composed rune's parts addressable:
+`[data-rune="character"] [data-slot="description"]` resolves for a theme, for the
+editor and for tooling, with no wrapper in the tree.
+
+- **No boundary element, deliberately unlike SPEC-143's regions.** A declared rune
+  builds its own output, so a region's `<div>` costs nothing. A slot usually sits
+  *inside* a primitive, and a boundary there would exist in the AST before the
+  primitive transforms it. A `figure` would then see a `div` where it expects an
+  image, and its content model could no longer interpret what it was given. The
+  value/region split therefore does not carry over to slots, and that difference is
+  intended.
+- **A slot placing several nodes marks each one.** Two description paragraphs both
+  carry `data-slot="description"`. That is addressing, not identity: `layout`,
+  `projection` and the editor's naming read `data-name`, so SPEC-143's
+  one-node-per-`data-name` rule is untouched.
+- **`data-slot` is part of the published output.** A composed rune's contract (D6)
+  lists its slot names, so renaming a slot is a visible change, as renaming a
+  `data-name` is on a declared rune.
+- **`data-owner` is still stripped** (D10a, step 4). Only the name is published.
+
+This also answers the recipe example above: a theme can style
+`[data-rune="recipe"] [data-slot="ingredients"]`, which no trace at all would have
+left no hook for.
 
 ### D11 — editability follows the source file, not the tree
 
@@ -1524,7 +1690,7 @@ templates: { by: layout }
 {% slot name="description" /%}
 
 {% slot name="sections" each %}
-  {% details summary=$item.heading %}{% slot /%}{% /details %}
+  {% details summary=$each.heading %}{% slot /%}{% /details %}
 {% /slot %}
 {% /card %}
 
@@ -2024,14 +2190,78 @@ position-dependent universal into a template — `width=$attrs.width` on a place
 `data-width` on a node that is not in the article's direct-child position, where none of its CSS
 matches. It is inert rather than wrong, but it reads as working and will be copied.
 
+### D25 — `schema` follows where a definition is loaded from; user definitions wait for a mechanical check
+
+*Decided 2026-10-08.* The risk recorded above ("It makes a false schema.org claim
+easier to write") rests on SPEC-130 D5: nothing validates a schema row against
+schema.org, and a reviewer reading `inspect`, `contracts` and the SEO baseline is the
+check. That holds for every row a maintainer writes and a PR reviews. It does not hold
+for a user's own definition, whose row publishes as JSON-LD with no reviewer, and
+whose errors are invisible on the page.
+
+**Decision:**
+
+1. **A first-party composed rune may declare `schema`.** First-party means shipped in
+   a package (core or a plugin), reviewed like any other code, so D5's trade holds.
+   This lets composition replace schema-emitting runes: SPEC-147's `character` keeps
+   its `Person` row.
+2. **A user definition may not, for now.** A definition loaded from a project's own
+   rune directory ({% ref "SPEC-153" /%}) that declares `schema` is rejected at load,
+   with a message naming the rune and this decision. The ban is enforced by that
+   loader, so it is a requirement on SPEC-153; no user delivery path exists before it.
+3. **What lifts the ban is a mechanical check, not a shipped ontology.**
+   `@adobe/structured-data-validator` (Apache-2.0, maintained, Node) validates JSON-LD
+   against the schema.org vocabulary and Google's rich-result rules, and reports
+   issues with a path and a severity. It takes the vocabulary as input rather than
+   bundling one, so refrakt would consume schema.org's published file, not curate an
+   ontology of its own. A spike runs it over `contracts/seo-baseline/` to measure its
+   noise and whether it catches the baseline's known defects. If it holds up, it
+   becomes a `refrakt validate` check, and the ban on user `schema` is lifted behind
+   it.
+
+**Considered and rejected for now.** A blanket ban on every composed rune: it would
+stop composition replacing any first-party rune that publishes structured data,
+SPEC-147 included. A closed allowlist of types: it checks the type but not the
+properties, so `Person { cookTime }` passes. Shipping a trimmed schema.org vocabulary
+and validating against it ourselves: it reverses SPEC-130 D5 and adds a data file to
+maintain, when a maintained library already does the job.
+
+### D26 — slots name fields; `each` binds `$each`; every slot is checked at construction
+
+*Decided 2026-10-08.* Answers three of the open questions below and the `$item` shape
+collision recorded under the template vocabulary.
+
+1. **`sections` is an ordinary slot name.** A slot names a *field*, and `sections` is the
+   name of the field the sections arrival mode fills. The template does not restate the
+   arrival mode; the content model still decides how the field fills, as SPEC-143 D5
+   requires. No special form is added.
+2. **`each` requires a field that holds a list.** It is allowed on any field whose value is
+   a list of items and rejected on a single-valued field, at schema construction, naming the
+   slot.
+3. **The per-item binding is `$each`, not `$item`.** It exists only inside an `each` slot.
+   Its fields are exactly the content model's `emitAttributes` for that item (for example
+   `$each.heading`), and nothing else. Naming a field the content model does not emit is an
+   error at schema construction, not a silent `undefined`. A distinct name keeps the
+   collection `$item` (an entity) and the data `$row` (a flat row) unambiguous: three
+   shapes, three names.
+4. **A template naming a slot the content model does not produce is an error** at schema
+   construction, naming the slot. This is the same unresolvable-source check a schema table
+   gets.
+5. **The same slot placed twice is an error**, at schema construction, naming the slot. A
+   portrait in the header *and* the footer is two declared fields or a theme concern, not a
+   duplicated slot. This holds the one-node-per-`data-name` rule SPEC-143 asserts, and it
+   matches D7's rule for placing a meta block twice.
+
+D11's rule is the other half of item 4: a field no slot places is also an error. Between
+them, every field and every slot is matched exactly once.
+
 ## Non-goals
 
 - Replacing {% ref "SPEC-143" /%}'s declared tier — the two tiers coexist, and D5 keeps them distinct
 - A template language of refrakt's own (D1, {% ref "ADR-036" /%})
 - Letting a composed rune style itself (D2)
 - Composing *across* sites, or composing a layout rather than a rune
-- Resolving the dormant editor's `editHints` ownership question — recorded, not answered
-- Answering {% ref "SPEC-143" /%}'s open question on unreviewed schema.org claims; this spec must not ship a `schema` composition path ahead of it
+- Letting a user definition declare `schema` before a mechanical check exists; first-party compositions may (D25)
 - Letting a theme supply a rune template, or retiring `layout` / `blocks` projection in favour of templates (D8)
 - Adding a `meta` rune — {% ref "SPEC-080" /%} already is that primitive (D7); what is missing is a template-side placement for a block it already defines
 - Changing the schema-table resolvers — that is {% ref "SPEC-146" /%} (D10)
@@ -2047,23 +2277,26 @@ as a slot with `each`. But `sections` is the content model's *arrival mode*, whi
 {% ref "SPEC-143" /%} D5 says to read rather than restate — so a template naming it
 as a slot may be restating it by another route. The alternative is a distinct form
 for "the thing the sections mode produced", which is uglier and more honest.
+*Answered by D26 (2026-10-08):* an ordinary slot name. It names the field, not the
+arrival mode, and `each` is checked against the field holding a list.
 
 **May a template name a slot the content model does not produce?** It should be an
 error, caught at schema construction with the slot named — the same unresolvable-
 source check a schema table already gets and {% ref "SPEC-144" /%} asks for. Worth
 confirming rather than assuming, because a silently-empty slot is the failure mode
-that wastes an author's afternoon.
+that wastes an author's afternoon. *Answered by D26 (2026-10-08):* confirmed, an error
+naming the slot.
 
 **May a slot appear twice in one template?** Instinct says no, for the same
 one-node-per-`data-name` reason SPEC-143 already asserts. But composition makes the
 temptation concrete — a portrait in the header *and* the footer — so the answer needs
-to be stated rather than inherited.
+to be stated rather than inherited. *Answered by D26 (2026-10-08):* no, an error naming
+the slot.
 
-**What does `{% slot %}` leave behind?** Ideally nothing: it is a placeholder and the
-primitives supply the structure. But a slot filled with several block nodes may need
-a boundary, which is the `value` vs `region` question SPEC-143 settled for declared
-runes. The answer here should almost certainly be the same one, and saying so
-explicitly is cheaper than rediscovering it.
+**What does `{% slot %}` leave behind?** *Answered by D10c (2026-10-08):* no element,
+and each placed node keeps `data-slot` in the output. The answer is deliberately *not*
+SPEC-143's value/region split, because a boundary inside a primitive would hide the
+placed content's node types from that primitive's content model.
 
 ## Acceptance Criteria
 
@@ -2100,6 +2333,20 @@ explicitly is cheaper than rediscovering it.
 - [ ] A composition template placing a rune that declares a top-level schema `type` is rejected at build, naming both runes; a subordinate emitter (`figure`, `gallery`) is allowed (D9)
 - [ ] `recipe` composed from `howto` is covered by a test asserting the rejection, so the counter-example cannot regress into a supported path (D9)
 - [ ] Slot substitution sets the ownership marker {% ref "SPEC-146" /%} defines, on both slot-placed and template-placed nodes (D10)
+- [ ] `data-owner` and `data-slot` are declared once at config assembly on every node and tag schema, not per rune, and a placed node keeps both through the primitive's transform (D10a)
+- [ ] The resolvers admit a node past a boundary by `data-owner` plus `data-slot`, and a primitive's own `data-name` on the same node is left untouched (D10a)
+- [ ] A survival test runs a marked node through every rune in D12's placement set and fails naming any rune that drops either attribute (D10a)
+- [ ] A composed rune has a generated, block-less `RuneConfig`: its root carries no `rf-*` class and no `data-rune-fields`, and its modifiers, universal attributes and meta blocks render (D2a)
+- [ ] `RuneConfig.block` is optional; no config without a block ever emits `rf-undefined`, and contracts describe a block-less entry by its `data-*` modifiers and slot names (D2a)
+- [ ] A first-party composed rune may declare `schema`; a user definition that declares it is rejected at load, naming the rune and D25 (D25, enforced by SPEC-153's loader)
+- [ ] `@adobe/structured-data-validator` has been run over `contracts/seo-baseline/`, and its findings (noise, and which known defects it catches) are recorded as the evidence for or against lifting D25's ban (D25)
+- [ ] A slot emits no element; every top-level node it places carries `data-slot` in the rendered HTML, `data-owner` does not, and the composed rune's contract lists its slot names (D10c)
+- [ ] `sections` is placed with an ordinary `{% slot name="sections" each %}`; no special form exists (D26)
+- [ ] `each` on a single-valued field is rejected at schema construction, naming the slot (D26)
+- [ ] Inside an `each` slot, `$each` exposes exactly the content model's `emitAttributes`; naming any other field is rejected at schema construction, naming the field (D26)
+- [ ] A template naming a slot the content model does not produce is rejected at schema construction, naming the slot (D26)
+- [ ] A template placing the same slot twice is rejected at schema construction, naming the slot (D26)
+- [ ] A composed rune whose `registers` source is a placed node registers the same id and data as one whose source is an attribute, read from the field bag in Phase 2; `findRef` and the strip timing are unchanged (D10b)
 - [ ] A composed rune's content-derived `properties` resolve — the `image` from a slot-placed portrait reaches the entity, asserted against the graph and not just the attributes (D10)
 - [ ] An author's nested rune inside a slot is never retyped as part of the composed entity (D10)
 - [ ] A composed rune nested inside another cannot reach the inner one's names, and vice versa (D10)

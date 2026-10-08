@@ -14,15 +14,19 @@ const CACHE_FILENAME = '.plan-cache.json';
 // than served. The on-disk file wraps the entry map with this version.
 const CACHE_VERSION = 2;
 
-/** Recursively collect all .md file paths under a directory */
+/** Recursively collect all .md file paths under a directory. Dot-directories
+ *  (`.git` and the like) are skipped, as `walkFiles` in pipeline.ts does: their
+ *  contents are not plan content, and git can delete a lock file in one between
+ *  the listing and a `stat`. Entry types come from `readdir`, so only a symlink
+ *  is `stat`ed (to keep following linked directories). */
 function collectMdFiles(dir: string): string[] {
 	const files: string[] = [];
-	for (const entry of readdirSync(dir)) {
-		const full = join(dir, entry);
-		const stat = statSync(full);
-		if (stat.isDirectory()) {
-			files.push(...collectMdFiles(full));
-		} else if (entry.endsWith('.md')) {
+	for (const entry of readdirSync(dir, { withFileTypes: true })) {
+		const full = join(dir, entry.name);
+		const isDir = entry.isSymbolicLink() ? statSync(full).isDirectory() : entry.isDirectory();
+		if (isDir) {
+			if (!entry.name.startsWith('.')) files.push(...collectMdFiles(full));
+		} else if (entry.name.endsWith('.md')) {
 			files.push(full);
 		}
 	}
