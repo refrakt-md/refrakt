@@ -70,6 +70,36 @@ function withMarkers(schema: Schema): Schema {
 		[OWNER_ATTR]: { type: String },
 		[SLOT_ATTR]: { type: String },
 	};
+	// Declaring the markers keeps them only where Markdoc renders attributes
+	// itself. A schema with its own `transform` builds its root from scratch —
+	// every rune does — so a composition placing `{% hint %}` would lose them on
+	// the hint's root. Carry them across, after the rune has resolved its own
+	// names, so its own namespace never sees them (SPEC-145 D10a).
+	const own = schema.transform;
+	if (own) {
+		copy.transform = function (this: Schema, node, config) {
+			const out = own.call(this, node, config);
+			carryMarkers(node.attributes, out);
+			return out;
+		};
+	}
 	recordSchemaOrigin(copy, schema);
 	return copy;
+}
+
+/** Set a placed node's markers on the top-level tags its transform produced,
+ *  where the transform did not already carry them. */
+function carryMarkers(from: Record<string, unknown> | undefined, out: unknown): void {
+	const owner = from?.[OWNER_ATTR];
+	const slot = from?.[SLOT_ATTR];
+	if (owner === undefined && slot === undefined) return;
+	for (const tag of Array.isArray(out) ? out : [out]) {
+		if (!Markdoc.Tag.isTag(tag)) continue;
+		if (owner !== undefined && tag.attributes[OWNER_ATTR] === undefined) {
+			tag.attributes[OWNER_ATTR] = owner;
+		}
+		if (slot !== undefined && tag.attributes[SLOT_ATTR] === undefined) {
+			tag.attributes[SLOT_ATTR] = slot;
+		}
+	}
 }

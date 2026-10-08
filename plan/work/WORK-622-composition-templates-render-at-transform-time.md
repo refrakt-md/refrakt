@@ -1,4 +1,4 @@
-{% work id="WORK-622" status="ready" priority="high" complexity="complex" source="SPEC-145" milestone="v0.40.0" tags="runes,composition,markdoc,architecture" %}
+{% work id="WORK-622" status="in-progress" priority="high" complexity="complex" source="SPEC-145" milestone="v0.40.0" tags="runes,composition,markdoc,architecture" %}
 
 # A rune can be defined by a composition template
 

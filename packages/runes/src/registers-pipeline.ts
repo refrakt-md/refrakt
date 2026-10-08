@@ -4,7 +4,9 @@ import type {
 	EntityRegistry,
 	PipelineContext,
 	PluginPipelineHooks,
+	PluginRune,
 } from '@refrakt-md/types';
+import { pluginRuneSchema } from './composed-rune.js';
 import {
 	readRegistersSource,
 	registersDataEntries,
@@ -41,11 +43,17 @@ export interface DeclaredRegistration {
 /** Collect the declarations from a rune record (`Plugin.runes` or the core
  *  catalog), keyed by the rune name its renderable carries as `data-rune`. */
 export function collectRegistrations(
-	runes: Record<string, { transform?: unknown; schema?: unknown }>,
+	runes: Record<string, { transform?: unknown; template?: unknown; schema?: unknown }>,
 ): DeclaredRegistration[] {
 	const out: DeclaredRegistration[] = [];
 	for (const [rune, entry] of Object.entries(runes)) {
-		const registers = registersFor(entry.transform ?? entry.schema);
+		// A composed plugin rune (SPEC-153 D11) declares `registers` in its
+		// definition; its schema is the one its template compiles to.
+		const schema =
+			typeof entry.template === 'string'
+				? pluginRuneSchema(rune, entry as PluginRune)
+				: (entry.transform ?? entry.schema);
+		const registers = registersFor(schema);
 		if (registers) out.push({ rune, registers });
 	}
 	return out;

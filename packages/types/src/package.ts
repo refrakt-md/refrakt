@@ -9,10 +9,23 @@ export interface PluginAttribute {
 	matches?: string[];
 }
 
-/** A single rune provided by a plugin */
+/**
+ * A single rune provided by a plugin: exactly one of `transform` (a rune that
+ * builds its own output) or `template` (a composed rune — SPEC-145, SPEC-153
+ * D11). An entry carrying both is rejected, naming the rune.
+ */
 export interface PluginRune {
 	/** Markdoc Schema for parsing and transformation (built using the full Model API) */
-	transform: Record<string, unknown>;
+	transform?: Record<string, unknown>;
+	/**
+	 * A composed rune's definition (SPEC-145): YAML frontmatter declaring its
+	 * input (`tag`, `attributes`, `content`, `schema`, `registers`, …) and a
+	 * Markdoc body that is its output template, placing the content model's
+	 * fields into slots of other runes. The rune's name is its key in
+	 * `Plugin.runes`, never restated in the frontmatter (SPEC-153 D9). A composed
+	 * rune has no hand-written theme config: its block-less config is generated.
+	 */
+	template?: string;
 	/** Attribute schema for tooling and validation */
 	schema?: Record<string, PluginAttribute>;
 	/** Markdoc fixture string for the inspect command */

@@ -1,5 +1,13 @@
 import 'reflect-metadata';
-import { runes, tags, nodes, mergePlugins, defineRune, runeTagMap } from '@refrakt-md/runes';
+import {
+	runes,
+	tags,
+	nodes,
+	mergePlugins,
+	defineRune,
+	runeTagMap,
+	pluginRuneSchema,
+} from '@refrakt-md/runes';
 import type { Rune, LoadedPlugin } from '@refrakt-md/runes';
 import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import type { SchemaAttribute, Schema } from '@markdoc/markdoc';
@@ -127,7 +135,7 @@ function loadPackageFromWorkspace(req: NodeRequire, npmName: string): LoadedPlug
 	for (const [runeName, entry] of Object.entries(pkgExport.runes)) {
 		runeInstances[runeName] = defineRune({
 			name: runeName,
-			schema: entry.transform as Schema,
+			schema: pluginRuneSchema(runeName, entry) as Schema,
 			description:
 				entry.description ?? `Community rune from ${pkgExport.displayName ?? pkgExport.name}`,
 			aliases: entry.aliases,

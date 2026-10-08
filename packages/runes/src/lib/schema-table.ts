@@ -618,8 +618,12 @@ function isMine(attrs: Record<string, unknown>, owner: unknown, foreign: boolean
 	// `data-rune` are the primitive's, so they count among the primitive's own
 	// nodes whoever owns the node; the owner reaches it by `SLOT_ATTR` only
 	// (`isSlotted`), never by a primitive's name. Without this a `figure` holding
-	// an image placed for `character` lost its own `contentUrl`.
-	if (marked !== undefined && attrs[SLOT_ATTR] !== undefined) return !foreign;
+	// an image placed for `character` lost its own `contentUrl`. The same rule
+	// read from the owner's side: an author's `{% figure %}` placed straight into
+	// the composed rune's slot is not matched by the owner's `figure` row.
+	if (marked !== undefined && attrs[SLOT_ATTR] !== undefined) {
+		return marked !== owner && !foreign;
+	}
 	if (foreign) return owner !== undefined && marked === owner;
 	return marked === undefined || marked === owner;
 }

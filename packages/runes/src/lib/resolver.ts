@@ -208,14 +208,7 @@ export function resolveSequence(
 							const emitAttrs = (field as any).emitAttributes as Record<string, string> | undefined;
 							if (emitAttrs) {
 								for (const [key, ref] of Object.entries(emitAttrs)) {
-									if (ref.startsWith('$')) {
-										// Support fallback: '$a|$b' tries a, then b
-										const parts = ref.slice(1).split('|');
-										attrs[key] =
-											parts.map((p) => items[i][p.trim()]).find((v) => v != null && v !== '') ?? '';
-									} else {
-										attrs[key] = ref;
-									}
+									attrs[key] = resolveEmitReference(ref, (name) => items[i][name]);
 								}
 							}
 							// Forward list item children after the first (inline) child as tag body
@@ -394,6 +387,32 @@ function matchKnownSection(
 }
 
 /**
+ * Resolve one `emitAttributes` value. A value starting with `$` names a source:
+ * `$heading` the flattened heading text, `$field` an extracted field, and
+ * `'$a|$b'` the first of several that is non-empty. Anything else is a literal.
+ *
+ * Shared by the `emitTag` paths and by a composition's `$each` binding (SPEC-145
+ * D4a), so the three forms mean the same thing wherever they are written.
+ */
+export function resolveEmitReference(ref: string, lookup: (name: string) => unknown): unknown {
+	if (!ref.startsWith('$')) return ref;
+	for (const part of ref.split('|')) {
+		const value = lookup(part.trim().replace(/^\$/, ''));
+		if (value != null && value !== '') return value;
+	}
+	return '';
+}
+
+/** The `emitAttributes` sources of one section: `heading` is its text, every
+ *  other name a `headingExtract` field. */
+export function sectionLookup(
+	headingText: string,
+	extracted: Record<string, unknown>,
+): (name: string) => unknown {
+	return (name) => (name === 'heading' ? headingText : extracted[name]);
+}
+
+/**
  * Resolve a sections model: split children at heading boundaries,
  * optionally extracting heading data and emitting child rune tags.
  *
@@ -496,13 +515,7 @@ export function resolveSections(
 			const attrs: Record<string, any> = {};
 			if (model.emitAttributes) {
 				for (const [key, ref] of Object.entries(model.emitAttributes)) {
-					if (ref === '$heading') {
-						attrs[key] = headingText;
-					} else if (ref.startsWith('$')) {
-						attrs[key] = extracted[ref.slice(1)] ?? '';
-					} else {
-						attrs[key] = ref;
-					}
+					attrs[key] = resolveEmitReference(ref, sectionLookup(headingText, extracted));
 				}
 			}
 

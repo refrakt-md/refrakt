@@ -1302,6 +1302,28 @@ longer interpret what it was given, which is the reason for placing it there.
 Marking after the transform needs a link from AST node to rendered tag, which Markdoc
 does not provide, so it would rest on matching content heuristically.
 
+#### Amendment (2026-10-08, {% ref "WORK-621" /%}, refrakt-md/refrakt#680) — a node carrying both markers has two namespaces
+
+Step 3 says the marker extends SPEC-146's `isMine` rather than replacing it. As written
+that did not hold. `isMine` rejected a node marked for another rune even among the
+primitive's own nodes, so a primitive could not resolve its own names on a node placed
+into it. Measured in #680: a marked image placed in `figure` lost `contentUrl` from the
+figure's own `ImageObject`.
+
+**Decision:**
+
+- **A node carrying both `data-owner` and `data-slot` has two namespaces.** Its
+  `data-name`, `data-field` and `data-rune` belong to the placed primitive, which
+  resolves them among its own nodes as if the node were unmarked.
+- **The composing rune reaches that node only by `data-slot`** (`isSlotted`), never by a
+  primitive's name. The rule holds from the owner's side too: an author's `{% figure %}`
+  placed straight into a composed rune's slot is not matched by that rune's own `figure`
+  row.
+- **A node with `data-owner` alone keeps SPEC-146's `isMine` behaviour unchanged.**
+
+The reason is the measured loss above: without the split, every primitive that names a
+placed node for its own schema row loses that property, silently.
+
 ### D10b — registration reads a node-sourced value from a copy taken at transform time
 
 *Decided 2026-10-07.* A composed rune may carry a `registers` block (SPEC-144), and

@@ -102,6 +102,32 @@ export interface RuneContract {
 	 *  that value (base config merged with the variant delta). Present only for
 	 *  runes that declare `variants`. */
 	variants?: Record<string, Record<string, RuneContract>>;
+	/**
+	 * SPEC-145 D6 / D10c — a composed rune's structure is its expansion. `slots`
+	 * are its published part names (`[data-slot="…"]` in the output); `expansion`
+	 * is the template's tree, each placed rune carrying its own `root` selector,
+	 * so a primitive's change shows up in every composition that places it.
+	 */
+	composition?: {
+		slots: string[];
+		expansion: CompositionContractNode[];
+	};
+}
+
+/** One node of a composed rune's expansion (D6). */
+export interface CompositionContractNode {
+	/** A placed rune, by name. */
+	rune?: string;
+	/** The placed rune's root selector, from its own contract. */
+	root?: string;
+	/** A slot, by name; `''` is the item content inside an `each` slot. */
+	slot?: string;
+	each?: true;
+	fallback?: true;
+	/** A Markdoc node the template writes itself. */
+	node?: string;
+	conditional?: true;
+	children?: CompositionContractNode[];
 }
 
 /** Top-level structure contract document */
@@ -138,6 +164,12 @@ export interface StructureContractOptions {
 	 * that silently covered nothing for the 67 of 95 runes that live in plugins.
 	 */
 	schemaRows?: Record<string, unknown>;
+	/**
+	 * Composed runes' expansions, keyed by rune name — SPEC-145 D6. Passed in for
+	 * the same reason as `schemaRows`: a composition is declared on the rune's
+	 * schema, which this package cannot reach.
+	 */
+	compositions?: Record<string, { slots: string[]; outline: CompositionContractNode[] }>;
 }
 
 export function generateStructureContract(
@@ -151,6 +183,13 @@ export function generateStructureContract(
 		const contract = generateRuneContract(runeName, runeConfig, prefix);
 		const row = options.schemaRows?.[contract.dataRune];
 		if (row !== undefined) contract.schemaOrg = row;
+		const composition = options.compositions?.[contract.dataRune];
+		if (composition) {
+			contract.composition = {
+				slots: [...composition.slots],
+				expansion: expandComposition(composition.outline, runes, prefix),
+			};
+		}
 		result[runeName] = contract;
 	}
 
@@ -166,6 +205,29 @@ export function generateStructureContract(
 		),
 		runes: result,
 	};
+}
+
+/** Annotate a composition's outline with each placed rune's root selector. */
+function expandComposition(
+	outline: CompositionContractNode[],
+	runes: ThemeConfig['runes'],
+	prefix: string,
+): CompositionContractNode[] {
+	const byRune = new Map(Object.entries(runes).map(([key, cfg]) => [toKebabCase(key), cfg]));
+	const visit = (nodes: CompositionContractNode[]): CompositionContractNode[] =>
+		nodes.map((n) => {
+			const { children, ...rest } = n;
+			const out: CompositionContractNode = n.rune
+				? { rune: n.rune, root: rootOf(n.rune), ...rest }
+				: { ...rest };
+			if (children) out.children = visit(children);
+			return out;
+		});
+	const rootOf = (rune: string) => {
+		const cfg = byRune.get(rune);
+		return cfg?.block ? `.${prefix}-${cfg.block}` : `[data-rune="${rune}"]`;
+	};
+	return visit(outline);
 }
 
 function generateRuneContract(

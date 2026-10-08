@@ -1,4 +1,4 @@
-{% work id="WORK-623" status="ready" priority="high" complexity="moderate" source="SPEC-145" milestone="v0.40.0" tags="runes,composition,validation,dx" %}
+{% work id="WORK-623" status="in-progress" priority="high" complexity="moderate" source="SPEC-145" milestone="v0.40.0" tags="runes,composition,validation,dx" %}
 
 # A composition definition is checked at construction
 

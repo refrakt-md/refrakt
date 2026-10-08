@@ -32,8 +32,28 @@ describe('declareSlotMarkers', () => {
 		const out = declareSlotMarkers(tags as Record<string, Schema>);
 		expect(out).not.toBe(tags);
 		expect((tags as Record<string, Schema>).hint.attributes?.[OWNER_ATTR]).toBeUndefined();
-		// A copy keeps everything else, including the transform.
-		expect(out.hint.transform).toBe((tags as Record<string, Schema>).hint.transform);
+		// A copy keeps everything else. Its transform delegates to the rune's
+		// own, and only adds the markers to the root the rune built (below).
+		expect(out.hint.transform).not.toBe((tags as Record<string, Schema>).hint.transform);
+		expect(out.hint.render).toBe((tags as Record<string, Schema>).hint.render);
+	});
+
+	it('carries a placed rune’s markers onto the root its transform builds (SPEC-145 D10a)', () => {
+		// A rune builds its own root, so declaring the markers is not enough for a
+		// rune a composition places: `{% hint %}` in a slot would lose them.
+		const config = {
+			tags: declareSlotMarkers(tags as Record<string, Schema>),
+			nodes: declareSlotMarkersOnNodes(nodes as Record<string, Schema>),
+		};
+		const ast = Markdoc.parse('{% hint %}\nPlaced.\n{% /hint %}\n');
+		const hint = ast.children[0];
+		hint.attributes[OWNER_ATTR] = 'composed';
+		hint.attributes[SLOT_ATTR] = 'body';
+		const out = Markdoc.transform(hint, config as never) as unknown as {
+			attributes: Record<string, unknown>;
+		};
+		expect(out.attributes['data-rune']).toBe('hint');
+		expect(out.attributes).toMatchObject({ [OWNER_ATTR]: 'composed', [SLOT_ATTR]: 'body' });
 	});
 
 	it('builds one copy per map', () => {

@@ -3,6 +3,8 @@ import type { Plugin, RuneExtension } from '@refrakt-md/types';
 import type { RuneConfig, RuneProvenance, LocalizedValue } from '@refrakt-md/transform';
 import { selectLocaleBundle } from '@refrakt-md/transform';
 import { Rune, defineRune, runeTagMap } from './rune.js';
+import { checkComposedCatalog, composedPluginRune } from './composed-rune.js';
+import { compositionFor, composedTypeName } from './lib/composition.js';
 
 /** A loaded plugin with its parsed rune definitions */
 export interface LoadedPlugin {
@@ -96,6 +98,22 @@ export async function loadPlugin(npmPackageName: string): Promise<LoadedPlugin> 
 	const runes: Record<string, Rune> = {};
 	const fixtures: Record<string, string> = {};
 	for (const [runeName, entry] of Object.entries(pkg.runes)) {
+		if (entry.template !== undefined) {
+			// SPEC-153 D11 — a composed rune: its schema and its block-less
+			// config are both built from the definition.
+			const composed = composedPluginRune(runeName, entry);
+			runes[runeName] = defineRune({
+				...composed.rune,
+				name: runeName,
+				schema: composed.rune.schema,
+				description: entry.description ?? composed.rune.description,
+				aliases: entry.aliases ?? composed.rune.aliases,
+				seoType: entry.seoType,
+				authoringHints: entry.authoringHints,
+			});
+			if (entry.fixture) fixtures[runeName] = entry.fixture;
+			continue;
+		}
 		runes[runeName] = defineRune({
 			name: runeName,
 			schema: entry.transform as Schema,
@@ -292,6 +310,12 @@ export function mergePlugins(
 				themeRunes[key] = value as unknown as RuneConfig;
 			}
 		}
+		// SPEC-145 D2a — a composed rune's config is generated from its
+		// definition, never hand-written beside it.
+		for (const rune of Object.values(loadedPkg.runes)) {
+			const info = compositionFor(rune.schema);
+			if (info?.config && info.typeName) themeRunes[info.typeName] = info.config;
+		}
 		if (loadedPkg.pkg.theme?.icons) {
 			for (const [group, icons] of Object.entries(loadedPkg.pkg.theme.icons)) {
 				themeIcons[group] = { ...themeIcons[group], ...icons };
@@ -303,6 +327,11 @@ export function mergePlugins(
 			}
 		}
 	}
+
+	// SPEC-145 — the composition checks that need every rune: cycles (by name),
+	// a composed type placed over a peer type (D9), a placed rune missing its
+	// required parent (D12). Here, at assembly, rather than at render.
+	checkComposedCatalog(runes, themeRunes);
 
 	const extensions: Record<string, RuneExtension> = {};
 	for (const loadedPkg of loaded) {
@@ -584,8 +613,9 @@ function isPlugin(value: unknown): value is Plugin {
 	);
 }
 
-/** Validate a loaded Plugin has required fields */
-function validatePlugin(pkg: Plugin, npmName: string): void {
+/** Validate a loaded Plugin has required fields. Each rune entry carries
+ *  exactly one of `transform` or `template` (SPEC-153 D11). */
+export function validatePlugin(pkg: Plugin, npmName: string): void {
 	if (!pkg.name) {
 		throw new Error(`Plugin "${npmName}" has an empty name field`);
 	}
@@ -597,10 +627,32 @@ function validatePlugin(pkg: Plugin, npmName: string): void {
 	}
 
 	for (const [name, entry] of Object.entries(pkg.runes)) {
+		if (entry.template !== undefined) {
+			if (entry.transform !== undefined) {
+				throw new Error(
+					`Plugin "${npmName}" rune "${name}" carries both a \`transform\` and a composition \`template\`. ` +
+						`A rune has exactly one emit path (SPEC-145 D5, SPEC-153 D11): drop the transform to compose, or the template to build its own output.`,
+				);
+			}
+			if (typeof entry.template !== 'string') {
+				throw new Error(
+					`Plugin "${npmName}" rune "${name}" has an invalid template. ` +
+						`Expected a composed rune definition: YAML frontmatter and a Markdoc template, as one string.`,
+				);
+			}
+			const configKey = composedTypeName(name);
+			if (pkg.theme?.runes?.[configKey] !== undefined) {
+				throw new Error(
+					`Plugin "${npmName}" rune "${name}" is composed but also has a hand-written theme config (\`theme.runes.${configKey}\`). ` +
+						`A composed rune's config is generated from its definition, and it has no block and ships no CSS (SPEC-145 D2, D2a).`,
+				);
+			}
+			continue;
+		}
 		if (!entry.transform || typeof entry.transform !== 'object') {
 			throw new Error(
 				`Plugin "${npmName}" rune "${name}" has an invalid transform. ` +
-					`Expected a Markdoc Schema object (created via createContentModelSchema()).`,
+					`Expected a Markdoc Schema object (created via createContentModelSchema()), or a composition \`template\`.`,
 			);
 		}
 	}

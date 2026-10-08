@@ -34,7 +34,12 @@ export type { SerializedTag, RendererNode } from '@refrakt-md/types';
 
 // Contract generation
 export { generateStructureContract } from './contracts.js';
-export type { StructureContract, RuneContract } from './contracts.js';
+export type {
+	StructureContract,
+	RuneContract,
+	CompositionContractNode,
+	StructureContractOptions,
+} from './contracts.js';
 
 // Helpers (useful for theme authors building custom transforms)
 export {
