@@ -523,7 +523,9 @@ export async function discoverPluginFixtureManifest(
 			manifest.push(parseFixture(raw, file));
 		}
 	} catch {
-		// Plugin not resolvable via require (e.g., workspace link) — skip file fixtures
+		// `<pkg>/package.json` did not resolve — the package is not installed, or it declares an
+		// `exports` map without a `./package.json` entry (ERR_PACKAGE_PATH_NOT_EXPORTED). A
+		// workspace link resolves fine. Skip file fixtures.
 	}
 
 	return manifest;
