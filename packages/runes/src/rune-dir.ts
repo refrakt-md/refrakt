@@ -10,6 +10,7 @@
  * could have written by hand: a `PluginRune` carrying the file as its
  * `template`. Nothing downstream can tell where a definition came from.
  */
+import { CompositionError } from './lib/composition-errors.js';
 import type { PluginRune } from '@refrakt-md/types';
 
 /**
@@ -51,7 +52,8 @@ export function runeNameOfFile(file: string, where: string): string {
 		const hint = stem.includes('.')
 			? ' The directory already says what its files are, so a definition takes no suffix: `playlist.md`, not `playlist.rune.md`. Fixtures belong in a sibling `fixtures/` directory.'
 			: '';
-		throw new Error(
+		throw new CompositionError(
+			'file-name-invalid',
 			`${where}: "${file}" is not a rune definition file. Every \`.md\` in a rune directory is one, named \`<rune>.md\` with a kebab-case rune name (SPEC-153 D9).${hint}`,
 		);
 	}
@@ -76,7 +78,10 @@ export function readRuneDefinitions(
 		const path = join(file);
 		const source = reader.read(path);
 		if (source === null) {
-			throw new Error(`${where}: "${path}" is listed but could not be read as a file.`);
+			throw new CompositionError(
+				'file-unreadable',
+				`${where}: "${path}" is listed but could not be read as a file.`,
+			);
 		}
 		out.push({ name, path, source });
 	}
@@ -105,7 +110,8 @@ export function withRuneDefinitions<P extends { runes?: Record<string, PluginRun
 	pathOf: (file: RuneDefinitionFile) => string = (file) => file.path,
 ): P & { runes: Record<string, PluginRune> } {
 	if (files.length === 0) {
-		throw new Error(
+		throw new CompositionError(
+			'rune-dir-empty',
 			`${where} holds no \`<rune>.md\` definition. A declared rune directory that ships empty is a packaging bug: check the package's \`files\` (SPEC-153 D3).`,
 		);
 	}
@@ -119,7 +125,8 @@ export function withRuneDefinitions<P extends { runes?: Record<string, PluginRun
 	for (const file of files) {
 		const other = claimedBy.get(file.name);
 		if (other) {
-			throw new Error(
+			throw new CompositionError(
+				'rune-defined-twice',
 				`${where} defines rune "${file.name}" twice: as ${pathOf(file)} and as ${other}. A rune has one definition; remove one of them.`,
 			);
 		}

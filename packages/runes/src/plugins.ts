@@ -5,6 +5,7 @@ import { selectLocaleBundle } from '@refrakt-md/transform';
 import { Rune, defineRune, runeTagMap } from './rune.js';
 import { checkComposedCatalog, composedPluginRune, coreCatalogRunes } from './composed-rune.js';
 import { PROJECT_RUNES, readRuneDefinitions, withRuneDefinitions } from './rune-dir.js';
+import { CompositionError } from './lib/composition-errors.js';
 import type { RuneDirReader } from './rune-dir.js';
 import { compositionFor, composedTypeName } from './lib/composition.js';
 
@@ -198,7 +199,8 @@ async function resolvePackageDir(
 			code === 'ERR_PACKAGE_PATH_NOT_EXPORTED'
 				? ` Its \`exports\` map leaves out \`./package.json\`; add \`"./package.json": "./package.json"\` (SPEC-153 D6).`
 				: '';
-		throw new Error(
+		throw new CompositionError(
+			'package-unresolvable',
 			`Plugin "${npmPackageName}" declares ${purpose} but its package directory could not be located: ${(err as Error).message}${fix}`,
 		);
 	}
@@ -217,7 +219,8 @@ async function withRuneDir(pkg: Plugin, npmPackageName: string, base: string): P
 
 	const declared = pkg.runeDir;
 	if (typeof declared !== 'string' || declared.length === 0) {
-		throw new Error(
+		throw new CompositionError(
+			'rune-dir-invalid',
 			`Plugin "${npmPackageName}" has an invalid \`runeDir\`. Expected a non-empty path relative to the plugin package directory.`,
 		);
 	}
@@ -225,7 +228,8 @@ async function withRuneDir(pkg: Plugin, npmPackageName: string, base: string): P
 	const dir = resolve(pkgDir, declared);
 	const rel = relative(pkgDir, dir);
 	if (rel.startsWith('..') || isAbsolute(rel)) {
-		throw new Error(
+		throw new CompositionError(
+			'rune-dir-invalid',
 			`Plugin "${npmPackageName}" runeDir "${declared}" resolves to ${dir}, outside its package directory ${pkgDir}. A rune directory ships inside the package.`,
 		);
 	}
@@ -236,7 +240,8 @@ async function withRuneDir(pkg: Plugin, npmPackageName: string, base: string): P
 			try {
 				return readdirSync(dir).filter((f) => statSync(join(dir, f)).isFile());
 			} catch (err) {
-				throw new Error(
+				throw new CompositionError(
+					'rune-dir-unreadable',
 					`${where} could not be read: ${(err as Error).message}. Check that the directory exists and is listed in the package's \`files\` (SPEC-153 D3).`,
 				);
 			}
@@ -245,7 +250,10 @@ async function withRuneDir(pkg: Plugin, npmPackageName: string, base: string): P
 			try {
 				return readFileSync(join(dir, file), 'utf-8');
 			} catch (err) {
-				throw new Error(`${where}: "${file}" could not be read: ${(err as Error).message}`);
+				throw new CompositionError(
+					'file-unreadable',
+					`${where}: "${file}" could not be read: ${(err as Error).message}`,
+				);
 			}
 		},
 	};
@@ -549,13 +557,15 @@ function checkProjectPrecedence(
 			const as = n === name ? '' : ` (through its alias "${n}")`;
 			const core = coreOwner.get(n);
 			if (core) {
-				throw new Error(
+				throw new CompositionError(
+					'project-core-name',
 					`Project rune "${name}" (${file})${as} takes the name of core rune "${core}". A core rune's name cannot be shadowed: every snippet, page and composition that uses "${core}" would change meaning (SPEC-153 D8). Rename the definition.`,
 				);
 			}
 			const owners = pluginOwners.get(n);
 			if (owners && !prefer?.[n]) {
-				throw new Error(
+				throw new CompositionError(
+					'project-plugin-name',
 					`Project rune "${name}" (${file})${as} and the rune "${n}" from ${owners.join(', ')} share a name. Say which wins in refrakt.config.json:\n` +
 						`  "runes": { "prefer": { "${n}": "${PROJECT_RUNES}" } }\n` +
 						`or rename the definition (SPEC-153 D8).`,
@@ -638,7 +648,8 @@ export async function loadLocalRunes(
 	/** SPEC-153 D7 — `runes.local` takes a JS module for unpublished plugin
 	 *  development; a composed rune definition has its own home. */
 	const notADefinition = (name: string, modulePath: string, what: string) =>
-		new Error(
+		new CompositionError(
+			'local-definition',
 			`Local rune "${name}" at "${modulePath}" is ${what}. \`runes.local\` takes a JavaScript module exporting a rune with a \`transform\`, for developing a plugin before publishing it (SPEC-153 D7). Put a composed rune definition in the project's rune directory instead: move it to \`runes/${name}.md\` (or the directory \`runes.dir\` names) and remove this \`runes.local\` entry.`,
 		);
 
@@ -805,20 +816,23 @@ export function validatePlugin(pkg: Plugin, npmName: string): void {
 	for (const [name, entry] of Object.entries(pkg.runes)) {
 		if (entry.template !== undefined) {
 			if (entry.transform !== undefined) {
-				throw new Error(
+				throw new CompositionError(
+					'second-emit-path',
 					`Plugin "${npmName}" rune "${name}" carries both a \`transform\` and a composition \`template\`. ` +
 						`A rune has exactly one emit path (SPEC-145 D5, SPEC-153 D11): drop the transform to compose, or the template to build its own output.`,
 				);
 			}
 			if (typeof entry.template !== 'string') {
-				throw new Error(
+				throw new CompositionError(
+					'template-entry-invalid',
 					`Plugin "${npmName}" rune "${name}" has an invalid template. ` +
 						`Expected a composed rune definition: YAML frontmatter and a Markdoc template, as one string.`,
 				);
 			}
 			const configKey = composedTypeName(name);
 			if (pkg.theme?.runes?.[configKey] !== undefined) {
-				throw new Error(
+				throw new CompositionError(
+					'template-entry-invalid',
 					`Plugin "${npmName}" rune "${name}" is composed but also has a hand-written theme config (\`theme.runes.${configKey}\`). ` +
 						`A composed rune's config is generated from its definition, and it has no block and ships no CSS (SPEC-145 D2, D2a).`,
 				);

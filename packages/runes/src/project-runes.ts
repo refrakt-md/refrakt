@@ -12,6 +12,7 @@
  * `runeDir` uses (D1). `mergePlugins` takes it as its project layer and applies
  * D8's precedence.
  */
+import type { CompositionErrorCode } from './lib/composition-errors.js';
 import type { PluginRune, ProjectFiles } from '@refrakt-md/types';
 import {
 	CompositionError,
@@ -36,6 +37,8 @@ export interface ProjectRuneFinding {
 	line: number;
 	/** The rune, when the file name is one. */
 	rune?: string;
+	/** Its entry in `COMPOSITION_ERRORS`, when the failure is a coded one. */
+	code?: CompositionErrorCode;
 	message: string;
 }
 
@@ -56,6 +59,7 @@ function schemaBanned(name: string, source: string): CompositionError | undefine
 	const definition = parseCompositionDefinition(name, source);
 	if (definition.schema === undefined) return undefined;
 	const err = new CompositionError(
+		'project-schema',
 		`Rune "${name}": a project's own definition may not declare \`schema\` (SPEC-145 D25). Its schema.org row would publish as structured data with no reviewer, and nothing checks a row against schema.org. Remove the \`schema\` block; a plugin's rune directory may declare one, because a published package is reviewed like code.`,
 	);
 	const index = frontmatterKeyLine(definition.frontmatter, ['schema']);
@@ -97,10 +101,11 @@ export function checkProjectRunes(
 			runes[name] = pluginRune(name, entry, { name: PROJECT_RUNES });
 			entries[name] = entry;
 		} catch (e) {
-			const line = (e as CompositionError).line;
+			const { line, code } = e as CompositionError;
 			findings.push({
 				file: path,
 				line: typeof line === 'number' ? line : 1,
+				...(code ? { code } : {}),
 				...(name ? { rune: name } : {}),
 				message: (e as Error).message,
 			});
@@ -132,7 +137,10 @@ export function loadProjectRunes(
 	if (findings.length > 0) {
 		const [first] = findings;
 		const more = findings.length > 1 ? ` (and ${findings.length - 1} more)` : '';
-		throw new Error(`${first.file}:${first.line}: ${first.message}${more}`);
+		throw new CompositionError(
+			first.code ?? 'invalid-value',
+			`${first.file}:${first.line}: ${first.message}${more}`,
+		);
 	}
 	return loaded;
 }
