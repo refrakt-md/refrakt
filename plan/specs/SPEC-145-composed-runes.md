@@ -2378,6 +2378,62 @@ collision recorded under the template vocabulary.
 D11's rule is the other half of item 4: a field no slot places is also an error. Between
 them, every field and every slot is matched exactly once.
 
+### D27 — a variant schema moves into a composition as data; item reach and item defaults are open
+
+*Recorded 2026-10-08,* from the question of how `playlist` would compose
+({% ref "SPEC-155" /%}). It is the first entity rune whose schema varies by an attribute.
+
+**What holds.**
+
+1. **A variant schema is already a declaration.** `playlistSchema` is
+   `{ by: 'type', rows: { album, mix, podcast, audiobook, series }, fallback }`: five types,
+   five item rows and a fallback, all data. It goes into a definition's `schema:` key
+   unchanged and is applied by the existing `applySchemaTable`, as the no-new-schema-path
+   criterion requires. `track`'s own `{ by: 'type', rows: { song, episode, chapter, talk,
+   video } }` is the same shape. D25 permits it for first-party definitions.
+2. **Structure and meaning are separate variant axes.** `templates: { by: … }` (D15) selects
+   which template renders. `schema: { by: … }` selects which schema.org row applies. They may
+   key on the same attribute or on different ones, and neither implies the other. `playlist`
+   needs only the meaning axis, because its markup does not change with `type`. This is the
+   case D18's note on `recipe` and `howto` reserved the variant form for: one authored shape,
+   several schema.org types.
+
+**Three gaps, none decided.** Each is listed under Open questions, below.
+
+- **(a) Item rows name a rune; under D10a they must name a slot.** `children: { track: … }`
+  matches items by `data-rune="track"`. The D10a amendment from {% ref "WORK-621" /%} lets the
+  composing rune reach a placed node only by `data-slot`. An item row in a composition
+  therefore names the slot whose `each` placed the items, e.g. `children: { tracks: … }`. D10's
+  criterion "an author's nested rune inside a slot is never retyped" also needs to separate
+  two cases. Items the content model produced are the rune's own: for `playlist`, once
+  SPEC-155 D3's `emitTag: 'track'` lands, both track forms are. A rune the author nests in
+  prose is not.
+- **(b) Per-variant item defaults have no declarative form.** `adoptNestedTrack` writes into
+  each untyped track. It sets `type` from a lookup (`CHILD_KIND`: album→song, podcast→episode,
+  audiobook→chapter, …), which also selects the track's own schema row, and it passes the
+  playlist's `artist` down as a default. A template cannot express a parent writing into its
+  items. The candidate home is the content model's `emitAttributes`, which already sets
+  attributes on emitted items. It would need two forms it lacks: a read of the composing
+  rune's attributes (`artist: $attrs.artist`), and a value mapped through a table
+  (`type: { from: $attrs.type, map: { podcast: episode, … } }`).
+- **(c) Nothing checks that `rows` covers the selecting attribute's values.**
+  `validateSchemaTable` (`packages/runes/src/lib/schema-table.ts`) checks that `by` names a
+  declared attribute and that a `fallback` exists. It does not check `rows` keys against the
+  attribute's `matches`, so a misspelt row (`podcasts:`) silently falls back to `MusicAlbum`.
+  D15 already requires an exact two-way correspondence for template variants. The schema `by`
+  should get the same check, and it would also catch this in today's hand-written runes.
+
+(c) is ready to build on its own. (a) and (b) block a composed `playlist`, not the v0.40.0
+slices: neither `bond` nor `character` declares a `by` table. `character`'s `sections` slot is
+the first composition with repeated items, so (a)'s slot-keyed item row is the form
+{% ref "WORK-625" /%} should use if it needs one.
+
+SPEC-155 already records the other two blockers for `playlist`:
+
+- `name` and `image` are harvested from the rendered header and stay gated on
+  {% ref "SPEC-146" /%} (its D2);
+- its appearance is gated on the arrangement vocabulary ({% ref "ADR-030" /%} rule 4).
+
 ## Non-goals
 
 - Replacing {% ref "SPEC-143" /%}'s declared tier — the two tiers coexist, and D5 keeps them distinct
@@ -2420,6 +2476,20 @@ the slot.
 and each placed node keeps `data-slot` in the output. The answer is deliberately *not*
 SPEC-143's value/region split, because a boundary inside a primitive would hide the
 placed content's node types from that primitive's content model.
+
+Three more, added by D27 (2026-10-08), from the question of composing `playlist`:
+
+**What does an item row key on in a composition?** The slot whose `each` placed the items
+seems to be the only key D10a leaves. Confirm it, and restate D10's "an author's nested rune
+inside a slot is never retyped" so that content-model-produced items count as the rune's own.
+See D27 (a).
+
+**How does a composed rune give its items per-variant defaults?** Today `playlist` writes a
+track kind and an artist default into each untyped track in code. The candidate is extending
+`emitAttributes` with a composing-rune attribute read and a value map. See D27 (b).
+
+**Should `validateSchemaTable` require `rows` to cover the selecting attribute's `matches`?**
+Proposed yes, in both directions, mirroring D15. See D27 (c).
 
 ## Acceptance Criteria
 
