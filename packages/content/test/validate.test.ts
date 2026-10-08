@@ -108,7 +108,7 @@ describe('content validation reports what the schemas already declared', () => {
 });
 
 describe('the id allow-list is explicit, so enabling an id is deliberate', () => {
-	it('ships the phase 1 and phase 2 ids, and the registers source audit', () => {
+	it('ships the phase 1 and phase 2 ids, the registers source audit and the unmatched-content audit', () => {
 		expect([...DEFAULT_VALIDATION_IDS]).toEqual([
 			'tag-undefined',
 			'attribute-undefined',
@@ -117,6 +117,8 @@ describe('the id allow-list is explicit, so enabling an id is deliberate', () =>
 			'attribute-type-invalid',
 			// SPEC-144 / WORK-611 — raised only by a rune that declares `registers`.
 			'registers-source-unresolved',
+			// WORK-631 — an authored node no content-model field matches.
+			'content-unmatched',
 		]);
 	});
 

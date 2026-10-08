@@ -246,3 +246,49 @@ describe('the registers source audit', () => {
 		expect(cliFindings(findings)).toEqual(buildFindings(site.pipelineWarnings));
 	});
 });
+
+describe('the unmatched-content audit (WORK-631)', () => {
+	it('reports content no content-model field matches at the rune’s file and line', async () => {
+		const { mkdtempSync, writeFileSync } = await import('node:fs');
+		const { tmpdir } = await import('node:os');
+		const { createContentModelSchema, createComponentRenderable } = await import(
+			'@refrakt-md/runes'
+		);
+		const Markdoc = (await import('@markdoc/markdoc')).default;
+		// A narrow preamble and no catch-all: the paragraph after the heading
+		// is matched by nothing and the transform drops it.
+		const note = createContentModelSchema({
+			contentModel: {
+				type: 'sequence',
+				fields: [{ name: 'title', match: 'heading', optional: true }],
+			},
+			transform(resolved) {
+				const title = new Markdoc.Tag('h2', {}, []);
+				return createComponentRenderable({
+					rune: 'note',
+					tag: 'div',
+					refs: { title },
+					children: resolved.title ? [title] : [],
+				});
+			},
+		});
+		const dir = mkdtempSync(path.join(tmpdir(), 'refrakt-unmatched-'));
+		writeFileSync(
+			path.join(dir, 'notes.md'),
+			'# Notes\n\n{% note %}\n## Title\n\nDropped prose.\n{% /note %}\n',
+		);
+
+		const findings = await validateContent(dir, { additionalTags: { note } });
+		const hit = findings.filter((f) => f.id === 'content-unmatched');
+		expect(hit).toEqual([
+			expect.objectContaining({ file: 'notes.md', line: 3, severity: 'warning' }),
+		]);
+		expect(hit[0].message).toContain(
+			'paragraph at line 6 matches no content-model field of {% note %} and is dropped from the output',
+		);
+
+		// The build reports the same finding.
+		const site = await loadContent(dir, { additionalTags: { note } });
+		expect(cliFindings(findings)).toEqual(buildFindings(site.pipelineWarnings));
+	});
+});
