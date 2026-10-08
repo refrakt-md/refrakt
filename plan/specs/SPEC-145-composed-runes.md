@@ -1234,8 +1234,10 @@ styling. One attribute cannot carry both.
    boundary, `findAllByName` and `findChildren` admit a node for name *n* when
    `data-owner` is the resolving rune and `data-slot` is *n*. Inside a rune's own
    nodes, nothing changes. This extends SPEC-146's `isMine`; it does not replace it.
-4. **Both are stripped** by the existing release step once the owning rune's table
-   has run (SPEC-146 D4, `releaseOwnedNodes`), so neither reaches the HTML.
+4. **`data-owner` is stripped; `data-slot` stays.** The existing release step
+   (SPEC-146 D4, `releaseOwnedNodes`) removes `data-owner` once the owning rune's
+   table has run, because ownership is only bookkeeping. `data-slot` is the composed
+   rune's published name for its parts and remains in the output (D10c).
 5. **A survival test gates placement.** It runs a marked node through every rune a
    composition may place into (D12's set) and fails if either attribute is missing
    from the output. A rune that rebuilds a node instead of passing it through, so
@@ -1293,6 +1295,36 @@ storytelling replacement would depend on exactly that. Keeping the marker until
 Phase 2 would stretch its lifetime across stages and page caching, which is the
 "one hop" lifetime D4 deliberately shortened, and a marker that leaks into HTML
 fails silently.
+
+### D10c — a slot leaves no element, only its name
+
+*Decided 2026-10-08. Answers the open question "What does `{% slot %}` leave behind?"*
+
+**A slot adds no element to the output. Each top-level node it places keeps
+`data-slot="<slot name>"` in the rendered HTML.** The primitives supply all of the
+structure, and the name makes the composed rune's parts addressable:
+`[data-rune="character"] [data-slot="description"]` resolves for a theme, for the
+editor and for tooling, with no wrapper in the tree.
+
+- **No boundary element, deliberately unlike SPEC-143's regions.** A declared rune
+  builds its own output, so a region's `<div>` costs nothing. A slot usually sits
+  *inside* a primitive, and a boundary there would exist in the AST before the
+  primitive transforms it. A `figure` would then see a `div` where it expects an
+  image, and its content model could no longer interpret what it was given. The
+  value/region split therefore does not carry over to slots, and that difference is
+  intended.
+- **A slot placing several nodes marks each one.** Two description paragraphs both
+  carry `data-slot="description"`. That is addressing, not identity: `layout`,
+  `projection` and the editor's naming read `data-name`, so SPEC-143's
+  one-node-per-`data-name` rule is untouched.
+- **`data-slot` is part of the published output.** A composed rune's contract (D6)
+  lists its slot names, so renaming a slot is a visible change, as renaming a
+  `data-name` is on a declared rune.
+- **`data-owner` is still stripped** (D10a, step 4). Only the name is published.
+
+This also answers the recipe example above: a theme can style
+`[data-rune="recipe"] [data-slot="ingredients"]`, which no trace at all would have
+left no hook for.
 
 ### D11 — editability follows the source file, not the tree
 
@@ -2150,11 +2182,10 @@ one-node-per-`data-name` reason SPEC-143 already asserts. But composition makes 
 temptation concrete — a portrait in the header *and* the footer — so the answer needs
 to be stated rather than inherited.
 
-**What does `{% slot %}` leave behind?** Ideally nothing: it is a placeholder and the
-primitives supply the structure. But a slot filled with several block nodes may need
-a boundary, which is the `value` vs `region` question SPEC-143 settled for declared
-runes. The answer here should almost certainly be the same one, and saying so
-explicitly is cheaper than rediscovering it.
+**What does `{% slot %}` leave behind?** *Answered by D10c (2026-10-08):* no element,
+and each placed node keeps `data-slot` in the output. The answer is deliberately *not*
+SPEC-143's value/region split, because a boundary inside a primitive would hide the
+placed content's node types from that primitive's content model.
 
 ## Acceptance Criteria
 
@@ -2194,6 +2225,7 @@ explicitly is cheaper than rediscovering it.
 - [ ] `data-owner` and `data-slot` are declared once at config assembly on every node and tag schema, not per rune, and a placed node keeps both through the primitive's transform (D10a)
 - [ ] The resolvers admit a node past a boundary by `data-owner` plus `data-slot`, and a primitive's own `data-name` on the same node is left untouched (D10a)
 - [ ] A survival test runs a marked node through every rune in D12's placement set and fails naming any rune that drops either attribute (D10a)
+- [ ] A slot emits no element; every top-level node it places carries `data-slot` in the rendered HTML, `data-owner` does not, and the composed rune's contract lists its slot names (D10c)
 - [ ] A composed rune whose `registers` source is a placed node registers the same id and data as one whose source is an attribute, read from the field bag in Phase 2; `findRef` and the strip timing are unchanged (D10b)
 - [ ] A composed rune's content-derived `properties` resolve — the `image` from a slot-placed portrait reaches the entity, asserted against the graph and not just the attributes (D10)
 - [ ] An author's nested rune inside a slot is never retyped as part of the composed entity (D10)
