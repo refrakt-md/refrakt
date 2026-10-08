@@ -7,7 +7,7 @@ import { translations } from './translations.js';
 export const learning: Plugin = {
 	name: 'learning',
 	displayName: 'Learning',
-	version: '0.39.0',
+	version: '0.40.0',
 	runes: {
 		howto: {
 			transform: howto,

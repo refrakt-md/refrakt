@@ -1,5 +1,26 @@
 # @refrakt-md/content
 
+## 0.40.0
+
+### Minor Changes
+
+- bf59a0e: `data-owner` and `data-slot` now survive a primitive's transform, ahead of composed runes (SPEC-145 D10a). The page pipeline declares both attributes once, when it assembles the Markdoc config, on every node and tag schema. No rune declares them itself, so authoring tools do not offer them. The schema-table resolvers admit a node by `data-owner` plus `data-slot`, and a primitive's own `data-name` on that node still resolves for the primitive. `releaseOwnedNodes` strips `data-owner` and keeps `data-slot`. Nothing sets the markers yet, so rendered output and structured data are unchanged.
+
+  New exports from `@refrakt-md/runes`: `declareSlotMarkers`, `declareSlotMarkersOnNodes`, `OWNER_ATTR`, `SLOT_ATTR`.
+
+### Patch Changes
+
+- Updated dependencies [7b30425]
+- Updated dependencies [1f4aee2]
+- Updated dependencies [cfbab94]
+- Updated dependencies [587518b]
+- Updated dependencies [cf25876]
+- Updated dependencies [bf59a0e]
+  - @refrakt-md/transform@0.40.0
+  - @refrakt-md/runes@0.40.0
+  - @refrakt-md/types@0.40.0
+  - @refrakt-md/highlight@0.40.0
+
 ## 0.39.0
 
 ### Minor Changes
