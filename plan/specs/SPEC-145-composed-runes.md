@@ -2462,7 +2462,7 @@ placed content's node types from that primitive's content model.
 - [ ] A composed rune has a generated, block-less `RuneConfig`: its root carries no `rf-*` class and no `data-rune-fields`, and its modifiers, universal attributes and meta blocks render (D2a)
 - [ ] `RuneConfig.block` is optional; no config without a block ever emits `rf-undefined`, and contracts describe a block-less entry by its `data-*` modifiers and slot names (D2a)
 - [ ] A first-party composed rune may declare `schema`; a user definition that declares it is rejected at load, naming the rune and D25 (D25, enforced by SPEC-153's loader)
-- [ ] `@adobe/structured-data-validator` has been run over `contracts/seo-baseline/`, and its findings (noise, and which known defects it catches) are recorded as the evidence for or against lifting D25's ban (D25)
+- [x] `@adobe/structured-data-validator` has been run over `contracts/seo-baseline/`, and its findings (noise, and which known defects it catches) are recorded as the evidence for or against lifting D25's ban (D25)
 - [ ] A slot emits no element; every top-level node it places carries `data-slot` in the rendered HTML, `data-owner` does not, and the composed rune's contract lists its slot names (D10c)
 - [ ] `sections` is placed with an ordinary `{% slot name="sections" each %}`; no special form exists (D26)
 - [ ] `each` on a single-valued field is rejected at schema construction, naming the slot (D26)
