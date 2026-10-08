@@ -1,4 +1,4 @@
-{% bug id="BUG-032" status="confirmed" severity="major" source="SPEC-002" tags="runes,sandbox,design,pipeline" milestone="v0.40.0" %}
+{% bug id="BUG-032" status="fixed" severity="major" source="SPEC-002" tags="runes,sandbox,design,pipeline" milestone="v0.40.0" pr="refrakt-md/refrakt#677" %}
 
 # Sandbox context attribute is never emitted, so every sandbox gets the default design tokens
 
@@ -74,5 +74,30 @@ Two generated artifacts will change, and the change is the evidence:
 - {% ref "SPEC-002" /%}: the cross-page pipeline, whose design-context use case
   this is ("the sandbox rune is a context consumer")
 - {% ref "WORK-613" /%}: found it while capturing the design registry snapshot
+
+## Resolution
+
+Completed: 2026-10-08
+
+Branch: `claude/v040-bug-032-sandbox-context`
+PR: refrakt-md/refrakt#677
+
+### What was done
+- `packages/runes/src/tags/sandbox.ts`: `context` is passed as a `properties` meta, so it lands in the `data-rune-fields` bag where the design `postProcess` reads it with `readField`. It is emitted only when set, so a sandbox without a context is unchanged.
+- `packages/editor/app/src/lib/preview/block-renderer.ts`: the preview's token injection reads `readField(tag, 'context')` (bag first) instead of a `<meta data-field="context">` child that `createComponentRenderable` drops.
+- Tests:
+  - `packages/runes/test/sandbox.test.ts` covers the bag with and without `context`.
+  - New `packages/editor/test/block-renderer.test.ts` covers named, default and missing scopes. With the old reader, 2 of these 3 fail.
+- `plugins/design/test/fixtures/registry-snapshot.json`, regenerated with `REFRAKT_WRITE_REGISTRY_SNAPSHOT=1`:
+  - `injected["/usage"]` goes from 3× `default` to `default` plus the `dark` set (from `/dark`); the `missing` sandbox gets nothing.
+  - `warnings` gains the "missing" warning.
+  - `registrations` is unchanged (structurally compared).
+- Changeset for `@refrakt-md/runes` and `@refrakt-md/editor` (patch).
+
+### Notes
+- The milestone table expected contracts and the SEO baseline to move. Neither did:
+  - Contracts are derived from engine config, which has no `context` modifier, and the engine strips the field bag from output.
+  - The SEO baseline has no sandbox fixture, and sandbox emits no structured data.
+- Finding, filed as BUG-034 rather than widened into this fix: the `rf-sandbox` behaviour reads tokens from a `data-design-tokens` host attribute (or `RfContext.designTokens`), and nothing sets either. The pipeline injects a `<meta data-field="design-tokens">` child instead, so the iframe never receives tokens. This fix makes the build choose the right set, and BUG-034 is what delivers it to the page.
 
 {% /bug %}
