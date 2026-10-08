@@ -1,5 +1,22 @@
 # @refrakt-md/editor
 
+## 0.40.0
+
+### Patch Changes
+
+- cf25876: `sandbox`'s `context` attribute now takes effect. The sandbox transform never emitted it, so the design plugin always resolved a sandbox to the `default` design-context token set: `context="dark"` got `default`, and an undefined scope got `default` with no warning. `context` is now a field in the rune's `data-rune-fields` bag. A named scope gets its own token set, an unknown scope gets none and raises `Sandbox references design context "…" which is not defined on any page`, and a sandbox with no `context` still gets `default`. The editor's block preview reads the same field, so it matches the build.
+- Updated dependencies [7b30425]
+- Updated dependencies [1f4aee2]
+- Updated dependencies [cfbab94]
+- Updated dependencies [587518b]
+- Updated dependencies [cf25876]
+- Updated dependencies [bf59a0e]
+  - @refrakt-md/transform@0.40.0
+  - @refrakt-md/runes@0.40.0
+  - @refrakt-md/types@0.40.0
+  - @refrakt-md/content@0.40.0
+  - @refrakt-md/highlight@0.40.0
+
 ## 0.39.0
 
 ### Patch Changes

@@ -1,5 +1,37 @@
 # @refrakt-md/runes
 
+## 0.40.0
+
+### Minor Changes
+
+- 1f4aee2: A rune can now be defined by a composition template (SPEC-145). A definition is YAML frontmatter declaring the rune's input (`tag`, `attributes`, `content`, `schema`, `registers`, `metaFields`, `blocks`) and a Markdoc body that places the content model's fields into slots of existing runes: `{% slot name="x" /%}`, with fallback content, and `{% slot name="xs" each %}…{% /slot %}` with `$each` bound to the model's `emitAttributes`. `$attrs.<name>` and Markdoc's own `{% if %}` work in the template. The template renders at the rune's transform, after field resolution, so every placed rune runs its own transform unchanged. Slot-placed nodes carry `data-slot` in the output; a slot adds no element. The composed root carries the rune's own `data-rune` and a generated block-less config, and a node-sourced `registers` value is copied into the field bag for Phase 2.
+
+  Every bad definition fails at load or construction, naming the rune and what was rejected: a preprocessor tag in the template, a second emit path, an unplaced field, an unknown or repeated slot, `each` on a single value, an undeclared `$each` or `$attrs` field, a cycle, a peer schema type, a placed rune missing its required parent, and CSS.
+
+  `PluginRune` carries exactly one of `transform` or `template` (SPEC-153 D11); `transform` is now optional on the type. `refrakt contracts` records a composed rune's slot names and expansion. No shipped rune is composed yet, so contracts and structured data are unchanged.
+
+  New exports from `@refrakt-md/runes`: `defineComposedRune`, `composedPluginRune`, `pluginRuneSchema`, `checkComposedCatalog`, `collectCompositions`, `compileComposition`, `compositionFor`, `parseCompositionDefinition`, `composedRuneConfig`, `composedTypeName`, `checkCompositions`, `SUBORDINATE_SCHEMA_TYPES`, `validatePlugin`. `createContentModelSchema` takes a `template` option.
+
+- 587518b: A composed rune's template can place a declared meta block with `{% metablock name="…" /%}` (SPEC-145 D7). A composed rune has no `layout`, so until now a definition could declare `metaFields` and `blocks` in full and get nothing rendered. The tag marks where the block goes. The engine fills it from the rune's own config and values, anywhere in its template's subtree, using the same renderer `layout` projection uses, so the block renders identically and a theme's `blocks` override reaches it unchanged.
+
+  The tag is template vocabulary only: on a page it is an undefined tag. Each of these is rejected when the definition is built, naming the block: a name that matches no declared block, a block placed twice, and a placement inside an `each` slot. A block whose fields all resolve empty emits nothing.
+
+  Every attribute a `metaFields` entry reads is now a modifier of the generated config, so it also renders as a `data-*` attribute, as on a tree-owning rune. `METABLOCK_ATTR` and `METABLOCK_OWNER_ATTR` are exported from `@refrakt-md/transform`. No shipped rune is composed, so existing output is unchanged.
+
+- bf59a0e: `data-owner` and `data-slot` now survive a primitive's transform, ahead of composed runes (SPEC-145 D10a). The page pipeline declares both attributes once, when it assembles the Markdoc config, on every node and tag schema. No rune declares them itself, so authoring tools do not offer them. The schema-table resolvers admit a node by `data-owner` plus `data-slot`, and a primitive's own `data-name` on that node still resolves for the primitive. `releaseOwnedNodes` strips `data-owner` and keeps `data-slot`. Nothing sets the markers yet, so rendered output and structured data are unchanged.
+
+  New exports from `@refrakt-md/runes`: `declareSlotMarkers`, `declareSlotMarkersOnNodes`, `OWNER_ATTR`, `SLOT_ATTR`.
+
+### Patch Changes
+
+- cf25876: `sandbox`'s `context` attribute now takes effect. The sandbox transform never emitted it, so the design plugin always resolved a sandbox to the `default` design-context token set: `context="dark"` got `default`, and an undefined scope got `default` with no warning. `context` is now a field in the rune's `data-rune-fields` bag. A named scope gets its own token set, an unknown scope gets none and raises `Sandbox references design context "…" which is not defined on any page`, and a sandbox with no `context` still gets `default`. The editor's block preview reads the same field, so it matches the build.
+- Updated dependencies [7b30425]
+- Updated dependencies [1f4aee2]
+- Updated dependencies [cfbab94]
+- Updated dependencies [587518b]
+  - @refrakt-md/transform@0.40.0
+  - @refrakt-md/types@0.40.0
+
 ## 0.39.0
 
 ### Minor Changes

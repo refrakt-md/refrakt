@@ -1,5 +1,22 @@
 # @refrakt-md/plan
 
+## 0.40.0
+
+### Patch Changes
+
+- f7a2b3a: The plan scanner no longer descends into dot-directories such as `.git`. Their contents are not plan content, and a lock file git deleted mid-scan could fail the scan with `ENOENT`.
+- d7f2b03: `@refrakt-md/plan` and `@refrakt-md/docs` now export `./package.json`. Their `exports` maps previously left it out, so `require.resolve('<pkg>/package.json')` threw `ERR_PACKAGE_PATH_NOT_EXPORTED` and anything reading the installed package (such as plugin fixture discovery) silently found nothing. `@refrakt-md/plan`'s `files` also no longer lists a `styles` directory that does not exist.
+- Updated dependencies [7b30425]
+- Updated dependencies [1f4aee2]
+- Updated dependencies [cfbab94]
+- Updated dependencies [587518b]
+- Updated dependencies [cf25876]
+- Updated dependencies [bf59a0e]
+  - @refrakt-md/transform@0.40.0
+  - @refrakt-md/runes@0.40.0
+  - @refrakt-md/types@0.40.0
+  - @refrakt-md/content@0.40.0
+
 ## 0.39.0
 
 ### Patch Changes

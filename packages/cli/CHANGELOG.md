@@ -1,5 +1,33 @@
 # @refrakt-md/cli
 
+## 0.40.0
+
+### Minor Changes
+
+- 7b30425: A `RuneConfig` may now omit `block` (SPEC-145 D2a). A block-less config gets no `rf-*` classes, on its root or on its named children, and never `rf-undefined`. Everything else the identity transform does still applies: modifiers render as `data-*` attributes, universal attributes and metadata blocks render, and `data-rune-fields` is stripped. `refrakt contracts` describes a block-less entry by `[data-rune]` and its `data-*` modifiers, with no BEM selectors. `validateThemeConfig` and `refrakt plugin validate` accept a missing `block` and still reject an empty one. `refrakt inspect --audit` and `scaffold-css` skip block-less runes, because they ship no CSS. No shipped rune drops its block yet, so existing output is unchanged.
+- 1f4aee2: A rune can now be defined by a composition template (SPEC-145). A definition is YAML frontmatter declaring the rune's input (`tag`, `attributes`, `content`, `schema`, `registers`, `metaFields`, `blocks`) and a Markdoc body that places the content model's fields into slots of existing runes: `{% slot name="x" /%}`, with fallback content, and `{% slot name="xs" each %}…{% /slot %}` with `$each` bound to the model's `emitAttributes`. `$attrs.<name>` and Markdoc's own `{% if %}` work in the template. The template renders at the rune's transform, after field resolution, so every placed rune runs its own transform unchanged. Slot-placed nodes carry `data-slot` in the output; a slot adds no element. The composed root carries the rune's own `data-rune` and a generated block-less config, and a node-sourced `registers` value is copied into the field bag for Phase 2.
+
+  Every bad definition fails at load or construction, naming the rune and what was rejected: a preprocessor tag in the template, a second emit path, an unplaced field, an unknown or repeated slot, `each` on a single value, an undeclared `$each` or `$attrs` field, a cycle, a peer schema type, a placed rune missing its required parent, and CSS.
+
+  `PluginRune` carries exactly one of `transform` or `template` (SPEC-153 D11); `transform` is now optional on the type. `refrakt contracts` records a composed rune's slot names and expansion. No shipped rune is composed yet, so contracts and structured data are unchanged.
+
+  New exports from `@refrakt-md/runes`: `defineComposedRune`, `composedPluginRune`, `pluginRuneSchema`, `checkComposedCatalog`, `collectCompositions`, `compileComposition`, `compositionFor`, `parseCompositionDefinition`, `composedRuneConfig`, `composedTypeName`, `checkCompositions`, `SUBORDINATE_SCHEMA_TYPES`, `validatePlugin`. `createContentModelSchema` takes a `template` option.
+
+### Patch Changes
+
+- Updated dependencies [7b30425]
+- Updated dependencies [1f4aee2]
+- Updated dependencies [cfbab94]
+- Updated dependencies [587518b]
+- Updated dependencies [cf25876]
+- Updated dependencies [bf59a0e]
+  - @refrakt-md/transform@0.40.0
+  - @refrakt-md/runes@0.40.0
+  - @refrakt-md/editor@0.40.0
+  - @refrakt-md/content@0.40.0
+  - @refrakt-md/html@0.40.0
+  - @refrakt-md/ai@0.40.0
+
 ## 0.39.0
 
 ### Minor Changes

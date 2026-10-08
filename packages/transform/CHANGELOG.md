@@ -1,5 +1,37 @@
 # @refrakt-md/transform
 
+## 0.40.0
+
+### Minor Changes
+
+- 7b30425: A `RuneConfig` may now omit `block` (SPEC-145 D2a). A block-less config gets no `rf-*` classes, on its root or on its named children, and never `rf-undefined`. Everything else the identity transform does still applies: modifiers render as `data-*` attributes, universal attributes and metadata blocks render, and `data-rune-fields` is stripped. `refrakt contracts` describes a block-less entry by `[data-rune]` and its `data-*` modifiers, with no BEM selectors. `validateThemeConfig` and `refrakt plugin validate` accept a missing `block` and still reject an empty one. `refrakt inspect --audit` and `scaffold-css` skip block-less runes, because they ship no CSS. No shipped rune drops its block yet, so existing output is unchanged.
+- 1f4aee2: A rune can now be defined by a composition template (SPEC-145). A definition is YAML frontmatter declaring the rune's input (`tag`, `attributes`, `content`, `schema`, `registers`, `metaFields`, `blocks`) and a Markdoc body that places the content model's fields into slots of existing runes: `{% slot name="x" /%}`, with fallback content, and `{% slot name="xs" each %}…{% /slot %}` with `$each` bound to the model's `emitAttributes`. `$attrs.<name>` and Markdoc's own `{% if %}` work in the template. The template renders at the rune's transform, after field resolution, so every placed rune runs its own transform unchanged. Slot-placed nodes carry `data-slot` in the output; a slot adds no element. The composed root carries the rune's own `data-rune` and a generated block-less config, and a node-sourced `registers` value is copied into the field bag for Phase 2.
+
+  Every bad definition fails at load or construction, naming the rune and what was rejected: a preprocessor tag in the template, a second emit path, an unplaced field, an unknown or repeated slot, `each` on a single value, an undeclared `$each` or `$attrs` field, a cycle, a peer schema type, a placed rune missing its required parent, and CSS.
+
+  `PluginRune` carries exactly one of `transform` or `template` (SPEC-153 D11); `transform` is now optional on the type. `refrakt contracts` records a composed rune's slot names and expansion. No shipped rune is composed yet, so contracts and structured data are unchanged.
+
+  New exports from `@refrakt-md/runes`: `defineComposedRune`, `composedPluginRune`, `pluginRuneSchema`, `checkComposedCatalog`, `collectCompositions`, `compileComposition`, `compositionFor`, `parseCompositionDefinition`, `composedRuneConfig`, `composedTypeName`, `checkCompositions`, `SUBORDINATE_SCHEMA_TYPES`, `validatePlugin`. `createContentModelSchema` takes a `template` option.
+
+- cfbab94: The identity guard is path-granular (SPEC-158). `IDENTITY_FIELDS` now holds config paths, and `findReservedFields` resolves a wildcard segment. Three protections join the existing eight keys, each dropped and reported rather than thrown:
+
+  - A theme override of `sequence` is ignored — whether an ordinal is information (a playlist's track numbers) is rune identity. `sequenceDirection` stays overridable.
+  - A theme override of `metaFields.<field>.metaType` is ignored while that entry's `label`, `sentimentMap` and `transform` still merge; an override entry that leaves `metaType` out keeps the declared one.
+  - A `layout` wrapper's `attrs` may not set an attribute an identity field emits (`data-section`, `data-media`, `typeof`, `property`, `data-sequence`, `data-meta-type`, or `data-{name}` for a declared modifier). The attribute is dropped at config assembly and the wrapper's other attributes stand; `validateThemeConfig` reports it as an error. `data-zone-layout` and other presentation attributes are unaffected.
+
+  `mergeRuneConfig`, `derivedAttributeOwner`, `IDENTITY_FIELD_ATTRIBUTES` and `derivedAttributeMessage` are now exported. Nothing in the shipped plugins or Lumina is affected.
+
+- 587518b: A composed rune's template can place a declared meta block with `{% metablock name="…" /%}` (SPEC-145 D7). A composed rune has no `layout`, so until now a definition could declare `metaFields` and `blocks` in full and get nothing rendered. The tag marks where the block goes. The engine fills it from the rune's own config and values, anywhere in its template's subtree, using the same renderer `layout` projection uses, so the block renders identically and a theme's `blocks` override reaches it unchanged.
+
+  The tag is template vocabulary only: on a page it is an undefined tag. Each of these is rejected when the definition is built, naming the block: a name that matches no declared block, a block placed twice, and a placement inside an `each` slot. A block whose fields all resolve empty emits nothing.
+
+  Every attribute a `metaFields` entry reads is now a modifier of the generated config, so it also renders as a `data-*` attribute, as on a tree-owning rune. `METABLOCK_ATTR` and `METABLOCK_OWNER_ATTR` are exported from `@refrakt-md/transform`. No shipped rune is composed, so existing output is unchanged.
+
+### Patch Changes
+
+- Updated dependencies [1f4aee2]
+  - @refrakt-md/types@0.40.0
+
 ## 0.39.0
 
 ### Patch Changes
