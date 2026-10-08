@@ -1098,41 +1098,105 @@ which are transform slots — **block names and slot names share one namespace i
 `layout`**, with blocks resolved first (`engine.ts:1562-1571`). That is precisely why
 a tag is needed: a composed rune has no `layout` to write the name into.
 
-The composed form keeps `metaFields` and `blocks` verbatim and drops `layout`:
+The composed form keeps the meta block and drops `layout`:
 
 ```md
 ---
 tag: article
+aliases: [location, place]
+description: A realm profile, composed over `card`, `details` and a placed meta block. SPEC-145 D7's worked example, kept beside the storytelling plugin's `realm` rather than shipped in place of it (SPEC-147 D1).
 attributes:
-  name:      { type: string, required: true }
-  realmType: { type: string }
-  scale:     { type: string }
+  name:   { type: string, required: true, description: "Display name shown in the realm header." }
+  type:   { type: string, default: place, description: "Kind of location (e.g. city, forest, dungeon, plane, continent)." }
+  scale:  { type: string, description: "Geographic scope of the realm (e.g. room, district, region, world)." }
+  tags:   { type: string, description: "Comma-separated keywords for filtering and cross-referencing." }
+  parent: { type: string, description: "Name of the containing realm for hierarchical nesting." }
+  media-position: { type: string, matches: [top, bottom, start, end, cover], default: top, description: "Where the media zone sits relative to the content: above (top), below (bottom), or beside (start/end)" }
+  media-ratio:    { type: string, matches: ["1/3", "2/5", "1/2", "3/5", "2/3"], description: "Media zone’s share of the row width when media is beside content (start/end)" }
+  valign:         { type: string, matches: [top, center, bottom, stretch], description: "Cross-axis alignment when media is beside content (start/end); applies to the shorter zone" }
+  collapse:       { type: string, matches: [sm, md, lg, never], description: "Breakpoint at which side-by-side layouts collapse to a single stacked column" }
+provides: [prose]
 content:
   type: sections
   sectionHeading: heading
+  emitAttributes: { heading: $heading }
   preamble:
-    scene: { match: image, optional: true }
+    scene:       { match: image, optional: true }
+    description: { match: paragraph, optional: true, greedy: true }
+    body:        { match: any, optional: true, greedy: true }
 metaFields:
-  realmType: { metaType: category, label: Type }
-  scale:     { metaType: category, label: Scale, condition: scale }
+  type:  { metaType: category, label: Type }
+  scale: { metaType: category, label: Scale, condition: scale }
 blocks:
-  metadata: { fields: [realmType, scale], layout: definition-list }
+  metadata: { fields: [type, scale], layout: definition-list }
+schema:
+  type: Place
+  properties: { name: name, type: additionalType, scene: image }
+registers:
+  entity:
+    idFrom: name
+    data: [{ realmType: type }, scale, tags, parent, name]
 ---
 
-{% mediatext %}
+{% card media-position=$attrs["media-position"] media-ratio=$attrs["media-ratio"] valign=$attrs.valign collapse=$attrs.collapse %}
 {% slot name="scene" /%}
+
 ---
+
 # {% $attrs.name %}
 
 {% metablock name="metadata" /%}
 
+{% slot name="description" /%}
+
 {% slot name="body" /%}
 
 {% slot name="sections" each %}
-  {% details summary=$each.heading %}{% slot /%}{% /details %}
+{% details summary=$each.heading %}
+{% slot /%}
+{% /details %}
 {% /slot %}
-{% /mediatext %}
+{% /card %}
 ```
+
+*Corrected 2026-10-08, after {% ref "WORK-636" /%}.* An earlier version of this example did not
+construct, and it placed `{% mediatext %}`, which cannot carry realm's split. The form above is
+the definition WORK-636 stores and measures, in
+`packages/content/test/fixtures/composed-storytelling/runes/realm.md`. Each change has a reason:
+
+- **`description` and `body` are declared preamble fields.** The template placed
+  `{% slot name="body" /%}`, and the content model had no `body` field, which D26 rejects at
+  construction. `description` matches the lead paragraphs, and `body` is the catch-all that keeps
+  everything else, until {% ref "WORK-631" /%} reports unmatched content.
+- **`emitAttributes: { heading: $heading }` is declared.** Without it, `$each.heading` is
+  rejected at construction (D26), as in `character`'s example.
+- **The type attribute is `type`, not `realmType`.** A realm page writes `type="kingdom"`. The
+  plugin renamed it to `realmType` on the way to its metas, and its registry bag keeps that name.
+  So the metaField and block are keyed `type`, and the registered data aliases it:
+  `{ realmType: type }`. `type` defaults to `place`, as the plugin's meta does, so the data bag
+  and `additionalType` match for a realm that names no type.
+- **The split is `{% card %}`, not `{% mediatext %}`.** Measured, `mediatext` fails three ways:
+  - It speaks `align` / `ratio`, not the `SplitLayoutModel` attributes realm accepts.
+    `media-position="start"` (the SEO baseline fixture's) has nowhere to go, and `top`, `bottom`,
+    `cover`, `valign` and `collapse` have no counterpart at all.
+  - With no scene it renders an empty media zone; card omits it (D17).
+  - It moves every image-only paragraph into its media zone. An image the author wrote in the
+    description leaves the body and loses its `data-slot`.
+
+  `card` takes the split attributes through `$attrs["media-position"]` and the rest, which is
+  D18's argument.
+- **The schema row, the registration, the other attributes and `aliases: [location, place]` are
+  declared**, so the composed rune publishes, registers and accepts what the plugin's does.
+  The four split attributes are declared by hand, since `base` is not a definition key.
+
+Measured against the plugin and the SEO baseline:
+
+- **JSON-LD:** the baseline's `realm` fixture publishes the recorded graph exactly, at both harvest
+  points, including the scene's `image`.
+- **RDFa:** `name` is on a `<meta>`.
+- **Registry:** the storytelling snapshot is reproduced exactly.
+
+`faction` has the same shape, and it is stored beside `realm`.
 
 What lands is the DOM the projection already produces: a `<dl>` of
 `<dt data-meta-label>` / `<dd>` pairs, each `<dd>` a chip or bare text chosen from the
@@ -1143,7 +1207,7 @@ field's `metaType` (`engine.ts:1330-1356`); a `bar` block would land as
 
 #### Whose config resolves the marker
 
-The marker sits inside `{% mediatext %}`, but the block belongs to `realm`.
+The marker sits inside `{% card %}`, but the block belongs to `realm`.
 `assembleWithBlocks` is called per-rune with *that* rune's config and
 `modifierValues`, so the outer rune's pass must scan its whole subtree for markers —
 not only its direct children, which is all `layout` addresses.

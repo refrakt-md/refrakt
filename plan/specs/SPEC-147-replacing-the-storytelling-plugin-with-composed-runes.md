@@ -43,7 +43,7 @@ content model (`storyboard`) and **one** `postTransform` (`plot`).
 | `lore` | Clean — simplest shape |
 | `bond` | Clean — {% ref "SPEC-144" /%}'s `edge` declaration; already SPEC-145's worked example |
 | `character` | Registration ✓; its `character-section` child rune is replaceable by `{% section %}`; CSS caveat below |
-| `realm`, `faction` | Same shape; their split maps to `{% mediatext %}` |
+| `realm`, `faction` | Same shape; their split maps to `{% card %}`, not `{% mediatext %}` (measured, Finding 6) |
 | `beat` | Carried by `plot`'s item model, not separately blocked |
 | `plot` | Two apparent blockers, **both already have core primitives** — see below |
 | `storyboard` | Genuinely blocked, and probably not a storytelling rune at all |
@@ -198,6 +198,32 @@ it, so dropping it is a difference to state, not to skip.
 Neither needs a new primitive. Both are differences under D2, and they are named here
 so they are explained rather than rediscovered.
 
+*Measured by {% ref "WORK-636" /%} (2026-10-08).* Two corrections, from composing `realm` and
+`faction`.
+
+**The loss is wider than "only with sections".** The plugin's preamble fields are `scene`,
+`description` (paragraphs) and `items` (tags). A list written after the description matches none
+of them. It is dropped, and so is everything after it (a `{% hint %}`, say), **whether or not
+sections follow**. The composed runes' catch-all `body` keeps all of it.
+
+**The split does not map to `{% mediatext %}`; it maps to `{% card %}`.** The table above and
+this finding's opening both say it does. Measured over the same definition, `mediatext` fails
+three ways:
+
+- It speaks `align` / `ratio`. `realm` and `faction` accept `SplitLayoutModel`'s
+  `media-position`, `media-ratio`, `valign` and `collapse`, and the baseline fixtures write
+  `media-position="start"`. A template cannot pass those through, and `top`, `bottom`, `cover`,
+  `valign` and `collapse` have no counterpart.
+- It renders an empty media zone when there is no scene.
+- It moves every image-only paragraph into its media zone. An image the author wrote in the
+  description leaves the body and loses its `data-slot`. The plugin takes only the *first*
+  paragraph as the scene.
+
+`card` has none of these problems. It carries `SplitLayoutModel`, it has D17's empty-zone guard,
+and it splits only on the template's `---`. That is SPEC-145 D18's conclusion: `card` is the
+canonical media-split primitive, and `mediatext` is outside the eight. Both definitions place
+`card`, as `character` does.
+
 ## Decisions
 
 ### D1 — replace alongside, delete separately
@@ -209,7 +235,7 @@ and does not gate 1.0.
 ### D2 — the composed output is compared against the plugin's baseline, difference by difference
 
 Not "byte-identical" — the arrangements will differ, deliberately (`{% section %}` in
-place of `character-section`, `{% mediatext %}` in place of the split). The gate is that
+place of `character-section`, `{% card %}` in place of the split). The gate is that
 **every difference is explained**, in the same spirit SPEC-145 sets for its own spike.
 The 5 storytelling fixtures already in `contracts/seo-baseline/` are the reference.
 
