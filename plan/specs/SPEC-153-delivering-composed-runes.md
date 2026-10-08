@@ -266,6 +266,17 @@ relaxing three things at once and inventing a second loader entry point. D2's sh
 not preclude it later; it is simply a different change, and the hosted product is the
 consumer that would justify it.
 
+## Status after v0.40.0
+
+Implementation notes 1 and 2 are done:
+- {% ref "WORK-626" /%}: every plugin's manifest resolves, and `files` matches disk.
+- {% ref "WORK-627" /%}: the `npm pack` → install → load harness.
+
+Notes 3–5 are open: plugin rune directories, project rune directories, and the
+`discoverPluginFixtures` caller. In v0.40.0, composed definitions reached the pipeline as
+strings. This spec stays `draft`. `plan validate`'s suggestion to advance it is expected
+until notes 3–5 have work behind them.
+
 ## Implementation notes, deliberately not yet work items
 
 Kept here rather than filed, so the adopting milestone decides its own breakdown.

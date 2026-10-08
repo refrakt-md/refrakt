@@ -235,6 +235,14 @@ to match: D1 keeps it unchanged, and its baseline records today's output. The
 The stamp's removal is also named in the changeset that ships the composed runes,
 because it is the one difference a downstream consumer could notice in markup.
 
+## Status after v0.40.0
+
+Two of the thirteen criteria have work behind them, and this spec stays `draft`.
+{% ref "WORK-624" /%} composed `bond` and {% ref "WORK-625" /%} composed `character`. Both ship
+beside the plugin as test fixtures (D1), and every difference from the plugin is explained (D2).
+`plan validate` suggests advancing to `implemented` because both linked items are done. They
+cover only the two slices, so that warning is expected until the rest of the runes are composed.
+
 ## Implementation notes, deliberately not yet work items
 
 Kept here rather than filed, so the milestone that adopts this decides its own breakdown

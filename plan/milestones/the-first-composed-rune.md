@@ -1,4 +1,4 @@
-{% milestone name="v0.40.0" status="planning" %}
+{% milestone name="v0.40.0" status="complete" %}
 
 # v0.40.0 — The first composed rune
 
@@ -76,6 +76,29 @@ explained, not eliminated (SPEC-147 D2).
 - WORK-628 and BUG-032 are independent.
 
 So three tracks can run in parallel: the mechanism, delivery, and the spike plus the rider.
+
+## Outcome
+
+Every item is done, and BUG-032 is fixed. PRs #675–#681 and #683–#686.
+
+- **Composition works end to end.** `bond` reproduces the storytelling registry snapshot
+  exactly (#684). `character` matches the recorded JSON-LD at both harvest points, and its
+  slot-placed portrait now reaches the graph as `image` (#686). The plugin is unchanged, and
+  each slice's rendered differences are listed and asserted.
+- **Three decisions changed on contact:**
+  - the D10a two-namespace rule for doubly-marked nodes (#680);
+  - `{% metablock %}`, pulled in as WORK-630 when WORK-622 showed declared blocks could not
+    render without it;
+  - both worked examples in SPEC-145, rewritten to the definitions that were proved.
+- **The D25 spike kept the ban** on `schema` in user definitions. The validator catches
+  typo-class errors, 3 of 17 recorded defects. WORK-629 runs it in CI on first-party rows.
+- **Filed along the way:**
+  - BUG-033 (playlist/track domain errors) and BUG-034 (tokens never reach the sandbox
+    iframe), deferred by decision;
+  - WORK-631 (content no field matches is silently dropped);
+  - WORK-632 (`rows` coverage of `matches`).
+- **Recurring local flake:** `plan-site-dogfood-real` and `plugins/plan/test/pipeline` time
+  out at 30s under full-suite load in 4-core containers. CI is unaffected.
 
 ## Deliberately not here
 
