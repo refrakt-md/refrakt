@@ -80,13 +80,52 @@ export const myPackage: Plugin = {
 
 | Field | Required | Purpose |
 |-------|----------|---------|
-| `transform` | Yes | Markdoc Schema — the rune's parse and transform logic |
+| `transform` | One of `transform` / `template` | Markdoc Schema — the rune's parse and transform logic |
+| `template` | One of `transform` / `template` | A composed rune's definition as a string; see [Shipping composed runes](#shipping-composed-runes-from-a-rune-directory) for the file form |
 | `description` | Recommended | Human-readable description shown in the rune catalog |
 | `aliases` | No | Alternative tag names that resolve to this rune |
 | `seoType` | No | Schema.org type for automatic JSON-LD generation |
 | `fixture` | Recommended | Example Markdoc string for `refrakt inspect` |
 | `authoringHints` | No | Short note shown under "Authoring notes" in `refrakt reference` and included in `refrakt write` prompts |
 | `schema` | Recommended | Attribute definitions for tooling and validation |
+
+## Shipping composed runes from a rune directory
+
+A composed rune is a Markdown file: YAML frontmatter declaring its input, and a Markdoc body that places the content model's fields into slots of existing runes. A plugin ships such files by declaring a directory instead of writing `template` strings in JavaScript:
+
+```
+my-story-pack/
+├── package.json
+├── index.js            ← exports the Plugin object, with runeDir: 'runes'
+├── runes/
+│   ├── bond.md         ← the rune `bond`
+│   └── character.md    ← the rune `character`
+└── fixtures/
+    └── bond.md         ← a fixture, as every plugin keeps them
+```
+
+```typescript
+export const storyPack: Plugin = {
+  name: 'story-pack',
+  version: '1.0.0',
+  runeDir: 'runes',   // relative to the package directory
+  runes: {},          // code-defined runes may sit beside the directory's
+};
+```
+
+Every `<rune>.md` in the directory loads as a composed rune, exactly as if it were a `runes` entry carrying the file as its `template`. `refrakt inspect`, `refrakt reference`, `refrakt contracts` and the pipeline cannot tell the two apart.
+
+- **The filename is the rune's name.** `bond.md` defines `{% bond %}`. A frontmatter `rune:` or `name:` restating it is an error. A file takes no suffix (`bond.md`, not `bond.rune.md`), and a `.md` whose name is not a kebab-case rune name is rejected rather than skipped.
+- **Fixtures stay in `fixtures/`**, beside `runes/`, not in it.
+- **One definition per name.** A file in the directory and a `runes` entry (or a `runes` entry's alias) with the same name are rejected, naming both.
+- **A read failure is an error, never zero runes.** If the plugin's JavaScript loaded, its own files are on disk, so a missing or unreadable directory is a packaging bug. The error names the resolved path and the cause. A declared directory with no definitions in it is an error too.
+
+Two packaging requirements follow, and both are invisible in a monorepo:
+
+1. **`files` must publish the directory.** `"files": ["dist", "runes"]`. Without it, `npm pack` leaves the definitions out, and every page using them has an undefined tag once the package is installed.
+2. **`<pkg>/package.json` must resolve.** The loader finds the directory through it. A package with no `exports` map resolves it already. A package with one must list `"./package.json": "./package.json"`.
+
+`refrakt plugins validate` checks both, builds every definition in the directory, and reports each failure with the resolved path and the cause.
 
 ## Writing the Rune Schema
 

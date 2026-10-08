@@ -26,6 +26,13 @@
  * Third-party dependencies still come from npm, with `--prefer-offline` so a warm
  * cache (as after `npm ci`) serves them.
  *
+ * Fixture plugins (`FIXTURE_PLUGINS`) are packed and loaded beside the real ones.
+ * They are not workspaces and never publish; each exists to prove a packaging
+ * path no shipping plugin exercises yet. For a plugin declaring `runeDir`
+ * (SPEC-153 D2), the loader also checks that every `<rune>.md` in the packed
+ * directory came back as a composed rune and that each of the plugin's packed
+ * fixtures renders through it.
+ *
  * Needs a built tree (`npm run build`), because tarballs carry `dist/`.
  *
  *   npm run plugins:pack-check                 # every plugin under plugins/
@@ -51,7 +58,19 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const SCOPE = '@refrakt-md/';
 
-/** Workspace packages under `packages/` and `plugins/`, keyed by package name. */
+/**
+ * Plugin packages that are not workspaces, packed like plugins. Each is the only
+ * consumer of a delivery path, so the tarball proof has to come from it:
+ *
+ * - `composed-storytelling` ships its runes from a declared `runeDir`
+ *   (SPEC-153 D2, WORK-633). No shipping plugin can yet: composing a plan rune
+ *   would change the plan site's published output, which WORK-633 records.
+ *   Its `runes/` are the definitions the composed-storytelling tests measure.
+ */
+export const FIXTURE_PLUGINS = ['packages/content/test/fixtures/composed-storytelling'];
+
+/** Workspace packages under `packages/` and `plugins/`, plus the fixture
+ *  plugins, keyed by package name. */
 export function readWorkspaces(root = ROOT) {
 	const workspaces = new Map();
 	for (const group of ['packages', 'plugins']) {
@@ -64,6 +83,13 @@ export function readWorkspaces(root = ROOT) {
 			const pkg = JSON.parse(readFileSync(manifest, 'utf-8'));
 			workspaces.set(pkg.name, { dir, pkg, isPlugin: group === 'plugins' });
 		}
+	}
+	for (const rel of FIXTURE_PLUGINS) {
+		const dir = join(root, rel);
+		const manifest = join(dir, 'package.json');
+		if (!existsSync(manifest)) continue;
+		const pkg = JSON.parse(readFileSync(manifest, 'utf-8'));
+		workspaces.set(pkg.name, { dir, pkg, isPlugin: true, isFixture: true });
 	}
 	return workspaces;
 }
@@ -90,12 +116,13 @@ export function internalClosure(name, workspaces) {
 	return [...seen].sort();
 }
 
-/** Accept `plan` or `@refrakt-md/plan`; default to every plugin. */
+/** Accept `plan`, `@refrakt-md/plan` or a fixture plugin's full name; default
+ *  to every plugin, fixtures included. */
 export function selectPlugins(args, workspaces) {
 	const plugins = [...workspaces].filter(([, ws]) => ws.isPlugin).map(([name]) => name);
 	if (args.length === 0) return plugins;
 	return args.map((arg) => {
-		const name = arg.startsWith(SCOPE) ? arg : `${SCOPE}${arg}`;
+		const name = plugins.includes(arg) || arg.startsWith(SCOPE) ? arg : `${SCOPE}${arg}`;
 		if (!plugins.includes(name)) throw new Error(`Unknown plugin "${arg}"`);
 		return name;
 	});
@@ -128,11 +155,45 @@ try {
 		if (!path.startsWith(here)) throw new Error('resolved outside the fixture project: ' + path);
 	}
 	stage = 'load';
-	const { loadPlugin } = await import('@refrakt-md/runes');
-	const loaded = await loadPlugin(name);
+	const runesModule = await import('@refrakt-md/runes');
+	const loaded = await runesModule.loadPlugin(name);
 	const count = Object.keys(loaded.runes).length;
 	if (count === 0) throw new Error('loadPlugin() returned no runes');
-	console.log(JSON.stringify({ ok: true, plugin: loaded.pkg.name, runes: count }));
+	const composed = [];
+	if (loaded.pkg.runeDir !== undefined) {
+		// SPEC-153 D2 — every packed definition is a composed rune, and every
+		// packed fixture renders through it.
+		stage = 'runeDir';
+		const { readdirSync, readFileSync, existsSync } = await import('node:fs');
+		const { dirname, join } = await import('node:path');
+		const pkgDir = dirname(manifest);
+		const dir = join(pkgDir, loaded.pkg.runeDir);
+		for (const file of readdirSync(dir).filter((f) => f.endsWith('.md'))) {
+			const rune = file.slice(0, -3);
+			if (!runesModule.compositionFor(loaded.runes[rune]?.schema)) {
+				throw new Error('runeDir file ' + file + ' did not load as a composed rune');
+			}
+			composed.push(rune);
+		}
+		const merged = runesModule.mergePlugins([loaded], new Set(Object.keys(runesModule.runes)));
+		const Markdoc = (await import('@markdoc/markdoc')).default;
+		const fixtures = join(pkgDir, 'fixtures');
+		const rendered = existsSync(fixtures) ? readdirSync(fixtures).filter((f) => f.endsWith('.md')) : [];
+		for (const file of rendered) {
+			const rune = file.split('.')[0];
+			if (!composed.includes(rune)) continue;
+			const tree = Markdoc.transform(Markdoc.parse(readFileSync(join(fixtures, file), 'utf-8')), {
+				tags: { ...runesModule.tags, ...merged.tags },
+				variables: { generatedIds: new Set(), path: '/p', headings: [] },
+			});
+			const json = JSON.stringify(runesModule.serializeTree(tree));
+			if (!json.includes('"data-rune":"' + rune + '"')) {
+				throw new Error('fixture ' + file + ' did not render a ' + rune + ' rune');
+			}
+		}
+		if (composed.length === 0) throw new Error('runeDir held no definitions');
+	}
+	console.log(JSON.stringify({ ok: true, plugin: loaded.pkg.name, runes: count, composed }));
 } catch (err) {
 	console.log(JSON.stringify({ ok: false, stage, message: err.message }));
 	process.exit(1);
@@ -234,7 +295,13 @@ function main(argv) {
 			const result = harness(plugin, workspaces, tarballs, base);
 			const secs = ((Date.now() - t) / 1000).toFixed(1);
 			if (result.ok) {
-				console.log(`✓ ${plugin}: loaded ${result.runes} runes from the tarball (${secs}s)`);
+				const fromDir =
+					result.composed?.length > 0
+						? `, composed from runeDir: ${result.composed.join(', ')}`
+						: '';
+				console.log(
+					`✓ ${plugin}: loaded ${result.runes} runes from the tarball${fromDir} (${secs}s)`,
+				);
 			} else {
 				failures.push(plugin);
 				console.error(`✗ ${plugin}: ${result.stage} failed: ${result.message}`);

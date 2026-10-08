@@ -1,0 +1,17 @@
+{
+  "name": "refrakt-fixture-composed-storytelling",
+  "description": "Test fixture, not published: a plugin that ships SPEC-145's composed bond and character from a declared rune directory (SPEC-153 D2). Packed by scripts/pack-harness.mjs.",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "runes",
+    "fixtures"
+  ]
+}
