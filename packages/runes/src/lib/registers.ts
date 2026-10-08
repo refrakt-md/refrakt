@@ -1,6 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Schema } from '@markdoc/markdoc';
 import { readField } from '@refrakt-md/transform';
+import { SchemaSideTable } from './schema-side-table.js';
 
 /**
  * Declarative entity and edge registration — SPEC-144 / WORK-611.
@@ -84,7 +85,7 @@ export interface RegistersIndex {
 /** Declarations recorded by `createContentModelSchema`, keyed by schema — the
  *  same pattern as `schemaTables`, for the same reason: tooling has only the
  *  schema to read from. */
-export const schemaRegisters = new WeakMap<Schema, RegistersDeclaration>();
+export const schemaRegisters = new SchemaSideTable<RegistersDeclaration>();
 
 /** The `registers` block a rune declares, if it declares one. */
 export function registersFor(schema: unknown): RegistersDeclaration | undefined {

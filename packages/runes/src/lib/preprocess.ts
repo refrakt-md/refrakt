@@ -1,5 +1,6 @@
 import type { Node, Schema } from '@markdoc/markdoc';
 import type { PreprocessContext, PreprocessPage } from '@refrakt-md/types';
+import { SchemaSideTable } from './schema-side-table.js';
 
 /**
  * Per-rune preprocessing (SPEC-141).
@@ -49,7 +50,7 @@ export type RunePreprocess = (
  * `schemaRuneStructures`: Markdoc never reads it, and only {@link preprocessTree}
  * does.
  */
-export const schemaPreprocessors = new WeakMap<Schema, RunePreprocess>();
+export const schemaPreprocessors = new SchemaSideTable<RunePreprocess>();
 
 /**
  * Resolve every preprocessing rune in a page AST, in tree order.

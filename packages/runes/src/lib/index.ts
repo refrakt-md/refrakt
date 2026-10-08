@@ -23,6 +23,7 @@ import { stripSchemaOrg } from './component.js';
 import { RenderableNodeCursor } from './renderable.js';
 import { applySchemaTable, releaseOwnedNodes, validateSchemaTable } from './schema-table.js';
 import type { SchemaTable } from './schema-table.js';
+import { SchemaSideTable } from './schema-side-table.js';
 import {
 	auditRegistersSources,
 	registersSources,
@@ -36,7 +37,10 @@ export {
 	selectRow,
 	findByName,
 	SCHEMA_TYPE_EXPLICIT,
+	OWNER_ATTR,
+	SLOT_ATTR,
 } from './schema-table.js';
+export { declareSlotMarkers, declareSlotMarkersOnNodes } from './slot-markers.js';
 export type { SchemaTable, SchemaRow, EntityRow, PropertyMap } from './schema-table.js';
 export type { InlineTransformResult } from './component.js';
 export {
@@ -123,7 +127,7 @@ export interface RuneStructure {
 	provides?: readonly string[];
 }
 
-export const schemaRuneStructures = new WeakMap<Schema, RuneStructure>();
+export const schemaRuneStructures = new SchemaSideTable<RuneStructure>();
 
 /**
  * A rune's declarative schema.org table, keyed by its Markdoc schema — SPEC-130
@@ -139,7 +143,7 @@ export const schemaRuneStructures = new WeakMap<Schema, RuneStructure>();
  * structure contract showed none of WORK-561's new `data-name`s. Recording the
  * table here is what lets the review surface D5 depends on exist at all.
  */
-export const schemaTables = new WeakMap<Schema, SchemaTable>();
+export const schemaTables = new SchemaSideTable<SchemaTable>();
 
 /**
  * A declaratively-labelled rune's slot declaration, keyed by its Markdoc schema
@@ -147,7 +151,7 @@ export const schemaTables = new WeakMap<Schema, SchemaTable>();
  * the tag module, and `inspect` and `reference` have only the schema to read.
  * Absent for a rune that keeps a hand-written transform.
  */
-export const schemaEmits = new WeakMap<Schema, EmitsDeclaration>();
+export const schemaEmits = new SchemaSideTable<EmitsDeclaration>();
 
 /**
  * Record a hand-written schema's universal-attribute posture.
@@ -856,7 +860,7 @@ export interface ContentModelSchemaOptions {
  *  emits structurally is emitted by every instance, so once seen it needs no
  *  second transform — which keeps the audit at one extra transform per rune
  *  per process rather than one per instance. */
-const resolvedRegistersSources = new WeakMap<Schema, Set<string>>();
+const resolvedRegistersSources = new SchemaSideTable<Set<string>>();
 
 /**
  * The validate-time audit of a `registers` block — WORK-611.

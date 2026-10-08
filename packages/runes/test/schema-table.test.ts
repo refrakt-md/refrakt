@@ -8,7 +8,7 @@ import {
 	collectJsonLd,
 	type SchemaTable,
 } from '../src/index.js';
-import { OWNER_ATTR, releaseOwnedNodes } from '../src/lib/schema-table.js';
+import { OWNER_ATTR, SLOT_ATTR, releaseOwnedNodes } from '../src/lib/schema-table.js';
 import { breadcrumbSchema } from '../src/tags/breadcrumb.js';
 import { createContentModelSchema } from '../src/lib/index.js';
 
@@ -712,5 +712,103 @@ describe('findAllByName resolves owner-marked nodes past a boundary (SPEC-146 Pr
 		const tree = root({}, [named('caption', 'Own'), card(named('name', 'Nested'))]);
 		expect(findByName(tree, 'caption')).toBeDefined();
 		expect(findByName(tree, 'name')).toBeUndefined();
+	});
+});
+
+describe('a placed node is resolved by its slot name, beside the primitive’s own (SPEC-145 D10a)', () => {
+	// Composition marks every node it places with both attributes. Nothing sets
+	// them in production yet (WORK-622 will), so they are set by hand here.
+	const placed = <T extends InstanceType<typeof Tag>>(
+		node: T,
+		slot: string,
+		owner = 'probe',
+	): T => {
+		node.attributes[OWNER_ATTR] = owner;
+		node.attributes[SLOT_ATTR] = slot;
+		return node;
+	};
+	const card = (...children: unknown[]) =>
+		new Tag('div', { 'data-rune': 'card' }, children as never);
+	// The primitive names the node for its own styling; the composed rune names it
+	// `portrait`. One attribute could not carry both.
+	const img = () => new Tag('img', { 'data-name': 'image', src: 'v.jpg' });
+	const portraitTable: SchemaTable = { type: 'Person', properties: { portrait: 'image' } };
+
+	it('admits a node past a boundary by owner plus slot', () => {
+		const node = placed(img(), 'portrait');
+		const tree = applySchemaTable(root({}, [card(node)]), portraitTable, {});
+		expect(node.attributes.property).toBe('image');
+		expect(first(tree)).toMatchObject({ '@type': 'Person', image: 'v.jpg' });
+	});
+
+	it('leaves the primitive’s own `data-name` on the node untouched', () => {
+		const node = placed(img(), 'portrait');
+		applySchemaTable(root({}, [card(node)]), portraitTable, {});
+		expect(node.attributes['data-name']).toBe('image');
+		expect(node.attributes[SLOT_ATTR]).toBe('portrait');
+	});
+
+	it('lets the primitive still resolve its own name on a node placed for someone else', () => {
+		// `figure`'s ImageObject reads its own `image`; without the namespace split
+		// an image placed for `character` lost `contentUrl` (measured, WORK-621).
+		const node = placed(img(), 'portrait', 'character');
+		const figure = applySchemaTable(
+			new Tag('figure', { 'data-rune': 'figure' }, [node] as never),
+			{ type: 'ImageObject', properties: { image: 'contentUrl' } },
+			{},
+		);
+		expect(first(figure)).toMatchObject({ '@type': 'ImageObject', contentUrl: 'v.jpg' });
+	});
+
+	it('never admits the owner by the primitive’s name past a boundary', () => {
+		// The composed rune's names are its slot names. A table source that happens
+		// to equal the primitive's `data-name` must not reach into the primitive.
+		const tree = applySchemaTable(
+			root({}, [card(placed(img(), 'portrait'))]),
+			{ type: 'Person', properties: { image: 'image' } },
+			{},
+		);
+		expect(first(tree)?.image).toBeUndefined();
+	});
+
+	it('ignores a slot name with no owner, or another rune’s owner', () => {
+		const bare = img();
+		bare.attributes[SLOT_ATTR] = 'portrait';
+		const theirs = placed(img(), 'portrait', 'faction');
+		const tree = applySchemaTable(root({}, [bare, card(theirs)]), portraitTable, {});
+		expect(bare.attributes.property).toBeUndefined();
+		expect(theirs.attributes.property).toBeUndefined();
+		expect(first(tree)?.image).toBeUndefined();
+	});
+
+	it('matches a camelCase source against a kebab slot name', () => {
+		const tree = applySchemaTable(
+			root({}, [card(placed(named('x', 'Veshra'), 'given-name'))]),
+			{ type: 'Person', properties: { givenName: 'givenName' } },
+			{},
+		);
+		expect(first(tree).givenName).toBe('Veshra');
+	});
+
+	it('admits a child past a boundary by owner plus slot', () => {
+		const step = placed(new Tag('li', {}, ['Mix']), 'step');
+		applySchemaTable(
+			root({}, [card(step)]),
+			{ type: 'HowTo', children: { step: { type: 'HowToStep', property: 'step' } } },
+			{},
+		);
+		expect(step.attributes.typeof).toBe('HowToStep');
+		expect(step.attributes.property).toBe('step');
+	});
+
+	it('is not matched once released: `data-owner` goes, `data-slot` stays', () => {
+		const node = placed(img(), 'portrait');
+		const tree = root({}, [card(node)]);
+		releaseOwnedNodes(tree);
+		expect(node.attributes[OWNER_ATTR]).toBeUndefined();
+		// The slot name is the composed rune's published name for the part (D10c).
+		expect(node.attributes[SLOT_ATTR]).toBe('portrait');
+		// And with the owner gone it no longer resolves — the CLI audit's view.
+		expect(findByName(tree, 'portrait')).toBeUndefined();
 	});
 });

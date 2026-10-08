@@ -293,7 +293,7 @@ export function findAllByName(
 			attrs['data-name'] === kebab ||
 			attrs['data-field'] === name ||
 			attrs['data-field'] === kebab;
-		if (named && isMine(attrs, owner, inner)) {
+		if ((named && isMine(attrs, owner, inner)) || isSlotted(attrs, owner, name, kebab)) {
 			out.push(node);
 			// A name marks one node, not a subtree: descending into a match would
 			// find nothing new and risks a nested re-use of the same name.
@@ -588,7 +588,9 @@ function findChildren(root: AnyTag, name: string): AnyTag[] {
 		const attrs = node.attributes ?? {};
 		const named =
 			attrs['data-rune'] === name || attrs['data-name'] === name || attrs['data-field'] === name;
-		if (named && isMine(attrs, owner, foreign)) out.push(node as AnyTag);
+		if ((named && isMine(attrs, owner, foreign)) || isSlotted(attrs, owner, name, name)) {
+			out.push(node as AnyTag);
+		}
 		const crossing = attrs['data-rune'] !== undefined;
 		for (const c of node.children ?? []) visit(c, foreign || crossing);
 	};
@@ -604,11 +606,45 @@ function findChildren(root: AnyTag, name: string): AnyTag[] {
  * another rune is that rune's. Past another rune's boundary only a node marked
  * for this rune counts: whatever else is down there belongs to the rune whose
  * boundary it is.
+ *
+ * That holds for a node marked with `OWNER_ATTR` alone. A node composition
+ * placed carries `SLOT_ATTR` as well, and splits the question by attribute —
+ * see the first branch.
  */
 function isMine(attrs: Record<string, unknown>, owner: unknown, foreign: boolean): boolean {
 	const marked = attrs[OWNER_ATTR];
+	// SPEC-145 D10a — a node carrying both markers was placed by composition,
+	// and its two names are two namespaces. Its `data-name` / `data-field` / own
+	// `data-rune` are the primitive's, so they count among the primitive's own
+	// nodes whoever owns the node; the owner reaches it by `SLOT_ATTR` only
+	// (`isSlotted`), never by a primitive's name. Without this a `figure` holding
+	// an image placed for `character` lost its own `contentUrl`.
+	if (marked !== undefined && attrs[SLOT_ATTR] !== undefined) return !foreign;
 	if (foreign) return owner !== undefined && marked === owner;
 	return marked === undefined || marked === owner;
+}
+
+/**
+ * Is a node placed on this rune's behalf under the slot name being resolved?
+ * SPEC-145 D10a step 3 — the extension to `isMine`, not a replacement for it.
+ *
+ * A placed node sits inside a primitive, and the primitive may name the same
+ * node for its own styling: one attribute cannot carry both names, so the
+ * composing rune's name travels as `SLOT_ATTR` and the primitive's `data-name`
+ * is left alone. A slot name counts only beside a matching `OWNER_ATTR` —
+ * `data-slot` survives into the output (D10c), so on its own it says what a
+ * node is called, not whose name it is — and then it counts on either side of
+ * a boundary.
+ */
+function isSlotted(
+	attrs: Record<string, unknown>,
+	owner: unknown,
+	name: string,
+	kebab: string,
+): boolean {
+	const slot = attrs[SLOT_ATTR];
+	if (slot === undefined || owner === undefined || attrs[OWNER_ATTR] !== owner) return false;
+	return slot === name || slot === kebab;
 }
 
 /**
@@ -622,12 +658,26 @@ function isMine(attrs: Record<string, unknown>, owner: unknown, foreign: boolean
 export const OWNER_ATTR = 'data-owner';
 
 /**
+ * What the owning rune calls a node it placed — SPEC-145 D10a. Set together
+ * with `OWNER_ATTR` and read only together with it.
+ *
+ * Unlike the owner mark it is not bookkeeping: `releaseOwnedNodes` leaves it in
+ * place, because a composed rune's slot names are its published names for its
+ * parts (D10c) — `[data-rune="character"] [data-slot="description"]` is a
+ * theme's hook, and the composed rune's contract lists them.
+ */
+export const SLOT_ATTR = 'data-slot';
+
+/**
  * Strip the ownership marks a rune has finished resolving. SPEC-146 D4: the
  * marker answers a resolution question during the transform, so it is
  * bookkeeping, not output, and nothing downstream reads it.
  *
  * Runs once the owning rune's table has been applied. Markdoc transforms
  * bottom-up, so no rune that could still need the mark runs later.
+ *
+ * `SLOT_ATTR` on the same node stays: it is output, not bookkeeping (SPEC-145
+ * D10a step 4, D10c).
  */
 export function releaseOwnedNodes(output: RenderableTreeNode): void {
 	if (!isTag(output)) return;

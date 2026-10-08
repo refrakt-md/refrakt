@@ -161,6 +161,13 @@ export {
 export type { DeclaredRegistration } from './registers-pipeline.js';
 export type { ResolvedSchemaRow, SchemaPropertyRow } from './schema-row.js';
 export type { SchemaTable, SchemaRow, EntityRow, PropertyMap } from './lib/index.js';
+// SPEC-145 D10a — the slot markers, declared once where the Markdoc config is assembled
+export {
+	declareSlotMarkers,
+	declareSlotMarkersOnNodes,
+	OWNER_ATTR,
+	SLOT_ATTR,
+} from './lib/index.js';
 
 // SPEC-125 Phase 3 — the declared rule for universal-attribute availability
 export {

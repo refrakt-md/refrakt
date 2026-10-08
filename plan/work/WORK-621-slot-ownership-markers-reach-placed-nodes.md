@@ -1,4 +1,4 @@
-{% work id="WORK-621" status="ready" priority="high" complexity="moderate" source="SPEC-145" milestone="v0.40.0" tags="runes,schema,composition,seo" %}
+{% work id="WORK-621" status="in-progress" priority="high" complexity="moderate" source="SPEC-145" milestone="v0.40.0" tags="runes,schema,composition,seo" %}
 
 # `data-owner` and `data-slot` survive a primitive's transform
 
