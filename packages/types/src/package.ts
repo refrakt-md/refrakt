@@ -105,6 +105,14 @@ export interface Plugin {
 	 *  lands) resolve from the named root. See SPEC-063 for the full
 	 *  authoring + resolution model. */
 	fileRoots?: Record<string, string>;
+	/** SPEC-153 D2 — a directory of composed rune definitions, relative to the
+	 *  plugin package's own directory (resolved the way `fileRoots` resolves).
+	 *  Every `<rune>.md` in it is loaded as a composed rune named after the file
+	 *  (D9), exactly as if it were a `Plugin.runes` entry carrying that file as
+	 *  its `template`. The directory must be published (`files`) and the package
+	 *  must resolve `<pkg>/package.json`; a read failure throws (D3).
+	 *  `refrakt plugin validate` checks both (D6). */
+	runeDir?: string;
 	/** SPEC-035 — per-locale translation bundles for this plugin's runes, keyed
 	 *  by BCP 47 locale (`{ de: {...}, fr: {...} }`). Authored as per-locale JSON
 	 *  imported here (Decision D3/D8). Keys are the plugin-scoped i18n keys

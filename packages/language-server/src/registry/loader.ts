@@ -6,14 +6,16 @@ import {
 	mergePlugins,
 	defineRune,
 	runeTagMap,
-	pluginRuneSchema,
+	pluginRune,
+	readRuneDefinitions,
+	withRuneDefinitions,
 } from '@refrakt-md/runes';
 import type { Rune, LoadedPlugin } from '@refrakt-md/runes';
 import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import type { SchemaAttribute, Schema } from '@markdoc/markdoc';
 import Markdoc from '@markdoc/markdoc';
-import { existsSync, readdirSync, statSync } from 'node:fs';
-import { join, dirname, isAbsolute } from 'node:path';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, dirname, isAbsolute, resolve } from 'node:path';
 import { createRequire } from 'node:module';
 
 export interface RuneInfo {
@@ -127,21 +129,33 @@ function findPluginExport(mod: Record<string, unknown>, npmName: string): Plugin
  */
 function loadPackageFromWorkspace(req: NodeRequire, npmName: string): LoadedPlugin {
 	const mod = req(npmName) as Record<string, unknown>;
-	const pkgExport = findPluginExport(mod, npmName);
+	let pkgExport = findPluginExport(mod, npmName);
+
+	// SPEC-153 D2 — a declared rune directory's definitions are rune entries
+	// like any other. A failure throws, and the caller reports the package.
+	const runeDir = (pkgExport as { runeDir?: unknown }).runeDir;
+	if (typeof runeDir === 'string') {
+		const dir = resolve(dirname(req.resolve(`${npmName}/package.json`)), runeDir);
+		const where = `Plugin "${npmName}" runeDir ${dir}`;
+		const files = readRuneDefinitions(
+			{
+				list: () => readdirSync(dir).filter((f) => statSync(join(dir, f)).isFile()),
+				read: (file) => readFileSync(join(dir, file), 'utf-8'),
+			},
+			'',
+			where,
+		);
+		pkgExport = withRuneDefinitions(pkgExport, files, where, (f) => join(dir, f.path));
+	}
 
 	const runeInstances: Record<string, Rune> = {};
 	const fixtures: Record<string, string> = {};
 
 	for (const [runeName, entry] of Object.entries(pkgExport.runes)) {
-		runeInstances[runeName] = defineRune({
-			name: runeName,
-			schema: pluginRuneSchema(runeName, entry) as Schema,
-			description:
-				entry.description ?? `Community rune from ${pkgExport.displayName ?? pkgExport.name}`,
-			aliases: entry.aliases,
-			seoType: entry.seoType,
-			category: entry.category,
-		});
+		// The same Rune `loadPlugin` builds, so a composed entry's description
+		// and aliases come from its definition.
+		const rune = pluginRune(runeName, entry as never, pkgExport);
+		runeInstances[runeName] = defineRune({ ...rune, category: entry.category });
 		if (entry.fixture) {
 			fixtures[runeName] = entry.fixture;
 		}
@@ -149,7 +163,7 @@ function loadPackageFromWorkspace(req: NodeRequire, npmName: string): LoadedPlug
 
 	// Cast to LoadedPlugin — the pkg field expects Plugin from @refrakt-md/types
 	// but our PluginLike has the same shape
-	return { pkg: pkgExport as any, npmName, runes: runeInstances, fixtures };
+	return { pkg: pkgExport as any, npmName, runes: runeInstances, fixtures, fileRoots: {} };
 }
 
 /**

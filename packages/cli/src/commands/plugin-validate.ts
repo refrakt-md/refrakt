@@ -1,5 +1,5 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
-import { resolve, join, relative, dirname } from 'path';
+import { resolve, join, relative, dirname, isAbsolute, sep } from 'path';
 import type { CliPlugin, Plugin, PluginRune } from '@refrakt-md/types';
 import {
 	validateThemeConfig,
@@ -7,7 +7,13 @@ import {
 	type ValidationError,
 	type ValidationWarning,
 } from '@refrakt-md/transform';
-import { composedPluginRune, parseFixture, type FixtureRole } from '@refrakt-md/runes';
+import {
+	composedPluginRune,
+	parseFixture,
+	readRuneDefinitions,
+	runeEntriesOf,
+	type FixtureRole,
+} from '@refrakt-md/runes';
 import { discoverPlugins } from '../lib/plugins.js';
 
 export interface PluginValidateOptions {
@@ -35,6 +41,8 @@ interface PluginValidationResult {
  * 5. Attribute schemas are well-formed if provided
  * 6. Theme config (RuneConfig entries) validates if provided
  * 7. Fixture files exist for runes that declare them
+ * 8. A declared `runeDir` is published by `files`, the package resolves its
+ *    own `package.json`, and every definition in it builds (SPEC-153 D6)
  */
 export async function pluginValidateCommand(opts: PluginValidateOptions): Promise<void> {
 	const pluginDir = resolve(opts.pluginDir ?? process.cwd());
@@ -132,6 +140,13 @@ async function validatePlugin(pluginDir: string): Promise<PluginValidationResult
 	if (!pkg.version || typeof pkg.version !== 'string') {
 		errors.push({ path: 'Plugin.version', message: 'Required and must be a non-empty string' });
 	}
+	// SPEC-153 D6 — a declared rune directory is checked against what would
+	// publish, and its definitions join the rune entries validated below.
+	if (pkg.runeDir !== undefined) {
+		const dirRunes = validateRuneDir(pluginDir, pkgJson, pkg, errors);
+		pkg = { ...pkg, runes: { ...pkg.runes, ...dirRunes } };
+	}
+
 	if (!pkg.runes || typeof pkg.runes !== 'object' || Object.keys(pkg.runes).length === 0) {
 		errors.push({ path: 'Plugin.runes', message: 'Must define at least one rune' });
 		return { valid: false, pluginName: npmName, errors, warnings };
@@ -232,7 +247,7 @@ async function validatePlugin(pluginDir: string): Promise<PluginValidationResult
 
 	// Step 9: Check for descriptions (helpful for AI integration)
 	const runesWithoutDescription = Object.entries(pkg.runes)
-		.filter(([, entry]) => !entry.description && !isChildRune(entry))
+		.filter(([name, entry]) => !describedBy(name, entry) && !isChildRune(entry))
 		.map(([name]) => name);
 	if (runesWithoutDescription.length > 0) {
 		warnings.push({
@@ -247,6 +262,117 @@ async function validatePlugin(pluginDir: string): Promise<PluginValidationResult
 	warnings.push(...cliPluginResult.warnings);
 
 	return { valid: errors.length === 0, pluginName: npmName, errors, warnings };
+}
+
+/**
+ * SPEC-153 D6 — the two packaging failures that are invisible in a monorepo and
+ * fatal on install: a rune directory `files` does not publish, and a package
+ * whose `<pkg>/package.json` does not resolve (`loadPlugin` locates the
+ * directory through it). Each error names the resolved path and the cause.
+ * Returns the directory's definitions as rune entries, so the per-rune checks
+ * build them like any other composed entry.
+ */
+function validateRuneDir(
+	pluginDir: string,
+	pkgJson: Record<string, unknown>,
+	pkg: Plugin,
+	errors: ValidationError[],
+): Record<string, PluginRune> {
+	const declared = pkg.runeDir;
+	if (typeof declared !== 'string' || declared.length === 0) {
+		errors.push({
+			path: 'Plugin.runeDir',
+			message: 'Must be a non-empty path relative to the plugin package directory',
+		});
+		return {};
+	}
+	const dir = resolve(pluginDir, declared);
+	const rel = relative(pluginDir, dir).split(sep).join('/');
+	if (rel === '' || rel.startsWith('..') || isAbsolute(rel)) {
+		errors.push({
+			path: 'Plugin.runeDir',
+			message: `"${declared}" resolves to ${dir}, which is not a directory inside the package (${pluginDir})`,
+		});
+		return {};
+	}
+
+	// Resolvable: `loadPlugin` finds the directory through `<pkg>/package.json`,
+	// which an `exports` map blocks unless it lists the manifest.
+	const exportsField = pkgJson.exports;
+	const exportsManifest =
+		exportsField === undefined ||
+		(typeof exportsField === 'object' &&
+			exportsField !== null &&
+			!Array.isArray(exportsField) &&
+			'./package.json' in exportsField);
+	if (!exportsManifest) {
+		errors.push({
+			path: 'package.json.exports',
+			message: `runeDir "${declared}" (${dir}) cannot be located once installed: the \`exports\` map leaves out "./package.json", so resolving "${pkgJson.name}/package.json" fails with ERR_PACKAGE_PATH_NOT_EXPORTED. Add "./package.json": "./package.json" to \`exports\``,
+		});
+	}
+
+	// Published: a `files` list that does not cover the directory drops it from
+	// the tarball, and every rune in it becomes an undefined tag on install.
+	const files = pkgJson.files;
+	if (Array.isArray(files) && !filesCover(files as unknown[], rel)) {
+		errors.push({
+			path: 'package.json.files',
+			message: `runeDir "${declared}" (${dir}) is not covered by \`files\` (${JSON.stringify(files)}), so \`npm pack\` leaves it out and its runes are missing on install. Add "${rel}" to \`files\``,
+		});
+	}
+
+	let entries: Record<string, PluginRune> = {};
+	try {
+		const where = `runeDir ${dir}`;
+		const reader = {
+			list: () => {
+				try {
+					return readdirSync(dir).filter((f) => statSync(join(dir, f)).isFile());
+				} catch (err) {
+					throw new Error(`${where} could not be read: ${(err as Error).message}`);
+				}
+			},
+			read: (file: string) => readFileSync(join(dir, file), 'utf-8'),
+		};
+		const definitions = readRuneDefinitions(reader, '', where);
+		if (definitions.length === 0) {
+			throw new Error(`${where} holds no \`<rune>.md\` definition`);
+		}
+		entries = runeEntriesOf(definitions);
+	} catch (err) {
+		errors.push({ path: 'Plugin.runeDir', message: (err as Error).message });
+		return {};
+	}
+
+	for (const name of Object.keys(entries)) {
+		if (pkg.runes?.[name] !== undefined) {
+			errors.push({
+				path: `runes.${name}`,
+				message: `Defined twice: as ${join(dir, `${name}.md`)} in runeDir and as \`Plugin.runes.${name}\`. A rune has one definition`,
+			});
+			delete entries[name];
+		}
+	}
+	return entries;
+}
+
+/**
+ * Whether an npm `files` list publishes a package-relative directory. Covers
+ * the forms a directory is listed in — `runes`, `./runes/`, `runes/**`,
+ * `runes/*.md` — and any entry naming an ancestor. Negated entries are not
+ * evaluated; a list that publishes the directory and then excludes it is
+ * caught by the pack harness, not here.
+ */
+export function filesCover(files: readonly unknown[], dir: string): boolean {
+	const norm = (p: string) => p.replace(/^\.\//, '').replace(/\/+$/, '');
+	for (const raw of files) {
+		if (typeof raw !== 'string' || raw.startsWith('!')) continue;
+		const entry = norm(raw).replace(/\/\*\*(\/\*(\.md)?)?$|\/\*(\.md)?$/, '');
+		if (entry === '' || entry === '.' || entry === '**' || entry === '*') return true;
+		if (dir === entry || dir.startsWith(`${entry}/`)) return true;
+	}
+	return false;
 }
 
 /** Validate a package's `cli-plugin` export when present.
@@ -557,6 +683,18 @@ function readFileFixtureRoles(
 	}
 
 	return roles;
+}
+
+/** Whether a rune entry carries a description — its own, or for a composed
+ *  entry the definition's `description` frontmatter. */
+function describedBy(name: string, entry: PluginRune): boolean {
+	if (entry.description) return true;
+	if (typeof entry.template !== 'string') return false;
+	try {
+		return Boolean(composedPluginRune(name, entry).definition.description);
+	} catch {
+		return false; // A definition that does not build is reported in step 4.
+	}
 }
 
 /** Check if a rune entry is likely a child/internal rune (no need for fixture) */

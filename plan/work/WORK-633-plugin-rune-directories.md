@@ -1,4 +1,4 @@
-{% work id="WORK-633" status="ready" priority="high" complexity="complex" source="SPEC-153" milestone="v0.41.0" tags="composition,plugins,packaging,loader" %}
+{% work id="WORK-633" status="in-progress" priority="high" complexity="complex" source="SPEC-153" milestone="v0.41.0" tags="composition,plugins,packaging,loader" %}
 
 # A plugin ships composed runes from a declared rune directory
 
