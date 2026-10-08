@@ -1,6 +1,8 @@
 import type { ThemeManifest } from '@refrakt-md/types';
 import {
 	VARIANT_DELTA_RESERVED_FIELDS,
+	derivedAttributeMessage,
+	derivedAttributeOwner,
 	findReservedFields,
 	identityFieldMessage,
 } from './identity-fields.js';
@@ -324,6 +326,10 @@ function validateRuneConfig(
 		}
 	}
 
+	// layout attrs (SPEC-158 D4) — a created wrapper may not carry an attribute
+	// an identity field derives.
+	validateLayoutAttrs(rune.layout as RuneConfig['layout'], prefix, modifierNames, errors);
+
 	// variants (SPEC-091) — modifier-keyed config deltas. Every axis must be a
 	// declared modifier (selection rides the modifier system), and a delta may
 	// not override identity fields (it restructures a rune, never redefines it).
@@ -361,8 +367,38 @@ function validateRuneConfig(
 							message: `Variant deltas ${identityFieldMessage(field)}`,
 						});
 					}
+					validateLayoutAttrs(
+						(delta as Partial<RuneConfig>).layout,
+						deltaPath,
+						modifierNames,
+						errors,
+					);
 				}
 			}
+		}
+	}
+}
+
+/** SPEC-158 D4 — the same refusal `mergeRuneConfig` enforces at assembly,
+ *  surfaced as an error for `refrakt plugin validate` / `theme validate`. */
+function validateLayoutAttrs(
+	layout: RuneConfig['layout'] | undefined,
+	prefix: string,
+	modifierNames: Set<string>,
+	errors: ValidationError[],
+): void {
+	if (typeof layout !== 'object' || layout === null) return;
+	for (const [name, entry] of Object.entries(layout)) {
+		if (Array.isArray(entry) || typeof entry !== 'object' || entry === null) continue;
+		const attrs = (entry as { attrs?: unknown }).attrs;
+		if (typeof attrs !== 'object' || attrs === null) continue;
+		for (const attribute of Object.keys(attrs)) {
+			const field = derivedAttributeOwner(attribute, modifierNames);
+			if (!field) continue;
+			errors.push({
+				path: `${prefix}.layout.${name}.attrs.${attribute}`,
+				message: `A layout ${derivedAttributeMessage(attribute, field)}`,
+			});
 		}
 	}
 }

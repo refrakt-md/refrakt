@@ -1,4 +1,4 @@
-{% work id="WORK-619" status="ready" priority="high" complexity="simple" source="SPEC-158" milestone="v0.40.0" tags="theme,config,identity,correctness" %}
+{% work id="WORK-619" status="in-progress" priority="high" complexity="simple" source="SPEC-158" milestone="v0.40.0" tags="theme,config,identity,correctness" %}
 
 # The identity guard is path-granular
 
