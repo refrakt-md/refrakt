@@ -1,4 +1,4 @@
-{% spec id="SPEC-158" status="implemented" tags="theme, config, identity, correctness, architecture" %}
+{% spec id="SPEC-158" status="shipped" tags="theme, config, identity, correctness, architecture" released-in="v0.40.0" %}
 
 # The identity guard is path-granular
 
