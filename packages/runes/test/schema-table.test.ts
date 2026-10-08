@@ -317,6 +317,52 @@ describe('validateSchemaTable', () => {
 	});
 });
 
+describe("a `by` table covers its attribute's `matches` (WORK-632)", () => {
+	const attrs = { type: { matches: ['album', 'podcast'] } };
+	const rows = { album: { type: 'MusicAlbum' }, podcast: { type: 'PodcastSeries' } };
+
+	it('accepts rows that match the declared values exactly', () => {
+		expect(validateSchemaTable({ by: 'type', rows, fallback: { type: 'X' } }, attrs)).toEqual([]);
+	});
+
+	it('rejects a row key the attribute does not accept, naming the key and the values', () => {
+		const issues = validateSchemaTable(
+			{ by: 'type', rows: { ...rows, podcasts: { type: 'X' } }, fallback: { type: 'X' } },
+			attrs,
+		);
+		expect(issues).toHaveLength(1);
+		expect(issues[0].path).toBe('rows.podcasts');
+		expect(issues[0].message).toMatch(/`podcasts` is not a value `type` accepts/);
+		expect(issues[0].message).toMatch(/'album', 'podcast'/);
+	});
+
+	it('rejects a declared value with no row rather than letting it fall through', () => {
+		const issues = validateSchemaTable(
+			{ by: 'type', rows: { album: rows.album }, fallback: { type: 'X' } },
+			attrs,
+		);
+		expect(issues).toHaveLength(1);
+		expect(issues[0].message).toMatch(/accepts `podcast` but no row covers it/);
+	});
+
+	it('rejects `by` on an attribute without `matches`, since its rows cannot be checked', () => {
+		const issues = validateSchemaTable({ by: 'type', rows, fallback: { type: 'X' } }, { type: {} });
+		expect(issues).toHaveLength(1);
+		expect(issues[0].message).toMatch(/no `matches` list/);
+	});
+
+	it('names the selecting attribute when construction rejects the table', () => {
+		expect(() =>
+			createContentModelSchema({
+				attributes: { type: { type: String, matches: ['a', 'b'] } },
+				contentModel: { type: 'sequence', fields: [] },
+				schema: { by: 'type', rows: { a: { type: 'A' } }, fallback: { type: 'A' } },
+				transform: () => new Tag('div'),
+			}),
+		).toThrow(/Invalid schema table \(by: 'type'\):[\s\S]*accepts `b`/);
+	});
+});
+
 describe('declared lists always serialise as arrays (D6)', () => {
 	// `appendToProperty` stores the first value as a scalar and only promotes on
 	// the second, so the *shape* of the output varied with the amount of content

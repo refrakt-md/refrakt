@@ -1,4 +1,4 @@
-{% work id="WORK-632" status="ready" priority="medium" complexity="simple" source="SPEC-145" tags="seo,schema,validation" milestone="v0.41.0" %}
+{% work id="WORK-632" status="in-progress" priority="medium" complexity="simple" source="SPEC-145" tags="seo,schema,validation" milestone="v0.41.0" %}
 
 # A by-attribute schema table's rows must cover the attribute's matches
 
