@@ -1,9 +1,11 @@
 import type { Schema } from '@markdoc/markdoc';
-import type { Plugin, RuneExtension } from '@refrakt-md/types';
+import type { Plugin, PluginRune, RuneExtension } from '@refrakt-md/types';
 import type { RuneConfig, RuneProvenance, LocalizedValue } from '@refrakt-md/transform';
 import { selectLocaleBundle } from '@refrakt-md/transform';
 import { Rune, defineRune, runeTagMap } from './rune.js';
 import { checkComposedCatalog, composedPluginRune } from './composed-rune.js';
+import { readRuneDefinitions, withRuneDefinitions } from './rune-dir.js';
+import type { RuneDirReader } from './rune-dir.js';
 import { compositionFor, composedTypeName } from './lib/composition.js';
 
 /** A loaded plugin with its parsed rune definitions */
@@ -74,16 +76,41 @@ export function assertFileRootNamespaceAllowed(namespace: string, source: string
 	}
 }
 
+/** Options for {@link loadPlugin}. */
+export interface LoadPluginOptions {
+	/**
+	 * Resolve the package from here — a file path or `file:` URL — instead of
+	 * from `@refrakt-md/runes`' own location. Both the import and the package
+	 * directory (`fileRoots`, `runeDir`) resolve from it. For tests and tools
+	 * that load a plugin installed somewhere other than beside runes.
+	 */
+	from?: string;
+}
+
 /**
  * Load a plugin by npm package name.
  *
  * Dynamically imports the package and extracts the Plugin export.
- * Creates Rune instances from each plugin entry using defineRune().
+ * Creates Rune instances from each plugin entry using defineRune(). A plugin
+ * declaring a `runeDir` (SPEC-153 D2) has every `<rune>.md` in it loaded as a
+ * composed rune entry first, so from here on it is indistinguishable from an
+ * entry written in `Plugin.runes` (D1).
  */
-export async function loadPlugin(npmPackageName: string): Promise<LoadedPlugin> {
+export async function loadPlugin(
+	npmPackageName: string,
+	options: LoadPluginOptions = {},
+): Promise<LoadedPlugin> {
+	const base = options.from ?? import.meta.url;
 	let mod: Record<string, unknown>;
 	try {
-		mod = await import(/* @vite-ignore */ npmPackageName);
+		if (options.from) {
+			const { createRequire } = await import('node:module');
+			const { pathToFileURL } = await import('node:url');
+			const entry = createRequire(base).resolve(npmPackageName);
+			mod = await import(/* @vite-ignore */ pathToFileURL(entry).href);
+		} else {
+			mod = await import(/* @vite-ignore */ npmPackageName);
+		}
 	} catch (err) {
 		throw new Error(
 			`Failed to load plugin "${npmPackageName}": ${(err as Error).message}\n` +
@@ -91,80 +118,154 @@ export async function loadPlugin(npmPackageName: string): Promise<LoadedPlugin> 
 		);
 	}
 
-	const pkg = findPluginExport(mod, npmPackageName);
+	let pkg = findPluginExport(mod, npmPackageName);
+	if (pkg.runeDir !== undefined) pkg = await withRuneDir(pkg, npmPackageName, base);
 
 	validatePlugin(pkg, npmPackageName);
 
 	const runes: Record<string, Rune> = {};
 	const fixtures: Record<string, string> = {};
 	for (const [runeName, entry] of Object.entries(pkg.runes)) {
-		if (entry.template !== undefined) {
-			// SPEC-153 D11 — a composed rune: its schema and its block-less
-			// config are both built from the definition.
-			const composed = composedPluginRune(runeName, entry);
-			runes[runeName] = defineRune({
-				...composed.rune,
-				name: runeName,
-				schema: composed.rune.schema,
-				description: entry.description ?? composed.rune.description,
-				aliases: entry.aliases ?? composed.rune.aliases,
-				seoType: entry.seoType,
-				authoringHints: entry.authoringHints,
-			});
-			if (entry.fixture) fixtures[runeName] = entry.fixture;
-			continue;
-		}
-		runes[runeName] = defineRune({
-			name: runeName,
-			schema: entry.transform as Schema,
-			description: entry.description ?? `Plugin rune from ${pkg.displayName ?? pkg.name}`,
-			aliases: entry.aliases,
-			seoType: entry.seoType,
-			authoringHints: entry.authoringHints,
-		});
-		if (entry.fixture) {
-			fixtures[runeName] = entry.fixture;
-		}
+		runes[runeName] = pluginRune(runeName, entry, pkg);
+		if (entry.fixture) fixtures[runeName] = entry.fixture;
 	}
 
-	const fileFixtures = await discoverPluginFixtures(npmPackageName);
+	const fileFixtures = await discoverPluginFixtures(npmPackageName, base);
 	for (const [runeName, content] of Object.entries(fileFixtures)) {
 		if (!fixtures[runeName]) {
 			fixtures[runeName] = content;
 		}
 	}
 
-	const fileRoots = await resolvePluginFileRoots(pkg, npmPackageName);
+	const fileRoots = await resolvePluginFileRoots(pkg, npmPackageName, base);
 
 	return { pkg, npmName: npmPackageName, runes, fixtures, fileRoots };
+}
+
+/**
+ * The `Rune` one plugin entry defines. A composed entry (SPEC-153 D11) gets its
+ * schema and its block-less config from the definition; the entry's own
+ * fields, where set, win over the definition's.
+ */
+export function pluginRune(
+	runeName: string,
+	entry: PluginRune,
+	pkg: Pick<Plugin, 'name' | 'displayName'>,
+): Rune {
+	if (entry.template !== undefined) {
+		const composed = composedPluginRune(runeName, entry);
+		return defineRune({
+			...composed.rune,
+			name: runeName,
+			schema: composed.rune.schema,
+			description: entry.description ?? composed.rune.description,
+			aliases: entry.aliases ?? composed.rune.aliases,
+			seoType: entry.seoType,
+			authoringHints: entry.authoringHints,
+		});
+	}
+	return defineRune({
+		name: runeName,
+		schema: entry.transform as Schema,
+		description: entry.description ?? `Plugin rune from ${pkg.displayName ?? pkg.name}`,
+		aliases: entry.aliases,
+		seoType: entry.seoType,
+		authoringHints: entry.authoringHints,
+	});
+}
+
+/**
+ * The directory a plugin package sits in, through `<pkg>/package.json`. Throws
+ * naming what needed it and the cause: a package that declares files it
+ * ships cannot be allowed to lose them quietly (SPEC-153 D3).
+ */
+async function resolvePackageDir(
+	npmPackageName: string,
+	base: string,
+	purpose: string,
+): Promise<string> {
+	const { createRequire } = await import('node:module');
+	const { dirname } = await import('node:path');
+	try {
+		return dirname(createRequire(base).resolve(`${npmPackageName}/package.json`));
+	} catch (err) {
+		const code = (err as NodeJS.ErrnoException).code;
+		const fix =
+			code === 'ERR_PACKAGE_PATH_NOT_EXPORTED'
+				? ` Its \`exports\` map leaves out \`./package.json\`; add \`"./package.json": "./package.json"\` (SPEC-153 D6).`
+				: '';
+		throw new Error(
+			`Plugin "${npmPackageName}" declares ${purpose} but its package directory could not be located: ${(err as Error).message}${fix}`,
+		);
+	}
+}
+
+/**
+ * SPEC-153 D2/D3 — the plugin with its rune directory read in: every
+ * `<rune>.md` becomes a `template` entry in a copy of `Plugin.runes`. The
+ * directory is as available as the plugin's JavaScript, so any failure here is
+ * a packaging bug and throws with the resolved path and the cause; it never
+ * yields fewer runes.
+ */
+async function withRuneDir(pkg: Plugin, npmPackageName: string, base: string): Promise<Plugin> {
+	const { readdirSync, readFileSync, statSync } = await import('node:fs');
+	const { join, relative, resolve, isAbsolute } = await import('node:path');
+
+	const declared = pkg.runeDir;
+	if (typeof declared !== 'string' || declared.length === 0) {
+		throw new Error(
+			`Plugin "${npmPackageName}" has an invalid \`runeDir\`. Expected a non-empty path relative to the plugin package directory.`,
+		);
+	}
+	const pkgDir = await resolvePackageDir(npmPackageName, base, `runeDir "${declared}"`);
+	const dir = resolve(pkgDir, declared);
+	const rel = relative(pkgDir, dir);
+	if (rel.startsWith('..') || isAbsolute(rel)) {
+		throw new Error(
+			`Plugin "${npmPackageName}" runeDir "${declared}" resolves to ${dir}, outside its package directory ${pkgDir}. A rune directory ships inside the package.`,
+		);
+	}
+
+	const where = `Plugin "${npmPackageName}" runeDir ${dir}`;
+	const reader: RuneDirReader = {
+		list() {
+			try {
+				return readdirSync(dir).filter((f) => statSync(join(dir, f)).isFile());
+			} catch (err) {
+				throw new Error(
+					`${where} could not be read: ${(err as Error).message}. Check that the directory exists and is listed in the package's \`files\` (SPEC-153 D3).`,
+				);
+			}
+		},
+		read(file) {
+			try {
+				return readFileSync(join(dir, file), 'utf-8');
+			} catch (err) {
+				throw new Error(`${where}: "${file}" could not be read: ${(err as Error).message}`);
+			}
+		},
+	};
+	const files = readRuneDefinitions(reader, '', where);
+	return withRuneDefinitions(pkg, files, where, (file) => join(dir, file.path));
 }
 
 /** Resolve a plugin's declared `fileRoots` to absolute on-disk paths.
  *
  *  Paths are interpreted relative to the plugin package's own directory
  *  (the dir containing the plugin's `package.json`). Throws if the package
- *  can't be located on disk (workspace-link cases where `require.resolve`
- *  fails) — fileRoots that can't be reached is a misconfig worth surfacing,
- *  not silently dropping like file fixtures. */
+ *  can't be located on disk (a missing install, or an `exports` map without
+ *  `./package.json`) — fileRoots that can't be reached is a misconfig worth
+ *  surfacing, not silently dropping like file fixtures. */
 async function resolvePluginFileRoots(
 	pkg: Plugin,
 	npmPackageName: string,
+	base: string = import.meta.url,
 ): Promise<Record<string, string>> {
 	const declared = pkg.fileRoots;
 	if (!declared || Object.keys(declared).length === 0) return {};
 
-	const { createRequire } = await import('node:module');
-	const { dirname, resolve } = await import('node:path');
-
-	let pkgDir: string;
-	try {
-		const require = createRequire(import.meta.url);
-		pkgDir = dirname(require.resolve(`${npmPackageName}/package.json`));
-	} catch (err) {
-		throw new Error(
-			`Plugin "${npmPackageName}" declares fileRoots but its package directory could not be located: ${(err as Error).message}`,
-		);
-	}
+	const { resolve } = await import('node:path');
+	const pkgDir = await resolvePackageDir(npmPackageName, base, 'fileRoots');
 
 	const resolved: Record<string, string> = {};
 	for (const [namespace, relativePath] of Object.entries(declared)) {
@@ -521,40 +622,40 @@ export async function loadLocalRunes(
  * parsed into a {@link ParsedFixture} (frontmatter validated, body stripped).
  *
  * Returns an empty array when the package isn't resolvable or has no fixtures/
- * directory. A fixture whose frontmatter fails schema validation throws from
- * `parseFixture` — callers that want resilience can wrap individual files; the
- * CI corpus check (WORK-414) relies on the throw to fail loudly.
+ * directory. Only the resolution is forgiven: a fixture whose frontmatter fails
+ * schema validation throws from `parseFixture`, and the CI corpus check
+ * (WORK-414) relies on the throw to fail loudly.
  */
 export async function discoverPluginFixtureManifest(
 	npmPackageName: string,
+	base: string = import.meta.url,
 ): Promise<import('./fixtures.js').ParsedFixture[]> {
 	const manifest: import('./fixtures.js').ParsedFixture[] = [];
 
+	const { createRequire } = await import('node:module');
+	const { existsSync, readFileSync, readdirSync } = await import('node:fs');
+	const { dirname, join } = await import('node:path');
+	const { parseFixture } = await import('./fixtures.js');
+
+	let pkgDir: string;
 	try {
-		const { createRequire } = await import('node:module');
-		const { existsSync, readFileSync, readdirSync } = await import('node:fs');
-		const { dirname, join } = await import('node:path');
-		const { parseFixture } = await import('./fixtures.js');
-
-		const require = createRequire(import.meta.url);
-		const pkgJsonPath = require.resolve(`${npmPackageName}/package.json`);
-		const pkgDir = dirname(pkgJsonPath);
-		const fixturesDir = join(pkgDir, 'fixtures');
-
-		if (!existsSync(fixturesDir)) {
-			return manifest;
-		}
-
-		for (const file of readdirSync(fixturesDir).sort()) {
-			if (!file.endsWith('.md')) continue;
-			const raw = readFileSync(join(fixturesDir, file), 'utf-8');
-			if (!raw.trim()) continue;
-			manifest.push(parseFixture(raw, file));
-		}
+		pkgDir = dirname(createRequire(base).resolve(`${npmPackageName}/package.json`));
 	} catch {
 		// `<pkg>/package.json` did not resolve — the package is not installed, or it declares an
 		// `exports` map without a `./package.json` entry (ERR_PACKAGE_PATH_NOT_EXPORTED). A
-		// workspace link resolves fine. Skip file fixtures.
+		// workspace link resolves fine. Skip file fixtures; a `runeDir`, which cannot be
+		// skipped, reports the same failure as an error (SPEC-153 D3).
+		return manifest;
+	}
+
+	const fixturesDir = join(pkgDir, 'fixtures');
+	if (!existsSync(fixturesDir)) return manifest;
+
+	for (const file of readdirSync(fixturesDir).sort()) {
+		if (!file.endsWith('.md')) continue;
+		const raw = readFileSync(join(fixturesDir, file), 'utf-8');
+		if (!raw.trim()) continue;
+		manifest.push(parseFixture(raw, file));
 	}
 
 	return manifest;
@@ -569,10 +670,11 @@ export async function discoverPluginFixtureManifest(
  */
 export async function discoverPluginFixtures(
 	npmPackageName: string,
+	base: string = import.meta.url,
 ): Promise<Record<string, string>> {
 	const fixtures: Record<string, string> = {};
 
-	for (const fx of await discoverPluginFixtureManifest(npmPackageName)) {
+	for (const fx of await discoverPluginFixtureManifest(npmPackageName, base)) {
 		if (!fx.body) continue;
 		// Prefer the canonical scenario; otherwise take the first one we see.
 		if (fx.scenario === 'canonical' || !(fx.rune in fixtures)) {

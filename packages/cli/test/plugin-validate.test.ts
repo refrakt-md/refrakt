@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, writeFileSync, rmSync, existsSync } from 'fs';
+import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'fs';
 import { join, resolve } from 'path';
 import { tmpdir } from 'os';
 
@@ -656,5 +656,99 @@ describe('plugin-validate', () => {
 
 		exitMock.mockRestore();
 		logMock.mockRestore();
+	});
+});
+
+describe('plugin-validate: a declared runeDir (SPEC-153 D6)', () => {
+	const bond = readFileSync(
+		resolve(__dirname, '../../content/test/fixtures/composed-storytelling/runes/bond.md'),
+		'utf-8',
+	);
+	let dir: string;
+	beforeEach(() => {
+		dir = createTempDir();
+		writeModule(
+			dir,
+			'index.js',
+			"export default { name: 'fx', version: '1.0.0', runeDir: 'runes', runes: {} };\n",
+		);
+		writeModule(dir, 'runes/bond.md', bond);
+		writeFixture(dir, 'bond.md', '{% bond from="A" to="B" %}\nx\n{% /bond %}\n');
+	});
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	async function validate(pkgJson: Record<string, unknown>) {
+		writePkgJson(dir, { name: 'fx', version: '1.0.0', main: 'index.js', ...pkgJson });
+		const { pluginValidateCommand } = await import('../src/commands/plugin-validate.js');
+		const exitMock = vi.spyOn(process, 'exit').mockImplementation(() => {
+			throw new Error('process.exit called');
+		});
+		const logs: string[] = [];
+		const logMock = vi.spyOn(console, 'log').mockImplementation((...args) => {
+			logs.push(args.join(' '));
+		});
+		try {
+			await pluginValidateCommand({ pluginDir: dir, json: true });
+		} catch {}
+		exitMock.mockRestore();
+		logMock.mockRestore();
+		return JSON.parse(logs.join('\n')) as {
+			valid: boolean;
+			errors: Array<{ path: string; message: string }>;
+		};
+	}
+
+	it('passes a published, resolvable directory and builds its definitions', async () => {
+		const result = await validate({
+			files: ['index.js', 'runes', 'fixtures'],
+			exports: { '.': './index.js', './package.json': './package.json' },
+		});
+		expect(result.errors).toEqual([]);
+		expect(result.valid).toBe(true);
+	});
+
+	it('passes a package with no `exports` map and no `files` list', async () => {
+		expect((await validate({})).valid).toBe(true);
+	});
+
+	it('fails a directory `files` does not publish, naming the resolved path', async () => {
+		const result = await validate({ files: ['index.js', 'dist'] });
+		expect(result.valid).toBe(false);
+		const err = result.errors.find((e) => e.path === 'package.json.files');
+		expect(err?.message).toContain(join(dir, 'runes'));
+		expect(err?.message).toContain('npm pack');
+	});
+
+	it('fails a package whose `exports` map blocks `./package.json`, naming the cause', async () => {
+		const result = await validate({ exports: { '.': './index.js' } });
+		expect(result.valid).toBe(false);
+		const err = result.errors.find((e) => e.path === 'package.json.exports');
+		expect(err?.message).toContain(join(dir, 'runes'));
+		expect(err?.message).toContain('ERR_PACKAGE_PATH_NOT_EXPORTED');
+	});
+
+	it('fails a declared directory that does not exist, with the path and the cause', async () => {
+		rmSync(join(dir, 'runes'), { recursive: true });
+		const result = await validate({});
+		const err = result.errors.find((e) => e.path === 'Plugin.runeDir');
+		expect(err?.message).toContain(join(dir, 'runes'));
+		expect(err?.message).toContain('ENOENT');
+	});
+
+	it('reports a definition that does not build, naming the rune', async () => {
+		writeModule(dir, 'runes/broken.md', '---\ntag: aside\n---\n\n{% slot name="x" /%}\n');
+		const result = await validate({});
+		expect(result.errors.find((e) => e.path === 'runes.broken.template')?.message).toMatch(
+			/Rune "broken": .*slot `x` names no field/,
+		);
+	});
+
+	it('recognises the forms `files` lists a directory in', async () => {
+		const { filesCover } = await import('../src/commands/plugin-validate.js');
+		for (const entry of ['runes', './runes/', 'runes/**', 'runes/*.md', 'runes/**/*.md', '*']) {
+			expect(filesCover([entry], 'runes'), entry).toBe(true);
+		}
+		expect(filesCover(['lib'], 'lib/runes')).toBe(true);
+		expect(filesCover(['dist', '!runes', 'runes-old'], 'runes')).toBe(false);
 	});
 });

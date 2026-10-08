@@ -1045,10 +1045,11 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 	// schema path. Both declarations are in scope here, so the ambiguity is
 	// cheap to reject rather than ship.
 	if (options.schema) {
-		const issues = validateSchemaTable(options.schema, Object.keys(attributes));
+		const issues = validateSchemaTable(options.schema, attributes);
 		if (issues.length > 0) {
 			const detail = issues.map((i) => `  ${i.path}: ${i.message}`).join('\n');
-			throw new Error(`Invalid schema table:\n${detail}`);
+			const axis = options.schema.by !== undefined ? ` (by: '${options.schema.by}')` : '';
+			throw new Error(`Invalid schema table${axis}:\n${detail}`);
 		}
 	}
 

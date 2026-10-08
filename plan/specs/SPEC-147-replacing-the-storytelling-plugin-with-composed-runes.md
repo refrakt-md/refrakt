@@ -139,6 +139,11 @@ so the two cross-links the registry snapshot records inside character pages are 
 core form has to treat a composition's placed primitives as part of the composed rune: for
 example, by keying on the slot markers (`data-slot`) rather than on `data-rune` depth.
 
+*Measured again by {% ref "WORK-635" /%}.* The loss follows from the primitive, not from
+composition. A composed `lore` places no primitive: its body slot sits directly in the composed
+rune's own `<article>`. So the snapshot's cross-link inside the lore page (`Witch`) is made, and
+the registry snapshot's `links` are reproduced exactly.
+
 ## Finding 5 — the CSS has an answer, and it is {% ref "ADR-035" /%}'s companion
 
 Lumina carries **413 lines** across `character`, `realm`, `faction`, `lore`, `plot`,

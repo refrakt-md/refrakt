@@ -80,13 +80,52 @@ export const myPackage: Plugin = {
 
 | Field | Required | Purpose |
 |-------|----------|---------|
-| `transform` | Yes | Markdoc Schema — the rune's parse and transform logic |
+| `transform` | One of `transform` / `template` | Markdoc Schema — the rune's parse and transform logic |
+| `template` | One of `transform` / `template` | A composed rune's definition as a string; see [Shipping composed runes](#shipping-composed-runes-from-a-rune-directory) for the file form |
 | `description` | Recommended | Human-readable description shown in the rune catalog |
 | `aliases` | No | Alternative tag names that resolve to this rune |
 | `seoType` | No | Schema.org type for automatic JSON-LD generation |
 | `fixture` | Recommended | Example Markdoc string for `refrakt inspect` |
 | `authoringHints` | No | Short note shown under "Authoring notes" in `refrakt reference` and included in `refrakt write` prompts |
 | `schema` | Recommended | Attribute definitions for tooling and validation |
+
+## Shipping composed runes from a rune directory
+
+A composed rune is a Markdown file: YAML frontmatter declaring its input, and a Markdoc body that places the content model's fields into slots of existing runes. A plugin ships such files by declaring a directory instead of writing `template` strings in JavaScript:
+
+```
+my-story-pack/
+├── package.json
+├── index.js            ← exports the Plugin object, with runeDir: 'runes'
+├── runes/
+│   ├── bond.md         ← the rune `bond`
+│   └── character.md    ← the rune `character`
+└── fixtures/
+    └── bond.md         ← a fixture, as every plugin keeps them
+```
+
+```typescript
+export const storyPack: Plugin = {
+  name: 'story-pack',
+  version: '1.0.0',
+  runeDir: 'runes',   // relative to the package directory
+  runes: {},          // code-defined runes may sit beside the directory's
+};
+```
+
+Every `<rune>.md` in the directory loads as a composed rune, exactly as if it were a `runes` entry carrying the file as its `template`. `refrakt inspect`, `refrakt reference`, `refrakt contracts` and the pipeline cannot tell the two apart.
+
+- **The filename is the rune's name.** `bond.md` defines `{% bond %}`. A frontmatter `rune:` or `name:` restating it is an error. A file takes no suffix (`bond.md`, not `bond.rune.md`), and a `.md` whose name is not a kebab-case rune name is rejected rather than skipped.
+- **Fixtures stay in `fixtures/`**, beside `runes/`, not in it.
+- **One definition per name.** A file in the directory and a `runes` entry (or a `runes` entry's alias) with the same name are rejected, naming both.
+- **A read failure is an error, never zero runes.** If the plugin's JavaScript loaded, its own files are on disk, so a missing or unreadable directory is a packaging bug. The error names the resolved path and the cause. A declared directory with no definitions in it is an error too.
+
+Two packaging requirements follow, and both are invisible in a monorepo:
+
+1. **`files` must publish the directory.** `"files": ["dist", "runes"]`. Without it, `npm pack` leaves the definitions out, and every page using them has an undefined tag once the package is installed.
+2. **`<pkg>/package.json` must resolve.** The loader finds the directory through it. A package with no `exports` map resolves it already. A package with one must list `"./package.json": "./package.json"`.
+
+`refrakt plugins validate` checks both, builds every definition in the directory, and reports each failure with the resolved path and the cause.
 
 ## Writing the Rune Schema
 
@@ -185,10 +224,11 @@ Sources resolve three ways, in order: a node that survives into the output is st
 | `by` / `rows` / `fallback` | Select a row by the value of a **declared attribute**. |
 | `byField` / `rows` / `fallback` | Select a row by a value in the rune's own **field bag**, for a type that depends on what the content is. Your transform records the fact as a property; the table decides what it means. `figure` asserts `ImageObject` only while its body is media, recording `body: 'mixed'` otherwise and mapping that to an empty row. |
 
-Three rules the table enforces, because getting them wrong fails silently:
+Four rules the table enforces, because getting them wrong fails silently:
 
 - **A nested entity must declare the `property` that holds it.** `collectJsonLd` nests a typed node only when the same node carries both `typeof` and `property` — so a type without a property publishes a detached top-level entity related to nothing.
 - **`by` names an attribute your rune declares**, not a modifier. Modifiers are read by the engine, which has no part in this path. `by` and `byField` are exclusive.
+- **A `by` table's `rows` match its attribute's `matches` exactly, both ways.** The attribute must declare `matches`. A row key it does not accept can never be selected, so it is rejected. A value it accepts with no row is rejected too, rather than falling through to `fallback`: `fallback` is for an author who stated no value. If a value should publish the fallback's type, give it a row that says so.
 - **An entity resolving to a bare `@type` emits nothing.** If you want an entity, give it at least one property.
 
 Declare `lists` for any collection. Without it a one-item collection serialises as an object and a two-item one as an array, so every consumer has to handle both shapes.
