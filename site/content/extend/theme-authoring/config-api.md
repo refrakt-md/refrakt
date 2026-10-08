@@ -30,7 +30,7 @@ interface ThemeConfig {
 
 ## RuneConfig
 
-Each entry in `runes` describes how a single rune type is transformed. All fields except `block` are optional.
+Each entry in `runes` describes how a single rune type is transformed. Every field is optional; almost every rune sets `block`.
 
 {% hint type="warning" %}
 **Three fields are rune identity, not theme configuration.** `block`, `modifiers` and `sections` say what a rune *is*, and a rune's universal-attribute applicability is derived from them — `reading` needs a `body` role, `prominence` needs a header-ish one, `cover` needs a declared `media-position` modifier. A theme that could rewrite them could change what the same markdown means, so it may not: an override of one is ignored with a build warning, and a variant delta carrying one is a config-load error. Everything else here stays fully theme-owned. See {% ref "ADR-028" /%}.
@@ -38,14 +38,16 @@ Each entry in `runes` describes how a single rune type is transformed. All field
 
 ### block
 
-The BEM block name, without the prefix. This is the only required field.
+The BEM block name, without the prefix.
 
 ```typescript
 Grid: { block: 'grid' }
 // → class="rf-grid"
 ```
 
-The engine always produces the block class (`.rf-grid`) and sets `data-rune="grid"` on the root element.
+The engine produces the block class (`.rf-grid`) and sets `data-rune="grid"` on the root element.
+
+A config may leave `block` out. That is how a composed rune is configured ({% ref "SPEC-145" /%} D2a): it has no BEM block and ships no CSS, but its modifiers, universal attributes and metadata blocks still have to render. With no block, the engine runs every step it runs for any rune *except* emitting `rf-*` classes. Modifiers become `data-*` attributes, universal attributes apply, metadata renders and the internal field bag is stripped, but neither the root nor its named children get a class. Such a rune is addressable only by `[data-rune]`, its `data-*` modifiers and the primitives it contains, and `refrakt contracts` describes it that way, with no BEM selectors.
 
 **Rune identity** (ADR-028) — not theme-overridable.
 

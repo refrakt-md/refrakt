@@ -40,7 +40,7 @@ export function collectMetadata(config: ThemeConfig): Omit<MetaAuditResult, 'css
 		if (!runeConfig.structure) continue;
 
 		for (const [key, entry] of Object.entries(runeConfig.structure)) {
-			collectFromEntry(entry, key, runeKey, runeConfig.block, fields);
+			collectFromEntry(entry, key, runeKey, runeConfig.block ?? '', fields);
 		}
 	}
 

@@ -192,15 +192,23 @@ function runSingleAudit(
 		);
 	}
 
+	// A block-less rune (SPEC-145 D2a) emits no BEM selectors and ships no CSS,
+	// so there is nothing to audit.
+	if (!runeConfig.block) {
+		console.log(`${rune.name} has no BEM block (block-less config) — no CSS to audit.`);
+		return;
+	}
+	const block = runeConfig.block;
+
 	// Read CSS for this block
-	const cssFile = readCssForBlock(cssDir, runeConfig.block);
+	const cssFile = readCssForBlock(cssDir, block);
 	const cssMatches: CssSelectorMatch[] = cssFile ? parseCssFile(cssFile.content, cssFile.path) : [];
 
 	// Collect all possible selectors across variants
 	const schemaVariants = discoverVariants(rune.schema);
 	const allSelectors = collectAllSelectors(
 		rune.name,
-		runeConfig.block,
+		block,
 		config.prefix,
 		schemaVariants,
 		runeConfig.contextModifiers,
@@ -248,6 +256,8 @@ function runFullAudit(
 		const runeTypeof = rune.typeName;
 		const runeConfig = runeTypeof ? config.runes[runeTypeof] : undefined;
 		if (!runeConfig) continue; // Skip runes without identity transform config
+		const block = runeConfig.block;
+		if (!block) continue; // Block-less (SPEC-145 D2a) — no selectors, no CSS
 
 		const schemaVariants = discoverVariants(rune.schema);
 
@@ -255,7 +265,7 @@ function runFullAudit(
 		try {
 			allSelectors = collectAllSelectors(
 				rune.name,
-				runeConfig.block,
+				block,
 				config.prefix,
 				schemaVariants,
 				runeConfig.contextModifiers,
@@ -271,7 +281,7 @@ function runFullAudit(
 		}
 
 		// Filter CSS matches to only those relevant to this rune's block
-		const blockPrefix = `.${config.prefix}-${runeConfig.block}`;
+		const blockPrefix = `.${config.prefix}-${block}`;
 		const relevantCss = allCssMatches.filter(
 			(m) => m.selector.startsWith(blockPrefix) || m.selector.startsWith('[data-'),
 		);
@@ -557,7 +567,9 @@ function runDimensionAudit(config: ThemeConfig, options: InspectOptions): void {
 	const cssResult = cssDir ? checkDimensionCss(cssDir) : undefined;
 
 	// Determine unassigned runes: runes with dimensions but no surface in CSS
-	const allRuneBlocks = new Set(Object.values(config.runes).map((r) => r.block));
+	const allRuneBlocks = new Set(
+		Object.values(config.runes).flatMap((r) => (r.block ? [r.block] : [])),
+	);
 	const assignedBlocks = new Set(cssResult?.surfaces.flatMap((g) => g.runes) ?? []);
 	const unassignedRunes = [...allRuneBlocks].filter((b) => !assignedBlocks.has(b)).sort();
 

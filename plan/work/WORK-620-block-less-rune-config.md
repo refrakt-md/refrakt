@@ -1,4 +1,4 @@
-{% work id="WORK-620" status="ready" priority="high" complexity="moderate" source="SPEC-145" milestone="v0.40.0" tags="transform,engine,composition,contracts" %}
+{% work id="WORK-620" status="in-progress" priority="high" complexity="moderate" source="SPEC-145" milestone="v0.40.0" tags="transform,engine,composition,contracts" %}
 
 # A rune config may omit `block`
 

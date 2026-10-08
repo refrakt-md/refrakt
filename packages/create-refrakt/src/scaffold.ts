@@ -1050,7 +1050,7 @@ const { prefix, runes } = themeConfig;
 
 describe('Theme CSS coverage', () => {
 \tit('block selectors exist for styled runes', () => {
-\t\tconst allBlocks = [...new Set(Object.values(runes).map(c => c.block))];
+\t\tconst allBlocks = [...new Set(Object.values(runes).map(c => c.block).filter(Boolean))];
 \t\tconst styledBlocks = allBlocks.filter(block =>
 \t\t\tallCssSelectors.has(\`.\${prefix}-\${block}\`)
 \t\t);

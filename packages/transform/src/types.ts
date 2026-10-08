@@ -151,8 +151,14 @@ export interface MetaField {
  *  decoration and stays fully theme-owned. */
 export interface RuneConfig {
 	/** BEM block name (without prefix). E.g., 'hint' → .rf-hint
-	 *  **Identity (ADR-028)** — not theme-overridable. */
-	block: string;
+	 *  **Identity (ADR-028)** — not theme-overridable.
+	 *
+	 *  Optional (SPEC-145 D2a). A block-less config is how a composed rune gets
+	 *  its modifiers, universal attributes and meta blocks rendered without a
+	 *  BEM block: the engine runs every step except emitting `rf-*` classes, so
+	 *  nothing can target the rune by class name. Its root is addressable only
+	 *  through `data-rune` and its `data-*` modifiers. */
+	block?: string;
 
 	/** SPEC-035 — i18n key scope for this rune's labels: `'core'` for core
 	 *  runes, else the owning plugin's short name (`'learning'`, `'docs'`, …).

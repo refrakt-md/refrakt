@@ -30,7 +30,7 @@ export const PROGRAMMATIC_STRINGS: Record<string, string> = {
 
 /** The auto-derived label key for a field/entry `ref` on a rune. */
 function labelKey(config: RuneConfig, ref: string, override?: string): string {
-	return override ?? `${config.scope ?? 'core'}.${config.block}.${ref}`;
+	return override ?? `${config.scope ?? 'core'}.${config.block ?? ''}.${ref}`;
 }
 
 /** Collect labels from a structure-entry tree (legacy `StructureEntry.label`). */
@@ -69,7 +69,7 @@ export function extractI18nKeys(config: ThemeConfig): Record<string, string> {
 		collectStructureLabels(runeConfig, runeConfig.structure, out);
 		// Enum-as-text display values (Zone 6): `{scope}.{block}.{value}`.
 		for (const [value, text] of Object.entries(runeConfig.i18nEnums ?? {})) {
-			out[`${runeConfig.scope ?? 'core'}.${runeConfig.block}.${value}`] = text;
+			out[`${runeConfig.scope ?? 'core'}.${runeConfig.block ?? ''}.${value}`] = text;
 		}
 	}
 
