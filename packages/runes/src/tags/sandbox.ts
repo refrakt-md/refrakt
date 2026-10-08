@@ -134,6 +134,8 @@ export const sandbox = createContentModelSchema({
 			description: 'Max records in the payload (default 500)',
 		},
 	},
+	// The body is HTML read as raw source (`extractInlineContent`), not resolved.
+	rawBody: true,
 	contentModel: {
 		type: 'sequence',
 		fields: [],
