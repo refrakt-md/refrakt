@@ -4,7 +4,7 @@ import { generateStructureContract } from '@refrakt-md/transform';
 import type { ThemeConfig } from '@refrakt-md/transform';
 import { baseConfig } from '@refrakt-md/runes';
 import type { Rune } from '@refrakt-md/runes';
-import { collectSchemaRows } from '@refrakt-md/runes';
+import { collectCompositions, collectSchemaRows } from '@refrakt-md/runes';
 
 export interface ContractsOptions {
 	output?: string;
@@ -33,6 +33,7 @@ export function contractsCommand(opts: ContractsOptions): void {
 	// what the test regenerates, which is a second implementation by another name.
 	const contract = generateStructureContract(opts.config ?? baseConfig, {
 		schemaRows: opts.runes ? collectSchemaRows(opts.runes) : undefined,
+		compositions: opts.runes ? collectCompositions(opts.runes) : undefined,
 	});
 
 	const json = JSON.stringify(contract, null, '\t') + '\n';

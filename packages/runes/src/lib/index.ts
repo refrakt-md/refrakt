@@ -31,6 +31,8 @@ import {
 	validateRegistersDeclaration,
 } from './registers.js';
 import type { RegistersDeclaration } from './registers.js';
+import { compileComposition, schemaCompositions } from './composition.js';
+import type { CompositionTemplate } from './composition.js';
 export {
 	applySchemaTable,
 	validateSchemaTable,
@@ -41,6 +43,24 @@ export {
 	SLOT_ATTR,
 } from './schema-table.js';
 export { declareSlotMarkers, declareSlotMarkersOnNodes } from './slot-markers.js';
+export {
+	compileComposition,
+	compositionFor,
+	schemaCompositions,
+	parseCompositionDefinition,
+	composedRuneConfig,
+	composedTypeName,
+	checkCompositions,
+	SUBORDINATE_SCHEMA_TYPES,
+} from './composition.js';
+export type {
+	CompositionTemplate,
+	CompositionInfo,
+	CompositionOutlineNode,
+	CompositionDefinition,
+	CompositionCatalogEntry,
+	CompiledComposition,
+} from './composition.js';
 export type { SchemaTable, SchemaRow, EntityRow, PropertyMap } from './schema-table.js';
 export type { InlineTransformResult } from './component.js';
 export {
@@ -752,7 +772,8 @@ export interface ContentModelSchemaOptions {
 	 * attributes, the Markdoc config, and optionally the AST node.
 	 * Returns the renderable output.
 	 *
-	 * Exactly one of `transform` and `emits` (SPEC-143 D8). Keep a transform
+	 * Exactly one of `transform`, `emits` and `template` (SPEC-143 D8, SPEC-145
+	 * D5). Keep a transform
 	 * when the rune unwraps, filters, reorders or merges what the content model
 	 * resolved — the family test (D4).
 	 */
@@ -771,6 +792,14 @@ export interface ContentModelSchemaOptions {
 	 * authored a second time beside it.
 	 */
 	emits?: EmitsDeclaration;
+
+	/**
+	 * SPEC-145 — a composition template: the rune's output is a Markdoc template
+	 * placing its resolved fields into slots of other runes. Checked against the
+	 * content model and compiled here, once; the transform it yields is called
+	 * where `transform` would be (D4). See `lib/composition.ts`.
+	 */
+	template?: CompositionTemplate;
 
 	/**
 	 * SPEC-130 / WORK-565 — the rune's declarative schema.org table.
@@ -919,22 +948,39 @@ function auditRegistersOnValidate(
  * that receives the resolver's output.
  */
 export function createContentModelSchema(options: ContentModelSchemaOptions): Schema {
-	// SPEC-143 D8 — exactly one of the two. A rune that declared some slots and
-	// patched the rest in a transform would leave neither half able to say what
-	// the output is.
-	if (options.transform && options.emits) {
+	// SPEC-143 D8, extended to three by SPEC-145 D5 — exactly one emit path. A
+	// rune that declared some slots and patched the rest in a transform would
+	// leave neither half able to say what the output is.
+	const named = options.emits?.rune ?? options.template?.rune;
+	const declared = [
+		options.transform && '`transform`',
+		options.emits && 'a slot declaration (`emits`)',
+		options.template && 'a composition template',
+	].filter((x): x is string => Boolean(x));
+	if (declared.length > 1) {
 		throw new Error(
-			`Rune "${options.emits.rune}": declares both \`transform\` and \`emits\`. Use exactly one (SPEC-143 D8) — the declaration for a rune that only labels its fields, the transform for one that restructures them.`,
+			`Rune "${named}": declares ${declared.length === 2 ? `both ${declared.join(' and ')}` : `${declared.slice(0, -1).join(', ')} and ${declared.at(-1)}`}. Use exactly one of a slot declaration, a composition template or a \`transform\` (SPEC-143 D8, SPEC-145 D5) — the declaration for a rune that only labels its fields, the template for one composed from other runes, the transform for one that restructures them.`,
 		);
 	}
-	if (!options.transform && !options.emits) {
+	if (declared.length === 0) {
 		const attrNames = Object.keys(options.attributes ?? {});
 		throw new Error(
-			`A rune${attrNames.length ? ` (attributes: ${attrNames.join(', ')})` : ''} declares neither \`transform\` nor \`emits\`. It needs exactly one (SPEC-143 D8).`,
+			`A rune${attrNames.length ? ` (attributes: ${attrNames.join(', ')})` : ''} declares neither \`transform\` nor \`emits\` nor a composition template. It needs exactly one (SPEC-143 D8, SPEC-145 D5).`,
 		);
 	}
 	// Built once, at construction — not per page, not per instance.
-	const transform = options.transform ?? makeSlotTransform(options.emits!, options.contentModel);
+	const composition = options.template
+		? compileComposition(options.template, {
+				contentModel: options.contentModel,
+				attributes: Object.keys({ ...options.base, ...options.attributes }),
+				schema: options.schema,
+				registers: options.registers,
+			})
+		: undefined;
+	const transform =
+		options.transform ??
+		composition?.transform ??
+		makeSlotTransform(options.emits!, options.contentModel);
 
 	// The `sections` join table follows from the declaration. A rune may still
 	// state roles for names `layout` creates (a `preamble` header), but not
@@ -1135,6 +1181,7 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 
 	if (options.schema) schemaTables.set(schema, options.schema);
 	if (options.emits) schemaEmits.set(schema, options.emits);
+	if (composition) schemaCompositions.set(schema, composition.info);
 
 	// SPEC-144 / WORK-611 — record the registration declaration, and audit its
 	// sources at validate time, where Markdoc attaches file and line.

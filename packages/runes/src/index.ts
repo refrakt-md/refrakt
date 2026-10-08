@@ -168,6 +168,25 @@ export {
 	OWNER_ATTR,
 	SLOT_ATTR,
 } from './lib/index.js';
+// SPEC-145 — the composition template, its checks and its side table
+export {
+	compileComposition,
+	compositionFor,
+	schemaCompositions,
+	parseCompositionDefinition,
+	composedRuneConfig,
+	composedTypeName,
+	checkCompositions,
+	SUBORDINATE_SCHEMA_TYPES,
+} from './lib/index.js';
+export type {
+	CompositionTemplate,
+	CompositionInfo,
+	CompositionOutlineNode,
+	CompositionDefinition,
+	CompositionCatalogEntry,
+	CompiledComposition,
+} from './lib/index.js';
 
 // SPEC-125 Phase 3 — the declared rule for universal-attribute availability
 export {
@@ -394,8 +413,20 @@ export {
 	discoverPluginFixtures,
 	discoverPluginFixtureManifest,
 	assertFileRootNamespaceAllowed,
+	validatePlugin,
 } from './plugins.js';
 export type { LoadedPlugin, MergedPluginResult } from './plugins.js';
+// SPEC-145 — composed runes: a definition (frontmatter + Markdoc template) as a rune
+export {
+	defineComposedRune,
+	composedPluginRune,
+	pluginRuneSchema,
+	checkComposedCatalog,
+	collectCompositions,
+} from './composed-rune.js';
+export type { ComposedRune, CompositionContract } from './composed-rune.js';
+import { registerCoreCatalog } from './composed-rune.js';
+import { baseConfig as coreThemeConfig } from './config.js';
 export {
 	coreConfig,
 	baseConfig,
@@ -1228,3 +1259,7 @@ export const nodes = {
 	td,
 	error: Markdoc.nodes.error,
 };
+
+// SPEC-145 — the composition checks that span the catalog (cycles, D9, D12)
+// see core runes through this, rather than by importing this module.
+registerCoreCatalog(runes, coreThemeConfig.runes);

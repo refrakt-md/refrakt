@@ -7,7 +7,7 @@ import {
 	type ValidationError,
 	type ValidationWarning,
 } from '@refrakt-md/transform';
-import { parseFixture, type FixtureRole } from '@refrakt-md/runes';
+import { composedPluginRune, parseFixture, type FixtureRole } from '@refrakt-md/runes';
 import { discoverPlugins } from '../lib/plugins.js';
 
 export interface PluginValidateOptions {
@@ -409,11 +409,31 @@ function validateRuneEntry(
 ): void {
 	const prefix = `runes.${runeName}`;
 
-	// transform is required
-	if (!entry.transform || typeof entry.transform !== 'object') {
+	// Exactly one emit path: a transform, or a composition template (SPEC-153 D11).
+	if (entry.template !== undefined) {
+		if (entry.transform !== undefined) {
+			errors.push({
+				path: prefix,
+				message:
+					'Carries both a `transform` and a composition `template`; a rune has exactly one emit path (SPEC-145 D5)',
+			});
+		} else if (typeof entry.template !== 'string') {
+			errors.push({
+				path: `${prefix}.template`,
+				message:
+					'Must be a composed rune definition (frontmatter and a Markdoc template) as a string',
+			});
+		} else {
+			try {
+				composedPluginRune(runeName, entry);
+			} catch (e) {
+				errors.push({ path: `${prefix}.template`, message: (e as Error).message });
+			}
+		}
+	} else if (!entry.transform || typeof entry.transform !== 'object') {
 		errors.push({
 			path: `${prefix}.transform`,
-			message: 'Required and must be a Markdoc Schema object',
+			message: 'Required and must be a Markdoc Schema object (or a composition `template`)',
 		});
 	}
 
