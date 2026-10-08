@@ -644,8 +644,9 @@ is the same reasoning D11 rests on.
 **It makes a false schema.org claim easier to write.** Composition lowers the bar
 to asserting a type, which sharpens {% ref "SPEC-143" /%}'s open question about a
 user rune's schema row being published with no reviewer in the loop. Bad CSS is
-visible on the page; a wrong `Person` row is invisible by construction. This spec
-should not ship a composition path for `schema` before that question has an answer.
+visible on the page; a wrong `Person` row is invisible by construction. *D25
+(2026-10-08) settles the interim:* first-party compositions may declare `schema`, user
+definitions may not until a mechanical check exists.
 
 **Slot substitution over node lists is where the complexity actually is.** Scalar
 `variables` substitution is a string replace. Node-list substitution has to decide
@@ -2189,14 +2190,49 @@ position-dependent universal into a template — `width=$attrs.width` on a place
 `data-width` on a node that is not in the article's direct-child position, where none of its CSS
 matches. It is inert rather than wrong, but it reads as working and will be copied.
 
+### D25 — `schema` follows where a definition is loaded from; user definitions wait for a mechanical check
+
+*Decided 2026-10-08.* The risk recorded above ("It makes a false schema.org claim
+easier to write") rests on SPEC-130 D5: nothing validates a schema row against
+schema.org, and a reviewer reading `inspect`, `contracts` and the SEO baseline is the
+check. That holds for every row a maintainer writes and a PR reviews. It does not hold
+for a user's own definition, whose row publishes as JSON-LD with no reviewer, and
+whose errors are invisible on the page.
+
+**Decision:**
+
+1. **A first-party composed rune may declare `schema`.** First-party means shipped in
+   a package (core or a plugin), reviewed like any other code, so D5's trade holds.
+   This lets composition replace schema-emitting runes: SPEC-147's `character` keeps
+   its `Person` row.
+2. **A user definition may not, for now.** A definition loaded from a project's own
+   rune directory ({% ref "SPEC-153" /%}) that declares `schema` is rejected at load,
+   with a message naming the rune and this decision. The ban is enforced by that
+   loader, so it is a requirement on SPEC-153; no user delivery path exists before it.
+3. **What lifts the ban is a mechanical check, not a shipped ontology.**
+   `@adobe/structured-data-validator` (Apache-2.0, maintained, Node) validates JSON-LD
+   against the schema.org vocabulary and Google's rich-result rules, and reports
+   issues with a path and a severity. It takes the vocabulary as input rather than
+   bundling one, so refrakt would consume schema.org's published file, not curate an
+   ontology of its own. A spike runs it over `contracts/seo-baseline/` to measure its
+   noise and whether it catches the baseline's known defects. If it holds up, it
+   becomes a `refrakt validate` check, and the ban on user `schema` is lifted behind
+   it.
+
+**Considered and rejected for now.** A blanket ban on every composed rune: it would
+stop composition replacing any first-party rune that publishes structured data,
+SPEC-147 included. A closed allowlist of types: it checks the type but not the
+properties, so `Person { cookTime }` passes. Shipping a trimmed schema.org vocabulary
+and validating against it ourselves: it reverses SPEC-130 D5 and adds a data file to
+maintain, when a maintained library already does the job.
+
 ## Non-goals
 
 - Replacing {% ref "SPEC-143" /%}'s declared tier — the two tiers coexist, and D5 keeps them distinct
 - A template language of refrakt's own (D1, {% ref "ADR-036" /%})
 - Letting a composed rune style itself (D2)
 - Composing *across* sites, or composing a layout rather than a rune
-- Resolving the dormant editor's `editHints` ownership question — recorded, not answered
-- Answering {% ref "SPEC-143" /%}'s open question on unreviewed schema.org claims; this spec must not ship a `schema` composition path ahead of it
+- Letting a user definition declare `schema` before a mechanical check exists; first-party compositions may (D25)
 - Letting a theme supply a rune template, or retiring `layout` / `blocks` projection in favour of templates (D8)
 - Adding a `meta` rune — {% ref "SPEC-080" /%} already is that primitive (D7); what is missing is a template-side placement for a block it already defines
 - Changing the schema-table resolvers — that is {% ref "SPEC-146" /%} (D10)
@@ -2269,6 +2305,8 @@ placed content's node types from that primitive's content model.
 - [ ] A survival test runs a marked node through every rune in D12's placement set and fails naming any rune that drops either attribute (D10a)
 - [ ] A composed rune has a generated, block-less `RuneConfig`: its root carries no `rf-*` class and no `data-rune-fields`, and its modifiers, universal attributes and meta blocks render (D2a)
 - [ ] `RuneConfig.block` is optional; no config without a block ever emits `rf-undefined`, and contracts describe a block-less entry by its `data-*` modifiers and slot names (D2a)
+- [ ] A first-party composed rune may declare `schema`; a user definition that declares it is rejected at load, naming the rune and D25 (D25, enforced by SPEC-153's loader)
+- [ ] `@adobe/structured-data-validator` has been run over `contracts/seo-baseline/`, and its findings (noise, and which known defects it catches) are recorded as the evidence for or against lifting D25's ban (D25)
 - [ ] A slot emits no element; every top-level node it places carries `data-slot` in the rendered HTML, `data-owner` does not, and the composed rune's contract lists its slot names (D10c)
 - [ ] A composed rune whose `registers` source is a placed node registers the same id and data as one whose source is an attribute, read from the field bag in Phase 2; `findRef` and the strip timing are unchanged (D10b)
 - [ ] A composed rune's content-derived `properties` resolve — the `image` from a slot-placed portrait reaches the entity, asserted against the graph and not just the attributes (D10)
