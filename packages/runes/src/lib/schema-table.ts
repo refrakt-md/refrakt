@@ -166,16 +166,20 @@ export interface SchemaTableIssue {
  */
 export function validateSchemaTable(
 	table: SchemaTable,
-	declaredAttributes: string[] = [],
+	declaredAttributes: string[] | Record<string, { matches?: unknown }> = [],
 ): SchemaTableIssue[] {
 	const issues: SchemaTableIssue[] = [];
+	const definitions = Array.isArray(declaredAttributes) ? undefined : declaredAttributes;
+	const declared = definitions ? Object.keys(definitions) : (declaredAttributes as string[]);
 
 	if (table.by !== undefined) {
-		if (declaredAttributes.length > 0 && !declaredAttributes.includes(table.by)) {
+		if (declared.length > 0 && !declared.includes(table.by)) {
 			issues.push({
 				path: 'by',
 				message: `\`by: '${table.by}'\` names an attribute the rune does not declare. \`by\` selects a row from \`attrs\`, not from a modifier.`,
 			});
+		} else if (definitions?.[table.by]) {
+			issues.push(...checkRowCoverage(table, definitions[table.by].matches));
 		}
 		if (!table.rows || Object.keys(table.rows).length === 0) {
 			issues.push({ path: 'rows', message: '`by` needs `rows` to select from.' });
@@ -223,6 +227,53 @@ export function validateSchemaTable(
 	for (const [value, row] of Object.entries(table.rows ?? {})) checkRow(row, `rows.${value}.`);
 	if (table.fallback) checkRow(table.fallback, 'fallback.');
 
+	return issues;
+}
+
+/**
+ * WORK-632 / SPEC-145 D27 (c) — a `by` table's `rows` and its attribute's
+ * `matches` must correspond exactly, both ways, as D15 requires of template
+ * variants. Otherwise a misspelt row (`podcasts:`) or a newly added enum value
+ * silently selects the fallback, and nothing the reader of the page can see
+ * changes.
+ *
+ * A declared value with no row is an error, not a fall-through to `fallback`.
+ * `fallback` answers the case where the author stated no value; a value the
+ * rune itself declares is a decision the table owes a row. A value that should
+ * share the fallback's type says so with a row of its own — one line — so the
+ * choice is visible in `inspect` and the next added value cannot inherit it by
+ * omission.
+ */
+function checkRowCoverage(table: SchemaTable, matches: unknown): SchemaTableIssue[] {
+	const by = table.by as string;
+	if (!Array.isArray(matches)) {
+		return [
+			{
+				path: 'by',
+				message: `\`by: '${by}'\` names an attribute with no \`matches\` list, so its rows cannot be checked against the values an author may write. Declare \`matches\` on \`${by}\`.`,
+			},
+		];
+	}
+	const values = matches.map(String);
+	const keys = Object.keys(table.rows ?? {});
+	const declared = values.map((v) => `'${v}'`).join(', ');
+	const issues: SchemaTableIssue[] = [];
+	for (const key of keys) {
+		if (!values.includes(key)) {
+			issues.push({
+				path: `rows.${key}`,
+				message: `row \`${key}\` is not a value \`${by}\` accepts, so it can never be selected. \`${by}\` declares: ${declared}.`,
+			});
+		}
+	}
+	for (const value of values) {
+		if (!keys.includes(value)) {
+			issues.push({
+				path: 'rows',
+				message: `\`${by}\` accepts \`${value}\` but no row covers it, so it would silently publish the fallback. Add \`rows.${value}\` — repeat the fallback row if that is the intended type.`,
+			});
+		}
+	}
 	return issues;
 }
 

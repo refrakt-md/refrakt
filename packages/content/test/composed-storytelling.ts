@@ -97,11 +97,12 @@ export type Json = any;
 const STORY_TYPES = new Set(['character', 'realm', 'faction', 'lore', 'plot', 'bond']);
 
 /** Build the storytelling registry site with `pkg`, captured in the shape of the
- *  plugin's own snapshot test (`plugins/storytelling/test/registry-snapshot.test.ts`). */
-export async function capture(pkg: Plugin) {
+ *  plugin's own snapshot test (`plugins/storytelling/test/registry-snapshot.test.ts`).
+ *  `dir` builds another site the same way. */
+export async function capture(pkg: Plugin, dir = siteDir) {
 	const spy = vi.spyOn(EntityRegistryImpl.prototype, 'register');
 	const merged = merge(pkg);
-	const site = await loadContent(siteDir, {
+	const site = await loadContent(dir, {
 		plugins: merged.plugins,
 		additionalTags: merged.tags,
 		reporter: () => {},
