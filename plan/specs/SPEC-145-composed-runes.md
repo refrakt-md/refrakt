@@ -740,6 +740,30 @@ filled with content the primitive's content model rejects, and a slot whose
 authored content contains another composed rune. Each has an obvious answer; none
 is free.
 
+## Status after v0.40.0
+
+The mechanism and its first two slices shipped in v0.40.0 ({% ref "WORK-619" /%}–{% ref "WORK-630" /%}):
+- block-less configs and slot markers;
+- template rendering and the construction-time checks;
+- `{% metablock %}`;
+- `bond` and `character` as composed fixtures, matched against the plugin's registry and the SEO baseline.
+
+Still open:
+- D13 (i18n keying);
+- D14/D24 (the chrome carrier);
+- D15 (multiple templates);
+- D11's editor half;
+- `$slots` conditionals;
+- `refrakt inspect` showing the expansion;
+- D27 (a) and (b);
+- loading definitions from a directory ({% ref "SPEC-153" /%}).
+
+Follow-ups filed:
+- {% ref "WORK-631" /%}: content no field matches is dropped silently;
+- {% ref "WORK-632" /%}: D27 (c).
+
+The spec stays `accepted`.
+
 ## Decisions
 
 ### D1 — the template is Markdoc, not a new syntax
