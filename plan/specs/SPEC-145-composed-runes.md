@@ -1,4 +1,4 @@
-{% spec id="SPEC-145" status="draft" tags="runes, composition, markdoc, seo, hosted, architecture" %}
+{% spec id="SPEC-145" status="accepted" tags="runes, composition, markdoc, seo, hosted, architecture" %}
 
 # Composed runes
 
