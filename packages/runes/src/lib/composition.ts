@@ -68,6 +68,8 @@ import type {
 	Tag,
 } from '@markdoc/markdoc';
 import yaml from 'yaml';
+import { CompositionError } from './composition-errors.js';
+import type { CompositionErrorCode } from './composition-errors.js';
 import type {
 	ContentFieldDefinition,
 	ContentModel,
@@ -161,18 +163,8 @@ export function compositionFor(schema: unknown): CompositionInfo | undefined {
 /** Tags a template may not contain: they resolve at preprocess, a stage a
  *  template comes after (D4). `include` is the route for a repeated block that
  *  needs one. */
-/**
- * A definition or template the compiler rejects. `line` is the 1-based line in
- * the definition's source where the problem is, when it can be located: the
- * template node it names, or the frontmatter key it is about. `refrakt validate`
- * reports it with the file (SPEC-153, WORK-634).
- */
-export class CompositionError extends Error {
-	line?: number;
-	/** 0-based line within the template body; mapped to `line` by the caller
-	 *  that knows where the body starts in the file. */
-	bodyLine?: number;
-}
+export { CompositionError, COMPOSITION_ERRORS } from './composition-errors.js';
+export type { CompositionErrorCode } from './composition-errors.js';
 
 /**
  * The 0-based line, within a YAML frontmatter block, of the key at `path` —
@@ -263,12 +255,13 @@ interface SlotField {
  */
 function slotFields(
 	model: ContentModel | ((attrs: Record<string, any>) => ContentModel),
-	fail: (msg: string) => never,
+	fail: (code: CompositionErrorCode, msg: string) => never,
 ): Map<string, SlotField> {
 	const fields = new Map<string, SlotField>();
 	const m = typeof model === 'function' ? model({}) : model;
 	if ('when' in m) {
 		fail(
+			'content-model-type',
 			'a conditional (`when`) content model is not supported by a composition — the template, not the model, is where an assembly varies.',
 		);
 	}
@@ -291,6 +284,7 @@ function slotFields(
 		});
 	} else {
 		fail(
+			'content-model-type',
 			`a \`${s.type}\` content model is not supported by a composition. Declare a \`sequence\` or \`sections\` model, whose fields are the slots.`,
 		);
 	}
@@ -417,15 +411,15 @@ export function compileComposition(
 	const { rune, tag, body } = template;
 	/** The template node being checked, so a failure can say where it is. */
 	let current: Node | undefined;
-	const fail = (msg: string): never => {
-		const err = new CompositionError(`Rune "${rune}": invalid composition template — ${msg}`);
+	const fail = (code: CompositionErrorCode, msg: string): never => {
+		const err = new CompositionError(code, `Rune "${rune}": invalid composition template — ${msg}`);
 		const line = current?.lines?.[0];
 		if (typeof line === 'number') err.bodyLine = line;
 		throw err;
 	};
-	if (typeof body !== 'string') fail('the template body must be a string.');
+	if (typeof body !== 'string') fail('invalid-value', 'the template body must be a string.');
 	if (typeof tag !== 'string' || !/^[a-z][a-z0-9]*$/.test(tag)) {
-		fail('`tag` must be an element name.');
+		fail('invalid-value', '`tag` must be an element name.');
 	}
 
 	const ast = Markdoc.parse(normaliseEach(body));
@@ -447,22 +441,27 @@ export function compileComposition(
 		for (const path of variablePaths(n.attributes)) {
 			const [root, name] = path;
 			if (root === 'attrs') {
-				if (name === undefined) fail('`$attrs` must name an attribute, as `$attrs.<name>`.');
+				if (name === undefined)
+					fail('attrs-undeclared', '`$attrs` must name an attribute, as `$attrs.<name>`.');
 				if (!declared.has(name)) {
 					fail(
+						'attrs-undeclared',
 						`\`$attrs.${name}\` names no declared attribute (declared: ${[...declared].join(', ') || 'none'}).`,
 					);
 				}
 			} else if (root === 'each') {
 				if (!scope.each) {
 					fail(
+						'each-outside-slot',
 						`\`$each${name ? `.${name}` : ''}\` is used outside an \`each\` slot; it exists only inside one (D26).`,
 					);
 				}
-				if (name === undefined) fail('`$each` must name a field, as `$each.<name>`.');
+				if (name === undefined)
+					fail('each-field-not-emitted', '`$each` must name a field, as `$each.<name>`.');
 				if (!scope.each!.fields.includes(name)) {
 					const exposed = scope.each!.fields;
 					fail(
+						'each-field-not-emitted',
 						`\`$each.${name}\` names no field of slot \`${scope.each!.slot}\`. \`$each\` exposes exactly the content model's \`emitAttributes\` (${exposed.join(', ') || 'none declared'}) — declare it there (D26).`,
 					);
 				}
@@ -490,10 +489,14 @@ export function compileComposition(
 		}
 	};
 	const checkNode = (n: Node, scope: Scope): CompositionOutlineNode[] | undefined => {
-		if (n.type === 'error') {
-			const errors = (n as unknown as { errors?: Array<{ message?: string }> }).errors ?? [];
+		// A syntax error is an `error` node; an unclosed or unopened tag parses as
+		// a tag carrying a critical error, and would otherwise build silently.
+		const errors = (n as unknown as { errors?: Array<{ message?: string; level?: string }> })
+			.errors;
+		if (n.type === 'error' || errors?.some((e) => e.level === 'critical')) {
 			fail(
-				`Markdoc could not parse it: ${errors.map((e) => e.message).join('; ') || 'syntax error'}.`,
+				'template-parse',
+				`Markdoc could not parse it: ${(errors ?? []).map((e) => e.message).join('; ') || 'syntax error'}.`,
 			);
 		}
 		checkVariables(n, scope);
@@ -504,6 +507,7 @@ export function compileComposition(
 		if (n.type === 'tag' && n.tag) {
 			if (PREPROCESSOR_TAGS.has(n.tag)) {
 				fail(
+					'preprocessor-tag',
 					`it contains \`{% ${n.tag} %}\`, which resolves at preprocess, before a template renders (D4). A repeated block that needs \`${n.tag}\` is an \`{% include %}\`, not a composition.`,
 				);
 			}
@@ -512,7 +516,10 @@ export function compileComposition(
 				return n.tag === 'if' ? [{ conditional: true, children }] : children;
 			}
 			if (selfNames.has(n.tag)) {
-				fail(`it places \`{% ${n.tag} %}\`, which is the rune itself — a composition cycle.`);
+				fail(
+					'composition-cycle',
+					`it places \`{% ${n.tag} %}\`, which is the rune itself — a composition cycle.`,
+				);
 			}
 			placements.push({ rune: n.tag, ...(scope.parentRune ? { parent: scope.parentRune } : {}) });
 			const children = outlineOf(n.children, { ...scope, parentRune: n.tag });
@@ -530,35 +537,42 @@ export function compileComposition(
 		const each = n.attributes.each;
 		for (const key of Object.keys(n.attributes)) {
 			if (key !== 'name' && key !== 'each') {
-				fail(`a \`{% slot %}\` takes \`name\` and \`each\` only, not \`${key}\`.`);
+				fail('slot-invalid', `a \`{% slot %}\` takes \`name\` and \`each\` only, not \`${key}\`.`);
 			}
 		}
-		if (each !== undefined && each !== true) fail('`each` on a slot takes no value.');
+		if (each !== undefined && each !== true)
+			fail('slot-invalid', '`each` on a slot takes no value.');
 
 		if (name === undefined) {
 			if (!scope.each) {
 				fail(
+					'bare-slot-misplaced',
 					'a bare `{% slot /%}` means "this item\'s content" and is only valid inside an `each` slot. Name the field it places.',
 				);
 			}
-			if (each) fail('a bare `{% slot /%}` cannot itself iterate.');
-			if (n.children.length > 0) fail('a bare `{% slot /%}` takes no fallback content.');
+			if (each) fail('slot-invalid', 'a bare `{% slot /%}` cannot itself iterate.');
+			if (n.children.length > 0)
+				fail('slot-invalid', 'a bare `{% slot /%}` takes no fallback content.');
 			return { slot: '' };
 		}
-		if (typeof name !== 'string' || name === '') fail('a slot `name` must be a non-empty string.');
+		if (typeof name !== 'string' || name === '')
+			fail('slot-invalid', 'a slot `name` must be a non-empty string.');
 		if (scope.each) {
 			fail(
+				'slot-inside-each',
 				`slot \`${name}\` is placed inside the \`each\` slot \`${scope.each.slot}\`, which would place it once per item. Place it outside.`,
 			);
 		}
 		const field = fields.get(name);
 		if (!field) {
 			fail(
+				'slot-unknown-field',
 				`slot \`${name}\` names no field of the content model (fields: ${[...fields.keys()].join(', ') || 'none'}) (D26).`,
 			);
 		}
 		if (placedSlots.has(name)) {
 			fail(
+				'slot-placed-twice',
 				`slot \`${name}\` is placed twice. A slot is placed exactly once; two positions are two declared fields, or a theme's concern (D26).`,
 			);
 		}
@@ -568,6 +582,7 @@ export function compileComposition(
 		if (each) {
 			if (!field!.list) {
 				fail(
+					'each-on-single-field',
 					`slot \`${name}\` iterates with \`each\`, but field \`${name}\` holds a single value, not a list (D26).`,
 				);
 			}
@@ -578,6 +593,7 @@ export function compileComposition(
 			const sawBare = JSON.stringify(children).includes('"slot":""');
 			if (!sawBare) {
 				fail(
+					'each-item-unplaced',
 					`the \`each\` slot \`${name}\` never places its item — a bare \`{% slot /%}\` inside it is the item's content, and without one that content is dropped (D11).`,
 				);
 			}
@@ -599,33 +615,43 @@ export function compileComposition(
 	function checkMetablock(n: Node, scope: Scope): CompositionOutlineNode {
 		for (const key of Object.keys(n.attributes)) {
 			if (key !== 'name') {
-				fail(`a \`{% metablock %}\` takes \`name\` only, not \`${key}\`.`);
+				fail('metablock-invalid', `a \`{% metablock %}\` takes \`name\` only, not \`${key}\`.`);
 			}
 		}
 		const name = n.attributes.name;
 		if (typeof name !== 'string' || name === '') {
-			fail('a `{% metablock %}` needs a `name`: the declared block it places.');
+			fail(
+				'metablock-invalid',
+				'a `{% metablock %}` needs a `name`: the declared block it places.',
+			);
 		}
 		if (n.children.length > 0) {
-			fail(`\`{% metablock name="${name}" %}\` takes no content; write it self-closing.`);
+			fail(
+				'metablock-invalid',
+				`\`{% metablock name="${name}" %}\` takes no content; write it self-closing.`,
+			);
 		}
 		if (n.inline) {
 			fail(
+				'metablock-invalid',
 				`\`{% metablock name="${name}" /%}\` sits inside a line of text. A meta block is a block; place it on its own line.`,
 			);
 		}
 		if (scope.each) {
 			fail(
+				'metablock-inside-each',
 				`\`{% metablock name="${name}" /%}\` is placed inside the \`each\` slot \`${scope.each.slot}\`, which would place it once per item. Place it outside (D7).`,
 			);
 		}
 		if (!declaredBlocks.has(name as string)) {
 			fail(
+				'metablock-undeclared',
 				`\`{% metablock name="${name}" /%}\` names no declared block (declared: ${[...declaredBlocks].join(', ') || 'none'}). Declare it under \`blocks\` (D7).`,
 			);
 		}
 		if (placedBlocks.has(name as string)) {
 			fail(
+				'metablock-placed-twice',
 				`meta block \`${name}\` is placed twice. A block is placed exactly once: two placements would give two nodes one \`data-name\` (D7).`,
 			);
 		}
@@ -639,6 +665,7 @@ export function compileComposition(
 	const unplaced = [...fields.keys()].filter((f) => !placedSlots.has(f));
 	if (unplaced.length > 0) {
 		fail(
+			'field-unplaced',
 			`content-model field${unplaced.length > 1 ? 's' : ''} ${unplaced.map((f) => `\`${f}\``).join(', ')} ${unplaced.length > 1 ? 'are' : 'is'} placed by no slot, so authored content would be dropped. Place ${unplaced.length > 1 ? 'each' : 'it'} with \`{% slot name="…" /%}\` (D11).`,
 		);
 	}
@@ -1044,8 +1071,15 @@ const kebab = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCas
 export function parseCompositionDefinition(rune: string, source: string): CompositionDefinition {
 	let frontmatter = '';
 	/** Throw, located at the frontmatter key `at` names when it is given. */
-	const fail = (msg: string, at?: readonly string[] | number): never => {
-		const err = new CompositionError(`Rune "${rune}": invalid composition definition — ${msg}`);
+	const fail = (
+		code: CompositionErrorCode,
+		msg: string,
+		at?: readonly string[] | number,
+	): never => {
+		const err = new CompositionError(
+			code,
+			`Rune "${rune}": invalid composition definition — ${msg}`,
+		);
 		const index =
 			typeof at === 'number' ? at : at ? frontmatterKeyLine(frontmatter, at) : undefined;
 		// The frontmatter's first line is the source's second, after `---`.
@@ -1053,11 +1087,12 @@ export function parseCompositionDefinition(rune: string, source: string): Compos
 		throw err;
 	};
 	if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(rune)) {
-		fail('the rune name must be kebab-case.');
+		fail('name-not-kebab', 'the rune name must be kebab-case.');
 	}
-	if (typeof source !== 'string') fail('the definition must be a string.');
+	if (typeof source !== 'string') fail('invalid-value', 'the definition must be a string.');
 	const match = /^﻿?---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)([\s\S]*)$/.exec(source);
-	if (!match) fail('it has no frontmatter block (`---` … `---`) declaring its input.');
+	if (!match)
+		fail('no-frontmatter', 'it has no frontmatter block (`---` … `---`) declaring its input.');
 	frontmatter = match![1];
 	let front: unknown;
 	try {
@@ -1065,12 +1100,13 @@ export function parseCompositionDefinition(rune: string, source: string): Compos
 	} catch (e) {
 		const pos = (e as { linePos?: Array<{ line: number }> }).linePos?.[0]?.line;
 		fail(
+			'frontmatter-yaml',
 			`its frontmatter is not valid YAML: ${(e as Error).message}`,
 			typeof pos === 'number' ? pos - 1 : undefined,
 		);
 	}
 	if (!front || typeof front !== 'object' || Array.isArray(front)) {
-		fail('its frontmatter must be a mapping.');
+		fail('frontmatter-yaml', 'its frontmatter must be a mapping.');
 	}
 	const fm = front as Record<string, unknown>;
 
@@ -1078,66 +1114,72 @@ export function parseCompositionDefinition(rune: string, source: string): Compos
 		if (DEFINITION_KEYS.has(key)) continue;
 		if (key === 'rune' || key === 'name') {
 			fail(
+				'name-restated',
 				`frontmatter key \`${key}\` restates the rune's name, which is the file's name. Remove it (SPEC-153 D9).`,
 				[key],
 			);
 		}
 		if (STYLE_KEYS.has(key)) {
 			fail(
+				'style-key',
 				`frontmatter key \`${key}\` would ship styles. A composed rune has no block and ships no CSS: its appearance is the primitives' (D2). A rune that needs its own styling is a declared rune in a plugin.`,
 				[key],
 			);
 		}
 		if (EMIT_KEYS.has(key)) {
 			fail(
+				'second-emit-path',
 				`frontmatter key \`${key}\` declares a second emit path. A definition's template is its emit path; exactly one of a slot declaration, a template or a \`transform\` (D5).`,
 				[key],
 			);
 		}
 		if (key === 'layout') {
 			fail(
+				'layout-key',
 				"frontmatter key `layout` cannot apply: `layout` places a rune's own containers, and a composed rune's containers belong to the primitives it places (D7). Arrange them in the template.",
 				[key],
 			);
 		}
-		fail(`unknown frontmatter key \`${key}\` (expected ${[...DEFINITION_KEYS].join(', ')}).`, [
-			key,
-		]);
+		fail(
+			'unknown-key',
+			`unknown frontmatter key \`${key}\` (expected ${[...DEFINITION_KEYS].join(', ')}).`,
+			[key],
+		);
 	}
 
 	const tag = (fm.tag ?? 'div') as string;
 	if (typeof tag !== 'string' || !/^[a-z][a-z0-9]*$/.test(tag))
-		fail('`tag` must be an element name.', ['tag']);
+		fail('invalid-value', '`tag` must be an element name.', ['tag']);
 
 	let aliases: string[] | undefined;
 	if (fm.aliases !== undefined) {
 		if (!Array.isArray(fm.aliases) || !fm.aliases.every((a) => typeof a === 'string')) {
-			fail('`aliases` must be a list of names.', ['aliases']);
+			fail('invalid-value', '`aliases` must be a list of names.', ['aliases']);
 		}
 		aliases = fm.aliases as string[];
 	}
 	if (fm.description !== undefined && typeof fm.description !== 'string') {
-		fail('`description` must be a string.', ['description']);
+		fail('invalid-value', '`description` must be a string.', ['description']);
 	}
 
-	const attributes = parseAttributes(fm.attributes, (msg, at) =>
-		fail(msg, ['attributes', ...(at ?? [])]),
+	const attributes = parseAttributes(fm.attributes, (code, msg, at) =>
+		fail(code, msg, ['attributes', ...(at ?? [])]),
 	);
-	const contentModel = parseContentModel(fm.content, (msg, at) =>
-		fail(msg, ['content', ...(at ?? [])]),
+	const contentModel = parseContentModel(fm.content, (code, msg, at) =>
+		fail(code, msg, ['content', ...(at ?? [])]),
 	);
 
 	for (const key of ['schema', 'registers', 'metaFields', 'blocks'] as const) {
 		const v = fm[key];
 		if (v !== undefined && (!v || typeof v !== 'object' || Array.isArray(v))) {
-			fail(`\`${key}\` must be a mapping.`, [key]);
+			fail('invalid-value', `\`${key}\` must be a mapping.`, [key]);
 		}
 	}
 	if (
 		fm.provides !== undefined &&
 		(!Array.isArray(fm.provides) || !fm.provides.every((p) => typeof p === 'string'))
 	) {
-		fail('`provides` must be a list of names.', ['provides']);
+		fail('invalid-value', '`provides` must be a list of names.', ['provides']);
 	}
 
 	return {
@@ -1160,35 +1202,40 @@ export function parseCompositionDefinition(rune: string, source: string): Compos
 }
 
 /** Locates a failure inside a frontmatter section: the key path under it. */
-type SectionFail = (msg: string, at?: readonly string[]) => never;
+type SectionFail = (code: CompositionErrorCode, msg: string, at?: readonly string[]) => never;
 
 function parseAttributes(raw: unknown, sectionFail: SectionFail): Record<string, SchemaAttribute> {
-	const fail = (msg: string) => sectionFail(msg);
+	const fail = (code: CompositionErrorCode, msg: string) => sectionFail(code, msg);
 	if (raw === undefined) return {};
 	if (!raw || typeof raw !== 'object' || Array.isArray(raw))
-		fail('`attributes` must be a mapping.');
+		fail('attribute-invalid', '`attributes` must be a mapping.');
 	const out: Record<string, SchemaAttribute> = {};
 	for (const [name, decl] of Object.entries(raw as Record<string, unknown>)) {
 		const where = `attribute \`${name}\``;
-		const at = (msg: string) => sectionFail(msg, [name]);
-		if (!/^[a-z][a-zA-Z0-9]*(-[a-z0-9]+)*$/.test(name)) at(`${where}: not a valid attribute name.`);
+		const at = (code: CompositionErrorCode, msg: string) => sectionFail(code, msg, [name]);
+		if (!/^[a-z][a-zA-Z0-9]*(-[a-z0-9]+)*$/.test(name))
+			at('attribute-invalid', `${where}: not a valid attribute name.`);
 		if (!decl || typeof decl !== 'object' || Array.isArray(decl)) {
-			at(`${where} must be a mapping such as \`{ type: string }\`.`);
+			at('attribute-invalid', `${where} must be a mapping such as \`{ type: string }\`.`);
 		}
 		const d = decl as Record<string, unknown>;
 		for (const key of Object.keys(d)) {
 			if (!ATTRIBUTE_KEYS.has(key)) {
-				at(`${where}: unknown key \`${key}\` (expected ${[...ATTRIBUTE_KEYS].join(', ')}).`);
+				at(
+					'attribute-invalid',
+					`${where}: unknown key \`${key}\` (expected ${[...ATTRIBUTE_KEYS].join(', ')}).`,
+				);
 			}
 		}
 		const type = ATTRIBUTE_TYPES[String(d.type ?? 'string')];
-		if (!type) at(`${where}: \`type\` must be string, number or boolean.`);
+		if (!type) at('attribute-invalid', `${where}: \`type\` must be string, number or boolean.`);
 		if (d.matches !== undefined) {
 			if (!Array.isArray(d.matches) || d.matches.length === 0) {
-				at(`${where}: \`matches\` must be a non-empty list.`);
+				at('attribute-invalid', `${where}: \`matches\` must be a non-empty list.`);
 			}
 			if (RESERVED_MODIFIERS.has(kebab(name))) {
 				at(
+					'attribute-reserved',
 					`${where} declares \`matches\`, so it would render as \`data-${kebab(name)}\` — an attribute the engine writes itself. Rename it (D2a).`,
 				);
 			}
@@ -1222,35 +1269,40 @@ function parseFields(raw: unknown, where: string, fail: SectionFail): ContentFie
 		? raw.map((f) => [String((f as Record<string, unknown>)?.name ?? ''), f])
 		: raw && typeof raw === 'object'
 			? Object.entries(raw)
-			: fail(`\`${where}\` must be a mapping of fields.`);
+			: fail('content-model-invalid', `\`${where}\` must be a mapping of fields.`);
 	return entries.map(([name, f]) => {
-		const at = (msg: string) => fail(msg, [section, name]);
+		const at = (code: CompositionErrorCode, msg: string) => fail(code, msg, [section, name]);
 		if (!/^[a-z][a-zA-Z0-9]*(-[a-zA-Z0-9]+)*$/.test(name)) {
-			at(`\`${where}\`: \`${name}\` is not a valid field name.`);
+			at('content-model-invalid', `\`${where}\`: \`${name}\` is not a valid field name.`);
 		}
-		if (!f || typeof f !== 'object') at(`\`${where}.${name}\` must be a mapping.`);
+		if (!f || typeof f !== 'object')
+			at('content-model-invalid', `\`${where}.${name}\` must be a mapping.`);
 		const def = { ...(f as Record<string, unknown>) };
 		delete def.name;
 		for (const key of Object.keys(def)) {
 			if (!FIELD_KEYS.has(key)) {
 				at(
+					'content-model-invalid',
 					`\`${where}.${name}\`: unknown key \`${key}\` (expected ${[...FIELD_KEYS].join(', ')}).`,
 				);
 			}
 		}
-		if (typeof def.match !== 'string') at(`\`${where}.${name}\` needs a \`match\`.`);
+		if (typeof def.match !== 'string')
+			at('content-model-invalid', `\`${where}.${name}\` needs a \`match\`.`);
 		return { name, ...def } as unknown as ContentFieldDefinition;
 	});
 }
 
 function parseHeadingExtract(raw: unknown, sectionFail: SectionFail): HeadingExtract {
-	const fail = (msg: string) => sectionFail(msg, ['headingExtract']);
+	const fail = (code: CompositionErrorCode, msg: string) =>
+		sectionFail(code, msg, ['headingExtract']);
 	const fields = (raw as { fields?: unknown })?.fields;
-	if (!Array.isArray(fields)) fail('`content.headingExtract.fields` must be a list.');
+	if (!Array.isArray(fields))
+		fail('content-model-invalid', '`content.headingExtract.fields` must be a list.');
 	return {
 		fields: (fields as Array<Record<string, unknown>>).map((f) => {
 			if (typeof f?.name !== 'string' || typeof f.pattern !== 'string') {
-				fail('a `headingExtract` field needs a `name` and a `pattern`.');
+				fail('content-model-invalid', 'a `headingExtract` field needs a `name` and a `pattern`.');
 			}
 			let pattern: RegExp | 'remainder' = 'remainder';
 			if (f.pattern !== 'remainder') {
@@ -1258,6 +1310,7 @@ function parseHeadingExtract(raw: unknown, sectionFail: SectionFail): HeadingExt
 					pattern = new RegExp(f.pattern as string);
 				} catch (e) {
 					fail(
+						'content-model-invalid',
 						`headingExtract \`${f.name}\`: \`pattern\` is not a regular expression: ${(e as Error).message}`,
 					);
 				}
@@ -1287,18 +1340,24 @@ const SECTIONS_KEYS = new Set([
 
 function parseContentModel(raw: unknown, fail: SectionFail): ContentModel {
 	if (raw === undefined) return { type: 'sequence', fields: [] };
-	if (!raw || typeof raw !== 'object' || Array.isArray(raw)) fail('`content` must be a mapping.');
+	if (!raw || typeof raw !== 'object' || Array.isArray(raw))
+		fail('content-model-invalid', '`content` must be a mapping.');
 	const c = raw as Record<string, unknown>;
 	const allowed =
 		c.type === 'sequence' ? SEQUENCE_KEYS : c.type === 'sections' ? SECTIONS_KEYS : null;
 	if (!allowed) {
 		fail(
+			'content-model-type',
 			`\`content.type\` must be \`sequence\` or \`sections\`${c.type ? `, not \`${String(c.type)}\`` : ''}: a composition's slots are the model's fields.`,
 		);
 	}
 	for (const key of Object.keys(c)) {
 		if (!allowed!.has(key)) {
-			fail(`\`content\`: unknown key \`${key}\` for a ${String(c.type)} model.`, [key]);
+			fail(
+				'content-model-invalid',
+				`\`content\`: unknown key \`${key}\` for a ${String(c.type)} model.`,
+				[key],
+			);
 		}
 	}
 	if (c.type === 'sequence') {
@@ -1308,7 +1367,10 @@ function parseContentModel(raw: unknown, fail: SectionFail): ContentModel {
 		} as SequenceModel;
 	}
 	if (c.fields !== undefined && c.preamble !== undefined) {
-		fail('`content` declares both `fields` and `preamble`; they are one thing — use `preamble`.');
+		fail(
+			'content-model-invalid',
+			'`content` declares both `fields` and `preamble`; they are one thing — use `preamble`.',
+		);
 	}
 	const sectionModel =
 		c.sectionModel === undefined
@@ -1316,7 +1378,9 @@ function parseContentModel(raw: unknown, fail: SectionFail): ContentModel {
 					type: 'sequence',
 					fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 				} as SequenceModel)
-			: parseContentModel(c.sectionModel, (msg, at) => fail(msg, ['sectionModel', ...(at ?? [])]));
+			: parseContentModel(c.sectionModel, (code, msg, at) =>
+					fail(code, msg, ['sectionModel', ...(at ?? [])]),
+				);
 	if (c.emitAttributes !== undefined) {
 		const ea = c.emitAttributes;
 		if (
@@ -1325,9 +1389,11 @@ function parseContentModel(raw: unknown, fail: SectionFail): ContentModel {
 			Array.isArray(ea) ||
 			!Object.values(ea).every((v) => typeof v === 'string')
 		) {
-			fail('`content.emitAttributes` must map names to `$heading`, `$<field>` or a literal.', [
-				'emitAttributes',
-			]);
+			fail(
+				'content-model-invalid',
+				'`content.emitAttributes` must map names to `$heading`, `$<field>` or a literal.',
+				['emitAttributes'],
+			);
 		}
 	}
 	return {
@@ -1457,7 +1523,8 @@ export function checkCompositions(
 					? (parentEntry?.entry.dataRune ?? parentEntry?.name ?? parent)
 					: undefined;
 				if (parentRune !== requiredRune) {
-					throw new Error(
+					throw new CompositionError(
+						'parent-required',
 						`Rune "${name}": its template places \`{% ${placedName} %}\`, which requires \`{% ${requiredRune} %}\` as its parent, ${parent ? `but sits inside \`{% ${parent} %}\`` : `but the template's nearest rune around it is "${name}" itself`}. Place \`{% ${requiredRune} %}\` and let its content model produce the \`${placed.name}\` children (D12).`,
 					);
 				}
@@ -1468,7 +1535,8 @@ export function checkCompositions(
 					(t) => !SUBORDINATE_SCHEMA_TYPES.has(t),
 				);
 				if (peer) {
-					throw new Error(
+					throw new CompositionError(
+						'peer-schema-type',
 						`Rune "${name}": it declares schema type \`${info.schemaType}\` and its template places \`{% ${placedName} %}\`, which declares the peer type \`${peer}\`. Two top-level entities in one subtree — compose into a type, never from one: place primitives that emit no type, or a subordinate one such as \`figure\` (D9).`,
 					);
 				}
@@ -1490,7 +1558,8 @@ export function checkCompositions(
 		if (state.get(name) === 'done') return;
 		if (state.get(name) === 'visiting') {
 			const cycle = [...stack.slice(stack.indexOf(name)), name];
-			throw new Error(
+			throw new CompositionError(
+				'composition-cycle',
 				`Composition cycle: ${cycle.map((n) => `"${n}"`).join(' places ')}. A composed rune cannot place itself, directly or through another.`,
 			);
 		}

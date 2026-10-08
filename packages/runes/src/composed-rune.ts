@@ -20,6 +20,7 @@ import {
 	compositionFor,
 	parseCompositionDefinition,
 } from './lib/composition.js';
+import type { CompositionErrorCode } from './lib/composition-errors.js';
 import type {
 	CompositionCatalogEntry,
 	CompositionDefinition,
@@ -92,16 +93,25 @@ function locate(e: Error, name: string, definition: CompositionDefinition): Comp
 	const message = e.message.startsWith(`Rune "${name}"`)
 		? e.message
 		: `Rune "${name}": ${e.message}`;
-	const err = new CompositionError(message);
+	const section = (['registers', 'schema', 'provides'] as const).find((key) =>
+		new RegExp(`\\b${key}\\b`).test(e.message),
+	);
+	// The compiler's own errors carry their code; the schema table's and the
+	// registration's are coded by the section they reject.
+	const code: CompositionErrorCode =
+		(e as CompositionError).code ??
+		(section === 'registers'
+			? 'registers-invalid'
+			: section === 'schema'
+				? 'schema-invalid'
+				: 'invalid-value');
+	const err = new CompositionError(code, message);
 	err.stack = e.stack;
 	const bodyLine = (e as CompositionError).bodyLine;
 	if (typeof bodyLine === 'number') {
 		err.line = definition.templateLine + bodyLine;
 		return err;
 	}
-	const section = ['registers', 'schema', 'provides'].find((key) =>
-		new RegExp(`\\b${key}\\b`).test(e.message),
-	);
 	const index = section ? frontmatterKeyLine(definition.frontmatter, [section]) : undefined;
 	err.line = index !== undefined ? index + 2 : definition.templateLine;
 	return err;
@@ -123,7 +133,10 @@ export function composedPluginRune(name: string, entry: PluginRune): ComposedRun
 	let built = byName.get(name);
 	if (!built) {
 		if (typeof entry.template !== 'string') {
-			throw new Error(`Rune "${name}" carries no composition template.`);
+			throw new CompositionError(
+				'template-entry-invalid',
+				`Rune "${name}" carries no composition template.`,
+			);
 		}
 		built = defineComposedRune(name, entry.template);
 		byName.set(name, built);

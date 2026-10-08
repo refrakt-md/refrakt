@@ -22,6 +22,7 @@ tint-lock: false
 - rune-authoring/output-contract
 - rune-authoring/composability
 - rune-authoring/registration
+- rune-authoring/composed-runes
 - rune-authoring/patterns
 
 ## Plugin authoring

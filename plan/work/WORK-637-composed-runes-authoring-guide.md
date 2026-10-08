@@ -1,4 +1,4 @@
-{% work id="WORK-637" status="ready" priority="high" complexity="moderate" source="SPEC-145,SPEC-153" milestone="v0.41.0" tags="docs,composition,dx" %}
+{% work id="WORK-637" status="in-progress" priority="high" complexity="moderate" source="SPEC-145,SPEC-153" milestone="v0.41.0" tags="docs,composition,dx" %}
 
 # The authoring guide for composed runes
 

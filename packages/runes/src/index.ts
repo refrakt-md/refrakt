@@ -180,6 +180,7 @@ export {
 	SUBORDINATE_SCHEMA_TYPES,
 	CompositionError,
 	frontmatterKeyLine,
+	COMPOSITION_ERRORS,
 } from './lib/index.js';
 export type {
 	CompositionTemplate,
@@ -443,6 +444,7 @@ export {
 	collectCompositions,
 } from './composed-rune.js';
 export type { ComposedRune, CompositionContract } from './composed-rune.js';
+export type { CompositionErrorCode } from './lib/composition-errors.js';
 import { registerCoreCatalog } from './composed-rune.js';
 import { baseConfig as coreThemeConfig } from './config.js';
 export {
