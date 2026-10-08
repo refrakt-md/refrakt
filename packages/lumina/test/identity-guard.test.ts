@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
 	assembleThemeConfig,
+	mergeRuneConfig,
 	mergeThemeConfig,
 	type IdentityViolation,
 	type RuneConfig,
@@ -31,6 +32,16 @@ describe('ADR-028 identity guard — shipped configs', () => {
 		expect(violations).toEqual([]);
 	});
 
+	it('Lumina merges unchanged — the guarded merge equals the unguarded one', () => {
+		// SPEC-158 rests its inertness claim on this: the path-granular guard
+		// (`sequence`, `metaFields.*.metaType`, layout `attrs`) must not move a
+		// single field of the reference theme. Asserted, not assumed.
+		const guarded = mergeThemeConfig(baseConfig, luminaOverrides, undefined, () => {});
+		for (const [key, override] of Object.entries(luminaOverrides.runes ?? {})) {
+			expect(guarded.runes[key]).toEqual(mergeRuneConfig(baseConfig.runes[key], override));
+		}
+	});
+
 	for (const [name, plugin] of Object.entries(plugins)) {
 		it(`@refrakt-md/${name} trips no identity violation`, () => {
 			const violations: IdentityViolation[] = [];
@@ -59,6 +70,16 @@ describe('ADR-028 identity guard — shipped configs', () => {
 		config = mergeThemeConfig(config, luminaOverrides, undefined, (v) => violations.push(v));
 
 		expect(violations).toEqual([]);
+
+		// …and the guard moved nothing: every rune equals its unguarded merge.
+		const unguarded = { ...baseConfig.runes };
+		for (const [key, value] of Object.entries(pluginRunes)) {
+			unguarded[key] = mergeRuneConfig(unguarded[key], value);
+		}
+		for (const [key, value] of Object.entries(luminaOverrides.runes ?? {})) {
+			unguarded[key] = mergeRuneConfig(unguarded[key], value);
+		}
+		expect(config.runes).toEqual(unguarded);
 
 		// And the real entry point produces the same rune set, so the mirror above
 		// is not testing a path nobody uses.

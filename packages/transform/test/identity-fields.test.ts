@@ -53,6 +53,11 @@ describe('the identity rule is expressed once', () => {
 			'universalAttributes',
 			'provides',
 			'schema',
+			// v0.40.0 (SPEC-158) — the guard became path-granular. `sequence` is
+			// ADR-030 rule 3's founding example; `metaFields.*.metaType` is the
+			// first sub-field path. The eight keys above are unchanged.
+			'sequence',
+			'metaFields.*.metaType',
 		]);
 		expect([...VARIANT_DELTA_RESERVED_FIELDS]).toEqual([...IDENTITY_FIELDS, 'variants']);
 	});
@@ -73,6 +78,7 @@ describe('ADR-028 — theme overrides may not redefine a rune', () => {
 	const overrideValue: Record<string, unknown> = {
 		block: 'other',
 		frameTarget: 'self',
+		sequence: 'connected',
 		modifiers: {},
 		sections: {},
 		mediaSlots: {},
@@ -80,7 +86,8 @@ describe('ADR-028 — theme overrides may not redefine a rune', () => {
 		provides: ['prose'],
 	};
 
-	for (const field of IDENTITY_FIELDS) {
+	// Whole-key paths; the wildcard path has its own tests (identity-paths).
+	for (const field of IDENTITY_FIELDS.filter((f) => !f.includes('.'))) {
 		it(`drops and reports a theme override of \`${field}\``, () => {
 			const { violations, sink } = collect();
 			const merged = mergeThemeConfig(
@@ -227,18 +234,20 @@ describe('the variant-delta path still enforces the same rule', () => {
 		);
 	}
 
-	for (const field of VARIANT_DELTA_RESERVED_FIELDS) {
+	for (const field of VARIANT_DELTA_RESERVED_FIELDS.filter((f) => !f.includes('.'))) {
 		it(`errors on a delta carrying \`${field}\``, () => {
 			const value =
-				field === 'block'
-					? 'other'
-					: field === 'frameTarget'
-						? 'self'
-						: field === 'universalAttributes'
-							? 'inline'
-							: field === 'provides'
-								? ['prose']
-								: {};
+				field === 'sequence'
+					? 'connected'
+					: field === 'block'
+						? 'other'
+						: field === 'frameTarget'
+							? 'self'
+							: field === 'universalAttributes'
+								? 'inline'
+								: field === 'provides'
+									? ['prose']
+									: {};
 			const res = validateDelta({ [field]: value } as Partial<RuneConfig>);
 			expect(res.valid).toBe(false);
 			expect(res.errors.some((e) => e.path === `runes.Card.variants.mode.cover.${field}`)).toBe(

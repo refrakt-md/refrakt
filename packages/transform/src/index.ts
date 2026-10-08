@@ -69,15 +69,18 @@ export type { ValidationResult, ValidationError, ValidationWarning } from './val
 export { extractSelectors } from './selectors.js';
 
 // Theme config merging
-export { mergeThemeConfig, applyRuneExtensions } from './merge.js';
+export { mergeThemeConfig, mergeRuneConfig, applyRuneExtensions } from './merge.js';
 export type { IdentityViolation, RuneConfigMergeOptions } from './merge.js';
 
 // Rune identity (ADR-028) — the shared rule behind both merge paths
 export {
 	IDENTITY_FIELDS,
 	VARIANT_DELTA_RESERVED_FIELDS,
+	IDENTITY_FIELD_ATTRIBUTES,
 	findReservedFields,
+	derivedAttributeOwner,
 	identityFieldMessage,
+	derivedAttributeMessage,
 } from './identity-fields.js';
 export type { IdentityField } from './identity-fields.js';
 

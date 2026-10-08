@@ -33,8 +33,27 @@ interface ThemeConfig {
 Each entry in `runes` describes how a single rune type is transformed. Every field is optional; almost every rune sets `block`.
 
 {% hint type="warning" %}
-**Three fields are rune identity, not theme configuration.** `block`, `modifiers` and `sections` say what a rune *is*, and a rune's universal-attribute applicability is derived from them — `reading` needs a `body` role, `prominence` needs a header-ish one, `cover` needs a declared `media-position` modifier. A theme that could rewrite them could change what the same markdown means, so it may not: an override of one is ignored with a build warning, and a variant delta carrying one is a config-load error. Everything else here stays fully theme-owned. See {% ref "ADR-028" /%}.
+**Some config paths are rune identity, not theme configuration.** They say what a rune *is* — what its content means — rather than how it looks. A theme that could rewrite them could change what the same markdown means, so it may not: an override of one is ignored with a build warning naming the rune and the path, and a variant delta carrying one is a config-load error. Everything else here stays fully theme-owned. See {% ref "ADR-028" /%}.
 {% /hint %}
+
+#### Guarded paths
+
+The guard is **path-granular** ({% ref "SPEC-158" /%}): a whole key where the whole key is identity, and a single sub-field where only that sub-field is.
+
+| Path | Why it is identity |
+|------|--------------------|
+| `block`, `modifiers`, `sections` | Universal-attribute applicability derives from them — `reading` needs a `body` role, `prominence` a header-ish one, `cover` a declared `media-position` modifier |
+| `mediaSlots`, `frameTarget` | Join tables that decide which zone is media and whether `frame=` applies at all |
+| `universalAttributes`, `provides` | Decide which attributes an author may write on the rune |
+| `schema` | The schema.org table — a claim about the content, not the skin |
+| `sequence` | Whether an ordinal is *information* (below) |
+| `metaFields.*.metaType` | What kind of field a meta field is — `label`, `sentimentMap` and `transform` on the same entry stay overridable |
+
+`sequence` is the case that makes the rule concrete. On a playlist the number *is* the track number — an identifier a listener says out loud. A theme that restyled a playlist from `numbered` to `connected` would not change how it looks; **it would delete the track numbers**. So `numbered` vs `connected` encodes a fact about the content, and the rune owns it ({% ref "ADR-030" /%} rule 3). `sequenceDirection` — the responsive collapse of the same list — is presentation, and stays the theme's.
+
+`metaFields.*.metaType` is the same split one level down: a theme may relabel a `status` field, recolour it with its own `sentimentMap`, or give it a value `transform`, but retyping it from `status` to `category` changes what the author declared their data to mean. A guarded sub-field is dropped while the rest of its entry merges, and an override entry that leaves `metaType` out keeps the declared one.
+
+A `layout` wrapper's `attrs` may not write an attribute an identity field emits — `data-section` (`sections`), `data-media` (`mediaSlots`), `typeof` / `property` (`schema`), `data-sequence` (`sequence`), `data-meta-type` (`metaFields.*.metaType`), or `data-{name}` for a declared modifier. The refused attribute is dropped and reported; the wrapper's other attributes stand. Presentation attributes such as `data-zone-layout` or `data-color-scheme` are unaffected. This is checked once, when the config is assembled, and `refrakt plugin validate` reports it as an error.
 
 ### block
 
@@ -133,7 +152,7 @@ metaFields: {
 
 | Field | Description |
 |-------|-------------|
-| `metaType` | Visual shape — `'status'`/`'category'`/`'tag'` render as chips; `'id'`/`'quantity'`/`'temporal'`/`'code'` render bare. Also drives typography (monospace for `id`/`code`, tabular-nums for `quantity`/`temporal`) |
+| `metaType` | Visual shape — `'status'`/`'category'`/`'tag'` render as chips; `'id'`/`'quantity'`/`'temporal'`/`'code'` render bare. Also drives typography (monospace for `id`/`code`, tabular-nums for `quantity`/`temporal`). **Rune identity** — a theme override of it is dropped; the entry's other fields still merge |
 | `label` | Human-readable label — the `<dt>` in a def-list, the in-chip label in a bar |
 | `sentimentMap` | Maps the resolved value to a sentiment colour (`positive`/`negative`/`caution`/`neutral`) |
 | `condition` / `renderWhenEmpty` | Render only when the named modifier is truthy (or merely present) |
@@ -170,7 +189,7 @@ layout: {
 Each value is a `LayoutEntry`:
 
 - a bare `string[]` **orders** an existing container's children;
-- `{ tag, children, attrs? }` **creates** a wrapper element (`<tag data-name=key>`) and fills it from the flat transform slots.
+- `{ tag, children, attrs? }` **creates** a wrapper element (`<tag data-name=key>`) and fills it from the flat transform slots. `attrs` may not set an attribute an identity field emits (`data-section`, `typeof`, `property`, …) — see [Guarded paths](#guarded-paths).
 
 Projected `blocks` and transform slots a list doesn't name are appended in transform order — rune content is never dropped. See [Blocks & layout](/extend/theme-authoring/blocks-and-layout) for name resolution and worked examples.
 
@@ -191,7 +210,7 @@ variants: {
 }
 ```
 
-Selection rides the modifier system — the modifier's own `default` picks the active value, so there is no separate condition language and no `defaultVariants`. A delta may override assembly/decoration fields (`layout`, `structure`, `styles`, `contentWrapper`, `staticModifiers`, `autoLabel`, `editHints`) but **not** identity fields (`block`, `modifiers`, `sections`); every axis must be a declared modifier. Both invariants are checked at config load. Requires the rune to be on the flat-slot + base-`layout` model. See the variants section in [Blocks & layout](/extend/theme-authoring/blocks-and-layout).
+Selection rides the modifier system — the modifier's own `default` picks the active value, so there is no separate condition language and no `defaultVariants`. A delta may override assembly/decoration fields (`layout`, `structure`, `styles`, `contentWrapper`, `staticModifiers`, `autoLabel`, `editHints`) but **not** identity paths (see [Guarded paths](#guarded-paths)); every axis must be a declared modifier. Both invariants are checked at config load. Requires the rune to be on the flat-slot + base-`layout` model. See the variants section in [Blocks & layout](/extend/theme-authoring/blocks-and-layout).
 
 ### structure (legacy)
 
@@ -392,6 +411,8 @@ See [Dimensions](/extend/theme-authoring/dimensions#checklist) for marker values
 ### sequence
 
 Ordered list style. The engine emits `data-sequence` on `<ol>` elements within the rune.
+
+**Rune identity** ({% ref "ADR-030" /%} rule 3) — not theme-overridable. Whether the ordinal is information is a fact about the content: switching a playlist to `connected` would delete its track numbers. `sequenceDirection` stays theme-owned.
 
 ```typescript
 Steps: { block: 'steps', sequence: 'connected' }
@@ -786,14 +807,14 @@ Merge behavior:
 | `prefix` | Override replaces base |
 | `tokenPrefix` | Override replaces base |
 | `icons` | Shallow merge by group (override groups replace base groups) |
-| `runes` | Per-rune merge: most fields replace, but `metaFields`, `blocks`, `layout`, and `variants` merge **by inner key**; `block`, `modifiers` and `sections` are identity and cannot be overridden at all |
+| `runes` | Per-rune merge: most fields replace, but `metaFields`, `blocks`, `layout`, and `variants` merge **by inner key**; the [guarded paths](#guarded-paths) are identity and cannot be overridden at all |
 
 {% hint type="note" %}
 Per-rune merge is **shallow for most fields** — overriding `structure` or `styles` replaces the entire object, not individual entries. The block-and-layout fields are the exception: `metaFields`, `blocks`, `layout`, and `variants` merge **by inner key**, so a theme can re-point a single field, swap one block's primitive, reshape one container, or add one variant without restating the whole map. When overriding a wrapper-creating `layout` entry, restate its `tag` (the entry is replaced as a whole).
 {% /hint %}
 
 {% hint type="warning" %}
-`block`, `modifiers` and `sections` are **rune identity** (ADR-028) and are not overridable here. An override carrying one is dropped — the rune's own declaration stands — and a build warning names the rune and the field. Adding a modifier, or rewiring a section role, would change which universal attributes an author may write on that rune, and applicability is a fact about the rune rather than about the theme. A theme still styles the emitted `data-section` / modifier attributes however it likes; it just does not define them.
+The [guarded paths](#guarded-paths) are **rune identity** (ADR-028) and are not overridable here. An override carrying one is dropped — the rune's own declaration stands — and a build warning names the rune and the path. Adding a modifier, or rewiring a section role, would change which universal attributes an author may write on that rune, and applicability is a fact about the rune rather than about the theme. A theme still styles the emitted `data-section` / modifier attributes however it likes; it just does not define them.
 {% /hint %}
 
 ## Real-world examples
