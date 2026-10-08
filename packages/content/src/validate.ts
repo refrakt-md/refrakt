@@ -52,6 +52,10 @@ export const DEFAULT_VALIDATION_IDS: readonly string[] = [
 	// declaring rune's own schema `validate`, so it never fires for content that
 	// uses no registering rune.
 	'registers-source-unresolved',
+	// WORK-631 — an authored node no content-model field matches, which the
+	// transform drops from the page. Raised by every content-model schema's own
+	// `validate`, against the rune's line, naming the dropped node's line.
+	'content-unmatched',
 ];
 
 /** How a finding's Markdoc level maps onto `PipelineWarning.severity`.
