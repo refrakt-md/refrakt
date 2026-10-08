@@ -254,7 +254,7 @@ registers:
 {% slot name="description" /%}
 
 {% slot name="sections" each %}
-  {% details summary=$item.heading %}
+  {% details summary=$each.heading %}
     {% slot /%}
   {% /details %}
 {% /slot %}
@@ -488,10 +488,10 @@ one.
 ### Repeated slots are the `collection` pattern, not iteration
 
 `{% slot name="sections" each %}` does not put a loop in the template. The engine
-iterates and the template describes *one* item with `$item` bound — the same
+iterates and the template describes *one* item with `$each` bound — the same
 arrangement `collection`, `data` and `relationships` item templates already use. A
 bare `{% slot /%}` inside an `each` means "this item's content", which avoids an
-`of=$item` argument.
+`of=$each` argument.
 
 This matters because the constraint is already documented and deliberate.
 `site/content/runes/data.md:174`:
@@ -510,7 +510,7 @@ Composition must hold that same line rather than quietly crossing it.
   and rendering something sensible. Self-closing stays the common form.
 - **`$attrs` is a binding, not new syntax.** Markdoc's variable form already works
   in content (`{% $attrs.name %}`) and in attribute position (`tone=$attrs.role`),
-  alongside the `$item` / `$row` bindings that exist.
+  alongside the `$each` binding (D26) and the `$item` / `$row` bindings that exist.
 
 ## The template vocabulary, in one place
 
@@ -524,12 +524,12 @@ new; each row points at where it is decided.
 |---|---|---|
 | `{% slot name="x" /%}` | place resolved field `x` here | this spec's subject |
 | `{% slot name="x" %}…{% /slot %}` | the same, with fallback content when `x` is empty | "Smaller shape decisions" above |
-| `{% slot name="xs" each %}…{% /slot %}` | the engine iterates; the body describes **one** item with `$item` bound | "Repeated slots are the `collection` pattern" above |
-| `{% slot /%}` (bare, inside `each`) | this item's content — avoids an `of=$item` argument | same |
+| `{% slot name="xs" each %}…{% /slot %}` | the engine iterates; the body describes **one** item with `$each` bound | "Repeated slots are the `collection` pattern" above |
+| `{% slot /%}` (bare, inside `each`) | this item's content — avoids an `of=$each` argument | same |
 | `{% metablock name="x" /%}` | place the rune's declared meta block `x` | D7 |
 | `{% if %}` / `{% else /%}` | Markdoc's own, with the content-model consequence D17 states | D17 |
 | `$attrs.name` | a resolved attribute, in content or attribute position | "Smaller shape decisions" above |
-| `$item` | the current item inside an `each` slot — **but see the shape collision below** | repeated-slots section |
+| `$each` | the current item inside an `each` slot; its fields are exactly the content model's `emitAttributes` | D26 |
 | `$row` | the existing `data` / `collection` row binding, unchanged | prior art, not added here |
 
 **There is no iteration tag and that is deliberate** — `each` is a slot modifier, not a
@@ -542,13 +542,10 @@ find this row and stop.
 because they are what compositions place; they are not additions, and D12 is what bounds
 which of them may be placed.
 
-**Four things on this list are not settled, and the list is where that becomes visible.**
-`metablock`'s name is still open against `{% fields %}` (D7's sub-questions); whether
-`sections` may be a slot name at all is an open question below; whether a slot may appear
-twice is another; and what a multi-node slot leaves behind is the third. Three of the four
-are about `{% slot %}` itself — which says the tag with one obvious meaning is carrying most
-of the undecided surface, and that the open questions below are load-bearing rather than
-tidying.
+**Four things on this list were not settled when it was collected, and the list is where that
+became visible.** `metablock`'s name is still open against `{% fields %}` (D7's sub-questions).
+The other three were about `{% slot %}` itself and are now answered: `sections` is an ordinary
+slot name (D26), a slot may not appear twice (D26), and a slot leaves no element (D10c).
 
 **And a fifth, which collecting the list is what surfaced: `$item` would be one name for a
 third shape.** The repeated-slots section justifies `each` as *"the same arrangement
@@ -566,6 +563,9 @@ has already named once, and the arrangement being "the same" is true of the *ite
 false of the *binding*. Either the binding gets its own name, or the composed case has to
 state what `$item` is for it in the same breath the others do. This is not an argument
 against `each`; it is the one unlabelled edge on it.
+
+*Answered by D26 (2026-10-08):* the binding gets its own name, `$each`, and its shape is
+stated: exactly the content model's `emitAttributes`.
 
 ## Authoring note — `{% metablock %}` versus placing `{% bar %}` or `{% deflist %}`
 
@@ -749,7 +749,7 @@ on the grounds that the primitives' own transforms would then run on the spliced
 unmodified. That is wrong, and the reason is decisive: **at preprocess the content
 model has not resolved anything.** Field matching, `sections`, `emitAttributes` and
 `headingExtract` all run inside the rune's transform at stage 2, so a template spliced
-at preprocess has no `resolved.title`, no `$item`, no heading text — nothing to bind a
+at preprocess has no `resolved.title`, no `$each`, no heading text — nothing to bind a
 slot to.
 
 So the template renders where a `transform` would have: **after field resolution, at
@@ -865,7 +865,7 @@ content:
 
 ```md
 {% slot name="sections" each %}
-  {% details summary=$item.heading %}{% slot /%}{% /details %}
+  {% details summary=$each.heading %}{% slot /%}{% /details %}
 {% /slot %}
 ```
 
@@ -1019,7 +1019,7 @@ blocks:
 {% slot name="body" /%}
 
 {% slot name="sections" each %}
-  {% details summary=$item.heading %}{% slot /%}{% /details %}
+  {% details summary=$each.heading %}{% slot /%}{% /details %}
 {% /slot %}
 {% /mediatext %}
 ```
@@ -1690,7 +1690,7 @@ templates: { by: layout }
 {% slot name="description" /%}
 
 {% slot name="sections" each %}
-  {% details summary=$item.heading %}{% slot /%}{% /details %}
+  {% details summary=$each.heading %}{% slot /%}{% /details %}
 {% /slot %}
 {% /card %}
 
@@ -2226,6 +2226,35 @@ properties, so `Person { cookTime }` passes. Shipping a trimmed schema.org vocab
 and validating against it ourselves: it reverses SPEC-130 D5 and adds a data file to
 maintain, when a maintained library already does the job.
 
+### D26 — slots name fields; `each` binds `$each`; every slot is checked at construction
+
+*Decided 2026-10-08.* Answers three of the open questions below and the `$item` shape
+collision recorded under the template vocabulary.
+
+1. **`sections` is an ordinary slot name.** A slot names a *field*, and `sections` is the
+   name of the field the sections arrival mode fills. The template does not restate the
+   arrival mode; the content model still decides how the field fills, as SPEC-143 D5
+   requires. No special form is added.
+2. **`each` requires a field that holds a list.** It is allowed on any field whose value is
+   a list of items and rejected on a single-valued field, at schema construction, naming the
+   slot.
+3. **The per-item binding is `$each`, not `$item`.** It exists only inside an `each` slot.
+   Its fields are exactly the content model's `emitAttributes` for that item (for example
+   `$each.heading`), and nothing else. Naming a field the content model does not emit is an
+   error at schema construction, not a silent `undefined`. A distinct name keeps the
+   collection `$item` (an entity) and the data `$row` (a flat row) unambiguous: three
+   shapes, three names.
+4. **A template naming a slot the content model does not produce is an error** at schema
+   construction, naming the slot. This is the same unresolvable-source check a schema table
+   gets.
+5. **The same slot placed twice is an error**, at schema construction, naming the slot. A
+   portrait in the header *and* the footer is two declared fields or a theme concern, not a
+   duplicated slot. This holds the one-node-per-`data-name` rule SPEC-143 asserts, and it
+   matches D7's rule for placing a meta block twice.
+
+D11's rule is the other half of item 4: a field no slot places is also an error. Between
+them, every field and every slot is matched exactly once.
+
 ## Non-goals
 
 - Replacing {% ref "SPEC-143" /%}'s declared tier — the two tiers coexist, and D5 keeps them distinct
@@ -2248,17 +2277,21 @@ as a slot with `each`. But `sections` is the content model's *arrival mode*, whi
 {% ref "SPEC-143" /%} D5 says to read rather than restate — so a template naming it
 as a slot may be restating it by another route. The alternative is a distinct form
 for "the thing the sections mode produced", which is uglier and more honest.
+*Answered by D26 (2026-10-08):* an ordinary slot name. It names the field, not the
+arrival mode, and `each` is checked against the field holding a list.
 
 **May a template name a slot the content model does not produce?** It should be an
 error, caught at schema construction with the slot named — the same unresolvable-
 source check a schema table already gets and {% ref "SPEC-144" /%} asks for. Worth
 confirming rather than assuming, because a silently-empty slot is the failure mode
-that wastes an author's afternoon.
+that wastes an author's afternoon. *Answered by D26 (2026-10-08):* confirmed, an error
+naming the slot.
 
 **May a slot appear twice in one template?** Instinct says no, for the same
 one-node-per-`data-name` reason SPEC-143 already asserts. But composition makes the
 temptation concrete — a portrait in the header *and* the footer — so the answer needs
-to be stated rather than inherited.
+to be stated rather than inherited. *Answered by D26 (2026-10-08):* no, an error naming
+the slot.
 
 **What does `{% slot %}` leave behind?** *Answered by D10c (2026-10-08):* no element,
 and each placed node keeps `data-slot` in the output. The answer is deliberately *not*
@@ -2308,6 +2341,11 @@ placed content's node types from that primitive's content model.
 - [ ] A first-party composed rune may declare `schema`; a user definition that declares it is rejected at load, naming the rune and D25 (D25, enforced by SPEC-153's loader)
 - [ ] `@adobe/structured-data-validator` has been run over `contracts/seo-baseline/`, and its findings (noise, and which known defects it catches) are recorded as the evidence for or against lifting D25's ban (D25)
 - [ ] A slot emits no element; every top-level node it places carries `data-slot` in the rendered HTML, `data-owner` does not, and the composed rune's contract lists its slot names (D10c)
+- [ ] `sections` is placed with an ordinary `{% slot name="sections" each %}`; no special form exists (D26)
+- [ ] `each` on a single-valued field is rejected at schema construction, naming the slot (D26)
+- [ ] Inside an `each` slot, `$each` exposes exactly the content model's `emitAttributes`; naming any other field is rejected at schema construction, naming the field (D26)
+- [ ] A template naming a slot the content model does not produce is rejected at schema construction, naming the slot (D26)
+- [ ] A template placing the same slot twice is rejected at schema construction, naming the slot (D26)
 - [ ] A composed rune whose `registers` source is a placed node registers the same id and data as one whose source is an attribute, read from the field bag in Phase 2; `findRef` and the strip timing are unchanged (D10b)
 - [ ] A composed rune's content-derived `properties` resolve — the `image` from a slot-placed portrait reaches the entity, asserted against the graph and not just the attributes (D10)
 - [ ] An author's nested rune inside a slot is never retyped as part of the composed entity (D10)
