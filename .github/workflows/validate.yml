@@ -45,6 +45,18 @@ jobs:
 
       - run: npm test
 
+      # SPEC-153 / WORK-627 — the `npm pack` → install → load harness. The test
+      # suite resolves plugins through workspace links, so it passes whatever a
+      # tarball contains. This packs each plugin and its internal dependencies,
+      # installs the tarballs into a temp project outside the workspace, and
+      # loads the plugin with `loadPlugin()` there.
+      #
+      # Cheap enough to gate every PR: ~25s for all nine plugins. Third-party
+      # dependencies install with `--prefer-offline`, so the cache `npm ci` just
+      # filled serves them and the step adds next to no network.
+      - name: Plugin pack harness
+        run: node scripts/pack-harness.mjs
+
       # `npx refrakt` does NOT work in this repo: the workspace package is
       # symlinked into `node_modules/@refrakt-md/cli`, but npm does not link its
       # `refrakt` bin into `node_modules/.bin`. Invoke the built entry point
