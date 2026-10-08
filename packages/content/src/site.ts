@@ -15,6 +15,8 @@ import {
 	runes as coreRunes,
 	collectRegistrations,
 	composeRegistersHooks,
+	declareSlotMarkers,
+	declareSlotMarkersOnNodes,
 } from '@refrakt-md/runes';
 import type { CompiledXrefPattern } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
@@ -154,7 +156,7 @@ export function buildPreprocessHookSets(
 	opts: PageEnvironmentOptions,
 	parsedPartials: Record<string, Node> | undefined,
 ): HookSet[] {
-	const embedTags = opts.additionalTags ? { ...tags, ...opts.additionalTags } : tags;
+	const { tags: embedTags, nodes: embedNodes } = assembleMarkdocSchemas(opts.additionalTags);
 	// SPEC-072 — plugin-declared (type, field) ordering overrides so
 	// collection/relationships sort & group in domain order. Defaults still come
 	// from each rune's attribute `matches`; these only cover divergent cases.
@@ -189,7 +191,7 @@ export function buildPreprocessHookSets(
 		repoBranch: opts.repoBranch,
 		embedConfig: {
 			tags: embedTags as Record<string, unknown>,
-			nodes: nodes as Record<string, unknown>,
+			nodes: embedNodes as Record<string, unknown>,
 			functions: functions as Record<string, unknown>,
 			orderings,
 			sentiments,
@@ -288,6 +290,38 @@ export function buildPageContentVariables(
 	};
 }
 
+const assembledTags = new WeakMap<object, Record<string, Schema>>();
+
+/**
+ * The tag and node schemas a page is read against: core plus every loaded
+ * plugin's runes, each declaring SPEC-145 D10a's slot markers.
+ *
+ * **This is where the markers are declared, once** (D10a step 2). Markdoc keeps
+ * only declared attributes, so a marker composition sets on the AST survives a
+ * primitive's transform only if that primitive's schema — and the schema of
+ * every node it passes through — names it. Doing it at assembly rather than in
+ * the runes covers plugin runes and future runes alike, and keeps both
+ * attributes out of every rune's own author-facing declaration.
+ *
+ * The page config and the preprocess hooks' `embedConfig` both come from here,
+ * so content an expand or collection re-transforms keeps its markers too.
+ * Memoised on the plugin tag map, which a site builds once.
+ */
+export function assembleMarkdocSchemas(additionalTags?: Record<string, Schema>): {
+	tags: Record<string, Schema>;
+	nodes: Record<string, Schema>;
+} {
+	const key = additionalTags ?? tags;
+	let merged = assembledTags.get(key);
+	if (!merged) {
+		merged = declareSlotMarkers(
+			(additionalTags ? { ...tags, ...additionalTags } : tags) as Record<string, Schema>,
+		);
+		assembledTags.set(key, merged);
+	}
+	return { tags: merged, nodes: declareSlotMarkersOnNodes(nodes as Record<string, Schema>) };
+}
+
 /** Inputs to {@link buildPageTransformConfig} — the per-page surface deciding
  *  which tags, nodes, functions and partials a page is read against. */
 export interface PageTransformConfigOptions {
@@ -322,7 +356,7 @@ export function buildPageTransformConfig(opts: PageTransformConfigOptions): {
 	headings: HeadingInfo[];
 } {
 	const headings = extractHeadings(opts.ast);
-	const mergedTags = opts.additionalTags ? { ...tags, ...opts.additionalTags } : tags;
+	const { tags: mergedTags, nodes: mergedNodes } = assembleMarkdocSchemas(opts.additionalTags);
 	// Capture deferBody runes' bodies as source before transform, so their
 	// per-entity `$item` templates aren't resolved here (SPEC-070 / WORK-262).
 	captureDeferredBodies(opts.ast, (name) =>
@@ -330,7 +364,7 @@ export function buildPageTransformConfig(opts: PageTransformConfigOptions): {
 	);
 	const config: Record<string, unknown> = {
 		tags: mergedTags,
-		nodes,
+		nodes: mergedNodes,
 		functions,
 		variables: {
 			generatedIds: new Set<string>(),

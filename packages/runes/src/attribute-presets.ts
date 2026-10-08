@@ -21,6 +21,7 @@
  */
 
 import type { Schema, SchemaAttribute } from '@markdoc/markdoc';
+import { SchemaSideTable } from './lib/schema-side-table.js';
 
 export interface AttributePresetMetadata {
 	/** Short, human-readable preset name (e.g., `"split layout"`). */
@@ -56,7 +57,7 @@ export function lookupAttributePreset(record: object): AttributePresetMetadata |
  * Map a Markdoc schema back to the `base:` record it was built from.
  * Populated by `createContentModelSchema()` when `base:` is provided.
  */
-export const schemaBasePresets = new WeakMap<Schema, Record<string, SchemaAttribute>>();
+export const schemaBasePresets = new SchemaSideTable<Record<string, SchemaAttribute>>();
 
 /** Names of the universal attributes auto-merged into every content-model schema. */
 export const UNIVERSAL_ATTRIBUTE_NAMES: ReadonlySet<string> = new Set([
