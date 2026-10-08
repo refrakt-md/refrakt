@@ -314,6 +314,13 @@ Six per-item properties on a child row, which no other rune has. The question of
 child row's own `properties` carry the over-match into the JSON-LD graph should be answered
 against this rune.
 
+**Variant schema in a composition** is recorded in {% ref "SPEC-145" /%} D27 (2026-10-08).
+`playlist`'s `by: 'type'` table moves into a definition unchanged. Three gaps remain open:
+- item rows must key on a slot rather than on `track`, under the D10a amendment;
+- the per-variant track defaults that `adoptNestedTrack` writes in code (`CHILD_KIND`, the
+  artist default) have no declarative form;
+- `rows` is never checked against `type`'s `matches`.
+
 ### D8 — the two selector defects are recorded here and want a bug of their own
 
 They are shipped-behaviour defects, not composition findings, and one is a regression. They
