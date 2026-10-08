@@ -1,4 +1,4 @@
-{% work id="WORK-635" status="ready" priority="medium" complexity="simple" source="SPEC-147" milestone="v0.41.0" tags="composition,storytelling,seo" %}
+{% work id="WORK-635" status="in-progress" priority="medium" complexity="simple" source="SPEC-147" milestone="v0.41.0" tags="composition,storytelling,seo" %}
 
 # `lore` as a composed rune
 
