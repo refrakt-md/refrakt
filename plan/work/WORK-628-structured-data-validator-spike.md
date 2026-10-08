@@ -1,4 +1,4 @@
-{% work id="WORK-628" status="ready" priority="medium" complexity="simple" source="SPEC-145" milestone="v0.40.0" tags="seo,schema,spike,validation" %}
+{% work id="WORK-628" status="in-progress" priority="medium" complexity="simple" source="SPEC-145" milestone="v0.40.0" tags="seo,schema,spike,validation" %}
 
 # Spike: `@adobe/structured-data-validator` over the SEO baseline
 

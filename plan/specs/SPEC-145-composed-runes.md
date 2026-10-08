@@ -2226,6 +2226,129 @@ properties, so `Person { cookTime }` passes. Shipping a trimmed schema.org vocab
 and validating against it ourselves: it reverses SPEC-130 D5 and adds a data file to
 maintain, when a maintained library already does the job.
 
+#### Spike result (2026-10-08, {% ref "WORK-628" /%}): keep the ban
+
+`scripts/sd-validator-spike.mjs` runs `@adobe/structured-data-validator` 1.7.0 against
+schema.org 30.1. It checks every fixture's `jsonLd` in today's baseline, the baseline as
+committed at three earlier points (`306e18e`, `83e86f6`, `edc0608`) so that fixed defects
+are checked against the version that still had them, and six synthetic probes for the
+defect classes the baseline cannot contain. Rerun it to reproduce any of the numbers here.
+
+**What the library is.** Two independent layers, and the distinction decides everything:
+
+- **A schema.org layer.** It checks that the type exists (ERROR) and that every property is in
+  the type's `domainIncludes`, inherited properties included (WARNING). That is all it checks.
+  It reads no ranges: value typing is a `TODO` in its source. It checks no cardinality, and
+  says nothing about an entity with no properties.
+- **A Google rich-result layer.** Hand-written required and recommended fields for about 35
+  types (Product, Recipe, Review, VideoObject, ImageObject, BreadcrumbList, HowToStep…).
+  Nothing for `Question`/`FAQPage`, `Event`, `Article`, `MusicPlaylist`, `Place`,
+  `ItemList` or most of the types refrakt emits.
+
+**Noise, on today's baseline (53 fixtures): 16 errors and 187 warnings.**
+
+- The rich-result layer produces 196 of them, and none bears on whether a claim is true. Most
+  are "Missing field … (optional)": every `HowToStep` lacks `image`/`video`/`url`, and
+  every `Product` lacks `gtin`/`brand`/`sku`. The errors are eligibility requirements content
+  cannot supply: `Product.image` and `Recipe.image` (×7), `Review.itemReviewed` (two
+  fixtures), `VideoObject.thumbnailUrl`/`uploadDate` (two fixtures), and an image licence on `figure`. A reviewer
+  accepts every one. Two rich-result findings are fair: `breadcrumb`'s `item` values are
+  relative paths in JSON-LD, which Google rejects, and a one-item `BreadcrumbList` is
+  ineligible.
+- The schema.org layer produces 7 warnings and **no false positives.** Every one is a
+  property outside its type's domain, filed as {% ref "BUG-033" /%}. They are `byArtist` on
+  `MusicPlaylist` (`playlist.mix`, the baseline's own control row), and `duration` on
+  `Chapter` and on `CreativeWork` (`playlist.audiobook`, `playlist.series`, `track.chapter`,
+  `track.talk`). None was a recorded defect, and the rows' own comments invite a second
+  opinion because nothing checks them.
+
+**Catch rate against the recorded defects: 3 of 17, one of them by accident.**
+
+| Recorded defect | Fixture | Caught? |
+|---|---|---|
+| `NonProfit`, a type schema.org lacks | `organization.nonprofit` @ `306e18e` | **Yes**, ERROR, schema.org layer |
+| BUG-028: `ImageObject` with no image | `figure.code` @ `edc0608` | **Yes**, ERROR, rich-result layer (needs `contentUrl`) |
+| WORK-609 over-match: a tier nested as `Offer.offers` | `pricing.foreign-tier` @ `83e86f6` | **Incidentally**, WARNING: `offers` is off `Offer`'s domain. The over-match itself is invisible |
+| WORK-609 over-match: foreign track, foreign steps | `playlist.foreign-track`, `recipe.foreign-steps` @ `83e86f6` | No: extra well-formed items |
+| BUG-028: `ImageObject` claimed over image + code | `figure.mixed` @ `edc0608` | No: the shape is a valid image |
+| BUG-013: podcast as `MusicPlaylist`/`MusicRecording`; episode as `MusicRecording` | `playlist.podcast`, `track.episode` @ `306e18e` | No: real types, real properties, wrong thing |
+| Group A: seven bare type assertions (`Blog`, `ItemList` ×2, `Dataset`, `ImageGallery`, `Place`, `TechArticle`); `map`'s `Place` was a type error besides | @ `306e18e` | No: an empty entity passes, and a wrong type only a reader sees |
+| `Question` with no `name`, heading glued into the answer | `accordion.items` (today) | No: no FAQ rules |
+| `jobTitle: ", CTO at Acme"` | `testimonial.comma` (today) | No: values are not read |
+
+It also misses an unrecorded value defect the same run surfaces: `datePublished: "March 2025"`
+(`playlist.podcast`), which is not a Date. That is in BUG-033 too.
+
+**Probes.** Each one is D25's risk in a pure form:
+
+| Probe | Caught? |
+|---|---|
+| `Person { cookTime }` (D25's own example) | WARNING |
+| `Person { jobtitle }` (misspelt) | WARNING |
+| `@type: "Persn"` | ERROR |
+| `Book { author: Rating, timeRequired: "an afternoon" }` (wrong range) | No |
+| `{ "@type": "Dataset" }` (asserts, says nothing) | No |
+| `Place { name: "Landmarks of Rome" }` (right shape, wrong thing) | No |
+
+**Cost.** One package of 236 KB, with no runtime dependencies, Node ≥ 18 and ESM only. It
+expects `@marbec/web-auto-extractor`'s output shape. JSON-LD that is already parsed can be
+grouped into that shape directly, so the extractor is not needed. The whole run (59 entity
+sets plus the one-off vocabulary index) takes 35–46 ms. One API hazard:
+`SchemaOrgValidator.schemaCache` is a static, so the first vocabulary any instance loads wins
+for the life of the process. A long-lived process (the MCP server, a dev server) would not
+pick up a vocabulary bump without restarting.
+
+**The vocabulary: obtained, pinned and updated.** The library takes
+`schemaorg-all-https.jsonld` as a constructor argument. That is 1.5 MB, or 229 KB gzipped.
+The spike pins release 30.1 by version and sha256 (`07e7c663…f88ae5`). It fetches the file
+from the `schemaorg/schemaorg` repository's `data/releases/30.1/` directory and caches it under
+`node_modules/.cache/`. schema.org serves the same file at `/version/30.1/`, but this
+sandbox's egress policy refused `schema.org` outright, while GitHub's raw host was allowed. A
+user's CI can hit the same wall, so a check that fetches at run time breaks builds offline and
+behind proxies. schema.org releases two to four times a year (30.0 on 2026-03-19, 30.1 on
+2026-09-16). Updating means changing the version and hash beside the pin and rerunning. A
+release directory is never rewritten upstream, so the hash does not drift under a fixed
+version.
+
+That cost cuts into the premise of item 3. "Consume, don't ship" holds only while the
+vocabulary is fetched at use time. Wiring this into `refrakt validate` for users means one of
+three things:
+
+- fetch on demand, which puts network in a validation command;
+- vendor the pinned file, which ships the ontology D5 declined, uncurated and 229 KB gzipped;
+- or require the user to supply it, which is a check nobody runs.
+
+**Recommendation: keep the ban on user `schema`, and do not make this the check that lifts
+it.** The ban exists because a user's row publishes with no reviewer. A check that replaces
+that reviewer has to catch what the reviewer would. On the evidence, this one catches the two
+mistakes a typo or a misremembered property produces: a type that does not exist and a
+property off its type. Those are probes 1–3. It does not catch the mistakes that made up
+almost all of the baseline's history: the wrong type for the content (BUG-013, `map`), a type
+asserted with nothing behind it (Group A), the wrong value (a string where a `Person` belongs,
+prose where a Date or Duration belongs), and wrong membership (WORK-609). Those are the
+mistakes a confident user makes. Lifting the ban behind this check would publish them with a
+passing grade, which is worse than the current position, where a user cannot publish them at
+all.
+
+Two narrower outcomes are worth having, and neither lifts the ban:
+
+- **As a maintainer-side net, the schema.org layer has earned a place.** It had zero false
+  positives and found three defects that reviewers had accepted, on rows that said nothing
+  checks them. Running it over the baseline in CI ({% ref "WORK-629" /%}) costs a devDependency
+  and a pinned file, and ships nothing. The rich-result layer stays out: on refrakt's output it
+  reports eligibility, not truth.
+- **If the ban is revisited,** the type and domain check can run on a user definition's row
+  at load time, against the row's declared type and property names, with no content and no
+  page. It is the cheapest check that is honest about what it covers, and "Considered and
+  rejected" already records it as insufficient on its own: it is the closed allowlist with
+  properties added. What would justify lifting the ban is a range check over emitted values.
+  The library lists that as a `TODO`, and it still would not see a wrong type or a bare type.
+  Until something does, a user's `schema` row stays the one place refrakt would publish a claim
+  nobody read.
+
+No `refrakt validate` check is filed from this spike, because the recommendation is not to
+build one.
+
 ### D26 — slots name fields; `each` binds `$each`; every slot is checked at construction
 
 *Decided 2026-10-08.* Answers three of the open questions below and the `$item` shape
