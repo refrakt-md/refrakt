@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import type {
 	Plugin,
+	ProjectFiles,
 	SiteConfig,
 	SecurityPolicy,
 	RefraktConfig,
@@ -137,12 +138,35 @@ function collectTintPresetSpecs(site: SiteConfig): string[] {
 	return specs;
 }
 
+/** The site's project rune directory: `runes.dir`, or `runes` (SPEC-153 D4). */
+function projectRuneDir(site: SiteConfig): string {
+	return site.runes?.dir ?? DEFAULT_RUNE_DIR;
+}
+
+/** Mirrors `DEFAULT_PROJECT_RUNE_DIR` in `@refrakt-md/runes`, which this module
+ *  only imports lazily. */
+const DEFAULT_RUNE_DIR = 'runes';
+
+/**
+ * Every definition file in the project's rune directory, as text — what D10's
+ * dev invalidation compares to decide whether the rune set must be rebuilt.
+ */
+function projectRuneSnapshot(files: ProjectFiles, site: SiteConfig): string {
+	const dir = projectRuneDir(site);
+	const parts: string[] = [];
+	for (const file of [...files.list(dir)].sort()) {
+		if (!file.endsWith('.md')) continue;
+		parts.push(file, files.read(`${dir}/${file}`) ?? '');
+	}
+	return JSON.stringify(parts);
+}
+
 /** Resolve a site's theme module + plugin merges into a single context object.
  *  Shared between the FS loader and the virtual loader so both produce
  *  byte-identical transforms from the same SiteConfig. */
 async function assembleSiteContext(
 	site: SiteConfig,
-	opts: { configDir?: string } = {},
+	opts: { configDir?: string; projectFiles?: ProjectFiles } = {},
 ): Promise<AssembledSiteContext> {
 	const themePackage = getThemePackage(site.theme);
 	const themeModule = await import(/* @vite-ignore */ themePackage + '/transform');
@@ -177,7 +201,21 @@ async function assembleSiteContext(
 
 	const pluginNames = site.plugins ?? [];
 
-	if (pluginNames.length === 0) {
+	// SPEC-153 D4/D5 — the project's own composed runes, read through its
+	// `ProjectFiles` so a hosted build over `memoryProjectFiles` gets them too.
+	const {
+		loadPlugin,
+		mergePlugins,
+		loadProjectRunes,
+		runes: coreRunes,
+	} = await import('@refrakt-md/runes');
+	const projectRunes = opts.projectFiles
+		? loadProjectRunes(opts.projectFiles, projectRuneDir(site))
+		: undefined;
+	const project =
+		projectRunes && Object.keys(projectRunes.runes).length > 0 ? projectRunes : undefined;
+
+	if (pluginNames.length === 0 && !project) {
 		// No plugins, but we still need to route site-level tint/background
 		// overrides + presetMap through assembleThemeConfig so tints with
 		// preset-path extends get resolved.
@@ -204,10 +242,9 @@ async function assembleSiteContext(
 		};
 	}
 
-	const { loadPlugin, mergePlugins, runes: coreRunes } = await import('@refrakt-md/runes');
 	const loaded = await Promise.all(pluginNames.map((name: string) => loadPlugin(name)));
 	const coreRuneNames = new Set(Object.keys(coreRunes));
-	const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer);
+	const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer, project);
 
 	const { config: assembledConfig } = assembleThemeConfig({
 		coreConfig: themeConfig,
@@ -254,11 +291,30 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 	let _loader: SiteLoader | null = null;
 	let _siteLoaderOptions: SiteLoaderOptions | null = null;
 	let _hl: { (tree: any): any; css: string } | null = null;
+	const projectFiles = fsProjectFiles(configDir);
+	let _runeSnapshot: string | null = null;
+
+	/**
+	 * SPEC-153 D10 — a rune definition is not a page: editing one changes the
+	 * tag set and the theme config, and so every page that uses the rune. When
+	 * the project's definitions differ from the ones the rune set was built
+	 * from, drop the whole assembly, not only the cached site, so the next load
+	 * rebuilds tags, transform and every page from the new definitions.
+	 */
+	function refreshProjectRunes(): boolean {
+		if (_initPromise === null) return false;
+		if (projectRuneSnapshot(projectFiles, site) === _runeSnapshot) return false;
+		_initPromise = null;
+		_loader = null;
+		_transform = null;
+		return true;
+	}
 
 	async function init(): Promise<void> {
 		if (_initPromise) return _initPromise;
 		_initPromise = (async () => {
-			const ctx = await assembleSiteContext(site, { configDir });
+			_runeSnapshot = projectRuneSnapshot(projectFiles, site);
+			const ctx = await assembleSiteContext(site, { configDir, projectFiles });
 			_transform = ctx.transform;
 
 			// Run each plugin's `configure` lifecycle hook before any pipeline
@@ -313,13 +369,19 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 		return _initPromise;
 	}
 
+	// Dev mode re-reads everything on every load, so it re-checks the
+	// definitions too; otherwise `invalidateSite()` is the signal.
+	const dev = options?.dev ?? false;
+
 	return {
 		async getSite(): Promise<Site> {
+			if (dev) refreshProjectRunes();
 			await init();
 			return _loader!.load();
 		},
 
 		async getTransform(): Promise<(tree: any) => any> {
+			if (dev) refreshProjectRunes();
 			await init();
 			return _transform!;
 		},
@@ -374,6 +436,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 		},
 
 		invalidateSite(): void {
+			if (refreshProjectRunes()) return;
 			_loader?.invalidate();
 		},
 	};
@@ -412,6 +475,11 @@ export interface VirtualRefraktLoaderOptions {
 	fileRoots?: FileRoots;
 	/** Skip caching — re-run the pipeline on every load(). Default: false. */
 	dev?: boolean;
+	/** The project's files (SPEC-113). Its `runes.dir` (default `runes`) is read
+	 *  through it, so a hosted build that passes `memoryProjectFiles(map)` gets
+	 *  the project's composed runes with no filesystem (SPEC-153 D5). Omitted,
+	 *  the project defines no runes of its own. */
+	projectFiles?: ProjectFiles;
 }
 
 /**
@@ -442,6 +510,7 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 		xrefs,
 		fileRoots: userFileRootsOption,
 		dev,
+		projectFiles,
 	} = options;
 	const xrefPatterns = compileConfiguredXrefPatterns(xrefs);
 	const userFileRoots = userFileRootsOption ?? {};
@@ -451,11 +520,25 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 	let _loader: SiteLoader | null = null;
 	let _virtualOptions: VirtualSiteLoaderOptions | null = null;
 	let _hl: { (tree: any): any; css: string } | null = null;
+	let _runeSnapshot: string | null = null;
+
+	/** SPEC-153 D10 — as in `createRefraktLoader`: a host that patches a
+	 *  definition in its live `memoryProjectFiles` map gets the rune set rebuilt
+	 *  on the next load after `invalidateSite()`. */
+	function refreshProjectRunes(): boolean {
+		if (_initPromise === null || !projectFiles) return false;
+		if (projectRuneSnapshot(projectFiles, site) === _runeSnapshot) return false;
+		_initPromise = null;
+		_loader = null;
+		_transform = null;
+		return true;
+	}
 
 	async function init(): Promise<void> {
 		if (_initPromise) return _initPromise;
 		_initPromise = (async () => {
-			const ctx = await assembleSiteContext(site);
+			if (projectFiles) _runeSnapshot = projectRuneSnapshot(projectFiles, site);
+			const ctx = await assembleSiteContext(site, { projectFiles });
 			_transform = ctx.transform;
 
 			// Plugin `configure` lifecycle — same as in createRefraktLoader.
@@ -509,6 +592,7 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 
 	return {
 		async getSite(): Promise<Site> {
+			if (dev) refreshProjectRunes();
 			await init();
 			return _loader!.load();
 		},
@@ -559,6 +643,7 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 		},
 
 		invalidateSite(): void {
+			if (refreshProjectRunes()) return;
 			_loader?.invalidate();
 		},
 	};

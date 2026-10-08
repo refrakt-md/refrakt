@@ -141,9 +141,20 @@ export interface SiteConfig {
 	repoBranch?: string;
 	/** Rune resolution configuration */
 	runes?: {
+		/** Which provider wins a rune name more than one provides: a plugin's
+		 *  short name, `"__core__"` to keep a core rune, or `"__project__"` to
+		 *  let a project rune shadow a plugin's (SPEC-153 D8). */
 		prefer?: Record<string, string>;
 		aliases?: Record<string, string>;
+		/** Unpublished plugin development: rune name → a JS module exporting a
+		 *  rune entry with a `transform`. Not for composed rune definitions,
+		 *  which go in `dir` (SPEC-153 D7). */
 		local?: Record<string, string>;
+		/** SPEC-153 D4 — the project's directory of composed rune definitions,
+		 *  relative to the project root. Every `<rune>.md` in it is a composed
+		 *  rune named after the file, read through `ProjectFiles` (D5). Defaults
+		 *  to `runes`; an absent directory defines no runes. */
+		dir?: string;
 	};
 }
 
@@ -294,6 +305,7 @@ export interface RefraktConfig {
 		prefer?: Record<string, string>;
 		aliases?: Record<string, string>;
 		local?: Record<string, string>;
+		dir?: string;
 	};
 }
 

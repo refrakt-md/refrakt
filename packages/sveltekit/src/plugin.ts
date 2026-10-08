@@ -97,8 +97,13 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 			const hasLocal = activeSite.runes?.local && Object.keys(activeSite.runes.local).length > 0;
 			const hasAliases =
 				activeSite.runes?.aliases && Object.keys(activeSite.runes.aliases).length > 0;
+			// SPEC-153 D4 — the project's own composed runes, if it has any.
+			const { fsProjectFiles } = await import('@refrakt-md/types/project-files');
+			const projectFiles = fsProjectFiles(activeConfigDir || resolvedRoot);
+			const runeDir = activeSite.runes?.dir ?? 'runes';
+			const hasProject = projectFiles.list(runeDir).some((f) => f.endsWith('.md'));
 
-			if (hasPackages || hasLocal || hasAliases) {
+			if (hasPackages || hasLocal || hasAliases || hasProject) {
 				try {
 					const runesPkg = '@refrakt-md/runes';
 					const {
@@ -106,6 +111,7 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 						mergePlugins,
 						applyAliases,
 						loadLocalRunes,
+						loadProjectRunes,
 						runes: coreRunes,
 						runeTagMap,
 					} = await import(runesPkg);
@@ -115,12 +121,13 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 					let mergedTags: Record<string, Schema> = {};
 					let merged;
 
-					// Load installed packages
-					if (hasPackages) {
+					// Load installed packages, and the project's rune directory
+					if (hasPackages || hasProject) {
 						const loaded = await Promise.all(
-							activeSite.plugins!.map((name: string) => loadPlugin(name)),
+							(activeSite.plugins ?? []).map((name: string) => loadPlugin(name)),
 						);
-						merged = mergePlugins(loaded, coreRuneNames, activeSite.runes?.prefer);
+						const project = hasProject ? loadProjectRunes(projectFiles, runeDir) : undefined;
+						merged = mergePlugins(loaded, coreRuneNames, activeSite.runes?.prefer, project);
 						mergedRunes = { ...coreRunes, ...merged.runes };
 						mergedTags = merged.tags;
 						mergedPackages = merged.plugins;
@@ -283,7 +290,10 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 				}
 			};
 
-			setupContentHmr(server, activeSite.contentDir, examplesDir, invalidate);
+			// SPEC-153 D10 — the project's rune definitions, relative to the
+			// project root like every `ProjectFiles` key.
+			const runesDir = resolve(activeConfigDir ?? resolvedRoot, activeSite.runes?.dir ?? 'runes');
+			setupContentHmr(server, activeSite.contentDir, examplesDir, invalidate, { runesDir });
 		},
 	};
 }

@@ -1,4 +1,4 @@
-{% work id="WORK-634" status="ready" priority="high" complexity="complex" source="SPEC-153" milestone="v0.41.0" tags="composition,project,loader,hosted,dx" %}
+{% work id="WORK-634" status="in-progress" priority="high" complexity="complex" source="SPEC-153" milestone="v0.41.0" tags="composition,project,loader,hosted,dx" %}
 
 # A project defines its own composed runes in `runes.dir`
 

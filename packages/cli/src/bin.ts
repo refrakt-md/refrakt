@@ -260,6 +260,26 @@ async function runPlugin(namespace: string, pluginArgs: string[]): Promise<void>
 	}
 }
 
+/**
+ * SPEC-153 D4 — the project's own composed runes: every `<rune>.md` in
+ * `runes.dir` (default `runes`) beside `refrakt.config.json`, read through
+ * `ProjectFiles`. `undefined` when there are none, so a project without the
+ * directory merges exactly as before.
+ */
+async function loadProjectLayer(
+	runesModule: typeof import('@refrakt-md/runes'),
+	configPath: string,
+	runesConfig: { dir?: string } | undefined,
+): Promise<import('@refrakt-md/runes').LoadedPlugin | undefined> {
+	const { dirname } = await import('node:path');
+	const { fsProjectFiles } = await import('@refrakt-md/types/project-files');
+	const loaded = runesModule.loadProjectRunes(
+		fsProjectFiles(dirname(configPath)),
+		runesConfig?.dir,
+	);
+	return Object.keys(loaded.runes).length > 0 ? loaded : undefined;
+}
+
 /** Load plugins from refrakt.config.json and assemble a merged ThemeConfig.
  *  Falls back to baseConfig if no config file or packages are found.
  *
@@ -324,10 +344,13 @@ async function loadMergedConfig(
 
 		const coreRuneNames = new Set(Object.keys(runes));
 		let merged;
+		const project = await loadProjectLayer(runesModule, configResult.path, siteScoped.runes);
 
-		if (siteScoped.plugins && siteScoped.plugins.length > 0) {
-			const loaded = await Promise.all(siteScoped.plugins.map((name: string) => loadPlugin(name)));
-			merged = mergePlugins(loaded, coreRuneNames, siteScoped.runes?.prefer);
+		if ((siteScoped.plugins && siteScoped.plugins.length > 0) || project) {
+			const loaded = await Promise.all(
+				(siteScoped.plugins ?? []).map((name: string) => loadPlugin(name)),
+			);
+			merged = mergePlugins(loaded, coreRuneNames, siteScoped.runes?.prefer, project);
 			mergedRunes = { ...runes, ...merged.runes };
 			mergedTags = { ...tags, ...merged.tags };
 			packageFixtures = merged.fixtures;
@@ -1565,7 +1588,7 @@ async function buildReferenceContext(
 
 	try {
 		const { loadRefraktConfigFile } = await import('./config-file.js');
-		const { config } = loadRefraktConfigFile(configDir);
+		const { config, path: configPath } = loadRefraktConfigFile(configDir);
 		const coreRuneNames = new Set(Object.keys(coreRunes));
 
 		// Resolve the site's plugins. Multi-site configs nest plugins under
@@ -1581,16 +1604,19 @@ async function buildReferenceContext(
 			scopedRunes = resolved.site.runes;
 		}
 
-		if (scopedPlugins && scopedPlugins.length > 0) {
+		const project = await loadProjectLayer(runesModule, configPath, scopedRunes);
+		if ((scopedPlugins && scopedPlugins.length > 0) || project) {
 			const loadedPackages = await Promise.all(
-				scopedPlugins.map((name: string) => loadPlugin(name)),
+				(scopedPlugins ?? []).map((name: string) => loadPlugin(name)),
 			);
-			const merged = mergePlugins(loadedPackages, coreRuneNames, scopedRunes?.prefer);
+			const merged = mergePlugins(loadedPackages, coreRuneNames, scopedRunes?.prefer, project);
+			if (project) loadedPackages.push(project);
 
 			const runeToNpm: Record<string, string> = {};
 			for (const loaded of loadedPackages) {
 				for (const name of Object.keys(loaded.runes)) {
-					runeToNpm[name] = loaded.npmName;
+					runeToNpm[name] =
+						loaded.npmName === runesModule.PROJECT_RUNES ? 'project' : loaded.npmName;
 				}
 			}
 

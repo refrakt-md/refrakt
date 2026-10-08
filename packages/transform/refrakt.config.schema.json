@@ -426,11 +426,11 @@
       "additionalProperties": false
     },
     "RunesConfig": {
-      "description": "Rune resolution — which package wins when several define the same rune name, extra tag names for existing runes, and runes loaded from local files.",
+      "description": "Rune resolution — which package wins when several define the same rune name, extra tag names for existing runes, runes loaded from local files, and the project's own composed rune definitions.",
       "type": "object",
       "properties": {
         "prefer": {
-          "description": "Which package wins when several define a rune of the same name, mapping rune name to package. Use `\"__core__\"` to force the built-in core rune to take precedence.",
+          "description": "Which package wins when several define a rune of the same name, mapping rune name to package. Use `\"__core__\"` to force the built-in core rune to take precedence, or `\"__project__\"` to let a definition in `runes.dir` shadow a plugin's rune. A project rune can never take a core rune's name.",
           "type": "object",
           "additionalProperties": { "type": "string" }
         },
@@ -440,9 +440,14 @@
           "additionalProperties": { "type": "string" }
         },
         "local": {
-          "description": "Rune implementations loaded from local files rather than a published package, mapping rune name to file path. Paths resolve relative to `refrakt.config.json`.",
+          "description": "Rune implementations loaded from local JavaScript modules rather than a published package, mapping rune name to module path — for developing a plugin before publishing it. Paths resolve relative to `refrakt.config.json`. A composed rune definition (`.md`) does not go here: put it in `runes.dir`.",
           "type": "object",
           "additionalProperties": { "type": "string" }
+        },
+        "dir": {
+          "description": "The project's directory of composed rune definitions, relative to the project root. Every `<rune>.md` in it is a composed rune named after the file. Defaults to `runes`; an absent directory defines no runes.",
+          "type": "string",
+          "default": "runes"
         }
       },
       "additionalProperties": false

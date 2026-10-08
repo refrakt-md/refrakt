@@ -1,4 +1,4 @@
-import { resolve, extname } from 'node:path';
+import { resolve, extname, sep } from 'node:path';
 
 /** File extensions recognized as sandbox example sources */
 const SANDBOX_EXTENSIONS = new Set(['.html', '.css', '.js', '.svg', '.glsl-vert', '.glsl-frag']);
@@ -35,6 +35,13 @@ export interface MinimalViteDevServer {
  * `createRefraktLoader.invalidateSite()` (or equivalent) so the next SSR
  * pass rebuilds the site from disk rather than serving the cached version.
  *
+ * When `options.runesDir` is provided, also watches the project's composed
+ * rune definitions (SPEC-153 D10). A definition is not a page: editing one
+ * changes every page that uses the rune. The loader decides what to rebuild
+ * when `onInvalidate` fires (`createRefraktLoader` rebuilds its rune set and
+ * every page when a definition changed); the watcher's job is to fire it and
+ * reload, for a file that is not in the content tree.
+ *
  * Shared between SvelteKit, Astro, and Nuxt — all three run on Vite and use
  * the same watcher / module-graph / WebSocket API surface.
  */
@@ -43,10 +50,24 @@ export function setupContentHmr(
 	contentDir: string,
 	examplesDir?: string,
 	onInvalidate?: () => void,
+	options: { runesDir?: string } = {},
 ): void {
 	const absContentDir = resolve(contentDir);
 
 	server.watcher.add(absContentDir);
+
+	if (options.runesDir) {
+		const absRunesDir = resolve(options.runesDir);
+		server.watcher.add(absRunesDir);
+		const reloadRune = (file: string) => {
+			if (!file.startsWith(absRunesDir + sep) || !file.endsWith('.md')) return;
+			onInvalidate?.();
+			server.ws.send({ type: 'full-reload' });
+		};
+		server.watcher.on('change', reloadRune);
+		server.watcher.on('add', reloadRune);
+		server.watcher.on('unlink', reloadRune);
+	}
 
 	const reload = (file: string) => {
 		if (!file.startsWith(absContentDir) || !file.endsWith('.md')) return;

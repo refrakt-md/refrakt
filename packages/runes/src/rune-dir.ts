@@ -33,6 +33,10 @@ export interface RuneDefinitionFile {
 	source: string;
 }
 
+/** The pseudo-plugin name a project's runes carry, and the `runes.prefer`
+ *  value that lets one shadow a plugin's rune (SPEC-153 D8). */
+export const PROJECT_RUNES = '__project__';
+
 const RUNE_NAME = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 
 /**

@@ -14,7 +14,8 @@ import type { HtmlTheme } from '@refrakt-md/html';
 import { assembleThemeConfig, createTransform, defaultLayout } from '@refrakt-md/transform';
 import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import { createHighlightTransform } from '@refrakt-md/highlight';
-import { loadPlugin, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
+import { loadPlugin, loadProjectRunes, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
+import { fsProjectFiles } from '@refrakt-md/types/project-files';
 import { getThemePackage } from '@refrakt-md/types';
 import type { RendererNode } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
@@ -67,10 +68,14 @@ async function build() {
 	let communityTags: Record<string, Schema> | undefined;
 	let finalConfig = themeConfig;
 
-	if (pluginNames.length > 0) {
+	// The project's own composed runes: every `<rune>.md` in `runes.dir`.
+	const projectRunes = loadProjectRunes(fsProjectFiles(configDir), site.runes?.dir);
+	const project = Object.keys(projectRunes.runes).length > 0 ? projectRunes : undefined;
+
+	if (pluginNames.length > 0 || project) {
 		const loaded = await Promise.all(pluginNames.map((name: string) => loadPlugin(name)));
 		const coreRuneNames = new Set(Object.keys(coreRunes));
-		const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer);
+		const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer, project);
 
 		communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
 

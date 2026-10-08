@@ -3,8 +3,8 @@ import type { Plugin, PluginRune, RuneExtension } from '@refrakt-md/types';
 import type { RuneConfig, RuneProvenance, LocalizedValue } from '@refrakt-md/transform';
 import { selectLocaleBundle } from '@refrakt-md/transform';
 import { Rune, defineRune, runeTagMap } from './rune.js';
-import { checkComposedCatalog, composedPluginRune } from './composed-rune.js';
-import { readRuneDefinitions, withRuneDefinitions } from './rune-dir.js';
+import { checkComposedCatalog, composedPluginRune, coreCatalogRunes } from './composed-rune.js';
+import { PROJECT_RUNES, readRuneDefinitions, withRuneDefinitions } from './rune-dir.js';
 import type { RuneDirReader } from './rune-dir.js';
 import { compositionFor, composedTypeName } from './lib/composition.js';
 
@@ -55,6 +55,10 @@ export interface MergedPluginResult {
 	 *  with {@link selectPluginStrings}. */
 	translations: Record<string, Record<string, LocalizedValue>>;
 }
+
+/** The resolution layer a rune came from: the project's own directory, or a plugin. */
+const sourceOf = (pkg: LoadedPlugin): 'project' | 'plugin' =>
+	pkg.npmName === PROJECT_RUNES ? 'project' : 'plugin';
 
 /** Reserved namespace names that cannot be used by user config or plugins. */
 const RESERVED_FILE_ROOT_NAMESPACES = new Set(['site']);
@@ -290,10 +294,15 @@ async function resolvePluginFileRoots(
  * 4. Two plugins same name, no core: resolved by `prefer`, or throws
  */
 export function mergePlugins(
-	loaded: LoadedPlugin[],
+	plugins: LoadedPlugin[],
 	coreRuneNames: Set<string>,
 	prefer?: Record<string, string>,
+	project?: LoadedPlugin,
 ): MergedPluginResult {
+	// SPEC-153 D8 — the project layer: core < plugin < project, core names
+	// never shadowable, a plugin's only through `runes.prefer`.
+	if (project) checkProjectPrecedence(project, plugins, coreRuneNames, prefer);
+	const loaded = project ? [...plugins, project] : plugins;
 	const ownership = new Map<string, Array<{ pkg: LoadedPlugin; rune: Rune }>>();
 
 	for (const loadedPkg of loaded) {
@@ -319,7 +328,7 @@ export function mergePlugins(
 				runes[name] = c.rune;
 				provenance[name] = {
 					qualifiedId: `${c.pkg.pkg.name}:${name}`,
-					source: 'plugin',
+					source: sourceOf(c.pkg),
 					pluginName: c.pkg.pkg.name,
 					origin: c.pkg.npmName,
 				};
@@ -333,7 +342,7 @@ export function mergePlugins(
 					runes[name] = match.rune;
 					provenance[name] = {
 						qualifiedId: `${match.pkg.pkg.name}:${name}`,
-						source: 'plugin',
+						source: sourceOf(match.pkg),
 						pluginName: match.pkg.pkg.name,
 						origin: match.pkg.npmName,
 					};
@@ -362,7 +371,7 @@ export function mergePlugins(
 			runes[name] = c.rune;
 			provenance[name] = {
 				qualifiedId: `${c.pkg.pkg.name}:${name}`,
-				source: 'plugin',
+				source: sourceOf(c.pkg),
 				pluginName: c.pkg.pkg.name,
 				origin: c.pkg.npmName,
 			};
@@ -374,7 +383,7 @@ export function mergePlugins(
 					runes[name] = match.rune;
 					provenance[name] = {
 						qualifiedId: `${match.pkg.pkg.name}:${name}`,
-						source: 'plugin',
+						source: sourceOf(match.pkg),
 						pluginName: match.pkg.pkg.name,
 						origin: match.pkg.npmName,
 					};
@@ -508,6 +517,55 @@ export function mergePlugins(
 }
 
 /**
+ * SPEC-153 D8 — a project rune may not take a core rune's name or alias: a
+ * `{% card %}` that means something local breaks every snippet, doc page and
+ * composition built on the core one. It may take a plugin rune's name only
+ * where `runes.prefer` says which wins (`"__project__"` for the project's).
+ */
+function checkProjectPrecedence(
+	project: LoadedPlugin,
+	plugins: LoadedPlugin[],
+	coreRuneNames: Set<string>,
+	prefer: Record<string, string> | undefined,
+): void {
+	const coreOwner = new Map<string, string>();
+	for (const name of coreRuneNames) coreOwner.set(name, name);
+	for (const [name, rune] of Object.entries(coreCatalogRunes())) {
+		if (!coreRuneNames.has(name)) continue;
+		for (const alias of rune.aliases) if (!coreOwner.has(alias)) coreOwner.set(alias, name);
+	}
+	const pluginOwners = new Map<string, string[]>();
+	for (const p of plugins) {
+		for (const [name, rune] of Object.entries(p.runes)) {
+			for (const n of [name, ...rune.aliases]) {
+				pluginOwners.set(n, [...(pluginOwners.get(n) ?? []), p.npmName]);
+			}
+		}
+	}
+
+	for (const [name, rune] of Object.entries(project.runes)) {
+		const file = `${name}.md`;
+		for (const n of [name, ...rune.aliases]) {
+			const as = n === name ? '' : ` (through its alias "${n}")`;
+			const core = coreOwner.get(n);
+			if (core) {
+				throw new Error(
+					`Project rune "${name}" (${file})${as} takes the name of core rune "${core}". A core rune's name cannot be shadowed: every snippet, page and composition that uses "${core}" would change meaning (SPEC-153 D8). Rename the definition.`,
+				);
+			}
+			const owners = pluginOwners.get(n);
+			if (owners && !prefer?.[n]) {
+				throw new Error(
+					`Project rune "${name}" (${file})${as} and the rune "${n}" from ${owners.join(', ')} share a name. Say which wins in refrakt.config.json:\n` +
+						`  "runes": { "prefer": { "${n}": "${PROJECT_RUNES}" } }\n` +
+						`or rename the definition (SPEC-153 D8).`,
+				);
+			}
+		}
+	}
+}
+
+/**
  * SPEC-035 — select the plugin translation dictionary for a locale, applying
  * the Decision D5 region-strip fallback (`de-AT` → `de`). Returns the merged
  * plugin-scoped strings for that locale, or an empty object when no plugin
@@ -577,7 +635,17 @@ export async function loadLocalRunes(
 
 	const { resolve } = await import('node:path');
 
+	/** SPEC-153 D7 — `runes.local` takes a JS module for unpublished plugin
+	 *  development; a composed rune definition has its own home. */
+	const notADefinition = (name: string, modulePath: string, what: string) =>
+		new Error(
+			`Local rune "${name}" at "${modulePath}" is ${what}. \`runes.local\` takes a JavaScript module exporting a rune with a \`transform\`, for developing a plugin before publishing it (SPEC-153 D7). Put a composed rune definition in the project's rune directory instead: move it to \`runes/${name}.md\` (or the directory \`runes.dir\` names) and remove this \`runes.local\` entry.`,
+		);
+
 	for (const [name, modulePath] of Object.entries(localConfig)) {
+		if (/\.(md|markdoc|mdoc)$/i.test(modulePath)) {
+			throw notADefinition(name, modulePath, 'a composed rune definition, not a module');
+		}
 		const absPath = resolve(projectRoot, modulePath);
 		let mod: Record<string, unknown>;
 		try {
@@ -588,8 +656,14 @@ export async function loadLocalRunes(
 			);
 		}
 
-		const entry = (mod.default ?? mod) as { transform?: Record<string, unknown> };
+		const entry = (mod.default ?? mod) as {
+			transform?: Record<string, unknown>;
+			template?: unknown;
+		};
 
+		if (entry.template !== undefined) {
+			throw notADefinition(name, modulePath, 'a module exporting a composition `template`');
+		}
 		if (!entry.transform || typeof entry.transform !== 'object') {
 			throw new Error(
 				`Local rune "${name}" at "${modulePath}" must export a transform (Markdoc Schema).`,

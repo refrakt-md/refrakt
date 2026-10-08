@@ -29,6 +29,8 @@ export interface ValidateRunOptions {
 }
 
 export interface ContentFindingOut {
+	/** Relative to the content root — or, for a rune definition
+	 *  (`rune-definition-invalid`), to the project root: `runes/<rune>.md`. */
 	file: string;
 	url: string;
 	line?: number;
@@ -62,6 +64,25 @@ export function hasErrors(result: ValidateRunResult): boolean {
 		(r) =>
 			r.config.some((f) => f.severity === 'error') || r.content.some((f) => f.severity === 'error'),
 	);
+}
+
+/** Every definition in the site's `runes.dir` that does not build, as findings
+ *  located at the definition's file and line. */
+async function checkProjectRuneDefinitions(
+	site: SiteConfig,
+	configDir: string,
+): Promise<ContentFindingOut[]> {
+	const { checkProjectRunes } = await import('@refrakt-md/runes');
+	const { fsProjectFiles } = await import('@refrakt-md/types/project-files');
+	const { findings } = checkProjectRunes(fsProjectFiles(configDir), site.runes?.dir);
+	return findings.map((f) => ({
+		file: f.file,
+		url: '',
+		line: f.line,
+		severity: 'error' as const,
+		id: 'rune-definition-invalid',
+		message: f.message,
+	}));
 }
 
 export async function runValidation(opts: ValidateRunOptions = {}): Promise<ValidateRunResult> {
@@ -132,7 +153,19 @@ export async function runValidation(opts: ValidateRunOptions = {}): Promise<Vali
 			result.config = validateSiteConfig(site, { configDir, siteName: name });
 		}
 
-		if (opts.only !== 'config') {
+		// SPEC-153 — the project's own rune definitions are checked before its
+		// content, because a definition that does not build takes its rune with
+		// it: every page using it would report `tag-undefined`. Each finding
+		// names the definition's file and line (WORK-634).
+		const runeFindings =
+			opts.only === 'config' ? [] : await checkProjectRuneDefinitions(site, configDir);
+		result.content.push(...runeFindings);
+
+		if (opts.only !== 'config' && runeFindings.length > 0) {
+			result.contentSuppressed =
+				`skipped: ${runeFindings.length} rune ${runeFindings.length === 1 ? 'definition does' : 'definitions do'} not build, ` +
+				`so every page using ${runeFindings.length === 1 ? 'it' : 'them'} would report an undefined tag. Fix the definitions above first.`;
+		} else if (opts.only !== 'config') {
 			// Computed even under `--only content`, so the suppression rule can
 			// still explain itself. Just not reported.
 			const resolution =
@@ -157,7 +190,20 @@ export async function runValidation(opts: ValidateRunOptions = {}): Promise<Vali
 					// The build summary is not this command's output. Findings are.
 					reporter: () => {},
 				});
-				result.content = await loader.validateSite({ deep: opts.deep });
+				try {
+					result.content.push(...(await loader.validateSite({ deep: opts.deep })));
+				} catch (err) {
+					// Site assembly itself failed — a rune name collision (SPEC-153
+					// D8), a composition check across the catalog. A finding, not a
+					// crash: validation reports problems rather than stopping at one.
+					result.content.push({
+						file: '',
+						url: '',
+						severity: 'error',
+						id: 'site-assembly-failed',
+						message: (err as Error).message,
+					});
+				}
 			}
 		}
 

@@ -100,7 +100,10 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 					name: 'refrakt-md:content-hmr',
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					configureServer(server: any) {
-						setupContentHmr(server, contentDir, examplesDir);
+						// SPEC-153 D10 — rune definitions reload the page too.
+						setupContentHmr(server, contentDir, examplesDir, undefined, {
+							runesDir: resolve(configDir, site.runes?.dir ?? 'runes'),
+						});
 					},
 				};
 

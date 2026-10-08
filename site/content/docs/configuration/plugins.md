@@ -70,11 +70,11 @@ The auto-discovery path is good enough for the refrakt repo itself — no `plugi
 
 ## Resolving conflicts
 
-When two plugins define a rune with the same name, refrakt needs to know which one wins. Three knobs control that, all on the `runes` field of a `SiteConfig`:
+When two plugins define a rune with the same name, refrakt needs to know which one wins. The knobs for that, and for runes that come from the project itself, all live on the `runes` field of a `SiteConfig`:
 
 ### `runes.prefer`
 
-When two packages define a rune with the same name, use `prefer` to specify which package wins. Use `"__core__"` to force the built-in core rune to take precedence.
+When two packages define a rune with the same name, use `prefer` to specify which package wins. Use `"__core__"` to force the built-in core rune to take precedence, and `"__project__"` to let a definition in [`runes.dir`](#runesdir) win over a plugin's rune.
 
 ```json
 {
@@ -103,9 +103,31 @@ Create additional tag names that resolve to an existing rune. Useful for site-sp
 }
 ```
 
+### `runes.dir`
+
+The project's own composed runes. Every `<rune>.md` in this directory is a rune named after its file: `runes/quote-card.md` defines `{% quote-card %}`. The directory is relative to the project root (the directory holding `refrakt.config.json`) and defaults to `runes`, so a project can start one without a config edit. `create-refrakt` writes the key anyway.
+
+```json
+{
+  "runes": {
+    "dir": "runes"
+  }
+}
+```
+
+A definition is YAML frontmatter declaring the rune's input and a Markdoc body placing it into existing runes; the file is the same one a plugin ships from its [rune directory](/extend/plugin-authoring/authoring#shipping-composed-runes-from-a-rune-directory).
+
+Three rules apply that a plugin's runes do not share:
+
+- **A project rune can never take a core rune's name or alias.** `{% card %}` meaning something local would break every snippet, page and composition that uses the core one, so the build stops and names both.
+- **Taking a plugin rune's name needs a `prefer` entry.** Set `"<name>": "__project__"` to let the project's definition win, or name the plugin to keep its rune.
+- **A project definition may not declare `schema`.** Its schema.org row would publish as structured data with nobody reviewing it, and nothing checks a row against schema.org. A plugin's definitions may, because a published package is reviewed like code. The definition is rejected at load, naming the rune.
+
+The directory is read through the project's file provider, so it works in a hosted build with no filesystem. In dev, editing a definition reloads every page that uses it. `refrakt validate` reports a definition that does not build as a finding at its file and line.
+
 ### `runes.local`
 
-Load rune implementations from local files without publishing to npm. Paths are resolved relative to `refrakt.config.json`.
+Load a rune implemented in JavaScript from a local module, for developing a plugin before publishing it. Paths are resolved relative to `refrakt.config.json`.
 
 ```json
 {
@@ -118,7 +140,7 @@ Load rune implementations from local files without publishing to npm. Paths are 
 }
 ```
 
-Local runes take highest priority over any installed package rune of the same name. They're ideal for project-specific runes or runes under active development.
+Local runes take highest priority over any installed package rune of the same name. Each entry must be a module exporting a rune with a `transform`. A composed rune definition (`.md`) is rejected here, with a pointer to `runes.dir`.
 
 ## Inspecting installed plugins
 
