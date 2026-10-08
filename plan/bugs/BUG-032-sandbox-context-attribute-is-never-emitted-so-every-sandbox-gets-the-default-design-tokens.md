@@ -98,6 +98,6 @@ PR: refrakt-md/refrakt#677
 - The milestone table expected contracts and the SEO baseline to move. Neither did:
   - Contracts are derived from engine config, which has no `context` modifier, and the engine strips the field bag from output.
   - The SEO baseline has no sandbox fixture, and sandbox emits no structured data.
-- Finding, filed as BUG-033 rather than widened into this fix: the `rf-sandbox` behaviour reads tokens from a `data-design-tokens` host attribute (or `RfContext.designTokens`), and nothing sets either. The pipeline injects a `<meta data-field="design-tokens">` child instead, so the iframe never receives tokens. This fix makes the build choose the right set, and BUG-033 is what delivers it to the page.
+- Finding, filed as BUG-034 rather than widened into this fix: the `rf-sandbox` behaviour reads tokens from a `data-design-tokens` host attribute (or `RfContext.designTokens`), and nothing sets either. The pipeline injects a `<meta data-field="design-tokens">` child instead, so the iframe never receives tokens. This fix makes the build choose the right set, and BUG-034 is what delivers it to the page.
 
 {% /bug %}
