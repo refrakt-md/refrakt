@@ -1,4 +1,4 @@
-{% work id="WORK-627" status="ready" priority="medium" complexity="moderate" source="SPEC-153" milestone="v0.40.0" tags="packaging,plugins,testing,composition" %}
+{% work id="WORK-627" status="in-progress" priority="medium" complexity="moderate" source="SPEC-153" milestone="v0.40.0" tags="packaging,plugins,testing,composition" %}
 
 # An `npm pack` → install → load harness for plugins
 

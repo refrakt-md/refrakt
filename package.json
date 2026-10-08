@@ -25,6 +25,7 @@
     "seo:baseline": "node scripts/generate-seo-baseline.mjs",
     "seo:baseline:check": "node scripts/generate-seo-baseline.mjs --check",
     "content:check-links": "node scripts/check-content-links.mjs",
+    "plugins:pack-check": "node scripts/pack-harness.mjs",
     "config:reference": "node scripts/generate-config-reference.mjs",
     "changeset": "changeset",
     "version-packages": "changeset version && node scripts/sync-plugin-versions.mjs && node scripts/generate-changelog.mjs && npm install --package-lock-only",
