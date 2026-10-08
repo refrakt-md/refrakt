@@ -1,6 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import { tags, nodes, serializeTree } from '@refrakt-md/runes';
-import { createTransform, renderToHtml } from '@refrakt-md/transform';
+import { createTransform, readField, renderToHtml } from '@refrakt-md/transform';
 import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
 import type { SerializedTag, AggregatedData } from '@refrakt-md/types';
 import { baseConfig } from '@refrakt-md/runes';
@@ -152,10 +152,9 @@ function injectSandboxDesignTokens(node: RendererNode, aggregated: AggregatedDat
 	const tag = node as SerializedTag;
 	if (tag.attributes?.['data-rune'] === 'sandbox') {
 		const contexts = designContexts(aggregated);
-		const contextChild = tag.children?.find(
-			(c) => (c as SerializedTag)?.attributes?.['data-field'] === 'context',
-		) as SerializedTag | undefined;
-		const scope = (contextChild?.attributes?.content as string) ?? 'default';
+		// Bag-first (data-rune-fields), legacy <meta data-field> fallback —
+		// the same read as the design plugin's postProcess (BUG-032).
+		const scope = readField(tag, 'context') || 'default';
 		const tokens = contexts[scope];
 		if (tokens) {
 			const injected: SerializedTag = {

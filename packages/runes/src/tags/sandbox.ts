@@ -143,6 +143,7 @@ export const sandbox = createContentModelSchema({
 		const framework = attrs.framework ?? '';
 		const dependencies = attrs.dependencies ?? '';
 		const label = attrs.label ?? '';
+		const context = attrs.context ?? '';
 		const height = attrs.height;
 		const dataQuery = attrs.data ?? '';
 		const dataFields = attrs['data-fields'] ?? '';
@@ -244,9 +245,18 @@ export const sandbox = createContentModelSchema({
 		}
 		children.push(new Tag('template', { 'data-content': 'source' }, [sanitisedContent]));
 
-		const el = createComponentRenderable({ rune: 'sandbox', tag: 'div', children });
-		// Emit as the rf-sandbox custom element; the renderer reads its config off
-		// these data-* attributes (no field-metas).
+		// BUG-032 — `context` is the one field: it lands in the `data-rune-fields`
+		// bag, where the design plugin's postProcess (and the editor preview)
+		// read it to pick a design-context token set. Omitted when unset, so a
+		// sandbox without a scope is unchanged and resolves to `default`.
+		const el = createComponentRenderable({
+			rune: 'sandbox',
+			tag: 'div',
+			properties: context ? { context: new Tag('meta', { content: context }) } : undefined,
+			children,
+		});
+		// Emit as the rf-sandbox custom element; the renderer reads the rest of its
+		// config off these data-* attributes.
 		el.name = 'rf-sandbox';
 		Object.assign(el.attributes, {
 			'data-source-content': sanitisedContent,

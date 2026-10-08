@@ -1,4 +1,4 @@
-{% bug id="BUG-032" status="confirmed" severity="major" source="SPEC-002" tags="runes,sandbox,design,pipeline" milestone="v0.40.0" %}
+{% bug id="BUG-032" status="in-progress" severity="major" source="SPEC-002" tags="runes,sandbox,design,pipeline" milestone="v0.40.0" %}
 
 # Sandbox context attribute is never emitted, so every sandbox gets the default design tokens
 

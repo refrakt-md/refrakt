@@ -24,6 +24,29 @@ describe('sandbox tag', () => {
 		);
 	});
 
+	// BUG-032 — `context` is a field in the `data-rune-fields` bag, where the
+	// design plugin's postProcess reads it to pick a design-context token set.
+	it('should carry context in the data-rune-fields bag', () => {
+		const result = parse(`{% sandbox context="dark" %}
+<button>Dark</button>
+{% /sandbox %}`);
+
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
+		expect(JSON.parse(sandbox!.attributes['data-rune-fields'])).toEqual({ context: 'dark' });
+		expect(sandbox!.children.some((c: any) => c?.attributes?.['data-field'] === 'context')).toBe(
+			false,
+		);
+	});
+
+	it('should emit no field bag when context is unset', () => {
+		const result = parse(`{% sandbox %}
+<button>Default</button>
+{% /sandbox %}`);
+
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
+		expect(sandbox!.attributes['data-rune-fields']).toBeUndefined();
+	});
+
 	it('should pass framework as a data attribute', () => {
 		const result = parse(`{% sandbox framework="tailwind" %}
 <div class="p-4">Hello</div>
