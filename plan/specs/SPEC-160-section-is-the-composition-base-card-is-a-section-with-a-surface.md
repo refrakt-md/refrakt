@@ -90,14 +90,33 @@ this spec builds for `card` itself:
    `card` too (its look is a surface plus shared dimensions, so Lumina needs no `card.css` of its
    own), the break is a migration note for third-party themes, not a design problem.
 
-Until then `card` stays a schema rune with unchanged output. Two intermediate steps are recorded
+Until then `card` stays a schema rune with unchanged output. One intermediate step is recorded
 and not specified here:
 
 - `card` adopting `section`'s flat header anatomy (title and blurb as placeable slots), which is
   SPEC-145 D20's change and its no-drift migration. If `card` becomes a composition, it gets the
   anatomy for free and D20 is never implemented, which is the better outcome.
-- Whether a core rune can be shipped as a composition at all, or only plugin and project runes
-  can (SPEC-153). That needs checking before step 3 is planned.
+
+**A core rune can ship as a composition; measured, not assumed.** A throwaway composed `tile`
+(placing `section` and `card`) was built with `defineComposedRune` and registered the way
+`packages/runes/src/index.ts` registers core runes: added to the `runes` catalog, with its
+generated config under its type name beside `baseConfig.runes`. Then:
+
+- `checkComposedCatalog` (cycles, D9 peer types, D12 required parents) passed with it counted
+  as core, and `collectCompositions` listed it for `contracts`;
+- it rendered through the identity transform as `data-rune="tile"`, its `title` slot landed in
+  `section`'s real `<header>` as `rf-section__headline` with `property="name"`, and the
+  `CreativeWork` name published.
+
+Two constraints on how, both small:
+
+- **The definition is a string in a TypeScript module, not a file in a rune directory.**
+  `@refrakt-md/runes` is imported by the editor's preview, so core must not read the file system
+  at load, which a plugin's `runeDir` does. `defineComposedRune(name, source)` takes the source
+  as a string, so core passes it one.
+- **The catalog checks run at site assembly.** They run inside `mergePlugins`, which every
+  assembly path calls (the content loader, the SvelteKit plugin, the CLI), so a core composition
+  is checked on every build, not only when a plugin is loaded.
 
 ### D4 — the storytelling compositions move to `section`
 
@@ -196,12 +215,17 @@ the `section` that carries the header. That is SPEC-145 D14's open question, whi
 composed rune's universal attributes apply to (its "chrome carrier"). `hero` and `cta` move once
 D14 is decided, with the `section` as the carrier.
 
-### D8 — a `link` primitive
+### D8 — `link` wraps blocks
 
 A whole-region link is useful far beyond `card`: a `figure` that opens the full image, a
 `section` that is a teaser for another page, a `testimonial` linking to the case study. Today
-only `card` and `bento-cell` can do it, each through its own `href`. `{% link href="…" %}`
-wraps any block and makes it a link.
+only `card` and `bento-cell` can do it, each through its own `href`.
+
+**`link` already exists, and this extends it.** Core registers the Markdown link node as a tag
+too (`packages/runes/src/nodes.ts`, exported in `tags`), so templates can write
+`{% link href=$item.url %}` inside collection cells. It renders a plain `<a>` with no `data-rune`,
+and it accepts inline children only (`strong`, `em`, `s`, `code`, `text`, `tag`). D8 lets it take
+block content, and wrap any block to make it a link.
 
 It has two renderings, chosen by what it wraps, because HTML allows an `<a>` around flow content
 only when that content contains nothing interactive:
@@ -221,11 +245,12 @@ title slot (`aria-labelledby`).
 
 **It must not become a name-resolution boundary.** SPEC-145 D19 records that a placed rune
 carrying `data-rune` stops `findAllByName`, so schema properties sourced inside it vanish. A
-link around a composed `character` must not hide the character's name from the harvest. So
-`link` renders a plain element with no `data-rune` of its own, the way an engine wrapper does, and
-a test pins that a schema property inside a `link` still publishes.
+link around a composed `character` must not hide the character's name from the harvest. The
+existing `link` already renders a plain `<a>` with no `data-rune` of its own; the block form
+must keep that, and a test pins that a schema property inside a `link` still publishes.
 
-An empty `href` renders the content unchanged, so a composition writes it unconditionally:
+An empty `href` renders the content unchanged, so a composition writes it unconditionally. That
+relaxes today's `href: { required: true }`, for the block form at least:
 
 ```md
 {% link href=$attrs.href %}
@@ -270,7 +295,6 @@ Steps 1 to 5 depend on nothing outside this spec and can ship in one milestone.
 - [ ] SPEC-145 D18 and D20 carry a note pointing to ADR-041
 - [ ] `{% link %}` wraps a block as a real `<a>` when it holds nothing interactive and as a focusable, labelled stretched link when it does; a schema property inside it still publishes; `card` and `bento-cell` `href` render through it
 - [ ] SPEC-145 D14's chrome carrier is decided before `hero` or `cta` is composed, and the composed `hero` and `cta` ship with no rune CSS in Lumina
-- [ ] Whether a core rune can ship as a composition is answered before `card` is planned as one
 
 ## References
 
