@@ -420,7 +420,7 @@ describe("SPEC-145's character example as written", () => {
 		expect(unmatched(pkg, fixture('body-and-sections'))).toEqual([
 			{
 				line: 1,
-				level: 'warning',
+				level: 'error',
 				message:
 					'{% hint %} at line 4 matches no content-model field of {% character %} and is dropped from the output',
 			},

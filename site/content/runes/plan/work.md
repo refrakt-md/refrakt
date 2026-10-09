@@ -13,7 +13,7 @@ This rune is part of **@refrakt-md/plan**. Install with `npm install @refrakt-md
 
 # Work
 
-A discrete piece of implementation work with acceptance criteria, priority, complexity, and status tracking. Not a user story — a clear description of what needs to change. H2 headings create named sections for structured content like acceptance criteria, approach, and references.
+A discrete piece of implementation work with acceptance criteria, priority, complexity, and status tracking. Not a user story — a clear description of what needs to change. H2 headings create named sections for structured content like acceptance criteria, approach, and references. Paragraphs straight after the title become the item's lead; anything else written before the first H2 — a `> Ref:` blockquote, a list, a code block, a table — renders as an intro above the sections.
 
 Also available as `{% task %}`.
 

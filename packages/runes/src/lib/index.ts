@@ -953,8 +953,10 @@ function auditRegistersOnValidate(
 	}));
 }
 
-/** Severity of `content-unmatched`, chosen from WORK-631's measurement. */
-export const CONTENT_UNMATCHED_LEVEL: 'warning' | 'error' = 'warning';
+/** Severity of `content-unmatched`. WORK-631 shipped it as a warning while
+ *  four plan runes still dropped content; WORK-638 fixed their content models,
+ *  measured zero over this repository's `plan/`, and raised it to an error. */
+export const CONTENT_UNMATCHED_LEVEL: 'warning' | 'error' = 'error';
 
 /** How a dropped node is named in a finding: a rune by its tag, a heading by
  *  its level, anything else by its node type. */

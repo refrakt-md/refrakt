@@ -23,6 +23,13 @@
 	.rf-milestone__body ul {
 		padding-left: 1.5rem;
 	}
+	.rf-milestone__body blockquote {
+		border-left: 3px solid var(--rf-color-border);
+		padding: 0.5rem 1rem;
+		margin: 0.75rem 0;
+		font-style: italic;
+		color: var(--rf-color-muted);
+	}
 
 	/* Auto-backlog */
 	.rf-milestone__backlog {

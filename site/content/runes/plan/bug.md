@@ -13,7 +13,7 @@ This rune is part of **@refrakt-md/plan**. Install with `npm install @refrakt-md
 
 # Bug
 
-Bug report with structured reproduction steps. Separate from work items because bugs have different required sections (reproduction steps, expected/actual behaviour) and different status values. H2 headings create named sections.
+Bug report with structured reproduction steps. Separate from work items because bugs have different required sections (reproduction steps, expected/actual behaviour) and different status values. H2 headings create named sections. Content before the first H2 that is not a lead paragraph — a code block, a list, a table — renders as an intro above the sections.
 
 ## Confirmed bug
 

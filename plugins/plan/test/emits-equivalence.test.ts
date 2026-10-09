@@ -158,6 +158,7 @@ describe('plan entity runes: declared, not transformed (SPEC-143)', () => {
 			expect(plan.theme?.runes?.[name[0].toUpperCase() + name.slice(1)]?.sections).toEqual({
 				title: 'title',
 				blurb: 'description',
+				intro: 'body',
 				body: 'body',
 			});
 		});
