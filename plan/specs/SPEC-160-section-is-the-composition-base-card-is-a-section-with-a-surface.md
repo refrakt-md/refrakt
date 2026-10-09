@@ -8,8 +8,8 @@ split ({% ref "SPEC-145" /%} D18). {% ref "ADR-041" /%} records why that puts a 
 the base of every composition, and decides to move the split onto `section` instead.
 
 This spec says what `section` gains, how its existing pages are kept safe, what happens to
-`card`, and in what order the compositions move. It also specifies the `actions` primitive that
-`hero` and `cta` need before they can be compositions.
+`card`, and in what order the compositions move. It also specifies two primitives: `actions`, which
+`hero` and `cta` need before they can be compositions, and `link`, which takes `href` off `card`.
 
 ## The two primitives today
 
@@ -69,24 +69,35 @@ beside or below the media, where `hero`, `feature` and `recipe` already put it, 
 **Open question:** whether a section with a split should drop the `contentSection` property.
 It describes the element's role in the page, not its layout, so the default answer is no.
 
-### D3 — `card`'s output does not change in this spec
+### D3 — `card`'s output does not change now; `card` as a composition is the target
 
 `card` keeps its attributes, its `---` counting, its `href` overlay, its `<div>` and its BEM
 output. Its schema moves onto the shared split helpers where it does not already use them, and
 `refrakt contracts --check` must report no change to `Card` on either contract copy.
 
-"`card` is a `section` with a surface" is the model this spec adopts, and the direction for
-later work, not a rewrite of `card` now. Two follow-ups are recorded and not specified here:
+**The target is `card` as a composition over `section`.** "`card` is a `section` with a
+surface" is the model this spec adopts. It becomes literal once three things exist, none of which
+this spec builds for `card` itself:
 
-- `card` adopting `section`'s flat header anatomy (title and blurb as placeable slots). That is
-  SPEC-145 D20's change, with the no-drift migration D20 costed on every page that places a
-  card. With compositions off `card`, nothing is blocked on it.
-- A `section` drawn as an object, through {% ref "SPEC-159" /%}'s `materiality` axis once it
-  exists. Then `card` and `section materiality="object"` converge, and whether `card` stays a
-  separate rune can be decided on evidence.
+1. **The surface**, from {% ref "SPEC-159" /%}'s `materiality` axis: a card is
+   `section materiality="object"` with the split and `media-position` defaulting to `top`, which
+   is what `card` renders today.
+2. **The whole-card link**, from the `link` primitive (D8) wrapping the section. `href` is the one
+   part of `card` that is behaviour rather than layout, and it moves into a primitive every rune
+   can use instead of staying a `card` attribute.
+3. **An answer to the class question** D7 records. A composed card renders `rf-section__*`, not
+   `rf-card__*`, and `card` is the most widely styled rune there is. If the D7 analysis holds for
+   `card` too (its look is a surface plus shared dimensions, so Lumina needs no `card.css` of its
+   own), the break is a migration note for third-party themes, not a design problem.
 
-`href` stays on `card` only. A whole-region link is behaviour of a discrete object, and a
-`section` that is itself a link is a pattern this spec does not want to encourage.
+Until then `card` stays a schema rune with unchanged output. Two intermediate steps are recorded
+and not specified here:
+
+- `card` adopting `section`'s flat header anatomy (title and blurb as placeable slots), which is
+  SPEC-145 D20's change and its no-drift migration. If `card` becomes a composition, it gets the
+  anatomy for free and D20 is never implemented, which is the better outcome.
+- Whether a core rune can be shipped as a composition at all, or only plugin and project runes
+  can (SPEC-153). That needs checking before step 3 is planned.
 
 ### D4 — the storytelling compositions move to `section`
 
@@ -150,26 +161,83 @@ output and look do not change.
 annotation or an attribute on `actions`) or stay positional. Positional matches today and is
 the default.
 
-### D7 — `hero` and `cta` become compositions, after the theme question is settled
+### D7 — `hero` and `cta` become compositions with no rune CSS of their own
 
 With D2 and D6, `hero` is a `section` with a split, `cover`, the header anatomy and `actions`;
 `cta` is a `section` with a header and `actions`. Both are {% ref "SPEC-151" /%}'s first
 marketing migrations.
 
-**The prerequisite is not mechanical.** A composition emits its primitives' element classes: a
-composed `character` carries `rf-card__*` and no `rf-character` class anywhere
-(`packages/content/test/composed-character.test.ts`). So a composed `hero` would render
-`rf-section__headline`, not `rf-hero__headline`, and every theme selector on `rf-hero__*` and
-`rf-cta__*`, Lumina's and any third party's, stops matching. Before `hero` and `cta` move, one of
-these has to be decided:
+**Neither needs CSS of its own.** Every selector in `skeleton/styles/runes/{hero,cta}.css` and
+`lumina/styles/runes/{hero,cta}.css` is one of these, and each already has, or gains in this
+spec, a home that is not the rune:
 
-1. themes target a composed rune as `[data-rune="hero"]` plus the primitive's classes, and the
-   change ships as a documented theme break with a migration note; or
-2. a composition may give its root a block class (`rf-hero`) and its placed primitive's named
-   parts an outer-rune alias, so existing selectors keep matching.
+| What the rune CSS does | Where it lives instead |
+|---|---|
+| Display-size headline and blurb | `prominence="display"`, which exists (`quiet` / `normal` / `prominent` / `display`, SPEC-107) |
+| The pill eyebrow when it holds a link | `section.css`, which already has it; it is copied three times today |
+| Buttons by list position (`li:first-child a`, …) | `actions` (D6) |
+| `data-align` on the header, blurb and actions | `section`'s `align` |
+| Media above or below, image fill | the shared split layout (`skeleton/styles/layouts/split.css`) |
+| `cover`, the `sm`–`xl` heights, `aspect` | the cover dimension, and `height` / `aspect` moving onto `section` with the split (D2) |
+| Full width, flush elevation, bleed | universal `width` and `elevation`, and `guestFit` |
+| `cta--in-hero`, `cta--in-pricing` | context tweaks to re-examine, not carry over by default |
 
-Option 2 touches SPEC-145's identity model and its path-granular guard
-({% ref "SPEC-158" /%}), so it is a decision of its own. This spec does not make it.
+So the theme question this decision first posed (how a composed rune keeps its `rf-hero__*`
+selectors) mostly dissolves. Lumina deletes `hero.css` and `cta.css`. What remains is a break
+for third-party themes that targeted those classes, which ships as a migration note naming the
+dimension each rule moved to. A composition keeping its own element classes is not needed for
+these two runes, and this spec does not propose it.
+
+**The real prerequisite is defaults.** A hero is `prominence="display"`, `width="full"` and
+`elevation="flush"` unless the author says otherwise. The template can hard-code those on its
+`{% section %}`, but then the author cannot override them: a universal attribute written on the
+composed rune (`{% hero prominence="prominent" %}`) lands on the composition's empty root, not on
+the `section` that carries the header. That is SPEC-145 D14's open question, which element a
+composed rune's universal attributes apply to (its "chrome carrier"). `hero` and `cta` move once
+D14 is decided, with the `section` as the carrier.
+
+### D8 — a `link` primitive
+
+A whole-region link is useful far beyond `card`: a `figure` that opens the full image, a
+`section` that is a teaser for another page, a `testimonial` linking to the case study. Today
+only `card` and `bento-cell` can do it, each through its own `href`. `{% link href="…" %}`
+wraps any block and makes it a link.
+
+It has two renderings, chosen by what it wraps, because HTML allows an `<a>` around flow content
+only when that content contains nothing interactive:
+
+- **Wrap.** When the content has no links, buttons or form controls, the rune renders a real `<a>`
+  around it. This is the simple, fully accessible case: the whole block is the link's content.
+- **Stretch.** When the content does contain interactive elements, wrapping would nest them, which
+  is invalid. The rune instead appends a stretched `<a data-name="link">` inside the wrapped
+  rune's root, positioned over it, as `card` does today, so the inner links stay clickable above
+  it.
+
+**It fixes an accessibility gap in today's overlay.** `card`'s stretched link is
+`aria-hidden="true" tabindex="-1"` (`packages/runes/src/tags/card.ts`), so a keyboard or
+screen-reader user cannot reach the whole-card link at all. The stretched form of `link` must be
+focusable and labelled: by an `aria-label` attribute when given, else by the wrapped content's
+title slot (`aria-labelledby`).
+
+**It must not become a name-resolution boundary.** SPEC-145 D19 records that a placed rune
+carrying `data-rune` stops `findAllByName`, so schema properties sourced inside it vanish. A
+link around a composed `character` must not hide the character's name from the harvest. So
+`link` renders a plain element with no `data-rune` of its own, the way an engine wrapper does, and
+a test pins that a schema property inside a `link` still publishes.
+
+An empty `href` renders the content unchanged, so a composition writes it unconditionally:
+
+```md
+{% link href=$attrs.href %}
+{% section materiality="object" media-position=$attrs["media-position"] %}
+…
+{% /section %}
+{% /link %}
+```
+
+**Open question:** whether `card`'s and `bento-cell`'s `href` are then deprecated in favour of
+`link`, or kept as sugar that renders through it. Keeping them as sugar costs nothing and keeps
+every existing page working, so that is the default.
 
 ## Order
 
@@ -177,13 +245,15 @@ Option 2 touches SPEC-145's identity model and its path-granular guard
 2. D2 and D3: the split on `section`, `card` unchanged.
 3. D4: the storytelling compositions on `section`.
 4. D6: `actions`, with `hero` and `cta` rendering through it while still plugin runes.
-5. D7: `hero` and `cta` as compositions, once the theme-class question has an answer.
+5. D8: `link`, with `card`'s and `bento-cell`'s `href` rendering through it.
+6. D7: `hero` and `cta` as compositions, once SPEC-145 D14's chrome carrier is decided.
+7. `card` as a composition (D3), once `materiality` exists.
 
-Steps 1 to 3 are independent of the theme question and can ship in one milestone.
+Steps 1 to 5 depend on nothing outside this spec and can ship in one milestone.
 
 ## Not in scope
 
-- Changing `card`'s output (D3's follow-ups).
+- Changing `card`'s output, or making it a composition (D3 records the target and its prerequisites).
 - `materiality` itself, which is {% ref "SPEC-159" /%}'s.
 - `mediatext`, for the reason SPEC-145 D20 records: it floats text around media, it does not
   split a row, and it has no header to place.
@@ -198,7 +268,9 @@ Steps 1 to 3 are independent of the theme question and can ship in one milestone
 - [ ] `character`, `realm` and `faction` are composed on `section`; their JSON-LD, RDFa and registry comparisons against the plugin are re-run and any movement explained
 - [ ] `{% actions %}` exists as a core rune with rank as a data attribute, Lumina styles it, and `hero` and `cta` render their actions through it with no visual change
 - [ ] SPEC-145 D18 and D20 carry a note pointing to ADR-041
-- [ ] The decision D7 needs (how themes target a composed rune's parts) is recorded before `hero` or `cta` is composed
+- [ ] `{% link %}` wraps a block as a real `<a>` when it holds nothing interactive and as a focusable, labelled stretched link when it does; a schema property inside it still publishes; `card` and `bento-cell` `href` render through it
+- [ ] SPEC-145 D14's chrome carrier is decided before `hero` or `cta` is composed, and the composed `hero` and `cta` ship with no rune CSS in Lumina
+- [ ] Whether a core rune can ship as a composition is answered before `card` is planned as one
 
 ## References
 

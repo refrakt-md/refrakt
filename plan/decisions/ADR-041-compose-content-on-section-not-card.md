@@ -87,11 +87,13 @@ decision to grow `card` a preamble. D20's measurements and its scope limit on `m
 - The three storytelling definitions are recomposed on `section`. Their fixtures' expected
   output changes; the registry and SEO comparisons against the plugin are re-run, not
   re-recorded silently.
-- Hero and cta still lose their `rf-hero__*` / `rf-cta__*` element classes when composed,
-  because a composition emits the primitive's classes (a composed `character` carries
-  `rf-card__*` and no `rf-character` class at all). This is true whichever primitive they are
-  built on, so it is not a cost of this decision, but SPEC-160 has to plan the theme side of
-  it before hero and cta move.
+- Hero and cta lose their `rf-hero__*` / `rf-cta__*` element classes when composed, because a
+  composition emits the primitive's classes (a composed `character` carries `rf-card__*` and no
+  `rf-character` class at all). This is true whichever primitive they are built on. SPEC-160 D7
+  finds that neither needs rune CSS once `section`, `actions` and the existing dimensions carry
+  their look, so the break is a migration note for third-party themes.
+- `card` itself can become a composition over `section` once `materiality` and a `link`
+  primitive exist (SPEC-160 D3, D8).
 - D14's chrome-carrier question gets a better default: the carrier is a `section`, which has
   no surface of its own for a universal attribute to double.
 - `recipe` and `howto`, which D18 called composable over `card`, compose over `section`
