@@ -69,6 +69,52 @@ beside or below the media, where `hero`, `feature` and `recipe` already put it, 
 **Open question:** whether a section with a split should drop the `contentSection` property.
 It describes the element's role in the page, not its layout, so the default answer is no.
 
+**The media zone's kind is an attribute.** A rune declares what its media is through
+`mediaSlots` in its config, for example `{ portrait: 'portrait' }`, and the engine stamps
+`data-media="portrait"` on that element. The shared media dimension then styles it with no rune
+CSS: `skeleton/styles/dimensions/media.css` crops a portrait square at `--media-portrait-size`
+(5rem, 3rem at compact density), and Lumina rounds it. The vocabulary is
+`portrait | cover | thumbnail | hero | icon` (`RuneConfig.mediaSlots`,
+`packages/transform/src/types.ts`).
+
+A composition cannot reach that. Its generated config carries only modifiers, `metaFields`,
+`blocks` and `provides` (`composedRuneConfig`, `packages/runes/src/lib/composition.ts`), and the
+media zone belongs to the rune it places, not to the composition. **This has already cost the
+composed `character` its round portrait:** the plugin's `character` renders the portrait zone
+with `data-media="portrait"`, and the composed one renders a plain media zone inside
+`rf-card__media`, with no kind (`packages/content/test/composed-character.test.ts`, the
+recorded plugin-vs-composed HTML).
+
+So `section` takes `media`, with the same five values, and stamps `data-media` on its media
+zone when it is given. With no `media`, the zone carries no kind, as today. A composition passes
+it through like the split attributes:
+
+```md
+{% section media-position=$attrs["media-position"] media="portrait" %}
+{% slot name="portrait" /%}
+
+---
+…
+{% /section %}
+```
+
+That gives three runes their portrait back from one attribute and the existing dimension:
+
+- **`character`** and **`testimonial`** (SPEC-161 D1), which declare a `portrait` media slot today;
+- **`cast-member`**, which hand-rolls the same circle in its own CSS
+  (`.rf-cast-member img { border-radius: var(--rf-radius-full) }` in `lumina/styles/runes/cast.css`)
+  instead of using the dimension. As `section media-position="top" media="portrait"` it needs
+  none. {% ref "SPEC-149" /%} already found `cast` and `cast-member` composable, with `Person`
+  mapped from attributes.
+
+**An `avatar` rune is not proposed.** It would earn its place only for a portrait outside any
+media zone, inline with text (a byline, a conversation speaker), or to add a fallback the
+dimension cannot, such as initials when there is no image. No rune audited so far needs either.
+The `placeholder:` / `icon:` image schemes resolve in the image node
+(`packages/runes/src/nodes.ts`), so an image *authored* into the media zone gets them without an
+`avatar` rune. An image given as an *attribute*, as `cast-member`'s `image` is, still needs
+{% ref "SPEC-149" /%} D4: the composition has to render it through the same resolution.
+
 ### D3 — `card`'s output does not change now; `card` as a composition is the target
 
 `card` keeps its attributes, its `---` counting, its `href` overlay, its `<div>` and its BEM
@@ -127,7 +173,9 @@ forward). Their fixtures' expected output changes, and is reviewed as a diff:
 - the element classes change from `rf-card__*` to `rf-section__*`;
 - the `title` and `description` slots become a real `<header>`, which they were not inside
   `card` (the composed `character` today renders its `<h1>` inside `rf-card__body`);
-- the surface disappears, which is the point.
+- the surface disappears, which is the point;
+- the portrait zone regains `data-media="portrait"` (D2's `media` attribute), which the
+  composition lost when it placed `card`.
 
 The comparisons recorded against the plugin are re-run, not re-recorded: JSON-LD against the SEO
 baseline, RDFa, and the storytelling registry snapshot (SPEC-145's worked `character` example
@@ -289,6 +337,7 @@ Steps 1 to 5 depend on nothing outside this spec and can ship in one milestone.
 
 - [ ] `section` declares the `body` role, and `reading` / `dropcap` take effect on its body
 - [ ] `section` accepts the split attributes and `cover`; with `media-position` it reads media, body and footer zones by `card`'s rule, and without it every existing `section` fixture renders unchanged
+- [ ] `section` accepts `media` (`portrait | cover | thumbnail | hero | icon`) and stamps `data-media` on its media zone; the composed `character` renders its portrait with `data-media="portrait"` again
 - [ ] `card`'s contract entry and gallery output are unchanged on both contract copies
 - [ ] `character`, `realm` and `faction` are composed on `section`; their JSON-LD, RDFa and registry comparisons against the plugin are re-run and any movement explained
 - [ ] `{% actions %}` exists as a core rune with rank as a data attribute, Lumina styles it, and `hero` and `cta` render their actions through it with no visual change
