@@ -1,5 +1,65 @@
 # @refrakt-md/runes
 
+## 0.41.0
+
+### Minor Changes
+
+- 5840734: Every construction error a composed rune definition can produce now has a stable code. `CompositionError.code` names it, and `COMPOSITION_ERRORS` lists every code with a one-line summary. The new authoring guide, `extend/rune-authoring/composed-runes`, documents each code with its cause and fix, and a test fails if an error is added without an entry.
+
+  A template with an unclosed or unopened tag, such as `{% hint %}` with no `{% /hint %}`, is now rejected with `template-parse`. Before, Markdoc recorded the problem on the node and the definition built anyway.
+
+- d94709b: **`content-unmatched` is now an error.** Content inside a rune that no field of its content model matches was reported as a warning since it was introduced; it is now reported at error severity, so `refrakt validate` exits non-zero and the build summary lists it as an error.
+
+  **This is a behaviour change for any project whose content trips the check.** Each finding names the rune, the dropped node and its line. That content is not rendered — it never was — so the fix is in the rune, not the page:
+
+  - add a field that takes it, for example a catch-all `{ name: 'body', match: 'any', optional: true, greedy: true }` at the end of the position where authors write it;
+  - or, for a rune whose transform reads its body as raw source rather than through the content model, set `rawBody: true` on `createContentModelSchema`.
+
+  To unblock a build while you fix a rune, add `"content-unmatched"` to `validation.disableIds` in the site config, which demotes the finding to info.
+
+  **The plan runes keep everything authors write.** They were the reason the check shipped as a warning — 800 nodes dropped over this repository's own `plan/` directory:
+
+  - `milestone` keeps its `##` sections. Everything after the lead paragraphs — the goals list, notes and every section — renders in the body, in authored order.
+  - `work`, `bug` and `decision` keep preamble content that is not a paragraph: a `> Ref:` blockquote, a list, a fence, a table or a `---` before the first `##`. It renders in a new `intro` region between the metadata and the sections, omitted when empty. Their layout gains the `intro` slot, and Lumina styles it like the body.
+
+- c04815d: Validation now reports content that no content-model field matches (`content-unmatched`). A rune used to drop such a node from the page silently: a block written before the first section of a rune whose preamble does not take it, a node left after the last sequence field, or a `---` zone the rune does not read. Each one is now a warning finding in `refrakt validate`, the `refrakt.validate` MCP tool and the build summary. The finding names the rune, the dropped node and its line. A `custom` content model is never reported, and neither is a rune that reads its body as raw source. `createContentModelSchema` takes a new `rawBody: true` option to declare that, and `deferBody` implies it. Turn the check off with `validation.disableIds: ["content-unmatched"]`.
+- 640494a: A plugin can ship composed runes as files (SPEC-153 D2). Declare `runeDir: 'runes'` on the `Plugin` export, and every `<rune>.md` in that package-relative directory loads as a composed rune named after the file. It behaves exactly like a `runes` entry carrying the file as its `template`, so `inspect`, `reference`, `contracts` and the pipeline show it the same way.
+
+  - A frontmatter key restating the rune's name is rejected, and so is a file name that is not a kebab-case rune name.
+  - A directory rune and a code-defined rune with the same name are rejected, naming both.
+  - A missing, unreadable or empty rune directory throws with the resolved path and the cause, instead of loading no runes. So does a package whose `exports` map blocks `./package.json`.
+  - `refrakt plugins validate` checks that `files` publishes the directory and that `<pkg>/package.json` resolves, and builds every definition in it. A composed rune's `description` frontmatter now counts as its description there.
+  - `loadPlugin(name, { from })` resolves the package from another location, for tools and tests.
+  - A plugin's `fixtures/` files that fail to parse now throw from `loadPlugin`, as `discoverPluginFixtureManifest` documented. Before, the error was swallowed along with an unresolvable package.
+
+- 90d5a05: A project can define its own composed runes (SPEC-153 D4). Every `<rune>.md` in `runes.dir` is a composed rune named after its file. `runes.dir` is relative to the project root and defaults to `runes`.
+
+  - **Read through `ProjectFiles` (D5).** A hosted build passes `projectFiles: memoryProjectFiles(map)` to `createVirtualRefraktLoader` and gets the project's runes with no filesystem. A path that escapes the project root is refused by the provider.
+  - **Precedence is core < plugin < project (D8).** A project rune taking a core rune's name or alias is rejected, naming both. Taking a plugin rune's name needs `runes.prefer`: `"__project__"` lets the project's definition win, and the plugin's name keeps the plugin's rune.
+  - **A project definition may not declare `schema` (SPEC-145 D25).** It is rejected at load, naming the rune. The same definition in a plugin's `runeDir` is accepted.
+  - **`runes.local` keeps its scope (D7).** A `.md` path, or a module exporting a composition `template`, is rejected with a pointer to `runes.dir`.
+  - **In dev, editing a definition rebuilds every page that uses it (D10).** `setupContentHmr` takes `{ runesDir }`, and the SvelteKit, Astro and Nuxt integrations pass it. `createRefraktLoader` rebuilds its rune set when a definition changed.
+  - **`refrakt validate` reports each definition that does not build** as a finding with its file and line (`rune-definition-invalid`). A site-assembly failure, such as a rune name collision, is reported as a finding rather than a crash. Construction errors now carry a `line` (`CompositionError`).
+  - **Everything else that loads runes reads the directory too:** `inspect`, `reference` and `contracts`, the SvelteKit build, the HTML starter's build script and the language server.
+  - **`create-refrakt` writes `runes: { dir: "runes" }`** into the configs it scaffolds.
+
+- f7280ae: A `by` schema table's `rows` must now match its attribute's `matches` exactly, both ways (SPEC-145 D27 (c), WORK-632). Until now `validateSchemaTable` checked only that `by` named a declared attribute and that a `fallback` existed. A misspelt row (`podcasts:`) or a newly added enum value would silently select the fallback, so `{% playlist type="podcast" %}` could publish `MusicAlbum`.
+
+  The table is rejected when the rune is built, with the selecting attribute named in the error, if:
+
+  - a row key is not among the attribute's `matches`. The error names the key and the declared values;
+  - a value in `matches` has no row. This is an error, not a fall-through to `fallback`. `fallback` covers an author who stated no value. A value the rune declares needs its own row, even when that row repeats the fallback;
+  - the attribute has no `matches` list, so its rows cannot be checked.
+
+  `validateSchemaTable` now accepts the attribute definitions as well as a list of names. With names only, it skips the coverage check. Every shipped table already passes (`playlist`, `track`, `organization`), so existing output is unchanged. A third-party plugin whose table leaves a declared value uncovered will now fail to build until it adds the row.
+
+### Patch Changes
+
+- Updated dependencies [640494a]
+- Updated dependencies [90d5a05]
+  - @refrakt-md/types@0.41.0
+  - @refrakt-md/transform@0.41.0
+
 ## 0.40.0
 
 ### Minor Changes
