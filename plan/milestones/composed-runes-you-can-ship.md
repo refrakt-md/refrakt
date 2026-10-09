@@ -1,4 +1,4 @@
-{% milestone name="v0.41.0" status="planning" %}
+{% milestone name="v0.41.0" status="complete" %}
 
 # v0.41.0 — Composed runes you can ship
 
