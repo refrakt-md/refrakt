@@ -220,7 +220,7 @@ Use `|` to match alternatives: `'list|fence'` matches either lists or code block
 
 ### Content no field matches
 
-A node no field matches is dropped from the output: a paragraph after the last sequence field, a node a required field skips, preamble content in a `sections` model that declares no `fields`, or a `---` zone beyond the declared ones. Validation reports each such node as `content-unmatched`, at warning severity, naming the rune, the node and its line. It reaches `refrakt validate` and the build summary.
+A node no field matches is dropped from the output: a paragraph after the last sequence field, a node a required field skips, preamble content in a `sections` model that declares no `fields`, or a `---` zone beyond the declared ones. Validation reports each such node as `content-unmatched`, at error severity, naming the rune, the node and its line. It reaches `refrakt validate`, which exits non-zero, and the build summary. It was a warning until every shipped rune kept its authored content; a rune that trips it now has a content model that loses what authors write.
 
 When a rune should accept whatever an author writes in a position, end that position with a catch-all field: `{ name: 'body', match: 'any', optional: true, greedy: true }`. A `custom` model is never reported, because its `processChildren` owns every child. A rune whose transform reads its body as raw source instead of through the content model, like `sandbox`, sets `rawBody: true` on `createContentModelSchema`. `deferBody` implies it.
 

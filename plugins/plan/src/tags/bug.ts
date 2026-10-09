@@ -4,8 +4,9 @@ import { VALID_STATUS, VALID_SEVERITY } from '../commands/enums.js';
 
 // SPEC-143 — the rune labels its resolved fields and nothing more, so it
 // declares its slots instead of writing a transform: the heading group becomes
-// the `title` header, the lead paragraphs the `blurb` (only when authored), and
-// the sections the `body`. Everything else it renders — the eyebrow, the
+// the `title` header, the lead paragraphs the `blurb` (only when authored), any
+// other content before the first section the `intro` (likewise), and the
+// sections the `body`. Everything else it renders — the eyebrow, the
 // metadata rows, the content column — is `metaFields`, `blocks` and `layout`.
 export const bugEmits = {
 	rune: 'bug',
@@ -25,6 +26,7 @@ export const bugEmits = {
 	slots: {
 		title: { as: 'region', el: 'header' },
 		blurb: { from: 'description', as: 'region', omitWhenEmpty: true },
+		intro: { as: 'region', omitWhenEmpty: true, role: 'body' },
 		body: { from: 'sections', as: 'region' },
 	},
 } satisfies EmitsDeclaration;
@@ -82,6 +84,9 @@ export const bug = createContentModelSchema({
 		fields: [
 			{ name: 'title', match: 'heading', optional: false },
 			{ name: 'description', match: 'paragraph', optional: true, greedy: true },
+			// Whatever else precedes the first `##` — a `> Ref:` blockquote, a
+			// list, a fence, a table — in authored order (WORK-638).
+			{ name: 'intro', match: 'any', optional: true, greedy: true },
 		],
 		sectionModel: {
 			type: 'sequence' as const,

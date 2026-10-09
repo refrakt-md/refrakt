@@ -1,4 +1,4 @@
-{% work id="WORK-638" status="ready" priority="medium" complexity="moderate" source="SPEC-145" tags="runes,content-model,plan,correctness" %}
+{% work id="WORK-638" status="in-progress" priority="high" complexity="moderate" source="SPEC-145" tags="runes,content-model,plan,correctness" milestone="v0.41.0" %}
 
 # Plan runes keep the content their content models drop, then content-unmatched becomes an error
 

@@ -7815,6 +7815,7 @@
 				"blurb",
 				"metadata",
 				"tags",
+				"intro",
 				"body",
 				"{content}"
 			],
@@ -7946,6 +7947,7 @@
 				"blurb",
 				"metadata",
 				"tags",
+				"intro",
 				"body",
 				"{content}"
 			],
@@ -8065,6 +8067,7 @@
 				"blurb",
 				"metadata",
 				"tags",
+				"intro",
 				"body",
 				"{content}"
 			],

@@ -41,34 +41,34 @@ Verify the role splits with the comprehensive TS+JSX snippet from the Nord page 
 
 Completed: 2026-05-20
 
-Branch: \`claude/spec-057-v0-14-2-implementation\`
+Branch: `claude/spec-057-v0-14-2-implementation`
 
 ### What was done
 
-- \`packages/lumina/src/presets/dracula.ts\` — Dracula as a dark-only \`ThemeTokensConfig\`. All chrome accents + code-surface + syntax (11 base roles + 5 extended) populated via \`modes.dark\`. Each hue annotated with its Dracula swatch name (Pink, Cyan, Green, Yellow, Purple, Red, Orange, Foreground, Current Line, Comment, Background) for traceability.
-- \`packages/lumina/package.json\` — added \`./presets/dracula\` export entry.
-- \`packages/lumina/test/dracula-preset.test.ts\` — 11 tests covering structural shape (dark-only invariant), role splits (type ≠ function, regex ≠ string), CSS generation (chrome + code-surface + syntax all in the dark block; no light block), and composition with tideline / niwaki / Lumina.
-- \`site/content/themes/dracula.md\` — doc page following the Nord pattern. Single palette block with \`tint-mode="dark"\` (no light variant). Live preview wraps the shared TS+JSX snippet in \`{% codegroup tint="dracula" %}\`.
-- \`refrakt.config.json\` — added \`sites.main.tints.dracula\` so the doc page can use \`tint="dracula"\`.
-- \`site/content/themes/_layout.md\` — Dracula listed in the Syntax presets group.
+- `packages/lumina/src/presets/dracula.ts` — Dracula as a dark-only `ThemeTokensConfig`. All chrome accents + code-surface + syntax (11 base roles + 5 extended) populated via `modes.dark`. Each hue annotated with its Dracula swatch name (Pink, Cyan, Green, Yellow, Purple, Red, Orange, Foreground, Current Line, Comment, Background) for traceability.
+- `packages/lumina/package.json` — added `./presets/dracula` export entry.
+- `packages/lumina/test/dracula-preset.test.ts` — 11 tests covering structural shape (dark-only invariant), role splits (type ≠ function, regex ≠ string), CSS generation (chrome + code-surface + syntax all in the dark block; no light block), and composition with tideline / niwaki / Lumina.
+- `site/content/themes/dracula.md` — doc page following the Nord pattern. Single palette block with `tint-mode="dark"` (no light variant). Live preview wraps the shared TS+JSX snippet in `{% codegroup tint="dracula" %}`.
+- `refrakt.config.json` — added `sites.main.tints.dracula` so the doc page can use `tint="dracula"`.
+- `site/content/themes/_layout.md` — Dracula listed in the Syntax presets group.
 
 ### SPEC-056 extended-role exercise
 
-Dracula sets 5 of the 7 SPEC-056 extended optional roles distinctly: \`type\` (Cyan), \`number\` (Purple, same as constant — same hue, intentional collapse), \`regex\` (Red, distinct from string Yellow), \`tag\` (Pink — same as keyword, intentional), \`attribute\` (Green — same as function, intentional), \`operator\` (Pink). \`parameter\` and \`property\` left unset (Dracula doesn't separately spec them). The Cyan/Green split between \`type\` and \`function\` is the SPEC-056 headline fidelity gain over a 9-role mapping.
+Dracula sets 5 of the 7 SPEC-056 extended optional roles distinctly: `type` (Cyan), `number` (Purple, same as constant — same hue, intentional collapse), `regex` (Red, distinct from string Yellow), `tag` (Pink — same as keyword, intentional), `attribute` (Green — same as function, intentional), `operator` (Pink). `parameter` and `property` left unset (Dracula doesn't separately spec them). The Cyan/Green split between `type` and `function` is the SPEC-056 headline fidelity gain over a 9-role mapping.
 
 ### Test results
 
-- \`npx vitest run packages/lumina/test/dracula-preset.test.ts\` — 11/11 pass.
-- Full suite \`npm test\` — 2547/2547 pass across 207 test files.
-- Site builds clean: \`data-tint="dracula"\` stamps on the doc page; \`[data-tint=dracula][data-color-scheme=dark]\` rule in the CSS bundle.
+- `npx vitest run packages/lumina/test/dracula-preset.test.ts` — 11/11 pass.
+- Full suite `npm test` — 2547/2547 pass across 207 test files.
+- Site builds clean: `data-tint="dracula"` stamps on the doc page; `[data-tint=dracula][data-color-scheme=dark]` rule in the CSS bundle.
 
 ### Files touched
 
-- \`packages/lumina/src/presets/dracula.ts\` (new)
-- \`packages/lumina/package.json\` (added export entry)
-- \`packages/lumina/test/dracula-preset.test.ts\` (new, 11 tests)
-- \`site/content/themes/dracula.md\` (new)
-- \`site/content/themes/_layout.md\` (Dracula in nav)
-- \`refrakt.config.json\` (Dracula in site tints)
+- `packages/lumina/src/presets/dracula.ts` (new)
+- `packages/lumina/package.json` (added export entry)
+- `packages/lumina/test/dracula-preset.test.ts` (new, 11 tests)
+- `site/content/themes/dracula.md` (new)
+- `site/content/themes/_layout.md` (Dracula in nav)
+- `refrakt.config.json` (Dracula in site tints)
 
 {% /work %}

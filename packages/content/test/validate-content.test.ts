@@ -281,7 +281,7 @@ describe('the unmatched-content audit (WORK-631)', () => {
 		const findings = await validateContent(dir, { additionalTags: { note } });
 		const hit = findings.filter((f) => f.id === 'content-unmatched');
 		expect(hit).toEqual([
-			expect.objectContaining({ file: 'notes.md', line: 3, severity: 'warning' }),
+			expect.objectContaining({ file: 'notes.md', line: 3, severity: 'error' }),
 		]);
 		expect(hit[0].message).toContain(
 			'paragraph at line 6 matches no content-model field of {% note %} and is dropped from the output',

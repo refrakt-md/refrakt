@@ -7,6 +7,7 @@ import {
 	fieldMetas,
 } from '@refrakt-md/runes';
 import { VALID_STATUS } from '../commands/enums.js';
+import { stripHorizontalRules } from '../util.js';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
@@ -45,26 +46,19 @@ export const milestone = createContentModelSchema({
 		fields: [
 			{ name: 'title', match: 'heading', optional: true },
 			{ name: 'description', match: 'paragraph', optional: true, greedy: true },
-			{ name: 'goals', match: 'list', optional: true },
-			{ name: 'notes', match: 'paragraph', optional: true, greedy: true },
+			// Everything after the lead paragraphs — the goals list, notes, and
+			// every `##` section — is the body, in authored order (WORK-638).
+			{ name: 'body', match: 'any', optional: true, greedy: true },
 		],
 	},
 	transform(resolved, attrs, config) {
 		const titleNodes = renderNodes(resolved.title, config);
 		const descNodes = renderNodes(resolved.description, config);
-		const goalsNodes = renderNodes(resolved.goals, config);
-		const notesNodes = renderNodes(resolved.notes, config);
+		const bodyNodes = renderNodes(resolved.body, config);
 
 		const title = titleNodes.count() > 0 ? titleNodes.wrap('header') : undefined;
 		const blurb = descNodes.count() > 0 ? descNodes.wrap('div').next() : undefined;
-		const contentChildren: any[] = [];
-		if (goalsNodes.count() > 0) {
-			contentChildren.push(goalsNodes.next());
-		}
-		if (notesNodes.count() > 0) {
-			contentChildren.push(...notesNodes.toArray());
-		}
-		const bodyDiv = new Tag('div', {}, contentChildren);
+		const bodyDiv = new Tag('div', {}, stripHorizontalRules(bodyNodes.toArray()));
 
 		return createComponentRenderable({
 			rune: 'milestone',

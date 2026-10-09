@@ -26,6 +26,25 @@
 		content: "@";
 	}
 
+	/* Content written before the first section that is not a lead paragraph —
+ * a `> Ref:` blockquote, a list, a fence, a table (WORK-638). It reads as
+ * the opening of the body. A closing `---` is the author's separator before
+ * the first section, which already draws its own rule. */
+	.rf-work__intro {
+		font-size: var(--rf-text-sm);
+		line-height: var(--rf-leading-relaxed);
+	}
+	.rf-work__intro blockquote {
+		border-left: 3px solid var(--rf-color-border);
+		padding: 0.5rem 1rem;
+		margin: 0.75rem 0;
+		font-style: italic;
+		color: var(--rf-color-muted);
+	}
+	.rf-work__intro > hr:last-child {
+		display: none;
+	}
+
 	.rf-work__body {
 		font-size: var(--rf-text-sm);
 		line-height: var(--rf-leading-relaxed);
