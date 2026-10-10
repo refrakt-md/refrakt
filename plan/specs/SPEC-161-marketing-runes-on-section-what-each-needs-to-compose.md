@@ -7,6 +7,8 @@ was `card`. {% ref "ADR-041" /%} moves the base to `section`, and {% ref "SPEC-1
 `section` the split and adds `actions`. This spec re-reads the remaining marketing runes on
 that base: `testimonial`, `feature`, `pricing` with `tier`, and `steps`. For each, it says what
 the composition is built from, what is missing, and what an author gives up.
+It also settles one question for the business plugin's `cast-member` (D7), because its
+name-over-role shape is the same as `testimonial`'s byline.
 
 Two questions were checked by experiment rather than assumed, and the results change the plan
 (see Measurements).
@@ -58,10 +60,25 @@ of items.
 
 ## Decisions
 
-### D1 — `testimonial` composes now, with its author as attributes
+### D1 — `testimonial` composes once `section` has a portrait zone, with its author as attributes
 
-**Built from:** `section`, `pull-quote` (D2), the rating `metablock`, and the media zone for the
-avatar.
+**Built from:** `section` with a split and `media="portrait"` ({% ref "SPEC-160" /%} D2), the
+rating `metablock`, and a byline `metablock` in the `stack` layout (D6).
+
+**Its only missing prerequisite is SPEC-160 D2.** Measured part by part:
+
+| Part | Built from | Today |
+|---|---|---|
+| The quote | a blockquote placed through a slot | available |
+| Stars | the `rating` field shape and `{% metablock %}` | available, measured |
+| `Review` / `Person` / `Rating` | a frontmatter schema table, author from attributes | available, measured at both harvest points |
+| Author name and role | `metaFields` from attributes, in a byline block | available as `bar`; the stacked look needs D6 |
+| `variant` | `{% if %}` around a whole `{% card %}` or `{% section %}` | available (SPEC-145 D17) |
+| Round avatar | a media zone marked `data-media="portrait"` | **missing**: `section` has no media zone yet, and `card`'s cannot be marked as a portrait |
+
+`stack` (D6) is what makes the byline look as it does today, name emphasised and role beneath;
+without it the byline renders in a `bar`, which is correct but reads as one line. `pull-quote`'s
+attribution (D2) is not on this path.
 
 ```md
 ---
@@ -75,12 +92,16 @@ attributes:
 content:
   type: sequence
   fields:
-    avatar: { match: image, optional: true }
-    quote:  { match: blockquote }
+    avatar:       { match: image, optional: true }
+    quote:        { match: blockquote }
+    avatar-after: { match: image, optional: true }
 metaFields:
   rating: { metaType: rating, rating: { total: rating-total }, condition: rating }
+  author: { tag: cite, condition: author }
+  role:   { condition: role }
 blocks:
   rating: { fields: [rating], layout: bar }
+  byline: { fields: [author, role], layout: stack }
 schema:
   type: Review
   properties: { quote: reviewBody }
@@ -88,7 +109,22 @@ schema:
     author: { type: Person, property: author, properties: { author: name, role: jobTitle } }
     rating: { type: Rating, property: reviewRating, properties: { rating: ratingValue } }
 ---
+
+{% section media-position="start" media="portrait" %}
+{% slot name="avatar" /%}
+{% slot name="avatar-after" /%}
+
+---
+
+{% metablock name="rating" /%}
+{% slot name="quote" /%}
+{% metablock name="byline" /%}
+{% /section %}
 ```
+
+The two image fields are because the plugin accepts the avatar before or after the quote; both
+are placed in the media zone, and an empty one renders nothing. `rating` becomes
+`marks` with `metaType: rating` when {% ref "WORK-639" /%} lands.
 
 **The author moves from content to attributes.** Today the name is the `**strong**` text of
 the first paragraph and the role is what follows a dash (`testimonial.ts:81-101`), which is
@@ -105,9 +141,6 @@ migration loud, and it must stay so: adding a `body` field would quietly render 
 and publish no author. The fix is a codemod, since the plugin's own parser already knows the
 shape and can rewrite the paragraph into `author` and `role` attributes once.
 
-The sketch is the shape, not the final definition: the plugin accepts the avatar before or
-after the quote, and the definition has to as well.
-
 **`variant` is SPEC-159's `materiality`.** `card` is an object; `inline` and `quote` are regions.
 Until `materiality` exists, the definition places `{% card %}` for `variant="card"` and
 `{% section %}` otherwise, with `{% if %}` around the whole invocation, which SPEC-145 D17
@@ -120,8 +153,10 @@ source is `<figure><blockquote/><figcaption/></figure>`. `pull-quote` gains an o
 `figcaption` part, filled from a trailing paragraph inside the rune (or a `cite` attribute),
 and renders as a `figure` when it has one. Without one, its output is unchanged.
 
-`testimonial` places its author through it, so the visual pairing of quote and author is one
-primitive's job rather than a layout every quote-bearing rune redraws.
+**This is no longer on `testimonial`'s path.** An earlier draft had `testimonial` place its author
+through `pull-quote`. The byline `metablock` (D1, D6) does that job with machinery compositions
+already have, and keeps the author as structured fields the schema table reads. The attribution
+stays worth doing for quotes in general: a pull-quote in an article that names its source.
 
 **Open question:** whether the attribution should be `cite` (an attribute, structured) or a
 trailing paragraph (content, free-form). An attribute is the default because it is reachable;
@@ -185,12 +220,62 @@ split. It has no schema table (only the `Step` typeof) and no imperative residue
 conditional content model, which a definition can declare. It is the cheapest marketing
 composition after SPEC-160's own `hero` and `cta`.
 
+### D6 — a `stack` layout for blocks: a lead value with secondary values beneath
+
+A `blocks` entry renders its fields through a layout primitive, and there are two
+(`LayoutPrimitive = 'definition-list' | 'bar'`, `packages/transform/src/types.ts`): `bar`, a row,
+and `definition-list`, a label/value grid. Neither draws a byline, the shape two runes already
+hand-roll in their own CSS:
+
+- `testimonial.css`: `__author-name` bold, `__author-role` small and muted, `0.125rem` below it;
+- `cast.css`: `__name` semibold, `__role` small and muted, `0.125rem` below it.
+
+`stack` is a third layout: the block's fields in a column, the first marked `data-lead`. The
+skin emphasises the lead and makes the rest secondary (smaller, muted). Its contract is statable
+without naming a rune ("a primary value with secondary values beneath it"), and it fits more
+than people: a title over a date, a product over a price.
+
+The engine change is one layout branch beside `bar`; the CSS is a few lines in
+`skeleton/styles/dimensions/metadata.css` and Lumina's. `testimonial`'s author rules and
+`cast`'s name and role rules are deleted when those runes compose.
+
+### D7 — `cast-member` puts its name in `section`'s header, not a byline
+
+`cast-member` could use the D6 byline too, and nothing blocks that. But in a team grid the
+member is the subject of their own region, so their name is that region's heading, which is
+what `section`'s header already models:
+
+```md
+{% section media-position="top" media="portrait" prominence="quiet" %}
+{% slot name="portrait" /%}
+
+---
+
+# {% $attrs.name %}
+
+{% $attrs.role %}
+{% slot name="body" /%}
+{% /section %}
+```
+
+The name becomes the headline and the role the blurb, emphasised and muted by the header styles
+that exist, and `prominence="quiet"` scales it for a grid. The composed `character` already
+writes its heading as `# {% $attrs.name %}`. `Person` maps `name` and `role` from attributes, as
+{% ref "SPEC-149" /%} found. The portrait is SPEC-160 D2's, and an `image` attribute rendered there
+still needs SPEC-149 D4's scheme resolution.
+
+In `testimonial` the subject is the quote and the person is its source, so a heading would be
+wrong there; that is the byline's case. If the two should look identical regardless, `cast-member`
+can use the byline instead; the choice is presentational.
+
 ## What is new, and what it unlocks
 
 | Capability | Kind | Unlocks |
 |---|---|---|
 | Rating | none needed: `metaFields` + `metablock` | `testimonial`; any rated thing |
-| `pull-quote` attribution (D2) | extends a core rune | `testimonial`; any attributed quote |
+| `pull-quote` attribution (D2) | extends a core rune | any attributed quote |
+| `stack` block layout (D6) | a third layout primitive | the `testimonial` byline; any lead-over-secondary pair |
+| `section` portrait zone | SPEC-160 D2 | `testimonial`, `cast-member`, `character` |
 | `deflist` feature terms (D3) | extends a core rune | `feature` |
 | `actions` | SPEC-160 D6 | `hero`, `cta`, `tier` |
 | Authored price + `{% price %}` (D4) | new core rune | `tier`, `pricing` |
@@ -199,7 +284,7 @@ composition after SPEC-160's own `hero` and `cta`.
 ## Order
 
 1. `steps` (D5): nothing new needed once SPEC-160 D2 lands.
-2. `testimonial` (D1, D2): needs `pull-quote` attribution and the codemod.
+2. `testimonial` (D1, D6): needs SPEC-160 D2, `stack`, and the codemod.
 3. `feature` (D3): needs `deflist`'s terms and SPEC-156's arrangements.
 4. `pricing` and `tier` (D4): needs `actions`, `price`, and SPEC-146 for the `Product` header.
 
@@ -212,6 +297,8 @@ difference explained. The plugin runes stay until that comparison is reviewed.
 - [ ] `testimonial` exists as a composition whose JSON-LD matches the plugin's `Review` graph (reviewBody, Person author, Rating) with the author given as attributes
 - [ ] A codemod rewrites `**Name** — Role` testimonial paragraphs into `author` / `role` attributes, and is run over this repo's content
 - [ ] `pull-quote` renders an attribution as `figcaption` inside a `figure`, and is unchanged without one
+- [ ] `blocks` accept a `stack` layout with the first field marked `data-lead`; `testimonial`'s byline renders through it and the hand-rolled author and cast name/role CSS is deleted
+- [ ] `cast-member` composes over `section` with its name as the header and its role as the blurb, publishing the plugin's `Person` graph
 - [ ] `deflist` reads `definition`'s term shapes, keeps the `**Term:**` form, and `feature` composes over it with matching output
 - [ ] `tier` composes over `card` with authored `price` / `currency`, publishes `Offer` price and priceCurrency, and `29 kr` publishes `SEK` (or the stated currency)
 - [ ] `steps` exists as a composition matching the plugin's output
