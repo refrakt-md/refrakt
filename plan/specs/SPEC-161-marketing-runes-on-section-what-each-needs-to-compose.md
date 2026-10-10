@@ -239,6 +239,31 @@ The engine change is one layout branch beside `bar`; the CSS is a few lines in
 `skeleton/styles/dimensions/metadata.css` and Lumina's. `testimonial`'s author rules and
 `cast`'s name and role rules are deleted when those runes compose.
 
+**Open question, to come back to: a `{% stack %}` rune for authored content.** `bar` and
+`deflist` ship twice, as a layout the engine fills from declared fields and as a rune that
+renders the same structure over author-written markdown (SPEC-145 D7). `stack` could follow
+suit: each top-level paragraph is an item, the first is the lead, and the output is the same
+`data-zone-layout="stack"` element with `data-lead`, so one set of CSS styles both.
+
+```md
+{% stack %}
+**Ada Lovelace**
+
+Analyst, Babbage & Co
+{% /stack %}
+```
+
+Inline markup would survive (links, bold, an icon), which the field-fed block cannot carry.
+Uses: an author box under a post, an attribution under a quote in prose, a title over a detail in
+a grid of cards. It would carry no meaning: no `<cite>`, no structured data, and no splitting of
+a single `**Name** — Role` line, which is the imperative parsing that gated `testimonial` in the
+first place. A quote's semantic source belongs to `pull-quote`'s attribution (D2), and a typed
+author to the field-fed block.
+
+Nothing audited here depends on it, so it is not part of this decision. It is cheap, modelled on
+`packages/runes/src/tags/bar.ts` with no new CSS. Revisit it when an author asks for a byline
+outside a composition, or fold it into the layout's change if it costs as little as expected.
+
 ### D7 — `cast-member` puts its name in `section`'s header, not a byline
 
 `cast-member` could use the D6 byline too, and nothing blocks that. But in a team grid the
