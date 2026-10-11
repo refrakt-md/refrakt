@@ -123,6 +123,23 @@ three native runes that do use it as chrome, not as a description of an entity:
   If all three move, `metaFields` and `blocks` become a composition-only concept, and the
   question "should native runes carry metadata at all" is answered no. That is a separate
   decision, made on that evidence.
+
+  Where each stands:
+
+  - **`budget`** has a path: {% ref "SPEC-162" /%} moves its arithmetic into a `ledger`
+    primitive and composes it over `section`.
+  - **`hint`** stays native for now. It becomes the target case once three things exist, and
+    each is useful without it:
+    - SPEC-145 D13's keyed strings, which give a composition translatable enum labels such as
+      "Warning";
+    - D14's chrome carrier, so the `sunken` surface and compact density are defaults an author
+      can override;
+    - {% ref "SPEC-163" /%}'s `sentiment` axis, which replaces `hint.css`'s per-type colours
+      with a value a theme keys without knowing the rune.
+
+    Its icon per `type` is the one part with no answer yet.
+  - **`codegroup`** is unexamined. Its `title` sits in the tab bar of a behaviour-driven rune,
+    which no composition places today.
 - **Implementation.** The guard is one check in `mergeRuneConfig`: a rune key whose config
   came from `composedRuneConfig` accepts no theme override. `assembleThemeConfig` already
   carries provenance for plugin runes. A test pins that an override of a composed rune's
