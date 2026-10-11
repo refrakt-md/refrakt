@@ -693,6 +693,10 @@ the rune.** In a composed `recipe`, `prepTime="PT15M"` is an attribute and belon
 metablock; a `deflist` the *content* author typed inside the body is content and stays a
 `deflist`.
 
+> **Revisited in D28.** With `{% field %}`, a declared value can be placed inside a `deflist` or
+> `bar` without these failures: a field's value is read from the field bag, ADR-042 removes the
+> theme's decision for compositions, and the field keeps its `metaType`.
+
 **Three things go wrong when a declared value is hand-placed as a rune**, in the order they
 bite:
 
@@ -1006,6 +1010,10 @@ having. The cost is the version coupling named above, accepted deliberately — 
 the noise story is an acceptance criterion, not an afterthought.
 
 ### D7 — a composed rune places declared meta blocks; `layout` cannot reach into primitives
+
+> **Amended by {% ref "ADR-042" /%} and D28.** Under ADR-042 a theme does not override a
+> composed rune's `blocks`, so this decision's theme authority holds for native runes only.
+> D28 adds `{% field %}` for placing a single field and makes `metablock` shorthand for it.
 
 {% ref "SPEC-080" /%}'s `metaFields` + `blocks` is already the metadata primitive,
 and it is better factored than a `meta` rune would be: `metaFields` is a pure data
@@ -2655,6 +2663,106 @@ SPEC-155 already records the other two blockers for `playlist`:
   {% ref "SPEC-146" /%} (its D2);
 - its appearance is gated on the arrangement vocabulary ({% ref "ADR-030" /%} rule 4).
 
+### D28 — a field is placed by `{% field %}`; `metablock` becomes shorthand for it
+
+*Proposed 2026-10-11.* It amends D7 and the "Authoring note — `{% metablock %}` versus placing
+`{% bar %}` or `{% deflist %}`", following {% ref "ADR-042" /%}.
+
+**What changed.** D7 gave `blocks` and `{% metablock %}` three jobs: keep a field's meaning,
+leave arrangement to the theme, and stay clear of the schema boundary. ADR-042 removes the
+second job for composed runes, because a composed rune's config belongs to its definition and a
+theme cannot override it. What is left is the first job, and it is about **when** a value
+renders, not about blocks.
+
+- A field's meaning resolves at stage 4: its sentiment, translated label and enum text, chip
+  shape from `metaType`, `splitOn`, `condition`, and marks. The translation tables arrive with
+  the assembled theme config, and the engine reads them (`localizedLabel` →
+  `resolveLocaleString`). A template renders at stage 2, which knows the locale code but not the
+  tables.
+- So a template still cannot render a field. It can only mark where one goes, as `metablock`
+  does today. Moving field rendering to stage 2 would mean handing the translation tables to the
+  schema transform. That is a pipeline change, and it is not taken here.
+
+Measured on the current output: `{% deflist %}` and the engine's `definition-list` block
+already render the same vocabulary. Both produce `dl[data-zone-layout="definition-list"]` with
+`div[data-name="row"]` rows of `dt[data-meta-label]` and `dd`, and their values share
+`data-meta-sentiment` and `data-meta-type`. The differences are small: engine rows carry
+`data-field`, and `{% bar %}` wraps each item in `<div><p>` where the engine's bar emits values
+directly.
+
+**The decision.**
+
+1. **`{% field name="…" /%}` places one field's value.** It is a stage-2 marker that the engine
+   fills at stage 4 with the field's full rendering: chip or bare text from `metaType`,
+   sentiment, translated enum text, `splitOn` parts, marks, and `<time>`. It is value-only, so
+   it means the same thing everywhere: in a `deflist` row, in a `bar`, in a heading, in an
+   eyebrow, or in a sentence ("Serves {% field name="servings" /%}"). It names a declared
+   `metaFields` entry, and naming an undeclared one is an error at construction, as D26 makes it
+   for slots.
+2. **A row or bar item built only from fields is dropped when they resolve empty.**
+   - `deflist` and `bar` render at stage 2, when a field is still a marker, so they cannot see
+     an empty value. They mark each row or item whose value consists only of field markers
+     (`data-field-row`).
+   - When the engine fills the markers at stage 4, it removes a marked row or item whose value
+     came out empty. This is `condition`'s behaviour carried to placed fields.
+   - It is automatic, not an option, because a label followed by nothing is never wanted.
+   - A row containing any authored content is never dropped.
+3. **A term-less `deflist` item holding a single field takes the field's label.** `-
+   {% field name="servings" /%}` renders as a row whose `dt` is the field's `metaFields` label,
+   translated through the same key as today (`{scope}.{block}.{ref}`), with `data-field` on the
+   row. Today a term-less item is an empty term plus a warning; this form is legal only when the
+   item's whole content is one field marker. A hand-written term (`**Time:**`) is the author's
+   wording, and stays untranslatable until D13 lands.
+4. **`metablock` is shorthand.** `{% metablock name="metadata" /%}` expands at template
+   compile time to `{% deflist %}` (or `{% bar %}`, following the block's `layout`) with one
+   `- {% field name="…" /%}` row per declared field, in order. That leaves one rendering path
+   for placed metadata, and the engine's block renderers serve only native runes' `layout`
+   projection. The expansion keeps the block's identity: the list carries `data-name` and
+   `data-zone` set to the block name, so `[data-zone="metadata"]` keeps matching. It also gains
+   `data-rune="deflist"` and `rf-deflist`, which is an output change to review on the four composed
+   storytelling definitions that use `metablock` today (`character`, `realm`, `faction`, `lore`).
+5. **`blocks` is optional in a composition.** A composition that places its fields with
+   `{% field %}` needs no `blocks`; one that uses `metablock` declares the block the shorthand
+   reads. `metaFields` stays required for any placed field, because it is where field meaning is
+   declared. Native runes keep `blocks` in engine config until ADR-042's follow-up settles them.
+6. **`{% bar %}` aligns with the engine's bar.** Its items lose the `<div><p>` wrapping, so the
+   two produce the same structure. This is worth doing whatever happens to `metablock`.
+
+**D7's three failure modes, revisited.** The authoring note on `{% metablock %}` versus
+placing `{% bar %}` or `{% deflist %}` lists three ways a declared value goes wrong when it is hand-placed as a rune.
+
+- **The schema boundary does not apply to a field.** A placed `deflist` is still a `data-rune`
+  node, so a property sourced from a *node* inside it still disappears (SPEC-146 Problem 2). But
+  a field's value is an attribute: the schema table reads it from the field bag, not from the
+  rendered row. Node-sourced content (a slot) still belongs outside a placed rune where schema
+  is involved, as D19 says.
+- **The usurped theme decision no longer exists for compositions.** Under ADR-042, arrangement
+  and layout are the definition's.
+- **The lost `metaType` is what `{% field %}` fixes.** The value keeps its declared type,
+  because the engine renders it from `metaFields`, not from a hand-written badge.
+
+The rule in the authoring guide becomes: **field meaning lives in `metaFields`; arrangement
+lives in the template.** Is the value an attribute? Place it with `{% field %}`, or with
+`metablock` for the whole declared block. Is it content someone writes? Place the content.
+
+**Recipe, as D28 writes it.** A redefinition with one total time:
+
+```md
+{% deflist %}
+- **Time:** {% field name="totalTime" /%}
+- {% field name="servings" /%}
+- {% field name="difficulty" /%}
+- **Diet:** Vegan
+{% /deflist %}
+```
+
+- "Time" is the author's wording, and the row is dropped if `totalTime` is empty.
+- "Serves" and "Difficulty" come from `metaFields`, translated, with the sentiment chip on
+  difficulty.
+- "Diet" is authored and always shown.
+
+`totalTime` itself needs a computed value, which is the open question below on `{% let %}`.
+
 ## Non-goals
 
 - Replacing {% ref "SPEC-143" /%}'s declared tier — the two tiers coexist, and D5 keeps them distinct
@@ -2711,6 +2819,20 @@ track kind and an artist default into each untyped track in code. The candidate 
 
 **Should `validateSchemaTable` require `rows` to cover the selecting attribute's `matches`?**
 Proposed yes, in both directions, mirroring D15. See D27 (c).
+
+**How does a template compute a value that a field then places?** D28's recipe example needs a
+`totalTime` that does not exist as an attribute. The candidate is
+`{% let name="totalTime" value=addDurations($attrs.prepTime, $attrs.cookTime) /%}`:
+- Markdoc computes the value at stage 2 with a registered function, from a closed set as
+  {% ref "ADR-036" /%} requires;
+- the tag writes the value into the rune's field bag, where `metaFields` gives it meaning and
+  `{% field %}` places it.
+
+Open points:
+- which functions are registered: `addDurations` at least;
+- whether a `let` name must also be declared in `metaFields`;
+- how a first-party definition's schema table may read a `let` value. D25 already keeps
+  project definitions from declaring `schema`.
 
 ## Acceptance Criteria
 
@@ -2791,7 +2913,13 @@ Proposed yes, in both directions, mirroring D15. See D27 (c).
 - [ ] A composed rune placing `{% card %}` inherits `extractMediaImage`'s unwrapping, so `![x](y)` in a media slot emits a bare `<img>` and not `<p><img>` (D18)
 - [ ] `recipe` and `howto` are confirmed composable once {% ref "SPEC-146" /%} lands, or the reason either is not is recorded against D18's claim
 - [ ] The rune authoring guide documents which tier to reach for, with the table from this spec
-- [ ] The rune authoring guide carries the `{% metablock %}` versus placed-`{% bar %}`/`{% deflist %}` note, including the attribute-or-content rule and all three failure modes — the schema boundary, the usurped theme decision, and the lost `metaType`
+- [ ] The rune authoring guide carries the `{% metablock %}` versus placed-`{% bar %}`/`{% deflist %}` note, including the attribute-or-content rule and all three failure modes — the schema boundary, the usurped theme decision, and the lost `metaType` (amended by D28: the guide states which of the three a placed `{% field %}` avoids)
+- [ ] `{% field name="…" /%}` places one declared field's value, rendered by the engine at stage 4 exactly as a block renders it; naming an undeclared field is an error at construction (D28)
+- [ ] A `deflist` row or `bar` item whose value is only field markers is dropped when they resolve empty; a row with any authored content never is (D28)
+- [ ] A term-less `deflist` item whose whole content is one `{% field %}` takes the field's translated label and carries `data-field` (D28)
+- [ ] `{% metablock %}` expands at compile time to a `deflist` or `bar` of `{% field %}` rows, keeping `data-name` and `data-zone`; the output diff on the four composed storytelling definitions (`character`, `realm`, `faction`, `lore`) is reviewed (D28)
+- [ ] A composition with no `blocks` may place fields with `{% field %}`; `metaFields` stays required for any placed field (D28)
+- [ ] `{% bar %}` emits its items without the `<div><p>` wrapping, matching the engine's bar layout (D28)
 
 ## References
 
