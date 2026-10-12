@@ -2728,8 +2728,61 @@ directly.
 6. **`{% bar %}` aligns with the engine's bar.** Its items lose the `<div><p>` wrapping, so the
    two produce the same structure. This is worth doing whatever happens to `metablock`.
 
+**The value element is the rune-to-theme contract.** A placed field reaches the theme as one
+element. Its shape comes from the field's declaration, never from where it is placed:
+
+| Shape | Chosen when | Element |
+|---|---|---|
+| plain | any other `metaType`, or none | `<span>` or `<time datetime>` with `data-meta-type` |
+| chip | `metaType` is `status`, `category` or `tag` | `<span class="rf-badge">` with `data-meta-type` and `data-meta-sentiment` |
+| link | `href` | `<a href data-meta-type="link">` |
+| marks | `rating` (`marks` after {% ref "WORK-639" /%}) | `<span data-meta-type>` holding `data-filled` marks |
+| icon | `icon: { group }` | `<span>` holding `[data-icon-group][data-icon]` and `[data-meta-value]` |
+| several | `splitOn` | one element per part, as siblings |
+
+These are today's renderers (`renderBlockValue` in `packages/transform/src/engine.ts`, which
+picks link, then marks, then icon, then chip, then plain). Three decisions tighten them into a
+contract, and they apply to engine blocks as well as to placed fields:
+
+7. **The value element carries `data-field`.** Today only a definition-list *row* has it
+   (`div[data-name="row"][data-field]`); a value in a bar, a chip, or a value placed in a
+   heading or a sentence carries none. A field that can be placed anywhere has to say which
+   field it is wherever it lands. Rows keep their `data-field` as well.
+8. **One value element, whatever the layout.** Today a plain value in a definition list is
+   written into the `dd` itself (`<dd data-meta-type="quantity">4</dd>`), while the same field
+   in a bar is a `<span data-meta-type>`. The value element is now always the element from the
+   table above, and `dd`, a bar item and a heading are layout around it:
+   `<dd><span data-field="servings" data-meta-type="quantity">4</span></dd>`. This changes
+   definition-list output, so it is a contract diff to review on every rune with a
+   definition-list block.
+9. **An enum value exposes its raw value.** A `category` or `status` value displays translated
+   text, and today nothing carries the value itself. A theme can key on a sentiment
+   (`caution`) but not on `hard`. The value element carries `data-value="hard"`, beside the
+   translated text. This follows the existing precedent: `<time datetime>` and `data-icon`
+   already keep the raw value next to the displayed one.
+
+**How a theme reads the contract**, in the order it should prefer:
+
+| Question | Attribute |
+|---|---|
+| What kind of value is this? | `data-meta-type` |
+| Is it good or bad? | `data-meta-sentiment` |
+| Is it a chip? | `.rf-badge` |
+| How is the group arranged? | `data-zone-layout`, `data-meta-label` |
+| Which value is it? | `data-value` |
+| Which field is it? | `data-field` |
+| Which rune is it? | `data-rune` |
+
+A theme that styles only the first four renders every rune correctly, including composed runes
+it has never seen, which is what ADR-042 relies on. The last three are for special cases.
+
+In one sentence: the definition declares what a value means, the template decides where it
+goes, the engine emits one element whose attributes state that meaning, and the theme decides
+how each meaning looks.
+
 **D7's three failure modes, revisited.** The authoring note on `{% metablock %}` versus
-placing `{% bar %}` or `{% deflist %}` lists three ways a declared value goes wrong when it is hand-placed as a rune.
+placing `{% bar %}` or `{% deflist %}` lists three ways a declared value goes wrong when it is
+hand-placed as a rune.
 
 - **The schema boundary does not apply to a field.** A placed `deflist` is still a `data-rune`
   node, so a property sourced from a *node* inside it still disappears (SPEC-146 Problem 2). But
@@ -2834,6 +2887,16 @@ Open points:
 - how a first-party definition's schema table may read a `let` value. D25 already keeps
   project definitions from declaring `schema`.
 
+**Should the theme, not the engine, decide which values are chips?** `CHIP_METATYPES` in
+`packages/transform/src/engine.ts` fixes that `status`, `category` and `tag` values get
+`.rf-badge` and the rest render plain. That is a presentation decision in the output. The purer
+contract emits only meaning (`data-meta-type`, sentiment) and lets the theme give pill geometry
+to whichever types it chooses. Against it:
+- Lumina, and every theme, would restate the chip rule in CSS;
+- `{% badge %}` emits `.rf-badge` explicitly, so the class cannot simply go.
+
+D28 keeps today's rule.
+
 ## Acceptance Criteria
 
 - [ ] A rune can be defined by a Markdoc template that places named slots into other runes
@@ -2920,6 +2983,10 @@ Open points:
 - [ ] `{% metablock %}` expands at compile time to a `deflist` or `bar` of `{% field %}` rows, keeping `data-name` and `data-zone`; the output diff on the four composed storytelling definitions (`character`, `realm`, `faction`, `lore`) is reviewed (D28)
 - [ ] A composition with no `blocks` may place fields with `{% field %}`; `metaFields` stays required for any placed field (D28)
 - [ ] `{% bar %}` emits its items without the `<div><p>` wrapping, matching the engine's bar layout (D28)
+- [ ] Every value element carries `data-field`, in engine blocks and wherever `{% field %}` places it; definition-list rows keep theirs (D28)
+- [ ] A field's value element is the same element in a definition list, a bar, a heading and prose; a `dd` wraps it rather than becoming it, and the definition-list contract diff is reviewed (D28)
+- [ ] A `category` or `status` value element carries its raw value as `data-value` beside the translated text (D28)
+- [ ] The theme-authoring guide documents the value element and the order in which a theme should read its attributes (D28)
 
 ## References
 
