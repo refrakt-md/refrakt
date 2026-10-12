@@ -1,6 +1,6 @@
 {% spec id="SPEC-167" status="draft" tags="runes, primitives, composition, marketing, tables, accessibility, i18n" %}
 
-# Matrix aligns definition lists, and comparison becomes a composition
+# Crosstab aligns definition lists, and comparison becomes a composition
 
 ## Summary
 
@@ -12,8 +12,8 @@ imperative code and the domain rune composes over it**.
 
 `comparison`'s one computation is lining up several labelled lists by their labels. That is a
 generic operation: a pivot of definition lists into a table of entities by attributes. This
-spec makes it a core primitive, `{% matrix %}`, and makes `comparison` a composition with two
-templates ({% ref "SPEC-145" /%} D15), `table` over `matrix` and `cards` over `grid` and
+spec makes it a core primitive, `{% crosstab %}`, and makes `comparison` a composition with two
+templates ({% ref "SPEC-145" /%} D15), `table` over `crosstab` and `cards` over `grid` and
 `card`. It adds a universal `featured` intent for "the one option singled out", decides the
 inclusion value {% ref "SPEC-166" /%} D5 left open, and records the visible changes.
 
@@ -55,16 +55,16 @@ modifier, and `pricing.css` draws it with a primary border, a large shadow and a
 
 SPEC-151 D4 rejected generalising `comparison`'s *content model*, because that would mean
 inventing an expression language for one consumer ({% ref "ADR-036" /%}). This spec does not do
-that. `matrix` is a primitive with code, and its content model is simple: a heading and some
+that. `crosstab` is a primitive with code, and its content model is simple: a heading and some
 content, per column. The computation lives in its transform, as `tally`'s does. ADR-036's
 objection is about content-model vocabulary and does not apply.
 
 ## Decisions
 
-### D1 — `{% matrix %}` is a core primitive that aligns definition lists into a table
+### D1 — `{% crosstab %}` is a core primitive that aligns definition lists into a table
 
 ```md
-{% matrix featured="Astro" %}
+{% crosstab featured="Astro" %}
 ### SvelteKit
 - **Learning curve** — Low
 - **SSR** — Built-in
@@ -72,7 +72,7 @@ objection is about content-model vocabulary and does not apply.
 ### Astro
 - **Learning curve** — Low
 - **Islands** — Yes
-{% /matrix %}
+{% /crosstab %}
 ```
 
 **Input.** A column is one of two shapes, and both may be mixed:
@@ -91,7 +91,7 @@ where a rune gives the column a start, as `card` already does ("a leading paragr
 followed by a heading", `packages/runes/src/tags/card.ts`).
 
 ```md
-{% matrix %}
+{% crosstab %}
 {% section %}
 ### SvelteKit
 - **Learning curve** — Low
@@ -105,10 +105,10 @@ Our pick
 - **Learning curve** — Low
 - **Islands** — Yes
 {% /section %}
-{% /matrix %}
+{% /crosstab %}
 ```
 
-**How it works.** In its transform, `matrix` wraps each bare list in a `deflist` node, renders
+**How it works.** In its transform, `crosstab` wraps each bare list in a `deflist` node, renders
 its children, and reads the rendered `dt`/`dd` pairs. It never parses term syntax itself: that
 stays in `deflist`, which gains the bold-lead term shape with a dash separator in
 {% ref "SPEC-161" /%} D3. Everything happens at stage 2, inside this one rune, on its own
@@ -122,7 +122,7 @@ metadata without re-wrapping it.
 **Output**, for the second example:
 
 ```html
-<div data-rune="matrix">
+<div data-rune="crosstab">
   <table>
     <colgroup><col><col><col data-featured></colgroup>
     <thead>
@@ -143,14 +143,14 @@ metadata without re-wrapping it.
 
 1. **Rows** are the union of terms across columns, in first-seen order. A column without a term
    gets an empty cell marked `data-empty`, with a visually hidden "Not listed" from
-   `core.matrix.empty` (SPEC-145 D29).
+   `core.crosstab.empty` (SPEC-145 D29).
 2. **Column state is carried to every cell of the column.** A column's `data-featured` (from a
    placed section or card carrying the D2 intent, or, for a heading column, the `featured`
    attribute naming its heading) and its `data-sentiment` ({% ref "SPEC-163" /%}) are stamped on its header cell,
    each of its cells and its `<col>`. A row's state is stamped on its row. A theme styles
-   `[data-featured]` on cells without knowing `matrix` exists.
+   `[data-featured]` on cells without knowing `crosstab` exists.
 3. **The eyebrow goes in the header cell**, so a screen reader hears "Our pick, Astro", and the
-   emphasis is not only visual. `matrix` renders no label of its own: the label is content.
+   emphasis is not only visual. `crosstab` renders no label of its own: the label is content.
 4. **Content that is not a row** (a paragraph after the list, a blockquote, an actions link)
    goes into a `<tfoot>` row, under its column. Nothing an author wrote is dropped, which fixes
    the table's loss of callouts and secondary rows.
@@ -158,10 +158,23 @@ metadata without re-wrapping it.
    in the markup, visually hidden, so rows keep their names.
 6. The table sits in a horizontally scrolling wrapper, as today's does.
 
+**The name.** `crosstab` is the established reporting and BI term for a text table with
+dimensions on both axes, which is what this builds. `matrix` was the first draft's name and was
+dropped because other runes have stronger claims to it:
+
+- **a 2×2 quadrant** (priority, effort and impact, likelihood and impact, which is a risk
+  matrix): the most common meaning of "matrix" in business and planning content, and a
+  plausible plugin rune with a different shape (two axes, items placed into cells);
+- **a mathematical matrix**, which is what LaTeX calls a bracketed grid of numbers.
+
+A RACI grid is the one "matrix" with this shape, and would be a composition over `crosstab`.
+Names near "compare" were avoided too: core already has `compare` (code comparison) and
+marketing has `comparison`. `pivot` was rejected because it implies aggregation.
+
 **Placement in core.** The input is core vocabulary (`deflist`, headings), and there is a
 second consumer beside `comparison`: a "compare plans" table for `pricing`, where a tier's
 feature list already has this shape. If a reviewer holds the stricter bar of two plugins,
-`matrix` ships in the marketing plugin first; nothing else here changes.
+`crosstab` ships in the marketing plugin first; nothing else here changes.
 
 ### D2 — `featured` is a universal intent
 
@@ -176,7 +189,7 @@ It is not an existing axis:
 - `sentiment` (SPEC-163) is good or bad.
 
 `featured` is a boolean available on `section` and so on `card`, emitting `data-featured` on
-the chrome carrier. `matrix` carries it into table cells (D1.2). It replaces:
+the chrome carrier. `crosstab` carries it into table cells (D1.2). It replaces:
 
 - `tier`'s `featured-tier` rune name and its `--featured` static modifier, amending
   {% ref "SPEC-161" /%} D4, which left the choice between elevation and a `prominence` value
@@ -243,7 +256,7 @@ templates: { by: layout }
 
 {% slot name="intro" /%}
 
-{% matrix labels=$attrs.labels %}
+{% crosstab labels=$attrs.labels %}
 {% slot name="sections" each %}
 {% section featured=equals($each.heading, $attrs.highlighted) %}
 {% if equals($each.heading, $attrs.highlighted) %}
@@ -255,7 +268,7 @@ templates: { by: layout }
 {% slot /%}
 {% /section %}
 {% /slot %}
-{% /matrix %}
+{% /crosstab %}
 
 {% if $attrs.verdict %}
 {% $attrs.verdict %}
@@ -292,14 +305,14 @@ templates: { by: layout }
 
 - **Two templates, not a runtime switch.** D15 gives each layout its own assembly, its own
   contract expansion and its own fixture. Each template places every field once.
-- **The two templates differ in two words.** Each item is a `section` in a `matrix` or a
-  `card` in a `grid`, with the same featured flag, eyebrow and heading. Only `matrix` reads
+- **The two templates differ in two words.** Each item is a `section` in a `crosstab` or a
+  `card` in a `grid`, with the same featured flag, eyebrow and heading. Only `crosstab` reads
   the sections as columns.
 - **The label is resolved at expansion** (SPEC-145 D30). The featured item's content starts
   with a paragraph and then a heading, so `section` and `card` both read it as the eyebrow, and
-  `matrix` takes it from the section's header. The key is `marketing.comparison.recommended`.
+  `crosstab` takes it from the section's header. The key is `marketing.comparison.recommended`.
 - **The cards template places `deflist` explicitly**, because `card` does not know terms. The
-  table template does not, because `matrix` wraps bare lists itself.
+  table template does not, because `crosstab` wraps bare lists itself.
 - **`collapse` is removed.** It was never read. A narrow screen gets the scrolling table, as
   today; an author who wants cards on every screen chooses `layout="cards"`.
 - **`comparison-row` and `comparison-column`** are removed with the native transform.
@@ -311,7 +324,7 @@ documentation page are rendered before and after, and the differences are record
 
 | Change | Why |
 |---|---|
-| `rf-comparison*` classes replaced by `matrix`, `grid`, `card` and `deflist` vocabulary | the composition emits shared vocabulary; Lumina's `comparison.css` is drained (ADR-044) |
+| `rf-comparison*` classes replaced by `crosstab`, `grid`, `card` and `deflist` vocabulary | the composition emits shared vocabulary; Lumina's `comparison.css` is drained (ADR-044) |
 | "Recommended" is translatable and replaceable | D3 |
 | Secondary rows and callouts appear in the table, in `<tfoot>` | D1.4 |
 | ✓ and ✗ become inclusion values with real text alternatives | D4 |
@@ -342,7 +355,7 @@ accepted cost as `card` moving onto `section` ({% ref "ADR-041" /%}).
 
 ## Open questions
 
-- **An `each` slot expands before the placed rune's content model runs**, so `matrix` sees the
+- **An `each` slot expands before the placed rune's content model runs**, so `crosstab` sees the
   repeated sections. `expand` runs over the whole template before any placed rune transforms
   (`composition.ts:886`), and `card` already sees a `---` written around slots in
   `character`'s template, so it should hold; the first implementation step is a probe, not an
@@ -356,9 +369,9 @@ accepted cost as `card` moving onto `section` ({% ref "ADR-041" /%}).
 
 ## Acceptance Criteria
 
-- [ ] `{% matrix %}` exists: a column is a heading or a placed `section`/`card`, bare lists are wrapped in `deflist`, rows are the union of terms in first-seen order, and missing cells are `data-empty` with a visually hidden "Not listed"
+- [ ] `{% crosstab %}` exists: a column is a heading or a placed `section`/`card`, bare lists are wrapped in `deflist`, rows are the union of terms in first-seen order, and missing cells are `data-empty` with a visually hidden "Not listed"
 - [ ] A paragraph before a heading in a heading column belongs to the column above it; only a placed `section` or `card` supplies an eyebrow
-- [ ] `matrix` reads only rendered `dt`/`dd` rows; a column built from `{% field %}` rows or an engine metadata block aligns the same as one built from a list
+- [ ] `crosstab` reads only rendered `dt`/`dd` rows; a column built from `{% field %}` rows or an engine metadata block aligns the same as one built from a list
 - [ ] A featured column's state is stamped on its header cell, its cells and its `<col>`; a column's eyebrow renders inside its header cell
 - [ ] Content in a column that is not a row renders in `<tfoot>` under that column; nothing authored is dropped
 - [ ] `labels="hidden"` hides row headers visually and keeps them in the accessibility tree

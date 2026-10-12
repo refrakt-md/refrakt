@@ -151,7 +151,7 @@ nothing to relocate — which continues to support "at most one", not "always on
 ### D1 — marketing stays a plugin, on `comparison` alone
 
 > **Amended by {% ref "SPEC-167" /%} D7.** `comparison` becomes a composition over a core
-> `{% matrix %}` primitive, a route that did not exist when this was written. Whether the
+> `{% crosstab %}` primitive, a route that did not exist when this was written. Whether the
 > plugin remains as a home for its compositions is left open there.
 
 Even if everything else composed, `comparison`'s cross-column alignment would keep the
