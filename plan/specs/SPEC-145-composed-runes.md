@@ -612,7 +612,7 @@ new; each row points at where it is decided.
 | `{% slot name="xs" each %}…{% /slot %}` | the engine iterates; the body describes **one** item with `$each` bound | "Repeated slots are the `collection` pattern" above |
 | `{% slot /%}` (bare, inside `each`) | this item's content — avoids an `of=$each` argument | same |
 | `{% metablock name="x" /%}` | place the rune's declared meta block `x` | D7 |
-| `{% if %}` / `{% else /%}` | Markdoc's own, with the content-model consequence D17 states | D17 |
+| `{% if %}` / `{% else /%}` | Markdoc's own; resolved at expansion when bound (D30), otherwise with the content-model consequence D17 states | D17, D30 |
 | `$attrs.name` | a resolved attribute, in content or attribute position | "Smaller shape decisions" above |
 | `$each` | the current item inside an `each` slot; its fields are exactly the content model's `emitAttributes` | D26 |
 | `$row` | the existing `data` / `collection` row binding, unchanged | prior art, not added here |
@@ -1971,6 +1971,10 @@ already accommodates.
 
 ### D17 — a template's `{% if %}` hides what it wraps from a nested rune's content model
 
+> **Narrowed by D30.** A conditional whose condition uses only `$attrs`, `$each` or `$slots`
+> is resolved during expansion, so the rune around it sees the chosen branch. The limit below
+> now applies only to conditionals on page-scope values.
+
 Slot-presence conditionals are useful for content and for wrappers, and they have a hard
 limit that is silent when crossed.
 
@@ -2954,6 +2958,46 @@ one is affected.
 - **Translating a value** remains the engine's job: enum values through `i18nEnums`
   ({% ref "SPEC-035" /%} Zone 6), and dates and numbers through their formatters.
 
+### D30 — a conditional bound at expansion is resolved there
+
+D17's limit exists because an `{% if %}` survives expansion as a tag node, so the rune it
+sits inside sees the tag and not its content. Nothing forces that for most conditionals in a
+template.
+
+**What expansion already knows.** A template is expanded once per instance, before any
+placed rune's content model runs. `expand` and `substitute`
+(`packages/runes/src/lib/composition.ts:771`, `:886`) replace every `$attrs.*` and `$each.*`
+with its concrete value at that point. An `if` node has its condition substituted like any
+other attribute, and is then kept as a tag. Only the keeping is the problem.
+
+**Decision.** During expansion, an `{% if %}` whose condition refers only to values bound at
+expansion is evaluated there, and the chosen branch replaces the `if` node in its parent. The
+bound values are `$attrs.*`, `$each.*` and, once it exists, `$slots.*`.
+
+1. **The same semantics as Markdoc's own `if`.** The condition is evaluated with the config's
+   functions (`equals`, `and`, `or`, `not`, `default`, and the site's own), and is truthy
+   exactly when Markdoc's `if` would take that branch. `{% else /%}`, including
+   `{% else <condition> /%}`, is handled the same way. A template means the same thing whether
+   its conditional is resolved early or late.
+2. **Only fully bound conditions are resolved.** A condition that refers to a page-scope
+   variable (`$frontmatter`, a site variable) cannot be evaluated at expansion. It stays an
+   `if` tag, resolves at transform, and D17's limit still applies to it.
+3. **The spliced branch is ordinary template content.** It is expanded with the same context,
+   so slots and `$each` inside it work as anywhere else. D11's "every field is placed once" is
+   checked on the template as written, so a slot placed in both branches of one conditional is
+   still two placements and still an error.
+
+**Consequences.**
+
+- **D17's worked case now works.** `{% if $slots.image %}…---{% /if %}` inside `card`
+  expands to either the delimiter or nothing before `card` looks for it.
+- **D17 narrows** to conditionals on page-scope values. Its definition-load diagnostic only
+  needs to cover those, and can say why: the condition names a value expansion cannot see.
+- **A conditional can supply structural content**, such as an eyebrow paragraph before a
+  heading, without inventing an attribute for it. {% ref "SPEC-167" /%}'s `comparison` cards
+  template is the worked case: only the featured card gets a "Recommended" eyebrow, written
+  as content.
+
 ## Non-goals
 
 - Replacing {% ref "SPEC-143" /%}'s declared tier — the two tiers coexist, and D5 keeps them distinct
@@ -3135,6 +3179,10 @@ D28 keeps today's rule.
 - [ ] `count` selects a plural form and interpolates `{count}` (D29)
 - [ ] `i18n-extract` lists every `t` key and composed `metaFields` label with its English text; one key with two English texts in one rune is an error at construction (D29)
 - [ ] `refrakt validate` reports `template-untranslated` at warning level for literal words in a composition template outside `t`, and never for symbols (D29)
+- [ ] An `{% if %}` whose condition uses only `$attrs`, `$each` or `$slots` is resolved during expansion and replaced by its chosen branch, including `{% else %}` branches, with the same truthiness as Markdoc's own `if` (D30)
+- [ ] D17's worked case passes with the conditional form: a `---` inside `{% if $slots.image %}` within `card` produces a media split when the slot is filled and none when it is empty (D30)
+- [ ] A conditional on a page-scope variable stays a runtime `if`, and D17's definition-load diagnostic still reports it when it wraps a structural delimiter (D30)
+- [ ] A slot placed in both branches of one conditional is still reported as placed twice (D30)
 
 ## References
 

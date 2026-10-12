@@ -192,8 +192,8 @@ sense (term and description), which it is, so `deflist` with an arrangement is t
 A pricing tier is a discrete object, so `tier` composes over `card`, not `section`: the one
 marketing rune where ADR-041's rule points the other way, and the reason `card` stays.
 
-- **Featured** is emphasis on the card (SPEC-159's elevation or a future `prominence` value),
-  replacing the `featured-tier` rune name.
+- **Featured** is emphasis on the card, replacing the `featured-tier` rune name. It is the
+  universal `featured` intent ({% ref "SPEC-167" /%} D2), not elevation or a `prominence` value.
 - **The sign-up link** becomes `actions` (SPEC-160 D6). Today `url` is harvested from the first
   `<a>` in the tier body.
 - **The feature list** stays a plain list, styled as a checklist by Lumina as it is now.

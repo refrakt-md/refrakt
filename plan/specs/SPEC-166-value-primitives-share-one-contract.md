@@ -27,7 +27,7 @@ plans found three value kinds that runes read by hand, each with its own parsing
 |---|---|---|
 | A date or time | `timeline` (`date` item field, `plugins/business/src/tags/timeline.ts`), `itinerary` (`time`, `plugins/places/src/tags/itinerary.ts`), `changelog` (`VERSION_DATE_PATTERN`), plan history and activity | per-rune patterns, no shared formatting |
 | A place | `map` (coordinates and address, `plugins/places/src/tags/map.ts`), `itinerary` (`location`), `event`, `organization` | per-rune parsing |
-| Included, not included, partial | `comparison` (task-list markers, drawn as ✓/✗, `plugins/marketing/src/tags/comparison.ts`) | a bare glyph with no text alternative |
+| Included, not included, partial | `comparison` (task-list markers, drawn as ✓/✗, `plugins/marketing/src/tags/comparison.ts`) | a glyph whose `aria-label` sits on a span with no role, so it is not reliably announced |
 
 The forms on the site include partial and written dates: `## 2023 - Founded`, `## v1.2.0 -
 January 2025`, and times such as `### 9:00 AM — Narita Airport`.
@@ -131,8 +131,8 @@ question in SPEC-165 that `design-context` breaks when a site redefines `palette
 - **An inclusion value** for `comparison`: included, not included, or partial. It is a value,
   not a glyph, and needs a text alternative. The skeleton already has a checklist dimension for
   task lists (`packages/skeleton/styles/dimensions/checklist.css`), so this may be a
-  `metaType` with sentiment rather than a new rune. It waits for `comparison`'s composition
-  plan.
+  `metaType` with sentiment rather than a new rune. *Decided by {% ref "SPEC-167" /%} D4: a
+  `metaType` with sentiment, read from task-list markers, with no rune of its own.*
 
 ## Not in scope
 
