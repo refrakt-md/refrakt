@@ -1693,6 +1693,9 @@ a constraint on *how* to compose a list, not a bar on composing one.
 
 ### D13 — a composed rune's strings need a keying name, or they are untranslatable
 
+> **Answered by D29.** Composed runes key by the rune's name (option 1), and literal template text
+> is translated with `{% t %}`.
+
 i18n keys are auto-derived as `{scope}.{block}.{ref}`
 (`packages/transform/src/types.ts:123`, `:145`, `:591`), with `scope` defaulting to
 `core` and set per plugin. A composed rune has **no block** — that is D2, and it is
@@ -2665,7 +2668,7 @@ SPEC-155 already records the other two blockers for `playlist`:
 
 ### D28 — a field is placed by `{% field %}`; `metablock` becomes shorthand for it
 
-*Proposed 2026-10-11.* It amends D7 and the "Authoring note — `{% metablock %}` versus placing
+*Proposed 2026-10-11; revised 2026-10-12 with D29.* It amends D7 and the "Authoring note — `{% metablock %}` versus placing
 `{% bar %}` or `{% deflist %}`", following {% ref "ADR-042" /%}.
 
 **What changed.** D7 gave `blocks` and `{% metablock %}` three jobs: keep a field's meaning,
@@ -2674,14 +2677,16 @@ second job for composed runes, because a composed rune's config belongs to its d
 theme cannot override it. What is left is the first job, and it is about **when** a value
 renders, not about blocks.
 
-- A field's meaning resolves at stage 4: its sentiment, translated label and enum text, chip
-  shape from `metaType`, `splitOn`, `condition`, and marks. The translation tables arrive with
-  the assembled theme config, and the engine reads them (`localizedLabel` →
-  `resolveLocaleString`). A template renders at stage 2, which knows the locale code but not the
-  tables.
-- So a template still cannot render a field. It can only mark where one goes, as `metablock`
-  does today. Moving field rendering to stage 2 would mean handing the translation tables to the
-  schema transform. That is a pipeline change, and it is not taken here.
+- A field's meaning is applied at stage 4: its sentiment, translated enum text, chip shape from
+  `metaType`, `splitOn`, `condition`, and marks. A template renders at stage 2.
+- So a template places a marker, as `metablock` does today, and the engine fills it. The reason
+  is the value, not the translation tables. The merged dictionary is built once per site by
+  `assembleThemeConfig`, before any page is transformed, so it could reach stage 2; D29 passes
+  it there for template text. A field's *value*, though, can be written late by a post-process
+  hook (see "the bag is the record", below), and only a stage-4 lookup sees the final value.
+- *Correction:* the first version of this decision said stage 2 "knows the locale code but not
+  the tables". The tables exist at stage 2; they are only not passed to the schema transform
+  today.
 
 Measured on the current output: `{% deflist %}` and the engine's `definition-list` block
 already render the same vocabulary. Both produce `dl[data-zone-layout="definition-list"]` with
@@ -2707,15 +2712,18 @@ directly.
      came out empty. This is `condition`'s behaviour carried to placed fields.
    - It is automatic, not an option, because a label followed by nothing is never wanted.
    - A row containing any authored content is never dropped.
-3. **A term-less `deflist` item holding a single field takes the field's label.** `-
-   {% field name="servings" /%}` renders as a row whose `dt` is the field's `metaFields` label,
-   translated through the same key as today (`{scope}.{block}.{ref}`), with `data-field` on the
-   row. Today a term-less item is an empty term plus a warning; this form is legal only when the
-   item's whole content is one field marker. A hand-written term (`**Time:**`) is the author's
-   wording, and stays untranslatable until D13 lands.
+3. **A row's label is template text.** `{% field %}` never emits a label, in any layout. The
+   template writes it, and makes it translatable with D29's `{% t %}`:
+   `- **{% t key="servings" %}Serves{% /t %}:** {% field name="servings" /%}`. A `deflist` item
+   with no term stays what it is today, an empty term with a warning. *Revised:* the first
+   version let a term-less item borrow the field's `metaFields` label, only to reach that
+   label's translation key. With D29 there is nothing to borrow it for, and a placeholder that
+   sometimes produced a label was harder to explain than one that never does.
 4. **`metablock` is shorthand.** `{% metablock name="metadata" /%}` expands at template
-   compile time to `{% deflist %}` (or `{% bar %}`, following the block's `layout`) with one
-   `- {% field name="…" /%}` row per declared field, in order. That leaves one rendering path
+   compile time to `{% deflist %}` (or `{% bar %}`, following the block's `layout`) with one row
+   per declared field, in order. A definition-list row is
+   `- **{% t key="<field>" %}<label>{% /t %}:** {% field name="<field>" /%}`, with the English
+   label taken from `metaFields`. A bar item is the field alone, because a bar is unlabelled. That leaves one rendering path
    for placed metadata, and the engine's block renderers serve only native runes' `layout`
    projection. The expansion keeps the block's identity: the list carries `data-name` and
    `data-zone` set to the block name, so `[data-zone="metadata"]` keeps matching. It also gains
@@ -2724,7 +2732,10 @@ directly.
 5. **`blocks` is optional in a composition.** A composition that places its fields with
    `{% field %}` needs no `blocks`; one that uses `metablock` declares the block the shorthand
    reads. `metaFields` stays required for any placed field, because it is where field meaning is
-   declared. Native runes keep `blocks` in engine config until ADR-042's follow-up settles them.
+   declared. Its `label` keeps one job in a composition: it is the English default the
+   `metablock` shorthand writes into the row, under the key `{scope}.{rune}.{field}` (D29). A
+   hand-written row that uses the same key translates identically. Native runes keep `blocks`
+   in engine config until ADR-042's follow-up settles them.
 6. **`{% bar %}` aligns with the engine's bar.** Its items lose the `<div><p>` wrapping, so the
    two produce the same structure. This is worth doing whatever happens to `metablock`.
 
@@ -2848,19 +2859,100 @@ lives in the template.** Is the value an attribute? Place it with `{% field %}`,
 
 ```md
 {% deflist %}
-- **Time:** {% field name="totalTime" /%}
-- {% field name="servings" /%}
-- {% field name="difficulty" /%}
-- **Diet:** Vegan
+- **{% t key="time" %}Time{% /t %}:** {% field name="totalTime" /%}
+- **{% t key="servings" %}Serves{% /t %}:** {% field name="servings" /%}
+- **{% t key="difficulty" %}Difficulty{% /t %}:** {% field name="difficulty" /%}
+- **{% t key="diet" %}Diet{% /t %}:** {% t key="vegan" %}Vegan{% /t %}
 {% /deflist %}
 ```
 
-- "Time" is the author's wording, and the row is dropped if `totalTime` is empty.
-- "Serves" and "Difficulty" come from `metaFields`, translated, with the sentiment chip on
-  difficulty.
-- "Diet" is authored and always shown.
+- Every label is template text, translated through D29 under `{scope}.recipe.<key>`.
+- The first three rows are built from fields, so each is dropped when its field is empty.
+- The "Diet" row is authored, so it is always shown.
+- The difficulty value gets its sentiment chip and translated enum text from `metaFields`.
 
 `totalTime` itself needs a computed value, which is the open question below on `{% let %}`.
+
+### D29 — template text is translated with `{% t %}`, keyed by the rune's name
+
+*Proposed 2026-10-12.* It answers D13's open question on literal template text and adopts D13's
+option 1 for composed runes. D28 depends on it: a row's label is template text, so template text
+has to be translatable.
+
+**The problem is wider than labels.** A composition template carries fixed UI text of several
+kinds, and none of it has a translation key today:
+
+| Kind | Example |
+|---|---|
+| Row labels | "Serves", "Difficulty" (D28) |
+| Empty-slot fallback | `{% slot name="description" %}No description yet.{% /slot %}` (the `PERSONA` test fixture) |
+| Literal badge text | `{% badge %}antagonist{% /badge %}` (D13) |
+| Attribute values | `{% details summary="Details" %}`, an `aria-label` |
+| Section headings | "Ingredients", "Steps" |
+| Unit text | "per day" (native `budget` keys it as `core.budget.perDay`) |
+
+D13 also measured that a block-less rune is mis-keyed in two different ways: `core..status` at
+lookup and `core.undefined.status` in the extractor. A composed rune has no block (D2), so every
+one is affected.
+
+**What exists.** The pieces are all present:
+
+- `assembleThemeConfig` (`packages/transform/src/assemble.ts`) builds one dictionary per site,
+  at load and before any page is transformed. Precedence, lowest to highest: the core bundle,
+  plugin bundles, then the site's own `strings`.
+- `resolveLocaleString(locale, key, english)` looks a key up and falls back to the English text
+  given at the call site.
+- A dictionary value may be a plural map (`PluralMap`), selected through `Intl.PluralRules`.
+- `i18n-extract` already lists keys and their English source for translators.
+
+**The decision.**
+
+1. **`{% t key="…" %}English text{% /t %}` translates a piece of template text.** Its content is
+   plain text, and that text is the English source and the fallback. A function form,
+   `t("key", "English text")`, does the same inside attribute values, where a tag cannot go:
+   `{% details summary=t("details", "Details") %}`.
+2. **Keys are scoped by the rune's name: `{scope}.{rune}.{key}`.**
+   - `scope` is the plugin name, as `assembleThemeConfig` already stamps it on plugin runes;
+     `core` for a core composition; `site` for a project's own definition.
+   - `key` is required, and matches `[a-z0-9-]+`. Keys derived from the English text were
+     rejected: editing the wording would change the key and silently orphan its translations.
+   - A composed rune's `metaFields` labels use the same namespace, `{scope}.{rune}.{field}`. The
+     engine's lookup and the extractor both derive from the rune's name when there is no block,
+     which closes D13's two mis-keyings together, as D13 requires.
+3. **`t` resolves at stage 2.** The schema transform receives the site's locale and merged
+   dictionary through its Markdoc config, taken from the same assembled config the engine
+   reads. Template text is fixed, unlike a field's value, so nothing is lost by resolving
+   early, and two things are gained:
+   - it works inside attribute values;
+   - content models see the translated text, so `deflist` still finds `**Term:**` in a
+     translated row.
+
+   The tree holds plain text, with no marker left for the engine.
+4. **Plurals use `count`.** `{% t key="serves" count=$attrs.servings %}Serves {count}{% /t %}`
+   selects a plural form when the dictionary entry is a plural map, and interpolates `{count}`.
+   `count` is the only placeholder; see the open question below.
+5. **The definition's owner supplies translations; a theme does not.** A plugin ships them in
+   its translation bundle, a site covers its own runes in `strings`, and a site can override a
+   plugin's through the existing precedence. Under {% ref "ADR-042" /%} a theme does not
+   translate a composed rune's text.
+6. **Extraction reads templates.** `i18n-extract` lists every `t` key with its English text,
+   and every composed rune's `metaFields` labels under the same namespace. One key with two
+   different English texts in one rune is an error at construction, naming both lines.
+7. **`t` is for composition templates.** Page content is written in the site's language and
+   is not keyed. Whether `t` is also useful in layouts and partials is left open.
+8. **Untranslated template text is reported, not rejected.** A literal text node containing
+   letters, in a composition template and outside `t`, is reported as `template-untranslated`
+   at warning level by `refrakt validate`. Symbols such as `↔` are not reported, and the build
+   never fails on it.
+
+**Not decided here:**
+
+- **Values inside a translated sentence**, for example "Serves {% field %} people". A field is
+  filled at stage 4 and `t` resolves at stage 2, so a message with a field inside it needs the
+  engine to resolve the message too. `count` covers the common plural case. A general
+  placeholder waits for a real case.
+- **Translating a value** remains the engine's job: enum values through `i18nEnums`
+  ({% ref "SPEC-035" /%} Zone 6), and dates and numbers through their formatters.
 
 ## Non-goals
 
@@ -3025,8 +3117,8 @@ D28 keeps today's rule.
 - [ ] The rune authoring guide carries the `{% metablock %}` versus placed-`{% bar %}`/`{% deflist %}` note, including the attribute-or-content rule and all three failure modes — the schema boundary, the usurped theme decision, and the lost `metaType` (amended by D28: the guide states which of the three a placed `{% field %}` avoids)
 - [ ] `{% field name="…" /%}` places one declared field's value, rendered by the engine at stage 4 exactly as a block renders it; naming an undeclared field is an error at construction (D28)
 - [ ] A `deflist` row or `bar` item whose value is only field markers is dropped when they resolve empty; a row with any authored content never is (D28)
-- [ ] A term-less `deflist` item whose whole content is one `{% field %}` takes the field's translated label and carries `data-field` (D28)
-- [ ] `{% metablock %}` expands at compile time to a `deflist` or `bar` of `{% field %}` rows, keeping `data-name` and `data-zone`; the output diff on the four composed storytelling definitions (`character`, `realm`, `faction`, `lore`) is reviewed (D28)
+- [ ] `{% field %}` emits a value element and never a label, in every layout; a term-less `deflist` item is unchanged (an empty term with a warning) (D28)
+- [ ] `{% metablock %}` expands at compile time to a `deflist` of `{% t %}`-labelled `{% field %}` rows, or a `bar` of fields, keeping `data-name` and `data-zone`; the output diff on the four composed storytelling definitions (`character`, `realm`, `faction`, `lore`) is reviewed (D28)
 - [ ] A composition with no `blocks` may place fields with `{% field %}`; `metaFields` stays required for any placed field (D28)
 - [ ] `{% bar %}` emits its items without the `<div><p>` wrapping, matching the engine's bar layout (D28)
 - [ ] Every value element carries `data-field`, in engine blocks and wherever `{% field %}` places it; definition-list rows keep theirs (D28)
@@ -3035,6 +3127,11 @@ D28 keeps today's rule.
 - [ ] The theme-authoring guide documents the value element and the order in which a theme should read its attributes (D28)
 - [ ] A placed field's value is looked up in the field bag by name at stage 4 and never copied into the tree; a value written by a post-process hook renders in place of the stage-2 value (D28)
 - [ ] The engine resolves a composed rune's fields from the bag, not from modifier values; `composedRuneConfig` generates modifiers only for attributes declaring `matches`, and the contract diff is reviewed (D28)
+- [ ] `{% t key="…" %}English{% /t %}` and `t("key", "English")` translate composition template text at stage 2, falling back to the English text; a translated row still parses as a `deflist` term (D29)
+- [ ] A composed rune's keys are `{scope}.{rune}.{key}`, with `scope` the plugin name, `core` or `site`; its `metaFields` labels use the same namespace, and the engine lookup and `i18n-extract` agree on every key, asserted on a block-less rune (D29, closing D13)
+- [ ] `count` selects a plural form and interpolates `{count}` (D29)
+- [ ] `i18n-extract` lists every `t` key and composed `metaFields` label with its English text; one key with two English texts in one rune is an error at construction (D29)
+- [ ] `refrakt validate` reports `template-untranslated` at warning level for literal words in a composition template outside `t`, and never for symbols (D29)
 
 ## References
 
