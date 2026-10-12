@@ -2780,6 +2780,52 @@ In one sentence: the definition declares what a value means, the template decide
 goes, the engine emits one element whose attributes state that meaning, and the theme decides
 how each meaning looks.
 
+**The bag is the record; the tree is the presentation.** Placing fields in the tree raises the
+question of whether a field's value should travel with it in the tree, rather than in the rune's
+field bag (`data-rune-fields`, on the root, stripped from output by the engine). It should not,
+because rendering is one reader of the bag among several:
+
+| Reader | Use of the bag |
+|---|---|
+| Schema table (`packages/runes/src/lib/schema-table.ts`) | attribute-sourced JSON-LD properties |
+| Entity registry (`packages/runes/src/lib/registers.ts`) | each entity's data, for cross-page use |
+| Plugin pipelines (e.g. `plugins/plan/src/pipeline.ts`) | rollups, filters and history |
+| Post-process hooks (e.g. `packages/runes/src/aggregate-resolve.ts`) | values written late, once every page is known |
+| Modifiers facet | root `data-*` attributes and BEM modifier classes |
+| Engine | rendering fields at stage 4 |
+
+Three reasons keep the record on the root:
+
+- **Meaning must not depend on arrangement.** If a value existed only where the template placed
+  it, structured data would have to find it in the tree, behind whatever rune the template
+  placed it in. That is {% ref "SPEC-146" /%}'s reachability problem. The bag is why D28 can say
+  the schema boundary does not apply to a field.
+- **Some values are written late.** Phase 4 post-process hooks write into the bag after every
+  page is known. A `{% field %}` marker looks its value up by name at stage 4, so it renders what
+  the record holds then. A copy taken into the tree at stage 2 could be stale.
+- **A field can be placed twice, or not at all.** It can appear in an eyebrow and in a list, or
+  be declared, never shown, and still published as JSON-LD. Only a record keyed by name handles
+  all three.
+
+So the bag stays the rune's single data record, read by the schema table, the registry, pipelines
+and modifiers. The tree carries one value element per placed field, which is the theme's
+contract. A marker refers to the record by name and never copies it, and the value element's
+`data-field` (decision 7) is the explicit link back to its record entry, for `inspect` and the
+editor as well as for themes.
+
+10. **A composed rune's generated modifiers are narrowed to enum and state attributes.**
+    `composedRuneConfig` (`packages/runes/src/lib/composition.ts`) makes a modifier of every
+    attribute that declares `matches` *and* of every attribute a `metaFields` entry reads. Each
+    modifier mirrors its value onto the root as a `data-*` attribute and a BEM class. The second
+    source exists only because the engine resolves fields against modifier values
+    (`resolveField(…, modifierValues, …)`). Once the value element carries `data-field` and
+    `data-value`, mirroring every field on the root is redundant. So:
+    - field resolution reads the bag directly, as `readField` already does for other readers;
+    - modifiers are generated only for attributes with `matches`, which are the enums and states
+      a theme legitimately styles the whole rune by (`[data-status="broken"]` on a bond).
+
+    Native runes are untouched: their modifiers are declared by hand.
+
 **D7's three failure modes, revisited.** The authoring note on `{% metablock %}` versus
 placing `{% bar %}` or `{% deflist %}` lists three ways a declared value goes wrong when it is
 hand-placed as a rune.
@@ -2987,6 +3033,8 @@ D28 keeps today's rule.
 - [ ] A field's value element is the same element in a definition list, a bar, a heading and prose; a `dd` wraps it rather than becoming it, and the definition-list contract diff is reviewed (D28)
 - [ ] A `category` or `status` value element carries its raw value as `data-value` beside the translated text (D28)
 - [ ] The theme-authoring guide documents the value element and the order in which a theme should read its attributes (D28)
+- [ ] A placed field's value is looked up in the field bag by name at stage 4 and never copied into the tree; a value written by a post-process hook renders in place of the stage-2 value (D28)
+- [ ] The engine resolves a composed rune's fields from the bag, not from modifier values; `composedRuneConfig` generates modifiers only for attributes declaring `matches`, and the contract diff is reviewed (D28)
 
 ## References
 
