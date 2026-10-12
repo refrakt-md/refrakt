@@ -46,7 +46,7 @@ long as runes may emit structure the theme has to learn.
    arithmetic, data fetching).
    - **The preferred shape is a primitive plus compositions.** The imperative part is a generic
      primitive, and the domain runes are compositions over it, as {% ref "SPEC-162" /%} does
-     with `ledger` and `budget` and SPEC-161 D3 states: a primitive may own imperative code; a
+     with `amount` and `tally` under `ledger` and `budget`, and SPEC-161 D3 states: a primitive may own imperative code; a
      composition may not.
    - **Otherwise, the native rune places core primitives in its output.** It builds child nodes
      of core runes and has them transformed normally, as `cast` already does by emitting

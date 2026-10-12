@@ -199,9 +199,10 @@ marketing rune where ADR-041's rule points the other way, and the reason `card` 
 - **The feature list** stays a plain list, styled as a checklist by Lumina as it is now.
 - **The price** is the blocker, as SPEC-151 D2 recorded: `parsedPrice` and `resolvedCurrency` are
   computed from the authored string. The fix is to make them authored: `price="19"
-  currency="USD" period="month"`, published directly as `price` and `priceCurrency`, and a
-  small `{% price %}` display rune that formats them with `Intl.NumberFormat`. Formatting at
-  render is presentation, not derived data, because the schema reads the attributes. This
+  currency="USD" period="month"`, published directly as `price` and `priceCurrency`, and
+  displayed with core's `{% amount %}` ({% ref "SPEC-162" /%} D7; this replaces the separate
+  `{% price %}` rune first proposed here). Formatting at render is presentation, not derived
+  data, because the schema reads the attributes. This
   also fixes a defect in the plugin: `inferCurrency` matches currency symbols only as a
   prefix, so `29 kr` publishes `USD`.
 
@@ -303,7 +304,7 @@ can use the byline instead; the choice is presentational.
 | `section` portrait zone | SPEC-160 D2 | `testimonial`, `cast-member`, `character` |
 | `deflist` feature terms (D3) | extends a core rune | `feature` |
 | `actions` | SPEC-160 D6 | `hero`, `cta`, `tier` |
-| Authored price + `{% price %}` (D4) | new core rune | `tier`, `pricing` |
+| Authored price + `{% amount %}` (D4) | core rune from SPEC-162 | `tier`, `pricing` |
 | `segmented` content model | SPEC-147 | `plot`, `storyboard` (no longer `feature`) |
 
 ## Order
@@ -311,7 +312,7 @@ can use the byline instead; the choice is presentational.
 1. `steps` (D5): nothing new needed once SPEC-160 D2 lands.
 2. `testimonial` (D1, D6): needs SPEC-160 D2, `stack`, and the codemod.
 3. `feature` (D3): needs `deflist`'s terms and SPEC-156's arrangements.
-4. `pricing` and `tier` (D4): needs `actions`, `price`, and SPEC-146 for the `Product` header.
+4. `pricing` and `tier` (D4): needs `actions`, `amount` (SPEC-162), and SPEC-146 for the `Product` header.
 
 Each composition is compared with the plugin's output before it replaces anything, as
 {% ref "SPEC-147" /%} D2 set: JSON-LD against the SEO baseline, rendered HTML, and every

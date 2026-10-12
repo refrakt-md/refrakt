@@ -126,8 +126,8 @@ three native runes that do use it as chrome, not as a description of an entity:
 
   Where each stands:
 
-  - **`budget`** has a path: {% ref "SPEC-162" /%} moves its arithmetic into a `ledger`
-    primitive and composes it over `section`.
+  - **`budget`** has a path: {% ref "SPEC-162" /%} moves its arithmetic into two core
+    primitives, `amount` and `tally`, and makes `ledger` and `budget` compositions over them.
   - **`hint`** stays native for now. It becomes the target case once three things exist, and
     each is useful without it:
     - SPEC-145 D13's keyed strings, which give a composition translatable enum labels such as

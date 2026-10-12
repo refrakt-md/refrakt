@@ -223,9 +223,10 @@ A probe measured each piece:
 | Scales (`Accent: #F59E0B, #D97706`) | `$each.value` is the whole string. | D1's list form |
 
 So palette needs no primitive of its own. Its cells, scales and contrast come from `color`, its
-layout from `grid`, and its anatomy from `section`. Only `ledger` keeps imperative code among
-the row-shaped runes, because it does arithmetic ({% ref "SPEC-162" /%}), not because it reads
-rows.
+layout from `grid`, and its anatomy from `section`. The same split holds for the
+row-shaped runes that do arithmetic: {% ref "SPEC-162" /%} reads rows the same way and adds an
+`amount` value primitive and a `tally` aggregation primitive, so `ledger` is a composition
+too.
 
 The `title` attribute stays as a fallback heading for pages that use it.
 
@@ -475,7 +476,7 @@ None of these runes emits structured data, so the SEO baseline does not apply.
 
 - {% ref "SPEC-160" /%}: `section` and its media zone; D3, where card itself becomes a composition.
 - {% ref "SPEC-161" /%} D3: a primitive may own imperative code, and a composition may not.
-- {% ref "SPEC-162" /%}: `ledger`, the one row-shaped rune that keeps a primitive, for its arithmetic.
+- {% ref "SPEC-162" /%}: `amount` and `tally`, the same split for money: a value primitive, an aggregation primitive, and `ledger` as a composition.
 - {% ref "SPEC-145" /%}: compositions. D3 here extends its definition format, and D6 amends its D26.
 - {% ref "BUG-038" /%}: YAML `itemModel` patterns are never compiled; palette depends on the fix.
 
