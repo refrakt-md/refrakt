@@ -3025,6 +3025,9 @@ Open points:
 - how a first-party definition's schema table may read a `let` value. D25 already keeps
   project definitions from declaring `schema`.
 
+> **Answered by {% ref "ADR-043" /%}** (proposed): the engine stops adding `rf-badge` to field
+> values, and the base stylesheet gives chip geometry by `data-meta-type`.
+
 **Should the theme, not the engine, decide which values are chips?** `CHIP_METATYPES` in
 `packages/transform/src/engine.ts` fixes that `status`, `category` and `tag` values get
 `.rf-badge` and the rest render plain. That is a presentation decision in the output. The purer
