@@ -203,6 +203,106 @@ These need their own spec. They are recorded here because the measurement found 
 decided. *Examined in {% ref "SPEC-169" /%}: `delimited` and `implicitSection` are accepted,
 `when` is not needed, `checklist` is not a gap, and each config feature has another home.*
 
+### D8 — within one definition, reuse is a fragment
+
+Writing out a full `recipe` with two {% ref "SPEC-145" /%} D15 templates (`standard` and
+`cover`) showed the cost D15 accepted: the metadata list and the ingredients, method and tips
+blocks were written twice, about twenty lines each time. D6 defers sharing across runes; this
+is sharing **within one file**, which raises none of D6's questions.
+
+```md
+---
+# …frontmatter as before, with templates: { by: layout }…
+---
+
+{% fragment name="photo-and-header" %}
+	{% slot name="photo" /%}
+
+	---
+
+	{% slot name="eyebrow" /%}
+	{% slot name="headline" /%}
+	{% slot name="blurb" /%}
+{% /fragment %}
+
+{% fragment name="body" %}
+	{% deflist %}
+		- **{% t key="prep-time" %}Prep time{% /t %}:** {% field name="prepTime" /%}
+		- **{% t key="servings" %}Servings{% /t %}:** {% field name="servings" /%}
+	{% /deflist %}
+
+	{% if $slots.ingredients %}
+		## {% t key="ingredients" %}Ingredients{% /t %}
+
+		{% slot name="ingredients" /%}
+	{% /if %}
+
+	…method and tips…
+{% /fragment %}
+
+## standard
+
+{% section forward="split" media="cover" %}
+	{% partial file="#photo-and-header" /%}
+	{% partial file="#body" /%}
+{% /section %}
+
+## cover
+
+{% section forward="split" media-position="cover" media="cover" %}
+	{% partial file="#photo-and-header" /%}
+{% /section %}
+
+{% section %}
+	{% partial file="#body" /%}
+{% /section %}
+```
+
+The templates now say only what differs between them: one section, or a cover band followed by
+a body section.
+
+1. **Declared with `{% fragment name="…" %}`**, before the first template heading, outside any
+   template. In a single-template file, fragments come first and the rest is the template.
+2. **Used with Markdoc's own `{% partial %}`, with `#` before the name**, read as "in this
+   file". Authors already know `{% partial file="cta.md" /%}` from `_partials/`
+   (`site/content/docs/authoring/partials.md`), so using a fragment needs no new tag.
+3. **Resolved during expansion**, like D3's `forward` and SPEC-145 D30's conditionals. The
+   fragment's content replaces the `partial` tag before any placed rune reads its content, so
+   `section` sees the `---` and the header paragraphs as if written inline. Slots, `$attrs`,
+   `$each`, `$slots`, `t` and `field` inside a fragment behave as in the template, and D30
+   conditionals inside it are resolved after the splice.
+4. **Placement is checked per template, after expansion.** Using `#body` in both templates is
+   fine; using it twice in one template places its slots twice, which is SPEC-145 D11's
+   existing error, now naming the fragment.
+5. **Construction errors:** an unknown fragment, a fragment named twice, and a fragment that
+   uses itself directly or through another. An unused fragment is a warning.
+6. **Tools show expanded templates only.** `inspect`, `contracts` and the reference never show
+   fragments, which are an authoring convenience, not output. An error inside a fragment
+   reports the fragment's line.
+
+**Deliberately left out:**
+
+- **Parameters.** Markdoc's `partial` takes `variables={…}`. Allowing it would make a fragment
+  a function, which is the template language ADR-036 warns against. A fragment sees exactly the
+  bindings of the template that uses it. Two places that need different content use two
+  fragments, or the template's own conditionals.
+- **Fragments from other files.** `file="shapes/profile.md#body"` is D6's deferred shared
+  shape. Keeping fragments file-local means a definition stays readable on its own, and the
+  syntax leaves room to extend later.
+- **Template inheritance** ("`cover` is `standard` with the header replaced"). That would define
+  a template's output partly somewhere else, implicitly, which is the problem ADR-042 removed
+  at the theme level. A fragment is explicit: every template lists what it places.
+
+**Why not one template with a conditional?** SPEC-145 D30 resolves
+`{% if equals($attrs.layout, "cover") %}` at expansion, so it would work. But D15 rejected
+conditional branches as template selection because tools would see one assembly where there
+are two, and D30 rule 3 counts a slot placed in both branches as placed twice. Fragments keep
+D15's separate, inspectable templates and remove the repetition.
+
+**Open:** the declaration tag's name. `fragment` reads well. A block form of `partial`
+(`{% partial name="…" %}…{% /partial %}`) would use one tag for both, but overloads a
+Markdoc built-in.
+
 ## Incidental findings
 
 Recorded so they are not lost, for separate handling:
@@ -232,6 +332,12 @@ Recorded so they are not lost, for separate handling:
 - [ ] `refrakt reference` groups a rune's attributes under each preset it uses, including several presets per rune, and shows overridden defaults beside the preset's
 - [ ] No preset declares a universal attribute
 - [ ] Site `runes/` definitions can use presets and cannot register them
+- [ ] A definition may declare `{% fragment name="…" %}` blocks before its first template, and `{% partial file="#name" /%}` splices one in during expansion, before any placed rune reads its content
+- [ ] Slot placement is counted per template after fragments expand; a fragment used twice in one template reports a double placement naming the fragment
+- [ ] An unknown fragment, a duplicate fragment name and a fragment cycle are construction errors; an unused fragment is a warning; an error inside a fragment reports the fragment's line
+- [ ] A `partial` with `variables`, or a `#` reference to another file, inside a definition is a construction error
+- [ ] `inspect`, `contracts` and the reference show expanded templates only
+- [ ] A two-template `recipe` fixture using fragments renders identically to the same definition written without them
 
 ## References
 
