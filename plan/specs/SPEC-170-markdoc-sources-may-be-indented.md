@@ -135,5 +135,6 @@ passes `allowIndentation: true` to the formatter, so an author's indentation is 
 
 - {% ref "SPEC-145" /%}: composed-rune templates, the main consumer.
 - {% ref "SPEC-169" /%}: what compositions can express; indentation is a readability fix, independent of it.
+- {% ref "WORK-640" /%}: the Markdoc 0.5.10 upgrade, which lands first so the shared `parse()` is built on the current version.
 
 {% /spec %}
