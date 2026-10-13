@@ -613,6 +613,8 @@ new; each row points at where it is decided.
 | `{% slot /%}` (bare, inside `each`) | this item's content — avoids an `of=$each` argument | same |
 | `{% metablock name="x" /%}` | place the rune's declared meta block `x` | D7 |
 | `{% if %}` / `{% else /%}` | Markdoc's own; resolved at expansion when bound (D30), otherwise with the content-model consequence D17 states | D17, D30 |
+| `{% template <attr>="v" %}…{% /template %}` | one of several assemblies, selected by the attribute named in `templates: { by }` | D15 |
+| `{% fragment name="x" %}…{% /fragment %}` + `{% partial file="#x" /%}` | a block declared once in the file and spliced in at expansion | {% ref "SPEC-168" /%} D8 |
 | `$attrs.name` | a resolved attribute, in content or attribute position | "Smaller shape decisions" above |
 | `$each` | the current item inside an `each` slot; its fields are exactly the content model's `emitAttributes` | D26 |
 | `$row` | the existing `data` / `collection` row binding, unchanged | prior art, not added here |
@@ -1890,8 +1892,15 @@ explode. Rune-locality is the property that makes names safe here and unsafe the
 #### Several templates in one file, keyed by value
 
 Keeps {% ref "ADR-037" /%}'s one-file-per-rune shape. With one assembly the body *is* the
-template; with several it is a sectioned document — the same `sections` pattern refrakt
-uses everywhere, so the definition format eats its own dog food.
+template; with several, each is a `{% template %}` block naming the attribute value it
+renders for.
+
+> **Revised by {% ref "SPEC-168" /%} D9.** An earlier draft made each template a `##` section
+> of the body, "the same `sections` pattern refrakt uses everywhere". That made every
+> top-level `##` in a multi-template file a template boundary, so a template could not hold a
+> plain top-level `##` heading of its own: one would silently split the template in two. A
+> tag has an explicit end, carries its values as an attribute instead of in heading text, and
+> matches how fragments (SPEC-168 D8) are declared.
 
 ```md
 ---
@@ -1912,36 +1921,39 @@ schema:
 templates: { by: layout }
 ---
 
-## full
+{% template layout="full" %}
+	{% card %}
+		{% slot name="portrait" /%}
 
-{% card %}
-{% slot name="portrait" /%}
+		# {% $attrs.name %}
 
-# {% $attrs.name %}
+		{% slot name="description" /%}
 
-{% slot name="description" /%}
+		{% slot name="sections" each %}
+			{% details summary=$each.heading %}{% slot /%}{% /details %}
+		{% /slot %}
+	{% /card %}
+{% /template %}
 
-{% slot name="sections" each %}
-  {% details summary=$each.heading %}{% slot /%}{% /details %}
-{% /slot %}
-{% /card %}
-
-## compact
-
-{% bar %}
-{% slot name="portrait" /%}
-**{% $attrs.name %}** — {% slot name="description" /%}
----
-{% details summary="Details" %}
-  {% slot name="sections" each %}{% slot /%}{% /slot %}
-{% /details %}
-{% /bar %}
+{% template layout="compact" %}
+	{% bar %}
+		{% slot name="portrait" /%}
+		**{% $attrs.name %}** — {% slot name="description" /%}
+		---
+		{% details summary="Details" %}
+			{% slot name="sections" each %}{% slot /%}{% /slot %}
+		{% /details %}
+	{% /bar %}
+{% /template %}
 ```
+
+The template tag names the selecting attribute itself (`layout="compact"`), so it reads as
+the condition it is. Its one attribute must be the one named in `templates: { by: … }`.
 
 `{% character name="Veshra" %}` renders `full` (the attribute's `default`);
 `layout="compact"` renders the other. Same content, same schema row, different assembly.
 
-#### Why keyed sections rather than `{% if %}` inside one template
+#### Why keyed templates rather than `{% if %}` inside one template
 
 `{% if %}` already works, so this is a real choice, and the deciding factor is tooling
 visibility. **Contracts already model this shape**: `packages/transform/src/contracts.ts:98-99`
@@ -1956,10 +1968,11 @@ where three exist.
 1. **The selecting attribute must declare `matches`.** Without a closed value set there is
    nothing to check coverage against. A `default` is wanted too, mirroring `variants`'
    "the modifier's own `default` already provides the active value".
-2. **Section names and `matches` values correspond exactly, both directions** — a value
-   with no section is an error, a section with no value is an error. The same bidirectional
-   shape the config-schema drift test already uses. *Amended by {% ref "SPEC-169" /%} D5: a
-   section heading may list several values, and every value is covered exactly once.*
+2. **Every `matches` value is covered by exactly one template, and every template's values
+   are in `matches`** — a value no template covers is an error, a value covered twice is an
+   error, and a template naming an unknown value is an error. The same bidirectional shape the
+   config-schema drift test already uses. A template may list several values,
+   `{% template kind="class, interface, module" %}` ({% ref "SPEC-169" /%} D5).
 3. **Every declared content-model field is placed by every template.** D11 makes an
    unplaced field a build error because content is never silently dropped; with several
    templates that check runs per template. A compact assembly that wants less prominence
@@ -3153,7 +3166,7 @@ D28 keeps today's rule.
 - [ ] Universal attributes apply to the nominated chrome carrier; a template with several top-level placed runes and no nomination is rejected (D14)
 - [ ] A rune may declare several templates in one file, keyed by the values of a declared attribute, selected at transform time (D15)
 - [ ] The selecting attribute must declare `matches`; one without it is rejected, naming the rune (D15)
-- [ ] Template section names and the attribute's `matches` values correspond exactly in both directions, each mismatch reported by name (D15)
+- [ ] Every `matches` value of the selecting attribute is covered by exactly one `{% template %}` block, each template names only known values, and each mismatch is reported by name (D15)
 - [ ] Every declared content-model field is placed by every template; one that omits a field is the same build error as a single template omitting it (D15)
 - [ ] Templates and `variants` deltas both apply to the same rune on the same axis, at their own stages, with the theme able to override the delta and not the template (D15)
 - [ ] `refrakt contracts` records one expansion per template under the existing `variants` contract shape, adding no new shape (D15)

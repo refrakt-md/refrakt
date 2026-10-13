@@ -164,18 +164,18 @@ content:
 
 ### D5 — a D15 template may cover several values
 
-{% ref "SPEC-145" /%} D15 constraint 2 requires template section names and the selecting
-attribute's `matches` values to correspond exactly, one to one. `symbol`'s `kind` has eight
-values and two assemblies. A template heading may therefore list several values:
+{% ref "SPEC-145" /%} D15 constraint 2 required templates and the selecting attribute's
+`matches` values to correspond one to one. `symbol`'s `kind` has eight values and two
+assemblies. A template may therefore list several values:
 
 ```md
-## class, interface, module
+{% template kind="class, interface, module" %}
+	…groups and members…
+{% /template %}
 
-…groups and members…
-
-## function, enum, type, hook, component
-
-…a flat symbol…
+{% template kind="function, enum, type, hook, component" %}
+	…a flat symbol…
+{% /template %}
 ```
 
 The constraint becomes: **every value is covered by exactly one template**, and every listed
@@ -239,7 +239,7 @@ Nothing is added to `composedRuneConfig` by this spec.
 - [ ] A composition accepts `implicitSection` on a sections model; its attribute keys must equal `emitAttributes`' keys; with no section heading, all content becomes one item of the `sections` slot
 - [ ] `each` on a non-greedy field matching one `list` iterates its items, with the bare slot as each item's content and no `$each` bindings
 - [ ] A composed `steps` renders the same steps from headings and from an ordered list, with one model and no conditional
-- [ ] A D15 template heading may list several values; every value is covered exactly once, reported both ways as before
+- [ ] A D15 `{% template %}` may list several values; every value is covered exactly once, reported both ways as before
 - [ ] The error for a conditional content model names this spec's alternatives (implicit sections, list `each`, D15 templates)
 - [ ] SPEC-145 D18's statement about recipe's delimited model and SPEC-145 D15's constraint 2 carry notes pointing here
 

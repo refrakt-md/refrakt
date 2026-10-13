@@ -240,29 +240,29 @@ is sharing **within one file**, which raises none of D6's questions.
 	…method and tips…
 {% /fragment %}
 
-## standard
+{% template layout="standard" %}
+	{% section forward="split" media="cover" %}
+		{% partial file="#photo-and-header" /%}
+		{% partial file="#body" /%}
+	{% /section %}
+{% /template %}
 
-{% section forward="split" media="cover" %}
-	{% partial file="#photo-and-header" /%}
-	{% partial file="#body" /%}
-{% /section %}
+{% template layout="cover" %}
+	{% section forward="split" media-position="cover" media="cover" %}
+		{% partial file="#photo-and-header" /%}
+	{% /section %}
 
-## cover
-
-{% section forward="split" media-position="cover" media="cover" %}
-	{% partial file="#photo-and-header" /%}
-{% /section %}
-
-{% section %}
-	{% partial file="#body" /%}
-{% /section %}
+	{% section %}
+		{% partial file="#body" /%}
+	{% /section %}
+{% /template %}
 ```
 
 The templates now say only what differs between them: one section, or a cover band followed by
 a body section.
 
-1. **Declared with `{% fragment name="…" %}`**, before the first template heading, outside any
-   template. In a single-template file, fragments come first and the rest is the template.
+1. **Declared with `{% fragment name="…" %}`** at the top level of the body, outside any
+   `{% template %}`. In a single-template file, everything outside fragments is the template.
 2. **Used with Markdoc's own `{% partial %}`, with `#` before the name**, read as "in this
    file". Authors already know `{% partial file="cta.md" /%}` from `_partials/`
    (`site/content/docs/authoring/partials.md`), so using a fragment needs no new tag.
@@ -303,6 +303,63 @@ D15's separate, inspectable templates and remove the repetition.
 (`{% partial name="…" %}…{% /partial %}`) would use one tag for both, but overloads a
 Markdoc built-in.
 
+### D9 — templates are tags, selected by one attribute for now
+
+**Templates become `{% template <attr>="value" %}` blocks**, amending {% ref "SPEC-145" /%} D15,
+which made each template a `##` section of the body. Fragments (D8) are tags, and three
+problems with heading-based templates tip the choice the same way:
+
+- **A top-level `##` meant two things.** In a file with several templates, every top-level `##`
+  started a template, so a template could not hold a plain top-level `##` heading of its own:
+  one would silently split it in two. The examples written so far only worked because their
+  headings happened to sit inside a placed rune or an `{% if %}`.
+- **Values belonged in an attribute, not heading text.** {% ref "SPEC-169" /%} D5's
+  `## class, interface, module` meant parsing a list out of a heading.
+- **A tag has an explicit end**, which SPEC-170's indentation makes visible.
+
+D15's actual reason for keyed templates (each assembly is visible to `contracts`, `inspect` and
+the reference) is unchanged, as are its constraints. Single-template definitions are
+unaffected: without `templates:`, the body is the template. D15 is not implemented
+(`packages/runes/src/lib/composition.ts` has no `templates` handling), so this is a spec change,
+not a migration.
+
+The tag names the selecting attribute itself (`layout="cover"`) rather than a generic
+`for="cover"`. It reads as the condition it is, and it is the form that extends to several
+conditions if that is ever needed.
+
+**Several conditions are not supported now.** Measured across the runes in this spec, every
+variation that changes *where slots are placed* is one attribute: `recipe`'s layout,
+`symbol`'s kind, `comparison`'s layout, `testimonial`'s variant, the composed `character`'s
+layout. The second axes that exist are of other kinds, each with a home already:
+
+| Second axis | Example | Home |
+|---|---|---|
+| Decoration | density, materiality, elevation | the placed primitives' attributes, passed with `forward` (D3) or the universal axes |
+| Meaning | `playlist`'s `type` choosing a schema.org row | `schema: { by: … }`, which SPEC-145 D27 already keeps separate from `templates: { by: … }` |
+| Optional template text | a label shown only for some values | an SPEC-145 D30 conditional, which places no slot |
+
+A conditional cannot stand in for a second structural axis: SPEC-145 D30 rule 3 counts a slot
+placed in both branches as placed twice, so a conditional can add or omit content but cannot
+place the same slot in two ways.
+
+**If a rune needs two structural axes**, the extension is already shaped:
+
+```yaml
+templates: { by: [layout, density] }
+```
+
+```md
+{% template layout="cover" density="compact" %} … {% /template %}
+{% template layout="cover" %} … {% /template %}   <!-- covers every other density -->
+```
+
+An omitted attribute means every value; every combination must be covered by exactly one
+template; an overlap is an error. Because coverage is exact, no precedence rule is needed. A
+free condition (`when=and(…)`) is rejected: coverage and overlap could no longer be checked.
+
+**Trigger:** a rune in which two attributes each change which slots are placed where. Until
+then, `templates: { by }` names one attribute and a template tag carries exactly that one.
+
 ## Incidental findings
 
 Recorded so they are not lost, for separate handling:
@@ -332,12 +389,14 @@ Recorded so they are not lost, for separate handling:
 - [ ] `refrakt reference` groups a rune's attributes under each preset it uses, including several presets per rune, and shows overridden defaults beside the preset's
 - [ ] No preset declares a universal attribute
 - [ ] Site `runes/` definitions can use presets and cannot register them
-- [ ] A definition may declare `{% fragment name="…" %}` blocks before its first template, and `{% partial file="#name" /%}` splices one in during expansion, before any placed rune reads its content
+- [ ] A definition may declare `{% fragment name="…" %}` blocks at the top level of its body, outside any template, and `{% partial file="#name" /%}` splices one in during expansion, before any placed rune reads its content
 - [ ] Slot placement is counted per template after fragments expand; a fragment used twice in one template reports a double placement naming the fragment
 - [ ] An unknown fragment, a duplicate fragment name and a fragment cycle are construction errors; an unused fragment is a warning; an error inside a fragment reports the fragment's line
 - [ ] A `partial` with `variables`, or a `#` reference to another file, inside a definition is a construction error
 - [ ] `inspect`, `contracts` and the reference show expanded templates only
 - [ ] A two-template `recipe` fixture using fragments renders identically to the same definition written without them
+- [ ] Templates are declared as `{% template <attr>="value[, value]" %}` blocks whose attribute is the one in `templates: { by }`; a top-level `##` inside a template is ordinary content
+- [ ] A template tag naming a different attribute, or more than one, is a construction error while `by` names a single attribute
 
 ## References
 

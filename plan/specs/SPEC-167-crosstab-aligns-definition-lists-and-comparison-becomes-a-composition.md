@@ -248,63 +248,68 @@ content:
 templates: { by: layout }
 ---
 
-## table
+{% fragment name="opening" %}
+	{% if $attrs.title %}
+		## {% $attrs.title %}
+	{% /if %}
 
-{% if $attrs.title %}
-## {% $attrs.title %}
-{% /if %}
+	{% slot name="intro" /%}
+{% /fragment %}
 
-{% slot name="intro" /%}
+{% fragment name="item-heading" %}
+	{% if equals($each.heading, $attrs.highlighted) %}
+		{% t key="recommended" %}Recommended{% /t %}
+	{% /if %}
 
-{% crosstab labels=$attrs.labels %}
-{% slot name="sections" each %}
-{% section featured=equals($each.heading, $attrs.highlighted) %}
-{% if equals($each.heading, $attrs.highlighted) %}
-{% t key="recommended" %}Recommended{% /t %}
-{% /if %}
+	### {% $each.heading %}
+{% /fragment %}
 
-### {% $each.heading %}
+{% fragment name="closing" %}
+	{% if $attrs.verdict %}
+		{% $attrs.verdict %}
+	{% /if %}
+{% /fragment %}
 
-{% slot /%}
-{% /section %}
-{% /slot %}
-{% /crosstab %}
+{% template layout="table" %}
+	{% partial file="#opening" /%}
 
-{% if $attrs.verdict %}
-{% $attrs.verdict %}
-{% /if %}
+	{% crosstab labels=$attrs.labels %}
+		{% slot name="sections" each %}
+			{% section featured=equals($each.heading, $attrs.highlighted) %}
+				{% partial file="#item-heading" /%}
 
-## cards
+				{% slot /%}
+			{% /section %}
+		{% /slot %}
+	{% /crosstab %}
 
-{% if $attrs.title %}
-## {% $attrs.title %}
-{% /if %}
+	{% partial file="#closing" /%}
+{% /template %}
 
-{% slot name="intro" /%}
+{% template layout="cards" %}
+	{% partial file="#opening" /%}
 
-{% grid cells="each" %}
-{% slot name="sections" each %}
-{% card featured=equals($each.heading, $attrs.highlighted) %}
-{% if equals($each.heading, $attrs.highlighted) %}
-{% t key="recommended" %}Recommended{% /t %}
-{% /if %}
+	{% grid cells="each" %}
+		{% slot name="sections" each %}
+			{% card featured=equals($each.heading, $attrs.highlighted) %}
+				{% partial file="#item-heading" /%}
 
-### {% $each.heading %}
+				{% deflist %}
+					{% slot /%}
+				{% /deflist %}
+			{% /card %}
+		{% /slot %}
+	{% /grid %}
 
-{% deflist %}
-{% slot /%}
-{% /deflist %}
-{% /card %}
-{% /slot %}
-{% /grid %}
-
-{% if $attrs.verdict %}
-{% $attrs.verdict %}
-{% /if %}
+	{% partial file="#closing" /%}
+{% /template %}
 ```
 
 - **Two templates, not a runtime switch.** D15 gives each layout its own assembly, its own
   contract expansion and its own fixture. Each template places every field once.
+- **What the two share is written once**, as fragments ({% ref "SPEC-168" /%} D8): the title
+  and intro, each item's eyebrow and heading, and the verdict. The `item-heading` fragment is
+  used inside an `each`, so `$each` is bound where it lands.
 - **The two templates differ in two words.** Each item is a `section` in a `crosstab` or a
   `card` in a `grid`, with the same featured flag, eyebrow and heading. Only `crosstab` reads
   the sections as columns.
