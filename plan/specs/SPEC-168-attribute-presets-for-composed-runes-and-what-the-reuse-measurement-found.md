@@ -200,7 +200,8 @@ the generated config cannot express than by repetition:
 | Generated config carries only `modifiers`, `metaFields`, `blocks`, `provides` | `composedRuneConfig`, `composition.ts:1428-1455` | `checklist` (`work`, `bug`), `sequence` (`timeline`, `itinerary`, `plot`), `mediaSlots`, chrome defaults |
 
 These need their own spec. They are recorded here because the measurement found them, not
-decided.
+decided. *Examined in {% ref "SPEC-169" /%}: `delimited` and `implicitSection` are accepted,
+`when` is not needed, `checklist` is not a gap, and each config feature has another home.*
 
 ## Incidental findings
 

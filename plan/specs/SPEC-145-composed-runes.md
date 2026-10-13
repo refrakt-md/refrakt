@@ -1958,7 +1958,8 @@ where three exist.
    "the modifier's own `default` already provides the active value".
 2. **Section names and `matches` values correspond exactly, both directions** — a value
    with no section is an error, a section with no value is an error. The same bidirectional
-   shape the config-schema drift test already uses.
+   shape the config-schema drift test already uses. *Amended by {% ref "SPEC-169" /%} D5: a
+   section heading may list several values, and every value is covered exactly once.*
 3. **Every declared content-model field is placed by every template.** D11 makes an
    unplaced field a build error because content is never silently dropped; with several
    templates that check runs per template. A compact assembly that wants less prominence
@@ -2092,6 +2093,9 @@ Neither has a custom content model, a `postTransform`, a behaviour or a pipeline
 recipe's `delimited`/zoned model and howto's flat `sequence` are both declarable in
 frontmatter. The only gap is `headline` / `blurb`, which is
 {% ref "SPEC-151" /%} D3's six-rune case.
+
+> **Corrected by {% ref "SPEC-169" /%} D1.** Recipe's `delimited` model was not declarable: the
+> composition parser accepted only `sequence` and `sections`. SPEC-169 D1 adds it.
 
 This corrects a claim that reached {% ref "SPEC-151" /%}: {% ref "SPEC-143" /%} D4 gates
 the *declared* emit path, not composability, so its exclusion of `recipe` and `howto` says
