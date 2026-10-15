@@ -229,6 +229,81 @@ export function plainRefs(text) {
 		.replace(/(\{%\s*file-ref\b[^%]*?)\s+preview="[^"]*"/g, '$1');
 }
 
+// --- ref check (SPEC-176 D6) ---
+
+/**
+ * Every ID and milestone name the plan declares: the `id` of a spec, work,
+ * bug or decision tag and the `name` of a milestone tag. A declaration inside
+ * a code fence is an example, not an entity, so it does not count.
+ */
+export function declaredPlanIds(planDir) {
+	const declared = new Set();
+	const walk = (dir) => {
+		for (const entry of readdirSync(dir, { withFileTypes: true })) {
+			if (entry.name.startsWith('.')) continue;
+			const path = join(dir, entry.name);
+			if (entry.isDirectory()) walk(path);
+			else if (entry.name.endsWith('.md')) {
+				const live = stripCodeFences(readFileSync(path, 'utf8').split('\n')).join('\n');
+				for (const m of live.matchAll(
+					/\{%\s*(spec|work|bug|decision|milestone)\b[^%]*?\b(id|name)="([^"]+)"/g,
+				)) {
+					if ((m[1] === 'milestone') === (m[2] === 'name')) declared.add(m[3]);
+				}
+			}
+		}
+	};
+	if (existsSync(planDir)) walk(planDir);
+	return declared;
+}
+
+/** The `ref` and `xref` targets in `text` that `declared` does not hold, with
+ *  their 1-based line numbers. Fenced examples are skipped. */
+export function unresolvedRefs(text, declared) {
+	const found = [];
+	let inFence = false;
+	text.split('\n').forEach((line, i) => {
+		if (/^\s*(```|~~~)/.test(line)) inFence = !inFence;
+		if (inFence) return;
+		for (const m of line.matchAll(/\{%\s*x?ref\s+"([^"]+)"/g)) {
+			if (!declared.has(m[1])) found.push({ line: i + 1, target: m[1] });
+		}
+	});
+	return found;
+}
+
+/**
+ * Check every summary the changelog can show: each note in `releases/notes/`,
+ * and each milestone opening the generator falls back to. A finding names the
+ * file, the line and the target. Returns an empty list when every ref resolves.
+ */
+export function releaseRefFindings(rootDir, planDirName = 'plan') {
+	const planDir = join(rootDir, planDirName);
+	const declared = declaredPlanIds(planDir);
+	const findings = [];
+	const notesDir = join(rootDir, 'releases', 'notes');
+	if (existsSync(notesDir)) {
+		for (const name of readdirSync(notesDir).filter((n) => n.endsWith('.md'))) {
+			const text = readFileSync(join(notesDir, name), 'utf8');
+			for (const f of unresolvedRefs(text, declared)) {
+				findings.push(
+					`releases/notes/${name}:${f.line}: ${f.target} is not declared in ${planDirName}/`,
+				);
+			}
+		}
+	}
+	for (const [milestone, source] of readMilestones(join(planDir, 'milestones'))) {
+		const summary = milestoneSummary(source);
+		if (!summary) continue;
+		for (const f of unresolvedRefs(summary, declared)) {
+			findings.push(
+				`${milestone} milestone opening: ${f.target} is not declared in ${planDirName}/`,
+			);
+		}
+	}
+	return findings;
+}
+
 function readPlanDir() {
 	try {
 		const config = JSON.parse(readFileSync(join(root, 'refrakt.config.json'), 'utf8'));

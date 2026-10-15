@@ -1,4 +1,4 @@
-{% work id="WORK-642" status="ready" priority="medium" complexity="simple" source="SPEC-176" tags="site,changelog,release,validation,tests" milestone="v0.41.1" %}
+{% work id="WORK-642" status="in-progress" priority="medium" complexity="simple" source="SPEC-176" tags="site,changelog,release,validation,tests" milestone="v0.41.1" %}
 
 # Every ref in a release note resolves to a plan entity
 
@@ -8,10 +8,10 @@ release note would therefore ship as a dead drawer.
 
 ## Acceptance Criteria
 
-- [ ] A test fails when a file in `releases/notes/` contains a `{% ref %}` or `{% xref %}` whose target is not an ID or milestone name declared in the plan
-- [ ] The failure names the note file, the line and the unknown ID
-- [ ] Declarations inside code fences in `plan/` do not count as declared
-- [ ] The milestone openings WORK-641 uses as a fallback are checked the same way
+- [x] A test fails when a file in `releases/notes/` contains a `{% ref %}` or `{% xref %}` whose target is not an ID or milestone name declared in the plan
+- [x] The failure names the note file, the line and the unknown ID
+- [x] Declarations inside code fences in `plan/` do not count as declared
+- [x] The milestone openings WORK-641 uses as a fallback are checked the same way
 
 ## Approach
 

@@ -16,7 +16,11 @@ import {
 	readMilestones,
 	milestoneSummary,
 	drawerRefs,
+	declaredPlanIds,
+	unresolvedRefs,
+	releaseRefFindings,
 } from './generate-changelog.mjs';
+import { fileURLToPath } from 'node:url';
 
 describe('stripCodeFences', () => {
 	it('removes a fenced block and its markers', () => {
@@ -369,5 +373,71 @@ describe('summaryFor', () => {
 
 	it('returns null with neither', () => {
 		expect(summaryFor('1.2.1', new Map(), milestones)).toBeNull();
+	});
+});
+
+// SPEC-176 D6 — a mistyped ID in a release note fails here, not as a dead
+// drawer. `refrakt validate --deep` does not report it.
+describe('every ref in a release summary resolves', () => {
+	let dir;
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'refrakt-release-refs-'));
+	});
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	const write = (rel, body) => {
+		mkdirSync(join(dir, rel, '..'), { recursive: true });
+		writeFileSync(join(dir, rel), body);
+	};
+
+	it('collects IDs and milestone names, skipping fenced examples', () => {
+		write(
+			'plan/specs/SPEC-001-a.md',
+			'{% spec id="SPEC-001" status="draft" %}\n\n# A\n\n```\n{% work id="WORK-999" %}\n```\n',
+		);
+		write('plan/milestones/v1.0.0.md', '{% milestone name="v1.0.0" %}\n# v1.0.0 — One\n');
+		expect([...declaredPlanIds(join(dir, 'plan'))].sort()).toEqual(['SPEC-001', 'v1.0.0']);
+	});
+
+	it('reports an unknown target with its line, and accepts known ones', () => {
+		const text = 'See {% ref "SPEC-001" /%}.\n\nAnd {% xref "SPEC-404" preview="drawer" /%}.';
+		expect(unresolvedRefs(text, new Set(['SPEC-001']))).toEqual([{ line: 3, target: 'SPEC-404' }]);
+	});
+
+	it('names the note file, the line and the unknown ID', () => {
+		write('plan/specs/SPEC-001-a.md', '{% spec id="SPEC-001" %}\n');
+		write(
+			'releases/notes/v1.0.0.md',
+			'Intro {% ref "SPEC-001" /%}.\n\nTypo {% ref "SPEC-010" /%}.\n',
+		);
+		expect(releaseRefFindings(dir)).toEqual([
+			'releases/notes/v1.0.0.md:3: SPEC-010 is not declared in plan/',
+		]);
+	});
+
+	it('does not count a declaration that only appears in a fence as declared', () => {
+		write(
+			'plan/specs/SPEC-001-a.md',
+			'{% spec id="SPEC-001" %}\n\n```\n{% spec id="SPEC-002" %}\n```\n',
+		);
+		write('releases/notes/v1.0.0.md', '{% ref "SPEC-002" /%}\n');
+		expect(releaseRefFindings(dir)).toEqual([
+			'releases/notes/v1.0.0.md:1: SPEC-002 is not declared in plan/',
+		]);
+	});
+
+	it('checks the milestone opening the generator falls back to', () => {
+		write(
+			'plan/milestones/v1.0.0.md',
+			'{% milestone name="v1.0.0" %}\n\n# v1.0.0 — One\n\nDelivers {% ref "SPEC-777" /%}.\n',
+		);
+		expect(releaseRefFindings(dir)).toEqual([
+			'v1.0.0 milestone opening: SPEC-777 is not declared in plan/',
+		]);
+	});
+
+	it("passes over this repository's notes and milestones", () => {
+		const repo = join(fileURLToPath(new URL('.', import.meta.url)), '..');
+		expect(releaseRefFindings(repo)).toEqual([]);
 	});
 });
