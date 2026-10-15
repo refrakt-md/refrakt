@@ -34,7 +34,6 @@ export interface MigrateFilenamesResult {
 	planned: PlannedRename[];
 	applied: PlannedRename[];
 	skipped: {
-		milestones: number;
 		alreadyCorrect: number;
 	};
 	errors: MigrateFilenamesError[];
@@ -63,13 +62,13 @@ function performRename(absFrom: string, absTo: string, useGit: boolean, cwd: str
 }
 
 /**
- * Scan a plan directory, compute target filenames of the form
- * `{ID}-{slug}.md` for every auto-ID entity, and either preview the
+ * Scan a plan directory, compute target filenames — `{ID}-{slug}.md` for
+ * every auto-ID entity, `{name}.md` for a milestone — and either preview the
  * renames (dry-run, default) or apply them.
  *
- * Milestones are skipped — they use semver names, not the numeric ID
- * scheme. Files whose current name already matches the target are
- * counted as `alreadyCorrect` and not touched.
+ * A milestone's whole filename is its name (`v1.0.0.md`), so its target ignores
+ * the current slug (BUG-041). Files whose current name already matches the
+ * target are counted as `alreadyCorrect` and not touched.
  */
 export function runMigrateFilenames(options: MigrateFilenamesOptions): MigrateFilenamesResult {
 	const { dir, apply = false, useGit = false } = options;
@@ -79,29 +78,25 @@ export function runMigrateFilenames(options: MigrateFilenamesOptions): MigrateFi
 	const planned: PlannedRename[] = [];
 	const applied: PlannedRename[] = [];
 	const errors: MigrateFilenamesError[] = [];
-	let milestonesSkipped = 0;
 	let alreadyCorrect = 0;
 
 	const targetPaths = new Set<string>();
 
 	for (const entity of entities) {
-		if (entity.type === 'milestone') {
-			milestonesSkipped++;
-			continue;
-		}
-
-		const id = entity.attributes.id;
+		const isMilestone = entity.type === 'milestone';
+		const id = isMilestone ? entity.attributes.name : entity.attributes.id;
 		if (!id) {
 			errors.push({
 				file: entity.file,
-				reason: 'missing frontmatter id attribute',
+				reason: isMilestone
+					? 'missing milestone name attribute'
+					: 'missing frontmatter id attribute',
 			});
 			continue;
 		}
 
 		const currentName = basename(entity.file);
-		const currentSlug = stripIdPrefix(currentName);
-		const targetName = `${id}-${currentSlug}`;
+		const targetName = isMilestone ? `${id}.md` : `${id}-${stripIdPrefix(currentName)}`;
 
 		if (currentName === targetName) {
 			alreadyCorrect++;
@@ -147,7 +142,6 @@ export function runMigrateFilenames(options: MigrateFilenamesOptions): MigrateFi
 		planned,
 		applied,
 		skipped: {
-			milestones: milestonesSkipped,
 			alreadyCorrect,
 		},
 		errors,

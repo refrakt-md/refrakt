@@ -59,17 +59,36 @@ describe('plan create', () => {
 		expect(content).toContain('# v1.0 — First Release');
 	});
 
+	// BUG-041 — the file was named after the title (`first-release.md`), which is
+	// how 17 of this repository's milestones came to be slug-named.
+	it('names a milestone file after its name, not its title', () => {
+		const result = runCreate({
+			dir: TMP,
+			type: 'milestone',
+			id: 'v9.9.9',
+			title: 'Something to ship',
+		});
+		expect(result.file).toBe(join(TMP, 'milestones', 'v9.9.9.md'));
+	});
+
 	it('creates directories if they do not exist', () => {
 		const dir = join(TMP, 'nested', 'plan');
 		runCreate({ dir, type: 'work', id: 'WORK-001', title: 'Test' });
 		expect(existsSync(join(dir, 'work'))).toBe(true);
 	});
 
-	it('throws on duplicate file for non-prefixed types (milestone)', () => {
-		runCreate({ dir: TMP, type: 'milestone', id: 'v1.0', title: 'Same Title' });
-		expect(() =>
-			runCreate({ dir: TMP, type: 'milestone', id: 'v2.0', title: 'Same Title' }),
-		).toThrow('already exists');
+	it('allows two milestones with the same title and different names', () => {
+		const first = runCreate({ dir: TMP, type: 'milestone', id: 'v1.0', title: 'Same Title' });
+		const second = runCreate({ dir: TMP, type: 'milestone', id: 'v2.0', title: 'Same Title' });
+		expect(first.file).toMatch(/v1\.0\.md$/);
+		expect(second.file).toMatch(/v2\.0\.md$/);
+	});
+
+	it('refuses a milestone whose name already exists', () => {
+		runCreate({ dir: TMP, type: 'milestone', id: 'v1.0', title: 'First' });
+		expect(() => runCreate({ dir: TMP, type: 'milestone', id: 'v1.0', title: 'Second' })).toThrow(
+			'already exists',
+		);
 	});
 
 	it('allows same-title entries across different IDs for prefixed types', () => {
@@ -129,10 +148,10 @@ describe('plan create', () => {
 		expect(result.file).toMatch(/ADR-003-use-sqlite\.md$/);
 	});
 
-	it('does not prefix milestone filenames (they use slug only)', () => {
+	it('uses the milestone name as the whole filename, with no slug', () => {
 		const result = runCreate({ dir: TMP, type: 'milestone', id: 'v1.0', title: 'First Release' });
-		expect(result.file).toMatch(/first-release\.md$/);
-		expect(result.file).not.toMatch(/v1\.0-first-release/);
+		expect(result.file).toMatch(/milestones\/v1\.0\.md$/);
+		expect(result.file).not.toMatch(/first-release/);
 	});
 
 	it('throws on duplicate ID', () => {

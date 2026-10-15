@@ -57,7 +57,7 @@ describe('plan migrate filenames — dry run (default)', () => {
 		expect(result.skipped.alreadyCorrect).toBe(1);
 	});
 
-	it('skips milestones entirely (they use semver names)', () => {
+	it('leaves a milestone already named after its name alone', () => {
 		writeFileSync(
 			join(TMP, 'v1.0.0.md'),
 			`{% milestone name="v1.0.0" status="active" %}\n# v1.0\n{% /milestone %}\n`,
@@ -71,7 +71,39 @@ describe('plan migrate filenames — dry run (default)', () => {
 		const result = runMigrateFilenames({ dir: TMP });
 
 		expect(result.planned).toHaveLength(0);
-		expect(result.skipped.milestones).toBe(2);
+		expect(result.skipped.alreadyCorrect).toBe(2);
+	});
+
+	// BUG-041 — `plan create milestone` used to name the file after the title,
+	// and nothing repaired it.
+	it('renames a milestone filed under a slug to its name', () => {
+		mkdirSync(join(TMP, 'milestones'), { recursive: true });
+		writeFileSync(
+			join(TMP, 'milestones/something-to-ship.md'),
+			`{% milestone name="v9.9.9" status="planning" %}\n# v9.9.9 — Something to ship\n{% /milestone %}\n`,
+		);
+
+		const result = runMigrateFilenames({ dir: TMP, apply: true });
+
+		expect(result.applied).toEqual([
+			{ id: 'v9.9.9', from: 'milestones/something-to-ship.md', to: 'milestones/v9.9.9.md' },
+		]);
+		expect(existsSync(join(TMP, 'milestones/v9.9.9.md'))).toBe(true);
+	});
+
+	it('reports a milestone with no name instead of renaming it', () => {
+		mkdirSync(join(TMP, 'milestones'), { recursive: true });
+		writeFileSync(
+			join(TMP, 'milestones/unnamed.md'),
+			`{% milestone status="planning" %}\n# Unnamed\n{% /milestone %}\n`,
+		);
+
+		const result = runMigrateFilenames({ dir: TMP });
+
+		expect(result.planned).toHaveLength(0);
+		expect(result.errors).toEqual([
+			{ file: 'milestones/unnamed.md', reason: 'missing milestone name attribute' },
+		]);
 	});
 
 	it('re-prefixes files with a wrong ID prefix in their name', () => {
@@ -152,8 +184,7 @@ describe('plan migrate filenames — apply', () => {
 
 		expect(result.applied).toHaveLength(1);
 		expect(result.applied[0].to).toBe('work/WORK-011-needs-renaming.md');
-		expect(result.skipped.alreadyCorrect).toBe(1);
-		expect(result.skipped.milestones).toBe(1);
+		expect(result.skipped.alreadyCorrect).toBe(2);
 	});
 });
 

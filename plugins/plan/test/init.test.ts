@@ -60,7 +60,7 @@ describe('plan init — scaffolding', () => {
 		expect(existsSync(join(planDir, 'specs', 'SPEC-001-example-spec.md'))).toBe(true);
 		expect(existsSync(join(planDir, 'work', 'WORK-001-example-work-item.md'))).toBe(true);
 		expect(existsSync(join(planDir, 'decisions', 'ADR-001-example-decision.md'))).toBe(true);
-		expect(existsSync(join(planDir, 'milestones', 'first-release.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'milestones', 'v0.1.0.md'))).toBe(true);
 	});
 
 	it('does not scaffold a root index.md (plan site auto-generates the dashboard)', () => {
@@ -133,7 +133,7 @@ describe('plan init — scaffolding', () => {
 		expect(existsSync(join(planDir, 'work', 'WORK-001-example-work-item.md'))).toBe(false);
 		expect(existsSync(join(planDir, 'specs', 'SPEC-001-example-spec.md'))).toBe(false);
 		expect(existsSync(join(planDir, 'decisions', 'ADR-001-example-decision.md'))).toBe(false);
-		expect(existsSync(join(planDir, 'milestones', 'first-release.md'))).toBe(false);
+		expect(existsSync(join(planDir, 'milestones', 'v0.1.0.md'))).toBe(false);
 		expect(readFileSync(join(planDir, 'work', 'my-task.md'), 'utf-8')).toContain('# Mine');
 	});
 
@@ -152,7 +152,7 @@ describe('plan init — scaffolding', () => {
 		expect(existsSync(join(planDir, 'work', 'WORK-001-example-work-item.md'))).toBe(false);
 		expect(existsSync(join(planDir, 'specs', 'SPEC-001-example-spec.md'))).toBe(true);
 		expect(existsSync(join(planDir, 'decisions', 'ADR-001-example-decision.md'))).toBe(true);
-		expect(existsSync(join(planDir, 'milestones', 'first-release.md'))).toBe(true);
+		expect(existsSync(join(planDir, 'milestones', 'v0.1.0.md'))).toBe(true);
 	});
 
 	it('reports created files', () => {
@@ -709,7 +709,7 @@ describe('plan init — example file content', () => {
 		const planDir = join(TMP, 'plan');
 		safeInit({ dir: planDir, projectRoot: TMP });
 
-		const milestone = readFileSync(join(planDir, 'milestones', 'first-release.md'), 'utf-8');
+		const milestone = readFileSync(join(planDir, 'milestones', 'v0.1.0.md'), 'utf-8');
 		expect(milestone).toContain('{% milestone');
 		expect(milestone).toContain('name="v0.1.0"');
 		expect(milestone).toContain('{% /milestone %}');

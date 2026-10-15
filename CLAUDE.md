@@ -308,7 +308,7 @@ plan/
 
 ### Filename Convention
 
-Plan files use `{ID}-{slug}.md` (e.g. `WORK-051-plan-validate-command.md`, `SPEC-023-auth-system.md`) for auto-ID types. Milestones keep their semver names (`v1.0.0.md`). `refrakt plan create` emits this format automatically; `refrakt plan migrate filenames --apply --git` upgrades legacy unprefixed files.
+Plan files use `{ID}-{slug}.md` (e.g. `WORK-051-plan-validate-command.md`, `SPEC-023-auth-system.md`) for auto-ID types. Milestones keep their semver names (`v1.0.0.md`). `refrakt plan create` emits this format automatically; `refrakt plan migrate filenames --apply --git` upgrades legacy unprefixed files and renames a milestone whose filename is not its name.
 
 ### Rune syntax
 

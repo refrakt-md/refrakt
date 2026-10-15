@@ -869,8 +869,7 @@ function handleMigrate(args: string[]): void {
 	}
 
 	console.log(`Scanned ${result.scanned} plan files in ${dir}/`);
-	console.log(`  Milestones skipped: ${result.skipped.milestones}`);
-	console.log(`  Already correct:    ${result.skipped.alreadyCorrect}`);
+	console.log(`  Already correct: ${result.skipped.alreadyCorrect}`);
 	console.log();
 
 	if (result.planned.length === 0 && result.errors.length === 0) {

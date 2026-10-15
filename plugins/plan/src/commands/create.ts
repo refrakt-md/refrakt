@@ -90,7 +90,7 @@ export function runCreate(options: CreateOptions): CreateResult {
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/(^-|-$)/g, '');
-	const fileName = isAutoIdType(type) ? `${id}-${slug}.md` : `${slug}.md`;
+	const fileName = isAutoIdType(type) ? `${id}-${slug}.md` : `${id}.md`;
 	const filePath = join(subDir, fileName);
 
 	if (existsSync(filePath)) {

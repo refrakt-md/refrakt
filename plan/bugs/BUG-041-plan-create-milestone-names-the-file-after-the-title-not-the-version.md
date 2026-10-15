@@ -1,4 +1,4 @@
-{% bug id="BUG-041" status="confirmed" severity="minor" tags="plan, cli, create, milestones, filenames" milestone="v0.41.1" %}
+{% bug id="BUG-041" status="in-progress" severity="minor" tags="plan, cli, create, milestones, filenames" milestone="v0.41.1" %}
 
 # plan create milestone names the file after the title, not the version
 
@@ -45,11 +45,11 @@ types (milestone)", expects `v1.0` and `v2.0` with the same title to collide on 
 
 ## Acceptance Criteria
 
-- [ ] `plan create milestone --id <name>` writes `milestones/<name>.md`, whatever the title
-- [ ] Two milestones with different names and the same title both create, and the test that expected them to collide is replaced by one that expects two files
-- [ ] Creating a milestone whose name already exists still fails with the duplicate-ID error
-- [ ] `plan migrate filenames` renames a milestone whose filename is not `<name>.md`, and still never touches one that already is
-- [ ] Docs that describe milestone filenames match the behaviour
+- [x] `plan create milestone --id <name>` writes `milestones/<name>.md`, whatever the title
+- [x] Two milestones with different names and the same title both create, and the test that expected them to collide is replaced by one that expects two files
+- [x] Creating a milestone whose name already exists still fails with the duplicate-ID error
+- [x] `plan migrate filenames` renames a milestone whose filename is not `<name>.md`, and still never touches one that already is
+- [x] Docs that describe milestone filenames match the behaviour
 
 ## References
 
