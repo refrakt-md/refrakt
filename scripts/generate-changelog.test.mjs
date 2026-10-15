@@ -11,6 +11,7 @@ import {
 	renderReleasePage,
 	hasPage,
 	plainRefs,
+	indexSummary,
 	summaryFor,
 	readNotes,
 	readMilestones,
@@ -245,6 +246,19 @@ describe('release pages', () => {
 		expect(hasPage({ summary: null, changes: [] })).toBe(false);
 		expect(hasPage({ summary: 'x', changes: [] })).toBe(true);
 		expect(hasPage({ summary: null, changes: ['- y'] })).toBe(true);
+	});
+});
+
+describe('indexSummary', () => {
+	it('drops the Background paragraph and flattens the rest', () => {
+		const note =
+			'**Faster.** See {% ref "SPEC-1" preview="drawer" /%}.\n\nBackground: {% ref "v1.0.0" preview="drawer" label="the milestone" /%} ·\n{% ref "SPEC-1" preview="drawer" /%}';
+		expect(indexSummary(note)).toBe('**Faster.** See SPEC-1.');
+	});
+
+	it('keeps an action-needed block', () => {
+		const note = 'Intro.\n\n{% hint type="warning" %}\n**Action needed:** x\n{% /hint %}';
+		expect(indexSummary(note)).toBe(note);
 	});
 });
 

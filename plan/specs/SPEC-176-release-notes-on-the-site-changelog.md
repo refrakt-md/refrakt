@@ -93,7 +93,9 @@ So drawers live where they are read:
 
 - **`/releases`** (`site/content/releases/index.md`) lists every release with its summary and a
   link to its page. Refs are flattened to their label or ID as plain text, so the index carries
-  no drawers; a `file-ref` keeps its link and loses its drawer preview. It measured 377 KB.
+  no drawers; a `file-ref` keeps its link and loses its drawer preview. A summary paragraph
+  opening with `Background:`, the drawer list the draft command writes, is left out, because
+  flattened it is a row of IDs that link nowhere. It measured 377 KB.
 - **`/releases/v<version>`** carries the summary with its drawers and the full list of changes
   under `## Changes`. A release gets a page when it has a summary or at least one change.
 
@@ -139,8 +141,9 @@ changelogs. The summary is filled as follows:
 
 | Releases | Count | Summary |
 |---|---|---|
-| Milestone, no note | 35 | Milestone opening (D3) |
+| Milestone, no note | 27 | Milestone opening (D3) |
 | v0.39.0, v0.40.0, v0.41.0 | 3 | Handwritten notes |
+| v0.11.0, v0.12.0, v0.24.0, v0.31.0, v0.36.0 to v0.38.0 | 7 | Notes replacing an opening that did not read as a summary (WORK-644) |
 | v0.4.0 to v0.9.0 minor releases | 6 | One-line note linking the `whats-new-in-0-x` blog post |
 | Patch releases | ~28 | None, only the link to their changes |
 | v0.2.0, v0.3.0, v0.10.0 | 3 | None |

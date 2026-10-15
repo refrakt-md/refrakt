@@ -93,7 +93,7 @@ ${entries.join('\n\n') || '_No releases yet._'}
 
 export function renderIndexEntry({ version, date, summary, changes }) {
 	const parts = [date ? `## v${version} - ${date}` : `## v${version}`];
-	if (summary) parts.push(plainRefs(summary));
+	if (summary) parts.push(indexSummary(summary));
 	if (changes.length) {
 		const count = changes.length === 1 ? '1 change' : `${changes.length} changes`;
 		parts.push(`[All ${count} in v${version} →](/releases/v${version})`);
@@ -212,6 +212,21 @@ function firstParagraph(lines) {
 export function drawerRefs(text) {
 	return text.replace(/\{%\s*(x?ref)\b([^%]*?)\s*\/%\}/g, (whole, tag, inner) =>
 		/\bpreview=/.test(inner) ? whole : `{% ${tag}${inner} preview="drawer" /%}`,
+	);
+}
+
+/**
+ * The summary as the index shows it: refs flattened, and a paragraph opening
+ * with `Background:` left out. That paragraph is the drawer list the draft
+ * command writes; flattened, it is a row of IDs that link nowhere, and the
+ * release page one click away has it with working drawers.
+ */
+export function indexSummary(summary) {
+	return plainRefs(
+		summary
+			.split(/\n{2,}/)
+			.filter((p) => !/^Background:/.test(p.trim()))
+			.join('\n\n'),
 	);
 }
 
