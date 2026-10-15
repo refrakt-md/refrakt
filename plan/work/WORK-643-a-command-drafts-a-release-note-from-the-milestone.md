@@ -1,4 +1,4 @@
-{% work id="WORK-643" status="in-progress" priority="medium" complexity="simple" source="SPEC-176" tags="site,changelog,release,scripts,docs" milestone="v0.41.1" %}
+{% work id="WORK-643" status="done" priority="medium" complexity="simple" source="SPEC-176" tags="site,changelog,release,scripts,docs" milestone="v0.41.1" pr="refrakt-md/refrakt#704" %}
 
 # A command drafts a release note from the milestone
 
@@ -27,5 +27,21 @@ group in ID order.
 ## References
 
 - {% ref "SPEC-176" /%} D5.
+
+## Resolution
+
+Completed: 2026-10-15
+
+Branch: `claude/site-changelog-readability-k4p902`
+PR: refrakt-md/refrakt#704
+
+### What was done
+- `scripts/draft-release-note.mjs` + `npm run release-notes:draft -- <version>`: writes `releases/notes/v<version>.md`, refuses to overwrite. Prefills the milestone opening, an action-needed hint, and drawer refs (milestone, distinct SPEC sources, bugs; by `milestone=`, not `released-in`).
+- `draftMarkerFindings` + a repository test fail while a note has a `TODO:` line.
+- RELEASING.md: a 'Writing the release note' section and a checklist item.
+
+### Notes
+- The criterion asked for a commented-out hint, but refrakt content has no comment syntax (BUG-012), so placeholders are `TODO:` lines guarded by a test. The criterion and SPEC-176 D5 were reworded to match.
+- The note belongs on main: the changesets action reruns version-packages on every push to main, which regenerates the changelog.
 
 {% /work %}

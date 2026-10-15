@@ -1,4 +1,4 @@
-{% bug id="BUG-041" status="in-progress" severity="minor" tags="plan, cli, create, milestones, filenames" milestone="v0.41.1" %}
+{% bug id="BUG-041" status="fixed" severity="minor" tags="plan, cli, create, milestones, filenames" milestone="v0.41.1" pr="refrakt-md/refrakt#704" %}
 
 # plan create milestone names the file after the title, not the version
 
@@ -55,5 +55,21 @@ types (milestone)", expects `v1.0` and `v2.0` with the same title to collide on 
 
 - The 17 renames: commit "plan: rename slug-named milestone files to their semver names" on
   `claude/site-changelog-readability-k4p902`.
+
+## Resolution
+
+Completed: 2026-10-15
+
+Branch: `claude/site-changelog-readability-k4p902`
+PR: refrakt-md/refrakt#704
+
+### What was done
+- `create.ts`: a milestone is written as `<name>.md`.
+- `migrate.ts`: `migrate filenames` renames a milestone whose filename is not `<name>.md` (a missing name is reported); `skipped.milestones` removed from the result and CLI output.
+- Tests: four that pinned the slug filename (create x2, plan init, create-refrakt scaffold) now assert the version filename; new tests for rename and missing name.
+- plan-cli docs and CLAUDE.md describe milestone renames; patch changeset.
+
+### Notes
+- A dry run over this repository plans nothing: all 941 files, milestones included, are already correctly named.
 
 {% /bug %}

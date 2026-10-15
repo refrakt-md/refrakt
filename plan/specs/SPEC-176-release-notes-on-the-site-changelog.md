@@ -1,4 +1,4 @@
-{% spec id="SPEC-176" status="accepted" tags="site, changelog, release, plan, docs" %}
+{% spec id="SPEC-176" status="implemented" tags="site, changelog, release, plan, docs" %}
 
 # Release notes on the site changelog
 

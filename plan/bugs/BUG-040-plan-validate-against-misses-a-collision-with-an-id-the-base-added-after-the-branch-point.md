@@ -1,4 +1,4 @@
-{% bug id="BUG-040" status="in-progress" severity="major" source="SPEC-135" tags="plan, validate, against, ids, ci" milestone="v0.41.1" %}
+{% bug id="BUG-040" status="fixed" severity="major" source="SPEC-135" tags="plan, validate, against, ids, ci" milestone="v0.41.1" pr="refrakt-md/refrakt#704" %}
 
 # plan validate --against misses a collision with an ID the base added after the branch point
 
@@ -73,5 +73,22 @@ an unresolvable ref is handled.
 ## References
 
 - {% ref "SPEC-135" /%} D8 and {% ref "WORK-582" /%}: the check and why it runs pre-merge.
+
+## Resolution
+
+Completed: 2026-10-15
+
+Branch: `claude/site-changelog-readability-k4p902`
+PR: refrakt-md/refrakt#704
+
+### What was done
+- `plugins/plan/src/commands/against.ts`: `branchPointPaths` lists plan files at `git merge-base HEAD <ref>`; `collisionsFrom` forgives a base claimant missing from the tree only if it existed there, plus a mirror rule for base-side renames/deletions. No merge-base is an error naming the fix (`git fetch --unshallow`).
+- `cli-plugin.ts` wires it into `plan validate --against`.
+- `against.test.ts`: five tests that advance the base after the branch point, plus unrelated history. Verified the main regression tests fail against the old condition.
+- `.github/workflows/validate.yml`: `fetch-depth: 0`; base fetched without `--depth=1`; base ref via env.
+- CLAUDE.md notes the history requirement; patch changeset.
+
+### Notes
+- `migrate ids --against` is unaffected: it does not call the new function.
 
 {% /bug %}
