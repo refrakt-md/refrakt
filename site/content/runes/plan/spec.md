@@ -21,7 +21,7 @@ A spec in accepted status with a version number and scope summary.
 
 {% preview source=true %}
 
-{% spec id="SPEC-008" status="accepted" version="1.2" tags="tint,theming" %}
+{% spec id="SPEC-9008" status="accepted" version="1.2" tags="tint,theming" %}
 # Tint Rune
 
 Section-level colour context override via CSS custom properties.
@@ -43,7 +43,7 @@ A minimal spec in draft status.
 
 {% preview source=true %}
 
-{% spec id="SPEC-012" status="draft" %}
+{% spec id="SPEC-9012" status="draft" %}
 # Dependency Graph Visualisation
 
 Render entity relationships as an interactive graph.
@@ -59,7 +59,7 @@ A spec that has been replaced by a newer version.
 
 {% preview source=true %}
 
-{% spec id="SPEC-003" status="superseded" version="1.0" supersedes="SPEC-001" %}
+{% spec id="SPEC-9003" status="superseded" version="1.0" supersedes="SPEC-9001" %}
 # Original Token System
 
 First-generation design token architecture.
