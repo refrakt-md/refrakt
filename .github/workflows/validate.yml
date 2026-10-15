@@ -28,7 +28,11 @@ jobs:
     name: Build & validate
     runs-on: ubuntu-latest
     steps:
+      # Full history: `plan validate --against` needs the merge-base of this
+      # commit and the base branch (BUG-040), and a depth-1 clone has none.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -77,10 +81,16 @@ jobs:
       #
       # PR-only: on a push to `main` the base IS this commit, so every ID would
       # match itself and there is nothing left to prevent.
+      #
+      # Fetched with history, not --depth=1: the check reads the merge-base to
+      # tell an ID the base added after the branch point from one the branch
+      # deleted (BUG-040), and refuses to run without it.
       - name: refrakt plan validate --against base
         if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          git fetch --no-tags origin "$BASE_REF"
           node packages/cli/dist/bin.js plan validate --against FETCH_HEAD
 
       # The content gate (SPEC-135 D4 / WORK-580b). Config resolution, then

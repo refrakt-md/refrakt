@@ -1,4 +1,4 @@
-{% bug id="BUG-040" status="confirmed" severity="major" source="SPEC-135" tags="plan, validate, against, ids, ci" milestone="v0.41.1" %}
+{% bug id="BUG-040" status="in-progress" severity="major" source="SPEC-135" tags="plan, validate, against, ids, ci" milestone="v0.41.1" %}
 
 # plan validate --against misses a collision with an ID the base added after the branch point
 
@@ -65,10 +65,10 @@ an unresolvable ref is handled.
 
 ## Acceptance Criteria
 
-- [ ] A collision with an ID the base added after the branch point is reported, naming both files
-- [ ] A base claimant the branch deleted or renamed is still not reported
-- [ ] A ref with no merge-base with `HEAD` fails with an error instead of reporting a clean run
-- [ ] `against.test.ts` has a test that advances the base after the branch point, and the existing tests still pass
+- [x] A collision with an ID the base added after the branch point is reported, naming both files
+- [x] A base claimant the branch deleted or renamed is still not reported
+- [x] A ref with no merge-base with `HEAD` fails with an error instead of reporting a clean run
+- [x] `against.test.ts` has a test that advances the base after the branch point, and the existing tests still pass
 
 ## References
 

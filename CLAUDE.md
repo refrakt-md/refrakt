@@ -332,6 +332,8 @@ refrakt plan migrate ids --against origin/main --apply --git
 
 **`--against` is the one that changes outcomes.** Plain detection can only fire once both claimants are reachable — after the merge, when every `{% ref %}` to that ID has already become ambiguous. `--against` fires on the branch, where the base ref still makes resolution free. The PR job runs it.
 
+It reads the merge-base of `HEAD` and the ref, which is how it tells an ID the base added after the branch point (a collision) from a file the branch deleted (not one). A clone whose history stops short of the merge-base gets an error, not a clean run: `git fetch --unshallow` first.
+
 `migrate ids` renumbers only when **nothing outside the moved entity references the colliding ID**. Otherwise it refuses and names the references that blocked it, with file and line. It will not guess which entity a reference meant — repointing one at the wrong entity is silent and permanent.
 
 **The base ref decides which claimant moves.** An ID already on `--against <ref>` is published — merged commits, PR bodies, npm CHANGELOGs reference it — so it keeps the ID and the branch-local claimant is renumbered. Without `--against`, a collision is refused rather than resolved by filename, because nothing establishes which claimant shipped. Every renumber and refusal names the claimant that kept the ID and why.

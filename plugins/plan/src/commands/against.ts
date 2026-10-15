@@ -101,6 +101,61 @@ export function readRefIds(planDir: string, ref: string, cwd: string): RefIdInde
 	return { ref, refIds };
 }
 
+export interface BranchPoint {
+	/** The merge-base of `HEAD` and the ref. */
+	commit: string;
+	/** Repo-relative plan paths that existed at the merge-base. */
+	paths: Set<string>;
+	error?: undefined;
+}
+
+/**
+ * The plan files that existed where the branch left the base (BUG-040).
+ *
+ * `collisionsFrom` needs this to tell apart the two ways a base claimant can be
+ * missing from the working tree. If it existed at the merge-base, the branch
+ * deleted or renamed it, and one claimant survives the merge. If it did not, the
+ * base **added** it after the branch point, the branch never had it, and both
+ * claimants survive. Without the merge-base the two look identical, and the
+ * second is the most common collision there is: two branches each taking the
+ * next free ID.
+ *
+ * A ref with no merge-base cannot be answered, so it is an error rather than a
+ * clean run. That includes a shallow clone whose history stops short of the
+ * branch point; the message says how to fetch it.
+ */
+export function branchPointPaths(
+	planDir: string,
+	ref: string,
+	cwd: string,
+): BranchPoint | { error: string } {
+	let commit: string;
+	try {
+		commit = git(['merge-base', 'HEAD', ref], cwd).trim();
+	} catch {
+		const shallow = (() => {
+			try {
+				return git(['rev-parse', '--is-shallow-repository'], cwd).trim() === 'true';
+			} catch {
+				return false;
+			}
+		})();
+		return {
+			error:
+				`No merge-base between HEAD and "${ref}". Nothing was compared: without it, an ID the base added after the branch point cannot be told from one the branch deleted.\n` +
+				(shallow
+					? '  This is a shallow clone. Fetch the history first: git fetch --unshallow'
+					: `  The two histories are unrelated. Compare against a ref this branch was made from.`),
+		};
+	}
+	try {
+		const listing = git(['ls-tree', '-r', '--name-only', commit, '--', planDir], cwd);
+		return { commit, paths: new Set(listing.split('\n').filter(Boolean)) };
+	} catch (err) {
+		return { error: `Could not list ${planDir} at the merge-base ${commit}: ${String(err)}` };
+	}
+}
+
 /**
  * Given the base ref's ID→path map and the working tree's entities, report the
  * IDs that collide.
@@ -110,8 +165,11 @@ export function readRefIds(planDir: string, ref: string, cwd: string): RefIdInde
  * in one file, the base already spends it on another, and *both files are still
  * there afterwards* — so every `{% ref %}` to that ID becomes ambiguous.
  *
- * It follows that a base file the branch no longer has is **not** a collision: the
- * merge applies the deletion and one claimant remains. That covers the ordinary
+ * It follows that a base file the branch **deleted** is not a collision: the
+ * merge applies the deletion and one claimant remains. "Deleted" means present at
+ * the branch point and absent now; a base file absent from the tree that was not
+ * there at the branch point was added by the base afterwards, and is a collision
+ * (BUG-040). That covers the ordinary
  * rename, where an edited title changes the slug
  * (`WORK-603-add-metafields-….md` → `WORK-603-add-fieldmetas-….md`), and it is
  * why the test is the base path's presence rather than a slug comparison.
@@ -127,16 +185,19 @@ export function readRefIds(planDir: string, ref: string, cwd: string): RefIdInde
  * block a merge. In-tree duplicates are a separate matter and already reported at
  * error severity by `checkDuplicateIds`, which runs before this.
  *
- * @param planDir Plan directory, relative to the repo root.
- * @param cwd     Repo root — needed to test whether the base's path still exists.
+ * @param planDir     Plan directory, relative to the repo root.
+ * @param branchPoint Repo-relative plan paths at the merge-base (`branchPointPaths`).
+ * @param cwd         Repo root — needed to test whether the base's path still exists.
  */
 export function collisionsFrom(
 	refIds: Map<string, string>,
 	entities: { file: string; attributes: { id?: string } }[],
 	planDir: string,
+	branchPoint: Set<string>,
 	cwd = process.cwd(),
 ): AgainstCollision[] {
 	const collisions: AgainstCollision[] = [];
+	const refPaths = new Set(refIds.values());
 	for (const e of entities) {
 		const id = e.attributes.id;
 		if (!id) continue;
@@ -147,10 +208,19 @@ export function collisionsFrom(
 		const refRel = refPath.startsWith(`${planDir}/`) ? refPath.slice(planDir.length + 1) : refPath;
 		if (refRel === e.file) continue;
 
-		// The base's claimant is gone from the branch, so the merge leaves one
-		// file holding the ID. A rename, a move, or a deliberate replacement —
-		// none of them produce the ambiguity this check exists to prevent.
-		if (!existsSync(join(cwd, refPath))) continue;
+		// The base's claimant is not in the working tree. If the branch had it
+		// at the branch point, the branch deleted or moved it — a rename, a move
+		// or a deliberate replacement — and the merge leaves one file holding the
+		// ID. If it did not, the base added it afterwards, and it is the second
+		// claimant this check exists to find (BUG-040).
+		if (!existsSync(join(cwd, refPath)) && branchPoint.has(refPath)) continue;
+
+		// The mirror case: the branch's claimant existed at the branch point and
+		// the base no longer has it, so the base moved or deleted it and the merge
+		// applies that. A base-side rename (`plan migrate filenames`, a retitle on
+		// main) leaves one claimant, not two.
+		const branchPath = `${planDir}/${e.file}`;
+		if (branchPoint.has(branchPath) && !refPaths.has(branchPath)) continue;
 
 		collisions.push({ id, file: e.file, refFile: refRel });
 	}
