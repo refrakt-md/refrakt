@@ -124,7 +124,7 @@ describe('findComments (BUG-012)', () => {
 	});
 
 	it('does not mistake Svelte block syntax for a comment', () => {
-		// `site/content/releases.md` describes `{@const}` inside `{#if}`. There is
+		// The changelog (`site/content/releases/`) describes `{@const}` inside `{#if}`. There is
 		// no closing `#}`, so it is not a comment attempt.
 		expect(findComments(page('- Fix build failure ({@const} inside {#if} block)'))).toEqual([]);
 	});

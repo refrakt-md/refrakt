@@ -26,7 +26,7 @@ Bumps all fixed-group packages and regenerates changelogs:
 npm run version-packages
 ```
 
-This runs `changeset version` followed by `scripts/generate-changelog.mjs` which aggregates per-package changelogs into `site/content/releases.md`.
+This runs `changeset version` followed by `scripts/generate-changelog.mjs` which aggregates per-package changelogs into the site changelog: a summary index at `site/content/releases/index.md` and one page per release beside it. Each summary is the release note in `releases/notes/v<version>.md` when there is one, and otherwise the opening of the milestone named after the version (SPEC-176).
 
 ## Publishing
 
@@ -77,7 +77,7 @@ After packages are published to npm:
 | `.changeset/config.json` | Changesets config — `fixed` array keeps all packages in sync |
 | `.github/workflows/release.yml` | CI workflow that versions and publishes on merge to `main` |
 | `scripts/sync-rune-versions.mjs` | Syncs `RunePackage.version` in `runes/*/src/index.ts` with `package.json` |
-| `scripts/generate-changelog.mjs` | Aggregates changelogs into `site/content/releases.md` |
+| `scripts/generate-changelog.mjs` | Aggregates changelogs and release notes into `site/content/releases/` |
 
 ## First-time publishing new packages
 

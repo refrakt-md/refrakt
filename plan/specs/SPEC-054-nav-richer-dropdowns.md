@@ -6,7 +6,7 @@ Evolve the existing `nav` layouts so authors can compose Linear- / Vercel- / Str
 
 ## Problem
 
-[SPEC-046](/plan/specs/SPEC-046) shipped `layout="menubar"` for header navigation: `## groups` become simple flat-list dropdowns. That covers compact product navs (Refrakt's own site, small SaaS sites) but breaks down once sites grow.
+{% ref "SPEC-046" /%} shipped `layout="menubar"` for header navigation: `## groups` become simple flat-list dropdowns. That covers compact product navs (Refrakt's own site, small SaaS sites) but breaks down once sites grow.
 
 **Sites with broader product surface need rich dropdown content.** Linear, Vercel, Stripe, and Notion all use header dropdowns that contain multiple columns of links, per-item descriptions, featured hero cards, and footer link rows specific to each panel. A flat list of items in a `## group` doesn't scale — once a group has more than ~6 items or items need context, the panel becomes hard to scan.
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync, readdirSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, rmSync } from 'fs';
 import { join, dirname, resolve } from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const outPath = join(root, 'site', 'content', 'releases.md');
+const outDir = join(root, 'site', 'content', 'releases');
 
 function main() {
 	// Collect CHANGELOG.md files from all workspace packages
@@ -22,16 +22,63 @@ function main() {
 	// Sort versions by semver descending
 	const sorted = [...versions.keys()].sort((a, b) => compareSemver(b, a));
 
-	// Build output
-	let body = '';
-	for (const version of sorted) {
-		const date = getTagDate(version);
-		const heading = date ? `## v${version} - ${date}` : `## v${version}`;
-		const changes = [...versions.get(version)].join('\n');
-		body += `${heading}\n\n${changes}\n\n`;
+	// SPEC-176: each release opens with a summary — a handwritten note, or the
+	// milestone's opening when there is none.
+	const notes = readNotes(join(root, 'releases', 'notes'));
+	const milestones = readMilestones(join(root, readPlanDir(), 'milestones'));
+	for (const version of notes.keys()) {
+		if (!versions.has(version)) console.log(`Skipped note for unreleased v${version}`);
 	}
 
-	const output = `---
+	// One page per release, holding the drawers and the full change list (D8),
+	// and an index that only summarises.
+	mkdirSync(outDir, { recursive: true });
+	const written = new Set(['index.md']);
+	const entries = [];
+	for (const version of sorted) {
+		const release = {
+			version,
+			date: getTagDate(version),
+			summary: summaryFor(version, notes, milestones),
+			changes: [...versions.get(version)],
+		};
+		entries.push(renderIndexEntry(release));
+		if (hasPage(release)) {
+			writeFileSync(join(outDir, `v${version}.md`), renderReleasePage(release));
+			written.add(`v${version}.md`);
+		}
+	}
+
+	writeFileSync(join(outDir, 'index.md'), renderIndex(entries));
+
+	// A page whose version no longer has a changelog entry would otherwise linger.
+	for (const name of readdirSync(outDir)) {
+		if (/^v\d.*\.md$/.test(name) && !written.has(name)) rmSync(join(outDir, name));
+	}
+	console.log(`Wrote ${written.size - 1} release pages and the index to ${outDir}`);
+}
+
+// Run only when invoked directly (e.g. `node scripts/generate-changelog.mjs`
+// from `npm run version-packages`). Importing the module for tests does not
+// regenerate the release pages.
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+	main();
+}
+
+// --- release summaries (SPEC-176) ---
+
+/** A release gets a page when there is something to put on it. */
+export function hasPage(release) {
+	return Boolean(release.summary) || release.changes.length > 0;
+}
+
+/**
+ * The index: one short entry per release, with no drawers (D8). Each drawer
+ * embeds its entity's whole body, so drawers for every release on one page grew
+ * it from 2 MB to 6.8 MB; they live on the release pages instead.
+ */
+export function renderIndex(entries) {
+	return `---
 title: Changelog
 description: Release history for refrakt.md
 ---
@@ -39,19 +86,156 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-${body.trim() || '_No releases yet._'}
+${entries.join('\n\n') || '_No releases yet._'}
 {% /changelog %}
 `;
-
-	writeFileSync(outPath, output);
-	console.log(`Wrote ${outPath}`);
 }
 
-// Run only when invoked directly (e.g. `node scripts/generate-changelog.mjs`
-// from `npm run version-packages`). Importing the module for tests does not
-// regenerate releases.md.
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-	main();
+export function renderIndexEntry({ version, date, summary, changes }) {
+	const parts = [date ? `## v${version} - ${date}` : `## v${version}`];
+	if (summary) parts.push(plainRefs(summary));
+	if (changes.length) {
+		const count = changes.length === 1 ? '1 change' : `${changes.length} changes`;
+		parts.push(`[All ${count} in v${version} →](/releases/v${version})`);
+	} else if (summary) {
+		parts.push(`[More about v${version} →](/releases/v${version})`);
+	}
+	return parts.join('\n\n');
+}
+
+export function renderReleasePage({ version, date, summary, changes }) {
+	const parts = [
+		`---\ntitle: v${version}\ndescription: What changed in refrakt.md v${version}\n---`,
+		`# v${version}`,
+		`${date ? `Released ${date} · ` : ''}[All releases](/releases)`,
+	];
+	if (summary) parts.push(summary);
+	if (changes.length) parts.push(`## Changes\n\n${changes.join('\n')}`);
+	return `${parts.join('\n\n')}\n`;
+}
+
+/** A handwritten note wins; otherwise the milestone named after the version;
+ *  otherwise no summary (D3). */
+export function summaryFor(version, notes, milestones) {
+	if (notes.has(version)) return notes.get(version);
+	const milestone = milestones.get(`v${version}`);
+	return milestone ? milestoneSummary(milestone) : null;
+}
+
+/**
+ * Read `releases/notes/v<version>.md` into version → content (D2).
+ *
+ * A note is placed verbatim inside the release's section of `{% changelog %}`,
+ * where a `#` or `##` heading would end the release and start a bogus one, so
+ * either is rejected with the file named.
+ */
+export function readNotes(dir) {
+	const notes = new Map();
+	if (!existsSync(dir)) return notes;
+	for (const name of readdirSync(dir)) {
+		const match = name.match(/^v(\d+\.\d+\.\d+(?:-[\w.]+)?)\.md$/);
+		if (!match) continue;
+		const content = readFileSync(join(dir, name), 'utf8').trim();
+		if (/^#{1,2}\s/m.test(stripCodeFences(content.split('\n')).join('\n'))) {
+			throw new Error(
+				`${name}: a release note may not contain a # or ## heading; it would split the changelog entry`,
+			);
+		}
+		if (content) notes.set(match[1], content);
+	}
+	return notes;
+}
+
+/** Map milestone name → source, read from the `name` attribute rather than the
+ *  filename, so a misnamed file still counts. */
+export function readMilestones(dir) {
+	const milestones = new Map();
+	if (!existsSync(dir)) return milestones;
+	for (const name of readdirSync(dir)) {
+		if (!name.endsWith('.md')) continue;
+		const source = readFileSync(join(dir, name), 'utf8');
+		const match = source.match(/\{%\s*milestone\b[^%]*?\bname="([^"]+)"/);
+		if (match) milestones.set(match[1], source);
+	}
+	return milestones;
+}
+
+/**
+ * The milestone's title in bold, then its first paragraph (D3).
+ *
+ * The title is the heading's text after the dash (`# v0.41.0 — Composed runes
+ * you can ship`). The first paragraph is the first block after the heading
+ * that is prose — a list, table, quote, fence or a line holding only a tag is
+ * skipped, so a milestone that opens with one falls through to the next
+ * paragraph.
+ */
+export function milestoneSummary(source) {
+	const lines = source.split('\n');
+	const headingAt = lines.findIndex((l) => /^#\s/.test(l));
+	if (headingAt === -1) return null;
+	const headingText = lines[headingAt].replace(/^#\s+/, '').trim();
+	const dash = headingText.match(/\s[—–-]\s(.+)$/);
+	const title = (dash ? dash[1] : headingText).trim();
+
+	const lead = /[.!?]$/.test(title) ? `**${title}**` : `**${title}.**`;
+	const paragraph = firstParagraph(lines.slice(headingAt + 1));
+	return paragraph ? `${lead} ${drawerRefs(paragraph)}` : lead;
+}
+
+/** The first block of prose lines, skipping fenced code and every block that
+ *  opens as a heading, list, quote, table, rule, HTML or Markdoc tag line. */
+function firstParagraph(lines) {
+	const isFence = (l) => /^\s*(```|~~~)/.test(l);
+	const isProse = (l) =>
+		!/^(#|[-*+]\s|\d+[.)]\s|>|\||<|---)/.test(l.trim()) && !/^\{%.*%\}$/.test(l.trim());
+	let block = [];
+	let inFence = false;
+	for (const line of [...lines, '']) {
+		if (isFence(line)) {
+			inFence = !inFence;
+			block = [];
+		} else if (inFence) {
+			// skip code
+		} else if (line.trim() === '') {
+			if (block.length && isProse(block[0])) return block.join('\n');
+			block = [];
+		} else {
+			block.push(line);
+		}
+	}
+	return null;
+}
+
+/** Give every `{% ref %}` / `{% xref %}` without a `preview` attribute
+ *  `preview="drawer"`: plan entities have no page on the main site, so a plain
+ *  ref there renders as unlinked text (D3, D7). */
+export function drawerRefs(text) {
+	return text.replace(/\{%\s*(x?ref)\b([^%]*?)\s*\/%\}/g, (whole, tag, inner) =>
+		/\bpreview=/.test(inner) ? whole : `{% ${tag}${inner} preview="drawer" /%}`,
+	);
+}
+
+/**
+ * Flatten references for the index, which carries no drawers: a ref becomes its
+ * label, or its target, as plain text; a file-ref keeps its GitHub link but
+ * loses its drawer preview.
+ */
+export function plainRefs(text) {
+	return text
+		.replace(/\{%\s*x?ref\s+"([^"]+)"([^%]*?)\s*\/%\}/g, (_, target, attrs) => {
+			const label = attrs.match(/\blabel="([^"]*)"/);
+			return label ? label[1] : target;
+		})
+		.replace(/(\{%\s*file-ref\b[^%]*?)\s+preview="[^"]*"/g, '$1');
+}
+
+function readPlanDir() {
+	try {
+		const config = JSON.parse(readFileSync(join(root, 'refrakt.config.json'), 'utf8'));
+		return config.plan?.dir ?? 'plan';
+	} catch {
+		return 'plan';
+	}
 }
 
 // --- helpers ---

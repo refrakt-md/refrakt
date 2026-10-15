@@ -9,9 +9,9 @@ milestone fallback is missing or reads badly. See the migration table in {% ref 
 
 - [ ] Handwritten notes exist for v0.39.0, v0.40.0 and v0.41.0, each with an action-needed block where that release requires a change from users
 - [ ] v0.4.0 to v0.9.0 each have a one-line note linking their `whats-new-in-0-x` blog post
-- [ ] Each of the 38 milestone openings used as a fallback has been read on the rendered page, and those that do not read as a summary have a note file instead
+- [ ] Each of the 38 milestone openings used as a fallback has been read on the rendered index, and those that do not read as a summary have a note file instead
 - [ ] No milestone file is edited to improve its opening as a summary
-- [ ] `site/content/releases.md` is regenerated and the site builds with no new errors
+- [ ] `site/content/releases/` is regenerated and the site builds with no new errors
 
 ## Approach
 
