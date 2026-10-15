@@ -1,4 +1,4 @@
-{% work id="WORK-641" status="ready" priority="medium" complexity="simple" source="SPEC-160" tags="site,changelog,release,scripts,docs" %}
+{% work id="WORK-643" status="ready" priority="medium" complexity="simple" source="SPEC-176" tags="site,changelog,release,scripts,docs" %}
 
 # A command drafts a release note from the milestone
 
@@ -16,16 +16,16 @@ command writes everything but the opening sentences.
 
 ## Approach
 
-Reuse the milestone and ID readers from WORK-639 and WORK-640 rather than parsing the plan a
+Reuse the milestone and ID readers from WORK-641 and WORK-642 rather than parsing the plan a
 third time. Order the background refs so the milestone comes first, then specs, then bugs, each
 group in ID order.
 
 ## Blocked by
 
-- {% ref "WORK-639" /%}
+- {% ref "WORK-641" /%}
 
 ## References
 
-- {% ref "SPEC-160" /%} D5.
+- {% ref "SPEC-176" /%} D5.
 
 {% /work %}

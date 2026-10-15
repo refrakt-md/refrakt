@@ -1,4 +1,4 @@
-{% work id="WORK-640" status="ready" priority="medium" complexity="simple" source="SPEC-160" tags="site,changelog,release,validation,tests" %}
+{% work id="WORK-642" status="ready" priority="medium" complexity="simple" source="SPEC-176" tags="site,changelog,release,validation,tests" %}
 
 # Every ref in a release note resolves to a plan entity
 
@@ -11,7 +11,7 @@ release note would therefore ship as a dead drawer.
 - [ ] A test fails when a file in `releases/notes/` contains a `{% ref %}` or `{% xref %}` whose target is not an ID or milestone name declared in the plan
 - [ ] The failure names the note file, the line and the unknown ID
 - [ ] Declarations inside code fences in `plan/` do not count as declared
-- [ ] The milestone openings WORK-639 uses as a fallback are checked the same way
+- [ ] The milestone openings WORK-641 uses as a fallback are checked the same way
 
 ## Approach
 
@@ -22,10 +22,10 @@ with the rest of `scripts/*.test.mjs`.
 
 ## Blocked by
 
-- {% ref "WORK-639" /%}
+- {% ref "WORK-641" /%}
 
 ## References
 
-- {% ref "SPEC-160" /%} D6.
+- {% ref "SPEC-176" /%} D6.
 
 {% /work %}

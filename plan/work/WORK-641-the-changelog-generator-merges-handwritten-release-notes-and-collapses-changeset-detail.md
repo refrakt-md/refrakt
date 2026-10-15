@@ -1,9 +1,9 @@
-{% work id="WORK-639" status="ready" priority="high" complexity="moderate" source="SPEC-160" tags="site,changelog,release,scripts" %}
+{% work id="WORK-641" status="ready" priority="high" complexity="moderate" source="SPEC-176" tags="site,changelog,release,scripts" %}
 
 # The changelog generator merges handwritten release notes and collapses changeset detail
 
 `scripts/generate-changelog.mjs` writes `site/content/releases.md` as one flat list of
-changeset bullets per version. This item gives each entry the shape {% ref "SPEC-160" /%}
+changeset bullets per version. This item gives each entry the shape {% ref "SPEC-176" /%}
 describes: a summary on top, then the bullets inside `{% details %}`.
 
 ## Acceptance Criteria
@@ -29,6 +29,6 @@ rewrite `releases.md`.
 
 ## References
 
-- {% ref "SPEC-160" /%} D1–D4.
+- {% ref "SPEC-176" /%} D1–D4.
 
 {% /work %}

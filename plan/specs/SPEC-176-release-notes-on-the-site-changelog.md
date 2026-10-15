@@ -1,4 +1,4 @@
-{% spec id="SPEC-160" status="accepted" tags="site, changelog, release, plan, docs" %}
+{% spec id="SPEC-176" status="accepted" tags="site, changelog, release, plan, docs" %}
 
 # Release notes on the site changelog
 
@@ -75,7 +75,7 @@ scannable: 75 entries read as 75 summaries, and nothing is lost.
 
 `released-in` is set on a spec after the release ships, so it is empty while the note is
 being written. The milestone links exist from the start: the work and bug items with
-`milestone="vX.Y.Z"`, and their `source` specs. A draft command (WORK-641) writes those as
+`milestone="vX.Y.Z"`, and their `source` specs. A draft command (WORK-643) writes those as
 drawer refs, so the person releasing writes only the opening sentences and decides whether an
 action-needed block is needed.
 
@@ -122,10 +122,10 @@ and the milestone itself is left alone.
 
 ## Implementation
 
-- {% ref "WORK-639" /%}: the generator merges notes, falls back to the milestone opening and
+- {% ref "WORK-641" /%}: the generator merges notes, falls back to the milestone opening and
   collapses the detail (D1–D4).
-- {% ref "WORK-640" /%}: the test that every ref in a note resolves (D6).
-- {% ref "WORK-641" /%}: the draft command and the RELEASING.md step (D5).
-- {% ref "WORK-642" /%}: the backfill and the review of milestone openings.
+- {% ref "WORK-642" /%}: the test that every ref in a note resolves (D6).
+- {% ref "WORK-643" /%}: the draft command and the RELEASING.md step (D5).
+- {% ref "WORK-644" /%}: the backfill and the review of milestone openings.
 
 {% /spec %}

@@ -1,9 +1,9 @@
-{% work id="WORK-642" status="ready" priority="medium" complexity="simple" source="SPEC-160" tags="site,changelog,release,docs" %}
+{% work id="WORK-644" status="ready" priority="medium" complexity="simple" source="SPEC-176" tags="site,changelog,release,docs" %}
 
 # Backfill release notes and review milestone fallbacks
 
 Once the generator handles notes, the existing page needs content in the summary slot where the
-milestone fallback is missing or reads badly. See the migration table in {% ref "SPEC-160" /%}.
+milestone fallback is missing or reads badly. See the migration table in {% ref "SPEC-176" /%}.
 
 ## Acceptance Criteria
 
@@ -15,17 +15,17 @@ milestone fallback is missing or reads badly. See the migration table in {% ref 
 
 ## Approach
 
-The v0.41.0 draft from the session that produced SPEC-160 is the starting point for its note.
+The v0.41.0 draft from the session that produced SPEC-176 is the starting point for its note.
 Those three notes are the examples later releases follow, so keep them short: two or three
 sentences, an action-needed block only when one is needed, then the background line.
 
 ## Blocked by
 
-- {% ref "WORK-639" /%}
-- {% ref "WORK-640" /%}
+- {% ref "WORK-641" /%}
+- {% ref "WORK-642" /%}
 
 ## References
 
-- {% ref "SPEC-160" /%} "Scope of the migration".
+- {% ref "SPEC-176" /%} "Scope of the migration".
 
 {% /work %}
