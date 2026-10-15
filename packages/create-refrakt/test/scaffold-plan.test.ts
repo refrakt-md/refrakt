@@ -45,7 +45,7 @@ describe('scaffoldPlan', () => {
 		expect(existsSync(join(targetDir, 'plan', 'decisions', 'ADR-001-example-decision.md'))).toBe(
 			true,
 		);
-		expect(existsSync(join(targetDir, 'plan', 'milestones', 'first-release.md'))).toBe(true);
+		expect(existsSync(join(targetDir, 'plan', 'milestones', 'v0.1.0.md'))).toBe(true);
 	});
 
 	it('generates package.json with only CLI + plan devDependencies', () => {
