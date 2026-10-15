@@ -316,7 +316,8 @@ Not in scope for v1, but reserved by the rune's shape:
   ctags-style indexer). Solves the line-staleness problem at the same time.
 - **`preview="popover"`** — anchored floating panel for short previews
   where a full drawer is overkill. Refrakt doesn't have a popover primitive
-  yet; this lands when it does.
+  yet; this lands when it does. *(Note: {% ref "SPEC-174" /%} specifies the
+  popover and adds this value to `ref` and `file-ref`.)*
 - **`preview="details"`** — inline expandable section using the existing
   `{% details %}` rune; opens below the paragraph rather than as overlay
   chrome.

@@ -150,6 +150,10 @@ nothing to relocate — which continues to support "at most one", not "always on
 
 ### D1 — marketing stays a plugin, on `comparison` alone
 
+> **Amended by {% ref "SPEC-167" /%} D7.** `comparison` becomes a composition over a core
+> `{% crosstab %}` primitive, a route that did not exist when this was written. Whether the
+> plugin remains as a home for its compositions is left open there.
+
 Even if everything else composed, `comparison`'s cross-column alignment would keep the
 plugin alive. Recorded so the question is not reopened each time the vocabulary grows.
 
@@ -167,6 +171,10 @@ and `event` remains the reference fixture ({% ref "SPEC-148" /%} D4) because it 
 measured. The count was four in an earlier draft; the correction above says why.
 
 ### D4 — `comparison` is not a candidate for a richer content-model vocabulary
+
+> **Conclusion replaced by {% ref "SPEC-167" /%} D7.** No content-model vocabulary is
+> invented, as this decision requires; the alignment moves into a primitive's transform
+> instead, so `comparison` no longer has to stay native.
 
 Distinct from D1. The temptation on seeing three custom models in one plugin is to
 generalise all three. Two are worth examining (`definition`'s split, `bento`'s cascade);

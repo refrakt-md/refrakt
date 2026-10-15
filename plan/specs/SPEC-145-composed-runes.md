@@ -612,7 +612,9 @@ new; each row points at where it is decided.
 | `{% slot name="xs" each %}…{% /slot %}` | the engine iterates; the body describes **one** item with `$each` bound | "Repeated slots are the `collection` pattern" above |
 | `{% slot /%}` (bare, inside `each`) | this item's content — avoids an `of=$each` argument | same |
 | `{% metablock name="x" /%}` | place the rune's declared meta block `x` | D7 |
-| `{% if %}` / `{% else /%}` | Markdoc's own, with the content-model consequence D17 states | D17 |
+| `{% if %}` / `{% else /%}` | Markdoc's own; resolved at expansion when bound (D30), otherwise with the content-model consequence D17 states | D17, D30 |
+| `{% template <attr>="v" %}…{% /template %}` | one of several assemblies, selected by the attribute named in `templates: { by }` | D15 |
+| `{% fragment name="x" %}…{% /fragment %}` + `{% partial file="#x" /%}` | a block declared once in the file and spliced in at expansion | {% ref "SPEC-168" /%} D8 |
 | `$attrs.name` | a resolved attribute, in content or attribute position | "Smaller shape decisions" above |
 | `$each` | the current item inside an `each` slot; its fields are exactly the content model's `emitAttributes` | D26 |
 | `$row` | the existing `data` / `collection` row binding, unchanged | prior art, not added here |
@@ -692,6 +694,10 @@ geometry {% ref "SPEC-156" /%} consolidates. Measured side by side:
 the rune.** In a composed `recipe`, `prepTime="PT15M"` is an attribute and belongs in a
 metablock; a `deflist` the *content* author typed inside the body is content and stays a
 `deflist`.
+
+> **Revisited in D28.** With `{% field %}`, a declared value can be placed inside a `deflist` or
+> `bar` without these failures: a field's value is read from the field bag, ADR-042 removes the
+> theme's decision for compositions, and the field keeps its `metaType`.
 
 **Three things go wrong when a declared value is hand-placed as a rune**, in the order they
 bite:
@@ -1006,6 +1012,10 @@ having. The cost is the version coupling named above, accepted deliberately — 
 the noise story is an acceptance criterion, not an afterthought.
 
 ### D7 — a composed rune places declared meta blocks; `layout` cannot reach into primitives
+
+> **Amended by {% ref "ADR-042" /%} and D28.** Under ADR-042 a theme does not override a
+> composed rune's `blocks`, so this decision's theme authority holds for native runes only.
+> D28 adds `{% field %}` for placing a single field and makes `metablock` shorthand for it.
 
 {% ref "SPEC-080" /%}'s `metaFields` + `blocks` is already the metadata primitive,
 and it is better factored than a `meta` rune would be: `metaFields` is a pure data
@@ -1685,6 +1695,9 @@ a constraint on *how* to compose a list, not a bar on composing one.
 
 ### D13 — a composed rune's strings need a keying name, or they are untranslatable
 
+> **Answered by D29.** Composed runes key by the rune's name (option 1), and literal template text
+> is translated with `{% t %}`.
+
 i18n keys are auto-derived as `{scope}.{block}.{ref}`
 (`packages/transform/src/types.ts:123`, `:145`, `:591`), with `scope` defaulting to
 `core` and set per plugin. A composed rune has **no block** — that is D2, and it is
@@ -1879,8 +1892,15 @@ explode. Rune-locality is the property that makes names safe here and unsafe the
 #### Several templates in one file, keyed by value
 
 Keeps {% ref "ADR-037" /%}'s one-file-per-rune shape. With one assembly the body *is* the
-template; with several it is a sectioned document — the same `sections` pattern refrakt
-uses everywhere, so the definition format eats its own dog food.
+template; with several, each is a `{% template %}` block naming the attribute value it
+renders for.
+
+> **Revised by {% ref "SPEC-168" /%} D9.** An earlier draft made each template a `##` section
+> of the body, "the same `sections` pattern refrakt uses everywhere". That made every
+> top-level `##` in a multi-template file a template boundary, so a template could not hold a
+> plain top-level `##` heading of its own: one would silently split the template in two. A
+> tag has an explicit end, carries its values as an attribute instead of in heading text, and
+> matches how fragments (SPEC-168 D8) are declared.
 
 ```md
 ---
@@ -1901,36 +1921,39 @@ schema:
 templates: { by: layout }
 ---
 
-## full
+{% template layout="full" %}
+	{% card %}
+		{% slot name="portrait" /%}
 
-{% card %}
-{% slot name="portrait" /%}
+		# {% $attrs.name %}
 
-# {% $attrs.name %}
+		{% slot name="description" /%}
 
-{% slot name="description" /%}
+		{% slot name="sections" each %}
+			{% details summary=$each.heading %}{% slot /%}{% /details %}
+		{% /slot %}
+	{% /card %}
+{% /template %}
 
-{% slot name="sections" each %}
-  {% details summary=$each.heading %}{% slot /%}{% /details %}
-{% /slot %}
-{% /card %}
-
-## compact
-
-{% bar %}
-{% slot name="portrait" /%}
-**{% $attrs.name %}** — {% slot name="description" /%}
----
-{% details summary="Details" %}
-  {% slot name="sections" each %}{% slot /%}{% /slot %}
-{% /details %}
-{% /bar %}
+{% template layout="compact" %}
+	{% bar %}
+		{% slot name="portrait" /%}
+		**{% $attrs.name %}** — {% slot name="description" /%}
+		---
+		{% details summary="Details" %}
+			{% slot name="sections" each %}{% slot /%}{% /slot %}
+		{% /details %}
+	{% /bar %}
+{% /template %}
 ```
+
+The template tag names the selecting attribute itself (`layout="compact"`), so it reads as
+the condition it is. Its one attribute must be the one named in `templates: { by: … }`.
 
 `{% character name="Veshra" %}` renders `full` (the attribute's `default`);
 `layout="compact"` renders the other. Same content, same schema row, different assembly.
 
-#### Why keyed sections rather than `{% if %}` inside one template
+#### Why keyed templates rather than `{% if %}` inside one template
 
 `{% if %}` already works, so this is a real choice, and the deciding factor is tooling
 visibility. **Contracts already model this shape**: `packages/transform/src/contracts.ts:98-99`
@@ -1945,9 +1968,11 @@ where three exist.
 1. **The selecting attribute must declare `matches`.** Without a closed value set there is
    nothing to check coverage against. A `default` is wanted too, mirroring `variants`'
    "the modifier's own `default` already provides the active value".
-2. **Section names and `matches` values correspond exactly, both directions** — a value
-   with no section is an error, a section with no value is an error. The same bidirectional
-   shape the config-schema drift test already uses.
+2. **Every `matches` value is covered by exactly one template, and every template's values
+   are in `matches`** — a value no template covers is an error, a value covered twice is an
+   error, and a template naming an unknown value is an error. The same bidirectional shape the
+   config-schema drift test already uses. A template may list several values,
+   `{% template kind="class, interface, module" %}` ({% ref "SPEC-169" /%} D5).
 3. **Every declared content-model field is placed by every template.** D11 makes an
    unplaced field a build error because content is never silently dropped; with several
    templates that check runs per template. A compact assembly that wants less prominence
@@ -1959,6 +1984,10 @@ probably a fixture per assembly, which {% ref "SPEC-102" /%}'s `<rune>.<scenario
 already accommodates.
 
 ### D17 — a template's `{% if %}` hides what it wraps from a nested rune's content model
+
+> **Narrowed by D30.** A conditional whose condition uses only `$attrs`, `$each` or `$slots`
+> is resolved during expansion, so the rune around it sees the chosen branch. The limit below
+> now applies only to conditionals on page-scope values.
 
 Slot-presence conditionals are useful for content and for wrappers, and they have a hard
 limit that is silent when crossed.
@@ -2077,6 +2106,9 @@ Neither has a custom content model, a `postTransform`, a behaviour or a pipeline
 recipe's `delimited`/zoned model and howto's flat `sequence` are both declarable in
 frontmatter. The only gap is `headline` / `blurb`, which is
 {% ref "SPEC-151" /%} D3's six-rune case.
+
+> **Corrected by {% ref "SPEC-169" /%} D1.** Recipe's `delimited` model was not declarable: the
+> composition parser accepted only `sequence` and `sections`. SPEC-169 D1 adds it.
 
 This corrects a claim that reached {% ref "SPEC-151" /%}: {% ref "SPEC-143" /%} D4 gates
 the *declared* emit path, not composability, so its exclusion of `recipe` and `howto` says
@@ -2655,6 +2687,334 @@ SPEC-155 already records the other two blockers for `playlist`:
   {% ref "SPEC-146" /%} (its D2);
 - its appearance is gated on the arrangement vocabulary ({% ref "ADR-030" /%} rule 4).
 
+### D28 — a field is placed by `{% field %}`; `metablock` becomes shorthand for it
+
+*Proposed 2026-10-11; revised 2026-10-12 with D29.* It amends D7 and the "Authoring note — `{% metablock %}` versus placing
+`{% bar %}` or `{% deflist %}`", following {% ref "ADR-042" /%}.
+
+**What changed.** D7 gave `blocks` and `{% metablock %}` three jobs: keep a field's meaning,
+leave arrangement to the theme, and stay clear of the schema boundary. ADR-042 removes the
+second job for composed runes, because a composed rune's config belongs to its definition and a
+theme cannot override it. What is left is the first job, and it is about **when** a value
+renders, not about blocks.
+
+- A field's meaning is applied at stage 4: its sentiment, translated enum text, chip shape from
+  `metaType`, `splitOn`, `condition`, and marks. A template renders at stage 2.
+- So a template places a marker, as `metablock` does today, and the engine fills it. The reason
+  is the value, not the translation tables. The merged dictionary is built once per site by
+  `assembleThemeConfig`, before any page is transformed, so it could reach stage 2; D29 passes
+  it there for template text. A field's *value*, though, can be written late by a post-process
+  hook (see "the bag is the record", below), and only a stage-4 lookup sees the final value.
+- *Correction:* the first version of this decision said stage 2 "knows the locale code but not
+  the tables". The tables exist at stage 2; they are only not passed to the schema transform
+  today.
+
+Measured on the current output: `{% deflist %}` and the engine's `definition-list` block
+already render the same vocabulary. Both produce `dl[data-zone-layout="definition-list"]` with
+`div[data-name="row"]` rows of `dt[data-meta-label]` and `dd`, and their values share
+`data-meta-sentiment` and `data-meta-type`. The differences are small: engine rows carry
+`data-field`, and `{% bar %}` wraps each item in `<div><p>` where the engine's bar emits values
+directly.
+
+**The decision.**
+
+1. **`{% field name="…" /%}` places one field's value.** It is a stage-2 marker that the engine
+   fills at stage 4 with the field's full rendering: chip or bare text from `metaType`,
+   sentiment, translated enum text, `splitOn` parts, marks, and `<time>`. It is value-only, so
+   it means the same thing everywhere: in a `deflist` row, in a `bar`, in a heading, in an
+   eyebrow, or in a sentence ("Serves {% field name="servings" /%}"). It names a declared
+   `metaFields` entry, and naming an undeclared one is an error at construction, as D26 makes it
+   for slots.
+2. **A row or bar item built only from fields is dropped when they resolve empty.**
+   - `deflist` and `bar` render at stage 2, when a field is still a marker, so they cannot see
+     an empty value. They mark each row or item whose value consists only of field markers
+     (`data-field-row`).
+   - When the engine fills the markers at stage 4, it removes a marked row or item whose value
+     came out empty. This is `condition`'s behaviour carried to placed fields.
+   - It is automatic, not an option, because a label followed by nothing is never wanted.
+   - A row containing any authored content is never dropped.
+3. **A row's label is template text.** `{% field %}` never emits a label, in any layout. The
+   template writes it, and makes it translatable with D29's `{% t %}`:
+   `- **{% t key="servings" %}Serves{% /t %}:** {% field name="servings" /%}`. A `deflist` item
+   with no term stays what it is today, an empty term with a warning. *Revised:* the first
+   version let a term-less item borrow the field's `metaFields` label, only to reach that
+   label's translation key. With D29 there is nothing to borrow it for, and a placeholder that
+   sometimes produced a label was harder to explain than one that never does.
+4. **`metablock` is shorthand.** `{% metablock name="metadata" /%}` expands at template
+   compile time to `{% deflist %}` (or `{% bar %}`, following the block's `layout`) with one row
+   per declared field, in order. A definition-list row is
+   `- **{% t key="<field>" %}<label>{% /t %}:** {% field name="<field>" /%}`, with the English
+   label taken from `metaFields`. A bar item is the field alone, because a bar is unlabelled. That leaves one rendering path
+   for placed metadata, and the engine's block renderers serve only native runes' `layout`
+   projection. The expansion keeps the block's identity: the list carries `data-name` and
+   `data-zone` set to the block name, so `[data-zone="metadata"]` keeps matching. It also gains
+   `data-rune="deflist"` and `rf-deflist`, which is an output change to review on the four composed
+   storytelling definitions that use `metablock` today (`character`, `realm`, `faction`, `lore`).
+5. **`blocks` is optional in a composition.** A composition that places its fields with
+   `{% field %}` needs no `blocks`; one that uses `metablock` declares the block the shorthand
+   reads. `metaFields` stays required for any placed field, because it is where field meaning is
+   declared. Its `label` keeps one job in a composition: it is the English default the
+   `metablock` shorthand writes into the row, under the key `{scope}.{rune}.{field}` (D29). A
+   hand-written row that uses the same key translates identically. Native runes keep `blocks`
+   in engine config until ADR-042's follow-up settles them.
+6. **`{% bar %}` aligns with the engine's bar.** Its items lose the `<div><p>` wrapping, so the
+   two produce the same structure. This is worth doing whatever happens to `metablock`.
+
+**The value element is the rune-to-theme contract.** A placed field reaches the theme as one
+element. Its shape comes from the field's declaration, never from where it is placed:
+
+| Shape | Chosen when | Element |
+|---|---|---|
+| plain | any other `metaType`, or none | `<span>` or `<time datetime>` with `data-meta-type` |
+| chip | `metaType` is `status`, `category` or `tag` | `<span class="rf-badge">` with `data-meta-type` and `data-meta-sentiment` |
+| link | `href` | `<a href data-meta-type="link">` |
+| marks | `rating` (`marks` after {% ref "WORK-639" /%}) | `<span data-meta-type>` holding `data-filled` marks |
+| icon | `icon: { group }` | `<span>` holding `[data-icon-group][data-icon]` and `[data-meta-value]` |
+| several | `splitOn` | one element per part, as siblings |
+
+These are today's renderers (`renderBlockValue` in `packages/transform/src/engine.ts`, which
+picks link, then marks, then icon, then chip, then plain). Three decisions tighten them into a
+contract, and they apply to engine blocks as well as to placed fields:
+
+7. **The value element carries `data-field`.** Today only a definition-list *row* has it
+   (`div[data-name="row"][data-field]`); a value in a bar, a chip, or a value placed in a
+   heading or a sentence carries none. A field that can be placed anywhere has to say which
+   field it is wherever it lands. Rows keep their `data-field` as well.
+8. **One value element, whatever the layout.** Today a plain value in a definition list is
+   written into the `dd` itself (`<dd data-meta-type="quantity">4</dd>`), while the same field
+   in a bar is a `<span data-meta-type>`. The value element is now always the element from the
+   table above, and `dd`, a bar item and a heading are layout around it:
+   `<dd><span data-field="servings" data-meta-type="quantity">4</span></dd>`. This changes
+   definition-list output, so it is a contract diff to review on every rune with a
+   definition-list block.
+9. **An enum value exposes its raw value.** A `category` or `status` value displays translated
+   text, and today nothing carries the value itself. A theme can key on a sentiment
+   (`caution`) but not on `hard`. The value element carries `data-value="hard"`, beside the
+   translated text. This follows the existing precedent: `<time datetime>` and `data-icon`
+   already keep the raw value next to the displayed one.
+
+**How a theme reads the contract**, in the order it should prefer:
+
+| Question | Attribute |
+|---|---|
+| What kind of value is this? | `data-meta-type` |
+| Is it good or bad? | `data-meta-sentiment` |
+| Is it a chip? | `.rf-badge` |
+| How is the group arranged? | `data-zone-layout`, `data-meta-label` |
+| Which value is it? | `data-value` |
+| Which field is it? | `data-field` |
+| Which rune is it? | `data-rune` |
+
+A theme that styles only the first four renders every rune correctly, including composed runes
+it has never seen, which is what ADR-042 relies on. The last three are for special cases.
+
+In one sentence: the definition declares what a value means, the template decides where it
+goes, the engine emits one element whose attributes state that meaning, and the theme decides
+how each meaning looks.
+
+**The bag is the record; the tree is the presentation.** Placing fields in the tree raises the
+question of whether a field's value should travel with it in the tree, rather than in the rune's
+field bag (`data-rune-fields`, on the root, stripped from output by the engine). It should not,
+because rendering is one reader of the bag among several:
+
+| Reader | Use of the bag |
+|---|---|
+| Schema table (`packages/runes/src/lib/schema-table.ts`) | attribute-sourced JSON-LD properties |
+| Entity registry (`packages/runes/src/lib/registers.ts`) | each entity's data, for cross-page use |
+| Plugin pipelines (e.g. `plugins/plan/src/pipeline.ts`) | rollups, filters and history |
+| Post-process hooks (e.g. `packages/runes/src/aggregate-resolve.ts`) | values written late, once every page is known |
+| Modifiers facet | root `data-*` attributes and BEM modifier classes |
+| Engine | rendering fields at stage 4 |
+
+Three reasons keep the record on the root:
+
+- **Meaning must not depend on arrangement.** If a value existed only where the template placed
+  it, structured data would have to find it in the tree, behind whatever rune the template
+  placed it in. That is {% ref "SPEC-146" /%}'s reachability problem. The bag is why D28 can say
+  the schema boundary does not apply to a field.
+- **Some values are written late.** Phase 4 post-process hooks write into the bag after every
+  page is known. A `{% field %}` marker looks its value up by name at stage 4, so it renders what
+  the record holds then. A copy taken into the tree at stage 2 could be stale.
+- **A field can be placed twice, or not at all.** It can appear in an eyebrow and in a list, or
+  be declared, never shown, and still published as JSON-LD. Only a record keyed by name handles
+  all three.
+
+So the bag stays the rune's single data record, read by the schema table, the registry, pipelines
+and modifiers. The tree carries one value element per placed field, which is the theme's
+contract. A marker refers to the record by name and never copies it, and the value element's
+`data-field` (decision 7) is the explicit link back to its record entry, for `inspect` and the
+editor as well as for themes.
+
+10. **A composed rune's generated modifiers are narrowed to enum and state attributes.**
+    `composedRuneConfig` (`packages/runes/src/lib/composition.ts`) makes a modifier of every
+    attribute that declares `matches` *and* of every attribute a `metaFields` entry reads. Each
+    modifier mirrors its value onto the root as a `data-*` attribute and a BEM class. The second
+    source exists only because the engine resolves fields against modifier values
+    (`resolveField(…, modifierValues, …)`). Once the value element carries `data-field` and
+    `data-value`, mirroring every field on the root is redundant. So:
+    - field resolution reads the bag directly, as `readField` already does for other readers;
+    - modifiers are generated only for attributes with `matches`, which are the enums and states
+      a theme legitimately styles the whole rune by (`[data-status="broken"]` on a bond).
+
+    Native runes are untouched: their modifiers are declared by hand.
+
+**D7's three failure modes, revisited.** The authoring note on `{% metablock %}` versus
+placing `{% bar %}` or `{% deflist %}` lists three ways a declared value goes wrong when it is
+hand-placed as a rune.
+
+- **The schema boundary does not apply to a field.** A placed `deflist` is still a `data-rune`
+  node, so a property sourced from a *node* inside it still disappears (SPEC-146 Problem 2). But
+  a field's value is an attribute: the schema table reads it from the field bag, not from the
+  rendered row. Node-sourced content (a slot) still belongs outside a placed rune where schema
+  is involved, as D19 says.
+- **The usurped theme decision no longer exists for compositions.** Under ADR-042, arrangement
+  and layout are the definition's.
+- **The lost `metaType` is what `{% field %}` fixes.** The value keeps its declared type,
+  because the engine renders it from `metaFields`, not from a hand-written badge.
+
+The rule in the authoring guide becomes: **field meaning lives in `metaFields`; arrangement
+lives in the template.** Is the value an attribute? Place it with `{% field %}`, or with
+`metablock` for the whole declared block. Is it content someone writes? Place the content.
+
+**Recipe, as D28 writes it.** A redefinition with one total time:
+
+```md
+{% deflist %}
+- **{% t key="time" %}Time{% /t %}:** {% field name="totalTime" /%}
+- **{% t key="servings" %}Serves{% /t %}:** {% field name="servings" /%}
+- **{% t key="difficulty" %}Difficulty{% /t %}:** {% field name="difficulty" /%}
+- **{% t key="diet" %}Diet{% /t %}:** {% t key="vegan" %}Vegan{% /t %}
+{% /deflist %}
+```
+
+- Every label is template text, translated through D29 under `{scope}.recipe.<key>`.
+- The first three rows are built from fields, so each is dropped when its field is empty.
+- The "Diet" row is authored, so it is always shown.
+- The difficulty value gets its sentiment chip and translated enum text from `metaFields`.
+
+`totalTime` itself needs a computed value, which is the open question below on `{% let %}`.
+
+### D29 — template text is translated with `{% t %}`, keyed by the rune's name
+
+*Proposed 2026-10-12.* It answers D13's open question on literal template text and adopts D13's
+option 1 for composed runes. D28 depends on it: a row's label is template text, so template text
+has to be translatable.
+
+**The problem is wider than labels.** A composition template carries fixed UI text of several
+kinds, and none of it has a translation key today:
+
+| Kind | Example |
+|---|---|
+| Row labels | "Serves", "Difficulty" (D28) |
+| Empty-slot fallback | `{% slot name="description" %}No description yet.{% /slot %}` (the `PERSONA` test fixture) |
+| Literal badge text | `{% badge %}antagonist{% /badge %}` (D13) |
+| Attribute values | `{% details summary="Details" %}`, an `aria-label` |
+| Section headings | "Ingredients", "Steps" |
+| Unit text | "per day" (native `budget` keys it as `core.budget.perDay`) |
+
+D13 also measured that a block-less rune is mis-keyed in two different ways: `core..status` at
+lookup and `core.undefined.status` in the extractor. A composed rune has no block (D2), so every
+one is affected.
+
+**What exists.** The pieces are all present:
+
+- `assembleThemeConfig` (`packages/transform/src/assemble.ts`) builds one dictionary per site,
+  at load and before any page is transformed. Precedence, lowest to highest: the core bundle,
+  plugin bundles, then the site's own `strings`.
+- `resolveLocaleString(locale, key, english)` looks a key up and falls back to the English text
+  given at the call site.
+- A dictionary value may be a plural map (`PluralMap`), selected through `Intl.PluralRules`.
+- `i18n-extract` already lists keys and their English source for translators.
+
+**The decision.**
+
+1. **`{% t key="…" %}English text{% /t %}` translates a piece of template text.** Its content is
+   plain text, and that text is the English source and the fallback. A function form,
+   `t("key", "English text")`, does the same inside attribute values, where a tag cannot go:
+   `{% details summary=t("details", "Details") %}`.
+2. **Keys are scoped by the rune's name: `{scope}.{rune}.{key}`.**
+   - `scope` is the plugin name, as `assembleThemeConfig` already stamps it on plugin runes;
+     `core` for a core composition; `site` for a project's own definition.
+   - `key` is required, and matches `[a-z0-9-]+`. Keys derived from the English text were
+     rejected: editing the wording would change the key and silently orphan its translations.
+   - A composed rune's `metaFields` labels use the same namespace, `{scope}.{rune}.{field}`. The
+     engine's lookup and the extractor both derive from the rune's name when there is no block,
+     which closes D13's two mis-keyings together, as D13 requires.
+3. **`t` resolves at stage 2.** The schema transform receives the site's locale and merged
+   dictionary through its Markdoc config, taken from the same assembled config the engine
+   reads. Template text is fixed, unlike a field's value, so nothing is lost by resolving
+   early, and two things are gained:
+   - it works inside attribute values;
+   - content models see the translated text, so `deflist` still finds `**Term:**` in a
+     translated row.
+
+   The tree holds plain text, with no marker left for the engine.
+4. **Plurals use `count`.** `{% t key="serves" count=$attrs.servings %}Serves {count}{% /t %}`
+   selects a plural form when the dictionary entry is a plural map, and interpolates `{count}`.
+   `count` is the only placeholder; see the open question below.
+5. **The definition's owner supplies translations; a theme does not.** A plugin ships them in
+   its translation bundle, a site covers its own runes in `strings`, and a site can override a
+   plugin's through the existing precedence. Under {% ref "ADR-042" /%} a theme does not
+   translate a composed rune's text.
+6. **Extraction reads templates.** `i18n-extract` lists every `t` key with its English text,
+   and every composed rune's `metaFields` labels under the same namespace. One key with two
+   different English texts in one rune is an error at construction, naming both lines.
+7. **`t` is for composition templates.** Page content is written in the site's language and
+   is not keyed. Whether `t` is also useful in layouts and partials is left open.
+8. **Untranslated template text is reported, not rejected.** A literal text node containing
+   letters, in a composition template and outside `t`, is reported as `template-untranslated`
+   at warning level by `refrakt validate`. Symbols such as `↔` are not reported, and the build
+   never fails on it.
+
+**Not decided here:**
+
+- **Values inside a translated sentence**, for example "Serves {% field %} people". A field is
+  filled at stage 4 and `t` resolves at stage 2, so a message with a field inside it needs the
+  engine to resolve the message too. `count` covers the common plural case. A general
+  placeholder waits for a real case.
+- **Translating a value** remains the engine's job: enum values through `i18nEnums`
+  ({% ref "SPEC-035" /%} Zone 6), and dates and numbers through their formatters.
+
+### D30 — a conditional bound at expansion is resolved there
+
+D17's limit exists because an `{% if %}` survives expansion as a tag node, so the rune it
+sits inside sees the tag and not its content. Nothing forces that for most conditionals in a
+template.
+
+**What expansion already knows.** A template is expanded once per instance, before any
+placed rune's content model runs. `expand` and `substitute`
+(`packages/runes/src/lib/composition.ts:771`, `:886`) replace every `$attrs.*` and `$each.*`
+with its concrete value at that point. An `if` node has its condition substituted like any
+other attribute, and is then kept as a tag. Only the keeping is the problem.
+
+**Decision.** During expansion, an `{% if %}` whose condition refers only to values bound at
+expansion is evaluated there, and the chosen branch replaces the `if` node in its parent. The
+bound values are `$attrs.*`, `$each.*` and, once it exists, `$slots.*`.
+
+1. **The same semantics as Markdoc's own `if`.** The condition is evaluated with the config's
+   functions (`equals`, `and`, `or`, `not`, `default`, and the site's own), and is truthy
+   exactly when Markdoc's `if` would take that branch. `{% else /%}`, including
+   `{% else <condition> /%}`, is handled the same way. A template means the same thing whether
+   its conditional is resolved early or late.
+2. **Only fully bound conditions are resolved.** A condition that refers to a page-scope
+   variable (`$frontmatter`, a site variable) cannot be evaluated at expansion. It stays an
+   `if` tag, resolves at transform, and D17's limit still applies to it.
+3. **The spliced branch is ordinary template content.** It is expanded with the same context,
+   so slots and `$each` inside it work as anywhere else. D11's "every field is placed once" is
+   checked on the template as written, so a slot placed in both branches of one conditional is
+   still two placements and still an error.
+
+**Consequences.**
+
+- **D17's worked case now works.** `{% if $slots.image %}…---{% /if %}` inside `card`
+  expands to either the delimiter or nothing before `card` looks for it.
+- **D17 narrows** to conditionals on page-scope values. Its definition-load diagnostic only
+  needs to cover those, and can say why: the condition names a value expansion cannot see.
+- **A conditional can supply structural content**, such as an eyebrow paragraph before a
+  heading, without inventing an attribute for it. {% ref "SPEC-167" /%}'s `comparison` cards
+  template is the worked case: only the featured card gets a "Recommended" eyebrow, written
+  as content.
+
 ## Non-goals
 
 - Replacing {% ref "SPEC-143" /%}'s declared tier — the two tiers coexist, and D5 keeps them distinct
@@ -2711,6 +3071,33 @@ track kind and an artist default into each untyped track in code. The candidate 
 
 **Should `validateSchemaTable` require `rows` to cover the selecting attribute's `matches`?**
 Proposed yes, in both directions, mirroring D15. See D27 (c).
+
+**How does a template compute a value that a field then places?** D28's recipe example needs a
+`totalTime` that does not exist as an attribute. The candidate is
+`{% let name="totalTime" value=addDurations($attrs.prepTime, $attrs.cookTime) /%}`:
+- Markdoc computes the value at stage 2 with a registered function, from a closed set as
+  {% ref "ADR-036" /%} requires;
+- the tag writes the value into the rune's field bag, where `metaFields` gives it meaning and
+  `{% field %}` places it.
+
+Open points:
+- which functions are registered: `addDurations` at least;
+- whether a `let` name must also be declared in `metaFields`;
+- how a first-party definition's schema table may read a `let` value. D25 already keeps
+  project definitions from declaring `schema`.
+
+> **Answered by {% ref "ADR-043" /%}** (proposed): the engine stops adding `rf-badge` to field
+> values, and the base stylesheet gives chip geometry by `data-meta-type`.
+
+**Should the theme, not the engine, decide which values are chips?** `CHIP_METATYPES` in
+`packages/transform/src/engine.ts` fixes that `status`, `category` and `tag` values get
+`.rf-badge` and the rest render plain. That is a presentation decision in the output. The purer
+contract emits only meaning (`data-meta-type`, sentiment) and lets the theme give pill geometry
+to whichever types it chooses. Against it:
+- Lumina, and every theme, would restate the chip rule in CSS;
+- `{% badge %}` emits `.rf-badge` explicitly, so the class cannot simply go.
+
+D28 keeps today's rule.
 
 ## Acceptance Criteria
 
@@ -2779,7 +3166,7 @@ Proposed yes, in both directions, mirroring D15. See D27 (c).
 - [ ] Universal attributes apply to the nominated chrome carrier; a template with several top-level placed runes and no nomination is rejected (D14)
 - [ ] A rune may declare several templates in one file, keyed by the values of a declared attribute, selected at transform time (D15)
 - [ ] The selecting attribute must declare `matches`; one without it is rejected, naming the rune (D15)
-- [ ] Template section names and the attribute's `matches` values correspond exactly in both directions, each mismatch reported by name (D15)
+- [ ] Every `matches` value of the selecting attribute is covered by exactly one `{% template %}` block, each template names only known values, and each mismatch is reported by name (D15)
 - [ ] Every declared content-model field is placed by every template; one that omits a field is the same build error as a single template omitting it (D15)
 - [ ] Templates and `variants` deltas both apply to the same rune on the same axis, at their own stages, with the theme able to override the delta and not the template (D15)
 - [ ] `refrakt contracts` records one expansion per template under the existing `variants` contract shape, adding no new shape (D15)
@@ -2791,7 +3178,28 @@ Proposed yes, in both directions, mirroring D15. See D27 (c).
 - [ ] A composed rune placing `{% card %}` inherits `extractMediaImage`'s unwrapping, so `![x](y)` in a media slot emits a bare `<img>` and not `<p><img>` (D18)
 - [ ] `recipe` and `howto` are confirmed composable once {% ref "SPEC-146" /%} lands, or the reason either is not is recorded against D18's claim
 - [ ] The rune authoring guide documents which tier to reach for, with the table from this spec
-- [ ] The rune authoring guide carries the `{% metablock %}` versus placed-`{% bar %}`/`{% deflist %}` note, including the attribute-or-content rule and all three failure modes — the schema boundary, the usurped theme decision, and the lost `metaType`
+- [ ] The rune authoring guide carries the `{% metablock %}` versus placed-`{% bar %}`/`{% deflist %}` note, including the attribute-or-content rule and all three failure modes — the schema boundary, the usurped theme decision, and the lost `metaType` (amended by D28: the guide states which of the three a placed `{% field %}` avoids)
+- [ ] `{% field name="…" /%}` places one declared field's value, rendered by the engine at stage 4 exactly as a block renders it; naming an undeclared field is an error at construction (D28)
+- [ ] A `deflist` row or `bar` item whose value is only field markers is dropped when they resolve empty; a row with any authored content never is (D28)
+- [ ] `{% field %}` emits a value element and never a label, in every layout; a term-less `deflist` item is unchanged (an empty term with a warning) (D28)
+- [ ] `{% metablock %}` expands at compile time to a `deflist` of `{% t %}`-labelled `{% field %}` rows, or a `bar` of fields, keeping `data-name` and `data-zone`; the output diff on the four composed storytelling definitions (`character`, `realm`, `faction`, `lore`) is reviewed (D28)
+- [ ] A composition with no `blocks` may place fields with `{% field %}`; `metaFields` stays required for any placed field (D28)
+- [ ] `{% bar %}` emits its items without the `<div><p>` wrapping, matching the engine's bar layout (D28)
+- [ ] Every value element carries `data-field`, in engine blocks and wherever `{% field %}` places it; definition-list rows keep theirs (D28)
+- [ ] A field's value element is the same element in a definition list, a bar, a heading and prose; a `dd` wraps it rather than becoming it, and the definition-list contract diff is reviewed (D28)
+- [ ] A `category` or `status` value element carries its raw value as `data-value` beside the translated text (D28)
+- [ ] The theme-authoring guide documents the value element and the order in which a theme should read its attributes (D28)
+- [ ] A placed field's value is looked up in the field bag by name at stage 4 and never copied into the tree; a value written by a post-process hook renders in place of the stage-2 value (D28)
+- [ ] The engine resolves a composed rune's fields from the bag, not from modifier values; `composedRuneConfig` generates modifiers only for attributes declaring `matches`, and the contract diff is reviewed (D28)
+- [ ] `{% t key="…" %}English{% /t %}` and `t("key", "English")` translate composition template text at stage 2, falling back to the English text; a translated row still parses as a `deflist` term (D29)
+- [ ] A composed rune's keys are `{scope}.{rune}.{key}`, with `scope` the plugin name, `core` or `site`; its `metaFields` labels use the same namespace, and the engine lookup and `i18n-extract` agree on every key, asserted on a block-less rune (D29, closing D13)
+- [ ] `count` selects a plural form and interpolates `{count}` (D29)
+- [ ] `i18n-extract` lists every `t` key and composed `metaFields` label with its English text; one key with two English texts in one rune is an error at construction (D29)
+- [ ] `refrakt validate` reports `template-untranslated` at warning level for literal words in a composition template outside `t`, and never for symbols (D29)
+- [ ] An `{% if %}` whose condition uses only `$attrs`, `$each` or `$slots` is resolved during expansion and replaced by its chosen branch, including `{% else %}` branches, with the same truthiness as Markdoc's own `if` (D30)
+- [ ] D17's worked case passes with the conditional form: a `---` inside `{% if $slots.image %}` within `card` produces a media split when the slot is filled and none when it is empty (D30)
+- [ ] A conditional on a page-scope variable stays a runtime `if`, and D17's definition-load diagnostic still reports it when it wraps a structural delimiter (D30)
+- [ ] A slot placed in both branches of one conditional is still reported as placed twice (D30)
 
 ## References
 
