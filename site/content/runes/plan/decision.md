@@ -23,7 +23,7 @@ A fully documented architecture decision record.
 
 {% preview source=true %}
 
-{% decision id="ADR-007" status="accepted" date="2026-03-11" tags="tint,css" %}
+{% decision id="ADR-9007" status="accepted" date="2026-03-11" tags="tint,css" %}
 # Use CSS custom properties for tint token injection
 
 ## Context
@@ -54,7 +54,7 @@ A decision still under review.
 
 {% preview source=true %}
 
-{% decision id="ADR-015" status="proposed" date="2026-03-18" %}
+{% decision id="ADR-9015" status="proposed" date="2026-03-18" %}
 # Adopt content model validation at parse time
 
 ## Context
