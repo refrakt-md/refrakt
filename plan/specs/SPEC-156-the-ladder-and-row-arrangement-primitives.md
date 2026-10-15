@@ -306,6 +306,10 @@ not credited with capability the repo already has.
 
 ### D8 — the per-instance cascade is real, evidenced, and out of scope
 
+> **To be re-checked, per {% ref "SPEC-171" /%} D4.** All three cases below have parents that
+> become compositions, which pass values to the children they place. Re-check the evidence
+> against those compositions before specifying `childDefaults`.
+
 {% ref "SPEC-151" /%} left `bento`'s parent→child attribute cascade needing *"its own
 justification rather than being invented for one rune."* It now has **three** instances, two
 shipped and hand-rolled: `bento`'s `media-position`; `playlist`'s `artist` (*"Default artist

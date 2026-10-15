@@ -164,6 +164,10 @@ whose distinguishing manifest a theme can rewrite is not the same rune.
 
 ### D5 — `plan-history` is out of scope
 
+> **Revisited by {% ref "SPEC-172" /%}.** Still not a composition candidate, but most of what
+> `plan-history` does (reading history, describing how an entity changed) is general. SPEC-172
+> records a core history service and a repository plugin as the direction.
+
 It reads git data rather than page content. Not a misfiled capability in the sense
 {% ref "SPEC-147" /%} and {% ref "SPEC-148" /%} found — it is domain-appropriate, it just
 is not sugar over a primitive and has no composition path.

@@ -1,4 +1,4 @@
-{% spec id="SPEC-153" status="implemented" tags="runes, composition, packaging, hosted, dx, plugins" %}
+{% spec id="SPEC-153" status="shipped" tags="runes, composition, packaging, hosted, dx, plugins" released-in="v0.41.0" %}
 
 # Delivering composed runes
 
