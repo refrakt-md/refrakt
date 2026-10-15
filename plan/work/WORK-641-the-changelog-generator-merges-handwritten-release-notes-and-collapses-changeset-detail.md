@@ -1,4 +1,4 @@
-{% work id="WORK-641" status="ready" priority="high" complexity="moderate" source="SPEC-176" tags="site,changelog,release,scripts" %}
+{% work id="WORK-641" status="ready" priority="high" complexity="moderate" source="SPEC-176" tags="site,changelog,release,scripts" milestone="v0.41.1" %}
 
 # The changelog generator merges handwritten release notes and collapses changeset detail
 

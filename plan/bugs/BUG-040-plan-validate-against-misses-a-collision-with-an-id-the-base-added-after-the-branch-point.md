@@ -1,4 +1,4 @@
-{% bug id="BUG-040" status="confirmed" severity="major" source="SPEC-135" tags="plan, validate, against, ids, ci" %}
+{% bug id="BUG-040" status="confirmed" severity="major" source="SPEC-135" tags="plan, validate, against, ids, ci" milestone="v0.41.1" %}
 
 # plan validate --against misses a collision with an ID the base added after the branch point
 

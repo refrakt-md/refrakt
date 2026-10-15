@@ -1,4 +1,4 @@
-{% work id="WORK-644" status="ready" priority="medium" complexity="simple" source="SPEC-176" tags="site,changelog,release,docs" %}
+{% work id="WORK-644" status="ready" priority="medium" complexity="simple" source="SPEC-176" tags="site,changelog,release,docs" milestone="v0.41.1" %}
 
 # Backfill release notes and review milestone fallbacks
 

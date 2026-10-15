@@ -1,4 +1,4 @@
-{% work id="WORK-642" status="ready" priority="medium" complexity="simple" source="SPEC-176" tags="site,changelog,release,validation,tests" %}
+{% work id="WORK-642" status="ready" priority="medium" complexity="simple" source="SPEC-176" tags="site,changelog,release,validation,tests" milestone="v0.41.1" %}
 
 # Every ref in a release note resolves to a plan entity
 

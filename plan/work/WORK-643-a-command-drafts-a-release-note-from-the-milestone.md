@@ -1,4 +1,4 @@
-{% work id="WORK-643" status="ready" priority="medium" complexity="simple" source="SPEC-176" tags="site,changelog,release,scripts,docs" %}
+{% work id="WORK-643" status="ready" priority="medium" complexity="simple" source="SPEC-176" tags="site,changelog,release,scripts,docs" milestone="v0.41.1" %}
 
 # A command drafts a release note from the milestone
 
