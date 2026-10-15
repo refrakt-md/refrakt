@@ -107,7 +107,8 @@ generator runs.
 being written. The milestone links exist from the start: the work and bug items with
 `milestone="vX.Y.Z"`, and their `source` specs. A draft command (WORK-643) writes those as
 drawer refs, so the person releasing writes only the opening sentences and decides whether an
-action-needed block is needed.
+action-needed block is needed. The draft marks what is left with `TODO:` lines, since refrakt content has no comment
+syntax, and a test fails while any remains in a note, so an unfinished draft cannot ship.
 
 ### D6 — Refs in notes are checked in tests
 
