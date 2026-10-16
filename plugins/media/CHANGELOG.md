@@ -1,5 +1,13 @@
 # @refrakt-md/media
 
+## 0.41.1
+
+### Patch Changes
+
+- @refrakt-md/runes@0.41.1
+- @refrakt-md/transform@0.41.1
+- @refrakt-md/types@0.41.1
+
 ## 0.41.0
 
 ### Patch Changes
