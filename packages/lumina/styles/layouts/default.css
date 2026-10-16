@@ -87,14 +87,21 @@
  * Rune blocks (elements with data-rune) get section-level margins.
  * Prose elements (p, h2, pre, table, etc.) keep their natural flow
  * spacing from global.css — only gaining section margins when
- * immediately adjacent to a rune block. */
-	.rf-page-content > article > * + [data-rune] {
+ * immediately adjacent to a rune block.
+ *
+ * A drawer enhanced into a `<dialog>` is not in the flow: it is a modal
+ * panel in the top layer, positioned by its own insets. Both rules skip
+ * it — otherwise the open panel keeps a 4rem margin top and bottom and
+ * stops short of the viewport edges (BUG-042), and prose after a closed,
+ * invisible drawer gains a section gap. The no-JS fallback is a
+ * `<section>`, which stays in the flow and keeps its spacing. */
+	.rf-page-content > article > * + [data-rune]:not(dialog) {
 		margin-top: var(--rf-spacing-section, 4rem);
 		margin-bottom: var(--rf-spacing-section, 4rem);
 	}
 	/* Prose after a rune block: section gap above only.
  * No margin-bottom so subsequent prose keeps natural flow spacing. */
-	.rf-page-content > article > [data-rune] + :not([data-rune]) {
+	.rf-page-content > article > [data-rune]:not(dialog) + :not([data-rune]) {
 		margin-top: var(--rf-spacing-section, 4rem);
 	}
 	.rf-page-content > article > [data-spacing="flush"] {
