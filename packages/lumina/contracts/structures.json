@@ -4763,7 +4763,7 @@
 						"default": "full"
 					},
 					"elevation": {
-						"default": "flat"
+						"default": "flush"
 					},
 					"bg": {
 						"selectors": [

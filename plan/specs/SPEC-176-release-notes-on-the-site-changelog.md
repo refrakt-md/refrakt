@@ -19,10 +19,9 @@ the plan entities behind it as drawers and the full list of changes.
 The index, `/releases`, one entry per release:
 
 ```markdoc
-## v0.41.0 - October 9, 2026
+## v0.41.0 · Composed runes you can ship - October 9, 2026
 
-**Composed runes you can ship.** Two or three sentences, written for users, on what the
-release is for (SPEC-153).
+Two or three sentences, written for users, on what the release is for (SPEC-153).
 
 [All 33 changes in v0.41.0 →](/releases/v0.41.0)
 ```
@@ -30,12 +29,11 @@ release is for (SPEC-153).
 A release page, `/releases/v0.41.0`:
 
 ```markdoc
-# v0.41.0
+# v0.41.0 · Composed runes you can ship
 
 Released October 9, 2026 · [All releases](/releases)
 
-**Composed runes you can ship.** The same summary, with its refs as drawers
-({% ref "SPEC-153" preview="drawer" /%}).
+The same summary, with its refs as drawers ({% ref "SPEC-153" preview="drawer" /%}).
 
 {% hint type="warning" %}
 **Action needed:** only when upgrading needs a change from the reader.
@@ -70,10 +68,15 @@ ignored, not an error.
 ### D3 — Without a note, use the milestone's opening
 
 When no note file exists and a milestone is named after the version, the generator uses the
-milestone's title (the text after the `—` in its `#` heading) in bold, followed by its first
-paragraph. On the release page, every plain `{% ref %}` in that paragraph gets
+milestone's first paragraph as the summary. On the release page, every plain `{% ref %}` in that paragraph gets
 `preview="drawer"`, because plan entities have no page on the main site and a plain ref there
 renders as unlinked text.
+
+**The title goes in the heading** (`v0.41.0 · Composed runes you can ship`), not at the start of
+the summary. It is the milestone's title (the text after the `—` in its `#` heading), or a
+note's frontmatter `title:` when the note sets one. The changelog rune reads it after the
+middle dot. *Revised after v0.41.1: the first version opened the summary with the title in
+bold, which Lumina styled as an uppercase badge and which repeated what the heading could say.*
 
 The opening is written for maintainers, so it is a fallback, not the goal: a release always
 gets a summary, and a handwritten note replaces it. A release with neither a note nor a

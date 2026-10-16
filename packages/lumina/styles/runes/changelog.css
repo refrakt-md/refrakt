@@ -17,6 +17,17 @@
 		margin: 0 0 0.25rem;
 		color: var(--rf-color-text);
 	}
+	/* "0.41.0 · Composed runes you can ship". The dot is drawn here rather than
+	 * written in the heading, with empty alt text so it is not announced. */
+	.rf-changelog-release__title {
+		font-weight: var(--rf-weight-semibold);
+	}
+	.rf-changelog-release__title::before {
+		content: "·" / "";
+		margin-right: 0.35em;
+		color: var(--rf-color-muted);
+		font-weight: var(--rf-weight-normal);
+	}
 	.rf-changelog-release time {
 		font-size: var(--rf-text-xs);
 		color: var(--rf-color-muted);
@@ -31,7 +42,10 @@
 		line-height: var(--rf-leading-relaxed);
 		margin-bottom: 0.25rem;
 	}
-	.rf-changelog-release strong {
+	/* A label leading a list item ("- **Added** …") is a badge. Bold anywhere
+	 * else in a release — a summary paragraph, an "Action needed" hint — stays
+	 * ordinary bold rather than turning into small capitals. */
+	.rf-changelog-release li > strong:first-child {
 		font-size: var(--rf-text-xs);
 		font-weight: var(--rf-weight-bold);
 		text-transform: uppercase;

@@ -36,7 +36,7 @@ Each release on the site changelog opens with a short summary for users. Draft i
 npm run release-notes:draft -- 0.42.0
 ```
 
-This writes `releases/notes/v0.42.0.md` with the milestone's opening to rewrite, an action-needed block to keep or delete, and drawer links to the milestone, its specs and its bugs, taken from the work and bug items that name the milestone. Lines starting with `TODO:` say what is left to do, and `npm test` fails while any remains. A ref to an ID the plan does not declare fails it too.
+This writes `releases/notes/v0.42.0.md` with the milestone's title in its frontmatter (`title:`, shown in the release heading as `v0.42.0 · Title`; delete the line to use the milestone's), the milestone's opening to rewrite, an action-needed block to keep or delete, and drawer links to the milestone, its specs and its bugs, taken from the work and bug items that name the milestone. Lines starting with `TODO:` say what is left to do, and `npm test` fails while any remains. A ref to an ID the plan does not declare fails it too.
 
 Keep it to two or three sentences, and keep the action-needed block only when upgrading needs a change from the reader. Merge the note to `main` before the "Version Packages" PR is merged: the changesets action reruns `npm run version-packages` on every push to `main`, which regenerates the changelog with the note. A release with no note falls back to its milestone's opening.
 

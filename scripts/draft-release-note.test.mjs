@@ -68,9 +68,9 @@ describe('draftReleaseNote', () => {
 	it('prefills the milestone opening and marks what is left to do', () => {
 		plan();
 		const note = draftReleaseNote('1.2.0', join(dir, 'plan'));
-		expect(note).toContain(
-			'**Faster builds.** Builds reuse their cache ({% ref "SPEC-12" preview="drawer" /%}).',
-		);
+		expect(note.startsWith('---\ntitle: "Faster builds"\n---\n')).toBe(true);
+		expect(note).toContain('Builds reuse their cache ({% ref "SPEC-12" preview="drawer" /%}).');
+		expect(note).not.toContain('**Faster builds.**');
 		expect(note).toContain('{% hint type="warning" %}\n**Action needed:**');
 		expect(note).toContain(
 			'Background: {% ref "v1.2.0" preview="drawer" label="the milestone" /%}',
@@ -81,7 +81,9 @@ describe('draftReleaseNote', () => {
 	it('drafts a placeholder opening without a milestone', () => {
 		write('plan/work/.keep', '');
 		const note = draftReleaseNote('2.0.0', join(dir, 'plan'));
-		expect(note).toContain('**Title.** What v2.0.0 is for.');
+		expect(note.startsWith('---\ntitle: \n---\n')).toBe(true);
+		expect(note).toContain('What v2.0.0 is for.');
+		expect(note).toContain('Set a title in the frontmatter');
 		expect(note).not.toContain('Background:');
 	});
 });
