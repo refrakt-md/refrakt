@@ -6,6 +6,17 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
+## v0.41.1
+
+**Readable release notes.** The changelog on the site is now a list of short summaries, one per release, saying what each
+release is for. Every release has its own page with the specs and bugs behind it as drawers and
+the full list of changes (SPEC-176). This release also fixes `plan validate --against`, which missed an ID
+collision with anything `main` created after a branch split off (BUG-040), and
+`plan create milestone`, which named the file after the title instead of the version
+(BUG-041).
+
+[All 6 changes in v0.41.1 →](/releases/v0.41.1)
+
 ## v0.41.0 - October 9, 2026
 
 **Composed runes you can ship.** v0.40.0 let a rune be defined as a template that places existing runes, but only from inside this repository. Now you can write your own: put a `<rune>.md` in your project's `runes/` directory, or ship a directory of them from a plugin by declaring `runeDir`. The [composed runes guide](/extend/rune-authoring/composed-runes) covers the file format, where definitions go, and every error a definition can produce.

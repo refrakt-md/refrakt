@@ -1,5 +1,24 @@
 # @refrakt-md/plan
 
+## 0.41.1
+
+### Patch Changes
+
+- 25ad932: `refrakt plan validate --against <ref>` now catches the collision it was built for: an ID the base branch took after your branch split off, while your branch took the same one. It used to read any base file missing from your working tree as one your branch had deleted, which also skipped every file the base added later, so two branches that each claimed the next free ID passed with "No ID collisions".
+
+  The check now reads the merge-base of `HEAD` and the ref. A base file that existed there and is gone from your tree was deleted or renamed by your branch, and is still not a collision; one that did not exist there is. A file the base renamed or deleted after the branch point is not a collision either.
+
+  Because it needs the merge-base, a ref with no shared history, or a shallow clone that stops short of it, is now an error rather than a clean run. Fetch the history first (`git fetch --unshallow`, or `fetch-depth: 0` with `actions/checkout`).
+
+- ba7622f: `refrakt plan create milestone --id v1.2.0 --title "…"` now writes `milestones/v1.2.0.md`. It used to name the file after the title (`milestones/<title-slug>.md`), contrary to the convention that a milestone's filename is its name, and two milestones with the same title could not both be created. `plan init`, and so `create-refrakt --type plan`, now writes its example milestone as `milestones/v0.1.0.md` instead of `milestones/first-release.md`.
+
+  `refrakt plan migrate filenames` now renames a milestone whose filename is not `<name>.md`, so a plan directory that picked up title-named milestones can be repaired with `--apply --git`. It used to skip milestones entirely. Its result no longer has a `skipped.milestones` count; milestones are counted under `skipped.alreadyCorrect` or planned like any other file.
+
+  - @refrakt-md/content@0.41.1
+  - @refrakt-md/runes@0.41.1
+  - @refrakt-md/transform@0.41.1
+  - @refrakt-md/types@0.41.1
+
 ## 0.41.0
 
 ### Minor Changes

@@ -1,5 +1,15 @@
 # create-refrakt
 
+## 0.41.1
+
+### Patch Changes
+
+- Updated dependencies [25ad932]
+- Updated dependencies [ba7622f]
+  - @refrakt-md/plan@0.41.1
+  - @refrakt-md/runes@0.41.1
+  - @refrakt-md/transform@0.41.1
+
 ## 0.41.0
 
 ### Minor Changes
