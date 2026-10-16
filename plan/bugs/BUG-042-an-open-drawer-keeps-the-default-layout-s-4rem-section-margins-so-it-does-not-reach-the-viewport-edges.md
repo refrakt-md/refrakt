@@ -1,4 +1,4 @@
-{% bug id="BUG-042" status="confirmed" severity="minor" source="SPEC-060" tags="lumina, drawer, layout, css" milestone="v0.41.1" %}
+{% bug id="BUG-042" status="fixed" severity="minor" source="SPEC-060" tags="lumina, drawer, layout, css" milestone="v0.41.1" pr="refrakt-md/refrakt#705" %}
 
 # An open drawer keeps the default layout's 4rem section margins, so it does not reach the viewport edges
 
@@ -49,5 +49,20 @@ It runs from 72px to 72px above the bottom; the computed margin is `64px 0`.
 - [x] The no-JS fallback (`section.rf-drawer`, in the flow) keeps its section spacing
 - [x] Prose after a drawer gains no section gap from it
 - [x] A docs-layout drawer is unchanged
+
+## Resolution
+
+Completed: 2026-10-16
+
+Branch: `claude/drawer-flow-margin`
+PR: refrakt-md/refrakt#705
+
+### What was done
+- `packages/lumina/styles/layouts/default.css`: both section-rhythm rules skip `dialog` (`* + [data-rune]:not(dialog)` and `[data-rune]:not(dialog) + :not([data-rune])`), with a comment explaining why.
+- Patch changeset for `@refrakt-md/lumina`.
+
+### Notes
+- Measured in Chromium at 1280×800 on a temporary default-layout page: 72→728 with margin `64px 0` before, 8→792 with margin 0 after. The no-JS `section` fallback keeps 64px; `/runes/xref` (docs layout) is unchanged; prose after a `<dialog>` keeps its natural 16px.
+- Fixed at the layout rule rather than by raising the drawer reset's specificity: a modal panel is not part of the page flow, and the flow rule should say so.
 
 {% /bug %}
