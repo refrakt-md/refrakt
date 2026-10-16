@@ -14,9 +14,10 @@
  *    (right/left) or height (top/bottom). Slide-in animation uses
  *    `@starting-style` to interpolate from off-screen on open.
  *
- * Body-scroll lock is applied as a class on `<html>` by the behavior
- * (`html.rf-drawer-open` → `overflow: hidden`) so mobile Safari doesn't
- * scroll the page underneath the open dialog.
+ * Page-scroll lock is applied as a class on `<html>` by the behavior
+ * (`html.rf-drawer-open` → `overflow: hidden` on the root only, never on
+ * `<body>`, see BUG-044) so mobile Safari doesn't scroll the page
+ * underneath the open dialog.
  */
 
 	.rf-drawer {
