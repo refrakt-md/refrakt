@@ -91,4 +91,23 @@ PR: refrakt-md/refrakt#704
 ### Notes
 - `migrate ids --against` is unaffected: it does not call the new function.
 
+
+---
+
+Completed: 2026-10-16
+
+Branch: `claude/site-changelog-readability-k4p902`
+PR: refrakt-md/refrakt#704
+
+### What was done
+- `plugins/plan/src/commands/against.ts`: `branchPointPaths` lists plan files at `git merge-base HEAD <ref>`; `collisionsFrom` forgives a base claimant missing from the tree only if it existed there, plus a mirror rule for base-side renames/deletions. No merge-base is an error naming the fix (`git fetch --unshallow`).
+- `cli-plugin.ts` wires it into `plan validate --against`.
+- `against.test.ts`: five tests that advance the base after the branch point, plus unrelated history. Verified the main regression tests fail against the old condition.
+- `.github/workflows/validate.yml`: the `--against` step runs last and unshallows the checkout itself (`git fetch --unshallow`) before fetching the base; base ref via env.
+- CLAUDE.md notes the history requirement; patch changeset.
+
+### Notes
+- `migrate ids --against` is unaffected: it does not call the new function.
+- The first version used `fetch-depth: 0` on the checkout. That made two tests that build real plan content time out (~170s on 3,473 commits against ~17s shallow), because the plan pipeline reads git history for timestamps and plan-history. The checkout stays shallow; only the last step pays for full history (~6s).
+
 {% /bug %}
