@@ -13,7 +13,7 @@ import {
 	EXIT_INVALID_ARGS as MIGRATE_INVALID_ARGS,
 } from './commands/migrate.js';
 import { runMigrateIds } from './commands/migrate-ids.js';
-import { readRefIds, collisionsFrom, baseClaimants } from './commands/against.js';
+import { readRefIds, collisionsFrom, baseClaimants, branchPointPaths } from './commands/against.js';
 import { scanPlanFiles } from './scanner.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
 import { resolvePlanDir, scaffoldRefraktConfigForPlan } from './plan-config.js';
@@ -660,8 +660,18 @@ function handleAgainst(dir: string, ref: string, formatJson: boolean): void {
 		process.exit(VALIDATE_INVALID_ARGS);
 	}
 
+	const branchPoint = branchPointPaths(dir, ref, cwd);
+	if (branchPoint.error !== undefined) {
+		if (formatJson) {
+			console.log(JSON.stringify({ ref, error: branchPoint.error, collisions: [] }, null, 2));
+		} else {
+			console.error(branchPoint.error);
+		}
+		process.exit(VALIDATE_INVALID_ARGS);
+	}
+
 	const entities = scanPlanFiles(dir, { cache: false });
-	const collisions = collisionsFrom(index.refIds, entities, dir, cwd);
+	const collisions = collisionsFrom(index.refIds, entities, dir, branchPoint.paths, cwd);
 
 	if (formatJson) {
 		console.log(JSON.stringify({ ref, collisions }, null, 2));
@@ -859,8 +869,7 @@ function handleMigrate(args: string[]): void {
 	}
 
 	console.log(`Scanned ${result.scanned} plan files in ${dir}/`);
-	console.log(`  Milestones skipped: ${result.skipped.milestones}`);
-	console.log(`  Already correct:    ${result.skipped.alreadyCorrect}`);
+	console.log(`  Already correct: ${result.skipped.alreadyCorrect}`);
 	console.log();
 
 	if (result.planned.length === 0 && result.errors.length === 0) {

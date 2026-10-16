@@ -178,7 +178,7 @@ There is no `serve` or `build` subcommand — a plan site is an ordinary refrakt
 
 ## migrate
 
-Convert legacy filenames to the `{ID}-{slug}.md` naming convention. Use this when you have plan files that were created manually or with an older version of the CLI that used a different naming scheme.
+Convert legacy filenames to the naming convention: `{ID}-{slug}.md` for specs, work items, bugs and decisions, and `{name}.md` for a milestone (`v1.0.0.md`). Use this when you have plan files that were created manually or with an older version of the CLI that used a different naming scheme, including milestones that older versions of `plan create` named after their title.
 
 By default, `migrate` runs in dry-run mode and shows what would change without modifying any files.
 

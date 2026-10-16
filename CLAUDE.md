@@ -308,7 +308,7 @@ plan/
 
 ### Filename Convention
 
-Plan files use `{ID}-{slug}.md` (e.g. `WORK-051-plan-validate-command.md`, `SPEC-023-auth-system.md`) for auto-ID types. Milestones keep their semver names (`v1.0.0.md`). `refrakt plan create` emits this format automatically; `refrakt plan migrate filenames --apply --git` upgrades legacy unprefixed files.
+Plan files use `{ID}-{slug}.md` (e.g. `WORK-051-plan-validate-command.md`, `SPEC-023-auth-system.md`) for auto-ID types. Milestones keep their semver names (`v1.0.0.md`). `refrakt plan create` emits this format automatically; `refrakt plan migrate filenames --apply --git` upgrades legacy unprefixed files and renames a milestone whose filename is not its name.
 
 ### Rune syntax
 
@@ -331,6 +331,8 @@ refrakt plan migrate ids --against origin/main --apply --git
 ```
 
 **`--against` is the one that changes outcomes.** Plain detection can only fire once both claimants are reachable — after the merge, when every `{% ref %}` to that ID has already become ambiguous. `--against` fires on the branch, where the base ref still makes resolution free. The PR job runs it.
+
+It reads the merge-base of `HEAD` and the ref, which is how it tells an ID the base added after the branch point (a collision) from a file the branch deleted (not one). A clone whose history stops short of the merge-base gets an error, not a clean run: `git fetch --unshallow` first.
 
 `migrate ids` renumbers only when **nothing outside the moved entity references the colliding ID**. Otherwise it refuses and names the references that blocked it, with file and line. It will not guess which entity a reference meant — repointing one at the wrong entity is silent and permanent.
 

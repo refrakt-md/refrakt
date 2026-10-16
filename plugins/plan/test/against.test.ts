@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, unlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { readRefIds, collisionsFrom } from '../src/commands/against.js';
+import { readRefIds, collisionsFrom, branchPointPaths } from '../src/commands/against.js';
 import { scanPlanFiles } from '../src/scanner.js';
 
 let repo: string;
@@ -43,8 +43,13 @@ afterEach(() => {
 function collisions(ref: string) {
 	const index = readRefIds('plan', ref, repo);
 	if (index.error) return { error: index.error, collisions: [] };
+	const branchPoint = branchPointPaths('plan', ref, repo);
+	if (branchPoint.error !== undefined) return { error: branchPoint.error, collisions: [] };
 	const entities = scanPlanFiles(join(repo, 'plan'), { cache: false });
-	return { error: undefined, collisions: collisionsFrom(index.refIds, entities, 'plan', repo) };
+	return {
+		error: undefined,
+		collisions: collisionsFrom(index.refIds, entities, 'plan', branchPoint.paths, repo),
+	};
 }
 
 describe('plan validate --against <ref> (SPEC-135 D8 / WORK-582)', () => {
@@ -138,5 +143,95 @@ describe('plan validate --against <ref> (SPEC-135 D8 / WORK-582)', () => {
 
 		const { collisions: found } = collisions(sha);
 		expect(found).toHaveLength(1);
+	});
+
+	// BUG-040. Every test above compares against the branch's own base commit,
+	// where a base file missing from the tree can only be one the branch
+	// deleted. These advance the base after the branch point.
+	describe('when the base moved on after the branch point', () => {
+		function branchFromMain() {
+			git('checkout', '-q', '-b', 'feature');
+		}
+		function onMain(fn: () => void, message: string) {
+			git('checkout', '-q', 'main');
+			fn();
+			git('add', '-A');
+			git('commit', '-qm', message);
+			git('checkout', '-q', 'feature');
+		}
+
+		it('catches an ID both sides took after the branch point', () => {
+			branchFromMain();
+			write('plan/work/WORK-003-from-branch.md', work('WORK-003', 'From the branch'));
+			git('add', '-A');
+			git('commit', '-qm', 'branch takes WORK-003');
+			onMain(
+				() => write('plan/work/WORK-003-from-main.md', work('WORK-003', 'From main')),
+				'main takes WORK-003',
+			);
+
+			const { error, collisions: found } = collisions('main');
+			expect(error).toBeUndefined();
+			expect(found).toEqual([
+				{
+					id: 'WORK-003',
+					file: 'work/WORK-003-from-branch.md',
+					refFile: 'work/WORK-003-from-main.md',
+				},
+			]);
+		});
+
+		it('catches it while the branch file is still uncommitted', () => {
+			branchFromMain();
+			onMain(
+				() => write('plan/work/WORK-003-from-main.md', work('WORK-003', 'From main')),
+				'main takes WORK-003',
+			);
+			write('plan/work/WORK-003-from-branch.md', work('WORK-003', 'From the branch'));
+
+			expect(collisions('main').collisions).toHaveLength(1);
+		});
+
+		it('does not flag a file the base renamed after the branch point', () => {
+			branchFromMain();
+			onMain(() => {
+				unlinkSync(join(repo, 'plan/work/WORK-001-alpha.md'));
+				write('plan/work/WORK-001-alpha-renamed.md', work('WORK-001', 'Alpha'));
+			}, 'main renames WORK-001');
+
+			expect(collisions('main').collisions).toEqual([]);
+		});
+
+		it('does not flag a file the base deleted after the branch point', () => {
+			branchFromMain();
+			onMain(() => unlinkSync(join(repo, 'plan/work/WORK-002-beta.md')), 'main deletes WORK-002');
+
+			expect(collisions('main').collisions).toEqual([]);
+		});
+
+		it('still forgives a rename on the branch while the base moved on', () => {
+			branchFromMain();
+			unlinkSync(join(repo, 'plan/work/WORK-001-alpha.md'));
+			write('plan/work/WORK-001-alpha-retitled.md', work('WORK-001', 'Alpha, retitled'));
+			onMain(
+				() => write('plan/work/WORK-004-delta.md', work('WORK-004', 'Delta')),
+				'main adds WORK-004',
+			);
+
+			expect(collisions('main').collisions).toEqual([]);
+		});
+	});
+
+	it('fails loudly when the ref shares no history with HEAD', () => {
+		git('checkout', '-q', '--orphan', 'unrelated');
+		git('rm', '-rqf', '.');
+		write('plan/work/WORK-001-x.md', work('WORK-001', 'X'));
+		git('add', '-A');
+		git('commit', '-qm', 'unrelated root');
+		git('checkout', '-q', 'main');
+
+		const { error, collisions: found } = collisions('unrelated');
+		expect(error).toContain('No merge-base');
+		expect(found).toEqual([]);
 	});
 });

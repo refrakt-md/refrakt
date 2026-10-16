@@ -1,4 +1,4 @@
-{% bug id="BUG-041" status="confirmed" severity="minor" tags="plan, cli, create, milestones, filenames" milestone="v0.41.1" %}
+{% bug id="BUG-041" status="fixed" severity="minor" tags="plan, cli, create, milestones, filenames" milestone="v0.41.1" pr="refrakt-md/refrakt#704" %}
 
 # plan create milestone names the file after the title, not the version
 
@@ -45,15 +45,31 @@ types (milestone)", expects `v1.0` and `v2.0` with the same title to collide on 
 
 ## Acceptance Criteria
 
-- [ ] `plan create milestone --id <name>` writes `milestones/<name>.md`, whatever the title
-- [ ] Two milestones with different names and the same title both create, and the test that expected them to collide is replaced by one that expects two files
-- [ ] Creating a milestone whose name already exists still fails with the duplicate-ID error
-- [ ] `plan migrate filenames` renames a milestone whose filename is not `<name>.md`, and still never touches one that already is
-- [ ] Docs that describe milestone filenames match the behaviour
+- [x] `plan create milestone --id <name>` writes `milestones/<name>.md`, whatever the title
+- [x] Two milestones with different names and the same title both create, and the test that expected them to collide is replaced by one that expects two files
+- [x] Creating a milestone whose name already exists still fails with the duplicate-ID error
+- [x] `plan migrate filenames` renames a milestone whose filename is not `<name>.md`, and still never touches one that already is
+- [x] Docs that describe milestone filenames match the behaviour
 
 ## References
 
 - The 17 renames: commit "plan: rename slug-named milestone files to their semver names" on
   `claude/site-changelog-readability-k4p902`.
+
+## Resolution
+
+Completed: 2026-10-15
+
+Branch: `claude/site-changelog-readability-k4p902`
+PR: refrakt-md/refrakt#704
+
+### What was done
+- `create.ts`: a milestone is written as `<name>.md`.
+- `migrate.ts`: `migrate filenames` renames a milestone whose filename is not `<name>.md` (a missing name is reported); `skipped.milestones` removed from the result and CLI output.
+- Tests: four that pinned the slug filename (create x2, plan init, create-refrakt scaffold) now assert the version filename; new tests for rename and missing name.
+- plan-cli docs and CLAUDE.md describe milestone renames; patch changeset.
+
+### Notes
+- A dry run over this repository plans nothing: all 941 files, milestones included, are already correctly named.
 
 {% /bug %}

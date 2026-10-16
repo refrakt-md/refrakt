@@ -4,12 +4,12 @@
     "dir": "plan"
   },
   "stale": {
-    "archival": ["site/content/docs/migration/**", "site/content/releases.md"],
+    "archival": ["site/content/docs/migration/**", "site/content/releases/**"],
     "generated": [
       "CHANGELOG.md",
       "packages/*/CHANGELOG.md",
       "plugins/*/CHANGELOG.md",
-      "site/content/releases.md",
+      "site/content/releases/**",
       "site/content/_data/*.json"
     ]
   },

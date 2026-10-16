@@ -28,6 +28,10 @@ jobs:
     name: Build & validate
     runs-on: ubuntu-latest
     steps:
+      # Shallow on purpose. The plan pipeline reads git history for timestamps
+      # and plan-history, and on the full history the tests that build real plan
+      # content run past their timeout (3,473 commits: ~170s against ~17s). The
+      # `--against` step, which does need history, fetches it itself, last.
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -69,20 +73,6 @@ jobs:
       - name: refrakt plan validate
         run: node packages/cli/dist/bin.js plan validate
 
-      # WORK-582 — catch an ID collision *before* the merge that creates it.
-      # Plain detection above is correct but can only fire once both claimants
-      # are reachable, which is after the merge, when every reference to the ID
-      # has already become ambiguous. This fires on the branch, where the base
-      # ref still makes resolution free.
-      #
-      # PR-only: on a push to `main` the base IS this commit, so every ID would
-      # match itself and there is nothing left to prevent.
-      - name: refrakt plan validate --against base
-        if: github.event_name == 'pull_request'
-        run: |
-          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
-          node packages/cli/dist/bin.js plan validate --against FETCH_HEAD
-
       # The content gate (SPEC-135 D4 / WORK-580b). Config resolution, then
       # content, for every site in refrakt.config.json. Exits non-zero on any
       # error-severity finding; warnings never fail it, which matters because
@@ -110,3 +100,25 @@ jobs:
       # correlation to weigh.
       - name: refrakt snippet review --check
         run: node packages/cli/dist/bin.js snippet review --check
+
+      # WORK-582 — catch an ID collision *before* the merge that creates it.
+      # Plain detection above is correct but can only fire once both claimants
+      # are reachable, which is after the merge, when every reference to the ID
+      # has already become ambiguous. This fires on the branch, where the base
+      # ref still makes resolution free.
+      #
+      # PR-only: on a push to `main` the base IS this commit, so every ID would
+      # match itself and there is nothing left to prevent.
+      #
+      # The check reads the merge-base of HEAD and the base to tell an ID the
+      # base added after the branch point from one the branch deleted (BUG-040),
+      # and refuses to run without it, so this step unshallows the checkout
+      # first. It runs last so no earlier step pays for the full history.
+      - name: refrakt plan validate --against base
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags --unshallow origin
+          git fetch --no-tags origin "$BASE_REF"
+          node packages/cli/dist/bin.js plan validate --against FETCH_HEAD

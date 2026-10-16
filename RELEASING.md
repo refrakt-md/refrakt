@@ -26,7 +26,19 @@ Bumps all fixed-group packages and regenerates changelogs:
 npm run version-packages
 ```
 
-This runs `changeset version` followed by `scripts/generate-changelog.mjs` which aggregates per-package changelogs into `site/content/releases.md`.
+This runs `changeset version` followed by `scripts/generate-changelog.mjs` which aggregates per-package changelogs into the site changelog: a summary index at `site/content/releases/index.md` and one page per release beside it. Each summary is the release note in `releases/notes/v<version>.md` when there is one, and otherwise the opening of the milestone named after the version (SPEC-176).
+
+## Writing the release note
+
+Each release on the site changelog opens with a short summary for users. Draft it once the release's milestone is settled:
+
+```bash
+npm run release-notes:draft -- 0.42.0
+```
+
+This writes `releases/notes/v0.42.0.md` with the milestone's opening to rewrite, an action-needed block to keep or delete, and drawer links to the milestone, its specs and its bugs, taken from the work and bug items that name the milestone. Lines starting with `TODO:` say what is left to do, and `npm test` fails while any remains. A ref to an ID the plan does not declare fails it too.
+
+Keep it to two or three sentences, and keep the action-needed block only when upgrading needs a change from the reader. Merge the note to `main` before the "Version Packages" PR is merged: the changesets action reruns `npm run version-packages` on every push to `main`, which regenerates the changelog with the note. A release with no note falls back to its milestone's opening.
 
 ## Publishing
 
@@ -44,6 +56,7 @@ Before merging a release PR, verify:
 
 - [ ] `npm run build` succeeds
 - [ ] `npm test` passes
+- [ ] The release note in `releases/notes/` is finished and on `main`, or the milestone's opening reads well as the summary on `/releases`
 - [ ] Scaffold smoke test: run `node packages/create-refrakt/dist/bin.js test-site` in a temp directory, `npm install`, and `npm run dev` — the site should start without errors
 - [ ] Scaffold writes `AGENTS.md` with the expected rune reference (runs automatically during scaffold; confirm the file exists and lists the runes from the configured packages)
 - [ ] Inter-package dependency versions are correct (exact pins for workspace deps, `~` ranges for scaffolded sites)
@@ -77,7 +90,7 @@ After packages are published to npm:
 | `.changeset/config.json` | Changesets config — `fixed` array keeps all packages in sync |
 | `.github/workflows/release.yml` | CI workflow that versions and publishes on merge to `main` |
 | `scripts/sync-rune-versions.mjs` | Syncs `RunePackage.version` in `runes/*/src/index.ts` with `package.json` |
-| `scripts/generate-changelog.mjs` | Aggregates changelogs into `site/content/releases.md` |
+| `scripts/generate-changelog.mjs` | Aggregates changelogs and release notes into `site/content/releases/` |
 
 ## First-time publishing new packages
 

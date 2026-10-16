@@ -25,6 +25,7 @@
     "seo:baseline": "node scripts/generate-seo-baseline.mjs",
     "seo:baseline:check": "node scripts/generate-seo-baseline.mjs --check",
     "content:check-links": "node scripts/check-content-links.mjs",
+    "release-notes:draft": "node scripts/draft-release-note.mjs",
     "plugins:pack-check": "node scripts/pack-harness.mjs",
     "config:reference": "node scripts/generate-config-reference.mjs",
     "changeset": "changeset",

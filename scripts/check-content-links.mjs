@@ -144,7 +144,7 @@ export function findComments(pages) {
 	for (const page of pages) {
 		const bare = page.source.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
 		// `{#` needs its closing `#}` to count: prose describing Svelte's `{#if}`
-		// is not a comment attempt, and `site/content/releases.md` has one.
+		// is not a comment attempt, and the changelog under `site/content/releases/` has one.
 		for (const [pattern, form] of [
 			[/<!--[\s\S]*?-->/, 'an HTML comment'],
 			[/\{#[\s\S]*?#\}/, 'Markdoc comment syntax'],
