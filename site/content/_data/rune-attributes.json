@@ -1084,6 +1084,16 @@
 			"rune": "changelog-release",
 			"plugin": "@refrakt-md/docs",
 			"scope": "own",
+			"name": "title",
+			"type": "string",
+			"required": false,
+			"description": "",
+			"page": "changelog"
+		},
+		{
+			"rune": "changelog-release",
+			"plugin": "@refrakt-md/docs",
+			"scope": "own",
 			"name": "date",
 			"type": "string",
 			"required": false,

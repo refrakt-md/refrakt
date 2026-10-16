@@ -7,6 +7,7 @@ import {
 	stripTables,
 	parseChangelog,
 	renderIndex,
+	releaseHeading,
 	renderIndexEntry,
 	renderReleasePage,
 	hasPage,
@@ -181,7 +182,7 @@ After the table.`);
 	});
 });
 
-// SPEC-176 — each entry opens with a summary and folds the changeset detail.
+// SPEC-176 — each release has a title in its heading and a summary under it.
 const MILESTONE = `{% milestone name="v1.2.0" status="complete" %}
 
 # v1.2.0 — Faster builds
@@ -196,17 +197,38 @@ Not part of the summary.
 {% /milestone %}
 `;
 
+describe('releaseHeading', () => {
+	it('puts the title after the version and the date after a dash', () => {
+		expect(releaseHeading('1.2.0', 'Faster builds', 'May 1, 2026')).toBe(
+			'v1.2.0 · Faster builds - May 1, 2026',
+		);
+	});
+
+	it('omits whichever of title and date is missing', () => {
+		expect(releaseHeading('1.2.0', '', 'May 1, 2026')).toBe('v1.2.0 - May 1, 2026');
+		expect(releaseHeading('1.2.0', 'Faster builds', '')).toBe('v1.2.0 · Faster builds');
+		expect(releaseHeading('1.2.0', '', '')).toBe('v1.2.0');
+	});
+
+	it('keeps a hyphenated title and rejects one with a spaced dash', () => {
+		expect(releaseHeading('1.2.0', 'render-stack removal', '')).toBe(
+			'v1.2.0 · render-stack removal',
+		);
+		expect(() => releaseHeading('1.2.0', 'Before - after', '')).toThrow('v1.2.0');
+	});
+});
+
 describe('index entries carry no drawers', () => {
 	const release = {
 		version: '1.2.0',
 		date: 'May 1, 2026',
-		summary: 'Faster ({% ref "SPEC-9001" preview="drawer" /%}).',
+		summary: { title: 'Faster builds', body: 'Faster ({% ref "SPEC-9001" preview="drawer" /%}).' },
 		changes: ['- One', '- Two'],
 	};
 
-	it('shows the summary with refs flattened, then links the release page', () => {
+	it('heads the entry with the title, flattens refs, then links the release page', () => {
 		expect(renderIndexEntry(release)).toBe(
-			'## v1.2.0 - May 1, 2026\n\nFaster (SPEC-9001).\n\n[All 2 changes in v1.2.0 →](/releases/v1.2.0)',
+			'## v1.2.0 · Faster builds - May 1, 2026\n\nFaster (SPEC-9001).\n\n[All 2 changes in v1.2.0 →](/releases/v1.2.0)',
 		);
 	});
 
@@ -230,21 +252,25 @@ describe('index entries carry no drawers', () => {
 });
 
 describe('release pages', () => {
-	it('keeps drawer refs and lists every change', () => {
+	it('titles the page with version and title, keeps drawer refs and lists every change', () => {
 		const page = renderReleasePage({
 			version: '1.2.0',
 			date: 'May 1, 2026',
-			summary: 'Faster ({% ref "SPEC-9001" preview="drawer" /%}).',
+			summary: {
+				title: 'Faster builds',
+				body: 'Faster ({% ref "SPEC-9001" preview="drawer" /%}).',
+			},
 			changes: ['- One', '- Two'],
 		});
 		expect(page).toBe(
-			'---\ntitle: v1.2.0\ndescription: What changed in refrakt.md v1.2.0\n---\n\n# v1.2.0\n\nReleased May 1, 2026 · [All releases](/releases)\n\nFaster ({% ref "SPEC-9001" preview="drawer" /%}).\n\n## Changes\n\n- One\n- Two\n',
+			'---\ntitle: "v1.2.0 · Faster builds"\ndescription: What changed in refrakt.md v1.2.0\n---\n\n# v1.2.0 · Faster builds\n\nReleased May 1, 2026 · [All releases](/releases)\n\nFaster ({% ref "SPEC-9001" preview="drawer" /%}).\n\n## Changes\n\n- One\n- Two\n',
 		);
 	});
 
-	it('exists only when there is a summary or a change', () => {
+	it('exists only when there is a summary body or a change', () => {
 		expect(hasPage({ summary: null, changes: [] })).toBe(false);
-		expect(hasPage({ summary: 'x', changes: [] })).toBe(true);
+		expect(hasPage({ summary: { title: 'T', body: '' }, changes: [] })).toBe(false);
+		expect(hasPage({ summary: { title: '', body: 'x' }, changes: [] })).toBe(true);
 		expect(hasPage({ summary: null, changes: ['- y'] })).toBe(true);
 	});
 });
@@ -252,8 +278,8 @@ describe('release pages', () => {
 describe('indexSummary', () => {
 	it('drops the Background paragraph and flattens the rest', () => {
 		const note =
-			'**Faster.** See {% ref "SPEC-1" preview="drawer" /%}.\n\nBackground: {% ref "v1.0.0" preview="drawer" label="the milestone" /%} ·\n{% ref "SPEC-1" preview="drawer" /%}';
-		expect(indexSummary(note)).toBe('**Faster.** See SPEC-1.');
+			'See {% ref "SPEC-1" preview="drawer" /%}.\n\nBackground: {% ref "v1.0.0" preview="drawer" label="the milestone" /%} ·\n{% ref "SPEC-1" preview="drawer" /%}';
+		expect(indexSummary(note)).toBe('See SPEC-1.');
 	});
 
 	it('keeps an action-needed block', () => {
@@ -279,10 +305,11 @@ describe('plainRefs', () => {
 });
 
 describe('milestoneSummary', () => {
-	it('bolds the title after the dash and appends the first paragraph', () => {
-		expect(milestoneSummary(MILESTONE)).toBe(
-			'**Faster builds.** Builds reuse their cache ({% ref "SPEC-9001" preview="drawer" /%}), and the CLI reports what\nit skipped.',
-		);
+	it('takes the title after the dash and the first paragraph as the body', () => {
+		expect(milestoneSummary(MILESTONE)).toEqual({
+			title: 'Faster builds',
+			body: 'Builds reuse their cache ({% ref "SPEC-9001" preview="drawer" /%}), and the CLI reports what\nit skipped.',
+		});
 	});
 
 	it('skips a list, a fence and a tag-only line to reach the first paragraph', () => {
@@ -302,22 +329,21 @@ code
 The paragraph.
 
 {% /milestone %}`;
-		expect(milestoneSummary(source)).toBe('**Lists first.** The paragraph.');
+		expect(milestoneSummary(source)).toEqual({ title: 'Lists first', body: 'The paragraph.' });
 	});
 
 	it('keeps a paragraph that opens with an inline ref', () => {
 		const source = '# v1.4.0 — X\n\n{% ref "SPEC-9002" /%} lands here.\n';
-		expect(milestoneSummary(source)).toBe(
-			'**X.** {% ref "SPEC-9002" preview="drawer" /%} lands here.',
+		expect(milestoneSummary(source).body).toBe(
+			'{% ref "SPEC-9002" preview="drawer" /%} lands here.',
 		);
 	});
 
-	it('falls back to the title alone when there is no paragraph', () => {
-		expect(milestoneSummary('# v1.5.0 — Only a title\n\n- a list\n')).toBe('**Only a title.**');
-	});
-
-	it('does not add a second stop to a title that ends in punctuation', () => {
-		expect(milestoneSummary('# v1.6.0 — Ready?\n')).toBe('**Ready?**');
+	it('has an empty body when there is no paragraph', () => {
+		expect(milestoneSummary('# v1.5.0 — Only a title\n\n- a list\n')).toEqual({
+			title: 'Only a title',
+			body: '',
+		});
 	});
 });
 
@@ -349,7 +375,17 @@ describe('reading notes and milestones from disk', () => {
 	it('reads notes keyed by version, ignoring other files', () => {
 		write('notes/v1.2.0.md', 'The note.\n');
 		write('notes/README.md', 'not a note');
-		expect([...readNotes(join(dir, 'notes'))]).toEqual([['1.2.0', 'The note.']]);
+		expect([...readNotes(join(dir, 'notes'))]).toEqual([
+			['1.2.0', { title: '', body: 'The note.' }],
+		]);
+	});
+
+	it('reads a title from frontmatter, quoted or not, and keeps it out of the body', () => {
+		write('notes/v1.2.0.md', '---\ntitle: "Faster: builds"\n---\n\nThe note.\n');
+		write('notes/v1.3.0.md', '---\ntitle: Plain title\n---\nBody.\n');
+		const notes = readNotes(join(dir, 'notes'));
+		expect(notes.get('1.2.0')).toEqual({ title: 'Faster: builds', body: 'The note.' });
+		expect(notes.get('1.3.0')).toEqual({ title: 'Plain title', body: 'Body.' });
 	});
 
 	it('returns no notes when the directory does not exist', () => {
@@ -363,7 +399,7 @@ describe('reading notes and milestones from disk', () => {
 
 	it('allows a heading inside a code fence in a note', () => {
 		write('notes/v1.2.0.md', 'Intro.\n\n```md\n## not a heading\n```\n');
-		expect(readNotes(join(dir, 'notes')).get('1.2.0')).toContain('## not a heading');
+		expect(readNotes(join(dir, 'notes')).get('1.2.0').body).toContain('## not a heading');
 	});
 
 	it('keys milestones by their name attribute, not the filename', () => {
@@ -374,15 +410,23 @@ describe('reading notes and milestones from disk', () => {
 
 describe('summaryFor', () => {
 	const milestones = new Map([['v1.2.0', MILESTONE]]);
+	const note = (title, body) => new Map([['1.2.0', { title, body }]]);
 
-	it('prefers a handwritten note over the milestone', () => {
-		expect(summaryFor('1.2.0', new Map([['1.2.0', 'Handwritten.']]), milestones)).toBe(
-			'Handwritten.',
+	it("prefers a note's body, and borrows the milestone's title when the note has none", () => {
+		expect(summaryFor('1.2.0', note('', 'Handwritten.'), milestones)).toEqual({
+			title: 'Faster builds',
+			body: 'Handwritten.',
+		});
+	});
+
+	it("lets a note's frontmatter title override the milestone's", () => {
+		expect(summaryFor('1.2.0', note('Quicker builds', 'Handwritten.'), milestones).title).toBe(
+			'Quicker builds',
 		);
 	});
 
 	it('falls back to the milestone opening', () => {
-		expect(summaryFor('1.2.0', new Map(), milestones)).toMatch(/^\*\*Faster builds\.\*\*/);
+		expect(summaryFor('1.2.0', new Map(), milestones)).toEqual(milestoneSummary(MILESTONE));
 	});
 
 	it('returns null with neither', () => {
