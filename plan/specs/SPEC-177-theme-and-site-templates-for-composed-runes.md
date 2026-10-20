@@ -40,7 +40,7 @@ input. This spec is the mechanism:
 ```md
 ---
 omit:
-  nutrition: Shown in the theme's recipe sidebar instead
+  notes: The theme's single-column layout has no place for cook's notes
 ---
 {% section media-position="top" %}
 	{% slot name="media" /%}
@@ -155,6 +155,28 @@ change structured data. Two guards keep it from doing so:
 The parity check is not run in every site build, because it renders each instance twice. Sites
 run it with `refrakt validate --deep`, which already pays for a full pipeline.
 
+**Why a schema source cannot be omitted, even though it could still be published.** JSON-LD is
+harvested before the identity transform, and the applier can rebuild a value from the field
+bag when its node was dropped. A template could therefore leave out, say, a recipe's nutrition
+and still publish it. It must not:
+
+- Search engines ask that structured data describe content visible on the page. Google's
+  structured data guidelines say not to mark up content that is not visible to readers, and a
+  page that does may lose its rich results. Data that is valid schema.org can still break that
+  rule.
+- A theme would be making that trade for every site that uses it, without the site seeing it.
+
+**What a template does instead: de-emphasise, not remove.** Content inside a disclosure is still
+on the page. A theme that does not want a source in the main flow places its slot:
+
+- in a `{% details %}` ("Nutrition per serving");
+- behind a popover or drawer trigger ({% ref "SPEC-174" /%});
+- small, at the end, as a quiet line.
+
+The slot is placed, so the published data and the checks are unchanged.
+`template-omit-schema-source` says this in its message: it names the source and suggests a
+disclosure rather than only refusing.
+
 ### D7 — words in a replacement belong to whoever wrote it
 
 - A theme template's own text uses `theme.<theme>.<rune>.*` keys, and the theme ships their
@@ -181,6 +203,11 @@ run it with `refrakt validate --deep`, which already pays for a full pipeline.
   `public` marker on a fragment.
 - **Templates from plugins.** A "recipe styles" plugin shipping templates for another plugin's
   rune is a third supplier. Nothing here prevents it later; it is out of scope until asked for.
+- **Hiding by CSS.** D6 governs templates. A theme's stylesheet can still `display: none` a
+  placed slot, and no template check sees it. That stays the theme author's responsibility, as
+  it is today. The vocabulary coverage report ({% ref "ADR-043" /%} decision 5) could warn when
+  a theme's CSS hides an element that carries a schema source; whether that can be detected
+  reliably is not yet known.
 
 ## Acceptance Criteria
 
@@ -189,6 +216,7 @@ run it with `refrakt validate --deep`, which already pays for a full pipeline.
 - [ ] `select` changes the default of the selecting attribute to a declared value; another attribute reports `template-select-input`; an explicit author value always wins
 - [ ] Site `templates/` and the theme manifest's `templates` directory are found per rune, and layering resolves per value and per key: site, then theme, then definition
 - [ ] Unknown slots, fields and runes, unplaced slots without `omit`, invalid `omit` entries, and omitted schema sources are reported; a failing replacement falls back to the next level
+- [ ] `template-omit-schema-source` names the source and suggests placing it in a disclosure
 - [ ] `refrakt theme check` and `refrakt validate --deep` compare JSON-LD under the replacement with the definition's template, and report any difference by property
 - [ ] Theme and site template text uses `theme.<theme>.*` and `site.*` keys, and `i18n-extract` reads both
 - [ ] `inspect --theme`, `reference` and `contracts --theme` show the templates and defaults in use
