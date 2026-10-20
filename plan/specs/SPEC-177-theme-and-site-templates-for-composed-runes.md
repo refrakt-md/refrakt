@@ -9,7 +9,7 @@ input. This spec is the mechanism:
 
 - a replacement is a definition file with the input half left out;
 - it can replace one template value and inherit the rest;
-- it can choose among the owner's templates with `select`;
+- it can change the defaults of the template selector and the presentation axes with `defaults`;
 - files are found per rune, site before theme before definition;
 - the checks that keep it from dropping content or changing published data.
 
@@ -69,7 +69,7 @@ input. This spec is the mechanism:
 - **Every slot is placed.** A replacement places every slot the definition has (D5). The
   theme above does not want cook's notes in its main flow, so it places them in a
   `{% details %}` rather than leaving them out.
-- **The frontmatter** takes one key, `select` (D3). Any input key (`attributes`,
+- **The frontmatter** takes one key, `defaults` (D3). Any input key (`attributes`,
   `contentModel`, `schema`, `registers`, `provides`, `presets`, `tag`, `aliases`) reports
   `template-override-input` and the file is not loaded.
 - **Files only, never TS.** A replacement is declarative, inspectable, and cannot run code.
@@ -84,23 +84,52 @@ input. This spec is the mechanism:
 - **Fragments** declared in a replacement are its own. A replacement cannot reach the
   definition's fragments, which stay private (D9 leaves public fragments open).
 
-### D3 — `select` changes which of the owner's templates is the default
+### D3 — `defaults` changes the template selector and the presentation axes, nothing else
 
 ```md
 ---
-select:
+defaults:
   layout: editorial
+  elevation: flat
 ---
 ```
 
-- It names only the attribute that selects among the definition's templates. Any other
-  attribute reports `template-select-input`.
-- Its value must be one the definition declares (`template-select-unknown-value`).
-- An author's explicit attribute always wins.
-- A file may hold `select` alone, `select` with a body, or a body alone. "Default to editorial,
-  and here is my editorial" is one file.
-- `select` is a map so that multi-axis templates (SPEC-168 D9, shaped but not enabled) can use
-  it later. Today it holds one key.
+`defaults` may name two kinds of attribute:
+
+| Kind | Examples | Why it is the theme's to choose |
+|---|---|---|
+| the template selector | `layout` on recipe | it picks among the owner's own arrangements |
+| a universal axis | `elevation`, `density`, `width`, `frame`, `tint` | presentation; the axes are registered (`UNIVERSAL_AXIS_FACETS`, {% ref "SPEC-124" /%}) |
+
+- **Anything else reports `template-default-input`.** A rune-specific attribute (`servings`,
+  `difficulty`, `type`, `status`) is a fact about the content ({% ref "ADR-045" /%} decision 5).
+- **Values are checked.** A value the attribute does not accept reports
+  `template-default-unknown-value`.
+- **Why a default and not CSS.** A theme can already draw `elevation="raised"` flat, since a
+  theme renders an intent its own way ({% ref "SPEC-159" /%}). CSS cannot tell a default
+  `raised` from an author who wrote `elevation="raised"`, so a flat theme would also flatten
+  the author who asked for lift. Changing the default changes only the unset case.
+- **Precedence**, highest first:
+  1. the author's explicit value;
+  2. a value written in the composition's template (`{% card elevation="raised" %}`), which is
+     the composition owner's explicit choice;
+  3. the site's default, then the theme's;
+  4. the definition's default.
+
+  So a theme's default for `card` does not change a recipe template that writes
+  `elevation="raised"` on its card. To change that, the theme sets recipe's own default or
+  replaces its template.
+- **Where an axis default lands.** On a composed rune, an axis default applies where the
+  author's attribute would ({% ref "SPEC-145" /%} D14).
+- **Primitives that are still native** (`card`, `section`) keep the existing per-rune axis
+  defaults in theme config (`defaultElevation`, {% ref "SPEC-107" /%}), the legacy path
+  {% ref "ADR-043" /%} decision 6 keeps. When `card` becomes a composition
+  ({% ref "SPEC-160" /%} D3), `templates/card.md` with `defaults: { elevation: flat }` replaces
+  it.
+- A file may hold `defaults` alone, `defaults` with a body, or a body alone. "Default to
+  editorial, and here is my editorial" is one file.
+- The selector entry stays a map key, so multi-axis templates (SPEC-168 D9, shaped but not
+  enabled) can use it later.
 
 ### D4 — where files are found, and how they layer
 
@@ -116,9 +145,9 @@ select:
 - **A file for a rune the site does not have** reports `template-override-no-target` as a
   warning, since themes ship templates for plugins a site may not install.
 - **Layering is per value and per key, not per file.** For each template value: site, then
-  theme, then definition. For `select`: site, then theme, then the definition's declared
-  default. A site file that replaces only `layout="cover"` keeps the theme's `select` and the
-  theme's other templates.
+  theme, then definition. For each `defaults` key: site, then theme, then the definition's
+  declared default. A site file that replaces only `layout="cover"` keeps the theme's
+  `defaults` and the theme's other templates.
 - **The dev server watches** both directories, and a change re-expands the affected rune.
 
 ### D5 — the checks when the site loads
@@ -192,7 +221,7 @@ seen from the side of structured data.
 ### D8 — tooling shows which template is in use
 
 - `refrakt inspect recipe --theme elegant` renders through the theme's layered templates, and
-  shows the resolved source of each template value and of `select`.
+  shows the resolved source of each template value and of each `defaults` key.
 - `refrakt reference` lists the default as "`classic` (theme elegant: `editorial`)".
 - `refrakt contracts --theme <name>` generates a theme's structure contract with its templates.
   The definition's own templates give the reference contract.
@@ -222,7 +251,7 @@ seen from the side of structured data.
 
 - [ ] A replacement file's body is expanded with the definition's template language and checks; input keys in its frontmatter report `template-override-input` and the file is not loaded
 - [ ] A replacement may cover all template values (no `template` tags) or some; uncovered values inherit; an undeclared value reports `template-override-unknown-value`
-- [ ] `select` changes the default of the selecting attribute to a declared value; another attribute reports `template-select-input`; an explicit author value always wins
+- [ ] `defaults` changes the default of the template selector and of universal axes to accepted values; any other attribute reports `template-default-input`; an explicit author value, then a value written in the composition's template, wins over it
 - [ ] Site `templates/` and the theme manifest's `templates` directory are found per rune, and layering resolves per value and per key: site, then theme, then definition
 - [ ] Unknown slots, fields and runes, and unplaced slots are reported; a failing replacement falls back to the next level
 - [ ] `template-override-unplaced` names the slot and suggests placing it in a disclosure or small at the end
@@ -230,7 +259,7 @@ seen from the side of structured data.
 - [ ] Theme and site template text uses `theme.<theme>.*` and `site.*` keys, and `i18n-extract` reads both
 - [ ] `inspect --theme`, `reference` and `contracts --theme` show the templates and defaults in use
 - [ ] The dev server reloads a rune when its replacement file changes
-- [ ] A fixture theme replaces `recipe`'s template and selects a declared layout, with the checks above passing and its JSON-LD equal to the definition's
+- [ ] A fixture theme replaces `recipe`'s template, selects a declared layout and sets a default elevation, with the checks above passing and its JSON-LD equal to the definition's
 
 ## References
 

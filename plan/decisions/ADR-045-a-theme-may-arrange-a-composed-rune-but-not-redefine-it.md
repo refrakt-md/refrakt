@@ -70,9 +70,17 @@ A site has the same need, more often: "keep this rune's input, but lay it out my
    mechanically. A theme can change how a recipe looks, never what a search engine is told
    about it.
 
-5. **Choosing among the owner's templates is allowed too.** When a definition ships several
-   templates selected by an attribute, a theme or site may change that attribute's default to
-   another value the definition declares. An author's explicit value always wins.
+5. **A theme or site may change two kinds of default, and no others.**
+   - **The template selector.** When a definition ships several templates selected by an
+     attribute, a theme or site may change that attribute's default to another value the
+     definition declares.
+   - **The universal presentation axes** (`elevation`, `density`, `width`, `frame`, `tint` and
+     the rest of the registered axes). "On this theme, cards are flat" is presentation. CSS
+     alone cannot express it, because it cannot tell a default from an author's explicit
+     value.
+
+   A rune-specific attribute (`servings`, `difficulty`, `type`, `status`) is a fact about the
+   content, and its default stays the definition's. An author's explicit value always wins.
 
 6. **Lookup is site, then theme, then definition**, resolved per template value and per key,
    so a partial override inherits the rest.
@@ -102,7 +110,7 @@ rationale about restructuring is narrowed to redefining.
 ## Consequences
 
 - **SPEC-177** specifies the mechanism: the file format, where files are found, partial
-  overrides, `select`, the checks, and theme CI.
+  overrides, `defaults`, the checks, and theme CI.
 - **Structure contracts become per theme** for composed runes. The definition's own template
   produces the reference contract. A theme's contract is generated with its templates and
   shipped in its `contracts` export, as Lumina's is today.
