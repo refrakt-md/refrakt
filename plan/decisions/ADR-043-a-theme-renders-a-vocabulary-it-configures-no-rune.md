@@ -67,6 +67,10 @@ Three facts frame the answer:
    | Translations of a rune's text | the definition's owner, overridable by the site (SPEC-145 D29) |
    | A rune's structure | the definition, or core for a primitive |
 
+   *(Amended by {% ref "ADR-045" /%}: for a composed rune, the order, layout and structure
+   rows are the definition's by default, and a theme or site may arrange them with a
+   replacement template. Which fields, labels and sentiment mapping stay the definition's.)*
+
 2. **All of `metaFields` is the definition's.** {% ref "SPEC-158" /%} D3 made
    `metaFields.*.metaType` identity and left `label`, `sentimentMap` and `transform`
    presentational, so that a theme had something to override. Seen without that need, all
@@ -128,6 +132,8 @@ Three facts frame the answer:
 - **The theme loses fine-grained control over a single rune.** CSS on `[data-rune]`,
   `[data-field]` and `[data-value]` covers most of what that control was used for. What a theme
   can never do again is restructure a rune, which under composition is correct.
+  *(Narrowed by {% ref "ADR-045" /%}: a theme may arrange a composed rune's template, never
+  redefine its input.)*
 
 ## Consequences
 
