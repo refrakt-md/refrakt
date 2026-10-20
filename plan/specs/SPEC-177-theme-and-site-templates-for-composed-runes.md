@@ -38,10 +38,6 @@ input. This spec is the mechanism:
 ### D1 — a replacement is a definition file without its input
 
 ```md
----
-omit:
-  notes: The theme's single-column layout has no place for cook's notes
----
 {% section media-position="top" %}
 	{% slot name="media" /%}
 
@@ -61,16 +57,21 @@ omit:
 		{% slot name="steps" /%}
 	{% /section %}
 {% /grid %}
+
+{% details summary=t("theme.elegant.recipe.notes", "Cook's notes") %}
+	{% slot name="notes" /%}
+{% /details %}
 ```
 
 - **The body** is written in the same template language as a definition: `slot`, `field`,
   `t`, `if`, `each`, `template`, `fragment`. Every check a definition's template gets runs on
   it.
-- **The frontmatter** takes two keys, `omit` and `select` (D3). Any input key (`attributes`,
+- **Every slot is placed.** A replacement places every slot the definition has (D5). The
+  theme above does not want cook's notes in its main flow, so it places them in a
+  `{% details %}` rather than leaving them out.
+- **The frontmatter** takes one key, `select` (D3). Any input key (`attributes`,
   `contentModel`, `schema`, `registers`, `provides`, `presets`, `tag`, `aliases`) reports
   `template-override-input` and the file is not loaded.
-- **`omit`** maps a slot name to a reason. The reason is required, because it is what a
-  reviewer reads.
 - **Files only, never TS.** A replacement is declarative, inspectable, and cannot run code.
 
 ### D2 — a replacement may cover one template value or all of them
@@ -127,10 +128,13 @@ Each replacement is checked against the definition it replaces, after layering:
 | Check | Report |
 |---|---|
 | a slot or field name the definition does not have | `template-override-unknown-slot`, `template-override-unknown-field` |
-| a slot neither placed nor in `omit` | `template-override-unplaced`, naming the slot |
-| an `omit` entry for a slot the template places, or one that does not exist | `template-override-omit-invalid` |
+| a slot the template does not place | `template-override-unplaced`, naming the slot |
 | a placed rune the site does not have | `template-override-unknown-rune` |
-| an omitted slot that is a schema source (D6) | `template-omit-schema-source` |
+
+- **There is no `omit`.** Not showing authored content changes what the rune contains, which
+  {% ref "ADR-045" /%} keeps on the definition's side. `template-override-unplaced` says so in
+  its message, and suggests placing the slot in a disclosure (`{% details %}`, a popover or a
+  drawer) or small at the end.
 
 - **All are errors.** A failing
   replacement is not loaded, and the rune falls back to the next level, so a broken theme
@@ -144,9 +148,10 @@ Each replacement is checked against the definition it replaces, after layering:
 The schema applier stamps sources on the template's output (see above), so a replacement could
 change structured data. Two guards keep it from doing so:
 
-1. **Static, at load.** Every schema source of the rune must be placed by the replacement:
-   a slot or field the row names may be moved, never omitted (`template-omit-schema-source`).
-   This catches the common failure without rendering anything.
+1. **Static, at load.** Every slot is placed (D5), so every slot the schema row names is
+   placed. A field the row names must be placed too, if the definition's own template places
+   it (`template-override-unplaced`). This catches the common failure without rendering
+   anything.
 2. **Parity, in CI.** A new `refrakt theme check` command renders the rune's fixtures through the
    definition's template and the replacement and compares the JSON-LD. Any difference is an
    error naming the property. The fixtures are the definition's documented examples, plus the
@@ -155,8 +160,8 @@ change structured data. Two guards keep it from doing so:
 The parity check is not run in every site build, because it renders each instance twice. Sites
 run it with `refrakt validate --deep`, which already pays for a full pipeline.
 
-**Why a schema source cannot be omitted, even though it could still be published.** JSON-LD is
-harvested before the identity transform, and the applier can rebuild a value from the field
+**Why data must be shown to be published, even though it could be published unseen.** JSON-LD
+is harvested before the identity transform, and the applier can rebuild a value from the field
 bag when its node was dropped. A template could therefore leave out, say, a recipe's nutrition
 and still publish it. It must not:
 
@@ -173,9 +178,8 @@ on the page. A theme that does not want a source in the main flow places its slo
 - behind a popover or drawer trigger ({% ref "SPEC-174" /%});
 - small, at the end, as a quiet line.
 
-The slot is placed, so the published data and the checks are unchanged.
-`template-omit-schema-source` says this in its message: it names the source and suggests a
-disclosure rather than only refusing.
+The slot is placed, so the published data and the checks are unchanged. This is D5's rule
+seen from the side of structured data.
 
 ### D7 — words in a replacement belong to whoever wrote it
 
@@ -203,6 +207,11 @@ disclosure rather than only refusing.
   `public` marker on a fragment.
 - **Templates from plugins.** A "recipe styles" plugin shipping templates for another plugin's
   rune is a third supplier. Nothing here prevents it later; it is out of scope until asked for.
+- **Placing a slot elsewhere on the page.** A template places slots only inside the rune's own
+  output. "Show the cook's notes in the sidebar" would need a slot sent to a layout region:
+  `{% slot name="notes" region="sidebar" /%}`, hoisted the way drawers are today, and placed
+  in the rune when the layout has no such region. Several runes on one page, their order in
+  the region, and what a region means in each adapter are open. Not designed here.
 - **Hiding by CSS.** D6 governs templates. A theme's stylesheet can still `display: none` a
   placed slot, and no template check sees it. That stays the theme author's responsibility, as
   it is today. The vocabulary coverage report ({% ref "ADR-043" /%} decision 5) could warn when
@@ -215,8 +224,8 @@ disclosure rather than only refusing.
 - [ ] A replacement may cover all template values (no `template` tags) or some; uncovered values inherit; an undeclared value reports `template-override-unknown-value`
 - [ ] `select` changes the default of the selecting attribute to a declared value; another attribute reports `template-select-input`; an explicit author value always wins
 - [ ] Site `templates/` and the theme manifest's `templates` directory are found per rune, and layering resolves per value and per key: site, then theme, then definition
-- [ ] Unknown slots, fields and runes, unplaced slots without `omit`, invalid `omit` entries, and omitted schema sources are reported; a failing replacement falls back to the next level
-- [ ] `template-omit-schema-source` names the source and suggests placing it in a disclosure
+- [ ] Unknown slots, fields and runes, and unplaced slots are reported; a failing replacement falls back to the next level
+- [ ] `template-override-unplaced` names the slot and suggests placing it in a disclosure or small at the end
 - [ ] `refrakt theme check` and `refrakt validate --deep` compare JSON-LD under the replacement with the definition's template, and report any difference by property
 - [ ] Theme and site template text uses `theme.<theme>.*` and `site.*` keys, and `i18n-extract` reads both
 - [ ] `inspect --theme`, `reference` and `contracts --theme` show the templates and defaults in use

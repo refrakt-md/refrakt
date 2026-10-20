@@ -54,9 +54,16 @@ A site has the same need, more often: "keep this rune's input, but lay it out my
    definition uses, and places only the rune's own slots and fields, core primitives, and runes
    the site has. It cannot run code.
 
-3. **Nothing authored is dropped silently.** A replacement template places every slot, or
-   names the ones it leaves out with a reason. A slot that feeds the schema row cannot be left
-   out.
+3. **Nothing authored is dropped.** A replacement template places every slot the definition
+   has, with no exceptions. Not showing a piece of authored content is not arrangement: it
+   changes what the rune contains. A theme that wants a slot out of the main flow places it
+   modestly instead: in a `{% details %}`, behind a popover or drawer, or small at the end. An
+   empty optional slot costs nothing, so the rule is no burden for content that is usually
+   absent.
+
+   A template places a slot only inside the rune's own output. Sending a slot to another part
+   of the page, such as a layout's sidebar, is not something a template can do today; SPEC-177
+   records it as an open question.
 
 4. **What is published does not depend on the template.** A rune's structured data under a
    replacement template equals its structured data under the definition's own, checked
