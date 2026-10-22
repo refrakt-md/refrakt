@@ -1,5 +1,16 @@
 # @refrakt-md/cli
 
+## 0.41.2
+
+### Patch Changes
+
+- @refrakt-md/ai@0.41.2
+- @refrakt-md/content@0.41.2
+- @refrakt-md/editor@0.41.2
+- @refrakt-md/html@0.41.2
+- @refrakt-md/runes@0.41.2
+- @refrakt-md/transform@0.41.2
+
 ## 0.41.1
 
 ### Patch Changes

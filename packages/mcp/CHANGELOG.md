@@ -1,5 +1,15 @@
 # @refrakt-md/mcp
 
+## 0.41.2
+
+### Patch Changes
+
+- @refrakt-md/cli@0.41.2
+- @refrakt-md/content@0.41.2
+- @refrakt-md/runes@0.41.2
+- @refrakt-md/transform@0.41.2
+- @refrakt-md/types@0.41.2
+
 ## 0.41.1
 
 ### Patch Changes
