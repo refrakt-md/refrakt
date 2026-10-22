@@ -1,4 +1,4 @@
-{% bug id="BUG-044" status="in-progress" severity="major" source="SPEC-060" tags="drawer,behaviors,skeleton,ios" %}
+{% bug id="BUG-044" status="fixed" severity="major" source="SPEC-060" tags="drawer,behaviors,skeleton,ios" pr="refrakt-md/refrakt#707" %}
 
 # After a drawer has been opened, the sticky site header trails behind page scrolling on iOS Safari
 
@@ -23,6 +23,22 @@ The drawer's scroll lock (`packages/skeleton/styles/runes/drawer.css`) set `over
 ## Acceptance Criteria
 - [x] The scroll lock sets `overflow: hidden` on `html` only, not on `body`
 - [x] Scrolling inside an open drawer's body does not chain to the page (`overscroll-behavior: contain`)
-- [ ] On iOS Safari, the sticky header stays pinned while scrolling after a drawer has been opened and closed
+- [x] On iOS Safari, the sticky header stays pinned while scrolling after a drawer has been opened and closed
+
+## Resolution
+
+Completed: 2026-10-22
+
+Branch: `claude/site-changelog-readability-k4p902`
+
+### What was done
+- `packages/skeleton/styles/runes/drawer.css`: the scroll lock sets `overflow: hidden` on `html.rf-drawer-open` only, no longer on `body` as well.
+- `packages/skeleton/styles/runes/drawer.css`: `overscroll-behavior: contain` on `dialog.rf-drawer .rf-drawer__body`, so scrolling inside a drawer does not chain to the page.
+- `packages/lumina/styles/runes/drawer.css`: header comment updated to match.
+- `.changeset/skeleton-drawer-scroll-lock.md`: skeleton patch.
+
+### Notes
+- Not reproducible in headless Chromium; confirmed fixed on iOS Safari against the PR's Cloudflare preview.
+- The mobile-menu behavior also locks `<body>` overflow and may cause the same lag; not changed here.
 
 {% /bug %}
