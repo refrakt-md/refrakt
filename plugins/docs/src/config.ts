@@ -115,7 +115,9 @@ export const config: Record<string, RuneConfig> = {
 	Changelog: {
 		block: 'changelog',
 		defaultDensity: 'full',
-		defaultElevation: 'flat',
+		// A release history is page content, not a card: no surface boundary,
+		// only vertical rhythm (each release keeps its own divider).
+		defaultElevation: 'flush',
 		sections: changelogSections,
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', releases: 'none' },

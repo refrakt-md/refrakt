@@ -37,6 +37,26 @@ Headings are parsed into version and date parts, with list items below becoming 
 
 {% /preview %}
 
+## Release titles
+
+Give a release a title by putting it after the version, separated by a middle dot (`·`). The date still follows a dash. The title renders inside the release heading, after the version.
+
+{% preview source=true %}
+
+{% changelog %}
+## v1.3.0 · Faster builds - March 2025
+
+Builds reuse their cache, and the CLI reports what it skipped.
+
+## v1.2.0 - January 2025
+
+- Added timeline and changelog runes
+{% /changelog %}
+
+{% /preview %}
+
+After a title, the dash before the date needs a space on each side, so a title can contain a hyphen (`render-stack`) but not ` - `. Both the title and the date are optional.
+
 ## Explicit releases
 
 Use `{% changelog-release %}` tags for more control over version and date values.
@@ -71,6 +91,7 @@ Use `{% changelog-release %}` tags for more control over version and date values
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `version` | `string` | — | Version number |
+| `title` | `string` | — | Release title, shown after the version |
 | `date` | `string` | — | Release date |
 
 ## Section header

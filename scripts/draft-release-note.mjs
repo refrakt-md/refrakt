@@ -65,10 +65,15 @@ export function draftReleaseNote(version, planDir) {
 	const source = readMilestones(join(planDir, 'milestones')).get(milestone);
 	const items = milestoneItems(planDir, milestone);
 	const refs = backgroundRefs(milestone, items, Boolean(source));
-	const opening = source ? milestoneSummary(source) : `**Title.** What ${milestone} is for.`;
+	const summary = source ? milestoneSummary(source) : null;
+	const opening = summary?.body || `What ${milestone} is for.`;
+	// The title goes in the release heading ("v0.42.0 · Title"). Left empty, the
+	// milestone's title is used; with no milestone there is none until one is set.
+	const front = `---\ntitle: ${summary?.title ? JSON.stringify(summary.title) : ''}\n---`;
 
 	const parts = [
-		`TODO: rewrite the opening below for users, in two or three sentences on what ${milestone} is for.${source ? " It starts as the milestone's opening, which is written for maintainers." : ''}`,
+		front,
+		`TODO: rewrite the opening below for users, in two or three sentences on what ${milestone} is for.${source ? " It starts as the milestone's opening, which is written for maintainers." : ' Set a title in the frontmatter, too.'}`,
 		opening,
 		'TODO: keep this block only if upgrading needs a change from the reader; otherwise delete it.',
 		'{% hint type="warning" %}\n**Action needed:** what to change, and how.\n{% /hint %}',

@@ -69,7 +69,22 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
 
 /** A release gets a page when there is something to put on it. */
 export function hasPage(release) {
-	return Boolean(release.summary) || release.changes.length > 0;
+	return Boolean(release.summary?.body) || release.changes.length > 0;
+}
+
+/**
+ * "v0.41.0", "v0.41.0 · Composed runes you can ship", with " - <date>" on the
+ * index. The changelog rune reads the title after the middle dot and the date
+ * after a spaced dash, so a title containing " - " would be misread as the
+ * start of the date; it is rejected rather than rendered wrong.
+ */
+export function releaseHeading(version, title, date) {
+	if (title && /\s[-–—]\s|\n/.test(title)) {
+		throw new Error(
+			`v${version}: the release title "${title}" may not contain " - " or a line break; the changelog heading would misread it`,
+		);
+	}
+	return `v${version}${title ? ` · ${title}` : ''}${date ? ` - ${date}` : ''}`;
 }
 
 /**
@@ -92,42 +107,50 @@ ${entries.join('\n\n') || '_No releases yet._'}
 }
 
 export function renderIndexEntry({ version, date, summary, changes }) {
-	const parts = [date ? `## v${version} - ${date}` : `## v${version}`];
-	if (summary) parts.push(indexSummary(summary));
+	const parts = [`## ${releaseHeading(version, summary?.title, date)}`];
+	if (summary?.body) parts.push(indexSummary(summary.body));
 	if (changes.length) {
 		const count = changes.length === 1 ? '1 change' : `${changes.length} changes`;
 		parts.push(`[All ${count} in v${version} →](/releases/v${version})`);
-	} else if (summary) {
+	} else if (summary?.body) {
 		parts.push(`[More about v${version} →](/releases/v${version})`);
 	}
 	return parts.join('\n\n');
 }
 
 export function renderReleasePage({ version, date, summary, changes }) {
+	const heading = releaseHeading(version, summary?.title, '');
 	const parts = [
-		`---\ntitle: v${version}\ndescription: What changed in refrakt.md v${version}\n---`,
-		`# v${version}`,
+		`---\ntitle: ${JSON.stringify(heading)}\ndescription: What changed in refrakt.md v${version}\n---`,
+		`# ${heading}`,
 		`${date ? `Released ${date} · ` : ''}[All releases](/releases)`,
 	];
-	if (summary) parts.push(summary);
+	if (summary?.body) parts.push(summary.body);
 	if (changes.length) parts.push(`## Changes\n\n${changes.join('\n')}`);
 	return `${parts.join('\n\n')}\n`;
 }
 
-/** A handwritten note wins; otherwise the milestone named after the version;
- *  otherwise no summary (D3). */
+/**
+ * The release's `{ title, body }`, or null (D3). A handwritten note's body wins
+ * over the milestone's opening; its frontmatter `title` wins over the
+ * milestone's title. A note without a title borrows the milestone's.
+ */
 export function summaryFor(version, notes, milestones) {
-	if (notes.has(version)) return notes.get(version);
-	const milestone = milestones.get(`v${version}`);
-	return milestone ? milestoneSummary(milestone) : null;
+	const note = notes.get(version);
+	const source = milestones.get(`v${version}`);
+	const milestone = source ? milestoneSummary(source) : null;
+	const title = note?.title || milestone?.title || '';
+	const body = note ? note.body : (milestone?.body ?? '');
+	return title || body ? { title, body } : null;
 }
 
 /**
- * Read `releases/notes/v<version>.md` into version → content (D2).
+ * Read `releases/notes/v<version>.md` into version → `{ title, body }` (D2).
  *
- * A note is placed verbatim inside the release's section of `{% changelog %}`,
- * where a `#` or `##` heading would end the release and start a bogus one, so
- * either is rejected with the file named.
+ * An optional frontmatter block may set `title:`, which goes in the release
+ * heading. The body is placed verbatim inside the release's section of
+ * `{% changelog %}`, where a `#` or `##` heading would end the release and start
+ * a bogus one, so either is rejected with the file named.
  */
 export function readNotes(dir) {
 	const notes = new Map();
@@ -135,13 +158,17 @@ export function readNotes(dir) {
 	for (const name of readdirSync(dir)) {
 		const match = name.match(/^v(\d+\.\d+\.\d+(?:-[\w.]+)?)\.md$/);
 		if (!match) continue;
-		const content = readFileSync(join(dir, name), 'utf8').trim();
-		if (/^#{1,2}\s/m.test(stripCodeFences(content.split('\n')).join('\n'))) {
+		const raw = readFileSync(join(dir, name), 'utf8');
+		const front = raw.match(/^---\n([\s\S]*?)\n---\n?/);
+		const titleLine = front?.[1].match(/^title:\s*(.*)$/m)?.[1].trim() ?? '';
+		const title = titleLine.replace(/^(["'])(.*)\1$/, '$2');
+		const body = (front ? raw.slice(front[0].length) : raw).trim();
+		if (/^#{1,2}\s/m.test(stripCodeFences(body.split('\n')).join('\n'))) {
 			throw new Error(
 				`${name}: a release note may not contain a # or ## heading; it would split the changelog entry`,
 			);
 		}
-		if (content) notes.set(match[1], content);
+		if (title || body) notes.set(match[1], { title, body });
 	}
 	return notes;
 }
@@ -161,13 +188,13 @@ export function readMilestones(dir) {
 }
 
 /**
- * The milestone's title in bold, then its first paragraph (D3).
+ * The milestone's `{ title, body }` (D3).
  *
  * The title is the heading's text after the dash (`# v0.41.0 — Composed runes
- * you can ship`). The first paragraph is the first block after the heading
- * that is prose — a list, table, quote, fence or a line holding only a tag is
- * skipped, so a milestone that opens with one falls through to the next
- * paragraph.
+ * you can ship`); it goes in the release heading. The body is the first
+ * paragraph: the first block after the heading that is prose — a list, table,
+ * quote, fence or a line holding only a tag is skipped, so a milestone that
+ * opens with one falls through to the next paragraph.
  */
 export function milestoneSummary(source) {
 	const lines = source.split('\n');
@@ -176,10 +203,8 @@ export function milestoneSummary(source) {
 	const headingText = lines[headingAt].replace(/^#\s+/, '').trim();
 	const dash = headingText.match(/\s[—–-]\s(.+)$/);
 	const title = (dash ? dash[1] : headingText).trim();
-
-	const lead = /[.!?]$/.test(title) ? `**${title}**` : `**${title}.**`;
 	const paragraph = firstParagraph(lines.slice(headingAt + 1));
-	return paragraph ? `${lead} ${drawerRefs(paragraph)}` : lead;
+	return { title, body: paragraph ? drawerRefs(paragraph) : '' };
 }
 
 /** The first block of prose lines, skipping fenced code and every block that
@@ -309,8 +334,8 @@ export function releaseRefFindings(rootDir, planDirName = 'plan') {
 	}
 	for (const [milestone, source] of readMilestones(join(planDir, 'milestones'))) {
 		const summary = milestoneSummary(source);
-		if (!summary) continue;
-		for (const f of unresolvedRefs(summary, declared)) {
+		if (!summary?.body) continue;
+		for (const f of unresolvedRefs(summary.body, declared)) {
 			findings.push(
 				`${milestone} milestone opening: ${f.target} is not declared in ${planDirName}/`,
 			);

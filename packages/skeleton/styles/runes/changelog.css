@@ -12,6 +12,6 @@
 .rf-changelog-release time {
 	display: block;
 }
-.rf-changelog-release strong {
+.rf-changelog-release li > strong:first-child {
 	display: inline-block;
 }
