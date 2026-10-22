@@ -1,5 +1,5 @@
 ---
-'@refrakt-md/docs': minor
+'@refrakt-md/docs': patch
 ---
 
 A changelog release can have a title. Write it after the version, separated by a middle dot: `## v0.41.0 · Composed runes you can ship - October 9, 2026`. The title renders inside the release heading, after the version, as a `title` element, and `{% changelog-release %}` takes a matching `title` attribute. After a title, the dash before the date needs a space on each side, so a title may contain a hyphen but not ` - `. Headings without a title parse exactly as before.
