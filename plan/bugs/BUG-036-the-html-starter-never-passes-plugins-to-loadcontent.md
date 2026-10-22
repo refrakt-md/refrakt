@@ -1,4 +1,4 @@
-{% bug id="BUG-036" status="confirmed" severity="major" source="SPEC-109" tags="create-refrakt,html,plugins,pipeline" %}
+{% bug id="BUG-036" status="confirmed" severity="major" source="SPEC-109" tags="create-refrakt,html,plugins,pipeline" milestone="v0.41.3" %}
 
 # The HTML starter never passes `plugins` to `loadContent`
 

@@ -1,4 +1,4 @@
-{% spec id="SPEC-169" status="draft" tags="runes, composition, content-model, architecture" %}
+{% spec id="SPEC-169" status="accepted" tags="runes, composition, content-model, architecture" %}
 
 # What the composition parser must accept, and what belongs elsewhere
 
@@ -230,6 +230,17 @@ Nothing is added to `composedRuneConfig` by this spec.
 - **Function-form models in native runes.** D2's rule could also be a warning on native runes
   whose model depends on attributes, since such a rune cannot later become a composition. That
   is a policy question for {% ref "ADR-044" /%}'s tiers, not decided here.
+
+## Scheduling
+
+- **v0.42.0:** D1 ({% ref "WORK-646" /%}), D3 ({% ref "WORK-647" /%}) and D4
+  ({% ref "WORK-648" /%}). D1's composed `hero` fixture needs `section`'s split and the
+  `actions` primitive from {% ref "SPEC-160" /%}, so it moves to {% ref "WORK-654" /%} in
+  v0.43.0. WORK-646 proves the model over `card` instead. D4's `steps` fixture uses a plain
+  container until {% ref "SPEC-156" /%}'s ladder exists.
+- **Deferred:** D5. Templates covering several values need templates as tags
+  ({% ref "SPEC-168" /%} D9), which are not implemented. Its criterion stays open, and this
+  spec can reach `implemented` only when D5 lands or is split out.
 
 ## Acceptance Criteria
 

@@ -1,4 +1,4 @@
-{% bug id="BUG-038" status="confirmed" severity="major" source="SPEC-145" tags="runes, composition, content-model, dx" %}
+{% bug id="BUG-038" status="confirmed" severity="major" source="SPEC-145" tags="runes, composition, content-model, dx" milestone="v0.42.0" %}
 
 # A composition's `itemModel` patterns are never compiled, so every `$each` field is empty
 

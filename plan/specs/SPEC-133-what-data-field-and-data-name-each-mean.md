@@ -1,4 +1,4 @@
-{% spec id="SPEC-133" status="shipped" source="SPEC-130" tags="runes, transform, engine, contract, data-channel, bem" released-in="v0.35.0" %}
+{% spec id="SPEC-133" status="accepted" source="SPEC-130" tags="runes, transform, engine, contract, data-channel, bem" %}
 
 # What `data-field` and `data-name` each mean
 
@@ -230,11 +230,27 @@ here, and SPEC-130 keeps only the parts that touch emission.
   keys on. The cost is a wide HTML diff and a breaking component-interface
   change.
 
+## Status after v0.41.2
+
+This spec was marked `shipped` in v0.35.0 because its linked work items were done, but those
+items delivered only its documentation half. {% ref "WORK-560" /%} stated the rule and
+documented the sentinels, and says it made none of the node moves, no `contentSection`
+removal and no casing fix. {% ref "WORK-565" /%} built the schema-table applier and changes no
+`data-field` or `data-name` output. An audit against the code on 2026-10-22 found two criteria
+met, one partly met (12 `[data-field=…]` selectors remain in Lumina's `bug.css`, `work.css`
+and `plot.css`) and five not started, so the spec is back to `accepted`.
+
+The `contentSection` removal is filed separately as {% ref "WORK-650" /%} for v0.43.0. It no
+longer has an open design question, and it touches the runes {% ref "SPEC-160" /%} changes
+next. The rest, which is the node moves, `data-field` limited to consumed metas, and the
+engine's row-key casing, still needs to be broken down into work items. Whether the full sweep
+is worth doing is this spec's own open question.
+
 ## Acceptance Criteria
-- [ ] `properties` and `refs` have a stated rule that predicts which map a node belongs in, and the authoring docs describe what the catalog actually emits
+- [x] `properties` and `refs` have a stated rule that predicts which map a node belongs in, and the authoring docs describe what the catalog actually emits
 - [ ] Nodes that survive into the output are addressed by `data-name` and carry a BEM element class — the ~97 content markers and value-bearing elements included
 - [ ] `data-field` on rune output means one thing: a meta about to be consumed and removed
-- [ ] The postprocess sentinels are either given their own attribute or documented as a named exception, not left as a footnote in another spec
+- [x] The postprocess sentinels are either given their own attribute or documented as a named exception, not left as a footnote in another spec
 - [ ] `data-field` casing is consistent between rune-emitted and engine-emitted output, or the engine stops emitting it
 - [ ] `property: 'contentSection'` is gone from all 29 transforms, along with the dead `Page` / `DocPage` nodes, the `PageSection` config entry and its CSS — and `TransformResult.property` with them
 - [ ] `refrakt contracts` describes the attributes it currently omits, and the CSS coverage test accounts for the new BEM element selectors

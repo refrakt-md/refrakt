@@ -1,4 +1,4 @@
-{% spec id="SPEC-160" status="draft" tags="runes, composition, primitives, section, card, marketing, storytelling" %}
+{% spec id="SPEC-160" status="accepted" tags="runes, composition, primitives, section, card, marketing, storytelling" %}
 
 # Section is the composition base; card is a section with a surface
 
@@ -66,8 +66,11 @@ lead the body, then everything else. With a split, the `<header>` sits in the co
 beside or below the media, where `hero`, `feature` and `recipe` already put it, and
 `cover-scope="header"` becomes expressible because `preamble` exists.
 
-**Open question:** whether a section with a split should drop the `contentSection` property.
-It describes the element's role in the page, not its layout, so the default answer is no.
+**Closed: whether a section with a split should drop the `contentSection` property.** The
+question is moot. The property is inert: its only consumer, the `Page` document node, never
+matched it and is never registered. {% ref "SPEC-133" /%} removes it from every rune, and
+{% ref "WORK-650" /%} does that before this spec's work starts, so `section` carries it with or
+without a split until then.
 
 **The media zone's kind is an attribute.** A rune declares what its media is through
 `mediaSlots` in its config, for example `{ portrait: 'portrait' }`, and the engine stamps
@@ -224,9 +227,8 @@ Lumina's button CSS moves from `hero.css` and `cta.css` into `actions.css`, and 
 `cta` (still plugin runes until D7) place their actions through the same renderer so their
 output and look do not change.
 
-**Open question:** whether the rank should be authorable (for example a trailing `{.primary}`
-annotation or an attribute on `actions`) or stay positional. Positional matches today and is
-the default.
+**Rank stays positional for now.** That matches today's output. An authorable rank (for example
+a trailing `{.primary}` annotation or an attribute on `actions`) is left until a rune needs one.
 
 ### D7 — `hero` and `cta` become compositions with no rune CSS of their own
 
@@ -308,9 +310,12 @@ relaxes today's `href: { required: true }`, for the block form at least:
 {% /link %}
 ```
 
-**Open question:** whether `card`'s and `bento-cell`'s `href` are then deprecated in favour of
-`link`, or kept as sugar that renders through it. Keeping them as sugar costs nothing and keeps
-every existing page working, so that is the default.
+**Closed: `card`'s and `bento-cell`'s `href` are kept as shorthand that renders through `link`,
+and are not deprecated.** About 20 content files use them, and deprecation would churn every one
+for no gain. The shorthand is also what a composition writes anyway: once `card` is a
+composition (D3), `href` is an attribute its template forwards to `{% link %}`, so it never needs
+retiring. Rendering through `link` gives both runes the focusable, labelled overlay above, which
+adds one tab stop per linked card. That is the intended fix, and the changeset names it.
 
 ## Order
 
@@ -322,7 +327,14 @@ every existing page working, so that is the default.
 6. D7: `hero` and `cta` as compositions, once SPEC-145 D14's chrome carrier is decided.
 7. `card` as a composition (D3), once `materiality` exists.
 
-Steps 1 to 5 depend on nothing outside this spec and can ship in one milestone.
+Steps 1 to 5 depend on nothing outside this spec and can ship in one milestone. They are
+planned for v0.43.0, after {% ref "WORK-650" /%} removes `contentSection`:
+
+- step 1: {% ref "WORK-651" /%};
+- step 2: {% ref "WORK-652" /%};
+- step 3: {% ref "WORK-653" /%};
+- step 4: {% ref "WORK-654" /%};
+- step 5: {% ref "WORK-655" /%}.
 
 ## Not in scope
 

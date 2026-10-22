@@ -1,4 +1,4 @@
-{% work id="WORK-640" status="ready" priority="medium" complexity="moderate" source="SPEC-170" tags="markdoc, dependencies, parsing, validation" %}
+{% work id="WORK-640" status="ready" priority="medium" complexity="moderate" source="SPEC-170" tags="markdoc, dependencies, parsing, validation" milestone="v0.42.0" %}
 
 # Upgrade Markdoc from 0.4.0 to 0.5.10
 

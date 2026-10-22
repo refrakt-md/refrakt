@@ -13,6 +13,17 @@ input. This spec is the mechanism:
 - files are found per rune, site before theme before definition;
 - the checks that keep it from dropping content or changing published data.
 
+## Prerequisites
+
+This spec builds on four things that do not exist yet. It should not be scheduled until they do:
+
+| Needs | From | State on 2026-10-22 |
+|---|---|---|
+| `{% template layout="…" %}` blocks and fragments | {% ref "SPEC-168" /%} D8, D9 | draft; not implemented |
+| the `{% t %}` tag and translation keys | {% ref "SPEC-145" /%} D13, D29 | not implemented |
+| `recipe` as a composition, the first target (acceptance fixture) | {% ref "SPEC-160" /%} D5, {% ref "SPEC-169" /%} D1 | the delimited model is planned for v0.42.0 and `section`'s split for v0.43.0; `recipe` itself is not planned |
+| indented templates, which every example here uses | {% ref "SPEC-170" /%} | planned for v0.42.0 |
+
 ## What exists, measured
 
 - **A definition is one Markdoc file.** Frontmatter declares the input (`attributes`,

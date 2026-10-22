@@ -1,4 +1,4 @@
-{% spec id="SPEC-170" status="draft" tags="markdoc, parsing, authoring, composition, tooling" %}
+{% spec id="SPEC-170" status="accepted" tags="markdoc, parsing, authoring, composition, tooling" %}
 
 # Markdoc sources may be indented
 
