@@ -6,6 +6,10 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
+## v0.41.2
+
+[All 5 changes in v0.41.2 →](/releases/v0.41.2)
+
 ## v0.41.1 · Readable release notes - October 16, 2026
 
 The changelog on the site is now a list of short summaries, one per release, saying what each
