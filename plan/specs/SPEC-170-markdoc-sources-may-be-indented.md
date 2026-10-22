@@ -121,6 +121,29 @@ passes `allowIndentation: true` to the formatter, so an author's indentation is 
 - The changeset notes the one behaviour change for content: a line indented four or more spaces
   that used to continue a paragraph as text can now start a block.
 
+### D5 — indent a tag's content only when it holds another block tag
+
+Indentation is allowed everywhere. It is *expected* only where it shows structure:
+
+- **A block tag whose content includes another block tag** is indented by one tab per level.
+  Composed-rune templates, `_layout.md` regions, and `tabs`, `hero` or `grid` holding other runes
+  are the cases that gain.
+- **A block tag holding only prose and inline tags stays flat.** A `{% hint %}` with paragraphs,
+  or a plan entity with prose and `{% ref /%}` tags, is not indented. So plan files, nearly all
+  single-level, are unchanged by the rule.
+- **Fences keep their own relative indentation** and move as a block.
+
+**Why not indent everything.** Every other Markdown renderer follows CommonMark, where a line
+indented a tab or four spaces is a code block. GitHub, Prettier and most editor previews would
+render an indented single-level file, such as every plan entity, as code. Where indentation shows
+no structure, that cost buys nothing. The rule has one cost of its own: adding the first nested
+tag inside a flat tag re-indents its body. The formatter makes that mechanical.
+
+**Applied by a tool, not by hand.** `refrakt format` ({% ref "WORK-657" /%}) re-indents by this
+rule, changes only leading whitespace, and refuses any rewrite that would change the AST. Its
+`--check` mode runs in CI. `Markdoc.format` cannot do it: its indent is two spaces, it indents
+every tag, and it reprints the whole document (see D3).
+
 ## Acceptance Criteria
 
 - [ ] A core package exports a `parse` function that tokenizes with `allowIndentation: true`, and every direct `Markdoc.parse` call in packages and plugins uses it
@@ -130,6 +153,8 @@ passes `allowIndentation: true` to the formatter, so an author's indentation is 
 - [ ] `refrakt validate`, the language server and the editor preview parse an indented page the same way the content loader does
 - [ ] The composed-runes guide documents indentation, and the composed fixtures are indented with byte-identical rendered output
 - [ ] The changeset describes the behaviour change for lines indented four or more spaces
+- [ ] `refrakt format` applies D5, changes only leading whitespace and refuses any rewrite that changes the AST; `--check` runs in CI and the language server formats with it
+- [ ] `site/content/` follows D5, migrated by the formatter with byte-identical rendered output
 
 ## References
 

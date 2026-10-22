@@ -18,7 +18,7 @@ validate, or preview, another.
 - [ ] A template indented with tabs and one indented with four spaces produce the same AST as the unindented template, including `---`, headings, lists, nested tags and a fence with relative indentation, asserted in a test
 - [ ] Parsing every tracked `.md` file with the shared function gives the same AST as before, measured on Markdoc 0.5.10 and recorded in the resolution
 - [ ] `refrakt validate`, the language server and the editor preview parse an indented page the same way the content loader does
-- [ ] The composed-runes guide documents indentation, and the composed fixtures in `packages/content/test/fixtures/composed-storytelling/runes/` are indented with byte-identical rendered output
+- [ ] The composed-runes guide documents indentation, and the composed fixtures in `packages/content/test/fixtures/composed-storytelling/runes/` are indented by SPEC-170 D5 with byte-identical rendered output (by hand here; {% ref "WORK-657" /%} enforces it afterwards)
 - [ ] The changeset describes the behaviour change for lines indented four or more spaces
 
 ## Approach
