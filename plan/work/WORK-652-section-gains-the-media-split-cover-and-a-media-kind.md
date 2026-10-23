@@ -15,6 +15,7 @@ gives `section` the split attributes, `cover`, and a `media` attribute that stam
 - [ ] A section with a split keeps its header anatomy (eyebrow, headline, blurb) in the content column
 - [ ] `card`'s contract entry and gallery output are unchanged on both contract copies
 - [ ] The section docs page documents the split, `cover` and `media`
+- [ ] SPEC-145 D18 and D20 carry a note pointing to ADR-041
 
 ## Approach
 

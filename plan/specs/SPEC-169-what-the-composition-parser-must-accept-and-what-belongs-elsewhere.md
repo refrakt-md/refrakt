@@ -238,6 +238,10 @@ Nothing is added to `composedRuneConfig` by this spec.
   `actions` primitive from {% ref "SPEC-160" /%}, so it moves to {% ref "WORK-654" /%} in
   v0.43.0. WORK-646 proves the model over `card` instead. D4's `steps` fixture uses a plain
   container until {% ref "SPEC-156" /%}'s ladder exists.
+- **D4's example renders correctly only after {% ref "ADR-046" /%}.** It places each step with
+  `{% section %}{% slot /%}{% /section %}`. Under `section`'s current grammar, a step's text is a
+  paragraph with no heading, so it renders as an eyebrow. ADR-046 anchors the grammar to the
+  headline, so it becomes body ({% ref "WORK-659" /%}, v0.43.0).
 - **Deferred:** D5. Templates covering several values need templates as tags
   ({% ref "SPEC-168" /%} D9), which are not implemented. Its criterion stays open, and this
   spec can reach `implemented` only when D5 lands or is split out.

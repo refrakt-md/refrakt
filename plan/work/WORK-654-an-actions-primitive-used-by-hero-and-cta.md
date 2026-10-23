@@ -25,6 +25,7 @@ needs it.
 
 - {% ref "WORK-652" /%}: the `hero` fixture needs `section`'s split
 - {% ref "WORK-646" /%}: the `hero` fixture needs the delimited model
+- {% ref "WORK-659" /%}: the `hero` fixture places eyebrow, headline and blurb slots in `section`, so it is recorded against the final header grammar
 
 ## References
 

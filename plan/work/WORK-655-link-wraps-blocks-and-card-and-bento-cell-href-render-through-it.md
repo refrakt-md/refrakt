@@ -10,6 +10,7 @@ and both `href` attributes become shorthand that renders through it.
 ## Acceptance Criteria
 
 - [ ] `{% link %}` accepts block content and renders a real `<a>` around it when it holds no links, buttons or form controls
+- [ ] The choice between wrap and stretch is made in the identity transform, so links added later (entity auto-links, resolved `{% ref %}`) are seen; a test asserts that a `link` around content that gains an auto-link in `postProcess` renders the stretched form, with no nested `<a>`
 - [ ] When the content is interactive, `link` renders a stretched `<a data-name="link">` inside the wrapped rune's root, focusable and labelled by `aria-label` when given, else by the content's title slot
 - [ ] `link` emits no `data-rune`, and a test asserts that a schema property inside a `link` still publishes
 - [ ] An empty `href` renders the content unchanged

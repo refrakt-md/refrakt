@@ -19,6 +19,7 @@ classes, a real `<header>` for title and description, no surface, and the portra
 ## Blocked by
 
 - {% ref "WORK-652" /%}
+- {% ref "WORK-659" /%}: `section`'s anchored header grammar, so the comparisons are taken against it
 - {% ref "WORK-650" /%}: so the comparisons are re-run once, without the dead `content-section` difference
 
 ## References

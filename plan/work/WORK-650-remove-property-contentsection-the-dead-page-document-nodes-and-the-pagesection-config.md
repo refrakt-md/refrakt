@@ -19,11 +19,11 @@ before {% ref "WORK-653" /%} re-runs those comparisons.
 - [ ] `property: 'contentSection'` is gone from every transform in `packages/runes/src/tags/` and `plugins/*/src/tags/`
 - [ ] `packages/runes/src/documents/page.ts` and `doc.ts` are deleted and `documents` is no longer exported from `@refrakt-md/runes`
 - [ ] The `PageSection` config entry, `packages/lumina/styles/runes/page-section.css` and its import in `packages/lumina/index.css` are removed, and the CSS coverage test passes
-- [ ] `TransformResult.property` is removed, after checking whether any user besides `contentSection` remains (SPEC-133 names `error.ts`, which the 2026-10-22 audit could not find)
+- [ ] `TransformResult.property` stays accepted but is ignored and marked `@deprecated` for one minor release, so a third-party plugin that still passes it keeps type-checking; its removal is noted for the release after. Before that, check whether any user besides `contentSection` remains (SPEC-133 names `error.ts`, which the 2026-10-22 audit could not find)
 - [ ] Tests that assert the attribute are updated, and the composed-storytelling tests no longer record `data-field="content-section"` as a difference
 - [ ] The four rune-authoring docs pages no longer document `contentSection`
 - [ ] Contracts are regenerated on both copies and the diff reviewed; the SEO baseline does not move
-- [ ] The changeset names the removed attribute and the removed `documents` export for third-party themes and tools
+- [ ] The changeset names the removed attribute, the removed `documents` export (it never ran, so it is removed outright) and the deprecated `property` field
 
 ## References
 
