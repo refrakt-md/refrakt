@@ -17,6 +17,7 @@ This spec defines the preview template:
   registration, and placing no slots;
 - sharing fragments with the canonical template when they use only attributes and fields;
 - layered by site, theme and definition like {% ref "SPEC-177" /%}'s replacements;
+- varying by the context the consumer requests (`popover`, `card`), never by a name in content;
 - publishing no structured data, by construction.
 
 It also gives every composed rune an automatic `embed()`, so it can be shown in full without an
@@ -38,6 +39,9 @@ It also needed an exception to SPEC-177 D5's every-slot rule.
 
 A summary needs none of this. The registry already holds what a summary shows. A template that
 reads the registration has no slots to omit and no schema row to publish.
+
+Context comes back in D9, as the selector between preview variants. There it needs no exception
+to anything, because a preview has no every-slot rule.
 
 **Why the registration is not made the same as the AST input.** Storing slot ASTs in the
 registry would make the two templates one, but:
@@ -147,6 +151,59 @@ A preview is a summary, so the reader must be able to reach the canonical page. 
 hover trigger is that link. Where a preview is rendered with no trigger, as in a collection, the
 engine wraps it in `{% link href=$entity.url %}` unless the template already links to it.
 
+### D9 — previews vary by context, not by name
+
+A hover card and a collection card may want different summaries. They are selected by the
+**context** the preview is rendered in, never by a name written in content.
+
+**Why not names.** A name such as `ref preview="popover" template="compact"` is a word in content,
+so it becomes a contract between a site's content and whichever theme is installed:
+
+- after a theme switch, the name may not exist, and the content falls back without a word;
+- two themes may give one name different meanings;
+- a theme author cannot know which names sites use, so cannot write previews for every rune.
+
+That is the reason {% ref "ADR-045" /%} keeps `layout` values on the definition's side: authored
+values are input, and a theme cannot extend input.
+
+**The vocabulary is closed, and refrakt owns it:**
+
+| Context | Requested by |
+|---|---|
+| *(none)*: the default | any consumer with no variant of its own |
+| `popover` | hover cards and `ref preview="popover"` ({% ref "SPEC-174" /%}) |
+| `card` | collection and aggregate items without a body of their own |
+
+The consumer sets the context; content cannot. A new context is a spec change, as a new universal
+axis is.
+
+**Variants are `{% template %}` blocks in the one preview file**, using SPEC-168 D9's tag:
+
+- A block with no `context` is the default. A preview file with no blocks at all is the default.
+- `{% template context="popover" %}` covers that context. A context with no block uses the
+  default.
+- A `context` value outside the vocabulary reports `preview-unknown-context`.
+- All blocks share the definition's fragments (D4).
+
+**Layering is per context, and the more specific template wins.** For a preview requested in
+context C, the lookup is:
+
+1. (rune, C) at the site, then the theme, then the definition;
+2. if none has C, (rune, default) at the site, then the theme, then the definition;
+3. if none has a default, the built-in fallback (D7).
+
+A theme's `recipe.preview.md` containing only a `popover` block therefore replaces the popover and
+inherits the rest. A definition's `popover` block survives a theme that ships only a default.
+That is the order SPEC-177 D4 uses for template values. Level first, where the theme's default
+would win over the definition's popover, was considered. It gives a theme complete control from
+one file, but discards a rune author's tailored popover under every theme that ships a default.
+
+**Most differences need no variant.** The engine stamps `data-preview-context` on every rendered
+preview (`popover`, `card`, or `default`). A theme can make one template compact in a popover and
+roomier in a card with CSS alone, including restyling every rune's popover at once. A context
+block is for a different structure, meaning other fields or another arrangement, not a different
+look.
+
 ## Example: a recipe and its preview
 
 The canonical definition, abridged. The `story` field is {% ref "ADR-047" /%}'s.
@@ -214,23 +271,42 @@ registers:
 {% /card %}
 ```
 
-`recipe.preview.md`, beside it:
+`recipe.preview.md`, beside it, with a default and a `popover` variant (D9):
 
 ```md
-{% section media-position="start" media="thumbnail" %}
-	{% image src=$attrs.photo alt="" /%}
+{% template %}
+	{% section media-position="start" media="thumbnail" %}
+		{% image src=$attrs.photo alt="" /%}
 
-	---
+		---
 
-	# {% field name="headline" /%}
+		# {% field name="headline" /%}
 
-	{% field name="blurb" /%}
+		{% field name="blurb" /%}
 
-	{% partial file="#facts" /%}
+		{% partial file="#facts" /%}
 
-	{% link href=$entity.url %}{% t key="view-recipe" %}View recipe{% /t %}{% /link %}
-{% /section %}
+		{% link href=$entity.url %}{% t key="view-recipe" %}View recipe{% /t %}{% /link %}
+	{% /section %}
+{% /template %}
+
+{% template context="popover" %}
+	{% section media-position="top" media="cover" header="headline" %}
+		{% image src=$attrs.photo alt="" /%}
+
+		---
+
+		# {% field name="headline" /%}
+
+		{% field name="prepTime" /%} · {% field name="cookTime" /%}
+	{% /section %}
+{% /template %}
 ```
+
+The popover's trigger is already the link to the recipe (D8), so it drops the link, the blurb and
+the full facts, and keeps a photo, the name and the times. `header="headline"` is
+{% ref "ADR-046" /%}'s: the times line stays body, not a blurb. A collection card has no `card`
+block, so it renders the default.
 
 What each part shows:
 
@@ -247,9 +323,8 @@ What each part shows:
 
 ## Open questions
 
-- **Named variants.** One preview per rune may be enough. If a rune needs a hover card and a
-  collection card that differ, consumers could select by name (`ref preview="popover"`, a
-  collection's `template="card"`). Not designed until a rune needs two.
+- **More contexts.** Search results and inline chips are candidates. Each is added by a spec
+  change when a consumer exists to request it.
 - **Registered content beyond scalars.** A preview cannot show the ingredients unless they are
   registered. Registering a short list (the first five ingredients, say) would need a list-valued
   registration source. Not designed until a preview needs it.
@@ -261,10 +336,13 @@ What each part shows:
 - [ ] Each `registers.entity.data` key names an attribute or field of the rune, or is a declared rename; anything else reports `register-unknown-name`
 - [ ] A preview may use the definition's fragments; one that places a slot reports `preview-slot`, naming the fragment
 - [ ] Popovers, hover cards and collections without a body render the preview; a rune with none renders its name linked to its page
+- [ ] A preview file may hold a default and `{% template context="popover|card" %}` blocks; an unknown context reports `preview-unknown-context`; a context with no block uses the default
+- [ ] For a context, (rune, context) is looked up at site, theme and definition before (rune, default) is; a theme file with only a `popover` block replaces that context and inherits the rest
+- [ ] Every rendered preview carries `data-preview-context`, and content has no way to set the context
 - [ ] A preview publishes no structured data and always links to its entity's canonical page
 - [ ] Every composed rune's registration has `embed()`, and a drawer preview of a composed entity renders its canonical template
 - [ ] `{% image %}` exists as a tag, with `src` and `alt`
-- [ ] The recipe example above is a fixture: its page publishes one `Recipe`, its preview shows the photo, headline, blurb and facts with no JSON-LD, and placing a slot in the preview fails
+- [ ] The recipe example above is a fixture: its page publishes one `Recipe`; its default preview shows the photo, headline, blurb and facts, its popover the photo, headline and times, both with no JSON-LD; placing a slot in the preview fails
 
 ## References
 
