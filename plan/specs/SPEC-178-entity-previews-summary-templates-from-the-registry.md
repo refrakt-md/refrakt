@@ -18,6 +18,8 @@ This spec defines the preview template:
 - sharing fragments with the canonical template when they use only attributes and fields;
 - layered by site, theme and definition like {% ref "SPEC-177" /%}'s replacements;
 - varying by the context the consumer requests (`popover`, `card`), never by a name in content;
+- able to show lists, such as a recipe's ingredients, which a registration can now hold as plain
+  text;
 - publishing no structured data, by construction.
 
 It also gives every composed rune an automatic `embed()`, so it can be shown in full without an
@@ -107,6 +109,8 @@ override.
 - **No slots.** A `{% slot %}` in a preview template reports `preview-slot`, naming the slot and
   suggesting the full rendering for content that needs it.
 - `t`, `if` and `link` work as in a composition template.
+- A list value (D10) renders through `field`, in the field's shape: list items, or chips for a
+  field such as `tags`. `limit=n` shows the first *n* and adds a translatable "and *m* more".
 
 ### D3 — registration keys are the rune's own names
 
@@ -204,6 +208,48 @@ roomier in a card with CSS alone, including restyling every rune's popover at on
 block is for a different structure, meaning other fields or another arrangement, not a different
 look.
 
+### D10 — a registration can hold a list
+
+**What exists.** The `registers` vocabulary already allows a list of strings
+(`packages/runes/src/lib/registers.ts`), and the `field:value` matcher already treats an array as
+membership (`packages/runes/src/field-match.ts`). But no declarative source produces one.
+`readRegistersSource` reads the *first* node named after the source, as text, or else a field-bag
+string. The only way to a list is the `{ json }` escape hatch. The schema table reads the same
+names differently: `recipe`'s `ingredient → recipeIngredient` uses `findAllByName`, so every item
+becomes one entry of the published array, while registration would keep only the first.
+
+**The list form:**
+
+```yaml
+data:
+  - headline
+  - { ingredients: { list: ingredients } }
+  - { tags: { list: tags, separator: "," } }
+```
+
+1. **`{ key: { list: source } }` reads every node with the source's name**, by the schema table's
+   rule (`findAllByName`, bounded at nested runes), and registers each node's text. In a
+   composition, a source naming a list field reads that field's items from the copy taken at
+   transform time ({% ref "SPEC-145" /%} D10b).
+2. **`separator` splits one string into a list**, for an attribute such as `tags`. The comma split
+   that the matcher applies to any string today becomes a declared one for registered lists.
+3. **It is explicit, never inferred from the count.** One ingredient registers a one-item list and
+   none an empty one, so previews and filters always see the same type.
+4. **Items are plain text.** No links or emphasis: the registry stays a small query index that can
+   be serialised. Rich content is the full rendering's.
+5. **The whole list is registered; a limit belongs to the display.** A popover may show three
+   ingredients and a card five, and a registration-time limit would make `ingredients:*pancetta*`
+   miss what was cut. A rune author keeps the registry small by choosing what to register, such as
+   ingredients but not steps. A registration `limit` is not added until a rune needs one.
+6. **The name check (D3) applies.** A key must be an attribute or field of the rune, or a declared
+   rename, as with a native rune's `{ ingredients: { list: ingredient } }`. `reference` shows
+   `ingredients ← every "ingredient" (list)`.
+
+A preview shows a list through `field` with `limit` (D2). A general loop over values
+(`{% each items=$attrs.ingredients %}`) would allow per-item markup, but it would be a second
+iteration construct beside composition's slot-bound `each`. It is not added until a preview needs
+per-item structure.
+
 ## Example: a recipe and its preview
 
 The canonical definition, abridged. The `story` field is {% ref "ADR-047" /%}'s.
@@ -237,7 +283,15 @@ schema:
 registers:
   entity:
     idFrom: headline
-    data: [headline, blurb, photo, prepTime, cookTime, servings, difficulty]
+    data:
+      - headline
+      - blurb
+      - photo
+      - prepTime
+      - cookTime
+      - servings
+      - difficulty
+      - { ingredients: { list: ingredients } }
 ---
 
 {% fragment name="facts" %}
@@ -299,12 +353,15 @@ registers:
 		# {% field name="headline" /%}
 
 		{% field name="prepTime" /%} · {% field name="cookTime" /%}
+
+		{% field name="ingredients" limit=3 /%}
 	{% /section %}
 {% /template %}
 ```
 
 The popover's trigger is already the link to the recipe (D8), so it drops the link, the blurb and
-the full facts, and keeps a photo, the name and the times. `header="headline"` is
+the full facts. It keeps a photo, the name, the times and the first three ingredients, with
+"and *n* more" after them (D10). `header="headline"` is
 {% ref "ADR-046" /%}'s: the times line stays body, not a blurb. A collection card has no `card`
 block, so it renders the default.
 
@@ -315,7 +372,8 @@ What each part shows:
 - **Shared fragment.** `#facts` uses only fields, so the page and the preview render the same
   facts from the same source (D4).
 - **No slots.** The preview cannot place `story`, `ingredients` or `steps`. Writing
-  `{% slot name="ingredients" /%}` reports `preview-slot` (D2). The full recipe is a drawer away.
+  `{% slot name="ingredients" /%}` reports `preview-slot` (D2). It shows the *registered*
+  ingredients, as plain text, through `field`. The full recipe is a drawer away.
 - **Nothing published.** The preview has no schema row. The `Recipe` is published once, from the
   recipe's own page.
 - **`photo` is node-sourced.** The registration reads the image's source from the photo slot at
@@ -325,9 +383,11 @@ What each part shows:
 
 - **More contexts.** Search results and inline chips are candidates. Each is added by a spec
   change when a consumer exists to request it.
-- **Registered content beyond scalars.** A preview cannot show the ingredients unless they are
-  registered. Registering a short list (the first five ingredients, say) would need a list-valued
-  registration source. Not designed until a preview needs it.
+- **The matcher's comma split (follow-up).** `field-match.ts` splits any string containing a
+  comma, so a scalar such as `"Salt, to taste"` matches as two values. Once registered lists are
+  declared (D10), the implicit split should stop applying to them, and arguably to every string.
+  Changing it can change existing `filter` results, so it is a separate item with its own
+  measurement.
 
 ## Acceptance Criteria
 
@@ -342,7 +402,11 @@ What each part shows:
 - [ ] A preview publishes no structured data and always links to its entity's canonical page
 - [ ] Every composed rune's registration has `embed()`, and a drawer preview of a composed entity renders its canonical template
 - [ ] `{% image %}` exists as a tag, with `src` and `alt`
-- [ ] The recipe example above is a fixture: its page publishes one `Recipe`; its default preview shows the photo, headline, blurb and facts, its popover the photo, headline and times, both with no JSON-LD; placing a slot in the preview fails
+- [ ] A `registers.entity.data` entry `{ key: { list: source } }` registers the text of every node with that name, or a list field's items in a composition, as a list; one match gives a one-item list and none an empty one
+- [ ] `{ key: { list: source, separator: "," } }` splits a string source into a list
+- [ ] A registered list matches in `field:value` filters by membership, and `reference` shows the list form
+- [ ] `{% field name="…" limit=n /%}` renders a list value in the field's shape, the first *n* items and a translatable "and *m* more"
+- [ ] The recipe example above is a fixture: its page publishes one `Recipe`; its default preview shows the photo, headline, blurb and facts, its popover the photo, headline, times and first three ingredients, both with no JSON-LD; placing a slot in the preview fails
 
 ## References
 
