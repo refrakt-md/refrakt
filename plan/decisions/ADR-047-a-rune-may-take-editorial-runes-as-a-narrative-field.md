@@ -96,16 +96,17 @@ columns, or an image beside the text.
 
 ## Open questions
 
-- **How an embedded rune renders its narrative.** When a composed rune with a narrative field is
-  shown in a drawer, expanded or previewed, should the narrative appear, be de-emphasised or be
-  left out? This belongs to {% ref "SPEC-178" /%}, which gives non-canonical contexts their own
-  templates.
+- **How a rune away from its own page shows its narrative.** {% ref "SPEC-178" /%} proposes an
+  answer. In full (`expand`, a drawer preview), the rune renders through its canonical template,
+  so the narrative appears where the template places it. As a summary (a popover, a hover card or
+  a collection), it renders through a preview template that reads the registration and places no
+  slots, so the narrative does not appear. This open question closes when SPEC-178 is accepted.
 
 ## References
 
 - {% ref "SPEC-160" /%}: D5, `recipe` over `section`.
 - {% ref "SPEC-177" /%}: D5 and D6, every slot placed and data shown.
-- {% ref "SPEC-178" /%}: context templates.
+- {% ref "SPEC-178" /%}: entity previews.
 - {% ref "ADR-045" /%}: a theme may arrange a composed rune.
 
 {% /decision %}
