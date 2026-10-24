@@ -1,4 +1,4 @@
-{% bug id="BUG-035" status="fixed" severity="major" source="SPEC-109" tags="create-refrakt,scaffolding,nav,dx" milestone="v0.41.3" %}
+{% bug id="BUG-035" status="fixed" severity="major" source="SPEC-109" tags="create-refrakt,scaffolding,nav,dx" milestone="v0.41.3" pr="refrakt-md/refrakt#712" %}
 
 # Five `create-refrakt` starters link a nav item to a page that does not exist
 

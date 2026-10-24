@@ -1,4 +1,4 @@
-{% bug id="BUG-043" status="fixed" severity="major" source="SPEC-072" tags="plan, pipeline, git, history, performance, ci" milestone="v0.41.3" %}
+{% bug id="BUG-043" status="fixed" severity="major" source="SPEC-072" tags="plan, pipeline, git, history, performance, ci" milestone="v0.41.3" pr="refrakt-md/refrakt#712" %}
 
 # Building plan content slows with the length of git history
 

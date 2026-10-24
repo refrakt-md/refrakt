@@ -1,4 +1,4 @@
-{% bug id="BUG-034" status="fixed" severity="major" source="SPEC-002" tags="behaviors,sandbox,design" milestone="v0.41.3" %}
+{% bug id="BUG-034" status="fixed" severity="major" source="SPEC-002" tags="behaviors,sandbox,design" milestone="v0.41.3" pr="refrakt-md/refrakt#712" %}
 
 # Injected design tokens never reach the sandbox iframe
 
