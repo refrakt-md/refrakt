@@ -1,5 +1,18 @@
 # @refrakt-md/cli
 
+## 0.41.3
+
+### Patch Changes
+
+- Updated dependencies [4503745]
+- Updated dependencies [4503745]
+  - @refrakt-md/content@0.41.3
+  - @refrakt-md/editor@0.41.3
+  - @refrakt-md/html@0.41.3
+  - @refrakt-md/ai@0.41.3
+  - @refrakt-md/runes@0.41.3
+  - @refrakt-md/transform@0.41.3
+
 ## 0.41.2
 
 ### Patch Changes

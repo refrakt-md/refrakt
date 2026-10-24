@@ -1,5 +1,11 @@
 # @refrakt-md/skeleton
 
+## 0.41.3
+
+### Patch Changes
+
+- @refrakt-md/types@0.41.3
+
 ## 0.41.2
 
 ### Patch Changes

@@ -6,7 +6,17 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.41.2
+## v0.41.3 · A fresh scaffold works
+
+A project made with `create-refrakt` builds with no errors, and the HTML starter runs the
+plugins it is configured with. Building plan content no longer slows down with the length of
+the repository's git history, and a sandbox receives the design tokens the pipeline injects.
+
+[All 3 changes in v0.41.3 →](/releases/v0.41.3)
+
+## v0.41.2 · Changelog titles and the iOS drawer fix - October 22, 2026
+
+A changelog release can now have a title, written after the version, and the site's changelog shows one for every release. On iOS Safari, the sticky site header no longer trails behind page scrolling after a drawer has been opened (BUG-044).
 
 [All 5 changes in v0.41.2 →](/releases/v0.41.2)
 

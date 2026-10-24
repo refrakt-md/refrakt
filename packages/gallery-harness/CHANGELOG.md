@@ -1,5 +1,7 @@
 # @refrakt-md/gallery-harness
 
+## 0.41.3
+
 ## 0.41.2
 
 ## 0.41.1
