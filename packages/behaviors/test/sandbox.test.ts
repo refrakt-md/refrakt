@@ -179,3 +179,18 @@ describe('rf-sandbox overflow signal (SPEC-116)', () => {
 		expect(el.hasAttribute('data-overflowing')).toBe(false);
 	});
 });
+
+describe('rf-sandbox design tokens (BUG-034)', () => {
+	it('reads the host `data-design-tokens` into the iframe document', () => {
+		const tokens = { colors: [{ name: 'Primary', value: '#2563EB' }], spacing: { unit: '4px' } };
+		const el = mount({ 'data-design-tokens': JSON.stringify(tokens) });
+		const srcdoc = el.querySelector('iframe')!.getAttribute('srcdoc') ?? '';
+		expect(srcdoc).toContain('--color-primary: #2563EB;');
+		expect(srcdoc).toContain('--spacing-unit: 4px;');
+	});
+
+	it('sends no tokens when the host has none', () => {
+		const el = mount({});
+		expect(el.querySelector('iframe')!.getAttribute('srcdoc') ?? '').not.toContain('--color-');
+	});
+});

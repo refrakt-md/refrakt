@@ -3,7 +3,8 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { EntityRegistryImpl, loadContent } from '@refrakt-md/content';
-import { defineRune, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
+import { coreConfig, defineRune, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
+import { createTransform } from '@refrakt-md/transform';
 import type { EntityRegistration } from '@refrakt-md/types';
 import { design } from '../src/index.js';
 
@@ -82,7 +83,8 @@ function collectInjected(node: unknown, out: string[]): void {
 	}
 	if (!node || typeof node !== 'object') return;
 	const n = node as { attributes?: Record<string, unknown>; children?: unknown[] };
-	if (n.attributes?.['data-field'] === 'design-tokens') out.push(String(n.attributes.content));
+	if (n.attributes?.['data-design-tokens'] !== undefined)
+		out.push(String(n.attributes['data-design-tokens']));
 	for (const c of n.children ?? []) collectInjected(c, out);
 }
 
@@ -105,5 +107,45 @@ describe('design registry snapshot (SPEC-144 D4)', () => {
 		expect(existsSync(snapshotPath), 'the committed snapshot is missing').toBe(true);
 		// Compared as compact text, so key order inside every data bag counts.
 		expect(JSON.stringify(snapshot)).toBe(committed(snapshotPath));
+	});
+});
+
+/** Every `rf-sandbox` element in a rendered tree. */
+function sandboxes(
+	node: unknown,
+	out: Array<{ attributes: Record<string, unknown>; children: unknown[] }> = [],
+) {
+	if (Array.isArray(node)) {
+		for (const c of node) sandboxes(c, out);
+		return out;
+	}
+	if (!node || typeof node !== 'object') return out;
+	const n = node as { name?: string; attributes?: Record<string, unknown>; children?: unknown[] };
+	if (n.name === 'rf-sandbox')
+		out.push({ attributes: n.attributes ?? {}, children: n.children ?? [] });
+	for (const c of n.children ?? []) sandboxes(c, out);
+	return out;
+}
+
+describe('design tokens reach the sandbox host (BUG-034)', () => {
+	it("the rendered `rf-sandbox` carries its context's tokens as `data-design-tokens`", async () => {
+		const merged = mergedPlugin();
+		const site = await loadContent(siteDir, {
+			plugins: merged.plugins,
+			additionalTags: merged.tags,
+			reporter: () => {},
+		});
+		const page = site.pages.find((p) => p.route.url === '/usage')!;
+		const rendered = createTransform(coreConfig)(JSON.parse(JSON.stringify(page.renderable)));
+		const [byDefault, dark, missing] = sandboxes(rendered);
+
+		// The attribute the `rf-sandbox` behaviour reads (`dataset.designTokens`).
+		const tokens = JSON.parse(String(byDefault.attributes['data-design-tokens']));
+		expect(tokens.colors.map((c: { name: string }) => c.name)).toEqual(['Primary', 'Accent']);
+		expect(JSON.parse(String(dark.attributes['data-design-tokens']))).not.toEqual(tokens);
+		expect(missing.attributes['data-design-tokens']).toBeUndefined();
+
+		// And no stray child carrying them, as there was before.
+		expect(JSON.stringify(rendered)).not.toContain('"data-field":"design-tokens"');
 	});
 });

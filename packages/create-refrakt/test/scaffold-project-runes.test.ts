@@ -66,9 +66,7 @@ describe('scaffold: project rune directory', () => {
 		expect(html).toContain('The engine weaves patterns.');
 		expect(html).toContain('— ');
 		expect(html).toContain('Ada');
-		// No diagnostic about the rune. (The starter's `_layout.md` nav has an
-		// unrelated `getting-started` item that resolves to no page; that error
-		// is on every page of a fresh scaffold and is not this test's subject.)
+		// No diagnostic about the rune.
 		expect(
 			site.pipelineWarnings.filter((w) => /quote-card|tag-undefined|undefined tag/.test(w.message)),
 		).toEqual([]);

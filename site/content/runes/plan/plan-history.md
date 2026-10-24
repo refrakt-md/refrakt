@@ -76,14 +76,14 @@ The history extractor classifies each commit into one of five event kinds:
 
 History is derived from git commits, not a separate event store:
 
-1. `git log --follow` retrieves the ordered commit list for each entity file
-2. `git show <hash>:<path>` retrieves the file contents at each commit
+1. One `git log` over the plan directory lists every commit that touched each entity file, following renames
+2. One `git cat-file --batch` reads the file's contents at each of those commits
 3. The opening Markdoc tag (line 1) is parsed for attribute changes
 4. Checkbox lines (`- [ ]` / `- [x]`) are diffed for criteria changes
 5. The `## Resolution` section is checked for appearance or modification
 6. Consecutive versions are compared to emit typed events
 
-Results are cached in `.plan-history-cache.json`, keyed by each file's latest commit hash. Subsequent builds skip files whose history hasn't changed.
+That is two git processes per build, however long the history is. Results are cached in `.plan-history-cache.json`, keyed by each file's latest commit hash. Subsequent builds skip files whose history hasn't changed.
 
 ### Shallow clones
 
@@ -91,7 +91,7 @@ In shallow clones (common in CI), only available commits are processed. The time
 
 ### Rename tracking
 
-`git log --follow` tracks files across renames, so entity history is preserved even when files are reorganised. The rename itself is not surfaced as an event.
+Rename detection carries a file's history over to its new path, so entity history is preserved even when files are reorganised, as long as both paths are inside the plan directory. The rename itself is not surfaced as an event.
 
 ## Output structure
 

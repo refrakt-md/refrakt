@@ -1,6 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { parse, findTag, findAllTags } from './helpers.js';
-import { planPipelineHooks } from '../src/pipeline.js';
+import { planPipelineHooks, setPlanDir } from '../src/pipeline.js';
 import type {
 	TransformedPage,
 	EntityRegistry,
@@ -288,6 +291,20 @@ Just a description, no checkboxes.
 });
 
 describe('planPipelineHooks — source attribute and implements relationships', () => {
+	// `aggregate` reads git history for the plan directory. Point it at an empty
+	// directory outside any repository, so these tests read no history and take
+	// the same time on every clone (BUG-043). Unset, it would read the real
+	// `plan/` and its full history.
+	let planDir: string;
+	beforeAll(() => {
+		planDir = mkdtempSync(join(tmpdir(), 'plan-pipeline-'));
+		setPlanDir(planDir);
+	});
+	afterAll(() => {
+		setPlanDir('');
+		rmSync(planDir, { recursive: true, force: true });
+	});
+
 	function runFullPipeline(pages: TransformedPage[]) {
 		const { entries, edges, registry } = makeRegistry();
 		const { ctx } = makeCtx();

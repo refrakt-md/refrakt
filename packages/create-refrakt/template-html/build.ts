@@ -17,7 +17,7 @@ import { createHighlightTransform } from '@refrakt-md/highlight';
 import { loadPlugin, loadProjectRunes, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
 import { fsProjectFiles } from '@refrakt-md/types/project-files';
 import { getThemePackage } from '@refrakt-md/types';
-import type { RendererNode } from '@refrakt-md/types';
+import type { Plugin, RendererNode } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
 import { mkdirSync, writeFileSync, cpSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -66,6 +66,7 @@ async function build() {
 	// Load plugins — site-scoped first, top-level fallback for legacy configs
 	const pluginNames = site.plugins ?? config.plugins ?? [];
 	let communityTags: Record<string, Schema> | undefined;
+	let plugins: Plugin[] | undefined;
 	let finalConfig = themeConfig;
 
 	// The project's own composed runes: every `<rune>.md` in `runes.dir`.
@@ -78,6 +79,7 @@ async function build() {
 		const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer, project);
 
 		communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
+		plugins = merged.plugins;
 
 		const { config: assembledConfig } = assembleThemeConfig({
 			coreConfig: themeConfig,
@@ -122,10 +124,13 @@ async function build() {
 		},
 	};
 
-	// Load content. The HTML adapter's build script doesn't surface
-	// `security` / `variables` via a CLI flag — for hosted-product use, edit
-	// this file to pass them through to `loadContent` (matches the option
-	// shape `createRefraktLoader` accepts for the Vite-based adapters).
+	// Load content. `plugins` carries the configured plugins' pipeline hooks
+	// and declarative `registers`; without it the entity registry and every
+	// cross-page feature built on it come out empty. The HTML adapter's build
+	// script doesn't surface `security` / `variables` via a CLI flag — for
+	// hosted-product use, edit this file to pass them through to `loadContent`
+	// (matches the option shape `createRefraktLoader` accepts for the
+	// Vite-based adapters).
 	// `reporter` prints the standard Phase 1/2/3/4 + warnings summary, so this
 	// build gets the same output as every other adapter without formatting it
 	// here.
@@ -133,6 +138,9 @@ async function build() {
 		basePath: '/',
 		icons,
 		additionalTags: communityTags,
+		plugins,
+		projectRoot: configDir,
+		siteConfig: site,
 		reporter: stderrReporter,
 	});
 

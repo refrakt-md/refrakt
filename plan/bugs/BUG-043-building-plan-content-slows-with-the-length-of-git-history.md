@@ -1,4 +1,4 @@
-{% bug id="BUG-043" status="confirmed" severity="major" source="SPEC-072" tags="plan, pipeline, git, history, performance, ci" milestone="v0.41.3" %}
+{% bug id="BUG-043" status="fixed" severity="major" source="SPEC-072" tags="plan, pipeline, git, history, performance, ci" milestone="v0.41.3" pr="refrakt-md/refrakt#712" %}
 
 # Building plan content slows with the length of git history
 
@@ -54,9 +54,29 @@ on either clone.
 
 ## Acceptance Criteria
 
-- [ ] The remaining time is accounted for: which calls run, how many times, for each of the two tests
-- [ ] History extraction reads file contents without one process per commit and file, for example with a single `git log -p` or `git cat-file --batch`, or is bounded or skipped where no page shows history
-- [ ] Both tests pass on a full-history clone within their timeouts
-- [ ] The pipeline test no longer depends on the history of the clone it runs in
+- [x] The remaining time is accounted for: which calls run, how many times, for each of the two tests
+- [x] History extraction reads file contents without one process per commit and file, for example with a single `git log -p` or `git cat-file --batch`, or is bounded or skipped where no page shows history
+- [x] Both tests pass on a full-history clone within their timeouts
+- [x] The pipeline test no longer depends on the history of the clone it runs in
+
+## Resolution
+
+Completed: 2026-10-24
+
+Branch: `claude/milestone-v0-41-3-1mzttp`
+
+### What was done
+- Accounted for the time (cold cache, full history, 3,504 commits): both tests ran ~5,220 git processes, 938 `git log --follow` (~98s) plus 4,276 `git show` (~30s), once per test. `--follow` was the unmeasured cost.
+- `plugins/plan/src/history.ts`: `extractBatchHistory` now runs one `git log --full-history -M --name-status` over the plan dir, groups commits per file following renames, and reads all contents with one `git cat-file --batch` (`readFilesAtCommits`). Only stale cache entries are read. `extractEntityHistory` uses the same event builder and one batch read. 115s → 0.6s for this repo.
+- `plugins/plan/src/pipeline.ts`: runs git from the plan dir, not the process cwd.
+- `plugins/plan/test/pipeline.test.ts`: points `setPlanDir` at an empty temp dir outside any repo.
+- `packages/content/src/timestamps.ts`: both `git log` passes are limited to the content dir with `-- .`.
+- Tests: batch matches per-entity output, rename following, cache reuse, outside-a-repo, `cat-file` parsing (multi-byte, missing).
+- `site/content/runes/plan/plan-history.md`: updated How it works and Rename tracking.
+
+### Notes
+- Measured after the fix on full history: the dogfood test takes ~8s, the pipeline test 11ms, and the whole build runs 7 git processes. The full suite passes on the full-history clone.
+- Output diff against the old code over this repo: 725 files identical. Renamed files now carry the commits from before the rename, and old paths no longer appear as separate keys (they used to double-count in the global feed). The only commits lost are from before a file entered `plan/`.
+- `--full-history` is needed because default simplification at the directory level prunes side branches that per-file `--follow` kept.
 
 {% /bug %}

@@ -677,7 +677,9 @@ export const planPipelineHooks: PluginPipelineHooks = {
 		try {
 			const planDir = _planDir ?? 'plan';
 			const cache = readHistoryCache(planDir);
-			history = extractBatchHistory(planDir, '.', { cache });
+			// Run git from the plan directory, so the history read is that
+			// directory's repository, not whichever one the process started in.
+			history = extractBatchHistory('.', planDir, { cache });
 			writeHistoryCache(planDir, cache);
 
 			// Parse repository URL from git remote
