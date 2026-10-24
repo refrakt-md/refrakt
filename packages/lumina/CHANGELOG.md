@@ -1,5 +1,14 @@
 # @refrakt-md/lumina
 
+## 0.41.3
+
+### Patch Changes
+
+- @refrakt-md/runes@0.41.3
+- @refrakt-md/skeleton@0.41.3
+- @refrakt-md/transform@0.41.3
+- @refrakt-md/types@0.41.3
+
 ## 0.41.2
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @refrakt-md/editor
 
+## 0.41.3
+
+### Patch Changes
+
+- 4503745: Design tokens now reach the sandbox iframe (BUG-034). The design plugin, and the editor preview, put a sandbox's `design-context` tokens in a child `<meta data-field="design-tokens">` that the `rf-sandbox` behaviour never read, so the iframe always got no tokens. They now set `data-design-tokens` on the `rf-sandbox` element, which is where the behaviour reads them. **This is a visible change:** on a site with a default `design-context`, every sandbox now renders with that context's fonts, colours and spacing variables, and a Tailwind sandbox gets its theme config.
+- Updated dependencies [4503745]
+  - @refrakt-md/content@0.41.3
+  - @refrakt-md/highlight@0.41.3
+  - @refrakt-md/runes@0.41.3
+  - @refrakt-md/transform@0.41.3
+  - @refrakt-md/types@0.41.3
+
 ## 0.41.2
 
 ### Patch Changes
