@@ -1,4 +1,4 @@
-{% decision id="ADR-041" status="proposed" date="2026-10-09" source="SPEC-160" tags="runes, composition, primitives, card, section, architecture" %}
+{% decision id="ADR-041" status="accepted" date="2026-10-09" source="SPEC-160" tags="runes, composition, primitives, card, section, architecture" %}
 
 # Compose content on section, not card
 
