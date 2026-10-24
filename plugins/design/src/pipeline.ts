@@ -21,7 +21,7 @@ function mapTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => unknown):
  * SPEC-144 / WORK-613 — `design-context` declares what it registers (its
  * `registers` block), and the core participant registers it and fills this
  * plugin's `aggregated` slot with the name index. What stays is the part a
- * declaration cannot express: writing the tokens into each `sandbox`, a rune
+ * declaration cannot express: writing the tokens onto each `sandbox`, a rune
  * this plugin does not own (SPEC-144 D2 — resolution, not registration).
  */
 export const designPipelineHooks: PluginPipelineHooks = {
@@ -45,11 +45,14 @@ export const designPipelineHooks: PluginPipelineHooks = {
 				return tag;
 			}
 			modified = true;
-			const injected = new Tag('meta', {
-				'data-field': 'design-tokens',
-				content: JSON.stringify(tokens),
-			});
-			return new Tag(tag.name, tag.attributes, [...tag.children, injected]);
+			// BUG-034 — on the host, where the `rf-sandbox` behaviour reads it
+			// (`dataset.designTokens`). A behaviour binds on its element's data
+			// attributes (ADR-038); a child `<meta>` here reached no reader.
+			return new Tag(
+				tag.name,
+				{ ...tag.attributes, 'data-design-tokens': JSON.stringify(tokens) },
+				tag.children,
+			);
 		});
 
 		if (!modified) return page;

@@ -1,7 +1,7 @@
 // ─── Git-Native Entity History ───
 // Derives structured lifecycle events from git commits for plan entities.
 
-import { execSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import {
@@ -49,42 +49,105 @@ interface CommitInfo {
 	message: string;
 }
 
+/** One file change in a commit, as `git log --name-status` reports it. */
+interface FileChange {
+	/** Status letter: `A`, `M`, `D`, `R` (rename), `C` (copy), `T` (type change). */
+	status: string;
+	/** Path after the commit (repo-root-relative). */
+	path: string;
+	/** Path before the commit, for renames and copies. */
+	oldPath?: string;
+}
+
+interface LoggedCommit extends CommitInfo {
+	changes: FileChange[];
+}
+
+/** `--format` for {@link parseLog}: a NUL record separator, then the meta line and the subject. */
+const LOG_FORMAT = '--format=%x00%H %aI %aN%n%s';
+
+/** Room for a log or a batch of file contents on a long history. */
+const GIT_MAX_BUFFER = 512 * 1024 * 1024;
+
+/** Run git and return stdout. `core.quotePath=false` keeps non-ASCII paths unquoted. */
+function git(args: string[], cwd: string, input?: string): Buffer {
+	return execFileSync('git', ['-c', 'core.quotePath=false', ...args], {
+		cwd,
+		input,
+		maxBuffer: GIT_MAX_BUFFER,
+		stdio: ['pipe', 'pipe', 'pipe'],
+	});
+}
+
+/** Parse `git log` output made with {@link LOG_FORMAT} and `--name-status`. Newest first. */
+function parseLog(output: string): LoggedCommit[] {
+	const commits: LoggedCommit[] = [];
+	for (const block of output.split('\x00')) {
+		const lines = block.split('\n').filter((l) => l.trim() !== '');
+		if (lines.length < 1) continue;
+
+		// Parse: HASH ISO_DATE AUTHOR_NAME
+		const metaLine = lines[0].trim();
+		const spaceIdx1 = metaLine.indexOf(' ');
+		const spaceIdx2 = metaLine.indexOf(' ', spaceIdx1 + 1);
+		if (spaceIdx1 === -1 || spaceIdx2 === -1) continue;
+
+		const changes: FileChange[] = [];
+		for (const line of lines.slice(2)) {
+			const [status, first, second] = line.split('\t');
+			if (!status || !first) continue;
+			const letter = status.charAt(0);
+			changes.push(
+				second !== undefined
+					? { status: letter, path: second, oldPath: first }
+					: { status: letter, path: first },
+			);
+		}
+
+		commits.push({
+			hash: metaLine.slice(0, spaceIdx1),
+			date: metaLine.slice(spaceIdx1 + 1, spaceIdx2),
+			author: metaLine.slice(spaceIdx2 + 1),
+			message: lines[1]?.trim() ?? '',
+			changes,
+		});
+	}
+	return commits;
+}
+
 /**
  * Get the ordered list of commits that touched a file (oldest first).
  * Uses --follow to track renames.
  */
 export function getFileCommits(filePath: string, cwd: string): CommitInfo[] {
+	return getFileVersions(filePath, cwd).map(({ commit }) => commit);
+}
+
+/** A file as one commit left it: the commit, and the file's path at that commit. */
+interface FileVersion {
+	commit: CommitInfo;
+	path: string;
+	/** The commit deleted the file, so it has no contents there. */
+	deleted: boolean;
+}
+
+/** Every commit that touched a file, oldest first, with the file's path at each (`--follow`). */
+function getFileVersions(filePath: string, cwd: string): FileVersion[] {
 	try {
-		const output = execSync(`git log --follow --format="%H %aI %aN%n%s" -- "${filePath}"`, {
+		const output = git(
+			['log', '--follow', '--name-status', LOG_FORMAT, '--', filePath],
 			cwd,
-			encoding: 'utf-8',
-			maxBuffer: 10 * 1024 * 1024,
-			stdio: ['pipe', 'pipe', 'pipe'],
-		});
-
-		const commits: CommitInfo[] = [];
-		const lines = output.trim().split('\n');
-
-		for (let i = 0; i < lines.length; i += 2) {
-			const metaLine = lines[i]?.trim();
-			const messageLine = lines[i + 1]?.trim();
-			if (!metaLine) continue;
-
-			// Parse: HASH ISO_DATE AUTHOR_NAME
-			const spaceIdx1 = metaLine.indexOf(' ');
-			const spaceIdx2 = metaLine.indexOf(' ', spaceIdx1 + 1);
-			if (spaceIdx1 === -1 || spaceIdx2 === -1) continue;
-
-			const hash = metaLine.slice(0, spaceIdx1);
-			const date = metaLine.slice(spaceIdx1 + 1, spaceIdx2);
-			const author = metaLine.slice(spaceIdx2 + 1);
-
-			commits.push({ hash, date, author, message: messageLine ?? '' });
-		}
-
-		// Reverse to oldest-first for diffing
-		commits.reverse();
-		return commits;
+		).toString('utf-8');
+		return parseLog(output)
+			.reverse()
+			.map(({ changes, ...commit }) => {
+				const change = changes[0];
+				return {
+					commit,
+					path: change?.path ?? filePath,
+					deleted: change?.status === 'D',
+				};
+			});
 	} catch {
 		return [];
 	}
@@ -94,18 +157,51 @@ export function getFileCommits(filePath: string, cwd: string): CommitInfo[] {
  * Get file contents at a specific commit.
  */
 export function getFileAtCommit(hash: string, filePath: string, cwd: string): string | null {
+	return readFilesAtCommits([{ hash, path: filePath }], cwd)[0];
+}
+
+/**
+ * Read many files at many commits through one `git cat-file --batch` process,
+ * rather than one `git show` per file and commit. Paths are repo-root-relative.
+ * An entry is `null` where the file does not exist at that commit.
+ */
+export function readFilesAtCommits(
+	specs: Array<{ hash: string; path: string }>,
+	cwd: string,
+): Array<string | null> {
+	if (specs.length === 0) return [];
+	let output: Buffer;
 	try {
-		return execSync(`git show "${hash}:${filePath}"`, {
+		output = git(
+			['cat-file', '--batch'],
 			cwd,
-			encoding: 'utf-8',
-			maxBuffer: 10 * 1024 * 1024,
-			stdio: ['pipe', 'pipe', 'pipe'],
-		});
+			specs.map(({ hash, path }) => `${hash}:${path}\n`).join(''),
+		);
 	} catch {
-		// File may not exist at this commit (pre-rename)
-		// Try to find the file via diff-tree to handle renames
-		return null;
+		return specs.map(() => null);
 	}
+
+	// Each answer is `<oid> <type> <size>\n<contents>\n`, or `<spec> missing\n`
+	// (also `ambiguous`), in the order the specs were written.
+	const results: Array<string | null> = [];
+	let offset = 0;
+	for (let i = 0; i < specs.length; i++) {
+		const eol = output.indexOf(0x0a, offset);
+		if (eol === -1) {
+			results.push(null);
+			continue;
+		}
+		const header = output.toString('utf-8', offset, eol).split(' ');
+		offset = eol + 1;
+		if (header.length !== 3 || !/^\d+$/.test(header[2])) {
+			results.push(null);
+			continue;
+		}
+		const size = Number(header[2]);
+		results.push(header[1] === 'blob' ? output.toString('utf-8', offset, offset + size) : null);
+		offset += size + 1;
+	}
+	return results;
 }
 
 /**
@@ -151,21 +247,41 @@ function snapshotFromContent(content: string): FileSnapshot {
  * @returns Array of HistoryEvent objects, oldest first
  */
 export function extractEntityHistory(filePath: string, cwd: string): HistoryEvent[] {
-	const commits = getFileCommits(filePath, cwd);
-	if (commits.length === 0) return [];
+	const versions = getFileVersions(filePath, cwd);
+	return eventsFromVersions(versions, readVersionContents(versions, cwd));
+}
 
+/** The file's contents at each version, in one batch; `null` where it was deleted. */
+function readVersionContents(versions: FileVersion[], cwd: string): Array<string | null> {
+	const live = versions.filter((v) => !v.deleted);
+	const read = readFilesAtCommits(
+		live.map((v) => ({ hash: v.commit.hash, path: v.path })),
+		cwd,
+	);
+	let next = 0;
+	return versions.map((v) => (v.deleted ? null : read[next++]));
+}
+
+/**
+ * Turn a file's versions (oldest first) and its contents at each into history
+ * events: a `created` event, then one event per later commit, classified by
+ * what the diff against the previous version changed.
+ */
+function eventsFromVersions(
+	versions: FileVersion[],
+	contents: Array<string | null>,
+): HistoryEvent[] {
 	const events: HistoryEvent[] = [];
 
 	let prevSnapshot: FileSnapshot | null = null;
 
-	for (let i = 0; i < commits.length; i++) {
-		const commit = commits[i];
-		const content = getFileAtCommit(commit.hash, filePath, cwd);
+	for (let i = 0; i < versions.length; i++) {
+		const commit = versions[i].commit;
+		const content = contents[i];
 
-		// If we can't get the file content (e.g. pre-rename), try the old name
+		// No contents at this commit (the commit deleted the file, or it could
+		// not be read). Record the creation if this is the first commit.
 		if (content === null) {
-			// For renamed files, the first commits may fail to resolve.
-			// Record a content event since we know the file was touched.
 			if (i === 0) {
 				events.push({
 					kind: 'created',
@@ -281,62 +397,65 @@ interface BatchCommitInfo {
 	files: string[];
 }
 
-/**
- * Get all commits affecting a directory, with their affected file lists.
- * Returns newest-first (git default).
- */
-export function getBatchCommits(planDir: string, cwd: string, since?: string): BatchCommitInfo[] {
+/** Every commit that touched `planDir`, newest first, with rename detection. */
+function logPlanDir(planDir: string, cwd: string, since?: string): LoggedCommit[] {
 	try {
-		// Use %x00 as record separator to avoid ambiguity with blank lines in output
-		let cmd = `git log --format="%x00%H %aI %aN%n%s" --name-only -- "${planDir}"`;
-		if (since) {
-			cmd = `git log --since="${since}" --format="%x00%H %aI %aN%n%s" --name-only -- "${planDir}"`;
-		}
-
-		const output = execSync(cmd, {
-			cwd,
-			encoding: 'utf-8',
-			maxBuffer: 10 * 1024 * 1024,
-			stdio: ['pipe', 'pipe', 'pipe'],
-		});
-
-		const commits: BatchCommitInfo[] = [];
-		// Split on the NUL byte record separator we injected
-		const blocks = output.split('\x00').filter((b) => b.trim() !== '');
-
-		for (const block of blocks) {
-			const lines = block.split('\n').filter((l) => l.trim() !== '');
-			if (lines.length < 2) continue;
-
-			const metaLine = lines[0].trim();
-			const messageLine = lines[1].trim();
-
-			const spaceIdx1 = metaLine.indexOf(' ');
-			const spaceIdx2 = metaLine.indexOf(' ', spaceIdx1 + 1);
-			if (spaceIdx1 === -1 || spaceIdx2 === -1) continue;
-
-			const hash = metaLine.slice(0, spaceIdx1);
-			const date = metaLine.slice(spaceIdx1 + 1, spaceIdx2);
-			const author = metaLine.slice(spaceIdx2 + 1);
-
-			const files = lines
-				.slice(2)
-				.map((l) => l.trim())
-				.filter((l) => l.length > 0);
-
-			commits.push({ hash, date, author, message: messageLine, files });
-		}
-
-		return commits;
+		const args = ['log', '--full-history', '-M', '--name-status', LOG_FORMAT];
+		if (since) args.push(`--since=${since}`);
+		args.push('--', planDir);
+		return parseLog(git(args, cwd).toString('utf-8'));
 	} catch {
 		return [];
 	}
 }
 
 /**
+ * Get all commits affecting a directory, with their affected file lists.
+ * Returns newest-first (git default).
+ */
+export function getBatchCommits(planDir: string, cwd: string, since?: string): BatchCommitInfo[] {
+	return logPlanDir(planDir, cwd, since).map(({ changes, ...commit }) => ({
+		...commit,
+		files: changes.map((c) => c.path),
+	}));
+}
+
+/**
+ * Group a directory's log (newest first) into one version list per file,
+ * oldest first, keyed by the file's latest path. A rename carries the file's
+ * versions over to its new path, which is what `git log --follow` does for a
+ * single file.
+ */
+function groupVersionsByFile(commits: LoggedCommit[]): Map<string, FileVersion[]> {
+	const byPath = new Map<string, FileVersion[]>();
+	for (let i = commits.length - 1; i >= 0; i--) {
+		const { changes, ...commit } = commits[i];
+		// Take every renamed file's versions off its old path before placing
+		// any, so a swap (`a → b`, `b → a`) moves each history exactly once.
+		const moved = new Map<string, FileVersion[]>();
+		for (const change of changes) {
+			if (change.status !== 'R' || change.oldPath === undefined) continue;
+			const versions = byPath.get(change.oldPath);
+			if (!versions) continue;
+			moved.set(change.path, versions);
+			byPath.delete(change.oldPath);
+		}
+		for (const change of changes) {
+			const versions = moved.get(change.path) ?? byPath.get(change.path) ?? [];
+			versions.push({ commit, path: change.path, deleted: change.status === 'D' });
+			byPath.set(change.path, versions);
+		}
+	}
+	return byPath;
+}
+
+/**
  * Extract history for all plan entities in a directory.
- * Groups commits by file path and runs per-entity extraction for files
- * with more than one commit. Single-commit files get a created event.
+ *
+ * Two git processes regardless of history length: one `git log` over the
+ * directory, and one `git cat-file --batch` for the contents of every file at
+ * every commit that touched it. Files whose latest commit matches the cache
+ * are not read at all.
  *
  * @returns Map of file path → HistoryEvent[]
  */
@@ -345,60 +464,31 @@ export function extractBatchHistory(
 	cwd: string,
 	options: { since?: string; cache?: HistoryCache } = {},
 ): Map<string, HistoryEvent[]> {
-	const batchCommits = getBatchCommits(planDir, cwd, options.since);
-
-	// Group by file: track which commits touch each file + latest hash
-	const fileCommitCounts = new Map<string, number>();
-	const fileLatestHash = new Map<string, string>();
-
-	for (const commit of batchCommits) {
-		for (const file of commit.files) {
-			fileCommitCounts.set(file, (fileCommitCounts.get(file) ?? 0) + 1);
-			// First occurrence (newest commit) sets the latest hash
-			if (!fileLatestHash.has(file)) {
-				fileLatestHash.set(file, commit.hash);
-			}
-		}
-	}
+	const byFile = groupVersionsByFile(logPlanDir(planDir, cwd, options.since));
 
 	const cache = options.cache;
 	const result = new Map<string, HistoryEvent[]>();
+	const stale: Array<{ file: string; versions: FileVersion[]; latestHash: string }> = [];
 
-	for (const [file, count] of fileCommitCounts) {
-		// Check cache
-		const latestHash = fileLatestHash.get(file)!;
-		if (cache) {
-			const cached = cache.entries[file];
-			if (cached && cached.latestCommit === latestHash) {
-				result.set(file, cached.events);
-				continue;
-			}
-		}
-
-		let events: HistoryEvent[];
-		if (count === 1) {
-			// Single commit — emit a created event directly from batch data
-			const commit = batchCommits.find((c) => c.files.includes(file))!;
-			const content = getFileAtCommit(commit.hash, file, cwd);
-			const attrs = content ? parseTagAttributes(content.split('\n')[0] ?? '') : {};
-			events = [
-				{
-					kind: 'created',
-					hash: commit.hash,
-					shortHash: commit.hash.slice(0, 7),
-					date: commit.date,
-					author: commit.author,
-					message: commit.message,
-					initialAttributes: attrs,
-				},
-			];
+	for (const [file, versions] of byFile) {
+		const latestHash = versions[versions.length - 1].commit.hash;
+		const cached = cache?.entries[file];
+		if (cached && cached.latestCommit === latestHash) {
+			result.set(file, cached.events);
 		} else {
-			events = extractEntityHistory(file, cwd);
+			stale.push({ file, versions, latestHash });
 		}
+	}
 
+	const contents = readVersionContents(
+		stale.flatMap((s) => s.versions),
+		cwd,
+	);
+	let offset = 0;
+	for (const { file, versions, latestHash } of stale) {
+		const events = eventsFromVersions(versions, contents.slice(offset, offset + versions.length));
+		offset += versions.length;
 		result.set(file, events);
-
-		// Update cache
 		if (cache) {
 			cache.entries[file] = { latestCommit: latestHash, events };
 		}

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, writeFileSync, rmSync } from 'fs';
+import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from 'fs';
+import { tmpdir } from 'os';
 import { join } from 'path';
 import { execSync } from 'child_process';
 import {
@@ -9,6 +10,9 @@ import {
 	diffAttributes,
 	diffCriteria,
 	extractEntityHistory,
+	extractBatchHistory,
+	readFilesAtCommits,
+	type HistoryCache,
 } from '../src/history.js';
 
 // ─── Unit tests (no git required) ───
@@ -458,5 +462,110 @@ describe('extractEntityHistory', () => {
 		const events = extractEntityHistory('work/task.md', TMP);
 		// Date should be a valid ISO 8601 string
 		expect(new Date(events[0].date).toISOString()).toBeTruthy();
+	});
+});
+
+describe('extractBatchHistory', () => {
+	beforeEach(() => {
+		mkdirSync(TMP, { recursive: true });
+		git('init');
+		git('config user.email "test@test.com"');
+		git('config user.name "Test Author"');
+	});
+
+	afterEach(() => {
+		rmSync(TMP, { recursive: true, force: true });
+	});
+
+	const task = (status: string) =>
+		`{% work id="WORK-001" status="${status}" %}\n\n# Task\n\nA body long enough for git to see a rename.\n\n{% /work %}`;
+
+	it('matches extractEntityHistory for every file', () => {
+		writeAndCommit('plan/work/a.md', task('draft'), 'Create a');
+		writeAndCommit(
+			'plan/work/b.md',
+			'{% bug id="BUG-001" status="confirmed" %}\n\n# Bug\n\n{% /bug %}',
+			'Create b',
+		);
+		writeAndCommit('plan/work/a.md', task('ready'), 'Promote a');
+
+		const batch = extractBatchHistory('plan', TMP);
+		expect([...batch.keys()].sort()).toEqual(['plan/work/a.md', 'plan/work/b.md']);
+		for (const [file, events] of batch) {
+			expect(events).toEqual(extractEntityHistory(file, TMP));
+		}
+	});
+
+	it('follows a rename, keyed by the new path, with the contents before it', () => {
+		writeAndCommit('plan/work/old-name.md', task('draft'), 'Create');
+		git('mv plan/work/old-name.md plan/work/WORK-001-new-name.md');
+		git('commit -m "Rename"');
+		writeAndCommit('plan/work/WORK-001-new-name.md', task('done'), 'Finish');
+
+		const batch = extractBatchHistory('plan', TMP);
+		expect([...batch.keys()]).toEqual(['plan/work/WORK-001-new-name.md']);
+
+		const events = batch.get('plan/work/WORK-001-new-name.md')!;
+		expect(events.map((e) => e.kind)).toEqual(['created', 'content', 'attributes']);
+		expect(events[0].initialAttributes).toEqual({ id: 'WORK-001', status: 'draft' });
+		expect(events[2].attributeChanges).toContainEqual({
+			field: 'status',
+			from: 'draft',
+			to: 'done',
+		});
+	});
+
+	it('reuses a cached file whose latest commit is unchanged', () => {
+		writeAndCommit('plan/work/a.md', task('draft'), 'Create a');
+		const cache: HistoryCache = { entries: {} };
+		extractBatchHistory('plan', TMP, { cache });
+
+		const sentinel = [{ ...cache.entries['plan/work/a.md'].events[0], message: 'from cache' }];
+		cache.entries['plan/work/a.md'].events = sentinel;
+		expect(extractBatchHistory('plan', TMP, { cache }).get('plan/work/a.md')).toBe(sentinel);
+
+		writeAndCommit('plan/work/a.md', task('ready'), 'Promote a');
+		const events = extractBatchHistory('plan', TMP, { cache }).get('plan/work/a.md')!;
+		expect(events.map((e) => e.message)).toEqual(['Create a', 'Promote a']);
+	});
+
+	it('returns an empty map outside a git repository', () => {
+		const outside = mkdtempSync(join(tmpdir(), 'plan-history-'));
+		try {
+			expect(extractBatchHistory('.', outside).size).toBe(0);
+		} finally {
+			rmSync(outside, { recursive: true, force: true });
+		}
+	});
+});
+
+describe('readFilesAtCommits', () => {
+	beforeEach(() => {
+		mkdirSync(TMP, { recursive: true });
+		git('init');
+		git('config user.email "test@test.com"');
+		git('config user.name "Test Author"');
+	});
+
+	afterEach(() => {
+		rmSync(TMP, { recursive: true, force: true });
+	});
+
+	it('reads many files at many commits, in order, with null for a missing one', () => {
+		writeAndCommit('a.md', 'first — with a multi-byte character', 'one');
+		const one = execSync('git rev-parse HEAD', { cwd: TMP, encoding: 'utf-8' }).trim();
+		writeAndCommit('a.md', 'second\nline two\n', 'two');
+		const two = execSync('git rev-parse HEAD', { cwd: TMP, encoding: 'utf-8' }).trim();
+
+		expect(
+			readFilesAtCommits(
+				[
+					{ hash: two, path: 'a.md' },
+					{ hash: one, path: 'missing.md' },
+					{ hash: one, path: 'a.md' },
+				],
+				TMP,
+			),
+		).toEqual(['second\nline two\n', null, 'first — with a multi-byte character']);
 	});
 });

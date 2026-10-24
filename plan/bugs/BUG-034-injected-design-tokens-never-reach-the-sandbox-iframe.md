@@ -1,4 +1,4 @@
-{% bug id="BUG-034" status="confirmed" severity="major" source="SPEC-002" tags="behaviors,sandbox,design" milestone="v0.41.3" %}
+{% bug id="BUG-034" status="fixed" severity="major" source="SPEC-002" tags="behaviors,sandbox,design" milestone="v0.41.3" %}
 
 # Injected design tokens never reach the sandbox iframe
 
@@ -51,5 +51,19 @@ changeset and review.
 ## Environment
 
 - `main` after {% ref "BUG-032" /%} (v0.39.0 packages)
+
+## Resolution
+
+Completed: 2026-10-24
+
+Branch: `claude/milestone-v0-41-3-1mzttp`
+
+### What was done
+- Chose the host attribute (ADR-038): `plugins/design/src/pipeline.ts` and `packages/editor/app/src/lib/preview/block-renderer.ts` now set `data-design-tokens` on the sandbox instead of appending a `<meta data-field="design-tokens">` child. The behaviour already reads `dataset.designTokens`, so it is unchanged.
+- `plugins/design/test/registry-snapshot.test.ts`: the snapshot collector reads the attribute (the committed snapshot is unchanged), and a new test asserts the identity-transformed `rf-sandbox` carries its context's tokens and that no meta child is left.
+- `packages/behaviors/test/sandbox.test.ts`: the host attribute's tokens reach the iframe `srcdoc`.
+
+### Notes
+- This is a visible change, with its own changeset (`.changeset/sandbox-design-tokens-host.md`).
 
 {% /bug %}

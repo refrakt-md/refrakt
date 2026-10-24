@@ -51,11 +51,13 @@ function isShallowClone(cwd: string): boolean {
  * Get the most recent commit timestamp (in unix seconds) for each file.
  * Returns a Map keyed by file path relative to the git root.
  * Only records the first (most recent) timestamp per file.
+ * The `-- .` pathspec limits the walk to `cwd` (the content directory), so its
+ * cost follows the commits that touched the content, not the whole repository.
  */
 function getGitModifiedTimes(cwd: string): Map<string, number> {
 	const mtimes = new Map<string, number>();
 	try {
-		const output = execSync('git log --format="%at" --name-only --diff-filter=ACMR HEAD', {
+		const output = execSync('git log --format="%at" --name-only --diff-filter=ACMR HEAD -- .', {
 			cwd,
 			encoding: 'utf-8',
 			maxBuffer: 10 * 1024 * 1024,
@@ -90,12 +92,15 @@ function getGitModifiedTimes(cwd: string): Map<string, number> {
 function getGitCreatedTimes(cwd: string): Map<string, number> {
 	const ctimes = new Map<string, number>();
 	try {
-		const output = execSync('git log --format="%at" --name-only --diff-filter=A --reverse HEAD', {
-			cwd,
-			encoding: 'utf-8',
-			maxBuffer: 10 * 1024 * 1024,
-			stdio: ['pipe', 'pipe', 'pipe'],
-		});
+		const output = execSync(
+			'git log --format="%at" --name-only --diff-filter=A --reverse HEAD -- .',
+			{
+				cwd,
+				encoding: 'utf-8',
+				maxBuffer: 10 * 1024 * 1024,
+				stdio: ['pipe', 'pipe', 'pipe'],
+			},
+		);
 
 		let currentTimestamp = 0;
 		for (const line of output.split('\n')) {

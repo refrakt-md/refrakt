@@ -137,7 +137,7 @@ function designContexts(aggregated: AggregatedData): Record<string, unknown> {
 
 /**
  * Client-side equivalent of the design package's Phase 4 postProcess.
- * Walks the serialized tree and injects design-tokens meta into Sandbox nodes
+ * Walks the serialized tree and sets `data-design-tokens` on Sandbox nodes
  * based on their context attribute and the cached aggregated data.
  */
 function injectSandboxDesignTokens(node: RendererNode, aggregated: AggregatedData): RendererNode {
@@ -157,13 +157,11 @@ function injectSandboxDesignTokens(node: RendererNode, aggregated: AggregatedDat
 		const scope = readField(tag, 'context') || 'default';
 		const tokens = contexts[scope];
 		if (tokens) {
-			const injected: SerializedTag = {
-				$$mdtype: 'Tag',
-				name: 'meta',
-				attributes: { 'data-field': 'design-tokens', content: JSON.stringify(tokens) },
-				children: [],
+			// On the host, as the design plugin's postProcess writes it (BUG-034).
+			return {
+				...tag,
+				attributes: { ...tag.attributes, 'data-design-tokens': JSON.stringify(tokens) },
 			};
-			return { ...tag, children: [...(tag.children ?? []), injected] };
 		}
 	}
 
