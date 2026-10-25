@@ -21,9 +21,9 @@ Wrap any content in a preview to give it a visual frame with a theme toggle.
 
 ```markdoc
 {% preview title="Hint variants" %}
-{% hint type="note" %}
-This is a note inside a preview.
-{% /hint %}
+	{% hint type="note" %}
+	This is a note inside a preview.
+	{% /hint %}
 {% /preview %}
 ```
 
@@ -47,9 +47,9 @@ Available presets: `mobile` (375px), `tablet` (768px), `desktop` (full width).
 
 ```markdoc
 {% preview source=true responsive="mobile,tablet,desktop" %}
-{% hint type="note" %}
-Resize me to see how this looks at different breakpoints.
-{% /hint %}
+	{% hint type="note" %}
+	Resize me to see how this looks at different breakpoints.
+	{% /hint %}
 {% /preview %}
 ```
 
@@ -59,9 +59,9 @@ You can include any subset of presets:
 
 ```markdoc
 {% preview responsive="mobile,tablet" %}
-{% hint type="check" %}
-Mobile and tablet only -- no desktop option.
-{% /hint %}
+	{% hint type="check" %}
+	Mobile and tablet only -- no desktop option.
+	{% /hint %}
 {% /preview %}
 ```
 
@@ -75,9 +75,9 @@ Add `source` to automatically extract the children's Markdoc text as the code vi
 
 ```markdoc
 {% preview source=true %}
-{% hint type="note" %}
-This is a note inside a preview.
-{% /hint %}
+	{% hint type="note" %}
+	This is a note inside a preview.
+	{% /hint %}
 {% /preview %}
 ```
 
@@ -105,11 +105,11 @@ Preview pairs naturally with the [sandbox](/runes/sandbox) rune. Nest a sandbox 
 
 ```markdoc
 {% preview source=true responsive="mobile,tablet,desktop" %}
-{% sandbox framework="tailwind" %}
-<button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-  Click me
-</button>
-{% /sandbox %}
+	{% sandbox framework="tailwind" %}
+	<button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+	  Click me
+	</button>
+	{% /sandbox %}
 {% /preview %}
 ```
 
@@ -117,15 +117,15 @@ The preview toolbar controls the sandbox iframe -- theme toggles propagate into 
 
 ```markdoc
 {% preview source=true %}
-{% sandbox framework="tailwind" %}
-<style data-source="CSS">
-  .card { padding: 1.5rem; border-radius: 0.5rem; }
-</style>
-<div class="card" data-source="HTML">
-  <h3>Card Title</h3>
-  <p>Card content goes here.</p>
-</div>
-{% /sandbox %}
+	{% sandbox framework="tailwind" %}
+	<style data-source="CSS">
+	  .card { padding: 1.5rem; border-radius: 0.5rem; }
+	</style>
+	<div class="card" data-source="HTML">
+	  <h3>Card Title</h3>
+	  <p>Card content goes here.</p>
+	</div>
+	{% /sandbox %}
 {% /preview %}
 ```
 

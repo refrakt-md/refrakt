@@ -16,20 +16,20 @@ Render raw HTML, CSS, and JavaScript in an isolated iframe. The sandbox handles 
 Write HTML directly inside the sandbox tag. The content is rendered in an iframe, completely isolated from the rest of the page.
 
 {% preview source=true %}
-{% sandbox %}
-<style>
-  .badge {
-    display: inline-block;
-    padding: 4px 12px;
-    background: #7C3AED;
-    color: white;
-    border-radius: 9999px;
-    font-family: system-ui;
-    font-size: 14px;
-  }
-</style>
-<span class="badge">Live HTML</span>
-{% /sandbox %}
+	{% sandbox %}
+	<style>
+	  .badge {
+	    display: inline-block;
+	    padding: 4px 12px;
+	    background: #7C3AED;
+	    color: white;
+	    border-radius: 9999px;
+	    font-family: system-ui;
+	    font-size: 14px;
+	  }
+	</style>
+	<span class="badge">Live HTML</span>
+	{% /sandbox %}
 {% /preview %}
 
 ## Framework presets
@@ -37,16 +37,16 @@ Write HTML directly inside the sandbox tag. The content is rendered in an iframe
 The `framework` attribute loads a CSS framework from CDN automatically.
 
 {% preview source=true %}
-{% sandbox framework="tailwind" %}
-<div class="flex gap-3 p-4">
-  <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-    Primary
-  </button>
-  <button class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-    Secondary
-  </button>
-</div>
-{% /sandbox %}
+	{% sandbox framework="tailwind" %}
+	<div class="flex gap-3 p-4">
+	  <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+	    Primary
+	  </button>
+	  <button class="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+	    Secondary
+	  </button>
+	</div>
+	{% /sandbox %}
 {% /preview %}
 
 Available presets:
@@ -63,15 +63,15 @@ Available presets:
 Load any script or stylesheet by URL with the `dependencies` attribute.
 
 {% preview source=true %}
-{% sandbox dependencies="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" %}
-<main class="container">
-  <article>
-    <h2>Pico CSS card</h2>
-    <p>Loaded via the dependencies attribute.</p>
-    <button>Click me</button>
-  </article>
-</main>
-{% /sandbox %}
+	{% sandbox dependencies="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" %}
+	<main class="container">
+	  <article>
+	    <h2>Pico CSS card</h2>
+	    <p>Loaded via the dependencies attribute.</p>
+	    <button>Click me</button>
+	  </article>
+	</main>
+	{% /sandbox %}
 {% /preview %}
 
 ## With JavaScript
@@ -79,45 +79,45 @@ Load any script or stylesheet by URL with the `dependencies` attribute.
 Scripts run inside the sandboxed iframe, fully isolated from the host page.
 
 {% preview source=true %}
-{% sandbox %}
-<style>
-  .counter {
-    font-family: system-ui;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-  }
-  .counter button {
-    padding: 6px 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    background: white;
-    cursor: pointer;
-    font-size: 16px;
-  }
-  .counter button:hover { background: #f3f4f6; }
-  .counter span { font-size: 24px; font-weight: 600; min-width: 3ch; text-align: center; }
-  @media (prefers-color-scheme: dark) {
-    .counter button { background: #374151; border-color: #4b5563; color: #f3f4f6; }
-    .counter button:hover { background: #4b5563; }
-  }
-  [data-theme="dark"] .counter button { background: #374151; border-color: #4b5563; color: #f3f4f6; }
-  [data-theme="dark"] .counter button:hover { background: #4b5563; }
-</style>
-<div class="counter">
-  <button onclick="update(-1)">−</button>
-  <span id="count">0</span>
-  <button onclick="update(1)">+</button>
-</div>
-<script>
-  let count = 0;
-  function update(delta) {
-    count += delta;
-    document.getElementById('count').textContent = count;
-  }
-</script>
-{% /sandbox %}
+	{% sandbox %}
+	<style>
+	  .counter {
+	    font-family: system-ui;
+	    display: flex;
+	    align-items: center;
+	    gap: 12px;
+	    padding: 16px;
+	  }
+	  .counter button {
+	    padding: 6px 16px;
+	    border: 1px solid #d1d5db;
+	    border-radius: 6px;
+	    background: white;
+	    cursor: pointer;
+	    font-size: 16px;
+	  }
+	  .counter button:hover { background: #f3f4f6; }
+	  .counter span { font-size: 24px; font-weight: 600; min-width: 3ch; text-align: center; }
+	  @media (prefers-color-scheme: dark) {
+	    .counter button { background: #374151; border-color: #4b5563; color: #f3f4f6; }
+	    .counter button:hover { background: #4b5563; }
+	  }
+	  [data-theme="dark"] .counter button { background: #374151; border-color: #4b5563; color: #f3f4f6; }
+	  [data-theme="dark"] .counter button:hover { background: #4b5563; }
+	</style>
+	<div class="counter">
+	  <button onclick="update(-1)">−</button>
+	  <span id="count">0</span>
+	  <button onclick="update(1)">+</button>
+	</div>
+	<script>
+	  let count = 0;
+	  function update(delta) {
+	    count += delta;
+	    document.getElementById('count').textContent = count;
+	  }
+	</script>
+	{% /sandbox %}
 {% /preview %}
 
 ## ES modules from a CDN
@@ -125,39 +125,39 @@ Scripts run inside the sandboxed iframe, fully isolated from the host page.
 Because scripts run for real, you can `import` an ES module straight from a CDN inside a `<script type="module">` — no bundler, no install. Here a version-pinned three.js draws a spinning cube:
 
 {% preview source=true %}
-{% sandbox height=300 %}
-<style>html,body{height:100%;margin:0}canvas{display:block;width:100%;height:100%}</style>
-<canvas id="c"></canvas>
-<script type="module">
-  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-  const canvas = document.getElementById('c');
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-  camera.position.z = 3;
-  const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(1.4, 1.4, 1.4),
-    new THREE.MeshStandardMaterial({ color: 0xe15f80, flatShading: true }),
-  );
-  scene.add(cube);
-  const light = new THREE.DirectionalLight(0xffffff, 3);
-  light.position.set(2, 3, 4);
-  scene.add(light, new THREE.AmbientLight(0xffffff, 0.6));
-  function resize() {
-    const w = canvas.clientWidth, h = canvas.clientHeight;
-    renderer.setSize(w, h, false);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-  }
-  resize();
-  (function loop() {
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.013;
-    renderer.render(scene, camera);
-    requestAnimationFrame(loop);
-  })();
-</script>
-{% /sandbox %}
+	{% sandbox height=300 %}
+	<style>html,body{height:100%;margin:0}canvas{display:block;width:100%;height:100%}</style>
+	<canvas id="c"></canvas>
+	<script type="module">
+	  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+	  const canvas = document.getElementById('c');
+	  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+	  const scene = new THREE.Scene();
+	  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+	  camera.position.z = 3;
+	  const cube = new THREE.Mesh(
+	    new THREE.BoxGeometry(1.4, 1.4, 1.4),
+	    new THREE.MeshStandardMaterial({ color: 0xe15f80, flatShading: true }),
+	  );
+	  scene.add(cube);
+	  const light = new THREE.DirectionalLight(0xffffff, 3);
+	  light.position.set(2, 3, 4);
+	  scene.add(light, new THREE.AmbientLight(0xffffff, 0.6));
+	  function resize() {
+	    const w = canvas.clientWidth, h = canvas.clientHeight;
+	    renderer.setSize(w, h, false);
+	    camera.aspect = w / h;
+	    camera.updateProjectionMatrix();
+	  }
+	  resize();
+	  (function loop() {
+	    cube.rotation.x += 0.01;
+	    cube.rotation.y += 0.013;
+	    renderer.render(scene, camera);
+	    requestAnimationFrame(loop);
+	  })();
+	</script>
+	{% /sandbox %}
 {% /preview %}
 
 Pin the version for reproducibility; for production also honour `prefers-reduced-motion` and provide a fallback — see the polished [three.js scene in Media guests](/runes/media-guests#live-program).
@@ -206,7 +206,7 @@ Here a `data-shape="tree"` binding feeds this site's own rune-section page tree 
 
 {% preview source=true %}
 
-{% sandbox src="sitemap-3d" data="type:page url:/runes/*" data-shape="tree" activation="visible" height=440 /%}
+	{% sandbox src="sitemap-3d" data="type:page url:/runes/*" data-shape="tree" activation="visible" height=440 /%}
 
 {% /preview %}
 
@@ -434,43 +434,43 @@ Here a single `data="type:spec type:work type:decision type:milestone" data-shap
 When used inside a preview with `source=true`, you can mark elements with `data-source` to control what appears in the source tab. Unmarked elements (scaffolding, wrappers) are excluded from the source view but still render in the preview.
 
 {% preview source=true %}
-{% sandbox framework="tailwind" %}
-<div class="min-h-[120px] flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-  <button data-source class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 font-medium transition-colors">
-    Click me
-  </button>
-</div>
-{% /sandbox %}
+	{% sandbox framework="tailwind" %}
+	<div class="min-h-[120px] flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+	  <button data-source class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 font-medium transition-colors">
+	    Click me
+	  </button>
+	</div>
+	{% /sandbox %}
 {% /preview %}
 
 Named `data-source` values create labelled tabs in the source panel.
 
 {% preview source=true %}
-{% sandbox %}
-<style data-source="CSS">
-  .card {
-    font-family: system-ui;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 24px;
-    max-width: 300px;
-  }
-  .card h3 { margin: 0 0 8px; }
-  .card p { margin: 0; color: #6b7280; }
-  @media (prefers-color-scheme: dark) {
-    .card { border-color: #374151; }
-    .card p { color: #9ca3af; }
-  }
-  [data-theme="dark"] .card { border-color: #374151; }
-  [data-theme="dark"] .card p { color: #9ca3af; }
-</style>
-<div class="wrapper" style="padding: 24px;">
-  <div data-source="HTML" class="card">
-    <h3>Card Title</h3>
-    <p>Card content goes here.</p>
-  </div>
-</div>
-{% /sandbox %}
+	{% sandbox %}
+	<style data-source="CSS">
+	  .card {
+	    font-family: system-ui;
+	    border: 1px solid #e5e7eb;
+	    border-radius: 12px;
+	    padding: 24px;
+	    max-width: 300px;
+	  }
+	  .card h3 { margin: 0 0 8px; }
+	  .card p { margin: 0; color: #6b7280; }
+	  @media (prefers-color-scheme: dark) {
+	    .card { border-color: #374151; }
+	    .card p { color: #9ca3af; }
+	  }
+	  [data-theme="dark"] .card { border-color: #374151; }
+	  [data-theme="dark"] .card p { color: #9ca3af; }
+	</style>
+	<div class="wrapper" style="padding: 24px;">
+	  <div data-source="HTML" class="card">
+	    <h3>Card Title</h3>
+	    <p>Card content goes here.</p>
+	  </div>
+	</div>
+	{% /sandbox %}
 {% /preview %}
 
 ## Standalone usage
@@ -507,37 +507,37 @@ Without a preview wrapper, the sandbox renders inline with no chrome — useful 
 A more complete example using Tailwind's utility classes for a responsive card layout.
 
 {% preview source=true responsive="mobile,tablet,desktop" %}
-{% sandbox framework="tailwind" %}
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-    <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-lg flex items-center justify-center mb-4">
-      <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-      </svg>
-    </div>
-    <h3 class="font-semibold text-gray-900 dark:text-white mb-1">Fast</h3>
-    <p class="text-sm text-gray-500 dark:text-gray-400">Built for speed with zero runtime overhead.</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center mb-4">
-      <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
-      </svg>
-    </div>
-    <h3 class="font-semibold text-gray-900 dark:text-white mb-1">Flexible</h3>
-    <p class="text-sm text-gray-500 dark:text-gray-400">Works with any content structure.</p>
-  </div>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-    <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center mb-4">
-      <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-      </svg>
-    </div>
-    <h3 class="font-semibold text-gray-900 dark:text-white mb-1">Secure</h3>
-    <p class="text-sm text-gray-500 dark:text-gray-400">Fully isolated in a sandboxed iframe.</p>
-  </div>
-</div>
-{% /sandbox %}
+	{% sandbox framework="tailwind" %}
+	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+	  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+	    <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-lg flex items-center justify-center mb-4">
+	      <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+	        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+	      </svg>
+	    </div>
+	    <h3 class="font-semibold text-gray-900 dark:text-white mb-1">Fast</h3>
+	    <p class="text-sm text-gray-500 dark:text-gray-400">Built for speed with zero runtime overhead.</p>
+	  </div>
+	  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+	    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center mb-4">
+	      <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+	        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+	      </svg>
+	    </div>
+	    <h3 class="font-semibold text-gray-900 dark:text-white mb-1">Flexible</h3>
+	    <p class="text-sm text-gray-500 dark:text-gray-400">Works with any content structure.</p>
+	  </div>
+	  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+	    <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center mb-4">
+	      <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+	        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+	      </svg>
+	    </div>
+	    <h3 class="font-semibold text-gray-900 dark:text-white mb-1">Secure</h3>
+	    <p class="text-sm text-gray-500 dark:text-gray-400">Fully isolated in a sandboxed iframe.</p>
+	  </div>
+	</div>
+	{% /sandbox %}
 {% /preview %}
 
 ## Design token context
@@ -598,7 +598,7 @@ Discovered content is automatically wrapped in `data-source` annotated elements,
 The `src` attribute works alongside other sandbox attributes. For example, load files from a directory and apply a CSS framework:
 
 {% preview source=true %}
-{% sandbox src="profile-card" framework="tailwind" /%}
+	{% sandbox src="profile-card" framework="tailwind" /%}
 {% /preview %}
 
 ### Merging with inline content

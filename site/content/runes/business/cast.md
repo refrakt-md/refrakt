@@ -21,14 +21,14 @@ List items are parsed into name and role parts automatically.
 
 {% preview source=true %}
 
-{% cast layout="grid" %}
-- Alice Johnson - CEO
-  ![Alice Johnson](https://assets.refrakt.md/team-alice-johnson.png)
-- Bob Smith - CTO
-  ![Bob Smith](https://assets.refrakt.md/team-bob-smith.png)
-- Carol Williams - Head of Design
-- David Chen - Lead Engineer
-{% /cast %}
+	{% cast layout="grid" %}
+	- Alice Johnson - CEO
+	  ![Alice Johnson](https://assets.refrakt.md/team-alice-johnson.png)
+	- Bob Smith - CTO
+	  ![Bob Smith](https://assets.refrakt.md/team-bob-smith.png)
+	- Carol Williams - Head of Design
+	- David Chen - Lead Engineer
+	{% /cast %}
 
 {% /preview %}
 
@@ -38,14 +38,14 @@ Use `layout="list"` for a denser, single-column directory.
 
 {% preview source=true %}
 
-{% cast layout="list" %}
-- Alice Johnson - CEO
-  ![Alice Johnson](https://assets.refrakt.md/team-alice-johnson.png)
-- Bob Smith - CTO
-  ![Bob Smith](https://assets.refrakt.md/team-bob-smith.png)
-- Carol Williams - Head of Design
-- David Chen - Lead Engineer
-{% /cast %}
+	{% cast layout="list" %}
+	- Alice Johnson - CEO
+	  ![Alice Johnson](https://assets.refrakt.md/team-alice-johnson.png)
+	- Bob Smith - CTO
+	  ![Bob Smith](https://assets.refrakt.md/team-bob-smith.png)
+	- Carol Williams - Head of Design
+	- David Chen - Lead Engineer
+	{% /cast %}
 
 {% /preview %}
 
@@ -55,15 +55,15 @@ Use `{% cast-member %}` tags for more control, including bios.
 
 {% preview source=true %}
 
-{% cast %}
-{% cast-member name="Alice Johnson" role="CEO" %}
-Alice founded the company in 2020.
-{% /cast-member %}
+	{% cast %}
+		{% cast-member name="Alice Johnson" role="CEO" %}
+		Alice founded the company in 2020.
+		{% /cast-member %}
 
-{% cast-member name="Bob Smith" role="CTO" %}
-Bob leads the engineering team.
-{% /cast-member %}
-{% /cast %}
+		{% cast-member name="Bob Smith" role="CTO" %}
+		Bob leads the engineering team.
+		{% /cast-member %}
+	{% /cast %}
 
 {% /preview %}
 

@@ -21,21 +21,21 @@ An album with an artist and track listing.
 
 {% preview source=true %}
 
-{% playlist type="album" artist="Pink Floyd" media-position="start" %}
-![The Dark Side of the Moon](https://assets.refrakt.md/playlist-dark-side-of-the-moon.png)
+	{% playlist type="album" artist="Pink Floyd" media-position="start" %}
+	![The Dark Side of the Moon](https://assets.refrakt.md/playlist-dark-side-of-the-moon.png)
 
----
+	---
 
-# The Dark Side of the Moon
+	# The Dark Side of the Moon
 
-A landmark progressive rock album exploring themes of time, death, and madness.
+	A landmark progressive rock album exploring themes of time, death, and madness.
 
-- **Speak to Me** (1:13)
-- **Breathe** (2:43)
-- **On the Run** (3:36)
-- **Time** (7:05)
-- **The Great Gig in the Sky** (4:44)
-{% /playlist %}
+	- **Speak to Me** (1:13)
+	- **Breathe** (2:43)
+	- **On the Run** (3:36)
+	- **Time** (7:05)
+	- **The Great Gig in the Sky** (4:44)
+	{% /playlist %}
 
 {% /preview %}
 
@@ -45,15 +45,15 @@ Use `type="podcast"` for episodic content with dates.
 
 {% preview source=true %}
 
-{% playlist type="podcast" %}
-# Design Systems Weekly
+	{% playlist type="podcast" %}
+	# Design Systems Weekly
 
-A podcast about building and scaling design systems.
+	A podcast about building and scaling design systems.
 
-- **Component Libraries at Scale** (45:30) — March 2025
-- **Token Architecture** (38:15) — February 2025
-- **Accessibility First** (42:00) — January 2025
-{% /playlist %}
+	- **Component Libraries at Scale** (45:30) — March 2025
+	- **Token Architecture** (38:15) — February 2025
+	- **Accessibility First** (42:00) — January 2025
+	{% /playlist %}
 
 {% /preview %}
 
@@ -63,14 +63,14 @@ When tracks have different artists, use italic text for per-track attribution. O
 
 {% preview source=true %}
 
-{% playlist type="mix" %}
-# Summer Vibes 2025
+	{% playlist type="mix" %}
+	# Summer Vibes 2025
 
-- **Midnight City** (4:03) *M83*
-- **Electric Feel** (3:49) *MGMT*
-- **Do I Wanna Know?** (4:32) *Arctic Monkeys*
-- **Intro** (4:18) *The xx*
-{% /playlist %}
+	- **Midnight City** (4:03) *M83*
+	- **Electric Feel** (3:49) *MGMT*
+	- **Do I Wanna Know?** (4:32) *Arctic Monkeys*
+	- **Intro** (4:18) *The xx*
+	{% /playlist %}
 
 {% /preview %}
 
@@ -80,15 +80,15 @@ Tracks can include nested lists for chapter markers or lyrics. Use `content="cha
 
 {% preview source=true %}
 
-{% playlist type="podcast" content="chapters" %}
-# Tech Talk: Web Components
+	{% playlist type="podcast" content="chapters" %}
+	# Tech Talk: Web Components
 
-- **Episode 42: Shadow DOM Deep Dive** (1:02:15)
-  1. **Introduction** (0:00) Overview of today's topic
-  2. **What is Shadow DOM?** (3:45) Core concepts explained
-  3. **Styling strategies** (18:30) CSS custom properties and parts
-  4. **Q&A** (45:00) Listener questions
-{% /playlist %}
+	- **Episode 42: Shadow DOM Deep Dive** (1:02:15)
+	  1. **Introduction** (0:00) Overview of today's topic
+	  2. **What is Shadow DOM?** (3:45) Core concepts explained
+	  3. **Styling strategies** (18:30) CSS custom properties and parts
+	  4. **Q&A** (45:00) Listener questions
+	{% /playlist %}
 
 {% /preview %}
 

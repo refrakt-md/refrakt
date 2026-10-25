@@ -30,6 +30,10 @@
     "./validate.js": {
       "types": "./dist/commands/validate-core.d.ts",
       "default": "./dist/commands/validate-core.js"
+    },
+    "./format.js": {
+      "types": "./dist/commands/format.d.ts",
+      "default": "./dist/commands/format.js"
     }
   },
   "files": [

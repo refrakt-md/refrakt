@@ -24,6 +24,12 @@ Every field is optional, and you can add arbitrary custom fields — runes and p
 
 The ones refrakt itself reads are listed in the **[frontmatter reference](/docs/authoring/frontmatter)**, generated from the schema. Two worth knowing early, because they turn up in the rest of this page: `slug` overrides the computed URL (see [Routing](#routing)), and `draft` keeps a page out of the build (see [Drafts](#drafts)).
 
+## Indenting nested runes
+
+A rune's content may be indented, with tabs or spaces, to show what it nests. In refrakt an indented line is never a code block, as it would be in plain Markdown. For code, use a fenced block (```` ``` ````).
+
+The convention is to indent a rune's content by one tab **only when the rune holds another block rune**. Content that is only prose stays flat. [`refrakt format`](/docs/cli/format) applies the rule, and `refrakt format --check` verifies it in CI.
+
 ## Routing
 
 URLs are derived from file paths with three transformations applied in order:
@@ -102,16 +108,16 @@ Layouts define named regions using the `{% layout %}` and `{% region %}` runes:
 
 ```markdoc
 {% layout %}
-{% region name="header" %}
-# My Site
-{% /region %}
+	{% region name="header" %}
+	# My Site
+	{% /region %}
 
-{% region name="nav" %}
-{% nav %}
-## Docs
-- getting-started
-{% /nav %}
-{% /region %}
+	{% region name="nav" %}
+		{% nav %}
+		## Docs
+		- getting-started
+		{% /nav %}
+	{% /region %}
 {% /layout %}
 ```
 

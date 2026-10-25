@@ -21,22 +21,22 @@ Describe a faction with sections that break down its structure.
 
 {% preview source=true %}
 
-{% faction name="The Silver Order" type="knightly order" alignment="lawful" size="large" media-position="start" %}
-![The Silver Order](https://assets.refrakt.md/faction-the-silver-order.png)
+	{% faction name="The Silver Order" type="knightly order" alignment="lawful" size="large" media-position="start" %}
+	![The Silver Order](https://assets.refrakt.md/faction-the-silver-order.png)
 
-A prestigious order of knights sworn to protect the realm.
+	A prestigious order of knights sworn to protect the realm.
 
-## Ranks
+	## Ranks
 
-- Initiate
-- Knight
-- Commander
-- Grand Master
+	- Initiate
+	- Knight
+	- Commander
+	- Grand Master
 
-## Holdings
+	## Holdings
 
-Their fortress overlooks the capital city from the northern cliffs.
-{% /faction %}
+	Their fortress overlooks the capital city from the northern cliffs.
+	{% /faction %}
 
 {% /preview %}
 
@@ -46,15 +46,15 @@ Use `type` and `alignment` to classify organizations.
 
 {% preview source=true %}
 
-{% faction name="The Whispering Hand" type="thieves guild" alignment="chaotic" size="medium" %}
-An underground network of spies and thieves operating across the port cities.
+	{% faction name="The Whispering Hand" type="thieves guild" alignment="chaotic" size="medium" %}
+	An underground network of spies and thieves operating across the port cities.
 
-## Operations
+	## Operations
 
-- Smuggling
-- Information brokering
-- Blackmail
-{% /faction %}
+	- Smuggling
+	- Information brokering
+	- Blackmail
+	{% /faction %}
 
 {% /preview %}
 

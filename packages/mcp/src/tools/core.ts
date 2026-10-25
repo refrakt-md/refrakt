@@ -416,6 +416,41 @@ export const staleTool: McpTool = {
 };
 
 // ----------------------------------------------------------------------------
+// refrakt.format — re-indent nested runes (SPEC-170 D5 / WORK-657)
+// ----------------------------------------------------------------------------
+
+export const formatTool: McpTool = {
+	name: 'refrakt.format',
+	description:
+		"Re-indent Markdoc files by the indentation rule: a block tag's content is indented one tab only when the tag holds another block tag. " +
+		'Only leading whitespace changes, and a file whose parse would change is refused and left alone (listed under `refused`, with its line). ' +
+		'Set `check` to report what would change without writing.',
+	inputSchema: {
+		type: 'object',
+		properties: {
+			paths: {
+				type: 'array',
+				items: { type: 'string' },
+				description:
+					'Files or directories, relative to the project root. Default: the project root.',
+			},
+			check: {
+				type: 'boolean',
+				description: 'Report the files that would change and write nothing. Default: false.',
+			},
+		},
+		additionalProperties: false,
+	},
+	async handler(input, ctx) {
+		const o = input as { paths?: string[]; check?: boolean };
+		// The CLI's own function, as `refrakt.validate` calls it.
+		const { runFormat } = await import('@refrakt-md/cli/format.js');
+		const report = runFormat({ paths: o.paths ?? [], check: o.check, cwd: ctx.cwd });
+		return { check: !!o.check, ...report };
+	},
+};
+
+// ----------------------------------------------------------------------------
 // Aggregate set
 // ----------------------------------------------------------------------------
 
@@ -429,6 +464,7 @@ export const CORE_TOOLS: McpTool[] = [
 	inspectListTool,
 	validateTool,
 	staleTool,
+	formatTool,
 ];
 
 // ----------------------------------------------------------------------------

@@ -21,17 +21,17 @@ Headings become character sections, and the first image (if any) is extracted as
 
 {% preview source=true %}
 
-{% character name="Veshra" role="antagonist" status="alive" aliases="The Bone Witch" tags="magic-user" %}
-## Backstory
+	{% character name="Veshra" role="antagonist" status="alive" aliases="The Bone Witch" tags="magic-user" %}
+	## Backstory
 
-Raised in the shadow of the Ashen Spire, Veshra discovered her gift for necromancy at a young age.
+	Raised in the shadow of the Ashen Spire, Veshra discovered her gift for necromancy at a young age.
 
-## Abilities
+	## Abilities
 
-- Bone conjuration
-- Spirit binding
-- Plague whisper
-{% /character %}
+	- Bone conjuration
+	- Spirit binding
+	- Plague whisper
+	{% /character %}
 
 {% /preview %}
 
@@ -41,11 +41,11 @@ The `role` attribute controls visual styling to distinguish character importance
 
 {% preview source=true %}
 
-{% character name="Elena" role="protagonist" status="alive" %}
-## Background
+	{% character name="Elena" role="protagonist" status="alive" %}
+	## Background
 
-The hero of the story — a wandering scholar searching for lost texts.
-{% /character %}
+	The hero of the story — a wandering scholar searching for lost texts.
+	{% /character %}
 
 {% /preview %}
 
@@ -55,11 +55,11 @@ Track whether a character is alive, dead, unknown, or missing.
 
 {% preview source=true %}
 
-{% character name="Lord Ashford" role="supporting" status="dead" %}
-## Legacy
+	{% character name="Lord Ashford" role="supporting" status="dead" %}
+	## Legacy
 
-Once the warden of the Eastern March, Lord Ashford fell during the Siege of Thornwall.
-{% /character %}
+	Once the warden of the Eastern March, Lord Ashford fell during the Siege of Thornwall.
+	{% /character %}
 
 {% /preview %}
 

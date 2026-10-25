@@ -17,24 +17,24 @@ It reads the same header slots as [`feature`](/runes/marketing/feature), [`hero`
 
 {% preview source=true %}
 
-{% section %}
-Composability
+	{% section %}
+		Composability
 
-## Runes that work together
+		## Runes that work together
 
-Every block is a rune — combine them freely to build a page.
+		Every block is a rune — combine them freely to build a page.
 
-{% bento %}
-## Marketing
-Hero, CTA, pricing, testimonials.
+		{% bento %}
+		## Marketing
+		Hero, CTA, pricing, testimonials.
 
-## Docs
-API references, changelogs, symbols.
+		## Docs
+		API references, changelogs, symbols.
 
-## Storytelling
-Characters, realms, factions, lore.
-{% /bento %}
-{% /section %}
+		## Storytelling
+		Characters, realms, factions, lore.
+		{% /bento %}
+	{% /section %}
 
 {% /preview %}
 
@@ -48,21 +48,21 @@ Every header slot is optional. With no leading eyebrow/headline/blurb the sectio
 
 {% preview source=true %}
 
-{% section align="center" %}
-Pick a plan
+	{% section align="center" %}
+		Pick a plan
 
-## Simple, transparent pricing
+		## Simple, transparent pricing
 
-No hidden fees. Cancel anytime.
+		No hidden fees. Cancel anytime.
 
-{% bento %}
-## Free
-For trying things out.
+		{% bento %}
+		## Free
+		For trying things out.
 
-## Pro
-For growing teams.
-{% /bento %}
-{% /section %}
+		## Pro
+		For growing teams.
+		{% /bento %}
+	{% /section %}
 
 {% /preview %}
 

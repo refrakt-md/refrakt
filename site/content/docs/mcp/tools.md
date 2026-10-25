@@ -17,6 +17,7 @@ The MCP server exposes two categories of tools: a fixed set of **core tools** th
 | `refrakt.contracts` | Generate structure contracts for every rune (BEM block, modifiers, data attrs, structural elements). | Yes |
 | `refrakt.inspect` | Show identity transform output for one rune at given attributes. | Yes |
 | `refrakt.inspect_list` | List every rune available in the active package set. | Yes |
+| `refrakt.format` | Indent nested runes by the indentation rule, or report what would change. | No |
 
 ### `refrakt.detect`
 
@@ -80,6 +81,21 @@ Returns `{ runes: [...] }` — the full list of runes with their package origin 
 ```
 
 Returns the same data as `refrakt plugins list --json`: each installed plugin with `namespace`, `packageName`, `packageVersion`, `commands` (with `hasInputSchema`/`hasOutputSchema`/`hasMcpHandler` flags per command), and discovery `source`.
+
+### `refrakt.format`
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "paths": { "type": "array", "items": { "type": "string" } },
+    "check": { "type": "boolean" }
+  },
+  "additionalProperties": false
+}
+```
+
+Runs [`refrakt format`](/docs/cli/format) on the given files or directories, relative to the project root (default: the root). With `check`, nothing is written. Returns `{ check, files, changed, refused }`. A file in `refused` would have parsed differently after re-indenting, so it was left alone. Its entry gives the line.
 
 ## Plugin tools
 

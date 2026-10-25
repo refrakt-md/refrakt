@@ -21,14 +21,14 @@ Wrap any in-world knowledge in a lore entry with a title and category.
 
 {% preview source=true %}
 
-{% lore title="The Prophecy of the Chosen One" category="prophecy" spoiler=true %}
-An ancient text found in the ruins of the First Temple.
+	{% lore title="The Prophecy of the Chosen One" category="prophecy" spoiler=true %}
+	An ancient text found in the ruins of the First Temple.
 
-> *When darkness covers the land and the last star fades,
-> one shall rise from forgotten blood to forge the world anew.*
+	> *When darkness covers the land and the last star fades,
+	> one shall rise from forgotten blood to forge the world anew.*
 
-The prophecy has been interpreted differently by various factions throughout history.
-{% /lore %}
+	The prophecy has been interpreted differently by various factions throughout history.
+	{% /lore %}
 
 {% /preview %}
 
@@ -38,9 +38,9 @@ Use the `category` attribute to classify different types of lore.
 
 {% preview source=true %}
 
-{% lore title="The Founding of Ironhold" category="history" %}
-In the third age, a band of dwarven exiles discovered rich veins of mithril beneath the Grey Peaks. They established Ironhold, which grew into the greatest forge-city the world had ever seen.
-{% /lore %}
+	{% lore title="The Founding of Ironhold" category="history" %}
+	In the third age, a band of dwarven exiles discovered rich veins of mithril beneath the Grey Peaks. They established Ironhold, which grew into the greatest forge-city the world had ever seen.
+	{% /lore %}
 
 {% /preview %}
 

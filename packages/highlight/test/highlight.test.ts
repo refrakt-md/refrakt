@@ -546,3 +546,47 @@ describe('highlight transform — line highlight (WORK-304)', () => {
 		expect(html).not.toContain('data-line-status=');
 	});
 });
+
+describe('markdoc highlighting of indented content (SPEC-170)', () => {
+	/** The highlighted HTML of one markdoc block, with its indentation removed
+	 *  from the text so two layouts can be compared token for token. */
+	async function tokens(source: string): Promise<string> {
+		const hl = await createHighlightTransform();
+		const result = hl(tag('code', { 'data-language': 'markdoc' }, [source])) as SerializedTag;
+		return (result.children[0] as string).replace(/>[ \t]+(?=[{<A-Za-z])/g, '>');
+	}
+
+	it('highlights an indented tag as it highlights a flat one', async () => {
+		const flat = await tokens('{% tabs %}\n{% tab name="a" %}\nText.\n{% /tab %}\n{% /tabs %}');
+		const indented = await tokens(
+			'{% tabs %}\n\t{% tab name="a" %}\n\tText.\n\t{% /tab %}\n{% /tabs %}',
+		);
+		expect(indented).toBe(flat);
+		expect(indented).not.toContain('{% tab name=&quot;a&quot; %}</span>');
+	});
+
+	it('still highlights an indented fence as code', async () => {
+		const out = await tokens('{% tab %}\n\t```js\n\tconst x = 1;\n\t```\n{% /tab %}');
+		expect(out).toContain('const');
+		expect(out).not.toContain(
+			'<span style="color:var(--rf-syntax-foreground)">const x = 1;</span>',
+		);
+	});
+});
+
+describe('tab-indented markdoc highlights as its flat form (SPEC-170)', () => {
+	async function highlighted(source: string): Promise<string> {
+		const hl = await createHighlightTransform();
+		return (hl(tag('code', { 'data-language': 'markdoc' }, [source])) as SerializedTag)
+			.children[0] as string;
+	}
+
+	it('gives indented headings and emphasis the tokens they get flat, with the tabs kept', async () => {
+		const flat = '{% card %}\n### Title\nSome **bold** text.\n{% /card %}';
+		const indented = '{% card %}\n\t### Title\n\tSome **bold** text.\n{% /card %}';
+		const out = await highlighted(indented);
+		expect(out.replace(/\t/g, '')).toBe(await highlighted(flat));
+		expect(out).toContain('<span class="line">\t<span');
+		expect(out).toContain('font-weight:bold');
+	});
+});

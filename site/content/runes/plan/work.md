@@ -23,21 +23,21 @@ A work item ready for implementation with acceptance criteria and approach.
 
 {% preview source=true %}
 
-{% work id="RF-142" status="ready" priority="high" complexity="moderate" milestone="v0.5.0" tags="tint,theming" %}
-# Implement tint rune dark mode support
+	{% work id="RF-142" status="ready" priority="high" complexity="moderate" milestone="v0.5.0" tags="tint,theming" %}
+	# Implement tint rune dark mode support
 
-The tint rune currently handles single-scheme colour tokens. It needs to support dual light/dark definitions.
+	The tint rune currently handles single-scheme colour tokens. It needs to support dual light/dark definitions.
 
-## Acceptance Criteria
-- [ ] Tint rune accepts light and dark content sections
-- [ ] Identity transform emits data-tint-dark when dark values present
-- [ ] Theme CSS swaps tokens in prefers-color-scheme: dark
-- [ ] Inline tints without dark values fall back to page tokens
-- [ ] Inspector audits contrast ratios for both variants
+	## Acceptance Criteria
+	- [ ] Tint rune accepts light and dark content sections
+	- [ ] Identity transform emits data-tint-dark when dark values present
+	- [ ] Theme CSS swaps tokens in prefers-color-scheme: dark
+	- [ ] Inline tints without dark values fall back to page tokens
+	- [ ] Inspector audits contrast ratios for both variants
 
-## Approach
-The identity transform parses light/dark headings within the tint child rune body. Dark values are emitted as `--tint-dark-*` CSS custom properties alongside the light values.
-{% /work %}
+	## Approach
+	The identity transform parses light/dark headings within the tint child rune body. Dark values are emitted as `--tint-dark-*` CSS custom properties alongside the light values.
+	{% /work %}
 
 {% /preview %}
 
@@ -47,16 +47,16 @@ A work item blocked by a dependency.
 
 {% preview source=true %}
 
-{% work id="RF-215" status="blocked" priority="medium" complexity="complex" assignee="alice" %}
-# Alignment system migration
+	{% work id="RF-215" status="blocked" priority="medium" complexity="complex" assignee="alice" %}
+	# Alignment system migration
 
-Migrate all runes from manual alignment classes to the new alignment system.
+	Migrate all runes from manual alignment classes to the new alignment system.
 
-## Acceptance Criteria
-- [ ] All runes use alignment utilities instead of manual classes
-- [ ] No visual regressions in existing content
-- [ ] Migration guide published
-{% /work %}
+	## Acceptance Criteria
+	- [ ] All runes use alignment utilities instead of manual classes
+	- [ ] No visual regressions in existing content
+	- [ ] Migration guide published
+	{% /work %}
 
 {% /preview %}
 

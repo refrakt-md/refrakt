@@ -9,6 +9,7 @@ import {
 	defineComposedRune,
 	extractSeo,
 	parseFixture,
+	parse,
 } from '@refrakt-md/runes';
 import type { Plugin } from '@refrakt-md/types';
 import { storytelling } from '../../../plugins/storytelling/src/index.js';
@@ -103,7 +104,7 @@ function harvestWith(pkg: Plugin, rune: Rune) {
 /** The JSON-LD a page publishes, harvested before and after the engine. */
 function graph(pkg: Plugin, source: string) {
 	const { schemas, identity } = pageContext(pkg);
-	const tree = Markdoc.transform(Markdoc.parse(source), {
+	const tree = Markdoc.transform(parse(source), {
 		...schemas,
 		variables: { generatedIds: new Set<string>(), path: '/p', headings: [] },
 	} as never);

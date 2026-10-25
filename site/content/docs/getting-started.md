@@ -61,16 +61,16 @@ Create a `_layout.md` at the root of your content directory:
 
 ```markdoc
 {% layout %}
-{% region name="header" %}
-# My Site
-{% /region %}
+	{% region name="header" %}
+	# My Site
+	{% /region %}
 
-{% region name="nav" %}
-{% nav %}
-## Docs
-- getting-started
-{% /nav %}
-{% /region %}
+	{% region name="nav" %}
+		{% nav %}
+		## Docs
+		- getting-started
+		{% /nav %}
+	{% /region %}
 {% /layout %}
 ```
 

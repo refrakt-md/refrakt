@@ -21,9 +21,9 @@ Define a relationship between two entities with a type and status.
 
 {% preview source=true %}
 
-{% bond from="Aragorn" to="Legolas" type="fellowship" status="active" %}
-Forged during the Council of Elrond, their bond was tested through the War of the Ring. Despite their different backgrounds, they developed a deep mutual respect.
-{% /bond %}
+	{% bond from="Aragorn" to="Legolas" type="fellowship" status="active" %}
+	Forged during the Council of Elrond, their bond was tested through the War of the Ring. Despite their different backgrounds, they developed a deep mutual respect.
+	{% /bond %}
 
 {% /preview %}
 
@@ -33,9 +33,9 @@ Set `bidirectional` to `false` for one-way relationships like mentorship or unre
 
 {% preview source=true %}
 
-{% bond from="Gandalf" to="Frodo" type="mentorship" status="active" bidirectional=false %}
-Gandalf chose Frodo as the ring-bearer, guiding him with wisdom and trust throughout the quest.
-{% /bond %}
+	{% bond from="Gandalf" to="Frodo" type="mentorship" status="active" bidirectional=false %}
+	Gandalf chose Frodo as the ring-bearer, guiding him with wisdom and trust throughout the quest.
+	{% /bond %}
 
 {% /preview %}
 

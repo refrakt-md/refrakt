@@ -10,6 +10,20 @@ describe('escapeFenceTags', () => {
 		expect(out).toBe(`\`\`\`\n${O} tag ${C}\n\`\`\``);
 	});
 
+	it('escapes {% %} inside an indented fence, and ends it at an indented closer (SPEC-170)', () => {
+		// Inside a rune whose content is indented, and inside a list item, a fence
+		// is indented. Unrecognised, its tags were parsed as real tags.
+		const out = escapeFenceTags(
+			'{% tab %}\n\t```md\n\t{% hero %}\n\t```\n\t{% note %}x{% /note %}\n{% /tab %}',
+		);
+		expect(out).toBe(
+			`{% tab %}\n\t\`\`\`md\n\t${O} hero ${C}\n\t\`\`\`\n\t{% note %}x{% /note %}\n{% /tab %}`,
+		);
+		expect(escapeFenceTags('- item\n\n  ```\n  {% x %}\n  ```')).toBe(
+			`- item\n\n  \`\`\`\n  ${O} x ${C}\n  \`\`\``,
+		);
+	});
+
 	it('escapes {% %} inside a language-tagged fence', () => {
 		const out = escapeFenceTags('```js\n{% tag %}\n```');
 		expect(out).toBe(`\`\`\`js\n${O} tag ${C}\n\`\`\``);

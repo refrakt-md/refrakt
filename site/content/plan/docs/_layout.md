@@ -6,32 +6,32 @@ tint-mode: auto
 tint-lock: false
 ---
 {% layout %}
-{% region name="nav" %}
-{% nav collapsible=true %}
-- [Documentation](/docs/getting-started)
-- [Runes](/runes/rune-catalog)
-- [Themes](/themes/themes-catalog)
-- [Planning](/plan)
+	{% region name="nav" %}
+		{% nav collapsible=true %}
+		- [Documentation](/docs/getting-started)
+		- [Runes](/runes/rune-catalog)
+		- [Themes](/themes/themes-catalog)
+		- [Planning](/plan)
 
-## Getting Started
+		## Getting Started
 
-- plan-overview
-- plan-workflow
+		- plan-overview
+		- plan-workflow
 
-## Publishing
+		## Publishing
 
-- plan-site
-- plan-integrate
+		- plan-site
+		- plan-integrate
 
-## Reference
+		## Reference
 
-- plan-entities
-- plan-cli
+		- plan-entities
+		- plan-cli
 
-{% /nav %}
-{% /region %}
+		{% /nav %}
+	{% /region %}
 
-{% region name="pagination" %}
-{% pagination auto=true /%}
-{% /region %}
+	{% region name="pagination" %}
+		{% pagination auto=true /%}
+	{% /region %}
 {% /layout %}

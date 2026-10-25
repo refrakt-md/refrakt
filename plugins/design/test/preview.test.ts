@@ -107,6 +107,25 @@ A note.
 		expect(code!.children[0]).not.toContain('{% /preview');
 	});
 
+	it('dedents source indented inside the preview, keeping its nesting (SPEC-170)', () => {
+		const content = `{% preview source=true %}
+	{% tabs %}
+		{% tab name="a" %}
+		A note.
+		{% /tab %}
+	{% /tabs %}
+{% /preview %}`;
+		const preview = findTag(parse(content) as any, (t) => t.attributes['data-rune'] === 'preview');
+		const source = findTag(
+			preview!,
+			(t) => t.name === 'pre' && t.attributes['data-name'] === 'source',
+		);
+		const code = findTag(source!, (t) => t.name === 'code');
+		expect(code!.children[0]).toBe(
+			'{% tabs %}\n\t{% tab name="a" %}\n\tA note.\n\t{% /tab %}\n{% /tabs %}',
+		);
+	});
+
 	it('should not auto-infer source when source=false (default)', () => {
 		const result = parse(`{% preview %}
 {% hint type="note" %}

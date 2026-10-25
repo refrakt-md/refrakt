@@ -21,27 +21,27 @@ Each heading becomes a cell; the heading itself is the cell title. Tile size com
 
 {% preview source=true %}
 
-{% bento columns=6 %}
-## Featured Article
+	{% bento columns=6 %}
+	## Featured Article
 
-This cell spans two-thirds of the grid across two rows — the hero of the layout.
+	This cell spans two-thirds of the grid across two rows — the hero of the layout.
 
-#### Tip of the Day
+	#### Tip of the Day
 
-A small cell — a third of the grid width — sits beside the hero.
+	A small cell — a third of the grid width — sits beside the hero.
 
-#### Did You Know?
+	#### Did You Know?
 
-Another small cell tucks under the first, still beside the hero.
+	Another small cell tucks under the first, still beside the hero.
 
-### Quick Update
+	### Quick Update
 
-A medium cell, half the grid width.
+	A medium cell, half the grid width.
 
-### Latest News
+	### Latest News
 
-Another medium pairs alongside.
-{% /bento %}
+	Another medium pairs alongside.
+	{% /bento %}
 
 {% /preview %}
 
@@ -64,31 +64,31 @@ The tiered presets are a sensible default, but heading level can drive *any* foo
 
 {% preview source=true %}
 
-{% bento columns=6 levels="6,3,2" collapse="sm" %}
-# Launch
+	{% bento columns=6 levels="6,3,2" collapse="sm" %}
+	# Launch
 
-`#` lands on rung 0 — the full width.
+	`#` lands on rung 0 — the full width.
 
-## Metrics
+	## Metrics
 
-`##` lands on rung 1 — half-width, pairs with the next.
+	`##` lands on rung 1 — half-width, pairs with the next.
 
-## Activity
+	## Activity
 
-Half-width.
+	Half-width.
 
-### Alpha
+	### Alpha
 
-`###` lands on rung 2 — a third.
+	`###` lands on rung 2 — a third.
 
-### Beta
+	### Beta
 
-A third.
+	A third.
 
-### Gamma
+	### Gamma
 
-A third.
-{% /bento %}
+	A third.
+	{% /bento %}
 
 {% /preview %}
 
@@ -112,23 +112,23 @@ A media guest is **presentational** by default. In a cell with `href` (a stretch
 
 {% preview source=true %}
 
-{% bento columns=6 %}
-# Coral reef
+	{% bento columns=6 %}
+	# Coral reef
 
-![A coral reef teeming with life](https://assets.refrakt.md/figure-coral-reef.jpg)
+	![A coral reef teeming with life](https://assets.refrakt.md/figure-coral-reef.jpg)
 
----
+	---
 
-Teeming with life beneath turquoise waters — the image fills the cell's media zone.
+	Teeming with life beneath turquoise waters — the image fills the cell's media zone.
 
-# Hot springs
+	# Hot springs
 
-![Volcanic hot springs](https://assets.refrakt.md/figure-hot-springs.jpg)
+	![Volcanic hot springs](https://assets.refrakt.md/figure-hot-springs.jpg)
 
----
+	---
 
-Steam rising from the Icelandic highlands.
-{% /bento %}
+	Steam rising from the Icelandic highlands.
+	{% /bento %}
 
 {% /preview %}
 
@@ -157,16 +157,16 @@ The `frame` axis is **not** available on `bento` — see the universal attribute
 
 {% preview source=true %}
 
-{% bento columns=6 elevation="raised" %}
-# Coral reef
-![A coral reef](https://assets.refrakt.md/figure-coral-reef.jpg)
----
-Teeming with life beneath turquoise waters.
-# Hot springs
-![Volcanic hot springs](https://assets.refrakt.md/figure-hot-springs.jpg)
----
-Steam rising from the Icelandic highlands.
-{% /bento %}
+	{% bento columns=6 elevation="raised" %}
+	# Coral reef
+	![A coral reef](https://assets.refrakt.md/figure-coral-reef.jpg)
+	---
+	Teeming with life beneath turquoise waters.
+	# Hot springs
+	![Volcanic hot springs](https://assets.refrakt.md/figure-hot-springs.jpg)
+	---
+	Steam rising from the Icelandic highlands.
+	{% /bento %}
 
 {% /preview %}
 
@@ -179,23 +179,23 @@ Two optional knobs keep a grid visually tidy. They act on perpendicular axes —
 
 {% preview source=true %}
 
-{% bento columns=4 levels="2" row-height="lg" content-height="md" media-position="bottom" collapse="sm" %}
-### Coral reef
+	{% bento columns=4 levels="2" row-height="lg" content-height="md" media-position="bottom" collapse="sm" %}
+	### Coral reef
 
-![A coral reef teeming with life](https://assets.refrakt.md/figure-coral-reef.jpg)
+	![A coral reef teeming with life](https://assets.refrakt.md/figure-coral-reef.jpg)
 
----
+	---
 
-Teeming with life beneath turquoise waters.
+	Teeming with life beneath turquoise waters.
 
-### Hot springs
+	### Hot springs
 
-![Volcanic hot springs](https://assets.refrakt.md/figure-hot-springs.jpg)
+	![Volcanic hot springs](https://assets.refrakt.md/figure-hot-springs.jpg)
 
----
+	---
 
-Steam rising from the Icelandic highlands, where geothermal vents warm the rivers and pools all year round.
-{% /bento %}
+	Steam rising from the Icelandic highlands, where geothermal vents warm the rivers and pools all year round.
+	{% /bento %}
 
 {% /preview %}
 
@@ -218,19 +218,19 @@ For full per-tile control (the dashboard case), author `{% bento-cell %}` tags d
 
 {% preview source=true %}
 
-{% bento columns=6 %}
-{% bento-cell cols=4 rows=2 href="/runes/rune-catalog" %}
-## Overview
+	{% bento columns=6 %}
+		{% bento-cell cols=4 rows=2 href="/runes/rune-catalog" %}
+		## Overview
 
-The hero tile spans four columns and two rows, and the whole cell links out.
-{% /bento-cell %}
+		The hero tile spans four columns and two rows, and the whole cell links out.
+		{% /bento-cell %}
 
-{% bento-cell cols=2 media-position="end" %}
-## Sidebar
+		{% bento-cell cols=2 media-position="end" %}
+		## Sidebar
 
-A two-column companion tile.
-{% /bento-cell %}
-{% /bento %}
+		A two-column companion tile.
+		{% /bento-cell %}
+	{% /bento %}
 
 {% /preview %}
 

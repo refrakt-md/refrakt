@@ -19,7 +19,7 @@ The table of contents below is generated from this page's own headings:
 
 {% preview source=true %}
 
-{% toc /%}
+	{% toc /%}
 
 {% /preview %}
 

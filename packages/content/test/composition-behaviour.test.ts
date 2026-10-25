@@ -10,6 +10,7 @@ import {
 	serializeTree,
 	tags as coreTags,
 	SLOT_ATTR,
+	parse,
 } from '@refrakt-md/runes';
 import type { LoadedPlugin } from '@refrakt-md/runes';
 import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
@@ -69,7 +70,7 @@ function renderPage(source: string): Json {
 		presetMap: {},
 	} as never);
 	const schemas = assembleMarkdocSchemas(merged.tags);
-	const rendered = Markdoc.transform(Markdoc.parse(source), {
+	const rendered = Markdoc.transform(parse(source), {
 		...schemas,
 		variables: { generatedIds: new Set<string>(), path: '/p', headings: [] },
 	} as never);

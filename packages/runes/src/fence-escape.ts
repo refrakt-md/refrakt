@@ -28,14 +28,18 @@ export function escapeFenceTags(markdown: string): string {
 			// one may. Matching the full info string — not just a bare `\w*` word —
 			// keeps fence tracking in sync so `{% %}` after a titled fence aren't
 			// mis-escaped.
-			const match = line.match(/^(`{3,})([^`]*)$/) ?? line.match(/^(~{3,})(.*)$/);
+			//
+			// A fence may be indented: inside a list item, and inside any rune whose
+			// content is indented (SPEC-170). An unrecognised fence is not escaped,
+			// and Markdoc then processes the tags in it as real tags.
+			const match = line.match(/^[ \t]*(`{3,})([^`]*)$/) ?? line.match(/^[ \t]*(~{3,})(.*)$/);
 			if (match) {
 				fenceChar = match[1][0];
 				fenceLen = match[1].length;
 			}
 			result.push(line);
 		} else {
-			const re = new RegExp(`^\\${fenceChar}{${fenceLen},}\\s*$`);
+			const re = new RegExp(`^[ \\t]*\\${fenceChar}{${fenceLen},}\\s*$`);
 			if (re.test(line)) {
 				fenceChar = null;
 				result.push(line);

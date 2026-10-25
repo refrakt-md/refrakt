@@ -77,7 +77,7 @@ Concretely:
 
 {# Render only on pages inside the docs section #}
 {% if equals($page.dir, "docs") %}
-  Quick-reference card content here.
+Quick-reference card content here.
 {% /if %}
 ```
 
@@ -96,7 +96,7 @@ This page is at {% $page.path %}.
 
 {# Conditional tags #}
 {% if equals($page.dir, "blog") %}
-  Posted: {% $file.created %}
+Posted: {% $file.created %}
 {% /if %}
 ```
 

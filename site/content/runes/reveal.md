@@ -17,19 +17,19 @@ Headings automatically split content into reveal steps.
 
 {% preview source=true %}
 
-{% reveal %}
-### Step 1: Install the package
+	{% reveal %}
+	### Step 1: Install the package
 
-Run the install command to add refrakt.md to your project.
+	Run the install command to add refrakt.md to your project.
 
-### Step 2: Configure your theme
+	### Step 2: Configure your theme
 
-Set up the lumina theme in your config file.
+	Set up the lumina theme in your config file.
 
-### Step 3: Write content
+	### Step 3: Write content
 
-Create Markdown files with runes and watch them transform.
-{% /reveal %}
+	Create Markdown files with runes and watch them transform.
+	{% /reveal %}
 
 {% /preview %}
 

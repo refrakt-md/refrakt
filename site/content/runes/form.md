@@ -17,13 +17,13 @@ List items are automatically mapped to the correct input types based on their na
 
 {% preview source=true %}
 
-{% form action="https://formspree.io/f/example" %}
-- Name
-- Email
-- Message
+	{% form action="https://formspree.io/f/example" %}
+	- Name
+	- Email
+	- Message
 
-**Send**
-{% /form %}
+	**Send**
+	{% /form %}
 
 {% /preview %}
 
@@ -33,19 +33,19 @@ Headings create `<fieldset>` sections with legends.
 
 {% preview source=true %}
 
-{% form action="/api/contact" %}
-## Contact Info
+	{% form action="/api/contact" %}
+	## Contact Info
 
-- Name
-- Email
-- Phone (optional)
+	- Name
+	- Email
+	- Phone (optional)
 
-## Your Message
+	## Your Message
 
-- Message
+	- Message
 
-**Submit**
-{% /form %}
+	**Submit**
+	{% /form %}
 
 {% /preview %}
 
@@ -55,25 +55,25 @@ A blockquote followed by a list creates a selection group. With 4 or fewer optio
 
 {% preview source=true %}
 
-{% form action="/api/signup" %}
-- Name
-- Email
+	{% form action="/api/signup" %}
+	- Name
+	- Email
 
-> What interests you? (multiple)
+	> What interests you? (multiple)
 
-- Web Design
-- Branding
-- Consulting
-- Development
+	- Web Design
+	- Branding
+	- Consulting
+	- Development
 
-> Preferred contact method
+	> Preferred contact method
 
-- Email
-- Phone
-- No preference
+	- Email
+	- Phone
+	- No preference
 
-**Sign Up**
-{% /form %}
+	**Sign Up**
+	{% /form %}
 
 {% /preview %}
 
@@ -83,11 +83,11 @@ Use the `variant` attribute to change the layout.
 
 {% preview source=true %}
 
-{% form action="/api/subscribe" variant="inline" %}
-- Email (placeholder: "you@example.com")
+	{% form action="/api/subscribe" variant="inline" %}
+	- Email (placeholder: "you@example.com")
 
-**Subscribe**
-{% /form %}
+	**Subscribe**
+	{% /form %}
 
 {% /preview %}
 

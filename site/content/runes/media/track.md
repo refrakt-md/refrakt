@@ -21,9 +21,9 @@ A single track with artist and duration.
 
 {% preview source=true %}
 
-{% track artist="Radiohead" duration="4:01" type="song" %}
-# Everything in Its Right Place
-{% /track %}
+	{% track artist="Radiohead" duration="4:01" type="song" %}
+	# Everything in Its Right Place
+	{% /track %}
 
 {% /preview %}
 
@@ -33,9 +33,9 @@ Use `type="episode"` for podcast episodes with a date.
 
 {% preview source=true %}
 
-{% track type="episode" artist="Tech Weekly" duration="42:30" date="March 2025" %}
-# The Future of Web Standards
-{% /track %}
+	{% track type="episode" artist="Tech Weekly" duration="42:30" date="March 2025" %}
+	# The Future of Web Standards
+	{% /track %}
 
 {% /preview %}
 
@@ -45,11 +45,11 @@ Tracks can include additional body content like descriptions or show notes.
 
 {% preview source=true %}
 
-{% track artist="Miles Davis" duration="9:22" type="song" %}
-# So What
+	{% track artist="Miles Davis" duration="9:22" type="song" %}
+	# So What
 
-The opening track from *Kind of Blue*, featuring the iconic two-chord modal structure that changed jazz forever.
-{% /track %}
+	The opening track from *Kind of Blue*, featuring the iconic two-chord modal structure that changed jazz forever.
+	{% /track %}
 
 {% /preview %}
 
@@ -61,17 +61,17 @@ It costs nothing to switch. A nested track that states no `type` takes the playl
 
 {% preview source=true %}
 
-{% playlist type="podcast" artist="Tech Weekly" %}
-# Design Systems Weekly
+	{% playlist type="podcast" artist="Tech Weekly" %}
+		# Design Systems Weekly
 
-- **Token Architecture** (38:15) — February 2025
+		- **Token Architecture** (38:15) — February 2025
 
-{% track duration="45:30" date="March 2025" url="https://example.com/ep-12" %}
-# Component Libraries at Scale
+		{% track duration="45:30" date="March 2025" url="https://example.com/ep-12" %}
+		# Component Libraries at Scale
 
-Why component libraries stall at the second team, and what to do about it.
-{% /track %}
-{% /playlist %}
+		Why component libraries stall at the second team, and what to do about it.
+		{% /track %}
+	{% /playlist %}
 
 {% /preview %}
 

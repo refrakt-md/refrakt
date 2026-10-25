@@ -30,11 +30,11 @@ and self-contained. Pick the **shape** that matches the slot's aspect.
 
 {% preview source=true %}
 
-{% gallery %}
-![A wide cover](placeholder:cover)
-![A square tile](placeholder:square)
-![A tall portrait](placeholder:portrait)
-{% /gallery %}
+	{% gallery %}
+	![A wide cover](placeholder:cover)
+	![A square tile](placeholder:square)
+	![A tall portrait](placeholder:portrait)
+	{% /gallery %}
 
 {% /preview %}
 

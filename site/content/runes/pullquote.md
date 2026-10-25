@@ -17,9 +17,9 @@ Wrap a blockquote or paragraph to turn it into a pull quote.
 
 {% preview source=true %}
 
-{% pullquote %}
-> Design is not just what it looks like and feels like. Design is how it works.
-{% /pullquote %}
+	{% pullquote %}
+	> Design is not just what it looks like and feels like. Design is how it works.
+	{% /pullquote %}
 
 {% /preview %}
 
@@ -29,9 +29,9 @@ Use the `align` attribute to position the pull quote within the content flow.
 
 {% preview source=true %}
 
-{% pullquote align="right" %}
-> The best interface is no interface.
-{% /pullquote %}
+	{% pullquote align="right" %}
+	> The best interface is no interface.
+	{% /pullquote %}
 
 {% /preview %}
 
@@ -41,17 +41,17 @@ The `variant` attribute controls the visual treatment.
 
 {% preview source=true %}
 
-{% pullquote variant="accent" align="center" %}
-> Words can be like X-rays if you use them properly — they'll go through anything.
-{% /pullquote %}
+	{% pullquote variant="accent" align="center" %}
+	> Words can be like X-rays if you use them properly — they'll go through anything.
+	{% /pullquote %}
 
 {% /preview %}
 
 {% preview source=true %}
 
-{% pullquote variant="editorial" %}
-> Simplicity is the ultimate sophistication.
-{% /pullquote %}
+	{% pullquote variant="editorial" %}
+	> Simplicity is the ultimate sophistication.
+	{% /pullquote %}
 
 {% /preview %}
 

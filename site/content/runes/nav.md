@@ -17,17 +17,17 @@ Define groups with headings and page slugs as list items. Items before the first
 
 {% preview source=true %}
 
-{% nav %}
-- [Documentation](/docs/getting-started)
+	{% nav %}
+	- [Documentation](/docs/getting-started)
 
-## Getting Started
-- [Getting started](/docs/getting-started)
-- [Configuration](/docs/configuration/overview)
+	## Getting Started
+	- [Getting started](/docs/getting-started)
+	- [Configuration](/docs/configuration/overview)
 
-## Reference
-- [CLI overview](/docs/cli/cli-overview)
-- [Inspect](/docs/cli/inspect)
-{% /nav %}
+	## Reference
+	- [CLI overview](/docs/cli/cli-overview)
+	- [Inspect](/docs/cli/inspect)
+	{% /nav %}
 
 {% /preview %}
 
@@ -47,15 +47,15 @@ The default — vertical sidebar with groups stacked top to bottom. This is the 
 
 {% preview source=true %}
 
-{% nav %}
-## Getting Started
-- [Getting started](/docs/getting-started)
-- [Configuration](/docs/configuration/overview)
+	{% nav %}
+	## Getting Started
+	- [Getting started](/docs/getting-started)
+	- [Configuration](/docs/configuration/overview)
 
-## Authoring
-- [Runes](/runes/rune-catalog)
-- [Themes](/themes/themes-catalog)
-{% /nav %}
+	## Authoring
+	- [Runes](/runes/rune-catalog)
+	- [Themes](/themes/themes-catalog)
+	{% /nav %}
 
 {% /preview %}
 

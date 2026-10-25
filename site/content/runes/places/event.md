@@ -21,16 +21,16 @@ An event with date, location, agenda, and a registration link.
 
 {% preview source=true %}
 
-{% event date="2025-06-15" endDate="2025-06-17" location="San Francisco, CA" url="https://example.com/register" %}
-# Tech Conference 2025
+	{% event date="2025-06-15" endDate="2025-06-17" location="San Francisco, CA" url="https://example.com/register" %}
+	# Tech Conference 2025
 
-Join us for three days of talks, workshops, and networking with the web development community.
+	Join us for three days of talks, workshops, and networking with the web development community.
 
-- Keynote: The Future of Web Development
-- Workshop: Building with Semantic Content
-- Panel: Open Source Sustainability
-- Networking Dinner
-{% /event %}
+	- Keynote: The Future of Web Development
+	- Workshop: Building with Semantic Content
+	- Panel: Open Source Sustainability
+	- Networking Dinner
+	{% /event %}
 
 {% /preview %}
 

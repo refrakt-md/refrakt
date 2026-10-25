@@ -21,19 +21,19 @@ A spec in accepted status with a version number and scope summary.
 
 {% preview source=true %}
 
-{% spec id="SPEC-9008" status="accepted" version="1.2" tags="tint,theming" %}
-# Tint Rune
+	{% spec id="SPEC-9008" status="accepted" version="1.2" tags="tint,theming" %}
+	# Tint Rune
 
-Section-level colour context override via CSS custom properties.
+	Section-level colour context override via CSS custom properties.
 
-## Problem
+	## Problem
 
-A page has a single colour context. Some sections need a different palette — a dark hero, a branded callout, a seasonal promotion. Currently there is no way to override colour tokens within a section scope.
+	A page has a single colour context. Some sections need a different palette — a dark hero, a branded callout, a seasonal promotion. Currently there is no way to override colour tokens within a section scope.
 
-## Solution
+	## Solution
 
-`tint` is a core rune that overrides colour tokens within its parent rune's scope. The identity transform reads tint definitions and injects CSS custom properties as inline styles on the container element.
-{% /spec %}
+	`tint` is a core rune that overrides colour tokens within its parent rune's scope. The identity transform reads tint definitions and injects CSS custom properties as inline styles on the container element.
+	{% /spec %}
 
 {% /preview %}
 
@@ -43,13 +43,13 @@ A minimal spec in draft status.
 
 {% preview source=true %}
 
-{% spec id="SPEC-9012" status="draft" %}
-# Dependency Graph Visualisation
+	{% spec id="SPEC-9012" status="draft" %}
+	# Dependency Graph Visualisation
 
-Render entity relationships as an interactive graph.
+	Render entity relationships as an interactive graph.
 
-This spec is not yet written. It will cover the visual representation of cross-references between specs, work items, and decisions.
-{% /spec %}
+	This spec is not yet written. It will cover the visual representation of cross-references between specs, work items, and decisions.
+	{% /spec %}
 
 {% /preview %}
 
@@ -59,13 +59,13 @@ A spec that has been replaced by a newer version.
 
 {% preview source=true %}
 
-{% spec id="SPEC-9003" status="superseded" version="1.0" supersedes="SPEC-9001" %}
-# Original Token System
+	{% spec id="SPEC-9003" status="superseded" version="1.0" supersedes="SPEC-9001" %}
+	# Original Token System
 
-First-generation design token architecture.
+	First-generation design token architecture.
 
-This specification has been superseded. See the current token system specification for the active design.
-{% /spec %}
+	This specification has been superseded. See the current token system specification for the active design.
+	{% /spec %}
 
 {% /preview %}
 

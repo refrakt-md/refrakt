@@ -4,175 +4,175 @@ tint-mode: auto
 tint-lock: false
 ---
 {% layout %}
-{% region name="nav" %}
-{% nav collapsible=true %}
-- [Documentation](/docs/getting-started)
-- [Runes](/runes/rune-catalog)
-- [Themes](/themes/themes-catalog)
-- [Planning](/plan)
+	{% region name="nav" %}
+		{% nav collapsible=true %}
+		- [Documentation](/docs/getting-started)
+		- [Runes](/runes/rune-catalog)
+		- [Themes](/themes/themes-catalog)
+		- [Planning](/plan)
 
-## Essentials
+		## Essentials
 
-- rune-catalog
-- surfaces
-- motion
-- media-guests
+		- rune-catalog
+		- surfaces
+		- motion
+		- media-guests
 
-## Content
+		## Content
 
-- hint
-- figure
-- sidenote
-- annotate
-- pullquote
-- textblock
-- mediatext
-- conversation
-- reveal
-- embed
-- card
-- progress
-- icon
-- image-schemes
-- badge
-- bar
-- deflist
+		- hint
+		- figure
+		- sidenote
+		- annotate
+		- pullquote
+		- textblock
+		- mediatext
+		- conversation
+		- reveal
+		- embed
+		- card
+		- progress
+		- icon
+		- image-schemes
+		- badge
+		- bar
+		- deflist
 
-## Registry
+		## Registry
 
-- xref
-- expand
-- file-ref
-- collection
-- relationships
-- aggregate
+		- xref
+		- expand
+		- file-ref
+		- collection
+		- relationships
+		- aggregate
 
-## Layout
+		## Layout
 
-- grid
-- gallery
-- tabs
-- accordion
-- juxtapose
-- details
-- drawer
-- sandbox
-- showcase
-- bg
-- tint
+		- grid
+		- gallery
+		- tabs
+		- accordion
+		- juxtapose
+		- details
+		- drawer
+		- sandbox
+		- showcase
+		- bg
+		- tint
 
-## Code & Data
+		## Code & Data
 
-- codegroup
-- compare
-- diff
-- snippet
-- data
-- include
-- code
-- datatable
-- chart
-- diagram
-- budget
-- form
+		- codegroup
+		- compare
+		- diff
+		- snippet
+		- data
+		- include
+		- code
+		- datatable
+		- chart
+		- diagram
+		- budget
+		- form
 
-## Site
+		## Site
 
-- layout
-- nav
-- pagination
-- toc
-- breadcrumb
-- blog
+		- layout
+		- nav
+		- pagination
+		- toc
+		- breadcrumb
+		- blog
 
-## Marketing
+		## Marketing
 
-- marketing
-- marketing/hero
-- marketing/cta
-- marketing/bento
-- marketing/feature
-- marketing/steps
-- marketing/pricing
-- marketing/testimonial
-- marketing/comparison
+		- marketing
+		- marketing/hero
+		- marketing/cta
+		- marketing/bento
+		- marketing/feature
+		- marketing/steps
+		- marketing/pricing
+		- marketing/testimonial
+		- marketing/comparison
 
-## Docs
+		## Docs
 
-- docs
-- docs/cli
-- docs/api
-- docs/symbol
-- docs/changelog
+		- docs
+		- docs/cli
+		- docs/api
+		- docs/symbol
+		- docs/changelog
 
-## Storytelling
+		## Storytelling
 
-- storytelling
-- storytelling/character
-- storytelling/realm
-- storytelling/lore
-- storytelling/faction
-- storytelling/plot
-- storytelling/bond
-- storytelling/storyboard
+		- storytelling
+		- storytelling/character
+		- storytelling/realm
+		- storytelling/lore
+		- storytelling/faction
+		- storytelling/plot
+		- storytelling/bond
+		- storytelling/storyboard
 
-## Places
+		## Places
 
-- places
-- places/event
-- places/map
-- places/itinerary
+		- places
+		- places/event
+		- places/map
+		- places/itinerary
 
-## Business
+		## Business
 
-- business
-- business/cast
-- business/organization
-- business/timeline
+		- business
+		- business/cast
+		- business/organization
+		- business/timeline
 
-## Learning
+		## Learning
 
-- learning
-- learning/howto
-- learning/recipe
+		- learning
+		- learning/howto
+		- learning/recipe
 
-## Design
+		## Design
 
-- design
-- design/swatch
-- design/palette
-- design/typography
-- design/spacing
-- design/mockup
-- design/preview
-- design/design-context
+		- design
+		- design/swatch
+		- design/palette
+		- design/typography
+		- design/spacing
+		- design/mockup
+		- design/preview
+		- design/design-context
 
-## Media
+		## Media
 
-- media
-- media/playlist
-- media/track
-- media/audio
+		- media
+		- media/playlist
+		- media/track
+		- media/audio
 
-## Plan
+		## Plan
 
-- plan
-- plan/cli
-- plan/workflow
-- plan/spec
-- plan/work
-- plan/bug
-- plan/decision
-- plan/milestone
-- plan/backlog
-- plan/decision-log
-- plan/plan-progress
-- plan/plan-activity
+		- plan
+		- plan/cli
+		- plan/workflow
+		- plan/spec
+		- plan/work
+		- plan/bug
+		- plan/decision
+		- plan/milestone
+		- plan/backlog
+		- plan/decision-log
+		- plan/plan-progress
+		- plan/plan-activity
 
-{% /nav %}
-{% /region %}
+		{% /nav %}
+	{% /region %}
 
-{% region name="pagination" %}
-{% pagination auto=true /%}
-{% /region %}
+	{% region name="pagination" %}
+		{% pagination auto=true /%}
+	{% /region %}
 {% /layout %}

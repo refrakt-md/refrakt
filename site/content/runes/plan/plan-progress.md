@@ -23,7 +23,7 @@ A bare `{% plan-progress /%}` covers what you act on day to day: **work items an
 
 {% preview source=true %}
 
-{% plan-progress /%}
+	{% plan-progress /%}
 
 {% /preview %}
 
@@ -33,7 +33,7 @@ Widen to the full plan set with `show="all"` — or list exactly the types you w
 
 {% preview source=true %}
 
-{% plan-progress show="all" /%}
+	{% plan-progress show="all" /%}
 
 {% /preview %}
 

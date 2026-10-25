@@ -21,7 +21,7 @@ The minimum case — a `src` attribute relative to the project root. The format 
 
 {% preview source=true %}
 
-{% data src="site/examples/revenue.csv" /%}
+	{% data src="site/examples/revenue.csv" /%}
 
 {% /preview %}
 
@@ -33,9 +33,9 @@ Because `chart` treats an authored `<table>` as its single source of truth, drop
 
 {% preview source=true %}
 
-{% chart type="bar" title="Revenue by product" %}
-{% data src="site/examples/revenue.csv" columns="product, revenue" numeric="revenue" /%}
-{% /chart %}
+	{% chart type="bar" title="Revenue by product" %}
+		{% data src="site/examples/revenue.csv" columns="product, revenue" numeric="revenue" /%}
+	{% /chart %}
 
 {% /preview %}
 
@@ -45,9 +45,9 @@ Same table, handed to `datatable` for runtime search + sort. Typed-numeric colum
 
 {% preview source=true %}
 
-{% datatable sortable="all" searchable=true %}
-{% data src="site/examples/revenue.csv" numeric="revenue,units" /%}
-{% /datatable %}
+	{% datatable sortable="all" searchable=true %}
+		{% data src="site/examples/revenue.csv" numeric="revenue,units" /%}
+	{% /datatable %}
 
 {% /preview %}
 
@@ -57,11 +57,11 @@ Every knob below runs at **build time** on a single intermediate shape, identica
 
 {% preview source=true %}
 
-{% data src="site/examples/revenue.csv"
-   where="region:EMEA"
-   sort="-units"
-   columns="product as Product, units as Units"
-   numeric="units" /%}
+	{% data src="site/examples/revenue.csv"
+	   where="region:EMEA"
+	   sort="-units"
+	   columns="product as Product, units as Units"
+	   numeric="units" /%}
 
 {% /preview %}
 
@@ -76,11 +76,11 @@ Without a body, `data` emits a `<table>`. Give it one and the body is rendered *
 
 ```markdoc
 {% data src="team.csv" sort="name" %}
-{% card %}
-### {% $row.name %}
+	{% card %}
+	### {% $row.name %}
 
-{% $row.role %}
-{% /card %}
+	{% $row.role %}
+	{% /card %}
 {% /data %}
 ```
 
@@ -94,13 +94,13 @@ The rendered rows are spliced in as **siblings**, landing exactly where hand-wri
 
 ```markdoc
 {% accordion %}
-{% data src="faq.csv" %}
-{% accordion-item %}
-## {% $row.question %}
+	{% data src="faq.csv" %}
+		{% accordion-item %}
+		## {% $row.question %}
 
-{% $row.answer %}
-{% /accordion-item %}
-{% /data %}
+		{% $row.answer %}
+		{% /accordion-item %}
+	{% /data %}
 {% /accordion %}
 ```
 
@@ -110,7 +110,7 @@ The body is bound to a row before anything inside it is resolved, so a `{% snipp
 
 ```markdoc
 {% data src="examples.csv" %}
-{% snippet path=$row.path /%}
+	{% snippet path=$row.path /%}
 {% /data %}
 ```
 
@@ -165,13 +165,13 @@ A `{% data %}` inside another one's body runs as a **subquery**, once per outer 
 
 ```markdoc
 {% data src="axes.json" where=$r %}
-## {% $row.axis %}
+	## {% $row.axis %}
 
-{% data src="axis-attributes.json" where=$row.query headers="Attribute, Type" %}
-{% code %}{% $row.name %}{% /code %}
----
-{% $row.type %}
-{% /data %}
+	{% data src="axis-attributes.json" where=$row.query headers="Attribute, Type" %}
+	{% code %}{% $row.name %}{% /code %}
+	---
+	{% $row.type %}
+	{% /data %}
 {% /data %}
 ```
 
@@ -225,8 +225,8 @@ JSON isn't inherently tabular, so its adapter owns three extra knobs; everything
 
 ```markdoc
 {% datatable sortable="all" searchable=true %}
-{% data src="data/inventory.json" orient="index" key-column="sku"
-   columns="sku as SKU, name as Item, stock as Stock" numeric="stock" /%}
+	{% data src="data/inventory.json" orient="index" key-column="sku"
+	   columns="sku as SKU, name as Item, stock as Stock" numeric="stock" /%}
 {% /datatable %}
 ```
 

@@ -23,28 +23,28 @@ A fully documented architecture decision record.
 
 {% preview source=true %}
 
-{% decision id="ADR-9007" status="accepted" date="2026-03-11" tags="tint,css" %}
-# Use CSS custom properties for tint token injection
+	{% decision id="ADR-9007" status="accepted" date="2026-03-11" tags="tint,css" %}
+	# Use CSS custom properties for tint token injection
 
-## Context
-Tint runes need to override colour tokens within a section scope. The solution must work without JavaScript and cascade through nested elements.
+	## Context
+	Tint runes need to override colour tokens within a section scope. The solution must work without JavaScript and cascade through nested elements.
 
-## Options Considered
-1. **CSS custom properties on the container** — inline styles setting `--tint-*` tokens, theme bridges via `var()` fallbacks.
-2. **Generated CSS classes per tint combination** — build step creates per-tint classes. Avoids inline styles but combinatorial explosion.
-3. **JavaScript runtime token injection** — behaviour script reads data attributes and sets styles. Most flexible but requires JS.
+	## Options Considered
+	1. **CSS custom properties on the container** — inline styles setting `--tint-*` tokens, theme bridges via `var()` fallbacks.
+	2. **Generated CSS classes per tint combination** — build step creates per-tint classes. Avoids inline styles but combinatorial explosion.
+	3. **JavaScript runtime token injection** — behaviour script reads data attributes and sets styles. Most flexible but requires JS.
 
-## Decision
-CSS custom properties via inline styles on the container element.
+	## Decision
+	CSS custom properties via inline styles on the container element.
 
-## Rationale
-Custom properties cascade naturally through the DOM subtree without JavaScript. Themes opt into tint support by including bridge CSS. The `--tint-*` namespace avoids collisions with theme-internal tokens.
+	## Rationale
+	Custom properties cascade naturally through the DOM subtree without JavaScript. Themes opt into tint support by including bridge CSS. The `--tint-*` namespace avoids collisions with theme-internal tokens.
 
-## Consequences
-- Themes must include the tint bridge CSS
-- Inline styles cannot use media queries — dark mode handled separately
-- Inspector must audit tint token contrast ratios
-{% /decision %}
+	## Consequences
+	- Themes must include the tint bridge CSS
+	- Inline styles cannot use media queries — dark mode handled separately
+	- Inspector must audit tint token contrast ratios
+	{% /decision %}
 
 {% /preview %}
 
@@ -54,15 +54,15 @@ A decision still under review.
 
 {% preview source=true %}
 
-{% decision id="ADR-9015" status="proposed" date="2026-03-18" %}
-# Adopt content model validation at parse time
+	{% decision id="ADR-9015" status="proposed" date="2026-03-18" %}
+	# Adopt content model validation at parse time
 
-## Context
-Currently content model violations are only caught during transform. Earlier validation would improve error messages.
+	## Context
+	Currently content model violations are only caught during transform. Earlier validation would improve error messages.
 
-## Decision
-Move validation to a post-parse AST pass.
-{% /decision %}
+	## Decision
+	Move validation to a post-parse AST pass.
+	{% /decision %}
 
 {% /preview %}
 

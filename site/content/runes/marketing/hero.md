@@ -21,17 +21,17 @@ A centered hero section with headline, description, and action buttons.
 
 {% preview source=true %}
 
-{% hero %}
+	{% hero %}
 
-Whats new [Version 1.0](#)
+	Whats new [Version 1.0](#)
 
-# Build with refrakt.md
+	# Build with refrakt.md
 
-A content framework that turns Markdown into rich, semantic pages. Write standard Markdown — runes decide how it's interpreted.
+	A content framework that turns Markdown into rich, semantic pages. Write standard Markdown — runes decide how it's interpreted.
 
-- [Get started](/docs/getting-started)
-- [View on GitHub](https://github.com/refrakt-md/refrakt)
-{% /hero %}
+	- [Get started](/docs/getting-started)
+	- [View on GitHub](https://github.com/refrakt-md/refrakt)
+	{% /hero %}
 
 {% /preview %}
 
@@ -41,17 +41,17 @@ Code fences inside a hero become copyable command blocks — great for install c
 
 {% preview source=true %}
 
-{% hero %}
-# Get started in seconds
+	{% hero %}
+	# Get started in seconds
 
-Scaffold a project and start writing.
+	Scaffold a project and start writing.
 
-```shell
-npm create refrakt
-```
+	```shell
+	npm create refrakt
+	```
 
-- [Documentation](/docs/getting-started)
-{% /hero %}
+	- [Documentation](/docs/getting-started)
+	{% /hero %}
 
 {% /preview %}
 
@@ -61,13 +61,13 @@ Use `align="left"` for a more editorial feel.
 
 {% preview source=true %}
 
-{% hero align="left" %}
-# Documentation that writes itself
+	{% hero align="left" %}
+	# Documentation that writes itself
 
-Semantic runes transform your Markdown into structured, accessible content.
+	Semantic runes transform your Markdown into structured, accessible content.
 
-- [Quick start](/docs/getting-started)
-{% /hero %}
+	- [Quick start](/docs/getting-started)
+	{% /hero %}
 
 {% /preview %}
 
@@ -81,18 +81,18 @@ Semantic runes transform your Markdown into structured, accessible content.
 
 {% preview source=true %}
 
-{% hero media-position="cover" %}
-![Mountain valley at dusk](https://assets.refrakt.md/media-text-valley.jpg)
+	{% hero media-position="cover" %}
+	![Mountain valley at dusk](https://assets.refrakt.md/media-text-valley.jpg)
 
----
+	---
 
-# Documentation that reads like it was designed
+	# Documentation that reads like it was designed
 
-Semantic runes turn plain Markdown into structured pages.
+	Semantic runes turn plain Markdown into structured pages.
 
-- [Get started](/docs/getting-started)
-- [Explore the runes](/runes/rune-catalog)
-{% /hero %}
+	- [Get started](/docs/getting-started)
+	- [Explore the runes](/runes/rune-catalog)
+	{% /hero %}
 
 {% /preview %}
 
@@ -104,17 +104,17 @@ The media zone holds *any* [media guest](/runes/media-guests) — including a ru
 
 {% preview source=true %}
 
-{% hero media-position="cover" height="lg" %}
-{% sandbox src="wireframe-waves" /%}
+	{% hero media-position="cover" height="lg" %}
+		{% sandbox src="wireframe-waves" /%}
 
----
+		---
 
-# Markdown in, meaning out
+		# Markdown in, meaning out
 
-Plain text becomes structured, semantic pages.
+		Plain text becomes structured, semantic pages.
 
-- [See how it works](/docs/getting-started)
-{% /hero %}
+		- [See how it works](/docs/getting-started)
+	{% /hero %}
 
 {% /preview %}
 
@@ -144,31 +144,31 @@ Cover (above) turns the **single media zone** into the backdrop, so the hero can
 
 {% preview source=true %}
 
-{% hero media-position="end" tint-mode="dark" collapse="lg" %}
-{% bg overlay="dark" overlay-opacity="0.4" %}
-{% sandbox src="wireframe-waves" /%}
-{% /bg %}
-{% codegroup %}
-```shell
-npm create refrakt@latest
-```
-```js
-import { defineConfig } from '@refrakt-md/sveltekit';
+	{% hero media-position="end" tint-mode="dark" collapse="lg" %}
+		{% bg overlay="dark" overlay-opacity="0.4" %}
+			{% sandbox src="wireframe-waves" /%}
+		{% /bg %}
+		{% codegroup %}
+		```shell
+		npm create refrakt@latest
+		```
+		```js
+		import { defineConfig } from '@refrakt-md/sveltekit';
 
-export default defineConfig({
-  plugins: ['@refrakt-md/marketing'],
-});
-```
-{% /codegroup %}
+		export default defineConfig({
+		  plugins: ['@refrakt-md/marketing'],
+		});
+		```
+		{% /codegroup %}
 
----
+		---
 
-# Backdrop and subject, at once
+		# Backdrop and subject, at once
 
-The wireframe terrain is a `bg` sandbox; the install snippet is the positioned media guest. One surface, two media intents.
+		The wireframe terrain is a `bg` sandbox; the install snippet is the positioned media guest. One surface, two media intents.
 
-- [How surfaces compose](/runes/surfaces)
-{% /hero %}
+		- [How surfaces compose](/runes/surfaces)
+	{% /hero %}
 
 {% /preview %}
 

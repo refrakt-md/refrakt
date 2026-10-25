@@ -118,12 +118,12 @@ Snippet itself has no `title` attribute — it's structurally a `fence` by the t
 
 ```markdoc
 {% figure caption="The language used when no extension matches" %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
+	{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
 {% /figure %}
 ```
 
 {% figure caption="The language used when no extension matches" %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
+	{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
 {% /figure %}
 
 ### A title bar above: `codegroup`
@@ -132,12 +132,12 @@ Snippet itself has no `title` attribute — it's structurally a `fence` by the t
 
 ```markdoc
 {% codegroup title="FALLBACK_LANG constant" %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
+	{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
 {% /codegroup %}
 ```
 
 {% codegroup title="FALLBACK_LANG constant" %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
+	{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
 {% /codegroup %}
 
 ## Language inference
@@ -178,10 +178,10 @@ Multiple snippets become tabs in a codegroup. Tab labels come from the inferred 
 
 {% preview source=true %}
 
-{% codegroup %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="1-5" /%}
-{% snippet path="packages/runes/src/util.ts" lines="1-5" /%}
-{% /codegroup %}
+	{% codegroup %}
+		{% snippet path="packages/runes/src/lang-map.ts" lines="1-5" /%}
+		{% snippet path="packages/runes/src/util.ts" lines="1-5" /%}
+	{% /codegroup %}
 
 {% /preview %}
 
@@ -189,13 +189,13 @@ Mixed children — snippets and triple-backtick fences in the same codegroup —
 
 {% preview source=true %}
 
-{% codegroup %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="1-5" /%}
-```python
-# An inline Python snippet alongside a real file
-def hello(): pass
-```
-{% /codegroup %}
+	{% codegroup %}
+		{% snippet path="packages/runes/src/lang-map.ts" lines="1-5" /%}
+		```python
+		# An inline Python snippet alongside a real file
+		def hello(): pass
+		```
+	{% /codegroup %}
 
 {% /preview %}
 
@@ -205,10 +205,10 @@ Two snippets become before/after for a diff comparison.
 
 {% preview source=true %}
 
-{% diff mode="split" %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
-{% snippet path="packages/runes/src/util.ts" lines="42-50" /%}
-{% /diff %}
+	{% diff mode="split" %}
+		{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
+		{% snippet path="packages/runes/src/util.ts" lines="42-50" /%}
+	{% /diff %}
 
 {% /preview %}
 

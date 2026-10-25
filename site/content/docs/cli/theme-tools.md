@@ -220,29 +220,29 @@ Installs a theme package and updates `refrakt.config.json`:
 
 {% tabs %}
 
-{% tab name="npm" %}
+	{% tab name="npm" %}
 
-```shell
-refrakt theme install @my-org/my-theme
-```
+	```shell
+	refrakt theme install @my-org/my-theme
+	```
 
-{% /tab %}
+	{% /tab %}
 
-{% tab name="Local directory" %}
+	{% tab name="Local directory" %}
 
-```shell
-refrakt theme install ./my-theme
-```
+	```shell
+	refrakt theme install ./my-theme
+	```
 
-{% /tab %}
+	{% /tab %}
 
-{% tab name="Tarball" %}
+	{% tab name="Tarball" %}
 
-```shell
-refrakt theme install /path/to/theme.tgz
-```
+	```shell
+	refrakt theme install /path/to/theme.tgz
+	```
 
-{% /tab %}
+	{% /tab %}
 
 {% /tabs %}
 

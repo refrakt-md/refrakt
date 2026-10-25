@@ -17,15 +17,15 @@ Tabs are automatically labeled by their code block language.
 
 {% preview source=true %}
 
-{% codegroup %}
-```js
-const x = 1;
-```
+	{% codegroup %}
+	```js
+	const x = 1;
+	```
 
-```python
-x = 1
-```
-{% /codegroup %}
+	```python
+	x = 1
+	```
+	{% /codegroup %}
 
 {% /preview %}
 
@@ -35,23 +35,23 @@ Use the `labels` attribute to override the default language-based tab names. Use
 
 {% preview source=true %}
 
-{% codegroup labels="React, Vue, Svelte" %}
-```jsx
-export default function App() {
-  return <h1>Hello</h1>;
-}
-```
+	{% codegroup labels="React, Vue, Svelte" %}
+	```jsx
+	export default function App() {
+	  return <h1>Hello</h1>;
+	}
+	```
 
-```html
-<template>
-  <h1>Hello</h1>
-</template>
-```
+	```html
+	<template>
+	  <h1>Hello</h1>
+	</template>
+	```
 
-```html
-<h1>Hello</h1>
-```
-{% /codegroup %}
+	```html
+	<h1>Hello</h1>
+	```
+	{% /codegroup %}
 
 {% /preview %}
 
@@ -61,16 +61,16 @@ Use the `title` attribute to display a filename or label in the topbar. With a s
 
 {% preview source=true %}
 
-{% codegroup title="app.js" %}
-```js
-import express from 'express';
+	{% codegroup title="app.js" %}
+	```js
+	import express from 'express';
 
-const app = express();
-app.get('/', (req, res) => {
-  res.send('Hello World');
-});
-```
-{% /codegroup %}
+	const app = express();
+	app.get('/', (req, res) => {
+	  res.send('Hello World');
+	});
+	```
+	{% /codegroup %}
 
 {% /preview %}
 
@@ -78,16 +78,16 @@ To force a tab bar on a single fence, provide the `labels` attribute.
 
 {% preview source=true %}
 
-{% codegroup title="server" labels="Express" %}
-```js
-import express from 'express';
+	{% codegroup title="server" labels="Express" %}
+	```js
+	import express from 'express';
 
-const app = express();
-app.get('/', (req, res) => {
-  res.send('Hello World');
-});
-```
-{% /codegroup %}
+	const app = express();
+	app.get('/', (req, res) => {
+	  res.send('Hello World');
+	});
+	```
+	{% /codegroup %}
 
 {% /preview %}
 
@@ -97,16 +97,16 @@ When neither `labels=` nor a per-fence `label` annotation is set, codegroup deri
 
 ```markdoc
 {% codegroup %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" linenumbers=true highlight="4-5" /%}
-{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" linenumbers=true highlight="8-9" /%}
+	{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" linenumbers=true highlight="4-5" /%}
+	{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" linenumbers=true highlight="8-9" /%}
 {% /codegroup %}
 ```
 
 Renders with tabs `lang-map.ts:3-7` and `codegroup.ts:7-14`, each panel's gutter starting at the file's real line offset (3 and 7 respectively), and each panel's `highlight` range emphasized — all four annotations (`source`, `lines`, `linenumbers`, `highlight`) propagate through the snippet → fence → codegroup chain uniformly:
 
 {% codegroup %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" linenumbers=true highlight="4-5" /%}
-{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" linenumbers=true highlight="8-9" /%}
+	{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" linenumbers=true highlight="4-5" /%}
+	{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" linenumbers=true highlight="8-9" /%}
 {% /codegroup %}
 
 The label resolution chain (first match wins):
@@ -124,11 +124,11 @@ Use the `overflow` attribute to control how long lines are handled. The default 
 
 {% preview source=true %}
 
-{% codegroup overflow="wrap" title="wrapped.ts" %}
-```ts
-const result = await fetchUserDataFromRemoteService(userId, { includeMetadata: true, resolveReferences: true, maxDepth: 3, timeout: 5000 });
-```
-{% /codegroup %}
+	{% codegroup overflow="wrap" title="wrapped.ts" %}
+	```ts
+	const result = await fetchUserDataFromRemoteService(userId, { includeMetadata: true, resolveReferences: true, maxDepth: 3, timeout: 5000 });
+	```
+	{% /codegroup %}
 
 {% /preview %}
 

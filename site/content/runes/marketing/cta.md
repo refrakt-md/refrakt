@@ -21,14 +21,14 @@ A headline with a description and action buttons.
 
 {% preview source=true %}
 
-{% cta %}
-# Get Started with refrakt.md
+	{% cta %}
+	# Get Started with refrakt.md
 
-Build structured content sites with semantic Markdown.
+	Build structured content sites with semantic Markdown.
 
-- [Quick Start](/docs/getting-started)
-- [View on GitHub](https://github.com)
-{% /cta %}
+	- [Quick Start](/docs/getting-started)
+	- [View on GitHub](https://github.com)
+	{% /cta %}
 
 {% /preview %}
 
@@ -38,15 +38,15 @@ Code fences inside a CTA become copyable command blocks.
 
 {% preview source=true %}
 
-{% cta %}
-# Install refrakt.md
+	{% cta %}
+	# Install refrakt.md
 
-Get up and running in seconds.
+	Get up and running in seconds.
 
-```shell
-npm install @refrakt-md/runes
-```
-{% /cta %}
+	```shell
+	npm install @refrakt-md/runes
+	```
+	{% /cta %}
 
 {% /preview %}
 

@@ -23,26 +23,26 @@ A function with signature, parameters, return value, and exception documentation
 
 {% preview source=true %}
 
-{% symbol kind="function" lang="typescript" since="1.0.0" %}
+	{% symbol kind="function" lang="typescript" since="1.0.0" %}
 
-## renderContent
+	## renderContent
 
-Transforms a Markdoc document into a renderable tree using the specified rune definitions.
+	Transforms a Markdoc document into a renderable tree using the specified rune definitions.
 
-```typescript
-renderContent(source: string, options?: RenderOptions): RenderTree
-```
+	```typescript
+	renderContent(source: string, options?: RenderOptions): RenderTree
+	```
 
-- **source** `string` -- Raw Markdoc content to parse and transform
-- **options** `RenderOptions` *(optional)* -- Configuration for the render pass
-  - **runes** `RuneMap` -- Custom rune definitions to merge with defaults
-  - **variables** `Record<string, any>` -- Template variables available in content
+	- **source** `string` -- Raw Markdoc content to parse and transform
+	- **options** `RenderOptions` *(optional)* -- Configuration for the render pass
+	  - **runes** `RuneMap` -- Custom rune definitions to merge with defaults
+	  - **variables** `Record<string, any>` -- Template variables available in content
 
-> Returns `RenderTree` -- A framework-agnostic tree for rendering.
+	> Returns `RenderTree` -- A framework-agnostic tree for rendering.
 
-> Throws `ParseError` if the source contains invalid Markdoc syntax.
+	> Throws `ParseError` if the source contains invalid Markdoc syntax.
 
-{% /symbol %}
+	{% /symbol %}
 
 {% /preview %}
 
@@ -52,56 +52,56 @@ Classes, interfaces, and modules use `###` headings for member groups (Construct
 
 {% preview source=true %}
 
-{% symbol kind="class" lang="typescript" since="1.0.0" %}
+	{% symbol kind="class" lang="typescript" since="1.0.0" %}
 
-## ContentParser
+	## ContentParser
 
-The core parsing engine that transforms raw Markdoc source into an abstract syntax tree.
+	The core parsing engine that transforms raw Markdoc source into an abstract syntax tree.
 
-```typescript
-class ContentParser extends EventEmitter
-```
+	```typescript
+	class ContentParser extends EventEmitter
+	```
 
-### Constructor
+	### Constructor
 
-```typescript
-new ContentParser(config: ParserConfig)
-```
+	```typescript
+	new ContentParser(config: ParserConfig)
+	```
 
-- **config** `ParserConfig` -- Parser configuration
-  - **strictMode** `boolean` -- Reject unknown runes. *Default: `false`*
-  - **maxDepth** `number` -- Maximum nesting depth. *Default: `10`*
+	- **config** `ParserConfig` -- Parser configuration
+	  - **strictMode** `boolean` -- Reject unknown runes. *Default: `false`*
+	  - **maxDepth** `number` -- Maximum nesting depth. *Default: `10`*
 
-### Methods
+	### Methods
 
-#### parse
+	#### parse
 
-Parse a Markdoc source string into a raw AST.
+	Parse a Markdoc source string into a raw AST.
 
-```typescript
-parse(source: string): ASTNode
-```
+	```typescript
+	parse(source: string): ASTNode
+	```
 
-- **source** `string` -- Raw Markdoc content
+	- **source** `string` -- Raw Markdoc content
 
-> Returns `ASTNode` -- The root node of the parsed abstract syntax tree.
+	> Returns `ASTNode` -- The root node of the parsed abstract syntax tree.
 
-#### transform
+	#### transform
 
-Transform a parsed AST into a renderable tree.
+	Transform a parsed AST into a renderable tree.
 
-```typescript
-transform(ast: ASTNode, variables?: Record<string, any>): RenderTree
-```
+	```typescript
+	transform(ast: ASTNode, variables?: Record<string, any>): RenderTree
+	```
 
-- **ast** `ASTNode` -- A parsed AST from the `parse` method
-- **variables** `Record<string, any>` *(optional)* -- Template variables
+	- **ast** `ASTNode` -- A parsed AST from the `parse` method
+	- **variables** `Record<string, any>` *(optional)* -- Template variables
 
-> Returns `RenderTree` -- A framework-agnostic renderable tree.
+	> Returns `RenderTree` -- A framework-agnostic renderable tree.
 
-> Throws `TransformError` if a rune's reinterpretation rules fail.
+	> Throws `TransformError` if a rune's reinterpretation rules fail.
 
-{% /symbol %}
+	{% /symbol %}
 
 {% /preview %}
 
@@ -111,22 +111,22 @@ Enum members are defined as a list with **name** `"value"` -- description format
 
 {% preview source=true %}
 
-{% symbol kind="enum" lang="typescript" since="1.2.0" %}
+	{% symbol kind="enum" lang="typescript" since="1.2.0" %}
 
-## RuneCategory
+	## RuneCategory
 
-Classification categories for runes in the registry.
+	Classification categories for runes in the registry.
 
-```typescript
-enum RuneCategory
-```
+	```typescript
+	enum RuneCategory
+	```
 
-- **Layout** `"layout"` -- Core structural runes (section, grid, columns)
-- **Content** `"content"` -- Content structure runes (tabs, accordion, callout)
-- **Data** `"data"` -- Data display and reference runes (datatable, chart, codegroup)
-- **Interactive** `"interactive"` -- User interaction runes (form, quiz, poll)
+	- **Layout** `"layout"` -- Core structural runes (section, grid, columns)
+	- **Content** `"content"` -- Content structure runes (tabs, accordion, callout)
+	- **Data** `"data"` -- Data display and reference runes (datatable, chart, codegroup)
+	- **Interactive** `"interactive"` -- User interaction runes (form, quiz, poll)
 
-{% /symbol %}
+	{% /symbol %}
 
 {% /preview %}
 
@@ -136,17 +136,17 @@ Type aliases are the simplest form -- just a name, description, and type definit
 
 {% preview source=true %}
 
-{% symbol kind="type" lang="typescript" %}
+	{% symbol kind="type" lang="typescript" %}
 
-## RuneMap
+	## RuneMap
 
-A mapping of rune names to their definitions. Used to register custom runes or override built-in rune behavior.
+	A mapping of rune names to their definitions. Used to register custom runes or override built-in rune behavior.
 
-```typescript
-type RuneMap = Record<string, RuneDefinition>
-```
+	```typescript
+	type RuneMap = Record<string, RuneDefinition>
+	```
 
-{% /symbol %}
+	{% /symbol %}
 
 {% /preview %}
 
@@ -160,17 +160,17 @@ Set the `deprecated` attribute to mark a construct as deprecated. Add a `source`
 
 {% preview source=true %}
 
-{% symbol kind="function" deprecated="2.0.0" source="https://github.com/example/blob/main/src/legacy.ts#L42" %}
+	{% symbol kind="function" deprecated="2.0.0" source="https://github.com/example/blob/main/src/legacy.ts#L42" %}
 
-## legacyRender
+	## legacyRender
 
-This function is deprecated. Use `renderContent` instead.
+	This function is deprecated. Use `renderContent` instead.
 
-```typescript
-legacyRender(source: string): any
-```
+	```typescript
+	legacyRender(source: string): any
+	```
 
-{% /symbol %}
+	{% /symbol %}
 
 {% /preview %}
 

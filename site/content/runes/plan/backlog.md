@@ -21,7 +21,7 @@ The examples below pass `limit=5` so they stay scannable; in real dashboards omi
 
 {% preview source=true %}
 
-{% backlog filter="status:ready" sort="priority" limit=5 /%}
+	{% backlog filter="status:ready" sort="priority" limit=5 /%}
 
 {% /preview %}
 
@@ -29,7 +29,7 @@ The examples below pass `limit=5` so they stay scannable; in real dashboards omi
 
 {% preview source=true %}
 
-{% backlog filter="status:in-progress" sort="priority" limit=5 /%}
+	{% backlog filter="status:in-progress" sort="priority" limit=5 /%}
 
 {% /preview %}
 
@@ -37,7 +37,7 @@ The examples below pass `limit=5` so they stay scannable; in real dashboards omi
 
 {% preview source=true %}
 
-{% backlog sort="priority" group="status" limit=10 /%}
+	{% backlog sort="priority" group="status" limit=10 /%}
 
 {% /preview %}
 
@@ -45,7 +45,7 @@ The examples below pass `limit=5` so they stay scannable; in real dashboards omi
 
 {% preview source=true %}
 
-{% backlog show="bug" sort="severity" limit=5 /%}
+	{% backlog show="bug" sort="severity" limit=5 /%}
 
 {% /preview %}
 
@@ -53,7 +53,7 @@ The examples below pass `limit=5` so they stay scannable; in real dashboards omi
 
 {% preview source=true %}
 
-{% backlog show="decision" sort="date" limit=5 /%}
+	{% backlog show="decision" sort="date" limit=5 /%}
 
 {% /preview %}
 
@@ -61,7 +61,7 @@ The examples below pass `limit=5` so they stay scannable; in real dashboards omi
 
 {% preview source=true %}
 
-{% backlog show="spec" limit=5 /%}
+	{% backlog show="spec" limit=5 /%}
 
 {% /preview %}
 
@@ -71,7 +71,7 @@ Filters combine with AND logic. Multiple values for the same field combine with 
 
 {% preview source=true %}
 
-{% backlog filter="status:ready priority:high priority:critical" sort="priority" limit=5 /%}
+	{% backlog filter="status:ready priority:high priority:critical" sort="priority" limit=5 /%}
 
 {% /preview %}
 
@@ -85,13 +85,13 @@ Filters combine with AND logic. Multiple values for the same field combine with 
 
 {% preview source=true %}
 
-{% backlog show="work" filter="status:ready" group="tags" limit=5 /%}
+	{% backlog show="work" filter="status:ready" group="tags" limit=5 /%}
 
 {% /preview %}
 
 {% preview source=true %}
 
-{% backlog filter="status:ready" sort="priority" limit=3 /%}
+	{% backlog filter="status:ready" sort="priority" limit=3 /%}
 
 {% /preview %}
 
@@ -101,7 +101,7 @@ Filters combine with AND logic. Multiple values for the same field combine with 
 
 {% preview source=true %}
 
-{% backlog show="all" layout="table" sort="status" limit=8 /%}
+	{% backlog show="all" layout="table" sort="status" limit=8 /%}
 
 {% /preview %}
 

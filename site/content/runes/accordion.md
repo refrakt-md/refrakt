@@ -17,19 +17,19 @@ Wrap each section in an `{% accordion-item %}` tag with a name.
 
 {% preview source=true %}
 
-{% accordion %}
-{% accordion-item name="What is refrakt.md?" %}
-A content framework built on Markdoc that extends Markdown with semantic runes. You write standard Markdown — runes decide how it's interpreted.
-{% /accordion-item %}
+	{% accordion %}
+		{% accordion-item name="What is refrakt.md?" %}
+		A content framework built on Markdoc that extends Markdown with semantic runes. You write standard Markdown — runes decide how it's interpreted.
+		{% /accordion-item %}
 
-{% accordion-item name="How do runes work?" %}
-Runes are Markdoc tags that wrap ordinary Markdown. The same list renders as navigation links, a feature grid, or action buttons — depending on which rune contains it.
-{% /accordion-item %}
+		{% accordion-item name="How do runes work?" %}
+		Runes are Markdoc tags that wrap ordinary Markdown. The same list renders as navigation links, a feature grid, or action buttons — depending on which rune contains it.
+		{% /accordion-item %}
 
-{% accordion-item name="Do I need to learn a new syntax?" %}
-No. Runes use standard Markdoc tag syntax, and the content inside is regular Markdown.
-{% /accordion-item %}
-{% /accordion %}
+		{% accordion-item name="Do I need to learn a new syntax?" %}
+		No. Runes use standard Markdoc tag syntax, and the content inside is regular Markdown.
+		{% /accordion-item %}
+	{% /accordion %}
 
 {% /preview %}
 
@@ -39,15 +39,15 @@ Headings are automatically converted into accordion items — no explicit tags n
 
 {% preview source=true %}
 
-{% accordion %}
-## What is refrakt.md?
+	{% accordion %}
+	## What is refrakt.md?
 
-A content framework built on Markdoc.
+	A content framework built on Markdoc.
 
-## How do runes work?
+	## How do runes work?
 
-Runes create interpretation contexts for Markdown content.
-{% /accordion %}
+	Runes create interpretation contexts for Markdown content.
+	{% /accordion %}
 
 {% /preview %}
 

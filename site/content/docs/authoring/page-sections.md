@@ -91,25 +91,25 @@ A content framework built on Markdoc.
 
 {% preview source=true %}
 
-{% accordion %}
-[What's new →](#)
+	{% accordion %}
+	[What's new →](#)
 
-## Frequently asked questions
+	## Frequently asked questions
 
-Browse our most common questions below.
+	Browse our most common questions below.
 
-## What is refrakt.md?
+	## What is refrakt.md?
 
-A content framework built on Markdoc that extends Markdown with semantic runes.
+	A content framework built on Markdoc that extends Markdown with semantic runes.
 
-## How do runes work?
+	## How do runes work?
 
-Runes create interpretation contexts for Markdown content.
+	Runes create interpretation contexts for Markdown content.
 
-## Do I need to learn new syntax?
+	## Do I need to learn new syntax?
 
-No. Runes use standard Markdoc tag syntax.
-{% /accordion %}
+	No. Runes use standard Markdoc tag syntax.
+	{% /accordion %}
 
 {% /preview %}
 

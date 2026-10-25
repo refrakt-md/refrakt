@@ -17,9 +17,9 @@ Display supplementary information with a visual callout.
 
 {% preview source=true %}
 
-{% hint type="note" %}
-This is a note with helpful information.
-{% /hint %}
+	{% hint type="note" %}
+	This is a note with helpful information.
+	{% /hint %}
 
 {% /preview %}
 
@@ -29,21 +29,21 @@ Use different types to convey different levels of importance.
 
 {% preview source=true %}
 
-{% hint type="note" %}
-This is a **note** — useful for supplementary information.
-{% /hint %}
+	{% hint type="note" %}
+	This is a **note** — useful for supplementary information.
+	{% /hint %}
 
-{% hint type="warning" %}
-This is a **warning** — something to be careful about.
-{% /hint %}
+	{% hint type="warning" %}
+	This is a **warning** — something to be careful about.
+	{% /hint %}
 
-{% hint type="caution" %}
-This is a **caution** — a serious potential issue.
-{% /hint %}
+	{% hint type="caution" %}
+	This is a **caution** — a serious potential issue.
+	{% /hint %}
 
-{% hint type="check" %}
-This is a **check** — a success or completion message.
-{% /hint %}
+	{% hint type="check" %}
+	This is a **check** — a success or completion message.
+	{% /hint %}
 
 {% /preview %}
 

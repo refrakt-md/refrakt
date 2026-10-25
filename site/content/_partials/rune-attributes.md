@@ -27,21 +27,21 @@
 {% /data %}
 
 {% accordion schema="none" %}
-{% data src="site/content/_data/rune-attributes.json" root="axesAvailable" where=$r %}
-## {% $row.axis %}
+	{% data src="site/content/_data/rune-attributes.json" root="axesAvailable" where=$r %}
+		## {% $row.axis %}
 
-{% $row.description %}
+		{% $row.description %}
 
-{% data src="site/content/_data/rune-attributes.json" root="axisAttributes" where=$row.query headers="Attribute, Type, Required, Description" %}
-{% code %}{% $row.name %}{% /code %}
----
-{% code %}{% $row.type %}{% /code %}
----
-{% if $row.required %}✓{% else /%}—{% /if %}
----
-{% $row.description %}
-{% /data %}
-{% /data %}
+		{% data src="site/content/_data/rune-attributes.json" root="axisAttributes" where=$row.query headers="Attribute, Type, Required, Description" %}
+		{% code %}{% $row.name %}{% /code %}
+		---
+		{% code %}{% $row.type %}{% /code %}
+		---
+		{% if $row.required %}✓{% else /%}—{% /if %}
+		---
+		{% $row.description %}
+		{% /data %}
+	{% /data %}
 {% /accordion %}
 
 {% data src="site/content/_data/rune-attributes.json" root="axesUnavailable" where=$r headers="Not available, Why" %}

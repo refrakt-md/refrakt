@@ -39,7 +39,7 @@ content:
 
 A template nests runes, so indent it to show the nesting. A tag's content may be indented by tabs or by spaces, and four spaces or a tab are **not** a code block in refrakt, as they would be in CommonMark. Indented and flat, a template parses to the same tree. This is true of every refrakt source, pages included.
 
-The convention is to **indent a tag's content by one tab only when it holds another block tag**:
+The convention, which [`refrakt format`](/docs/cli/format) applies and `refrakt format --check` verifies, is to **indent a tag's content by one tab only when it holds another block tag**:
 
 ```md
 {% card %}
@@ -143,9 +143,9 @@ Fallback content renders only when the field is empty: `{% slot name="descriptio
 
 ```md
 {% slot name="sections" each %}
-{% details summary=$each.heading %}
-{% slot /%}
-{% /details %}
+	{% details summary=$each.heading %}
+		{% slot /%}
+	{% /details %}
 {% /slot %}
 ```
 
@@ -202,11 +202,11 @@ The case that bites is `card`'s media zone. This does not work — the `---` sit
 
 ```md
 {% card %}
-{% if $attrs.image %}
-{% slot name="portrait" /%}
----
-{% /if %}
-…
+	{% if $attrs.image %}
+		{% slot name="portrait" /%}
+		---
+	{% /if %}
+	…
 {% /card %}
 ```
 
@@ -214,10 +214,10 @@ Emit both unconditionally and rely on the consuming rune's empty-input guard ins
 
 ```md
 {% card %}
-{% slot name="portrait" /%}
+	{% slot name="portrait" /%}
 
----
-…
+	---
+	…
 {% /card %}
 ```
 

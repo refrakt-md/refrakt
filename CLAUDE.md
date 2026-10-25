@@ -21,6 +21,7 @@ This project ships `@refrakt-md/mcp`, a Model Context Protocol server that wraps
 | `npx refrakt contracts ...` | `mcp__refrakt__refrakt.contracts` |
 | `npx refrakt plugins list` | `mcp__refrakt__refrakt.plugins_list` |
 | `npx refrakt validate` | `mcp__refrakt__refrakt.validate` |
+| `npx refrakt format <paths>` | `mcp__refrakt__refrakt.format` |
 
 `refrakt.validate` returns structured findings — file, line, severity, error id, message — rather than a rendered report, so you can filter and act on individual ones. Its default tier is per-page (parse and validate); pass `deep: true` to add the cross-page checks, which costs a full pipeline run. Config resolution runs first, because an unresolvable plugin makes every rune it contributes look like an undefined tag.
 
@@ -212,6 +213,8 @@ npm run lint          # Biome linter — advisory, not yet a gate
 - **JSON uses two spaces** — npm rewrites `package.json` and the lockfile that way on every install.
 - Single quotes, semicolons, trailing commas, 100-column lines. All enforced; don't hand-tune.
 - `.svelte`, `.astro`, and `.vue` are excluded: Biome formats only their `<script>` blocks, which would leave the markup half-converted. They're tab-indented already and `.editorconfig` keeps them that way.
+- **Markdoc is indented by `refrakt format`, not Biome** (Biome does not format Markdown). A block tag's content is indented one tab only when the tag holds another block tag (SPEC-170 D5); prose-only tags stay flat. `npm run format:md` applies it to `site/content/` and the composed fixtures, and `npm run format:md:check` is the CI gate. `plan/` is deliberately not covered: three specs embed `{% sandbox %}` blocks, and the rule would indent their whole bodies.
+- Parse Markdoc with `parse` from `@refrakt-md/runes`, never `Markdoc.parse`: it allows indentation, and a test fails on a direct call in package or plugin source.
 - The linter runs `recommended` minus three rules that this codebase deliberately doesn't follow (see the comments in `biome.jsonc`). There are pre-existing findings in the remaining rules, so `npm run lint` is not clean yet and CI does not gate on it.
 
 ### BEM Naming

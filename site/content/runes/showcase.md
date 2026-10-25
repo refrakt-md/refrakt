@@ -23,9 +23,9 @@ Wrap any visual content in a showcase to give it a framed presentation.
 
 {% preview source=true %}
 
-{% showcase %}
-![Dashboard screenshot](https://picsum.photos/seed/dashboard/800/450)
-{% /showcase %}
+	{% showcase %}
+	![Dashboard screenshot](https://picsum.photos/seed/dashboard/800/450)
+	{% /showcase %}
 
 {% /preview %}
 
@@ -35,17 +35,17 @@ Add a silhouette `drop-shadow` with `frame-shadow`. Four levels: `none`, `sm`, `
 
 {% preview source=true %}
 
-{% showcase frame-shadow="sm" %}
-![Interface preview](https://picsum.photos/seed/interface/800/450)
-{% /showcase %}
+	{% showcase frame-shadow="sm" %}
+	![Interface preview](https://picsum.photos/seed/interface/800/450)
+	{% /showcase %}
 
 {% /preview %}
 
 {% preview source=true %}
 
-{% showcase frame-shadow="lg" %}
-![Product shot](https://picsum.photos/seed/product/800/450)
-{% /showcase %}
+	{% showcase frame-shadow="lg" %}
+	![Product shot](https://picsum.photos/seed/product/800/450)
+	{% /showcase %}
 
 {% /preview %}
 
@@ -55,9 +55,9 @@ Let the showcase spill beyond its container — a breakout host renders `overflo
 
 {% preview source=true %}
 
-{% showcase frame-shadow="sm" frame-displace="bottom" frame-offset="lg" %}
-![App screenshot](https://picsum.photos/seed/appscreen/800/500)
-{% /showcase %}
+	{% showcase frame-shadow="sm" frame-displace="bottom" frame-offset="lg" %}
+	![App screenshot](https://picsum.photos/seed/appscreen/800/500)
+	{% /showcase %}
 
 {% /preview %}
 
@@ -71,9 +71,9 @@ Enforce a uniform aspect ratio with `frame-aspect`. Content is cropped to fit (`
 
 {% preview source=true %}
 
-{% showcase frame-aspect="16/9" frame-shadow="sm" %}
-![Landscape](https://picsum.photos/seed/landscape/800/600)
-{% /showcase %}
+	{% showcase frame-aspect="16/9" frame-shadow="sm" %}
+	![Landscape](https://picsum.photos/seed/landscape/800/600)
+	{% /showcase %}
 
 {% /preview %}
 
@@ -83,9 +83,9 @@ Facets compose freely.
 
 {% preview source=true %}
 
-{% showcase frame-shadow="lg" frame-displace="both" frame-aspect="16/9" %}
-![Hero image](https://picsum.photos/seed/heroimg/800/500)
-{% /showcase %}
+	{% showcase frame-shadow="lg" frame-displace="both" frame-aspect="16/9" %}
+	![Hero image](https://picsum.photos/seed/heroimg/800/500)
+	{% /showcase %}
 
 {% /preview %}
 

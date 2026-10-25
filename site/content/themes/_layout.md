@@ -5,44 +5,44 @@ tint-mode: auto
 tint-lock: false
 ---
 {% layout %}
-{% region name="nav" %}
-{% nav collapsible=true %}
-- [Documentation](/docs/getting-started)
-- [Runes](/runes/rune-catalog)
-- [Themes](/themes/themes-catalog)
-- [Planning](/plan)
+	{% region name="nav" %}
+		{% nav collapsible=true %}
+		- [Documentation](/docs/getting-started)
+		- [Runes](/runes/rune-catalog)
+		- [Themes](/themes/themes-catalog)
+		- [Planning](/plan)
 
-## Themes
+		## Themes
 
-- themes-catalog
+		- themes-catalog
 
-## Lumina
+		## Lumina
 
-- lumina
-- neutral-default
+		- lumina
+		- neutral-default
 
-## Theme presets
+		## Theme presets
 
-- tideline
+		- tideline
 
-## refrakt's syntax presets
+		## refrakt's syntax presets
 
-- niwaki
+		- niwaki
 
-## Imported syntax presets
+		## Imported syntax presets
 
-- nord
-- dracula
-- solarized
-- catppuccin
-- tokyo-night
-- one-dark
-- gruvbox
+		- nord
+		- dracula
+		- solarized
+		- catppuccin
+		- tokyo-night
+		- one-dark
+		- gruvbox
 
-{% /nav %}
-{% /region %}
+		{% /nav %}
+	{% /region %}
 
-{% region name="pagination" %}
-{% pagination auto=true /%}
-{% /region %}
+	{% region name="pagination" %}
+		{% pagination auto=true /%}
+	{% /region %}
 {% /layout %}

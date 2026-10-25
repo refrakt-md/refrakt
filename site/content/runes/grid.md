@@ -17,17 +17,17 @@ Equal columns created by separating content with horizontal rules.
 
 {% preview source=true %}
 
-{% grid %}
-**First column.** This content sits in the first cell of the grid layout.
+	{% grid %}
+	**First column.** This content sits in the first cell of the grid layout.
 
----
+	---
 
-**Second column.** Grid cells are separated by horizontal rules in the Markdown source.
+	**Second column.** Grid cells are separated by horizontal rules in the Markdown source.
 
----
+	---
 
-**Third column.** The grid automatically distributes available space across columns.
-{% /grid %}
+	**Third column.** The grid automatically distributes available space across columns.
+	{% /grid %}
 
 {% /preview %}
 
@@ -37,13 +37,13 @@ Use the `spans` attribute to control column widths. Values are space-separated s
 
 {% preview source=true %}
 
-{% grid spans="2 1" %}
-**Wide column.** This column spans two units of the grid, taking up twice the space of the narrow column beside it.
+	{% grid spans="2 1" %}
+	**Wide column.** This column spans two units of the grid, taking up twice the space of the narrow column beside it.
 
----
+	---
 
-**Narrow column.** This column takes one unit.
-{% /grid %}
+	**Narrow column.** This column takes one unit.
+	{% /grid %}
 
 {% /preview %}
 
@@ -53,17 +53,17 @@ Control spacing between cells with the `gap` attribute.
 
 {% preview source=true %}
 
-{% grid gap="tight" %}
-**Tight gap.** Less space between cells.
+	{% grid gap="tight" %}
+	**Tight gap.** Less space between cells.
 
----
+	---
 
-**Second cell.** The gap is smaller than default.
+	**Second cell.** The gap is smaller than default.
 
----
+	---
 
-**Third cell.** Useful for compact layouts.
-{% /grid %}
+	**Third cell.** Useful for compact layouts.
+	{% /grid %}
 
 {% /preview %}
 
@@ -73,15 +73,15 @@ Vertically align cells within their row using the `valign` attribute. Useful whe
 
 {% preview source=true %}
 
-{% grid valign="center" spans="2 1" %}
-**Tall cell.** This cell has more content and takes up more vertical space. The adjacent cell will be vertically centred relative to this one.
+	{% grid valign="center" spans="2 1" %}
+	**Tall cell.** This cell has more content and takes up more vertical space. The adjacent cell will be vertically centred relative to this one.
 
-Additional paragraph to increase the height of this cell.
+	Additional paragraph to increase the height of this cell.
 
----
+	---
 
-**Centred.** This shorter cell is vertically centred.
-{% /grid %}
+	**Centred.** This shorter cell is vertically centred.
+	{% /grid %}
 
 {% /preview %}
 
@@ -107,21 +107,21 @@ Responsive auto-fill layout. The grid creates as many columns as fit, each at le
 
 {% preview source=true %}
 
-{% grid mode="auto" min="200px" %}
-Card one.
+	{% grid mode="auto" min="200px" %}
+	Card one.
 
----
+	---
 
-Card two.
+	Card two.
 
----
+	---
 
-Card three.
+	Card three.
 
----
+	---
 
-Card four.
-{% /grid %}
+	Card four.
+	{% /grid %}
 
 {% /preview %}
 
@@ -153,21 +153,21 @@ Enforce a uniform aspect ratio on all grid cells. Content is cropped with `objec
 
 {% preview source=true %}
 
-{% grid mode="auto" min="200px" aspect="1/1" %}
-![](https://picsum.photos/seed/grid1/400/400)
+	{% grid mode="auto" min="200px" aspect="1/1" %}
+	![](https://picsum.photos/seed/grid1/400/400)
 
----
+	---
 
-![](https://picsum.photos/seed/grid2/400/400)
+	![](https://picsum.photos/seed/grid2/400/400)
 
----
+	---
 
-![](https://picsum.photos/seed/grid3/400/400)
+	![](https://picsum.photos/seed/grid3/400/400)
 
----
+	---
 
-![](https://picsum.photos/seed/grid4/400/400)
-{% /grid %}
+	![](https://picsum.photos/seed/grid4/400/400)
+	{% /grid %}
 
 {% /preview %}
 

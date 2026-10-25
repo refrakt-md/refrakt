@@ -17,15 +17,15 @@ Content before `---` becomes the first panel, content after becomes the second. 
 
 {% preview source=true %}
 
-{% juxtapose %}
+	{% juxtapose %}
 
-![Oak tree summer](https://assets.refrakt.md/oak-tree-summer.png)
+	![Oak tree summer](https://assets.refrakt.md/oak-tree-summer.png)
 
----
+	---
 
-![Oak tree winter](https://assets.refrakt.md/oak-tree-winter.png)
+	![Oak tree winter](https://assets.refrakt.md/oak-tree-winter.png)
 
-{% /juxtapose %}
+	{% /juxtapose %}
 
 {% /preview %}
 
@@ -35,15 +35,15 @@ Panels are not restricted to images. Put two sandboxes with light and dark modes
 
 {% preview source=true %}
 
-{% juxtapose %}
+	{% juxtapose %}
 
-{% sandbox src="profile-card" framework="tailwind" tint-mode="light" %}{% /sandbox %}
+	{% sandbox src="profile-card" framework="tailwind" tint-mode="light" %}{% /sandbox %}
 
----
+	---
 
-{% sandbox src="profile-card" framework="tailwind" tint-mode="dark" %}{% /sandbox %}
+	{% sandbox src="profile-card" framework="tailwind" tint-mode="dark" %}{% /sandbox %}
 
-{% /juxtapose %}
+	{% /juxtapose %}
 
 {% /preview %}
 
@@ -53,15 +53,15 @@ Use `variant="toggle"` for a button-based A/B switch between panels. Labels appe
 
 {% preview source=true %}
 
-{% juxtapose variant="toggle" labels="Summer, Winter" %}
+	{% juxtapose variant="toggle" labels="Summer, Winter" %}
 
-![Oak tree summer](https://assets.refrakt.md/oak-tree-summer.png)
+	![Oak tree summer](https://assets.refrakt.md/oak-tree-summer.png)
 
----
+	---
 
-![Oak tree winter](https://assets.refrakt.md/oak-tree-winter.png)
+	![Oak tree winter](https://assets.refrakt.md/oak-tree-winter.png)
 
-{% /juxtapose %}
+	{% /juxtapose %}
 
 {% /preview %}
 
@@ -71,15 +71,15 @@ Use `variant="fade"` for a crossfade transition between panels. The `duration` a
 
 {% preview source=true %}
 
-{% juxtapose variant="fade" labels="Summer, Winter" duration=800 %}
+	{% juxtapose variant="fade" labels="Summer, Winter" duration=800 %}
 
-![Oak tree summer](https://assets.refrakt.md/oak-tree-summer.png)
+	![Oak tree summer](https://assets.refrakt.md/oak-tree-summer.png)
 
----
+	---
 
-![Oak tree winter](https://assets.refrakt.md/oak-tree-winter.png)
+	![Oak tree winter](https://assets.refrakt.md/oak-tree-winter.png)
 
-{% /juxtapose %}
+	{% /juxtapose %}
 
 {% /preview %}
 
@@ -89,15 +89,15 @@ Use `variant="auto"` for scroll-triggered animation that automatically moves the
 
 {% preview source=true %}
 
-{% juxtapose variant="auto" labels="Summer, Winter" duration=2000 %}
+	{% juxtapose variant="auto" labels="Summer, Winter" duration=2000 %}
 
-![Oak tree summer](https://assets.refrakt.md/oak-tree-summer.png)
+	![Oak tree summer](https://assets.refrakt.md/oak-tree-summer.png)
 
----
+	---
 
-![Oak tree winter](https://assets.refrakt.md/oak-tree-winter.png)
+	![Oak tree winter](https://assets.refrakt.md/oak-tree-winter.png)
 
-{% /juxtapose %}
+	{% /juxtapose %}
 
 {% /preview %}
 
@@ -107,15 +107,15 @@ Use `orientation="horizontal"` to stack panels vertically with a horizontal divi
 
 {% preview source=true %}
 
-{% juxtapose orientation="horizontal" labels="Summer, Winter" %}
+	{% juxtapose orientation="horizontal" labels="Summer, Winter" %}
 
-![Oak tree summer](https://assets.refrakt.md/oak-tree-summer.png)
+	![Oak tree summer](https://assets.refrakt.md/oak-tree-summer.png)
 
----
+	---
 
-![Oak tree winter](https://assets.refrakt.md/oak-tree-winter.png)
+	![Oak tree winter](https://assets.refrakt.md/oak-tree-winter.png)
 
-{% /juxtapose %}
+	{% /juxtapose %}
 
 {% /preview %}
 

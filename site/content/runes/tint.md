@@ -17,9 +17,9 @@ The simplest form. Reference a named tint defined in the theme configuration as 
 
 {% preview source=true %}
 
-{% hint type="note" tint="warm" %}
-This hint uses a **warm** tint from the theme. The colours come from the theme's `tints.warm` definition.
-{% /hint %}
+	{% hint type="note" tint="warm" %}
+	This hint uses a **warm** tint from the theme. The colours come from the theme's `tints.warm` definition.
+	{% /hint %}
 
 {% /preview %}
 
@@ -29,17 +29,17 @@ For one-off colour overrides. Token values are defined as list items inside the 
 
 {% preview source=true %}
 
-{% hint type="check" %}
+	{% hint type="check" %}
 
-{% tint %}
-- background: #ecfdf5
-- accent: #059669
-- border: #a7f3d0
-{% /tint %}
+		{% tint %}
+		- background: #ecfdf5
+		- accent: #059669
+		- border: #a7f3d0
+		{% /tint %}
 
-This hint has custom colours defined inline. Only the listed tokens are overridden — unlisted ones fall through to the page defaults.
+		This hint has custom colours defined inline. Only the listed tokens are overridden — unlisted ones fall through to the page defaults.
 
-{% /hint %}
+	{% /hint %}
 
 {% /preview %}
 
@@ -49,18 +49,18 @@ The `mode` attribute forces dark or light mode on a section, regardless of the u
 
 {% preview source=true %}
 
-{% hint type="note" %}
+	{% hint type="note" %}
 
-{% tint mode="dark" %}
-- background: #1e293b
-- primary: #e2e8f0
-- accent: #38bdf8
-- border: #334155
-{% /tint %}
+		{% tint mode="dark" %}
+		- background: #1e293b
+		- primary: #e2e8f0
+		- accent: #38bdf8
+		- border: #334155
+		{% /tint %}
 
-This section is forced into **dark mode** with custom token values.
+		This section is forced into **dark mode** with custom token values.
 
-{% /hint %}
+	{% /hint %}
 
 {% /preview %}
 
@@ -71,21 +71,21 @@ Provide separate token sets for light and dark colour schemes using headings ins
 ```markdoc
 {% hint type="note" %}
 
-{% tint %}
-## Light
-- background: #fdf6e3
-- primary: #5c4a32
-- accent: #c47d3b
-- border: #e0d5c0
+	{% tint %}
+	## Light
+	- background: #fdf6e3
+	- primary: #5c4a32
+	- accent: #c47d3b
+	- border: #e0d5c0
 
-## Dark
-- background: #2a2118
-- primary: #e8d5b7
-- accent: #e0a86e
-- border: #4a3f33
-{% /tint %}
+	## Dark
+	- background: #2a2118
+	- primary: #e8d5b7
+	- accent: #e0a86e
+	- border: #4a3f33
+	{% /tint %}
 
-This section adapts its warm tint to both colour schemes.
+	This section adapts its warm tint to both colour schemes.
 
 {% /hint %}
 ```
@@ -99,11 +99,11 @@ Start from a named tint and override specific tokens.
 ```markdoc
 {% hint type="note" %}
 
-{% tint preset="warm" %}
-- accent: #e94560
-{% /tint %}
+	{% tint preset="warm" %}
+	- accent: #e94560
+	{% /tint %}
 
-Inherits all tokens from the "warm" preset, with a custom accent colour.
+	Inherits all tokens from the "warm" preset, with a custom accent colour.
 
 {% /hint %}
 ```
@@ -177,11 +177,11 @@ Tints can nest. An inner tint overrides an outer tint within its scope. CSS cust
 
 ```markdoc
 {% hero tint="dark" layout="full" %}
-# Our Recipes
+	# Our Recipes
 
-{% hint tint="warm" %}
-This hint has warm colours inside a dark hero.
-{% /hint %}
+	{% hint tint="warm" %}
+	This hint has warm colours inside a dark hero.
+	{% /hint %}
 
 {% /hero %}
 ```
