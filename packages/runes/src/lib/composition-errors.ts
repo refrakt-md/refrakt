@@ -25,8 +25,13 @@ export const COMPOSITION_ERRORS = {
 	'invalid-value': 'A frontmatter value has the wrong shape (`tag`, `aliases`, `schema`, …).',
 	'attribute-invalid': 'An `attributes` entry is malformed.',
 	'attribute-reserved': 'An enum attribute would render as a `data-*` the engine writes itself.',
-	'content-model-type': '`content.type` is not `sequence` or `sections`.',
+	'content-model-type': '`content.type` is not `sequence`, `sections` or `delimited`.',
 	'content-model-invalid': 'The `content` model, or one of its fields, is malformed.',
+	'delimiter-unsupported': 'A delimited model’s `delimiter` is not `hr`.',
+	'dynamic-zones': 'A delimited model declares `dynamicZones` (or a `zoneModel`).',
+	'zone-field-twice': 'A field name is declared in two zones of a delimited model.',
+	'implicit-section-mismatch':
+		'`implicitSection.attributes` does not give exactly the keys of `emitAttributes`.',
 	'schema-invalid': 'The `schema` table is rejected by its own checks.',
 	'registers-invalid': 'The `registers` declaration is rejected by its own checks.',
 
@@ -43,6 +48,7 @@ export const COMPOSITION_ERRORS = {
 	'slot-unknown-field': 'A slot names no field of the content model.',
 	'slot-placed-twice': 'The same slot is placed twice.',
 	'each-on-single-field': '`each` is used on a field that holds one value, not a list.',
+	'each-on-list-ambiguous': '`each` is used on a greedy field that can collect several lists.',
 	'each-item-unplaced': 'An `each` slot never places its item with a bare `{% slot /%}`.',
 	'field-unplaced': 'A content-model field is placed by no slot.',
 	'metablock-invalid':

@@ -163,3 +163,46 @@ describe('tooling sees a runeDir rune as it sees a code-defined composed one', (
 		expect(dirContract).toEqual(contract(b));
 	});
 });
+
+/** SPEC-169 D1 — a delimited composition: WORK-646's fixture. */
+const TEASER = readFileSync(
+	resolve(__dirname, '../../runes/test/fixtures/composed/teaser.md'),
+	'utf-8',
+);
+
+describe('tooling shows a delimited composition’s zones and slots (WORK-646)', () => {
+	const withTeaser = () =>
+		world(
+			install(
+				`export default { name: 'story', version: '1.0.0', runes: { teaser: { template: ${JSON.stringify(TEASER)} } } };\n`,
+			),
+		);
+
+	it('`refrakt inspect --json`', async () => {
+		const out = JSON.parse(await inspectJson(await withTeaser(), 'teaser'));
+		expect(out.composition.slots).toEqual(['media', 'headline', 'blurb']);
+		expect(out.composition.contentModel.type).toBe('delimited');
+		expect(
+			out.composition.contentModel.zones.map((z: { name: string; primary?: boolean }) => [
+				z.name,
+				z.primary ?? false,
+			]),
+		).toEqual([
+			['media', false],
+			['content', true],
+		]);
+	});
+
+	it('`refrakt reference`', async () => {
+		const out = referenceNameCommand(await withTeaser(), {
+			name: 'teaser',
+			format: 'markdown',
+			noExample: false,
+		});
+		expect(out.exitCode).toBe(0);
+		const text = JSON.stringify(out);
+		expect(text).toContain('Zone \\"media\\":');
+		expect(text).toContain('Zone \\"content\\" (primary — content written with no `---`):');
+		expect(text).toContain('Template slots: media, headline, blurb');
+	});
+});

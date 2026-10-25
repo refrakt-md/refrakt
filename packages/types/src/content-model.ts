@@ -159,9 +159,10 @@ export interface SectionsModel {
 	headingExtract?: HeadingExtract;
 
 	/**
-	 * When set, if no section-level headings are found, all children are
-	 * wrapped in a single emitted tag (requires `emitTag`) with the given
-	 * attributes instead of being treated as preamble.
+	 * When set, if no section-level headings are found, all children become
+	 * one section instead of preamble: with `emitTag`, a single emitted tag
+	 * carrying the given attributes; without, one section entry whose
+	 * attributes a composition binds to `$each` (SPEC-169 D3).
 	 */
 	implicitSection?: { attributes?: Record<string, string> };
 }

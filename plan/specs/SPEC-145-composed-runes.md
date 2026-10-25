@@ -2108,7 +2108,8 @@ frontmatter. The only gap is `headline` / `blurb`, which is
 {% ref "SPEC-151" /%} D3's six-rune case.
 
 > **Corrected by {% ref "SPEC-169" /%} D1.** Recipe's `delimited` model was not declarable: the
-> composition parser accepted only `sequence` and `sections`. SPEC-169 D1 adds it.
+> composition parser accepted only `sequence` and `sections`. SPEC-169 D1 adds it, with fixed
+> zones only, and {% ref "WORK-646" /%} implements it, so the statement above now holds.
 
 This corrects a claim that reached {% ref "SPEC-151" /%}: {% ref "SPEC-143" /%} D4 gates
 the *declared* emit path, not composability, so its exclusion of `recipe` and `howto` says

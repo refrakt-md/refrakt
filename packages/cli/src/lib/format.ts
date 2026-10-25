@@ -198,6 +198,7 @@ export function buildJsonOutput(opts: {
 	slots?: unknown;
 	/** The rune's `registers` block and its unresolvable sources (WORK-611). */
 	registers?: unknown;
+	composition?: unknown;
 }): object {
 	return {
 		rune: opts.rune,
@@ -227,6 +228,8 @@ export function buildJsonOutput(opts: {
 		slots: opts.slots ?? null,
 		// `null` for the same reason: "registers nothing" is a fact.
 		registers: opts.registers ?? null,
+		// SPEC-145 — `null` for a rune that is not a composition.
+		composition: opts.composition ?? null,
 	};
 }
 

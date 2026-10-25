@@ -73,7 +73,11 @@ import type { CompositionErrorCode } from './composition-errors.js';
 import type {
 	ContentFieldDefinition,
 	ContentModel,
+	DelimitedModel,
+	DelimitedZone,
 	HeadingExtract,
+	ItemFieldDefinition,
+	ItemModel,
 	ResolvedContent,
 	SectionsModel,
 	SequenceModel,
@@ -82,7 +86,7 @@ import type {
 import type { RuneConfig } from '@refrakt-md/transform';
 import { METABLOCK_ATTR, METABLOCK_OWNER_ATTR } from '@refrakt-md/transform';
 import { createComponentRenderable } from './component.js';
-import { resolveEmitReference, sectionLookup } from './resolver.js';
+import { IMPLICIT_SECTION_KEY, resolveEmitReference, sectionLookup } from './resolver.js';
 import { OWNER_ATTR, SLOT_ATTR, findAllByName } from './schema-table.js';
 import type { SchemaTable } from './schema-table.js';
 import { SchemaSideTable } from './schema-side-table.js';
@@ -246,12 +250,82 @@ interface SlotField {
 	refs: Record<string, string>;
 	/** The field's items are entries of the `sections` arrival mode. */
 	sections?: boolean;
+	/** The field is one Markdown list, and `each` iterates its items (SPEC-169 D4). */
+	listItems?: boolean;
+	/** The field may hold several lists, so `each` could not say whose items it
+	 *  iterates: `each` on it is an error rather than a guess (SPEC-169 D4). */
+	ambiguousList?: boolean;
+}
+
+/** `match` alternatives that are a Markdown list. */
+const LIST_MATCHES = new Set(['list', 'list:ordered', 'list:unordered']);
+
+/** A fail that may locate itself at a key path under `content`. */
+type ModelFail = (code: CompositionErrorCode, msg: string, at?: readonly string[]) => never;
+
+/**
+ * SPEC-169 D1 — what a composition accepts of a delimited model: `hr` as the
+ * delimiter, fixed zones, and each field name in one zone only, because the
+ * slots are the union of the zones' fields. Shared by the definition parser
+ * (which can locate the key) and the template compiler (which also sees a
+ * model handed to it in code).
+ */
+function checkDelimitedModel(m: DelimitedModel, fail: ModelFail): void {
+	if (m.dynamicZones) {
+		fail(
+			'dynamic-zones',
+			'a delimited model with `dynamicZones` is not supported by a composition: its zones have no fixed names, so a template has nothing to place. Declare fixed `zones` (SPEC-169 D1).',
+			['dynamicZones'],
+		);
+	}
+	if (m.delimiter !== 'hr') {
+		fail(
+			'delimiter-unsupported',
+			`a delimited model splits on \`hr\` (\`---\`) only, not \`${String(m.delimiter)}\` (SPEC-169 D1).`,
+			['delimiter'],
+		);
+	}
+	if (!Array.isArray(m.zones) || m.zones.length === 0) {
+		fail('content-model-invalid', 'a delimited model needs a non-empty list of `zones`.', [
+			'zones',
+		]);
+	}
+	const owner = new Map<string, string>();
+	for (const zone of m.zones!) {
+		for (const f of zone.fields ?? []) {
+			const first = owner.get(f.name);
+			if (first !== undefined) {
+				fail(
+					'zone-field-twice',
+					`field \`${f.name}\` is declared in zone \`${first}\` and in zone \`${zone.name}\`. A composition's slots are the union of the zones' fields, so a name belongs to one zone (SPEC-169 D1).`,
+					['zones', f.name],
+				);
+			}
+			owner.set(f.name, zone.name);
+		}
+	}
+}
+
+/** SPEC-169 D3 — an implicit section binds `$each` exactly as a real one does. */
+function checkImplicitSection(m: SectionsModel, fail: ModelFail): void {
+	if (!m.implicitSection) return;
+	const given = Object.keys(m.implicitSection.attributes ?? {}).sort();
+	const emitted = Object.keys(m.emitAttributes ?? {}).sort();
+	if (given.join('\0') !== emitted.join('\0')) {
+		const missing = emitted.filter((k) => !given.includes(k));
+		const extra = given.filter((k) => !emitted.includes(k));
+		fail(
+			'implicit-section-mismatch',
+			`\`implicitSection.attributes\` must give exactly the keys of \`emitAttributes\` (${emitted.join(', ') || 'none'}), so \`$each\` is bound the same way for a real and an implicit section${missing.length ? `; missing ${missing.map((k) => `\`${k}\``).join(', ')}` : ''}${extra.length ? `; not emitted ${extra.map((k) => `\`${k}\``).join(', ')}` : ''} (SPEC-169 D3).`,
+			['implicitSection'],
+		);
+	}
 }
 
 /**
  * Every field the content model resolves, by name. A composition reads
- * `sequence` and `sections` models; the others are rejected by name rather
- * than half-supported.
+ * `sequence`, `sections` and fixed-zone `delimited` models; the others are
+ * rejected by name rather than half-supported.
  */
 function slotFields(
 	model: ContentModel | ((attrs: Record<string, any>) => ContentModel),
@@ -262,18 +336,29 @@ function slotFields(
 	if ('when' in m) {
 		fail(
 			'content-model-type',
-			'a conditional (`when`) content model is not supported by a composition — the template, not the model, is where an assembly varies.',
+			'a conditional (`when`) content model is not supported by a composition — the template, not the model, is where an assembly varies. Each case has a declarative form: `implicitSection` on a sections model, `each` over a list field, or a template that places every alternative, with an empty one rendering nothing (SPEC-169 D2).',
 		);
 	}
 	const s = m as StructuralContentModel;
 	const addField = (f: ContentFieldDefinition) => {
 		const emitted = f.emitTag !== undefined && f.itemModel !== undefined;
 		const refs = emitted ? (f.emitAttributes ?? {}) : {};
-		fields.set(f.name, { list: !!f.greedy || emitted, each: Object.keys(refs), refs });
+		const alternatives = f.match.split('|');
+		const listOnly = alternatives.every((a) => LIST_MATCHES.has(a));
+		const listItems = !emitted && !f.greedy && listOnly;
+		const ambiguousList = !emitted && !!f.greedy && alternatives.some((a) => LIST_MATCHES.has(a));
+		fields.set(f.name, {
+			list: !!f.greedy || emitted || listItems,
+			each: Object.keys(refs),
+			refs,
+			...(listItems ? { listItems } : {}),
+			...(ambiguousList ? { ambiguousList } : {}),
+		});
 	};
 	if (s.type === 'sequence') {
 		for (const f of s.fields ?? []) addField(f);
 	} else if (s.type === 'sections') {
+		checkImplicitSection(s, fail);
 		for (const f of s.fields ?? []) addField(f);
 		const refs = s.emitAttributes ?? {};
 		fields.set('sections', {
@@ -282,13 +367,30 @@ function slotFields(
 			refs,
 			sections: s.emitTag === undefined,
 		});
+	} else if (s.type === 'delimited') {
+		checkDelimitedModel(s, fail);
+		for (const zone of s.zones ?? []) for (const f of zone.fields ?? []) addField(f);
 	} else {
 		fail(
 			'content-model-type',
-			`a \`${s.type}\` content model is not supported by a composition. Declare a \`sequence\` or \`sections\` model, whose fields are the slots.`,
+			`a \`${s.type}\` content model is not supported by a composition. Declare a \`sequence\`, \`sections\` or \`delimited\` model, whose fields are the slots.`,
 		);
 	}
 	return fields;
+}
+
+/**
+ * The resolved fields a template's slots read. A delimited model resolves each
+ * zone to its own record; its slots are the zones' fields, so the zones are
+ * merged — `checkDelimitedModel` has made their names disjoint.
+ */
+function slotValues(model: StructuralContentModel, resolved: ResolvedContent): ResolvedContent {
+	if (model.type !== 'delimited') return resolved;
+	const out: ResolvedContent = {};
+	for (const zone of model.zones ?? []) {
+		Object.assign(out, (resolved[zone.name] as ResolvedContent | undefined) ?? {});
+	}
+	return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -424,6 +526,9 @@ export function compileComposition(
 
 	const ast = Markdoc.parse(normaliseEach(body));
 	const fields = slotFields(options.contentModel, fail);
+	const structural = (
+		typeof options.contentModel === 'function' ? options.contentModel({}) : options.contentModel
+	) as StructuralContentModel;
 	const declared = new Set(options.attributes);
 	const selfNames = new Set([rune, ...(template.aliases ?? [])]);
 
@@ -580,6 +685,12 @@ export function compileComposition(
 		slotOrder.push(name);
 
 		if (each) {
+			if (field!.ambiguousList) {
+				fail(
+					'each-on-list-ambiguous',
+					`slot \`${name}\` iterates with \`each\`, but field \`${name}\` is greedy and can collect several lists, so it is unclear whose items are meant. Make it a non-greedy field matching one list, whose items \`each\` then iterates (SPEC-169 D4).`,
+				);
+			}
 			if (!field!.list) {
 				fail(
 					'each-on-single-field',
@@ -693,7 +804,12 @@ export function compileComposition(
 	): RenderableTreeNodes => {
 		const bound: Record<string, unknown> = {};
 		for (const name of attributeNames) bound[name] = attrs[name];
-		const ctx: ExpandContext = { rune, resolved, attrs: bound, fields };
+		const ctx: ExpandContext = {
+			rune,
+			resolved: slotValues(structural, resolved),
+			attrs: bound,
+			fields,
+		};
 
 		const placed = expand(ast.children, ctx);
 		// Top-level template nodes are the composed rune's own (D10). A slot
@@ -812,6 +928,20 @@ function itemsOf(
 	field: SlotField,
 	value: unknown,
 ): Array<{ each: Record<string, unknown>; content: Node[] }> {
+	if (field.listItems) {
+		// SPEC-169 D4 — one Markdown list: each item is placed as it is, with no
+		// extraction, so `$each` binds nothing. A tight item's text is an `inline`
+		// node; it is given the paragraph a loose item would have had.
+		return asNodes(value)
+			.flatMap((list) => (list.type === 'list' ? list.children : []))
+			.filter((item) => item.type === 'item')
+			.map((item) => ({
+				each: {},
+				content: item.children.map((c) =>
+					c.type === 'inline' ? new Ast.Node('paragraph', {}, [c]) : c,
+				),
+			}));
+	}
 	return asNodes(value).map((item) => {
 		if (field.sections) {
 			// A section entry: heading info under `$` keys, then the body's fields.
@@ -823,9 +953,12 @@ function itemsOf(
 				if (k.startsWith('$')) extracted[k.slice(1)] = v;
 			}
 			const lookup = sectionLookup(String(entry.$heading ?? ''), extracted);
+			// An implicit section (SPEC-169 D3) has no heading to read: its
+			// declared attributes are the values, under the same keys.
+			const implicit = entry[IMPLICIT_SECTION_KEY] as Record<string, unknown> | undefined;
 			const each: Record<string, unknown> = {};
 			for (const [key, ref] of Object.entries(field.refs)) {
-				each[key] = resolveEmitReference(ref, lookup);
+				each[key] = implicit ? implicit[key] : resolveEmitReference(ref, lookup);
 			}
 			const content = Object.entries(entry)
 				.filter(([k]) => !k.startsWith('$'))
@@ -1289,8 +1422,81 @@ function parseFields(raw: unknown, where: string, fail: SectionFail): ContentFie
 		}
 		if (typeof def.match !== 'string')
 			at('content-model-invalid', `\`${where}.${name}\` needs a \`match\`.`);
+		if (def.itemModel !== undefined) {
+			def.itemModel = parseItemModel(def.itemModel, `${where}.${name}.itemModel`, (code, msg) =>
+				fail(code, msg, [section, name, 'itemModel']),
+			);
+		}
 		return { name, ...def } as unknown as ContentFieldDefinition;
 	});
+}
+
+const ITEM_FIELD_KEYS = new Set([
+	'name',
+	'match',
+	'optional',
+	'greedy',
+	'extract',
+	'pattern',
+	'itemModel',
+]);
+
+/**
+ * An `itemModel` as YAML writes it. YAML has no regular expressions, so every
+ * `pattern` other than `remainder` arrives as a string and is compiled here, at
+ * every nesting level — the resolver applies a pattern only when it is a
+ * `RegExp`, so a string one would match nothing, silently (BUG-038).
+ */
+function parseItemModel(
+	raw: unknown,
+	where: string,
+	fail: (code: CompositionErrorCode, msg: string) => never,
+): ItemModel {
+	const fields = (raw as { fields?: unknown } | null)?.fields;
+	if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !Array.isArray(fields)) {
+		fail('content-model-invalid', `\`${where}\` must be a mapping with a \`fields\` list.`);
+	}
+	return {
+		fields: (fields as unknown[]).map((f) => {
+			const entry = f as Record<string, unknown> | null;
+			if (!entry || typeof entry !== 'object' || typeof entry.name !== 'string') {
+				fail('content-model-invalid', `a \`${where}\` field needs a \`name\`.`);
+			}
+			const field = entry as Record<string, unknown>;
+			const label = `\`${where}\` field \`${field.name}\``;
+			for (const key of Object.keys(field)) {
+				if (!ITEM_FIELD_KEYS.has(key)) {
+					fail(
+						'content-model-invalid',
+						`${label}: unknown key \`${key}\` (expected ${[...ITEM_FIELD_KEYS].join(', ')}).`,
+					);
+				}
+			}
+			if (typeof field.match !== 'string') {
+				fail('content-model-invalid', `${label} needs a \`match\`.`);
+			}
+			const out = { ...field } as unknown as ItemFieldDefinition;
+			if (field.pattern !== undefined) {
+				if (typeof field.pattern !== 'string') {
+					fail('content-model-invalid', `${label}: \`pattern\` must be a string.`);
+				}
+				if (field.pattern !== 'remainder') {
+					try {
+						out.pattern = new RegExp(field.pattern as string);
+					} catch (e) {
+						fail(
+							'content-model-invalid',
+							`${label}: \`pattern\` is not a regular expression: ${(e as Error).message}`,
+						);
+					}
+				}
+			}
+			if (field.itemModel !== undefined) {
+				out.itemModel = parseItemModel(field.itemModel, `${where}.${field.name}.itemModel`, fail);
+			}
+			return out;
+		}),
+	};
 }
 
 function parseHeadingExtract(raw: unknown, sectionFail: SectionFail): HeadingExtract {
@@ -1336,7 +1542,12 @@ const SECTIONS_KEYS = new Set([
 	'emitAttributes',
 	'headingExtract',
 	'knownSections',
+	'implicitSection',
 ]);
+/** `dynamicZones` and `zoneModel` are accepted as keys so that their rejection
+ *  can say why, rather than reporting an unknown key. */
+const DELIMITED_KEYS = new Set(['type', 'delimiter', 'zones', 'dynamicZones', 'zoneModel']);
+const ZONE_KEYS = new Set(['name', 'primary', 'fields']);
 
 function parseContentModel(raw: unknown, fail: SectionFail): ContentModel {
 	if (raw === undefined) return { type: 'sequence', fields: [] };
@@ -1344,11 +1555,17 @@ function parseContentModel(raw: unknown, fail: SectionFail): ContentModel {
 		fail('content-model-invalid', '`content` must be a mapping.');
 	const c = raw as Record<string, unknown>;
 	const allowed =
-		c.type === 'sequence' ? SEQUENCE_KEYS : c.type === 'sections' ? SECTIONS_KEYS : null;
+		c.type === 'sequence'
+			? SEQUENCE_KEYS
+			: c.type === 'sections'
+				? SECTIONS_KEYS
+				: c.type === 'delimited'
+					? DELIMITED_KEYS
+					: null;
 	if (!allowed) {
 		fail(
 			'content-model-type',
-			`\`content.type\` must be \`sequence\` or \`sections\`${c.type ? `, not \`${String(c.type)}\`` : ''}: a composition's slots are the model's fields.`,
+			`\`content.type\` must be \`sequence\`, \`sections\` or \`delimited\`${c.type ? `, not \`${String(c.type)}\`` : ''}: a composition's slots are the model's fields.`,
 		);
 	}
 	for (const key of Object.keys(c)) {
@@ -1366,6 +1583,7 @@ function parseContentModel(raw: unknown, fail: SectionFail): ContentModel {
 			fields: parseFields(c.fields, 'content.fields', fail),
 		} as SequenceModel;
 	}
+	if (c.type === 'delimited') return parseDelimitedModel(c, fail);
 	if (c.fields !== undefined && c.preamble !== undefined) {
 		fail(
 			'content-model-invalid',
@@ -1396,7 +1614,29 @@ function parseContentModel(raw: unknown, fail: SectionFail): ContentModel {
 			);
 		}
 	}
-	return {
+	let implicit: SectionsModel['implicitSection'];
+	if (c.implicitSection !== undefined) {
+		const is = c.implicitSection as { attributes?: unknown } | null;
+		const attrs = is?.attributes ?? {};
+		if (
+			!is ||
+			typeof is !== 'object' ||
+			Array.isArray(is) ||
+			Object.keys(is).some((k) => k !== 'attributes') ||
+			!attrs ||
+			typeof attrs !== 'object' ||
+			Array.isArray(attrs) ||
+			!Object.values(attrs).every((v) => typeof v === 'string')
+		) {
+			fail(
+				'content-model-invalid',
+				'`content.implicitSection` must be `{ attributes: { <name>: <literal>, … } }`.',
+				['implicitSection'],
+			);
+		}
+		implicit = { attributes: attrs as Record<string, string> };
+	}
+	const model = {
 		type: 'sections',
 		sectionHeading: typeof c.sectionHeading === 'string' ? c.sectionHeading : 'heading',
 		fields: parseFields(
@@ -1411,7 +1651,65 @@ function parseContentModel(raw: unknown, fail: SectionFail): ContentModel {
 		...(c.knownSections
 			? { knownSections: c.knownSections as SectionsModel['knownSections'] }
 			: {}),
+		...(implicit ? { implicitSection: implicit } : {}),
 	} as SectionsModel;
+	checkImplicitSection(model, fail);
+	return model;
+}
+
+/** A `delimited` model (SPEC-169 D1): `hr`, fixed zones, one zone per name. */
+function parseDelimitedModel(c: Record<string, unknown>, fail: SectionFail): DelimitedModel {
+	if (c.zoneModel !== undefined && !c.dynamicZones) {
+		fail(
+			'dynamic-zones',
+			'`content.zoneModel` describes dynamic zones, which a composition does not support: their zones have no fixed names, so a template has nothing to place. Declare fixed `zones` (SPEC-169 D1).',
+			['zoneModel'],
+		);
+	}
+	const delimiter = c.delimiter ?? 'hr';
+	if (!Array.isArray(c.zones) && !c.dynamicZones) {
+		fail('content-model-invalid', '`content.zones` must be a list of zones.', ['zones']);
+	}
+	const zones = ((c.zones as unknown[] | undefined) ?? []).map((z): DelimitedZone => {
+		const zone = z as Record<string, unknown> | null;
+		if (!zone || typeof zone !== 'object' || typeof zone.name !== 'string' || zone.name === '') {
+			fail('content-model-invalid', 'each of `content.zones` needs a `name`.', ['zones']);
+		}
+		const name = (zone as Record<string, unknown>).name as string;
+		for (const key of Object.keys(zone as object)) {
+			if (!ZONE_KEYS.has(key)) {
+				fail(
+					'content-model-invalid',
+					`zone \`${name}\`: unknown key \`${key}\` (expected ${[...ZONE_KEYS].join(', ')}).`,
+					['zones', name],
+				);
+			}
+		}
+		return {
+			name,
+			type: 'sequence',
+			fields: parseFields(zone!.fields, `content.zones.${name}.fields`, (code, msg, at) =>
+				fail(code, msg, ['zones', name, ...(at ?? [])]),
+			),
+			...(zone!.primary === true ? { primary: true } : {}),
+		};
+	});
+	const primaries = zones.filter((z) => z.primary);
+	if (primaries.length > 1) {
+		fail(
+			'content-model-invalid',
+			`zones ${primaries.map((z) => `\`${z.name}\``).join(', ')} are all \`primary\`; at most one zone receives content written with no \`---\`.`,
+			['zones'],
+		);
+	}
+	const model = {
+		type: 'delimited',
+		delimiter: delimiter as string,
+		zones,
+		...(c.dynamicZones ? { dynamicZones: true } : {}),
+	} as DelimitedModel;
+	checkDelimitedModel(model, fail);
+	return model;
 }
 
 /**

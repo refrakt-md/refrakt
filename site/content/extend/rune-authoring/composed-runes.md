@@ -44,12 +44,51 @@ From **{% $attrs.from %}**:
 | `description` | What the rune is for — shown by `refrakt reference` and in prompts. |
 | `attributes` | The rune's attributes: each `{ type, required, default, matches, description }`, `type` one of `string`, `number`, `boolean`. An attribute with `matches` becomes a `data-*` modifier on the root. |
 | `provides` | Capabilities the rune bears. `[prose]` admits the prose attributes (`reading`, `dropcap`) on it. |
-| `content` | The content model: how authored Markdown becomes named fields. `type: sequence` with `fields`, or `type: sections` with a `preamble` and per-section `sectionModel`, `emitAttributes`, `headingExtract`, `knownSections`. Each field is `{ match, optional, greedy, description, itemModel, emitTag, emitAttributes }`. See [Content Models](/extend/rune-authoring/content-models). |
+| `content` | The content model: how authored Markdown becomes named fields. `type: sequence` with `fields`; `type: sections` with a `preamble` and per-section `sectionModel`, `emitAttributes`, `headingExtract`, `knownSections`, `implicitSection`; or `type: delimited` with `zones`. Each field is `{ match, optional, greedy, description, itemModel, emitTag, emitAttributes }`. See [the content models a composition takes](#the-content-models-a-composition-takes) and [Content Models](/extend/rune-authoring/content-models). |
 | `metaFields`, `blocks` | Metadata about attribute values, and the blocks that group them — placed with `{% metablock %}`. |
 | `registers` | Entities and edges the rune puts in the site registry. See [Declaring Registration](/extend/rune-authoring/registration). |
 | `schema` | The schema.org row for the rune — in a plugin only, see [why](#why-schema-is-allowed-in-a-plugin-and-not-in-a-project). |
 
 Some keys are refused because they would contradict what a composed rune is: styles (`css`, `style`, `styles`, `stylesheet`, `block`, `class`) — its appearance is the primitives'; a second emit path (`transform`, `emits`, `slots`) — the template is its emit path; and `layout` — a composed rune's containers belong to the runes it places, so the template arranges them.
+
+## The content models a composition takes
+
+A composition's slots are its content model's fields, so a model is accepted only when every field it resolves has a fixed name. That rules in three of the four model types.
+
+| `type` | Its slots |
+|---|---|
+| `sequence` | Its `fields`. |
+| `sections` | Its `preamble` fields, plus `sections`: one item per section. |
+| `delimited` | The fields of all its `zones` together. |
+
+`custom` is rejected, because its code decides what it produces. A conditional (`when`) model is rejected too. Every case it covered has a declarative form: `implicitSection`, `each` over a list field, or a template that places every alternative and lets the empty one render nothing. A content model also never depends on attribute values. A model written as a function of the attributes is read once, with none.
+
+### `delimited`: content split on `---`
+
+A delimited model splits the content at each `---` into zones, and each zone is a sequence of fields:
+
+{% snippet path="packages/runes/test/fixtures/composed/teaser.md" /%}
+
+- **The slots are the zones' fields together**, here `media`, `headline` and `blurb`. A field name belongs to one zone; using it in two is an error.
+- **`primary` names the zone that receives content written with no `---` at all.** Without it, that content goes to the first zone. Here a teaser written without a picture is all `content`, not all `media`.
+- **Only `hr` is a delimiter**, and **zones are fixed**. `dynamicZones` is rejected: its zones have no names, so a template has nothing to place.
+- **The composition consumes the author's `---`.** The template re-emits one where a placed rune should split. Here `card` gets a media zone and a body. The template's `---` is unconditional, and an empty media zone is one `card` omits, as the `{% if %}` section below explains.
+
+Use a delimited model when the template must **address a field inside a zone**: wrap a zone's trailing list, place one list here and another there. A composition that only passes the zones through to one rune that splits them itself needs one greedy field, not zones.
+
+### `implicitSection`: no headings is one section
+
+A sections model treats content with no section heading as preamble. `implicitSection` makes it one section instead, so a rune reads the same whether or not the author used headings:
+
+```yaml
+content:
+  type: sections
+  sectionHeading: heading:2
+  emitAttributes: { label: $heading }
+  implicitSection: { attributes: { label: "" } }
+```
+
+The implicit section is an ordinary item of the `sections` slot, and its `attributes` are its `$each` values. They must give exactly the keys of `emitAttributes`, so `$each.label` exists for a real section and for the implicit one alike.
 
 ## The template vocabulary
 
@@ -92,12 +131,40 @@ Fallback content renders only when the field is empty: `{% slot name="descriptio
 {% /slot %}
 ```
 
-- `each` needs a field that holds a list — a `greedy` field, a field with an `itemModel` and an `emitTag`, or `sections`.
+- `each` needs a field that holds a list: a `greedy` field, a field with an `itemModel` and an `emitTag`, a field matching one Markdown list ([below](#each-over-a-list)), or `sections`.
 - The bare `{% slot /%}` inside is the item's content. An `each` slot without one drops every item's content, so it is an error.
 - `$each` exposes exactly the content model's `emitAttributes` for the item — `emitAttributes: { heading: $heading }` makes `$each.heading`. Naming anything else is an error, not a silent `undefined`.
 - Only the item's content and `$each` belong inside: a named slot or a meta block inside an `each` slot would be placed once per item, and is rejected.
 
 The name is `$each` rather than `$item` on purpose. A `collection`'s `$item` is an entity and a `data` row's `$row` is flat; a composition's item is neither, so it gets its own name.
+
+### `each` over a list
+
+A list can reach `each` in two ways, depending on whether its items need reading.
+
+**Placed as written.** A field that is not `greedy` and matches one list (`list`, `list:ordered` or `list:unordered`) iterates that list's items. Each item's content is the bare `{% slot /%}`, and `$each` binds nothing. This is how one model takes steps written either as headings or as an ordered list:
+
+{% snippet path="packages/runes/test/fixtures/composed/steps.md" /%}
+
+An author writes headings or a list. The template places both slots, and the one not written is empty and renders nothing. A greedy list field cannot be iterated this way, because it collects several lists and `each` could not say whose items it means. That is an error. So is a field that may match something other than a list.
+
+**Read into fields.** An `itemModel` with an `emitTag` reads each item into named values, and `emitAttributes` exposes them as `$each`:
+
+```yaml
+rows:
+  match: list
+  itemModel:
+    fields:
+      - { name: name,  match: text, pattern: "^\\s*([^:]+?)\\s*:" }
+      - { name: value, match: text, pattern: remainder }
+  emitTag: span
+  emitAttributes: { name: $name, value: $value }
+```
+
+`- Primary: #2563EB` gives `$each.name` = `Primary` and `$each.value` = `#2563EB`.
+
+- **A `pattern` is a regular expression, written as a YAML string.** Capture group 1 is the value, or the whole match without one. `remainder` takes what is left.
+- **Patterns consume the text they match, in order.** In the example `value` must be `remainder`: a second pattern expecting the colon would find it already gone.
 
 ### `$attrs`
 
@@ -326,8 +393,12 @@ Each error has a code. The fix column assumes the cause in the meaning column.
 | `invalid-value` | A value has the wrong shape — `tag` not an element name, `aliases` or `provides` not a list, `schema`, `registers`, `metaFields` or `blocks` not a mapping. | Fix the value at the reported line. |
 | `attribute-invalid` | An `attributes` entry is malformed: a bad name, not a mapping, an unknown key, a `type` other than `string`/`number`/`boolean`, an empty `matches`. | Fix the entry at the reported line. |
 | `attribute-reserved` | An attribute with `matches` would render as a `data-*` the engine writes itself (`data-name`, `data-rune`, `data-slot`, …). | Rename the attribute. |
-| `content-model-type` | `content.type` is not `sequence` or `sections`. | A composition's slots are its model's fields; use one of the two. |
-| `content-model-invalid` | The content model or one of its fields is malformed: a field without `match`, an unknown key, both `fields` and `preamble`, a bad `headingExtract` or `emitAttributes`. | Fix it at the reported line; see [Content Models](/extend/rune-authoring/content-models). |
+| `content-model-type` | `content.type` is not `sequence`, `sections` or `delimited`, or the model is conditional. | A composition's slots are its model's fields; use one of the three. For a conditional model, see [the declarative forms](#the-content-models-a-composition-takes). |
+| `content-model-invalid` | The content model or one of its fields is malformed: a field without `match`, an unknown key, both `fields` and `preamble`, a bad `headingExtract`, `emitAttributes`, `implicitSection` or zone, an `itemModel` `pattern` that is not a regular expression. | Fix it at the reported line; see [Content Models](/extend/rune-authoring/content-models). |
+| `delimiter-unsupported` | A delimited model's `delimiter` is not `hr`. | Split on `---`; it is the only delimiter a composition takes. |
+| `dynamic-zones` | A delimited model declares `dynamicZones`, or a `zoneModel`. | Declare fixed, named `zones`. |
+| `zone-field-twice` | A field name is declared in two zones. | Rename one: a composition's slots are all its zones' fields together. |
+| `implicit-section-mismatch` | `implicitSection.attributes` does not give exactly the keys of `emitAttributes`. | Give one value for each `emitAttributes` key, and no others. |
 | `schema-invalid` | The `schema` table fails its own checks — a source naming no attribute, field or node. | Fix the row the message names. |
 | `registers-invalid` | The `registers` declaration fails its own checks — a `{ field }` naming no key of the data bag, an undeclared source. | Fix the entry the message names; see [Declaring Registration](/extend/rune-authoring/registration). |
 | `template-parse` | Markdoc cannot parse the template, or a tag in it is never closed or never opened. | Fix the syntax at the reported line. |
@@ -340,7 +411,8 @@ Each error has a code. The fix column assumes the cause in the meaning column.
 | `slot-inside-each` | A named slot is placed inside an `each` slot, which would place it once per item. | Move it outside the `each` slot. |
 | `slot-unknown-field` | A slot names no field of the content model. | Fix the name, or declare the field under `content`. |
 | `slot-placed-twice` | The same slot is placed twice. | Place it once; two positions are two fields, or a theme's concern. |
-| `each-on-single-field` | `each` iterates a field that holds one value. | Make the field `greedy`, or drop `each`. |
+| `each-on-single-field` | `each` iterates a field that holds one value. | Make the field `greedy`, match it to one list, or drop `each`. |
+| `each-on-list-ambiguous` | `each` iterates a greedy field that can collect several lists. | Make the field match one list, not greedily, and `each` iterates its items. |
 | `each-item-unplaced` | An `each` slot has no bare `{% slot /%}`, so each item's content would be dropped. | Add `{% slot /%}` where the item's content goes. |
 | `field-unplaced` | A content-model field is placed by no slot, so its content would be dropped. | Place it, or remove the field. |
 | `metablock-invalid` | A `{% metablock %}` has no `name`, has content, has another attribute, or sits inside a line of text. | `{% metablock name="x" /%}` on its own line. |

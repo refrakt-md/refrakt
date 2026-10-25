@@ -1,4 +1,4 @@
-{% work id="WORK-648" status="ready" priority="medium" complexity="simple" source="SPEC-169" tags="runes, composition, content-model, each" milestone="v0.42.0" %}
+{% work id="WORK-648" status="done" priority="medium" complexity="simple" source="SPEC-169" tags="runes, composition, content-model, each" milestone="v0.42.0" pr="refrakt-md/refrakt#714" %}
 
 # each iterates the items of a list field
 
@@ -9,10 +9,10 @@ That blocks `steps`, which takes its steps from headings or from an ordered list
 
 ## Acceptance Criteria
 
-- [ ] `each` on a non-greedy field matching one `list` iterates its items, with the bare slot as each item's content and no `$each` bindings
-- [ ] A composed `steps` fixture renders the same steps from headings and from an ordered list, with one model and no conditional
-- [ ] An `each` over a greedy list field, or a field that can match several lists, is a construction error naming the field
-- [ ] The composed-runes guide documents list `each` beside `itemModel`, including that `itemModel` patterns consume the text they match in order (from BUG-038)
+- [x] `each` on a non-greedy field matching one `list` iterates its items, with the bare slot as each item's content and no `$each` bindings
+- [x] A composed `steps` fixture renders the same steps from headings and from an ordered list, with one model and no conditional
+- [x] An `each` over a greedy list field, or a field that can match several lists, is a construction error naming the field
+- [x] The composed-runes guide documents list `each` beside `itemModel`, including that `itemModel` patterns consume the text they match in order (from BUG-038)
 
 ## Approach
 
@@ -28,5 +28,18 @@ That blocks `steps`, which takes its steps from headings or from an ordered list
 
 - {% ref "SPEC-169" /%}: D4.
 - {% ref "BUG-038" /%}.
+
+## Resolution
+
+Completed: 2026-10-25
+
+Branch: `claude/v0-42-0-planning-t31f5e`
+
+### What was done
+- `composition.ts`: a non-greedy field whose `match` alternatives are all lists is `listItems`; `each` iterates the list's items, giving a tight item's inline content a paragraph, and binds no `$each`. A greedy field that can match a list (no `emitTag`) is `ambiguousList`, and `each` on it is `each-on-list-ambiguous`. A field that may match something other than a list stays `each-on-single-field`.
+- Fixture `packages/runes/test/fixtures/composed/steps.md`, in a plain `grid` until SPEC-156's ladder exists, and included in the guide beside the `itemModel` docs and the pattern-order note.
+
+### Notes
+- D4's open question (warn when an author writes both a list and headings) stays open.
 
 {% /work %}
