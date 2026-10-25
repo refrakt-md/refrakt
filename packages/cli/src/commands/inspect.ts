@@ -14,6 +14,9 @@ import {
 	registersFor,
 	auditRegistersSources,
 	describeRegisters,
+	compositionFor,
+	renderContentModel,
+	serializeContentModel,
 } from '@refrakt-md/runes';
 import type { RegistersDeclaration } from '@refrakt-md/runes';
 import type { ResolvedSchemaRow } from '@refrakt-md/runes';
@@ -338,7 +341,19 @@ function inspectSingle(
 		selectors,
 		schema: table ? describeSchemaRow(table, flags) : undefined,
 		slots: slotsOf(rune),
+		composition: compositionOf(rune),
 	});
+}
+
+/** A composed rune's content model and template slots (SPEC-145, SPEC-169 D1). */
+function compositionOf(rune: Rune) {
+	const info = rune.schema ? compositionFor(rune.schema) : undefined;
+	if (!info) return undefined;
+	const raw = schemaContentModels.get(rune.schema);
+	return {
+		slots: [...info.slots],
+		contentModel: raw ? (serializeContentModel(raw) ?? null) : null,
+	};
 }
 
 /** A declaratively-labelled rune's slots, defaults explicit (SPEC-143). */
@@ -379,6 +394,22 @@ function outputFormatted(
 	if (slots) {
 		console.log(heading('Slots (declared)'));
 		console.log(slots.map((s) => `  ${formatSlotLine(s)}`).join('\n'));
+	}
+
+	// SPEC-145 — a composed rune's input is its content model, and its output
+	// the slots its template places; a delimited model shows its zones here.
+	const composition = compositionOf(rune);
+	if (composition) {
+		console.log(heading('Composition'));
+		if (composition.contentModel) {
+			console.log(
+				renderContentModel(composition.contentModel)
+					.split('\n')
+					.map((l) => `  ${l}`)
+					.join('\n'),
+			);
+		}
+		console.log(`  Template slots: ${composition.slots.join(', ')}`);
 	}
 
 	// WORK-566 — the review surface. SPEC-130 D5 dispenses with validating a

@@ -15,6 +15,7 @@ import {
 } from './attribute-presets.js';
 import { AXIS_ATTRIBUTES } from './universal-attributes.js';
 import { schemaContentModels, schemaTables, schemaEmits } from './lib/index.js';
+import { compositionFor } from './lib/composition.js';
 import { describeRegisters, registersFor } from './lib/registers.js';
 import type { RegistersDeclaration } from './lib/registers.js';
 import { describeSlots, formatSlotLine } from './lib/slots.js';
@@ -156,6 +157,8 @@ export interface SerializedSectionsModel {
 export interface SerializedDelimitedZone {
 	name: string;
 	type: 'sequence';
+	/** Receives content written with no delimiter at all. */
+	primary?: boolean;
 	fields: SerializedContentField[];
 }
 
@@ -312,6 +315,12 @@ export function describeRune(rune: RuneInfo): string {
 		lines.push(renderContentModel(rune.contentModel));
 	}
 
+	// SPEC-145 — a composed rune's slots are its template's placements of the
+	// content model's fields, in template order (SPEC-169 D1: for a delimited
+	// model, the union of its zones' fields).
+	const composition = compositionFor(rune.schema);
+	if (composition) lines.push(`Template slots: ${composition.slots.join(', ')}`);
+
 	// SPEC-143 — a declaratively-labelled rune states its output slots as data,
 	// so the reference can say what a hand-written transform never let it: which
 	// field becomes which named node.
@@ -374,6 +383,7 @@ export function stripContentModel(model: ContentModel): SerializedContentModel |
 			zones: model.zones?.map((z) => ({
 				name: z.name,
 				type: 'sequence' as const,
+				...(z.primary ? { primary: true } : {}),
 				fields: z.fields.map(stripField),
 			})),
 			dynamicZones: model.dynamicZones,
@@ -523,7 +533,8 @@ function renderDelimitedModel(model: SerializedDelimitedModel): string {
 
 	if (model.zones && model.zones.length > 0) {
 		for (const zone of model.zones) {
-			lines.push(`Zone "${zone.name}":`);
+			const primary = zone.primary ? ` (primary — content written with no ${delimiter})` : '';
+			lines.push(`Zone "${zone.name}"${primary}:`);
 			for (const field of zone.fields) {
 				lines.push(`  - ${renderField(field)}`);
 			}

@@ -451,6 +451,37 @@ export function sectionLookup(
 }
 
 /**
+ * The key an implicit section's declared attributes ride under, on a section
+ * entry with no `emitTag`. A composition binds `$each` from it (SPEC-169 D3):
+ * there is no heading to resolve `emitAttributes` against.
+ */
+export const IMPLICIT_SECTION_KEY = '$implicitAttributes';
+
+/**
+ * `implicitSection`: no section heading was found, so every child is one
+ * section. With `emitTag` it is one emitted tag carrying the declared
+ * attributes; without, one section entry whose body is resolved by
+ * `sectionModel`, as a real section's would be.
+ */
+function implicitSection(
+	children: Node[],
+	model: SectionsModel,
+	locale: string | undefined,
+	unmatched: UnmatchedSink | undefined,
+): ResolvedContent {
+	const preamble = model.fields ? resolveSequence([], model.fields) : {};
+	const attributes = { ...(model.implicitSection?.attributes ?? {}) };
+	if (model.emitTag) {
+		return { ...preamble, sections: [new Ast.Node('tag', attributes, children, model.emitTag)] };
+	}
+	const body = resolve(children, model.sectionModel, undefined, locale, unmatched);
+	return {
+		...preamble,
+		sections: [{ $heading: '', [IMPLICIT_SECTION_KEY]: attributes, ...body }],
+	};
+}
+
+/**
  * Resolve a sections model: split children at heading boundaries,
  * optionally extracting heading data and emitting child rune tags.
  *
@@ -502,17 +533,7 @@ export function resolveSections(
 
 	if (level === undefined) {
 		// No headings found
-		if (model.implicitSection && model.emitTag) {
-			// Wrap all children in a single emitted tag
-			const preamble = model.fields ? resolveSequence([], model.fields) : {};
-			const tagNode = new Ast.Node(
-				'tag',
-				{ ...(model.implicitSection.attributes ?? {}) },
-				children,
-				model.emitTag,
-			);
-			return { ...preamble, sections: [tagNode] };
-		}
+		if (model.implicitSection) return implicitSection(children, model, locale, unmatched);
 
 		const preamble = resolvePreamble(children);
 		return { ...preamble, sections: [] };
@@ -535,16 +556,9 @@ export function resolveSections(
 	}
 	if (current) rawSections.push(current);
 
-	// implicitSection: if no sections found, wrap all children in a single emitted tag
-	if (rawSections.length === 0 && model.implicitSection && model.emitTag) {
-		const preamble = model.fields ? resolveSequence([], model.fields) : {};
-		const tagNode = new Ast.Node(
-			'tag',
-			{ ...(model.implicitSection.attributes ?? {}) },
-			children,
-			model.emitTag,
-		);
-		return { ...preamble, sections: [tagNode] };
+	// implicitSection: if no sections found, all children are one section
+	if (rawSections.length === 0 && model.implicitSection) {
+		return implicitSection(children, model, locale, unmatched);
 	}
 
 	// 3. Resolve preamble fields

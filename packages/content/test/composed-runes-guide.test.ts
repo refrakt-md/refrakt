@@ -269,9 +269,18 @@ describe('the worked examples are the tested definitions', () => {
 		const runesDir = relative(ROOT, join(composedDir, 'runes'));
 		expect(included).toContain(`${runesDir}/bond.md`);
 		expect(included).toContain(`${runesDir}/character.md`);
+		// The content-model examples (SPEC-169) are the definitions the runes
+		// package's composition tests build.
+		const modelsDir = 'packages/runes/test/fixtures/composed';
 		for (const path of included) {
 			expect(existsSync(join(ROOT, path)), path).toBe(true);
-			expect(path.startsWith(relative(ROOT, composedDir)), path).toBe(true);
+			expect(
+				path.startsWith(relative(ROOT, composedDir)) || path.startsWith(`${modelsDir}/`),
+				path,
+			).toBe(true);
+		}
+		for (const name of ['teaser', 'steps']) {
+			expect(included).toContain(`${modelsDir}/${name}.md`);
 		}
 		// The prose beside them makes claims about them, so they carry review
 		// markers: `refrakt snippet review --check` (a CI gate) fires when a
