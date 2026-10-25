@@ -24,7 +24,7 @@
     "@refrakt-md/types": "0.41.3",
     "@refrakt-md/transform": "0.41.3",
     "@refrakt-md/runes": "0.41.3",
-    "@markdoc/markdoc": "0.4.0",
+    "@markdoc/markdoc": "0.5.10",
     "iso8601-duration": "2.1.2",
     "reflect-metadata": "^0.2.0"
   }

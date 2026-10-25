@@ -20,6 +20,7 @@ import {
 	type GalleryCell,
 } from '../lib/gallery.js';
 import type { InspectDeps } from './inspect.js';
+import { parse } from '@refrakt-md/runes';
 
 export interface GalleryOptions {
 	/** Theme package whose CSS is inlined (e.g. `@refrakt-md/lumina`). */
@@ -244,7 +245,7 @@ function variantMatrix(rune: Rune): { variant: string; flags: Record<string, str
  *  Markdoc source string, returning the rendered tree (pre-`renderToHtml`).
  *  Shared by rune cells and layout-fixture content/regions. */
 function sourceToTree(source: string, transform: (tree: any) => any, deps: InspectDeps): any {
-	const ast = deps.Markdoc.parse(source);
+	const ast = parse(source);
 	const headings = deps.extractHeadings(ast);
 	const transformed = deps.Markdoc.transform(ast, {
 		tags: deps.tags,

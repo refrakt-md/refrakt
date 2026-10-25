@@ -12,7 +12,7 @@ const CLOSE_SENTINEL = '\x01RFTC\x02';
 
 /**
  * Escape `{%` and `%}` inside code fences so Markdoc doesn't parse them as tags.
- * Call this on raw markdown BEFORE passing to `Markdoc.parse()`.
+ * Call this on raw markdown BEFORE passing to `parse()`.
  */
 export function escapeFenceTags(markdown: string): string {
 	const lines = markdown.split('\n');

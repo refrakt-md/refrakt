@@ -108,7 +108,7 @@ describe('scaffold', () => {
 		expect(pkg.dependencies['@refrakt-md/types']).toBe(expected);
 		expect(pkg.dependencies['@refrakt-md/lumina']).toBe(expected);
 		// Third-party packages should not use the refrakt version
-		expect(pkg.dependencies['@markdoc/markdoc']).toBe('^0.4.0');
+		expect(pkg.dependencies['@markdoc/markdoc']).toBe('^0.5.10');
 	});
 
 	it('adds custom theme to package.json dependencies', async () => {

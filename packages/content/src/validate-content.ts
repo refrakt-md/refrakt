@@ -29,6 +29,7 @@ import {
 	type PageEnvironmentOptions,
 } from './site.js';
 import { validatePageDetailed, type ValidationSettings } from './validate.js';
+import { parse } from '@refrakt-md/runes';
 
 /**
  * One validation finding, with enough location detail for a caller to open the
@@ -138,7 +139,7 @@ export async function validateContent(
 	for (const page of tree.pages()) {
 		const { frontmatter, content } = parseFrontmatter(page.raw);
 		const route = router.resolve(page.relativePath, frontmatter);
-		let ast: Node = Markdoc.parse(escapeFenceTags(content));
+		let ast: Node = parse(escapeFenceTags(content));
 
 		// Computed before preprocess, exactly as the build does, so snippet can
 		// resolve `path=$file.path`-style references. `timestamps` is omitted —

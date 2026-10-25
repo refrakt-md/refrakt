@@ -60,7 +60,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@markdoc/markdoc": "0.4.0",
+    "@markdoc/markdoc": "0.5.10",
     "@refrakt-md/content": "0.41.3",
     "@refrakt-md/runes": "0.41.3",
     "@refrakt-md/transform": "0.41.3",

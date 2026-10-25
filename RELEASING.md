@@ -105,3 +105,20 @@ After the first publish, CI will handle subsequent releases automatically.
 ## Semver note (0.x)
 
 While packages are pre-1.0, caret ranges (`^0.x.0`) only allow patch updates — `^0.4.0` means `>=0.4.0 <0.5.0`. The `create-refrakt` template uses tilde ranges (`~0.x.0`) derived from its own package version to ensure scaffolded sites install the correct minor version.
+
+## The Markdoc pin
+
+Every package that depends on `@markdoc/markdoc` pins one exact version. A caret or tilde range is not used, for three reasons.
+
+- **One parser.** Packages with different Markdoc versions would parse the same page two ways. The content loader, `refrakt validate`, the language server and the editor preview would then disagree about a document.
+- **Committed outputs depend on the parse.** The structure contracts and the SEO baseline record output derived from Markdoc's AST, so a Markdoc release can change committed files with no refrakt change at all.
+- **`Markdoc.format` round trips.** Several paths format a subtree and parse it again in memory. A formatter change reaches rendered pages through them.
+
+The scaffolded projects' `^0.x.y` range in `packages/create-refrakt/src/scaffold.ts` must cover the pinned version. Under 0.x, `^0.4.0` excludes 0.5, so a stale range gives a new site a second Markdoc.
+
+An upgrade changes every pin, the scaffold ranges and the lockfile in one change (`npm install`, never by hand). Then it checks:
+
+1. **The AST of every tracked `.md` file**, captured before the upgrade and compared after. A difference is listed and explained, not accepted silently. WORK-640 (0.4.0 → 0.5.10) did this and found none across 1,545 files.
+2. `npm test`, `npx refrakt contracts --site main --check` against both contract copies, and `npm run seo:baseline:check`.
+3. `npx refrakt validate --deep`, for findings from new or stricter Markdoc validation.
+4. Markdoc's changelog, for changes to `format`, the validator and tag tokenizing, which the checks above may not exercise. Each such change gets a test (`packages/runes/test/markdoc-format.test.ts`, the location test in `packages/content/test/validate.test.ts`).

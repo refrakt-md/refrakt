@@ -94,9 +94,22 @@ export function collectDimensions(
 		}
 
 		// Sequence styles
-		if (runeConfig.sequence) {
-			if (!sequenceStyles[runeConfig.sequence]) sequenceStyles[runeConfig.sequence] = [];
-			sequenceStyles[runeConfig.sequence].push(runeKey);
+		// A modifier-sourced sequence can render any style its map or default names.
+		const seq = runeConfig.sequence;
+		const styles =
+			seq === undefined
+				? []
+				: typeof seq === 'string'
+					? [seq]
+					: [
+							...new Set([
+								...Object.values(seq.valueMap ?? {}),
+								...(seq.default ? [seq.default] : []),
+							]),
+						];
+		for (const style of styles) {
+			if (!sequenceStyles[style]) sequenceStyles[style] = [];
+			sequenceStyles[style].push(runeKey);
 		}
 	}
 

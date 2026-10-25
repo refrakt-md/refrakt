@@ -16,6 +16,7 @@
  */
 import Markdoc from '@markdoc/markdoc';
 import type { Node, Config, RenderableTreeNodes } from '@markdoc/markdoc';
+import { parse } from './parse.js';
 const { Ast } = Markdoc;
 
 /** Attribute the captured body source is stashed on. */
@@ -57,7 +58,7 @@ export function transformDeferredTemplate(
 	config: Partial<Config> | undefined,
 	variables: Record<string, unknown>,
 ): RenderableTreeNodes {
-	const ast = Markdoc.parse(source);
+	const ast = parse(source);
 	const merged = {
 		...(config ?? {}),
 		variables: { ...((config?.variables as Record<string, unknown>) ?? {}), ...variables },

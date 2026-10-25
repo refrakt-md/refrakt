@@ -11,6 +11,8 @@ export { buildBreadcrumb, buildToc, buildPrevNext, buildVersionSwitcher } from '
 export type {
 	ThemeConfig,
 	RuneConfig,
+	SequenceStyle,
+	SequenceSource,
 	NamedTransform,
 	StructureEntry,
 	TintTokens,

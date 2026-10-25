@@ -36,21 +36,21 @@ registers:
 ---
 
 {% card %}
-{% slot name="portrait" /%}
+	{% slot name="portrait" /%}
 
----
+	---
 
-# {% $attrs.name %}
+	# {% $attrs.name %}
 
-{% metablock name="metadata" /%}
+	{% metablock name="metadata" /%}
 
-{% slot name="description" /%}
+	{% slot name="description" /%}
 
-{% slot name="body" /%}
+	{% slot name="body" /%}
 
-{% slot name="sections" each %}
-{% details summary=$each.heading %}
-{% slot /%}
-{% /details %}
-{% /slot %}
+	{% slot name="sections" each %}
+		{% details summary=$each.heading %}
+			{% slot /%}
+		{% /details %}
+	{% /slot %}
 {% /card %}

@@ -468,6 +468,7 @@ export { resolveXrefs } from './xref-resolve.js';
 export { compileXrefPatterns } from './xref-patterns.js';
 export type { CompiledXrefPattern, CompiledXrefPatternsResult } from './xref-patterns.js';
 export { escapeFenceTags } from './fence-escape.js';
+export { parse } from './parse.js';
 
 // Component override prop interfaces (ADR-008)
 export type {

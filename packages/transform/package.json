@@ -37,7 +37,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@markdoc/markdoc": "0.4.0",
+    "@markdoc/markdoc": "0.5.10",
     "@refrakt-md/types": "0.41.3"
   },
   "devDependencies": {

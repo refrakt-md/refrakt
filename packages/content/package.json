@@ -38,7 +38,7 @@
     "@refrakt-md/runes": "0.41.3",
     "@refrakt-md/transform": "0.41.3",
     "@refrakt-md/types": "0.41.3",
-    "@markdoc/markdoc": "0.4.0",
+    "@markdoc/markdoc": "0.5.10",
     "yaml": "^2.4.0"
   }
 }

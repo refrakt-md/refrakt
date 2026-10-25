@@ -35,7 +35,7 @@
     "@refrakt-md/types": "0.41.3",
     "@refrakt-md/transform": "0.41.3",
     "@refrakt-md/runes": "0.41.3",
-    "@markdoc/markdoc": "0.4.0",
+    "@markdoc/markdoc": "0.5.10",
     "reflect-metadata": "^0.2.0",
     "tree-sitter-wasms": "^0.1.13",
     "typescript": "^5.4.0",

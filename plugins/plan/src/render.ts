@@ -26,6 +26,7 @@ import { work } from './tags/work.js';
 import { bug } from './tags/bug.js';
 import { decision } from './tags/decision.js';
 import { milestone } from './tags/milestone.js';
+import { parse } from '@refrakt-md/runes';
 
 // ── Tag Schemas ─────────────────────────────────────────────
 
@@ -55,7 +56,7 @@ const planTags: Record<string, any> = {
 export function renderEntity(source: string): RendererNode {
 	const tags = { ...coreTagOverrides, ...planTags };
 
-	const ast = Markdoc.parse(source);
+	const ast = parse(source);
 	const renderable = Markdoc.transform(ast, {
 		tags,
 		nodes: coreNodes,

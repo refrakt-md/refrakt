@@ -424,6 +424,25 @@ Steps: { block: 'steps', sequence: 'connected' }
 | `'connected'` | Vertical line with dots |
 | `'plain'` | No visual indicators |
 
+When the style depends on one of the rune's modifiers, read it from the modifier instead of writing a `postTransform`. `valueMap` translates a modifier value into a style, and `default` applies when the value is unset or has no entry. When neither gives a style, no `<ol>` is annotated. Without `valueMap`, the modifier's value must itself be a style.
+
+```typescript
+// A linear plot's beats are a timeline; other structures are plain lists.
+Plot: {
+  block: 'plot',
+  modifiers: { structure: { source: 'meta', default: 'linear' } },
+  sequence: { fromModifier: 'structure', valueMap: { linear: 'connected' } },
+}
+```
+
+| Key | Meaning |
+|-----|---------|
+| `fromModifier` | The modifier whose value selects the style |
+| `valueMap` | Modifier value → style (optional) |
+| `default` | The style for an unset or unmapped value (optional) |
+
+The modifier form is identity too. It is the rune's own config that maps a value to a style, so a theme cannot override it.
+
 Use `sequenceDirection` to control orientation:
 
 ```typescript

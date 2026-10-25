@@ -10,6 +10,7 @@ import type {
 	DependencyEdge,
 	FileSource,
 } from './types.js';
+import { parse } from '@refrakt-md/runes';
 
 const PLAN_RUNE_TYPES = new Set<string>(['spec', 'work', 'bug', 'decision', 'milestone']);
 const REF_TAG_NAMES = new Set<string>(['ref', 'xref']);
@@ -292,7 +293,7 @@ export function buildBlockedByAdjacency(entities: PlanEntity[]): Map<string, str
 
 /** Parse plan content from a string and return PlanEntity if it contains a plan rune, or null */
 export function parseFileContent(source: string, relPath: string): PlanEntity | null {
-	const ast = Markdoc.parse(escapeFenceTags(source));
+	const ast = parse(escapeFenceTags(source));
 
 	// Find the first plan rune tag at the top level
 	const planTag = ast.children.find(

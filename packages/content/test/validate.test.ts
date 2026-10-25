@@ -3,7 +3,14 @@ import * as path from 'node:path';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { loadContent } from '../src/site.js';
-import { DEFAULT_VALIDATION_IDS, resolveValidationIds, isSuppressible } from '../src/validate.js';
+import Markdoc from '@markdoc/markdoc';
+import type { Node } from '@markdoc/markdoc';
+import {
+	DEFAULT_VALIDATION_IDS,
+	resolveValidationIds,
+	isSuppressible,
+	validatePageDetailed,
+} from '../src/validate.js';
 import type { PipelineWarning } from '@refrakt-md/types';
 
 /**
@@ -407,5 +414,33 @@ describe('the escape hatch is narrow, and critical is outside it (SPEC-132 D5 / 
 		// way for it to appear is someone adding a field.
 		const settings: Record<string, unknown> = { enabled: true, ids: [], disableIds: [] };
 		expect(Object.keys(settings).sort()).toEqual(['disableIds', 'enabled', 'ids']);
+	});
+});
+
+describe('a validator error keeps its own location (Markdoc 0.5, WORK-640)', () => {
+	it('reports the line the error names, not the first line of the node', () => {
+		// A schema validator that points at the third line of its tag. Markdoc
+		// 0.4 gave every error the whole node's range; 0.5 keeps the error's own
+		// `location`, and the finding a caller sees carries it.
+		const pinpoint = {
+			attributes: {},
+			validate(node: Node) {
+				const line = node.lines[0] + 2;
+				return [
+					{
+						id: 'pinpoint',
+						level: 'critical' as const,
+						message: 'the third line is wrong',
+						location: { start: { line }, end: { line } },
+					},
+				];
+			},
+		};
+		const ast = Markdoc.parse('# Title\n\n{% pinpoint %}\nfirst\n\nthird\n{% /pinpoint %}\n');
+		const [finding] = validatePageDetailed(ast, { tags: { pinpoint } }, { url: '/' });
+		// The tag opens on 1-based line 3; the error names line 5.
+		expect(finding.id).toBe('pinpoint');
+		expect(finding.line).toBe(5);
+		expect(finding.warning.message).toContain('(line 5)');
 	});
 });
