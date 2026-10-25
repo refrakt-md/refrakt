@@ -29,14 +29,17 @@
 import type { Node } from '@markdoc/markdoc';
 import { parse as parseSource } from './parse.js';
 import { normaliseEach } from './lib/composition.js';
+import { escapeFenceTags } from './fence-escape.js';
 
 /**
- * Parse for layout. A composition template's `{% slot … each %}` is not
- * Markdoc syntax until the compiler rewrites it to `each=true`, and unparsed it
- * would hide the template's structure; the rewrite stays inside the tag, so
- * every line keeps its number.
+ * Parse as the content pipeline parses a page: tags inside fences escaped
+ * first, so the guard compares the tree a site actually builds from. And a
+ * composition template's `{% slot … each %}` is not Markdoc syntax until the
+ * compiler rewrites it to `each=true`; unparsed, it would hide the template's
+ * structure. Both rewrites stay inside their line, so every line keeps its
+ * number.
  */
-const parse = (source: string) => parseSource(normaliseEach(source));
+const parse = (source: string) => parseSource(escapeFenceTags(normaliseEach(source)));
 
 export interface FormatIndentResult {
 	/** The formatted source, or the source unchanged when the rewrite was refused. */
