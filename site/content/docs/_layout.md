@@ -46,6 +46,7 @@ tint-lock: false
 - cli/cli-overview
 - cli/inspect
 - cli/reference
+- cli/format
 - cli/write
 - cli/theme-tools
 

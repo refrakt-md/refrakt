@@ -22,6 +22,8 @@ if (!command || command === '--help' || command === '-h') {
 	runValidate(args.slice(1));
 } else if (command === 'stale') {
 	runStale(args.slice(1));
+} else if (command === 'format') {
+	runFormat(args.slice(1));
 } else if (command === 'migrate' && args[1] === 'snippets') {
 	runMigrateSnippets(args.slice(2));
 } else if (command === 'snippet') {
@@ -68,6 +70,7 @@ Commands:
   scaffold-css         Generate CSS stub files for all runes
   validate             Validate this project's sites (config + content)
   stale                Rank documentation references by how far their target has moved
+  format [paths...]    Indent nested runes by the indentation rule (--check to verify)
   snippet review       Stamp and check review markers on embedded source
   theme <subcommand>   Manage themes (install, info)
   edit                 Launch the browser-based content editor
@@ -1658,6 +1661,57 @@ async function buildReferenceContext(
 // ─────────────────────────────────────────────────────────────────────
 // `refrakt stale` — SPEC-136 / WORK-594
 // ─────────────────────────────────────────────────────────────────────
+
+function runFormat(formatArgs: string[]): void {
+	const paths: string[] = [];
+	let check = false;
+	let format: 'text' | 'json' = 'text';
+	for (let i = 0; i < formatArgs.length; i++) {
+		const arg = formatArgs[i];
+		if (arg === '--check') {
+			check = true;
+		} else if (arg === '--format') {
+			const value = formatArgs[++i];
+			if (value !== 'text' && value !== 'json') {
+				console.error('Error: --format must be "text" or "json"');
+				process.exit(1);
+			}
+			format = value;
+		} else if (arg === '--help' || arg === '-h') {
+			printFormatUsage();
+			process.exit(0);
+		} else if (arg.startsWith('-')) {
+			console.error(`Error: Unknown argument "${arg}"\n`);
+			printFormatUsage();
+			process.exit(1);
+		} else {
+			paths.push(arg);
+		}
+	}
+
+	import('./commands/format.js')
+		.then(({ formatCommand }) => process.exit(formatCommand({ paths, check, format })))
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
+}
+
+function printFormatUsage(): void {
+	console.log(`
+Usage: refrakt format [paths...] [options]
+
+Indent nested runes: a block tag's content is indented one tab only when the
+tag holds another block tag (SPEC-170 D5). Only leading whitespace changes, and
+a file whose parse would change is reported and left alone. Directories are
+walked for .md files; the default path is the current directory.
+
+Options:
+  --check                  Write nothing; exit 1 if any file would change
+  --format <text|json>     Output format (default: text)
+  --help, -h               Show this help message
+`);
+}
 
 function runStale(staleArgs: string[]): void {
 	let top: number | undefined;

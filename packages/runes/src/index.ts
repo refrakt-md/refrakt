@@ -469,6 +469,8 @@ export { compileXrefPatterns } from './xref-patterns.js';
 export type { CompiledXrefPattern, CompiledXrefPatternsResult } from './xref-patterns.js';
 export { escapeFenceTags } from './fence-escape.js';
 export { parse } from './parse.js';
+export { formatIndentation } from './format-indent.js';
+export type { FormatIndentResult } from './format-indent.js';
 
 // Component override prop interfaces (ADR-008)
 export type {

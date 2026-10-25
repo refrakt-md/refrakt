@@ -24,4 +24,7 @@ jobs:
 
       # Formatting only. `npm run lint` still reports pre-existing findings
       # across the tree, so the linter is not a gate yet.
+      #
+      # Markdoc indentation (`npm run format:md:check`, SPEC-170 D5) is checked
+      # in `validate.yml`, after the build: the formatter is the refrakt CLI.
       - run: npm run format:check

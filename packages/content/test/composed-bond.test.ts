@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
-import { defineComposedRune } from '@refrakt-md/runes';
+import { defineComposedRune, parse } from '@refrakt-md/runes';
 import type { EntityRegistration, Plugin } from '@refrakt-md/types';
 import { storytelling } from '../../../plugins/storytelling/src/index.js';
 import { assembleMarkdocSchemas } from '../src/site.js';
@@ -219,7 +219,7 @@ describe('composed bond — rendered tree against the plugin (SPEC-147 D2)', () 
 		expect(attrs(composedStorytelling())).toEqual(attrs(storytelling));
 
 		const validate = (pkg: Plugin, src: string) =>
-			Markdoc.validate(Markdoc.parse(src), {
+			Markdoc.validate(parse(src), {
 				...assembleMarkdocSchemas(merge(pkg).tags),
 				variables: {},
 			} as never).map((e) => e.error.id);

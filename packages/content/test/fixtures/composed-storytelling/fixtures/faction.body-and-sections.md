@@ -1,14 +1,14 @@
 {% faction name="The Ash Court" type="cult" alignment="evil" %}
-A cabal that meets beneath the Ashen Spire.
+	A cabal that meets beneath the Ashen Spire.
 
-- The First Ember
-- The Hollow Choir
+	- The First Ember
+	- The Hollow Choir
 
-{% hint type="note" %}
-The Court is unmasked in the final act.
-{% /hint %}
+	{% hint type="note" %}
+	The Court is unmasked in the final act.
+	{% /hint %}
 
-## Rites
+	## Rites
 
-Fire, and then silence.
+	Fire, and then silence.
 {% /faction %}

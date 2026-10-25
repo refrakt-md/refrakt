@@ -10,6 +10,7 @@ import {
 	mergePlugins,
 	runes as coreRunes,
 	serializeTree,
+	parse,
 } from '@refrakt-md/runes';
 import type { LoadedPlugin } from '@refrakt-md/runes';
 import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
@@ -171,7 +172,7 @@ export function pageContext(pkg: Plugin) {
 /** One page through the whole per-page assembly: schemas, theme, engine. */
 export function renderPage(pkg: Plugin, source: string): Json {
 	const { schemas, identity } = pageContext(pkg);
-	const rendered = Markdoc.transform(Markdoc.parse(source), {
+	const rendered = Markdoc.transform(parse(source), {
 		...schemas,
 		variables: { generatedIds: new Set<string>(), path: '/p', headings: [] },
 	} as never);

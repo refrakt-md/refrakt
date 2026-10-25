@@ -101,6 +101,18 @@ jobs:
       - name: refrakt snippet review --check
         run: node packages/cli/dist/bin.js snippet review --check
 
+      # SPEC-170 D5 / WORK-657 — nested runes are indented by the rule. It runs
+      # here, not beside Biome in `format.yml`, because the formatter is the
+      # refrakt CLI and needs the build; `format.yml` stays build-free so a
+      # formatting failure reports in seconds. The paths are `format:md`'s, so
+      # the gate and the command a contributor runs to fix it cannot disagree.
+      #
+      # `plan/` is not covered: three specs embed `{% sandbox %}` blocks, and
+      # the rule would indent their whole bodies, which GitHub then renders as
+      # code (recorded on WORK-657).
+      - name: refrakt format --check
+        run: npm run format:md:check
+
       # WORK-582 — catch an ID collision *before* the merge that creates it.
       # Plain detection above is correct but can only fire once both claimants
       # are reachable, which is after the merge, when every reference to the ID

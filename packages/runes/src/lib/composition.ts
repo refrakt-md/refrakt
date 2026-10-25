@@ -403,7 +403,7 @@ function slotValues(model: StructuralContentModel, resolved: ResolvedContent): R
  * has no bare boolean attribute. Rewrite it to `each=true` inside slot tags
  * only, outside quoted values, before parsing.
  */
-function normaliseEach(body: string): string {
+export function normaliseEach(body: string): string {
 	return body.replace(/\{%-?\s*slot\b([^%]*?)(-?%\})/g, (whole, inner: string, close: string) => {
 		let out = '';
 		let quote: string | null = null;

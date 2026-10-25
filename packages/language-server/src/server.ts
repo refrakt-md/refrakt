@@ -15,6 +15,7 @@ import { provideCompletion } from './providers/completion.js';
 import { provideHover } from './providers/hover.js';
 import { provideDiagnostics } from './providers/diagnostics.js';
 import { provideDefinition } from './providers/definition.js';
+import { provideFormatting } from './providers/formatting.js';
 import { inspectRuneAtPosition } from './providers/inspector.js';
 import { initializeRegistry, reinitialize } from './registry/loader.js';
 
@@ -38,6 +39,7 @@ connection.onInitialize((params): InitializeResult => {
 			},
 			hoverProvider: true,
 			definitionProvider: true,
+			documentFormattingProvider: true,
 		},
 	};
 });
@@ -82,6 +84,11 @@ connection.onHover((params) => {
 // Definition (go-to-definition for partial file references)
 connection.onDefinition((params) => {
 	return provideDefinition(params, documents);
+});
+
+// Formatting — `refrakt format`'s indentation rule (SPEC-170 D5)
+connection.onDocumentFormatting((params) => {
+	return provideFormatting(params, documents);
 });
 
 // Rune Inspector — custom request

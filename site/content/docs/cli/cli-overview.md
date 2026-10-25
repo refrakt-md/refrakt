@@ -24,6 +24,7 @@ This makes the `refrakt` command available in your project scripts and via `npx 
 | [contracts](/docs/cli/theme-tools#refrakt-contracts) | Generate and validate structure contracts |
 | [scaffold-css](/docs/cli/theme-tools#refrakt-scaffold-css) | Generate CSS stub files for a new theme |
 | [validate](/docs/cli/theme-tools#refrakt-validate) | Validate your project's sites — config resolution, then content |
+| [format](/docs/cli/format) | Indent nested runes by the indentation rule — `--check` for CI |
 | `stale` | Rank documentation references by commits to the target since the page last changed |
 | `migrate snippets` | Convert `lines=` snippet and file-ref invocations to anchors, verifying byte-identical output |
 | `snippet review` | Stamp and check review markers on embedded source — `--check` has its own exit code |

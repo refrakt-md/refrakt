@@ -8,6 +8,7 @@ import {
 	defineComposedRune,
 	extractSeo,
 	parseFixture,
+	parse,
 } from '@refrakt-md/runes';
 import type { Plugin } from '@refrakt-md/types';
 import { storytelling } from '../../../plugins/storytelling/src/index.js';
@@ -72,7 +73,7 @@ function harvestWith(pkg: Plugin, raw: string, file = 'character.md') {
 /** The JSON-LD a page publishes, harvested before and after the engine. */
 function graph(pkg: Plugin, source: string) {
 	const { schemas, identity } = pageContext(pkg);
-	const tree = Markdoc.transform(Markdoc.parse(source), {
+	const tree = Markdoc.transform(parse(source), {
 		...schemas,
 		variables: { generatedIds: new Set<string>(), path: '/p', headings: [] },
 	} as never);
@@ -439,7 +440,7 @@ describe('unmatched content (WORK-631)', () => {
 /** The `content-unmatched` findings `Markdoc.validate` raises for one page. */
 function unmatched(pkg: Plugin, source: string) {
 	const { schemas } = pageContext(pkg);
-	return Markdoc.validate(Markdoc.parse(source), {
+	return Markdoc.validate(parse(source), {
 		...schemas,
 		variables: { generatedIds: new Set<string>(), path: '/p', headings: [] },
 	} as never)
