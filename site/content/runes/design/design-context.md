@@ -21,37 +21,37 @@ Compose child design runes inside a design-context block.
 
 {% preview source=true %}
 
-{% design-context title="Brand Tokens" %}
+	{% design-context title="Brand Tokens" %}
 
-{% typography %}
-- heading: Inter (400, 600, 700)
-- body: Source Sans Pro (400, 600)
-- mono: Fira Code (400)
-{% /typography %}
+		{% typography %}
+		- heading: Inter (400, 600, 700)
+		- body: Source Sans Pro (400, 600)
+		- mono: Fira Code (400)
+		{% /typography %}
 
-{% palette %}
-## Brand
-- Primary: #2563EB
-- Secondary: #7C3AED
-- Accent: #F59E0B
+		{% palette %}
+		## Brand
+		- Primary: #2563EB
+		- Secondary: #7C3AED
+		- Accent: #F59E0B
 
-## Neutral
-- Gray: #F9FAFB, #E5E7EB, #9CA3AF, #374151, #111827
-{% /palette %}
+		## Neutral
+		- Gray: #F9FAFB, #E5E7EB, #9CA3AF, #374151, #111827
+		{% /palette %}
 
-{% spacing %}
-## Spacing
-- unit: 4px
-- scale: 4, 8, 12, 16, 24, 32, 48, 64
+		{% spacing %}
+		## Spacing
+		- unit: 4px
+		- scale: 4, 8, 12, 16, 24, 32, 48, 64
 
-## Radius
-- sm: 4px
-- md: 8px
-- lg: 12px
-- full: 9999px
-{% /spacing %}
+		## Radius
+		- sm: 4px
+		- md: 8px
+		- lg: 12px
+		- full: 9999px
+		{% /spacing %}
 
-{% /design-context %}
+	{% /design-context %}
 
 {% /preview %}
 

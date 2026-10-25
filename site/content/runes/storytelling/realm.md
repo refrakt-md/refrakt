@@ -21,21 +21,21 @@ Describe a location with sections for geography, features, or history.
 
 {% preview source=true %}
 
-{% realm name="Rivendell" type="sanctuary" scale="settlement" parent="Eriador" media-position="start" %}
-![Rivendell](https://assets.refrakt.md/realm-rivendell.png)
+	{% realm name="Rivendell" type="sanctuary" scale="settlement" parent="Eriador" media-position="start" %}
+	![Rivendell](https://assets.refrakt.md/realm-rivendell.png)
 
-The Last Homely House East of the Sea.
+	The Last Homely House East of the Sea.
 
-## Geography
+	## Geography
 
-A hidden valley in the foothills of the Misty Mountains.
+	A hidden valley in the foothills of the Misty Mountains.
 
-## Notable Features
+	## Notable Features
 
-- Hall of Fire
-- Council chamber
-- Extensive libraries
-{% /realm %}
+	- Hall of Fire
+	- Council chamber
+	- Extensive libraries
+	{% /realm %}
 
 {% /preview %}
 
@@ -45,19 +45,19 @@ Use the `type` attribute to categorize your locations.
 
 {% preview source=true %}
 
-{% realm name="The Undercroft" type="dungeon" scale="complex" media-position="start" %}
-![The Undercroft](https://assets.refrakt.md/realm-the-undercroft.png)
+	{% realm name="The Undercroft" type="dungeon" scale="complex" media-position="start" %}
+	![The Undercroft](https://assets.refrakt.md/realm-the-undercroft.png)
 
-## Overview
+	## Overview
 
-A sprawling network of tunnels beneath the old city, home to smugglers and worse.
+	A sprawling network of tunnels beneath the old city, home to smugglers and worse.
 
-## Dangers
+	## Dangers
 
-- Flooded passages
-- Collapsing ceilings
-- Cave spiders
-{% /realm %}
+	- Flooded passages
+	- Collapsing ceilings
+	- Cave spiders
+	{% /realm %}
 
 {% /preview %}
 

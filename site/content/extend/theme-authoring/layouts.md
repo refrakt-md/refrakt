@@ -388,44 +388,44 @@ Layouts are part of the theme configuration passed to the adapter. Both adapters
 
 {% tabs %}
 
-{% tab name="SvelteKit" %}
+	{% tab name="SvelteKit" %}
 
-```typescript
-import type { SvelteTheme } from '@refrakt-md/svelte';
-import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
+	```typescript
+	import type { SvelteTheme } from '@refrakt-md/svelte';
+	import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
 
-export const theme: SvelteTheme = {
-  config: myThemeConfig,
-  registry: myRegistry,
-  elements: myElements,
-  layouts: {
-    'default': defaultLayout,
-    'docs': docsLayout,
-    'blog-article': blogArticleLayout,
-  },
-};
-```
+	export const theme: SvelteTheme = {
+	  config: myThemeConfig,
+	  registry: myRegistry,
+	  elements: myElements,
+	  layouts: {
+	    'default': defaultLayout,
+	    'docs': docsLayout,
+	    'blog-article': blogArticleLayout,
+	  },
+	};
+	```
 
-In SvelteKit, the `layouts` map also accepts Svelte components (rendered directly), allowing you to mix declarative and component-based layouts.
+	In SvelteKit, the `layouts` map also accepts Svelte components (rendered directly), allowing you to mix declarative and component-based layouts.
 
-{% /tab %}
+	{% /tab %}
 
-{% tab name="HTML" %}
+	{% tab name="HTML" %}
 
-```typescript
-import type { HtmlTheme } from '@refrakt-md/html';
-import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
+	```typescript
+	import type { HtmlTheme } from '@refrakt-md/html';
+	import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
 
-export const theme: HtmlTheme = {
-  manifest: { /* ... */ },
-  layouts: {
-    'default': defaultLayout,
-    'docs': docsLayout,
-    'blog-article': blogArticleLayout,
-  },
-};
-```
+	export const theme: HtmlTheme = {
+	  manifest: { /* ... */ },
+	  layouts: {
+	    'default': defaultLayout,
+	    'docs': docsLayout,
+	    'blog-article': blogArticleLayout,
+	  },
+	};
+	```
 
-{% /tab %}
+	{% /tab %}
 
 {% /tabs %}

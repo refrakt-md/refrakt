@@ -21,7 +21,7 @@ The minimum case — a `src` attribute relative to the project root. The format 
 
 {% preview source=true %}
 
-{% data src="site/examples/revenue.csv" /%}
+	{% data src="site/examples/revenue.csv" /%}
 
 {% /preview %}
 
@@ -33,9 +33,9 @@ Because `chart` treats an authored `<table>` as its single source of truth, drop
 
 {% preview source=true %}
 
-{% chart type="bar" title="Revenue by product" %}
-{% data src="site/examples/revenue.csv" columns="product, revenue" numeric="revenue" /%}
-{% /chart %}
+	{% chart type="bar" title="Revenue by product" %}
+		{% data src="site/examples/revenue.csv" columns="product, revenue" numeric="revenue" /%}
+	{% /chart %}
 
 {% /preview %}
 
@@ -45,9 +45,9 @@ Same table, handed to `datatable` for runtime search + sort. Typed-numeric colum
 
 {% preview source=true %}
 
-{% datatable sortable="all" searchable=true %}
-{% data src="site/examples/revenue.csv" numeric="revenue,units" /%}
-{% /datatable %}
+	{% datatable sortable="all" searchable=true %}
+		{% data src="site/examples/revenue.csv" numeric="revenue,units" /%}
+	{% /datatable %}
 
 {% /preview %}
 
@@ -57,11 +57,11 @@ Every knob below runs at **build time** on a single intermediate shape, identica
 
 {% preview source=true %}
 
-{% data src="site/examples/revenue.csv"
-   where="region:EMEA"
-   sort="-units"
-   columns="product as Product, units as Units"
-   numeric="units" /%}
+	{% data src="site/examples/revenue.csv"
+	   where="region:EMEA"
+	   sort="-units"
+	   columns="product as Product, units as Units"
+	   numeric="units" /%}
 
 {% /preview %}
 

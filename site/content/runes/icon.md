@@ -31,18 +31,18 @@ Icons work naturally inside feature definitions. Place an icon before the bold n
 
 {% preview source=true %}
 
-{% feature %}
-## What you get
+	{% feature %}
+	## What you get
 
-- {% icon name="puzzle" /%} **Semantic runes**
-  Markdown primitives take on different meaning based on context.
+	- {% icon name="puzzle" /%} **Semantic runes**
+	  Markdown primitives take on different meaning based on context.
 
-- {% icon name="shield-check" /%} **Type-safe output**
-  Every rune produces typed, validated content.
+	- {% icon name="shield-check" /%} **Type-safe output**
+	  Every rune produces typed, validated content.
 
-- {% icon name="sparkles" /%} **Automatic SEO**
-  Structured data falls out of the content model.
-{% /feature %}
+	- {% icon name="sparkles" /%} **Automatic SEO**
+	  Structured data falls out of the content model.
+	{% /feature %}
 
 {% /preview %}
 

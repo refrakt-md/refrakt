@@ -54,20 +54,20 @@ Each rune ships a sensible default — a `card` is `flat`, a `hint` is `flush`, 
 
 {% preview source=true %}
 
-{% card elevation="flat" %}
-### `flat`
-A bordered surface, no shadow — the default card.
-{% /card %}
+	{% card elevation="flat" %}
+	### `flat`
+	A bordered surface, no shadow — the default card.
+	{% /card %}
 
-{% card elevation="raised" %}
-### `raised`
-Lifted on a small resting shadow.
-{% /card %}
+	{% card elevation="raised" %}
+	### `raised`
+	Lifted on a small resting shadow.
+	{% /card %}
 
-{% card elevation="floating" %}
-### `floating`
-A clear float — higher z-height.
-{% /card %}
+	{% card elevation="floating" %}
+	### `floating`
+	A clear float — higher z-height.
+	{% /card %}
 
 {% /preview %}
 
@@ -79,15 +79,15 @@ A clear float — higher z-height.
 
 {% preview source=true %}
 
-{% section prominence="quiet" %}
-## Quiet
-A smaller title — recedes into a dense list.
-{% /section %}
+	{% section prominence="quiet" %}
+	## Quiet
+	A smaller title — recedes into a dense list.
+	{% /section %}
 
-{% section prominence="display" %}
-## Display
-A hero-scale title.
-{% /section %}
+	{% section prominence="display" %}
+	## Display
+	A hero-scale title.
+	{% /section %}
 
 {% /preview %}
 
@@ -119,19 +119,19 @@ On a `figure` or `showcase` the frame lands on the rune itself; on a `card` or `
 
 {% preview source=true %}
 
-{% card elevation="raised" frame-aspect="16/9" frame-anchor="top" %}
-![Framed, top-anchored crop](https://picsum.photos/seed/galleryframe/800/600)
----
-### Framed media
-`frame-aspect` sets the shape; `frame-anchor` picks the focal point of the crop.
-{% /card %}
+	{% card elevation="raised" frame-aspect="16/9" frame-anchor="top" %}
+	![Framed, top-anchored crop](https://picsum.photos/seed/galleryframe/800/600)
+	---
+	### Framed media
+	`frame-aspect` sets the shape; `frame-anchor` picks the focal point of the crop.
+	{% /card %}
 
-{% card frame-aspect="16/9" frame-displace="top-end" frame-offset="md" frame-oversize="1.15" frame-shadow="md" %}
-![A displaced peek with silhouette shadow](https://picsum.photos/seed/gallerypeek/800/600)
----
-### Displaced peek + silhouette shadow
-`frame-displace` + `frame-oversize` push the guest past its slot; the host clips it to a peek, and `frame-shadow` traces the cropped silhouette — not the card.
-{% /card %}
+	{% card frame-aspect="16/9" frame-displace="top-end" frame-offset="md" frame-oversize="1.15" frame-shadow="md" %}
+	![A displaced peek with silhouette shadow](https://picsum.photos/seed/gallerypeek/800/600)
+	---
+	### Displaced peek + silhouette shadow
+	`frame-displace` + `frame-oversize` push the guest past its slot; the host clips it to a peek, and `frame-shadow` traces the cropped silhouette — not the card.
+	{% /card %}
 
 {% /preview %}
 
@@ -168,24 +168,24 @@ The axes earn their keep when one content rune does two jobs. A `recipe` is a bo
 
 {% preview source=true %}
 
-{% recipe prepTime="PT5M" servings=1 difficulty="easy" %}
-![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
+	{% recipe prepTime="PT5M" servings=1 difficulty="easy" %}
+	![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
 
----
+	---
 
-A cocktail classic
+	A cocktail classic
 
-## Tequila Sunrise
+	## Tequila Sunrise
 
-A layered showstopper that runs from deep orange to golden yellow.
+	A layered showstopper that runs from deep orange to golden yellow.
 
-- 60ml tequila
-- 120ml fresh orange juice
-- 15ml grenadine
+	- 60ml tequila
+	- 120ml fresh orange juice
+	- 15ml grenadine
 
-1. Fill a tall glass with ice; pour in tequila and orange juice.
-2. Pour grenadine over the back of a spoon so it sinks.
-{% /recipe %}
+	1. Fill a tall glass with ice; pour in tequila and orange juice.
+	2. Pour grenadine over the back of a spoon so it sinks.
+	{% /recipe %}
 
 {% /preview %}
 
@@ -193,24 +193,24 @@ Set three attributes and the *same* recipe becomes a full-bleed hero — `elevat
 
 {% preview source=true %}
 
-{% recipe prepTime="PT5M" servings=1 difficulty="easy" elevation="flush" width="full" prominence="display" %}
-![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
+	{% recipe prepTime="PT5M" servings=1 difficulty="easy" elevation="flush" width="full" prominence="display" %}
+	![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
 
----
+	---
 
-A cocktail classic
+	A cocktail classic
 
-## Tequila Sunrise
+	## Tequila Sunrise
 
-A layered showstopper that runs from deep orange to golden yellow.
+	A layered showstopper that runs from deep orange to golden yellow.
 
-- 60ml tequila
-- 120ml fresh orange juice
-- 15ml grenadine
+	- 60ml tequila
+	- 120ml fresh orange juice
+	- 15ml grenadine
 
-1. Fill a tall glass with ice; pour in tequila and orange juice.
-2. Pour grenadine over the back of a spoon so it sinks.
-{% /recipe %}
+	1. Fill a tall glass with ice; pour in tequila and orange juice.
+	2. Pour grenadine over the back of a spoon so it sinks.
+	{% /recipe %}
 
 {% /preview %}
 

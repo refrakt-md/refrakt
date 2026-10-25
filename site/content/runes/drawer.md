@@ -173,7 +173,7 @@ Trigger with {% ref "page-source" label="view this page's source" /%}.
 ```
 
 {% drawer id="page-source" title="View source" shortcut="." size="lg" %}
-{% snippet path=$file.path lang="markdoc" /%}
+	{% snippet path=$file.path lang="markdoc" /%}
 {% /drawer %}
 
 Nested drawers and multiple simultaneous open drawers aren't supported in v1 — native `<dialog>` enforces single-modal, and stacked modals are an antipattern.

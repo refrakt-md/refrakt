@@ -17,9 +17,9 @@ The `dropcap` attribute adds a large decorative first letter for an editorial fe
 
 {% preview source=true %}
 
-{% textblock dropcap=true %}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-{% /textblock %}
+	{% textblock dropcap=true %}
+	Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+	{% /textblock %}
 
 {% /preview %}
 
@@ -29,11 +29,11 @@ Use the `columns` attribute for newspaper-style column layouts.
 
 {% preview source=true %}
 
-{% textblock columns=2 %}
-The invention of the printing press in the 15th century revolutionized the spread of information across Europe. Before Gutenberg, books were painstakingly copied by hand, making them rare and expensive.
+	{% textblock columns=2 %}
+	The invention of the printing press in the 15th century revolutionized the spread of information across Europe. Before Gutenberg, books were painstakingly copied by hand, making them rare and expensive.
 
-With movable type, ideas could be reproduced quickly and cheaply. This democratization of knowledge helped fuel the Renaissance, the Reformation, and the Scientific Revolution.
-{% /textblock %}
+	With movable type, ideas could be reproduced quickly and cheaply. This democratization of knowledge helped fuel the Renaissance, the Reformation, and the Scientific Revolution.
+	{% /textblock %}
 
 {% /preview %}
 
@@ -43,9 +43,9 @@ The `lead` attribute styles the text as a larger introductory paragraph.
 
 {% preview source=true %}
 
-{% textblock lead=true %}
-This is the opening paragraph of the article, styled with larger text and heavier weight to draw the reader in.
-{% /textblock %}
+	{% textblock lead=true %}
+	This is the opening paragraph of the article, styled with larger text and heavier weight to draw the reader in.
+	{% /textblock %}
 
 {% /preview %}
 

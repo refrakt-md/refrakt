@@ -21,19 +21,19 @@ Headings are parsed into version and date parts, with list items below becoming 
 
 {% preview source=true %}
 
-{% changelog %}
-## v1.2.0 - January 2025
+	{% changelog %}
+	## v1.2.0 - January 2025
 
-- Added timeline and changelog runes
-- Added breadcrumb navigation rune
-- Fixed grid column spanning on mobile
+	- Added timeline and changelog runes
+	- Added breadcrumb navigation rune
+	- Fixed grid column spanning on mobile
 
-## v1.1.0 - December 2024
+	## v1.1.0 - December 2024
 
-- Added testimonial and compare runes
-- Improved pricing tier card styling
-- Fixed tab panel content not rendering
-{% /changelog %}
+	- Added testimonial and compare runes
+	- Improved pricing tier card styling
+	- Fixed tab panel content not rendering
+	{% /changelog %}
 
 {% /preview %}
 
@@ -43,15 +43,15 @@ Give a release a title by putting it after the version, separated by a middle do
 
 {% preview source=true %}
 
-{% changelog %}
-## v1.3.0 · Faster builds - March 2025
+	{% changelog %}
+	## v1.3.0 · Faster builds - March 2025
 
-Builds reuse their cache, and the CLI reports what it skipped.
+	Builds reuse their cache, and the CLI reports what it skipped.
 
-## v1.2.0 - January 2025
+	## v1.2.0 - January 2025
 
-- Added timeline and changelog runes
-{% /changelog %}
+	- Added timeline and changelog runes
+	{% /changelog %}
 
 {% /preview %}
 
@@ -63,16 +63,16 @@ Use `{% changelog-release %}` tags for more control over version and date values
 
 {% preview source=true %}
 
-{% changelog %}
-{% changelog-release version="2.0.0" date="March 2025" %}
-- Complete rewrite of the rendering engine
-- New plugin API for custom runes
-{% /changelog-release %}
+	{% changelog %}
+		{% changelog-release version="2.0.0" date="March 2025" %}
+		- Complete rewrite of the rendering engine
+		- New plugin API for custom runes
+		{% /changelog-release %}
 
-{% changelog-release version="1.0.0" date="January 2025" %}
-- Initial stable release
-{% /changelog-release %}
-{% /changelog %}
+		{% changelog-release version="1.0.0" date="January 2025" %}
+		- Initial stable release
+		{% /changelog-release %}
+	{% /changelog %}
 
 {% /preview %}
 

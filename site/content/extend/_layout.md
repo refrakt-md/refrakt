@@ -4,66 +4,66 @@ tint-mode: auto
 tint-lock: false
 ---
 {% layout %}
-{% region name="nav" %}
-{% nav collapsible=true %}
-- [Documentation](/docs/getting-started)
-- [Runes](/runes/rune-catalog)
-- [Themes](/themes/themes-catalog)
-- [Planning](/plan)
+	{% region name="nav" %}
+		{% nav collapsible=true %}
+		- [Documentation](/docs/getting-started)
+		- [Runes](/runes/rune-catalog)
+		- [Themes](/themes/themes-catalog)
+		- [Planning](/plan)
 
-## Overview
+		## Overview
 
-- [Overview](/extend)
+		- [Overview](/extend)
 
-## Rune authoring
+		## Rune authoring
 
-- rune-authoring/authoring-overview
-- rune-authoring/content-models
-- rune-authoring/output-contract
-- rune-authoring/composability
-- rune-authoring/registration
-- rune-authoring/composed-runes
-- rune-authoring/patterns
+		- rune-authoring/authoring-overview
+		- rune-authoring/content-models
+		- rune-authoring/output-contract
+		- rune-authoring/composability
+		- rune-authoring/registration
+		- rune-authoring/composed-runes
+		- rune-authoring/patterns
 
-## Plugin authoring
+		## Plugin authoring
 
-- plugin-authoring/authoring
-- plugin-authoring/extending-core
-- plugin-authoring/fixtures
-- plugin-authoring/pipeline
-- plugin-authoring/hosted-builds
+		- plugin-authoring/authoring
+		- plugin-authoring/extending-core
+		- plugin-authoring/fixtures
+		- plugin-authoring/pipeline
+		- plugin-authoring/hosted-builds
 
-## Theme authoring
+		## Theme authoring
 
-- theme-authoring/overview
-- theme-authoring/config-api
-- theme-authoring/dimensions
-- theme-authoring/motion
-- theme-authoring/surfaces
-- theme-authoring/blocks-and-layout
-- theme-authoring/css
-- theme-authoring/creating-a-theme
-- theme-authoring/components
-- theme-authoring/layouts
-- theme-authoring/tooling
-- theme-authoring/tint-cascade
+		- theme-authoring/overview
+		- theme-authoring/config-api
+		- theme-authoring/dimensions
+		- theme-authoring/motion
+		- theme-authoring/surfaces
+		- theme-authoring/blocks-and-layout
+		- theme-authoring/css
+		- theme-authoring/creating-a-theme
+		- theme-authoring/components
+		- theme-authoring/layouts
+		- theme-authoring/tooling
+		- theme-authoring/tint-cascade
 
-## Internationalization
+		## Internationalization
 
-- i18n/translating
+		- i18n/translating
 
-## Security
+		## Security
 
-- security
+		- security
 
-## Contributing
+		## Contributing
 
-- contributing
+		- contributing
 
-{% /nav %}
-{% /region %}
+		{% /nav %}
+	{% /region %}
 
-{% region name="pagination" %}
-{% pagination auto=true /%}
-{% /region %}
+	{% region name="pagination" %}
+		{% pagination auto=true /%}
+	{% /region %}
 {% /layout %}

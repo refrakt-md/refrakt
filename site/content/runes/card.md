@@ -15,15 +15,15 @@ There is one generic `card` (named by *shape*, not by entity) — refrakt delibe
 
 {% preview source=true %}
 
-{% card href="/runes/collection" %}
----
-### Collection rune
-The plural counterpart to `ref` and `expand` — query the registry and render the results.
+	{% card href="/runes/collection" %}
+	---
+	### Collection rune
+	The plural counterpart to `ref` and `expand` — query the registry and render the results.
 
----
+	---
 
-Core rune · see also `expand`
-{% /card %}
+	Core rune · see also `expand`
+	{% /card %}
 
 {% /preview %}
 
@@ -33,20 +33,20 @@ The body divides on `---` (a horizontal rule) into up to three zones — here al
 
 {% preview source=true %}
 
-{% card href="/runes/learning/recipe" media-position="start" %}
-![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
+	{% card href="/runes/learning/recipe" media-position="start" %}
+	![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
 
----
+	---
 
-Brunch classic
+	Brunch classic
 
-### Tequila Sunrise
-A bright, layered cocktail — five minutes, no shaker.
+	### Tequila Sunrise
+	A bright, layered cocktail — five minutes, no shaker.
 
----
+	---
 
-Cocktail · Easy
-{% /card %}
+	Cocktail · Easy
+	{% /card %}
 
 {% /preview %}
 
@@ -64,21 +64,21 @@ The media zone holds *any* content — it's ordinary markdown, transformed in pl
 
 {% preview source=true %}
 
-{% card %}
-{% codegroup %}
-```js
-export const sum = (a, b) => a + b;
-```
-```py
-def sum(a, b): return a + b
-```
-{% /codegroup %}
+	{% card %}
+		{% codegroup %}
+		```js
+		export const sum = (a, b) => a + b;
+		```
+		```py
+		def sum(a, b): return a + b
+		```
+		{% /codegroup %}
 
----
+		---
 
-### Tiny utilities
-A starter kit of one-liners.
-{% /card %}
+		### Tiny utilities
+		A starter kit of one-liners.
+	{% /card %}
 
 {% /preview %}
 
@@ -127,12 +127,12 @@ A card exposes two decorable surfaces ([surface model](/runes/surfaces)): the **
 
 {% preview source=true %}
 
-{% card elevation="raised" frame-aspect="16/9" frame-anchor="top left" %}
-![Dashboard](https://picsum.photos/seed/carddash/800/450)
----
-### Framed media
-`elevation` floats the card; `frame-*` presents the image in its media zone.
-{% /card %}
+	{% card elevation="raised" frame-aspect="16/9" frame-anchor="top left" %}
+	![Dashboard](https://picsum.photos/seed/carddash/800/450)
+	---
+	### Framed media
+	`elevation` floats the card; `frame-*` presents the image in its media zone.
+	{% /card %}
 
 {% /preview %}
 
@@ -144,16 +144,16 @@ A card exposes two decorable surfaces ([surface model](/runes/surfaces)): the **
 
 {% preview source=true %}
 
-{% card href="/runes/learning/recipe" media-position="cover" scrim-type="frost" scrim-blur="md" height="lg" %}
-![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
+	{% card href="/runes/learning/recipe" media-position="cover" scrim-type="frost" scrim-blur="md" height="lg" %}
+	![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
 
----
+	---
 
-Brunch classic
+	Brunch classic
 
-### Tequila Sunrise
-A bright, layered cocktail — five minutes, no shaker.
-{% /card %}
+	### Tequila Sunrise
+	A bright, layered cocktail — five minutes, no shaker.
+	{% /card %}
 
 {% /preview %}
 

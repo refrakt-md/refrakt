@@ -26,7 +26,7 @@ Renders the entity's source content (its top-level `{% spec %}` rune) wrapped in
 The block is live below — wrapped in a `{% drawer %}` so the spec doesn't dominate the docs page. Click {% ref "spec-066-preview" label="view SPEC-066 inline" /%} (or press `s`) to open it.
 
 {% drawer id="spec-066-preview" title="SPEC-066 — Expand rune" shortcut="s" size="lg" %}
-{% expand "SPEC-066" canonical=true label="View full spec source" /%}
+	{% expand "SPEC-066" canonical=true label="View full spec source" /%}
 {% /drawer %}
 
 ## Compose with a drawer

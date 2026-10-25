@@ -15,7 +15,7 @@ It's generic over entity type. Anything in the registry works the same way — p
 
 {% preview source=true %}
 
-{% collection type="work" filter="status:ready" sort="priority" limit=5 /%}
+	{% collection type="work" filter="status:ready" sort="priority" limit=5 /%}
 
 {% /preview %}
 
@@ -73,7 +73,7 @@ By default each group is a heading followed by its items. Set `group-display="ac
 
 {% preview source=true %}
 
-{% collection type="work" group="status" group-display="accordion" /%}
+	{% collection type="work" group="status" group-display="accordion" /%}
 
 {% /preview %}
 
@@ -101,7 +101,7 @@ Enum fields don't sort alphabetically. For a field whose values are a fixed set 
 
 {% preview source=true %}
 
-{% collection type="work" filter="status:ready" layout="table" fields="status,priority" limit=5 /%}
+	{% collection type="work" filter="status:ready" layout="table" fields="status,priority" limit=5 /%}
 
 {% /preview %}
 

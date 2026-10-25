@@ -21,23 +21,23 @@ A feature grid with named items and descriptions.
 
 {% preview source=true responsive="mobile,tablet,desktop" %}
 
-{% feature %}
-what you get
+	{% feature %}
+	what you get
 
-## Structured data
+	## Structured data
 
-- **Semantic runes**
+	- **Semantic runes**
 
-  Markdown primitives take on different meaning depending on the wrapping rune. Write Markdown — the rune decides what it means.
+	  Markdown primitives take on different meaning depending on the wrapping rune. Write Markdown — the rune decides what it means.
 
-- **Type-safe output**
+	- **Type-safe output**
 
-  Every rune produces typed, validated content that your theme components can rely on.
+	  Every rune produces typed, validated content that your theme components can rely on.
 
-- **Layout inheritance**
+	- **Layout inheritance**
 
-  Define regions once in a parent layout. Child pages inherit and can override with prepend, append, or replace modes.
-{% /feature %}
+	  Define regions once in a parent layout. Child pages inherit and can override with prepend, append, or replace modes.
+	{% /feature %}
 
 {% /preview %}
 
@@ -47,20 +47,20 @@ Add a paragraph after the heading to introduce the feature set.
 
 {% preview source=true responsive="mobile,tablet,desktop" %}
 
-{% feature %}
-what you get
-## Built for content teams
+	{% feature %}
+	what you get
+	## Built for content teams
 
-Refrakt gives you the building blocks to ship structured content sites without fighting your framework.
+	Refrakt gives you the building blocks to ship structured content sites without fighting your framework.
 
-- **Semantic runes**
+	- **Semantic runes**
 
-  Markdown primitives take on different meaning depending on the wrapping rune. Write Markdown — the rune decides what it means.
+	  Markdown primitives take on different meaning depending on the wrapping rune. Write Markdown — the rune decides what it means.
 
-- **Type-safe output**
+	- **Type-safe output**
 
-  Every rune produces typed, validated content that your theme components can rely on.
-{% /feature %}
+	  Every rune produces typed, validated content that your theme components can rely on.
+	{% /feature %}
 
 {% /preview %}
 
@@ -70,40 +70,40 @@ Use `media-position="end"` to place definitions alongside a media column — an 
 
 {% preview source=true responsive="mobile,tablet,desktop" %}
 
-{% feature media-position="end" %}
-{% codegroup %}
-```yaml title="refrakt.config.ts"
-export default {
-  content: './content',
-  theme: '@refrakt-md/lumina'
-}
-```
+	{% feature media-position="end" %}
+		{% codegroup %}
+		```yaml title="refrakt.config.ts"
+		export default {
+		  content: './content',
+		  theme: '@refrakt-md/lumina'
+		}
+		```
 
-```md title="content/index.md"
----
-title: Home
----
+		```md title="content/index.md"
+		---
+		title: Home
+		---
 
-{% hero %}
-# Welcome
-{% /hero %}
-```
-{% /codegroup %}
+		{% hero %}
+		# Welcome
+		{% /hero %}
+		```
+		{% /codegroup %}
 
----
+		---
 
-why Refrakt
+		why Refrakt
 
-## Built for versatility
+		## Built for versatility
 
-- **Zero config**
+		- **Zero config**
 
-  Drop Markdown files into your content directory. Routing, layouts, and type generation happen automatically.
+		  Drop Markdown files into your content directory. Routing, layouts, and type generation happen automatically.
 
-- **Framework agnostic**
+		- **Framework agnostic**
 
-  The identity transform is pure data. Render with Svelte, React, or anything else.
-{% /feature %}
+		  The identity transform is pure data. Render with Svelte, React, or anything else.
+	{% /feature %}
 
 {% /preview %}
 
@@ -113,42 +113,42 @@ Use `media-position="start"` to swap the column order — media on the left, def
 
 {% preview source=true responsive="mobile,tablet,desktop" %}
 
-{% feature media-position="start" %}
-{% codegroup %}
-```ts title="transform.ts"
-const ast = Markdoc.parse(content);
-const tree = Markdoc.transform(ast, {
-  tags,
-  nodes
-});
-```
+	{% feature media-position="start" %}
+		{% codegroup %}
+		```ts title="transform.ts"
+		const ast = Markdoc.parse(content);
+		const tree = Markdoc.transform(ast, {
+		  tags,
+		  nodes
+		});
+		```
 
-```html title="output.html"
-<section class="rf-hero">
-  <header class="rf-hero__body">
-    <h1>Welcome</h1>
-  </header>
-</section>
-```
-{% /codegroup %}
+		```html title="output.html"
+		<section class="rf-hero">
+		  <header class="rf-hero__body">
+		    <h1>Welcome</h1>
+		  </header>
+		</section>
+		```
+		{% /codegroup %}
 
----
+		---
 
-pipeline
-## How it works
+		pipeline
+		## How it works
 
-- **Parse**
+		- **Parse**
 
-  Markdoc turns your Markdown into an AST.
+		  Markdoc turns your Markdown into an AST.
 
-- **Transform**
+		- **Transform**
 
-  Rune schemas reinterpret the AST nodes based on context.
+		  Rune schemas reinterpret the AST nodes based on context.
 
-- **Render**
+		- **Render**
 
-  The identity transform adds BEM classes and structural elements. Your theme takes it from there.
-{% /feature %}
+		  The identity transform adds BEM classes and structural elements. Your theme takes it from there.
+	{% /feature %}
 
 {% /preview %}
 
@@ -164,28 +164,28 @@ When `layout` is unset it **derives from `media-position`** (stacked media → `
 
 {% preview source=true responsive="mobile,tablet,desktop" %}
 
-{% feature layout="carousel" %}
+	{% feature layout="carousel" %}
 
-why Refrakt
+	why Refrakt
 
-## Built for versatility
+	## Built for versatility
 
-- **Zero config**
+	- **Zero config**
 
-  Drop Markdown files into your content directory.
+	  Drop Markdown files into your content directory.
 
-- **Framework agnostic**
+	- **Framework agnostic**
 
-  The identity transform is pure data — render with anything.
+	  The identity transform is pure data — render with anything.
 
-- **Type-safe output**
+	- **Type-safe output**
 
-  Every rune produces validated content.
+	  Every rune produces validated content.
 
-- **Incremental adoption**
+	- **Incremental adoption**
 
-  Add runes to existing Markdown one block at a time.
-{% /feature %}
+	  Add runes to existing Markdown one block at a time.
+	{% /feature %}
 
 {% /preview %}
 
@@ -195,28 +195,28 @@ A `grid` is great when the feature has room, but cramped on a phone. Add `collap
 
 {% preview source=true responsive="mobile,tablet,desktop" %}
 
-{% feature layout="grid" collapse-to="carousel" %}
+	{% feature layout="grid" collapse-to="carousel" %}
 
-why Refrakt
+	why Refrakt
 
-## Built for versatility
+	## Built for versatility
 
-- **Zero config**
+	- **Zero config**
 
-  Drop Markdown files into your content directory.
+	  Drop Markdown files into your content directory.
 
-- **Framework agnostic**
+	- **Framework agnostic**
 
-  The identity transform is pure data — render with anything.
+	  The identity transform is pure data — render with anything.
 
-- **Type-safe output**
+	- **Type-safe output**
 
-  Every rune produces validated content.
+	  Every rune produces validated content.
 
-- **Incremental adoption**
+	- **Incremental adoption**
 
-  Add runes to existing Markdown one block at a time.
-{% /feature %}
+	  Add runes to existing Markdown one block at a time.
+	{% /feature %}
 
 {% /preview %}
 

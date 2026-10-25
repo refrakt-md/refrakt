@@ -21,7 +21,7 @@ This is a self-closing aggregation rune — it produces a sentinel that the pipe
 
 {% preview source=true %}
 
-{% plan-activity /%}
+	{% plan-activity /%}
 
 {% /preview %}
 
@@ -31,7 +31,7 @@ Show fewer or more recent items.
 
 {% preview source=true %}
 
-{% plan-activity limit=5 /%}
+	{% plan-activity limit=5 /%}
 
 {% /preview %}
 

@@ -21,15 +21,15 @@ List items with checkbox markers become plot beats. Use `[x]` for complete, `[>]
 
 {% preview source=true %}
 
-{% plot title="The Quest for the Crown" type="quest" structure="linear" %}
-The heroes must recover the lost crown before the solstice.
+	{% plot title="The Quest for the Crown" type="quest" structure="linear" %}
+	The heroes must recover the lost crown before the solstice.
 
-- [x] **Discovery** — Find the ancient map in the library
-- [x] **Departure** — Leave the city under cover of darkness
-- [>] **Trial** — Cross the Whispering Wastes
-- [ ] **Confrontation** — Face the guardian of the vault
-- [-] **Return** — Bring the crown back to the capital
-{% /plot %}
+	- [x] **Discovery** — Find the ancient map in the library
+	- [x] **Departure** — Leave the city under cover of darkness
+	- [>] **Trial** — Cross the Whispering Wastes
+	- [ ] **Confrontation** — Face the guardian of the vault
+	- [-] **Return** — Bring the crown back to the capital
+	{% /plot %}
 
 {% /preview %}
 
@@ -39,14 +39,14 @@ Different narrative structures for various storytelling needs.
 
 {% preview source=true %}
 
-{% plot title="The Shadow War" type="campaign" structure="branching" %}
-A long-running conflict with multiple factions vying for control.
+	{% plot title="The Shadow War" type="campaign" structure="branching" %}
+	A long-running conflict with multiple factions vying for control.
 
-- [x] **Opening moves** — The assassination of the ambassador
-- [>] **Escalation** — Border skirmishes erupt across the north
-- [ ] **Alliance** — Unite the free cities against the common threat
-- [ ] **Final battle** — Storm the Dark Citadel
-{% /plot %}
+	- [x] **Opening moves** — The assassination of the ambassador
+	- [>] **Escalation** — Border skirmishes erupt across the north
+	- [ ] **Alliance** — Unite the free cities against the common threat
+	- [ ] **Final battle** — Storm the Dark Citadel
+	{% /plot %}
 
 {% /preview %}
 

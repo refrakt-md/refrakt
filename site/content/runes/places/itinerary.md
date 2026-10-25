@@ -21,31 +21,31 @@ Use H2 headings for days and "time — location" headings for individual stops.
 
 {% preview source=true %}
 
-{% itinerary variant="day-by-day" %}
-## Day 1 — Arrival
+	{% itinerary variant="day-by-day" %}
+	## Day 1 — Arrival
 
-### 9:00 AM — Narita Airport
+	### 9:00 AM — Narita Airport
 
-Clear customs and pick up your Japan Rail Pass at the JR counter.
+	Clear customs and pick up your Japan Rail Pass at the JR counter.
 
-### 12:00 PM — Shinjuku
+	### 12:00 PM — Shinjuku
 
-Check in to the hotel and grab lunch at a nearby ramen shop.
+	Check in to the hotel and grab lunch at a nearby ramen shop.
 
-### 6:00 PM — Shibuya
+	### 6:00 PM — Shibuya
 
-Explore the famous crossing and have dinner in the area.
+	Explore the famous crossing and have dinner in the area.
 
-## Day 2 — Temples & Gardens
+	## Day 2 — Temples & Gardens
 
-### 8:00 AM — Meiji Shrine
+	### 8:00 AM — Meiji Shrine
 
-Start the day with a peaceful walk through the shrine grounds.
+	Start the day with a peaceful walk through the shrine grounds.
 
-### 11:00 AM — Harajuku
+	### 11:00 AM — Harajuku
 
-Browse Takeshita Street and the backstreet boutiques.
-{% /itinerary %}
+	Browse Takeshita Street and the backstreet boutiques.
+	{% /itinerary %}
 
 {% /preview %}
 
@@ -55,19 +55,19 @@ Without H2 headings, all stops are grouped into a single implicit day.
 
 {% preview source=true %}
 
-{% itinerary %}
-### 10:00 AM — Museum of Modern Art
+	{% itinerary %}
+	### 10:00 AM — Museum of Modern Art
 
-Spend the morning exploring the permanent collection.
+	Spend the morning exploring the permanent collection.
 
-### 1:00 PM — Central Park
+	### 1:00 PM — Central Park
 
-Picnic lunch on the Great Lawn.
+	Picnic lunch on the Great Lawn.
 
-### 3:00 PM — Times Square
+	### 3:00 PM — Times Square
 
-Walk through the theater district.
-{% /itinerary %}
+	Walk through the theater district.
+	{% /itinerary %}
 
 {% /preview %}
 

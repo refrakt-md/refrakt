@@ -17,25 +17,25 @@ Headings are automatically converted into tab labels.
 
 {% preview source=true %}
 
-{% tabs %}
-## npm
+	{% tabs %}
+	## npm
 
-```shell
-npm install @refrakt-md/runes
-```
+	```shell
+	npm install @refrakt-md/runes
+	```
 
-## yarn
+	## yarn
 
-```shell
-yarn add @refrakt-md/runes
-```
+	```shell
+	yarn add @refrakt-md/runes
+	```
 
-## pnpm
+	## pnpm
 
-```shell
-pnpm add @refrakt-md/runes
-```
-{% /tabs %}
+	```shell
+	pnpm add @refrakt-md/runes
+	```
+	{% /tabs %}
 
 {% /preview %}
 
@@ -45,15 +45,15 @@ Use `{% tab %}` tags for more control over tab names and content.
 
 {% preview source=true %}
 
-{% tabs %}
-{% tab name="JavaScript" %}
-Content for the JavaScript tab.
-{% /tab %}
+	{% tabs %}
+		{% tab name="JavaScript" %}
+		Content for the JavaScript tab.
+		{% /tab %}
 
-{% tab name="TypeScript" %}
-Content for the TypeScript tab.
-{% /tab %}
-{% /tabs %}
+		{% tab name="TypeScript" %}
+		Content for the TypeScript tab.
+		{% /tab %}
+	{% /tabs %}
 
 {% /preview %}
 

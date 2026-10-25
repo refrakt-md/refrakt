@@ -19,7 +19,7 @@ An aggregation rune that renders a chronological list of architecture decision r
 
 {% preview source=true %}
 
-{% decision-log sort="date" /%}
+	{% decision-log sort="date" /%}
 
 {% /preview %}
 
@@ -27,7 +27,7 @@ An aggregation rune that renders a chronological list of architecture decision r
 
 {% preview source=true %}
 
-{% decision-log filter="status:accepted" sort="date" /%}
+	{% decision-log filter="status:accepted" sort="date" /%}
 
 {% /preview %}
 
@@ -35,7 +35,7 @@ An aggregation rune that renders a chronological list of architecture decision r
 
 {% preview source=true %}
 
-{% decision-log sort="id" /%}
+	{% decision-log sort="id" /%}
 
 {% /preview %}
 

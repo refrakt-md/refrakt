@@ -19,21 +19,21 @@ A `{% chart %}` fills the media well; the same plain `card`, only the guest chan
 
 {% preview source=true %}
 
-{% card %}
-{% chart type="bar" %}
-| Quarter | Revenue |
-|---------|---------|
-| Q1 | 4200 |
-| Q2 | 5100 |
-| Q3 | 4800 |
-| Q4 | 6200 |
-{% /chart %}
+	{% card %}
+		{% chart type="bar" %}
+		| Quarter | Revenue |
+		|---------|---------|
+		| Q1 | 4200 |
+		| Q2 | 5100 |
+		| Q3 | 4800 |
+		| Q4 | 6200 |
+		{% /chart %}
 
----
+		---
 
-### Quarterly revenue
-Up 14% on the year.
-{% /card %}
+		### Quarterly revenue
+		Up 14% on the year.
+	{% /card %}
 
 {% /preview %}
 
@@ -45,21 +45,21 @@ A `{% diagram %}` renders to inline SVG, then the slot sizes it. It's non-intera
 
 {% preview source=true %}
 
-{% card %}
-{% diagram language="mermaid" %}
-```mermaid
-graph LR
-  A[Content] --> B[Transform]
-  B --> C[Render]
-  C --> D[HTML]
-```
-{% /diagram %}
+	{% card %}
+		{% diagram language="mermaid" %}
+		```mermaid
+		graph LR
+		  A[Content] --> B[Transform]
+		  B --> C[Render]
+		  C --> D[HTML]
+		```
+		{% /diagram %}
 
----
+		---
 
-### Pipeline at a glance
-Four stages, content to output.
-{% /card %}
+		### Pipeline at a glance
+		Four stages, content to output.
+	{% /card %}
 
 {% /preview %}
 
@@ -69,16 +69,16 @@ A `{% map %}` as a cover poster: it fills the card and a title overlays it. This
 
 {% preview source=true %}
 
-{% card href="/runes/places/map" media-position="cover" height="md" %}
-{% map zoom="12" center="48.8566, 2.3522" %}
-- **Paris** - *Demoted to a backdrop* - 48.8566, 2.3522
-{% /map %}
+	{% card href="/runes/places/map" media-position="cover" height="md" %}
+		{% map zoom="12" center="48.8566, 2.3522" %}
+		- **Paris** - *Demoted to a backdrop* - 48.8566, 2.3522
+		{% /map %}
 
----
+		---
 
-### A linked location poster
-The map would normally pan and zoom; inside a linked cover card its controls go silent, so the whole surface stays a single click target.
-{% /card %}
+		### A linked location poster
+		The map would normally pan and zoom; inside a linked cover card its controls go silent, so the whole surface stays a single click target.
+	{% /card %}
 
 {% /preview %}
 
@@ -88,41 +88,41 @@ The same chart guest, repeated across `{% bento-cell %}`s. A bento cell adopts `
 
 {% preview source=true %}
 
-{% bento columns=6 %}
+	{% bento columns=6 %}
 
-{% bento-cell %}
-{% chart type="bar" %}
-| Month | Revenue |
-|-------|---------|
-| Jan | 4200 |
-| Feb | 5100 |
-| Mar | 4800 |
-| Apr | 6200 |
-{% /chart %}
+		{% bento-cell %}
+			{% chart type="bar" %}
+			| Month | Revenue |
+			|-------|---------|
+			| Jan | 4200 |
+			| Feb | 5100 |
+			| Mar | 4800 |
+			| Apr | 6200 |
+			{% /chart %}
 
----
+			---
 
-### Revenue
-Up 14% on the quarter.
-{% /bento-cell %}
+			### Revenue
+			Up 14% on the quarter.
+		{% /bento-cell %}
 
-{% bento-cell %}
-{% chart type="line" %}
-| Week | Signups |
-|------|---------|
-| W1 | 120 |
-| W2 | 180 |
-| W3 | 240 |
-| W4 | 360 |
-{% /chart %}
+		{% bento-cell %}
+			{% chart type="line" %}
+			| Week | Signups |
+			|------|---------|
+			| W1 | 120 |
+			| W2 | 180 |
+			| W3 | 240 |
+			| W4 | 360 |
+			{% /chart %}
 
----
+			---
 
-### Signups
-Trending up week over week.
-{% /bento-cell %}
+			### Signups
+			Trending up week over week.
+		{% /bento-cell %}
 
-{% /bento %}
+	{% /bento %}
 
 {% /preview %}
 
@@ -134,40 +134,40 @@ A `{% codegroup %}` in the media zone is a tabbed snippet with a title below —
 
 {% preview source=true %}
 
-{% card frame-aspect="3/2" frame-displace="bottom-end" frame-offset="md" frame-oversize="1.15" substrate="cross" substrate-target="media" %}
-{% codegroup title="refrakt.config.ts" %}
-```ts
-import { defineConfig } from '@refrakt-md/cli';
-import marketing from '@refrakt-md/marketing';
-import learning from '@refrakt-md/learning';
-import storytelling from '@refrakt-md/storytelling';
+	{% card frame-aspect="3/2" frame-displace="bottom-end" frame-offset="md" frame-oversize="1.15" substrate="cross" substrate-target="media" %}
+		{% codegroup title="refrakt.config.ts" %}
+		```ts
+		import { defineConfig } from '@refrakt-md/cli';
+		import marketing from '@refrakt-md/marketing';
+		import learning from '@refrakt-md/learning';
+		import storytelling from '@refrakt-md/storytelling';
 
-export default defineConfig({
-  content: './content',
-  theme: '@refrakt-md/lumina',
-  plugins: [
-    marketing(),
-    learning(),
-    storytelling(),
-  ],
-  surfaces: {
-    card: {
-      elevation: 'md',
-      frame: { aspect: '16/9' },
-    },
-    figure: {
-      frame: { shadow: 'lg', anchor: 'top' },
-    },
-  },
-});
-```
-{% /codegroup %}
+		export default defineConfig({
+		  content: './content',
+		  theme: '@refrakt-md/lumina',
+		  plugins: [
+		    marketing(),
+		    learning(),
+		    storytelling(),
+		  ],
+		  surfaces: {
+		    card: {
+		      elevation: 'md',
+		      frame: { aspect: '16/9' },
+		    },
+		    figure: {
+		      frame: { shadow: 'lg', anchor: 'top' },
+		    },
+		  },
+		});
+		```
+		{% /codegroup %}
 
----
+		---
 
-### Codegroup over a substrate
-The codegroup oversizes and displaces toward the bottom-right; the cross substrate fills the media slot beneath and shows through the strip the codegroup no longer covers.
-{% /card %}
+		### Codegroup over a substrate
+		The codegroup oversizes and displaces toward the bottom-right; the cross substrate fills the media slot beneath and shows through the strip the codegroup no longer covers.
+	{% /card %}
 
 {% /preview %}
 
@@ -177,43 +177,43 @@ A `{% juxtapose %}` is a draggable before/after; the two panels are its `---` sp
 
 {% preview source=true %}
 
-{% card %}
-{% juxtapose labels="Summer, Winter" %}
+	{% card %}
+		{% juxtapose labels="Summer, Winter" %}
 
-![Oak tree summer](https://assets.refrakt.md/oak-tree-summer.png)
+		![Oak tree summer](https://assets.refrakt.md/oak-tree-summer.png)
 
----
+		---
 
-![Oak tree winter](https://assets.refrakt.md/oak-tree-winter.png)
+		![Oak tree winter](https://assets.refrakt.md/oak-tree-winter.png)
 
-{% /juxtapose %}
+		{% /juxtapose %}
 
----
+		---
 
-### Same tree, two seasons
-Drag the divider to flip between July and February.
-{% /card %}
+		### Same tree, two seasons
+		Drag the divider to flip between July and February.
+	{% /card %}
 
 {% /preview %}
 
 {% preview source=true %}
 
-{% card %}
-{% juxtapose labels="Light, Dark" %}
+	{% card %}
+		{% juxtapose labels="Light, Dark" %}
 
-{% sandbox src="profile-card" framework="tailwind" tint-mode="light" height=460 /%}
+			{% sandbox src="profile-card" framework="tailwind" tint-mode="light" height=460 /%}
 
----
+			---
 
-{% sandbox src="profile-card" framework="tailwind" tint-mode="dark" height=460 /%}
+			{% sandbox src="profile-card" framework="tailwind" tint-mode="dark" height=460 /%}
 
-{% /juxtapose %}
+		{% /juxtapose %}
 
----
+		---
 
-### Profile card, both modes
-The shared `profile-card` example — left panel pinned to light, right to dark.
-{% /card %}
+		### Profile card, both modes
+		The shared `profile-card` example — left panel pinned to light, right to dark.
+	{% /card %}
 
 {% /preview %}
 
@@ -227,46 +227,46 @@ A `{% mockup %}` (with a `{% sandbox %}` inside) is a media guest like any other
 
 {% preview source=true %}
 
-{% card %}
-{% mockup device="browser" url="acme.io" %}
-{% sandbox src="acme-landing" framework="tailwind" height=420 /%}
-{% /mockup %}
+	{% card %}
+		{% mockup device="browser" url="acme.io" %}
+			{% sandbox src="acme-landing" framework="tailwind" height=420 /%}
+		{% /mockup %}
 
----
+		---
 
-### Acme landing page
-The production homepage, framed in browser chrome for the docs.
-{% /card %}
+		### Acme landing page
+		The production homepage, framed in browser chrome for the docs.
+	{% /card %}
 
 {% /preview %}
 
 {% preview source=true %}
 
-{% bento columns=6 row-height="lg" content-height="md" %}
+	{% bento columns=6 row-height="lg" content-height="md" %}
 
-{% bento-cell cols=4 %}
-{% mockup device="browser" url="acme.io/dashboard" %}
-{% sandbox src="acme-dashboard" framework="tailwind" height=460 /%}
-{% /mockup %}
+		{% bento-cell cols=4 %}
+			{% mockup device="browser" url="acme.io/dashboard" %}
+				{% sandbox src="acme-dashboard" framework="tailwind" height=460 /%}
+			{% /mockup %}
 
----
+			---
 
-### Desktop
-The full three-up metrics view, with the avatar in the top bar.
-{% /bento-cell %}
+			### Desktop
+			The full three-up metrics view, with the avatar in the top bar.
+		{% /bento-cell %}
 
-{% bento-cell cols=2 %}
-{% mockup device="iphone-15" %}
-{% sandbox src="acme-dashboard-mobile" framework="tailwind" height=720 /%}
-{% /mockup %}
+		{% bento-cell cols=2 %}
+			{% mockup device="iphone-15" %}
+				{% sandbox src="acme-dashboard-mobile" framework="tailwind" height=720 /%}
+			{% /mockup %}
 
----
+			---
 
-### Mobile
-The same metrics stacked as a single column.
-{% /bento-cell %}
+			### Mobile
+			The same metrics stacked as a single column.
+		{% /bento-cell %}
 
-{% /bento %}
+	{% /bento %}
 
 {% /preview %}
 
@@ -278,14 +278,14 @@ The media zone holds a *running program* just as readily as an image. A `{% sand
 
 {% preview source=true %}
 
-{% card frame-aspect="21/9" %}
-{% sandbox src="threejs-scene" height="fill" /%}
+	{% card frame-aspect="21/9" %}
+		{% sandbox src="threejs-scene" height="fill" /%}
 
----
+		---
 
-### A live WebGL scene
-In a plain card the scene animates; a linked or cover card would demote it to a still backdrop, like any other interactive guest.
-{% /card %}
+		### A live WebGL scene
+		In a plain card the scene animates; a linked or cover card would demote it to a still backdrop, like any other interactive guest.
+	{% /card %}
 
 {% /preview %}
 

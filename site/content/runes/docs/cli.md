@@ -25,21 +25,21 @@ The language is auto-detected from file extensions and the presence of `tsconfig
 
 {% tabs %}
 
-{% tab name="TypeScript" %}
+	{% tab name="TypeScript" %}
 
-```shell
-refrakt docs extract ./src -o ./content/api --lang typescript
-```
+	```shell
+	refrakt docs extract ./src -o ./content/api --lang typescript
+	```
 
-{% /tab %}
+	{% /tab %}
 
-{% tab name="Python" %}
+	{% tab name="Python" %}
 
-```shell
-refrakt docs extract ./lib -o ./content/api --lang python
-```
+	```shell
+	refrakt docs extract ./lib -o ./content/api --lang python
+	```
 
-{% /tab %}
+	{% /tab %}
 
 {% /tabs %}
 

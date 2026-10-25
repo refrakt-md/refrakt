@@ -7,170 +7,170 @@ tint-mode: dark
 tint-lock: true
 ---
 {% layout %}
-{% region name="header" %}
-[{% icon name="mark" /%} refrakt.md](/)
+	{% region name="header" %}
+		[{% icon name="mark" /%} refrakt.md](/)
 
-{% nav layout="menubar" %}
-## Docs
+		{% nav layout="menubar" %}
+			## Docs
 
-{% nav layout="columns" %}
-- [Getting started](/docs/getting-started)
+			{% nav layout="columns" %}
+			- [Getting started](/docs/getting-started)
 
-  Install refrakt and build your first site.
+			  Install refrakt and build your first site.
 
-- [Content](/docs/content)
+			- [Content](/docs/content)
 
-  Pages, layouts, regions, and frontmatter.
+			  Pages, layouts, regions, and frontmatter.
 
-- [Authoring](/docs/authoring/variables)
+			- [Authoring](/docs/authoring/variables)
 
-  Variables, partials, entities, page sections, tint.
+			  Variables, partials, entities, page sections, tint.
 
-- [Configuration](/docs/configuration/overview)
+			- [Configuration](/docs/configuration/overview)
 
-  Sites, plugins, and themes in `refrakt.config.json`.
+			  Sites, plugins, and themes in `refrakt.config.json`.
 
----
+			---
 
-- [CLI](/docs/cli/cli-overview)
+			- [CLI](/docs/cli/cli-overview)
 
-  `refrakt` commands for inspect, write, and build.
+			  `refrakt` commands for inspect, write, and build.
 
-- [Adapters](/docs/adapters/adapters-overview)
+			- [Adapters](/docs/adapters/adapters-overview)
 
-  SvelteKit, Astro, Next, Nuxt, Eleventy, HTML.
+			  SvelteKit, Astro, Next, Nuxt, Eleventy, HTML.
 
-- [MCP](/docs/mcp/overview)
+			- [MCP](/docs/mcp/overview)
 
-  Model Context Protocol server for AI editors.
-{% /nav %}
+			  Model Context Protocol server for AI editors.
+			{% /nav %}
 
-## Runes
+			## Runes
 
-{% nav layout="columns" %}
-- [Rune catalog](/runes/rune-catalog)
+			{% nav layout="columns" %}
+			- [Rune catalog](/runes/rune-catalog)
 
-  Every author-facing rune in one place.
+			  Every author-facing rune in one place.
 
-- [Marketing](/runes/marketing)
+			- [Marketing](/runes/marketing)
 
-  Hero, CTA, bento, feature, pricing, steps.
+			  Hero, CTA, bento, feature, pricing, steps.
 
-- [Docs](/runes/docs)
+			- [Docs](/runes/docs)
 
-  API, symbol, changelog references.
+			  API, symbol, changelog references.
 
-- [Design](/runes/design)
+			- [Design](/runes/design)
 
-  Swatch, palette, typography, spacing previews.
+			  Swatch, palette, typography, spacing previews.
 
----
+			---
 
-- [Storytelling](/runes/storytelling)
+			- [Storytelling](/runes/storytelling)
 
-  Character, realm, faction, lore, plot, bond.
+			  Character, realm, faction, lore, plot, bond.
 
-- [Learning](/runes/learning)
+			- [Learning](/runes/learning)
 
-  How-to and recipe runes.
+			  How-to and recipe runes.
 
-- [Plan](/runes/plan)
+			- [Plan](/runes/plan)
 
-  Specs, work, decisions, milestones.
+			  Specs, work, decisions, milestones.
 
-- [Business](/runes/business)
+			- [Business](/runes/business)
 
-  Cast, organization, timeline.
-{% /nav %}
+			  Cast, organization, timeline.
+			{% /nav %}
 
-## Themes
-- [Themes catalog](/themes/themes-catalog)
-- [Lumina](/themes/lumina)
-- [Neutral default](/themes/neutral-default)
-- [Niwaki](/themes/niwaki)
-- [Tideline](/themes/tideline)
-- [Code-editor presets](/themes/themes-catalog)
+			## Themes
+			- [Themes catalog](/themes/themes-catalog)
+			- [Lumina](/themes/lumina)
+			- [Neutral default](/themes/neutral-default)
+			- [Niwaki](/themes/niwaki)
+			- [Tideline](/themes/tideline)
+			- [Code-editor presets](/themes/themes-catalog)
 
-## Extend
+			## Extend
 
-{% nav layout="columns" %}
-- [Rune authoring](/extend/rune-authoring/authoring-overview)
+			{% nav layout="columns" %}
+			- [Rune authoring](/extend/rune-authoring/authoring-overview)
 
-  Write custom runes — content models, output contract, patterns.
+			  Write custom runes — content models, output contract, patterns.
 
-- [Plugin authoring](/extend/plugin-authoring/authoring)
+			- [Plugin authoring](/extend/plugin-authoring/authoring)
 
-  Package runes, theme, behaviors, and CLI as a plugin.
+			  Package runes, theme, behaviors, and CLI as a plugin.
 
-- [Theme authoring](/extend/theme-authoring/overview)
+			- [Theme authoring](/extend/theme-authoring/overview)
 
-  Build a theme — tokens, CSS, identity-transform config.
+			  Build a theme — tokens, CSS, identity-transform config.
 
----
+			---
 
-- [Pipeline](/extend/plugin-authoring/pipeline)
+			- [Pipeline](/extend/plugin-authoring/pipeline)
 
-  Cross-page register, aggregate, and post-process hooks.
+			  Cross-page register, aggregate, and post-process hooks.
 
-- [Security](/extend/security)
+			- [Security](/extend/security)
 
-  Threat model and the `ResolvedSecurityPolicy` contract.
+			  Threat model and the `ResolvedSecurityPolicy` contract.
 
-- [Contributing](/extend/contributing)
+			- [Contributing](/extend/contributing)
 
-  Branches, the plan workflow, releases, and reporting issues.
-{% /nav %}
+			  Branches, the plan workflow, releases, and reporting issues.
+			{% /nav %}
 
-## Project
-- [Plan](/plan)
-- [Roadmap](https://plan.refrakt.md/refrakt-md/refrakt)
-- [Changelog](/releases)
-- [GitHub](https://github.com/refrakt-md/refrakt)
-{% /nav %}
-{% /region %}
+			## Project
+			- [Plan](/plan)
+			- [Roadmap](https://plan.refrakt.md/refrakt-md/refrakt)
+			- [Changelog](/releases)
+			- [GitHub](https://github.com/refrakt-md/refrakt)
+		{% /nav %}
+	{% /region %}
 
-{% region name="footer" %}
-{% nav layout="columns" %}
-## Learn
-- [Getting started](/docs/getting-started)
-- [Content](/docs/content)
-- [Authoring](/docs/authoring/variables)
-- [Entities](/docs/authoring/entities)
-- [Configuration](/docs/configuration/overview)
-- [CLI](/docs/cli/cli-overview)
-- [Adapters](/docs/adapters/adapters-overview)
-- [MCP](/docs/mcp/overview)
+	{% region name="footer" %}
+		{% nav layout="columns" %}
+		## Learn
+		- [Getting started](/docs/getting-started)
+		- [Content](/docs/content)
+		- [Authoring](/docs/authoring/variables)
+		- [Entities](/docs/authoring/entities)
+		- [Configuration](/docs/configuration/overview)
+		- [CLI](/docs/cli/cli-overview)
+		- [Adapters](/docs/adapters/adapters-overview)
+		- [MCP](/docs/mcp/overview)
 
----
+		---
 
-## Reference
-- [Rune catalog](/runes/rune-catalog)
-- [Themes catalog](/themes/themes-catalog)
-- [Lumina](/themes/lumina)
-- [Plan runes](/runes/plan)
+		## Reference
+		- [Rune catalog](/runes/rune-catalog)
+		- [Themes catalog](/themes/themes-catalog)
+		- [Lumina](/themes/lumina)
+		- [Plan runes](/runes/plan)
 
----
+		---
 
-## Extend
-- [Rune authoring](/extend/rune-authoring/authoring-overview)
-- [Plugin authoring](/extend/plugin-authoring/authoring)
-- [Theme authoring](/extend/theme-authoring/overview)
-- [Pipeline](/extend/plugin-authoring/pipeline)
-- [Security](/extend/security)
-- [Contributing](/extend/contributing)
+		## Extend
+		- [Rune authoring](/extend/rune-authoring/authoring-overview)
+		- [Plugin authoring](/extend/plugin-authoring/authoring)
+		- [Theme authoring](/extend/theme-authoring/overview)
+		- [Pipeline](/extend/plugin-authoring/pipeline)
+		- [Security](/extend/security)
+		- [Contributing](/extend/contributing)
 
----
+		---
 
-## Project
-- [Plan](/plan)
-- [Plan docs](/plan/docs/plan-overview)
-- [Roadmap](https://plan.refrakt.md/refrakt-md/refrakt)
-- [Changelog](/releases)
-- [Blog](/blog)
-- [GitHub](https://github.com/refrakt-md/refrakt)
-{% /nav %}
+		## Project
+		- [Plan](/plan)
+		- [Plan docs](/plan/docs/plan-overview)
+		- [Roadmap](https://plan.refrakt.md/refrakt-md/refrakt)
+		- [Changelog](/releases)
+		- [Blog](/blog)
+		- [GitHub](https://github.com/refrakt-md/refrakt)
+		{% /nav %}
 
-© 2026 refrakt.md — MIT licensed.
-{% /region %}
+		© 2026 refrakt.md — MIT licensed.
+	{% /region %}
 
 {% /layout %}

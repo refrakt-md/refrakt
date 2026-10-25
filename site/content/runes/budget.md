@@ -17,29 +17,29 @@ Use headings for categories and list items with amounts for line items.
 
 {% preview source=true %}
 
-{% budget currency="JPY" duration="5 days" %}
-Spring 2026
+	{% budget currency="JPY" duration="5 days" %}
+	Spring 2026
 
-# Tokyo Trip
+	# Tokyo Trip
 
-A week in Japan — temples, food, and a night in a ryokan.
+	A week in Japan — temples, food, and a night in a ryokan.
 
-## Accommodation
+	## Accommodation
 
-- Hotel in Shinjuku: ¥15000
-- Ryokan in Hakone: ¥25000
+	- Hotel in Shinjuku: ¥15000
+	- Ryokan in Hakone: ¥25000
 
-## Transportation
+	## Transportation
 
-- Japan Rail Pass (7-day): ¥29650
-- Airport transfer: ¥3000
-- Local metro cards: ¥5000
+	- Japan Rail Pass (7-day): ¥29650
+	- Airport transfer: ¥3000
+	- Local metro cards: ¥5000
 
-## Food & Dining
+	## Food & Dining
 
-- Daily meals: ¥5000
-- Sushi experience: ¥8000
-{% /budget %}
+	- Daily meals: ¥5000
+	- Sushi experience: ¥8000
+	{% /budget %}
 
 {% /preview %}
 
@@ -49,29 +49,29 @@ Use `variant="summary"` to show only category totals without individual line ite
 
 {% preview source=true %}
 
-{% budget currency="JPY" duration="5 days" variant="summary" %}
-Spring 2026
+	{% budget currency="JPY" duration="5 days" variant="summary" %}
+	Spring 2026
 
-# Tokyo Trip
+	# Tokyo Trip
 
-A week in Japan — temples, food, and a night in a ryokan.
+	A week in Japan — temples, food, and a night in a ryokan.
 
-## Accommodation
+	## Accommodation
 
-- Hotel in Shinjuku: ¥15000
-- Ryokan in Hakone: ¥25000
+	- Hotel in Shinjuku: ¥15000
+	- Ryokan in Hakone: ¥25000
 
-## Transportation
+	## Transportation
 
-- Japan Rail Pass (7-day): ¥29650
-- Airport transfer: ¥3000
-- Local metro cards: ¥5000
+	- Japan Rail Pass (7-day): ¥29650
+	- Airport transfer: ¥3000
+	- Local metro cards: ¥5000
 
-## Food & Dining
+	## Food & Dining
 
-- Daily meals: ¥5000
-- Sushi experience: ¥8000
-{% /budget %}
+	- Daily meals: ¥5000
+	- Sushi experience: ¥8000
+	{% /budget %}
 
 {% /preview %}
 
@@ -81,19 +81,19 @@ Mark categories as estimates by adding `(estimate)` or `(est.)` to the heading, 
 
 {% preview source=true %}
 
-{% budget currency="USD" %}
-# Weekend Getaway
+	{% budget currency="USD" %}
+	# Weekend Getaway
 
-## Hotel
+	## Hotel
 
-- Two nights downtown: $250
+	- Two nights downtown: $250
 
-## Activities (estimate)
+	## Activities (estimate)
 
-- Museum passes: $40
-- Boat tour: $60-80
-- Dining: $100-150
-{% /budget %}
+	- Museum passes: $40
+	- Boat tour: $60-80
+	- Dining: $100-150
+	{% /budget %}
 
 {% /preview %}
 

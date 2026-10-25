@@ -87,9 +87,9 @@ The `value` attribute is a **secondary `field:value` clause** within the primary
 
 {% preview source=true %}
 
-{% aggregate type="work" value="status:done" %}
-{% progress value=$item.value max=$item.count %}Done so far{% /progress %}
-{% /aggregate %}
+	{% aggregate type="work" value="status:done" %}
+	{% progress value=$item.value max=$item.count %}Done so far{% /progress %}
+	{% /aggregate %}
 
 {% /preview %}
 
@@ -103,10 +103,10 @@ Set `group` and the template is rendered once per distinct value of that field, 
 
 {% preview source=true %}
 
-{% aggregate type="work" value="status:done" group="status" %}
----
-{% badge data-status=$item.key %}{% $item.count %} {% humanize($item.key) %}{% /badge %}
-{% /aggregate %}
+	{% aggregate type="work" value="status:done" group="status" %}
+	---
+	{% badge data-status=$item.key %}{% $item.count %} {% humanize($item.key) %}{% /badge %}
+	{% /aggregate %}
 
 {% /preview %}
 
@@ -142,7 +142,7 @@ Add `layout="chart"` and the grouped counts render as a chart instead of a body 
 
 {% preview source=true %}
 
-{% aggregate type="work" group="status" layout="chart" chart-title="Work by status" /%}
+	{% aggregate type="work" group="status" layout="chart" chart-title="Work by status" /%}
 
 {% /preview %}
 

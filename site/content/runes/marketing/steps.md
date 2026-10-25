@@ -21,19 +21,19 @@ Each ordered list item becomes a numbered step.
 
 {% preview source=true %}
 
-{% steps %}
-1. Install the dependencies
+	{% steps %}
+	1. Install the dependencies
 
-   Run the install command for your package manager.
+	   Run the install command for your package manager.
 
-2. Create your content directory
+	2. Create your content directory
 
-   Add a `content/` folder with your Markdown files.
+	   Add a `content/` folder with your Markdown files.
 
-3. Start the dev server
+	3. Start the dev server
 
-   Run `npm run dev` and visit localhost.
-{% /steps %}
+	   Run `npm run dev` and visit localhost.
+	{% /steps %}
 
 {% /preview %}
 
@@ -43,19 +43,19 @@ Headings are automatically converted into steps instead of list items.
 
 {% preview source=true %}
 
-{% steps %}
-### Clone the repository
+	{% steps %}
+	### Clone the repository
 
-Fork and clone the repo to your local machine.
+	Fork and clone the repo to your local machine.
 
-### Install dependencies
+	### Install dependencies
 
-Run `npm install` to set up all packages.
+	Run `npm install` to set up all packages.
 
-### Run the tests
+	### Run the tests
 
-Verify everything works with `npm test`.
-{% /steps %}
+	Verify everything works with `npm test`.
+	{% /steps %}
 
 {% /preview %}
 

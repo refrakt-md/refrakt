@@ -17,12 +17,12 @@ A breadcrumb trail using the default `/` separator.
 
 {% preview source=true %}
 
-{% breadcrumb %}
-- [Home](/)
-- [Getting started](/docs/getting-started)
-- [Tabs](/runes/tabs)
-- Breadcrumb
-{% /breadcrumb %}
+	{% breadcrumb %}
+	- [Home](/)
+	- [Getting started](/docs/getting-started)
+	- [Tabs](/runes/tabs)
+	- Breadcrumb
+	{% /breadcrumb %}
 
 {% /preview %}
 
@@ -32,11 +32,11 @@ Use the `separator` attribute to change the divider between items.
 
 {% preview source=true %}
 
-{% breadcrumb separator="›" %}
-- [Home](/)
-- [Getting started](/docs/getting-started)
-- Current page
-{% /breadcrumb %}
+	{% breadcrumb separator="›" %}
+	- [Home](/)
+	- [Getting started](/docs/getting-started)
+	- Current page
+	{% /breadcrumb %}
 
 {% /preview %}
 

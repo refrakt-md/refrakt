@@ -5,73 +5,73 @@ tint-mode: auto
 tint-lock: false
 ---
 {% layout %}
-{% region name="nav" %}
-{% nav collapsible=true %}
-- [Documentation](/docs/getting-started)
-- [Runes](/runes/rune-catalog)
-- [Themes](/themes/themes-catalog)
-- [Planning](/plan)
+	{% region name="nav" %}
+		{% nav collapsible=true %}
+		- [Documentation](/docs/getting-started)
+		- [Runes](/runes/rune-catalog)
+		- [Themes](/themes/themes-catalog)
+		- [Planning](/plan)
 
-## Guide
+		## Guide
 
-- getting-started
-- content
+		- getting-started
+		- content
 
-## Authoring
+		## Authoring
 
-- authoring/frontmatter
-- authoring/variables
-- authoring/partials
-- authoring/page-sections
-- authoring/entities
-- authoring/tint
-- authoring/nav-slug-resolution
-- authoring/rich-menubar-panels
+		- authoring/frontmatter
+		- authoring/variables
+		- authoring/partials
+		- authoring/page-sections
+		- authoring/entities
+		- authoring/tint
+		- authoring/nav-slug-resolution
+		- authoring/rich-menubar-panels
 
-## Configuration
+		## Configuration
 
-- configuration/overview
-- configuration/reference
-- configuration/sites
-- configuration/plugins
-- configuration/entity-routes
-- configuration/search
-- configuration/i18n
-- configuration/plan
-- configuration/migration
-- configuration/schema
+		- configuration/overview
+		- configuration/reference
+		- configuration/sites
+		- configuration/plugins
+		- configuration/entity-routes
+		- configuration/search
+		- configuration/i18n
+		- configuration/plan
+		- configuration/migration
+		- configuration/schema
 
-## CLI
+		## CLI
 
-- cli/cli-overview
-- cli/inspect
-- cli/reference
-- cli/format
-- cli/write
-- cli/theme-tools
+		- cli/cli-overview
+		- cli/inspect
+		- cli/reference
+		- cli/format
+		- cli/write
+		- cli/theme-tools
 
-## Adapters
+		## Adapters
 
-- adapters/adapters-overview
-- adapters/sveltekit
-- adapters/astro
-- adapters/nextjs
-- adapters/nuxt
-- adapters/eleventy
-- adapters/html
+		- adapters/adapters-overview
+		- adapters/sveltekit
+		- adapters/astro
+		- adapters/nextjs
+		- adapters/nuxt
+		- adapters/eleventy
+		- adapters/html
 
-## MCP Server
+		## MCP Server
 
-- mcp/overview
-- mcp/installation
-- mcp/tools
-- mcp/resources
-- mcp/errors
+		- mcp/overview
+		- mcp/installation
+		- mcp/tools
+		- mcp/resources
+		- mcp/errors
 
-{% /nav %}
-{% /region %}
+		{% /nav %}
+	{% /region %}
 
-{% region name="pagination" %}
-{% pagination auto=true /%}
-{% /region %}
+	{% region name="pagination" %}
+		{% pagination auto=true /%}
+	{% /region %}
 {% /layout %}

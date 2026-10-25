@@ -19,12 +19,12 @@ A markdown list where each item starts with bold-text-plus-colon.
 
 {% preview source=true %}
 
-{% deflist %}
-- **Priority:** {% badge sentiment="caution" %}high{% /badge %}
-- **Complexity:** moderate
-- **Assignee:** @alice
-- **Milestone:** v0.18
-{% /deflist %}
+	{% deflist %}
+	- **Priority:** {% badge sentiment="caution" %}high{% /badge %}
+	- **Complexity:** moderate
+	- **Assignee:** @alice
+	- **Milestone:** v0.18
+	{% /deflist %}
 
 {% /preview %}
 
@@ -34,11 +34,11 @@ Inline runes inside the value (after `**Term:**`) compose naturally. Use `{% bad
 
 {% preview source=true %}
 
-{% deflist %}
-- **Status:** {% badge sentiment="positive" %}accepted{% /badge %}
-- **Version:** `v0.16.2`
-- **Released:** 2026-01-15
-{% /deflist %}
+	{% deflist %}
+	- **Status:** {% badge sentiment="positive" %}accepted{% /badge %}
+	- **Version:** `v0.16.2`
+	- **Released:** 2026-01-15
+	{% /deflist %}
 
 {% /preview %}
 
@@ -48,10 +48,10 @@ If a list item doesn't start with `**Term:**`, the rune emits an empty `<dt>` pl
 
 {% preview source=true %}
 
-{% deflist %}
-- **Term:** With prefix renders as dt + dd.
-- This item lacks a prefix — empty dt, full content as dd.
-{% /deflist %}
+	{% deflist %}
+	- **Term:** With prefix renders as dt + dd.
+	- This item lacks a prefix — empty dt, full content as dd.
+	{% /deflist %}
 
 {% /preview %}
 

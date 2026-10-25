@@ -28,7 +28,7 @@ If both are given, `value`/`max` wins. The percentage is clamped to 0–100; a `
 
 {% preview source=true %}
 
-{% progress percent=60 /%}
+	{% progress percent=60 /%}
 
 {% /preview %}
 

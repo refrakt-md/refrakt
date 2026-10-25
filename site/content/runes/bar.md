@@ -19,11 +19,11 @@ Split the body on a top-level `---` to get two groups. The right group is pushed
 
 {% preview source=true %}
 
-{% bar %}
-WORK-051
----
-{% badge sentiment="positive" %}done{% /badge %}
-{% /bar %}
+	{% bar %}
+	WORK-051
+	---
+	{% badge sentiment="positive" %}done{% /badge %}
+	{% /bar %}
 
 {% /preview %}
 
@@ -33,9 +33,9 @@ Omit the `---` to render a single left-aligned group.
 
 {% preview source=true %}
 
-{% bar %}
-Just one side — no right group.
-{% /bar %}
+	{% bar %}
+	Just one side — no right group.
+	{% /bar %}
 
 {% /preview %}
 

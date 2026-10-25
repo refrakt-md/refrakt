@@ -17,9 +17,9 @@ The simplest form. Reference a named tint defined in the theme configuration as 
 
 {% preview source=true %}
 
-{% hint type="note" tint="warm" %}
-This hint uses a **warm** tint from the theme. The colours come from the theme's `tints.warm` definition.
-{% /hint %}
+	{% hint type="note" tint="warm" %}
+	This hint uses a **warm** tint from the theme. The colours come from the theme's `tints.warm` definition.
+	{% /hint %}
 
 {% /preview %}
 
@@ -29,17 +29,17 @@ For one-off colour overrides. Token values are defined as list items inside the 
 
 {% preview source=true %}
 
-{% hint type="check" %}
+	{% hint type="check" %}
 
-{% tint %}
-- background: #ecfdf5
-- accent: #059669
-- border: #a7f3d0
-{% /tint %}
+		{% tint %}
+		- background: #ecfdf5
+		- accent: #059669
+		- border: #a7f3d0
+		{% /tint %}
 
-This hint has custom colours defined inline. Only the listed tokens are overridden — unlisted ones fall through to the page defaults.
+		This hint has custom colours defined inline. Only the listed tokens are overridden — unlisted ones fall through to the page defaults.
 
-{% /hint %}
+	{% /hint %}
 
 {% /preview %}
 
@@ -49,18 +49,18 @@ The `mode` attribute forces dark or light mode on a section, regardless of the u
 
 {% preview source=true %}
 
-{% hint type="note" %}
+	{% hint type="note" %}
 
-{% tint mode="dark" %}
-- background: #1e293b
-- primary: #e2e8f0
-- accent: #38bdf8
-- border: #334155
-{% /tint %}
+		{% tint mode="dark" %}
+		- background: #1e293b
+		- primary: #e2e8f0
+		- accent: #38bdf8
+		- border: #334155
+		{% /tint %}
 
-This section is forced into **dark mode** with custom token values.
+		This section is forced into **dark mode** with custom token values.
 
-{% /hint %}
+	{% /hint %}
 
 {% /preview %}
 

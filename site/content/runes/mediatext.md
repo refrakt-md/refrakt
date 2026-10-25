@@ -17,13 +17,13 @@ Place an image alongside text — the image is automatically extracted and place
 
 {% preview source=true %}
 
-{% mediatext align="left" ratio="1:1" %}
-![Mountain landscape](https://assets.refrakt.md/media-text-valley.jpg)
+	{% mediatext align="left" ratio="1:1" %}
+	![Mountain landscape](https://assets.refrakt.md/media-text-valley.jpg)
 
-The valley stretches out below, carved by millennia of glacial movement. In spring, wildflowers carpet the meadows in brilliant color, attracting hikers and photographers from around the world.
+	The valley stretches out below, carved by millennia of glacial movement. In spring, wildflowers carpet the meadows in brilliant color, attracting hikers and photographers from around the world.
 
-The trails here range from gentle walks suitable for families to challenging ridge climbs that reward with panoramic views.
-{% /mediatext %}
+	The trails here range from gentle walks suitable for families to challenging ridge climbs that reward with panoramic views.
+	{% /mediatext %}
 
 {% /preview %}
 
@@ -33,13 +33,13 @@ Flip the layout by setting `align="right"`.
 
 {% preview source=true %}
 
-{% mediatext align="right" ratio="1:2" %}
-![Ancient forest](https://assets.refrakt.md/media-text-old-growth.jpg)
+	{% mediatext align="right" ratio="1:2" %}
+	![Ancient forest](https://assets.refrakt.md/media-text-old-growth.jpg)
 
-Old-growth forests like this one in the Pacific Northwest contain trees over 500 years old, forming dense canopies that filter sunlight into soft, dappled patterns on the forest floor. The thick understory of ferns and moss supports an ecosystem found nowhere else on earth.
+	Old-growth forests like this one in the Pacific Northwest contain trees over 500 years old, forming dense canopies that filter sunlight into soft, dappled patterns on the forest floor. The thick understory of ferns and moss supports an ecosystem found nowhere else on earth.
 
-Walking through these forests feels like stepping back in time. The silence is broken only by birdsong and the occasional crack of a falling branch, while the air carries the rich scent of cedar and damp earth.
-{% /mediatext %}
+	Walking through these forests feels like stepping back in time. The silence is broken only by birdsong and the occasional crack of a falling branch, while the air carries the rich scent of cedar and damp earth.
+	{% /mediatext %}
 
 {% /preview %}
 
@@ -49,13 +49,13 @@ Enable `wrap` for text that flows around the image rather than staying in a stri
 
 {% preview source=true %}
 
-{% mediatext align="left" ratio="2:1" wrap=true %}
-![Japanese zen garden](https://assets.refrakt.md/media-text-zen-garden.jpg)
+	{% mediatext align="left" ratio="2:1" wrap=true %}
+	![Japanese zen garden](https://assets.refrakt.md/media-text-zen-garden.jpg)
 
-The Japanese zen garden, or *karesansui*, is an art form centuries in the making. Raked gravel represents flowing water, while carefully placed stones suggest mountains rising from the sea. Bonsai trees — shaped over decades of patient pruning — anchor the composition with gnarled trunks and delicate canopies that echo their full-sized counterparts in miniature.
+	The Japanese zen garden, or *karesansui*, is an art form centuries in the making. Raked gravel represents flowing water, while carefully placed stones suggest mountains rising from the sea. Bonsai trees — shaped over decades of patient pruning — anchor the composition with gnarled trunks and delicate canopies that echo their full-sized counterparts in miniature.
 
-In spring, cherry blossoms drift across the garden like pink snow, settling on the raked patterns and dissolving the boundary between the designed and the natural. The transience of the blossoms is central to the experience — a reminder that beauty is most vivid in its passing. Visitors often sit in silence on the wooden engawa, watching petals fall, letting the stillness of the garden quiet the mind.
-{% /mediatext %}
+	In spring, cherry blossoms drift across the garden like pink snow, settling on the raked patterns and dissolving the boundary between the designed and the natural. The transience of the blossoms is central to the experience — a reminder that beauty is most vivid in its passing. Visitors often sit in silence on the wooden engawa, watching petals fall, letting the stillness of the garden quiet the mind.
+	{% /mediatext %}
 
 {% /preview %}
 

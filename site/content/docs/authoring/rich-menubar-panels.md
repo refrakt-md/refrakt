@@ -74,21 +74,21 @@ To make a panel wider and split into multiple columns, drop a `{% nav layout="co
 ```
 
 {% nav layout="menubar" %}
-- [Docs](/docs/getting-started)
+	- [Docs](/docs/getting-started)
 
-## Documentation
+	## Documentation
 
-{% nav layout="columns" %}
-- [Getting started](/docs/getting-started)
-- [Configuration](/docs/configuration/overview)
-- [Authoring](/extend/rune-authoring/authoring-overview)
+	{% nav layout="columns" %}
+	- [Getting started](/docs/getting-started)
+	- [Configuration](/docs/configuration/overview)
+	- [Authoring](/extend/rune-authoring/authoring-overview)
 
----
+	---
 
-- [Themes](/extend/theme-authoring/overview)
-- [Adapters](/docs/adapters/adapters-overview)
-- [Plugins](/docs/configuration/plugins)
-{% /nav %}
+	- [Themes](/extend/theme-authoring/overview)
+	- [Adapters](/docs/adapters/adapters-overview)
+	- [Plugins](/docs/configuration/plugins)
+	{% /nav %}
 {% /nav %}
 
 The outer menubar automatically widens its panel to fit the nested grid.
@@ -112,15 +112,15 @@ For teams shipping documentation
 ```
 
 {% nav layout="menubar" %}
-- [Docs](/docs/getting-started)
+	- [Docs](/docs/getting-started)
 
-## Runes
-For teams shipping documentation
+	## Runes
+	For teams shipping documentation
 
-{% nav layout="columns" %}
-- [Rune catalog](/runes/rune-catalog)
-- [Plugin authoring](/extend/plugin-authoring/authoring)
-{% /nav %}
+	{% nav layout="columns" %}
+	- [Rune catalog](/runes/rune-catalog)
+	- [Plugin authoring](/extend/plugin-authoring/authoring)
+	{% /nav %}
 {% /nav %}
 
 ## Footer slot — secondary link
@@ -143,16 +143,16 @@ Content at the end of a `## group` (after all lists) becomes the panel's footer 
 ```
 
 {% nav layout="menubar" %}
-- [Docs](/docs/getting-started)
+	- [Docs](/docs/getting-started)
 
-## Docs
+	## Docs
 
-{% nav layout="columns" %}
-- [Configuration](/docs/configuration/overview)
-- [Authoring](/extend/rune-authoring/authoring-overview)
-{% /nav %}
+	{% nav layout="columns" %}
+	- [Configuration](/docs/configuration/overview)
+	- [Authoring](/extend/rune-authoring/authoring-overview)
+	{% /nav %}
 
-[See all docs →](/docs/getting-started)
+	[See all docs →](/docs/getting-started)
 {% /nav %}
 
 ## Per-item descriptions
@@ -182,23 +182,23 @@ Inline a paragraph (indented as a continuation) under any list item to give that
 ```
 
 {% nav layout="menubar" %}
-- [Docs](/docs/getting-started)
+	- [Docs](/docs/getting-started)
 
-## Product
+	## Product
 
-{% nav layout="columns" %}
-- [Configuration](/docs/configuration/overview)
+	{% nav layout="columns" %}
+	- [Configuration](/docs/configuration/overview)
 
-  Set up sites, plugins, and themes.
+	  Set up sites, plugins, and themes.
 
-- [Authoring](/extend/rune-authoring/authoring-overview)
+	- [Authoring](/extend/rune-authoring/authoring-overview)
 
-  Write content with Markdoc + runes.
+	  Write content with Markdoc + runes.
 
-- [Plugins](/docs/configuration/plugins)
+	- [Plugins](/docs/configuration/plugins)
 
-  Extend refrakt with custom runes.
-{% /nav %}
+	  Extend refrakt with custom runes.
+	{% /nav %}
 {% /nav %}
 
 ## Inline badges
@@ -220,15 +220,15 @@ The `{% badge %}` rune is recognised inside or after a nav item's link text. The
 ```
 
 {% nav layout="menubar" %}
-- [Docs](/docs/getting-started)
+	- [Docs](/docs/getting-started)
 
-## Runes
+	## Runes
 
-{% nav layout="columns" %}
-- [Marketing](/runes/marketing) {% badge sentiment="positive" %}Popular{% /badge %}
-- [Storytelling](/runes/storytelling)
-- [Plan](/runes/plan) {% badge sentiment="caution" %}Beta{% /badge %}
-{% /nav %}
+	{% nav layout="columns" %}
+	- [Marketing](/runes/marketing) {% badge sentiment="positive" %}Popular{% /badge %}
+	- [Storytelling](/runes/storytelling)
+	- [Plan](/runes/plan) {% badge sentiment="caution" %}Beta{% /badge %}
+	{% /nav %}
 {% /nav %}
 
 ## `layout="columns"` — multi-section column flow

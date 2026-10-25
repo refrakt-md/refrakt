@@ -24,9 +24,9 @@ Everything in the body is kept, in the order you wrote it:
 Set the caption directly on the rune.
 
 {% preview source=true %}
-{% figure caption="A coral reef teeming with life beneath turquoise waters" size="large" align="center" %}
-![Coral reef](https://assets.refrakt.md/figure-coral-reef.jpg)
-{% /figure %}
+	{% figure caption="A coral reef teeming with life beneath turquoise waters" size="large" align="center" %}
+	![Coral reef](https://assets.refrakt.md/figure-coral-reef.jpg)
+	{% /figure %}
 {% /preview %}
 
 ## With paragraph caption
@@ -34,11 +34,11 @@ Set the caption directly on the rune.
 If no `caption` attribute is provided, the first paragraph inside the rune is used as the caption.
 
 {% preview source=true %}
-{% figure size="medium" %}
-![Hot springs](https://assets.refrakt.md/figure-hot-springs.jpg)
+	{% figure size="medium" %}
+	![Hot springs](https://assets.refrakt.md/figure-hot-springs.jpg)
 
-Steam rising from volcanic hot springs in the Icelandic highlands.
-{% /figure %}
+	Steam rising from volcanic hot springs in the Icelandic highlands.
+	{% /figure %}
 {% /preview %}
 
 ## Captioning code, tables and diagrams
@@ -46,17 +46,17 @@ Steam rising from volcanic hot springs in the Icelandic highlands.
 A figure captions whatever it holds. Use it to caption a code block, a [snippet](/runes/snippet), a table, or a diagram.
 
 {% preview source=true %}
-{% figure caption="The request handler and its retry policy" %}
-```ts
-export async function handler(req: Request) {
-	return fetch(req, { retry: 3 });
-}
-```
+	{% figure caption="The request handler and its retry policy" %}
+	```ts
+	export async function handler(req: Request) {
+		return fetch(req, { retry: 3 });
+	}
+	```
 
-| Option  | Default |
-|---------|---------|
-| `retry` | `3`     |
-{% /figure %}
+	| Option  | Default |
+	|---------|---------|
+	| `retry` | `3`     |
+	{% /figure %}
 {% /preview %}
 
 [Codegroup](/runes/codegroup) is the other way to label code: it puts a title bar *above* the block, where figure puts a caption *below* it. Use codegroup when the label is a filename and figure when it describes what the reader is looking at.
@@ -70,9 +70,9 @@ A figure whose body is only media publishes an [`ImageObject`](https://schema.or
 A figure *is* a frame around its image, so it sets `frameTarget: "self"` ([surface model](/runes/surfaces)): `frame` chrome lands on the figure itself. `elevation` floats the figure as a box (`box-shadow`); `frame-shadow` is the image's silhouette `drop-shadow`; `frame-aspect` crops it to a ratio.
 
 {% preview source=true %}
-{% figure elevation="floating" frame-aspect="4/3" caption="Framed at 4/3 with a lifted figure" %}
-![Coral reef](https://assets.refrakt.md/figure-coral-reef.jpg)
-{% /figure %}
+	{% figure elevation="floating" frame-aspect="4/3" caption="Framed at 4/3 with a lifted figure" %}
+	![Coral reef](https://assets.refrakt.md/figure-coral-reef.jpg)
+	{% /figure %}
 {% /preview %}
 
 ### Attributes

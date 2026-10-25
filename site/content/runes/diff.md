@@ -17,35 +17,35 @@ Use `mode="split"` to show before and after side by side. Lines that match appea
 
 {% preview source=true %}
 
-{% diff mode="split" language="javascript" title="src/server.js" %}
-```javascript
-import express from 'express';
+	{% diff mode="split" language="javascript" title="src/server.js" %}
+	```javascript
+	import express from 'express';
 
-const app = express();
+	const app = express();
 
-app.get('/users', (req, res) => {
-  const users = db.query('SELECT * FROM users');
-  res.json(users);
-});
+	app.get('/users', (req, res) => {
+	  const users = db.query('SELECT * FROM users');
+	  res.json(users);
+	});
 
-app.listen(3000);
-```
+	app.listen(3000);
+	```
 
-```javascript
-import express from 'express';
+	```javascript
+	import express from 'express';
 
-const app = express();
-app.use(express.json());
+	const app = express();
+	app.use(express.json());
 
-app.get('/users', async (req, res) => {
-  const { page = 1, limit = 20 } = req.query;
-  const users = await db.query('SELECT * FROM users LIMIT ? OFFSET ?', [limit, (page - 1) * limit]);
-  res.json({ users, page, limit });
-});
+	app.get('/users', async (req, res) => {
+	  const { page = 1, limit = 20 } = req.query;
+	  const users = await db.query('SELECT * FROM users LIMIT ? OFFSET ?', [limit, (page - 1) * limit]);
+	  res.json({ users, page, limit });
+	});
 
-app.listen(3000);
-```
-{% /diff %}
+	app.listen(3000);
+	```
+	{% /diff %}
 
 {% /preview %}
 
@@ -55,32 +55,32 @@ The default mode shows changes in a single column with line numbers, `+`/`-` pre
 
 {% preview source=true %}
 
-{% diff mode="unified" language="css" %}
-```css
-.button {
-  display: inline-block;
-  padding: 8px 16px;
-  background: blue;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-```
+	{% diff mode="unified" language="css" %}
+	```css
+	.button {
+	  display: inline-block;
+	  padding: 8px 16px;
+	  background: blue;
+	  color: white;
+	  border: none;
+	  cursor: pointer;
+	}
+	```
 
-```css
-.button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 0.375rem;
-  cursor: pointer;
-}
-```
-{% /diff %}
+	```css
+	.button {
+	  display: inline-flex;
+	  align-items: center;
+	  gap: 0.5rem;
+	  padding: 0.5rem 1rem;
+	  background: var(--color-primary);
+	  color: white;
+	  border: none;
+	  border-radius: 0.375rem;
+	  cursor: pointer;
+	}
+	```
+	{% /diff %}
 
 {% /preview %}
 

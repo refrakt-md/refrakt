@@ -17,8 +17,8 @@ Point the `folder` attribute at a content directory containing your blog posts.
 
 {% preview source=true %}
 
-{% blog folder="/blog" %}
-{% /blog %}
+	{% blog folder="/blog" %}
+	{% /blog %}
 
 {% /preview %}
 
@@ -28,8 +28,8 @@ Use the `layout` attribute to switch between `list`, `grid`, and `compact` displ
 
 {% preview source=true %}
 
-{% blog folder="/blog" layout="grid" %}
-{% /blog %}
+	{% blog folder="/blog" layout="grid" %}
+	{% /blog %}
 
 {% /preview %}
 
@@ -39,13 +39,13 @@ Blog supports an optional headline and blurb above the post list. See [Page sect
 
 {% preview source=true %}
 
-{% blog folder="/blog" layout="grid" %}
+	{% blog folder="/blog" layout="grid" %}
 
-# Latest Posts
+	# Latest Posts
 
-Stay up to date with the newest updates and tutorials.
+	Stay up to date with the newest updates and tutorials.
 
-{% /blog %}
+	{% /blog %}
 
 {% /preview %}
 
@@ -55,8 +55,8 @@ Use `filter` to match against frontmatter fields and `sort` to control ordering.
 
 {% preview source=true %}
 
-{% blog folder="/blog" sort="title-asc" limit=3 %}
-{% /blog %}
+	{% blog folder="/blog" sort="title-asc" limit=3 %}
+	{% /blog %}
 
 {% /preview %}
 

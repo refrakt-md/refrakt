@@ -21,24 +21,24 @@ A complete recipe with ingredients, instructions, and a tip.
 
 {% preview source=true %}
 
-{% recipe prepTime="PT15M" cookTime="PT30M" servings=4 difficulty="easy" %}
-# Classic Pasta Carbonara
+	{% recipe prepTime="PT15M" cookTime="PT30M" servings=4 difficulty="easy" %}
+	# Classic Pasta Carbonara
 
-A rich and creamy Italian pasta dish.
+	A rich and creamy Italian pasta dish.
 
-- 400g spaghetti
-- 200g pancetta
-- 4 egg yolks
-- 100g Pecorino Romano
-- Black pepper to taste
+	- 400g spaghetti
+	- 200g pancetta
+	- 4 egg yolks
+	- 100g Pecorino Romano
+	- Black pepper to taste
 
-1. Cook pasta in salted boiling water until al dente
-2. Fry pancetta in a large pan until crispy
-3. Whisk egg yolks with grated cheese and pepper
-4. Toss hot pasta with pancetta, then stir in egg mixture off the heat
+	1. Cook pasta in salted boiling water until al dente
+	2. Fry pancetta in a large pan until crispy
+	3. Whisk egg yolks with grated cheese and pepper
+	4. Toss hot pasta with pancetta, then stir in egg mixture off the heat
 
-> The residual heat from the pasta cooks the eggs — never add eggs directly to a hot pan or they will scramble.
-{% /recipe %}
+	> The residual heat from the pasta cooks the eggs — never add eggs directly to a hot pan or they will scramble.
+	{% /recipe %}
 
 {% /preview %}
 
@@ -68,26 +68,26 @@ The body splits on `---` into **media → content → footer** zones (media-firs
 
 {% preview source=true %}
 
-{% recipe prepTime="PT5M" servings=1 difficulty="easy" media-position="cover" scrim-type="frost" scrim-blur="md" %}
-![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
+	{% recipe prepTime="PT5M" servings=1 difficulty="easy" media-position="cover" scrim-type="frost" scrim-blur="md" %}
+	![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
 
----
+	---
 
-A cocktail classic
+	A cocktail classic
 
-## Tequila Sunrise
+	## Tequila Sunrise
 
-A layered showstopper that transitions from deep orange to golden yellow — like watching the sun come up in a glass.
+	A layered showstopper that transitions from deep orange to golden yellow — like watching the sun come up in a glass.
 
-- 60ml tequila
-- 120ml fresh orange juice
-- 15ml grenadine
-- Orange slice and cherry for garnish
+	- 60ml tequila
+	- 120ml fresh orange juice
+	- 15ml grenadine
+	- Orange slice and cherry for garnish
 
-1. Fill a tall glass with ice and pour in the tequila and orange juice. Stir gently.
-2. Slowly pour grenadine over the back of a spoon so it sinks to the bottom.
-3. Let the layers settle, then garnish with an orange slice and a cherry.
-{% /recipe %}
+	1. Fill a tall glass with ice and pour in the tequila and orange juice. Stir gently.
+	2. Slowly pour grenadine over the back of a spoon so it sinks to the bottom.
+	3. Let the layers settle, then garnish with an orange slice and a cherry.
+	{% /recipe %}
 
 {% /preview %}
 
@@ -99,24 +99,24 @@ A recipe is a bordered card by default. The same recipe becomes a full-bleed her
 
 {% preview source=true %}
 
-{% recipe prepTime="PT5M" servings=1 difficulty="easy" elevation="flush" width="full" prominence="display" %}
-![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
+	{% recipe prepTime="PT5M" servings=1 difficulty="easy" elevation="flush" width="full" prominence="display" %}
+	![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
 
----
+	---
 
-A cocktail classic
+	A cocktail classic
 
-## Tequila Sunrise
+	## Tequila Sunrise
 
-A layered showstopper that runs from deep orange to golden yellow.
+	A layered showstopper that runs from deep orange to golden yellow.
 
-- 60ml tequila
-- 120ml fresh orange juice
-- 15ml grenadine
+	- 60ml tequila
+	- 120ml fresh orange juice
+	- 15ml grenadine
 
-1. Fill a tall glass with ice; pour in tequila and orange juice.
-2. Pour grenadine over the back of a spoon so it sinks.
-{% /recipe %}
+	1. Fill a tall glass with ice; pour in tequila and orange juice.
+	2. Pour grenadine over the back of a spoon so it sinks.
+	{% /recipe %}
 
 {% /preview %}
 

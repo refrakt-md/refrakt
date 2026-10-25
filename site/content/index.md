@@ -3,24 +3,24 @@ title: refrakt.md
 description: A content framework built on Markdoc with 100+ semantic runes
 ---
 {% hero align="left" spacing="flush" media-position="bottom" reveal="fade" %}
-{% bg gradient="to-br" from="transparent" to="muted/0.2" /%}
-{% codegroup overflow="wrap" title="index.md" %}
-{% snippet path=$file.path lines="5-24" lang="markdoc" /%}
-{% /codegroup %}
+	{% bg gradient="to-br" from="transparent" to="muted/0.2" /%}
+	{% codegroup overflow="wrap" title="index.md" %}
+		{% snippet path=$file.path lines="5-24" lang="markdoc" /%}
+	{% /codegroup %}
 
----
+	---
 
-Version {% $version %} released [Check out what's new](/releases)
+	Version {% $version %} released [Check out what's new](/releases)
 
-# Write Markdown. Get structure.
+	# Write Markdown. Get structure.
 
-A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown with 100+ semantic runes — tags that transform standard Markdown into structured, SEO-rich, machine-readable content.
+	A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown with 100+ semantic runes — tags that transform standard Markdown into structured, SEO-rich, machine-readable content.
 
-```shell
-npm create refrakt
-```
+	```shell
+	npm create refrakt
+	```
 
-- [Get Started](/docs/getting-started)
+	- [Get Started](/docs/getting-started)
 {% /hero %}
 
 {% feature align="left" spacing="loose" reveal="slide" stagger=true %}
@@ -55,53 +55,53 @@ Markdown is powerful but limited. Runes extend it with semantic structure — wi
 {% /feature %}
 
 {% feature media-position="end" align="left" media-ratio="1/2" valign="center" collapse="md" spacing="flush" reveal="scale" %}
-{% juxtapose %}
+	{% juxtapose %}
 
-{% sandbox src="profile-card" framework="tailwind" tint-mode="light" %}{% /sandbox %}
+	{% sandbox src="profile-card" framework="tailwind" tint-mode="light" %}{% /sandbox %}
 
----
+	---
 
-{% sandbox src="profile-card" framework="tailwind" tint-mode="dark" %}{% /sandbox %}
-{% /juxtapose %}
+	{% sandbox src="profile-card" framework="tailwind" tint-mode="dark" %}{% /sandbox %}
+	{% /juxtapose %}
 
----
+	---
 
-Composable by design
-## Runes that work together
+	Composable by design
+	## Runes that work together
 
-The `sandbox` rune renders code fences as live previews in isolated iframes. Drop two of them inside a `juxtapose` and you get an interactive light-vs-dark comparison — no custom code. Each rune handles its own job while combining into something greater than the parts.
+	The `sandbox` rune renders code fences as live previews in isolated iframes. Drop two of them inside a `juxtapose` and you get an interactive light-vs-dark comparison — no custom code. Each rune handles its own job while combining into something greater than the parts.
 {% /feature %}
 
 {% feature align="left" reveal="fade" %}
-{% preview source=true width="content" %}
-{% recipe prepTime="PT5M" servings=1 difficulty="easy" media-position="start" collapse="md" %}
-![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
+	{% preview source=true width="content" %}
+		{% recipe prepTime="PT5M" servings=1 difficulty="easy" media-position="start" collapse="md" %}
+		![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
 
----
+		---
 
-A cocktail classic
+		A cocktail classic
 
-## Tequila Sunrise
+		## Tequila Sunrise
 
-A layered showstopper that transitions from deep orange to golden yellow — like watching the sun come up in a glass.
+		A layered showstopper that transitions from deep orange to golden yellow — like watching the sun come up in a glass.
 
-- 60ml tequila
-- 120ml fresh orange juice
-- 15ml grenadine
-- Orange slice and cherry for garnish
+		- 60ml tequila
+		- 120ml fresh orange juice
+		- 15ml grenadine
+		- Orange slice and cherry for garnish
 
-1. Fill a tall glass with ice and pour in the tequila and orange juice. Stir gently.
-2. Slowly pour grenadine over the back of a spoon so it sinks to the bottom.
-3. Let the layers settle, then garnish with an orange slice and a cherry.
-{% /recipe %}
-{% /preview %}
+		1. Fill a tall glass with ice and pour in the tequila and orange juice. Stir gently.
+		2. Slowly pour grenadine over the back of a spoon so it sinks to the bottom.
+		3. Let the layers settle, then garnish with an orange slice and a cherry.
+		{% /recipe %}
+	{% /preview %}
 
----
+	---
 
-Built-in SEO
-## Structured data from plain Markdown
+	Built-in SEO
+	## Structured data from plain Markdown
 
-Every rune can emit Schema.org JSON-LD automatically. Write a `recipe` in Markdown — headings, lists, paragraphs — and the framework extracts Recipe schema, ingredient lists, and step instructions without any manual wiring.
+	Every rune can emit Schema.org JSON-LD automatically. Write a `recipe` in Markdown — headings, lists, paragraphs — and the framework extracts Recipe schema, ingredient lists, and step instructions without any manual wiring.
 {% /feature %}
 
 {% feature spacing="tight" tint-mode="auto" align="left" reveal="slide" stagger=true %}
