@@ -100,7 +100,7 @@ The pasted content lands as **siblings** at the call site, not wrapped in a cont
 
 ```markdoc
 {% accordion %}
-{% include file="faq-items.md" /%}
+	{% include file="faq-items.md" /%}
 {% /accordion %}
 ```
 

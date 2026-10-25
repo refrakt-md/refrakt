@@ -143,9 +143,9 @@ Fallback content renders only when the field is empty: `{% slot name="descriptio
 
 ```md
 {% slot name="sections" each %}
-{% details summary=$each.heading %}
-{% slot /%}
-{% /details %}
+	{% details summary=$each.heading %}
+		{% slot /%}
+	{% /details %}
 {% /slot %}
 ```
 
@@ -202,11 +202,11 @@ The case that bites is `card`'s media zone. This does not work — the `---` sit
 
 ```md
 {% card %}
-{% if $attrs.image %}
-{% slot name="portrait" /%}
----
-{% /if %}
-…
+	{% if $attrs.image %}
+		{% slot name="portrait" /%}
+		---
+	{% /if %}
+	…
 {% /card %}
 ```
 
@@ -214,10 +214,10 @@ Emit both unconditionally and rely on the consuming rune's empty-input guard ins
 
 ```md
 {% card %}
-{% slot name="portrait" /%}
+	{% slot name="portrait" /%}
 
----
-…
+	---
+	…
 {% /card %}
 ```
 

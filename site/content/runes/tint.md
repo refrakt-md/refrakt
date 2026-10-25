@@ -71,21 +71,21 @@ Provide separate token sets for light and dark colour schemes using headings ins
 ```markdoc
 {% hint type="note" %}
 
-{% tint %}
-## Light
-- background: #fdf6e3
-- primary: #5c4a32
-- accent: #c47d3b
-- border: #e0d5c0
+	{% tint %}
+	## Light
+	- background: #fdf6e3
+	- primary: #5c4a32
+	- accent: #c47d3b
+	- border: #e0d5c0
 
-## Dark
-- background: #2a2118
-- primary: #e8d5b7
-- accent: #e0a86e
-- border: #4a3f33
-{% /tint %}
+	## Dark
+	- background: #2a2118
+	- primary: #e8d5b7
+	- accent: #e0a86e
+	- border: #4a3f33
+	{% /tint %}
 
-This section adapts its warm tint to both colour schemes.
+	This section adapts its warm tint to both colour schemes.
 
 {% /hint %}
 ```
@@ -99,11 +99,11 @@ Start from a named tint and override specific tokens.
 ```markdoc
 {% hint type="note" %}
 
-{% tint preset="warm" %}
-- accent: #e94560
-{% /tint %}
+	{% tint preset="warm" %}
+	- accent: #e94560
+	{% /tint %}
 
-Inherits all tokens from the "warm" preset, with a custom accent colour.
+	Inherits all tokens from the "warm" preset, with a custom accent colour.
 
 {% /hint %}
 ```
@@ -177,11 +177,11 @@ Tints can nest. An inner tint overrides an outer tint within its scope. CSS cust
 
 ```markdoc
 {% hero tint="dark" layout="full" %}
-# Our Recipes
+	# Our Recipes
 
-{% hint tint="warm" %}
-This hint has warm colours inside a dark hero.
-{% /hint %}
+	{% hint tint="warm" %}
+	This hint has warm colours inside a dark hero.
+	{% /hint %}
 
 {% /hero %}
 ```

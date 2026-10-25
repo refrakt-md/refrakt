@@ -65,15 +65,15 @@ Tokens defined in a design-context are registered by the build pipeline and inje
 
 ```markdoc
 {% design-context scope="brand" title="Brand Tokens" %}
-{% palette %}
-## Brand
-- Primary: #2563EB
-- Secondary: #7C3AED
-{% /palette %}
-{% typography %}
-- heading: Inter (600, 700)
-- body: Inter (400, 500)
-{% /typography %}
+	{% palette %}
+	## Brand
+	- Primary: #2563EB
+	- Secondary: #7C3AED
+	{% /palette %}
+	{% typography %}
+	- heading: Inter (600, 700)
+	- body: Inter (400, 500)
+	{% /typography %}
 {% /design-context %}
 ```
 

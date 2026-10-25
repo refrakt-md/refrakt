@@ -118,7 +118,7 @@ Snippet itself has no `title` attribute — it's structurally a `fence` by the t
 
 ```markdoc
 {% figure caption="The language used when no extension matches" %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
+	{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
 {% /figure %}
 ```
 
@@ -132,7 +132,7 @@ Snippet itself has no `title` attribute — it's structurally a `fence` by the t
 
 ```markdoc
 {% codegroup title="FALLBACK_LANG constant" %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
+	{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
 {% /codegroup %}
 ```
 

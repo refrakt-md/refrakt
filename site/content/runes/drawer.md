@@ -133,11 +133,11 @@ The footer zone is generic markdoc — any inline content goes there, not only h
 
 ```markdoc
 {% drawer id="aggregate" title="Aggregate rune" %}
-{% expand "SPEC-076" /%}
+	{% expand "SPEC-076" /%}
 
----
+	---
 
-See {% ref "SPEC-076" /%}
+	See {% ref "SPEC-076" /%}
 {% /drawer %}
 ```
 
@@ -166,7 +166,7 @@ Drawers compose like any block container — embed runes, code blocks, even the 
 
 ```markdoc
 {% drawer id="page-source" title="View source" shortcut="." size="lg" %}
-{% snippet path=$file.path lang="markdoc" /%}
+	{% snippet path=$file.path lang="markdoc" /%}
 {% /drawer %}
 
 Trigger with {% ref "page-source" label="view this page's source" /%}.

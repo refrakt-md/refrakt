@@ -108,16 +108,16 @@ Layouts define named regions using the `{% layout %}` and `{% region %}` runes:
 
 ```markdoc
 {% layout %}
-{% region name="header" %}
-# My Site
-{% /region %}
+	{% region name="header" %}
+	# My Site
+	{% /region %}
 
-{% region name="nav" %}
-{% nav %}
-## Docs
-- getting-started
-{% /nav %}
-{% /region %}
+	{% region name="nav" %}
+		{% nav %}
+		## Docs
+		- getting-started
+		{% /nav %}
+	{% /region %}
 {% /layout %}
 ```
 

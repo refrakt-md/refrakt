@@ -154,11 +154,11 @@ It's content-aware and host-gated: the guest signals when its content actually o
 
 ```markdoc
 {% hero frame-overflow="bleed" %}
-{% sandbox src="pricing-table" /%}
+	{% sandbox src="pricing-table" /%}
 
----
+	---
 
-# Our plans
+	# Our plans
 {% /hero %}
 ```
 

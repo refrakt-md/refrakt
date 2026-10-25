@@ -115,10 +115,10 @@ Give `collection` a **body** and it becomes the per-item template: the body is t
 
 ```markdoc
 {% collection type="work" filter="status:ready" sort="priority" layout="grid" %}
-{% card href=$item.url %}
-### {% $item.data.title %}
-Status: {% $item.data.status %} · Priority: {% $item.data.priority %}
-{% /card %}
+	{% card href=$item.url %}
+	### {% $item.data.title %}
+	Status: {% $item.data.status %} · Priority: {% $item.data.priority %}
+	{% /card %}
 {% /collection %}
 ```
 
@@ -152,7 +152,7 @@ When the same template is reused across collections, put a [partial](/docs/autho
 
 ```markdoc
 {% collection type="page" filter="url:/blog/*" sort="date-desc" %}
-{% partial file="post-card.md" /%}
+	{% partial file="post-card.md" /%}
 {% /collection %}
 ```
 

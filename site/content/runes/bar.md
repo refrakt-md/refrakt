@@ -45,15 +45,15 @@ Drop a bar inside any block rune that accepts authored content. The rune emits t
 
 ```markdoc
 {% card %}
-{% bar %}
-ID-123
----
-{% badge sentiment="positive" %}New{% /badge %}
-{% /bar %}
+	{% bar %}
+	ID-123
+	---
+	{% badge sentiment="positive" %}New{% /badge %}
+	{% /bar %}
 
-# Card title
+	# Card title
 
-Body content here.
+	Body content here.
 {% /card %}
 ```
 

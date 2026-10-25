@@ -38,7 +38,7 @@ This implementation is described in {% ref "auth-spec" /%}, which is also
 embedded in the {% ref "auth-spec-drawer" label="auth spec drawer" /%}.
 
 {% drawer id="auth-spec-drawer" title="Auth spec" shortcut="s" %}
-{% expand "SPEC-066" canonical=true /%}
+	{% expand "SPEC-066" canonical=true /%}
 {% /drawer %}
 ```
 

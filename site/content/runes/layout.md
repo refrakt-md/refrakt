@@ -17,16 +17,16 @@ A `_layout.md` file uses regions to place content into theme slots.
 
 ```markdoc
 {% layout %}
-{% region name="header" %}
-# Site Title
-{% /region %}
+	{% region name="header" %}
+	# Site Title
+	{% /region %}
 
-{% region name="nav" %}
-{% nav %}
-- page-one
-- page-two
-{% /nav %}
-{% /region %}
+	{% region name="nav" %}
+		{% nav %}
+		- page-one
+		- page-two
+		{% /nav %}
+	{% /region %}
 {% /layout %}
 ```
 

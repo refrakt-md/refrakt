@@ -18,7 +18,7 @@ Place `{% pagination auto=true /%}` in a `_layout.md` and every page in the casc
 
 ```markdoc
 {% region name="pagination" %}
-{% pagination auto=true /%}
+	{% pagination auto=true /%}
 {% /region %}
 ```
 

@@ -179,10 +179,10 @@ Because the card is plain, a `collection` body template wires entity fields into
 
 ```markdoc
 {% collection type="page" filter="url:/blog/*" sort="date-desc" layout="grid" %}
-{% card href=$item.url %}
-### {% $item.data.title %}
-{% date($item.data.date) %} — {% $item.data.description %}
-{% /card %}
+	{% card href=$item.url %}
+	### {% $item.data.title %}
+	{% date($item.data.date) %} — {% $item.data.description %}
+	{% /card %}
 {% /collection %}
 ```
 

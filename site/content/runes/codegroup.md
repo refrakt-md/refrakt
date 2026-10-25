@@ -97,8 +97,8 @@ When neither `labels=` nor a per-fence `label` annotation is set, codegroup deri
 
 ```markdoc
 {% codegroup %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" linenumbers=true highlight="4-5" /%}
-{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" linenumbers=true highlight="8-9" /%}
+	{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" linenumbers=true highlight="4-5" /%}
+	{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" linenumbers=true highlight="8-9" /%}
 {% /codegroup %}
 ```
 
