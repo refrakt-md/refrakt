@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "scopeName": "text.html.markdown.refrakt",
-  "injectionSelector": "L:text.html.markdown, L:meta.paragraph.markdown, L:markup.list.markdown, L:markup.quote.markdown",
+  "injectionSelector": "L:text.html.markdown, L:meta.paragraph.markdown, L:markup.list.markdown, L:markup.quote.markdown, L:markup.raw.block.markdown",
   "patterns": [{ "include": "#rune-closing-tag" }, { "include": "#rune-tag" }],
   "repository": {
     "rune-closing-tag": {

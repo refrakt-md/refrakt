@@ -182,7 +182,16 @@ export const preview = createContentModelSchema({
 				const allLines = raw.split('\n');
 				const start = node.lines[0] + 1;
 				const end = node.lines[node.lines.length - 1] - 1;
-				const childSource = dedent(allLines.slice(start, end).join('\n').trim());
+				// Drop the blank lines around the content, but not the first line's
+				// indentation: `dedent` needs it to find the common indent of
+				// content indented inside the preview (SPEC-170).
+				const childSource = dedent(
+					allLines
+						.slice(start, end)
+						.join('\n')
+						.replace(/^(?:[ \t]*\n)+/, '')
+						.trimEnd(),
+				);
 				if (childSource) {
 					sourcePre = new Tag('pre', { 'data-language': 'markdoc' }, [
 						new Tag('code', { 'data-language': 'markdoc' }, [childSource]),

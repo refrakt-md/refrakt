@@ -7,6 +7,7 @@ import {
 	extractHeadings,
 	runeTagMap,
 	defineRune,
+	parse as parseSource,
 } from '@refrakt-md/runes';
 import { design } from '../src/index.js';
 
@@ -18,7 +19,7 @@ for (const [name, entry] of Object.entries(design.runes)) {
 const tags = { ...coreTags, ...runeTagMap(pluginRunes), ...Markdoc.tags };
 
 export function parse(content: string, variables: Record<string, any> = {}) {
-	const ast = Markdoc.parse(content);
+	const ast = parseSource(content);
 	const headings = extractHeadings(ast);
 	const config = {
 		tags,

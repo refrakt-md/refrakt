@@ -15,10 +15,21 @@ export const markdocLanguage: LanguageRegistration = {
 	embeddedLangs: ['markdown', 'html'],
 	patterns: [
 		{ include: '#sandbox-block' },
+		{ include: '#indentation' },
 		{ include: '#markdoc-tag' },
 		{ include: 'text.html.markdown' },
 	],
 	repository: {
+		// In refrakt an indented line is never a code block (SPEC-170): content
+		// is indented to show nesting. Markdown's grammar would claim a line
+		// starting with a tab or four spaces as indented code, matching at
+		// column 0 and so before a tag later on the line. Consume the indentation
+		// first, and leave a fence to Markdown, which allows it to be indented.
+		// Less than a tab or four spaces is not indented code to Markdown either,
+		// and stays its to highlight (a nested list item, say).
+		indentation: {
+			match: '^(?:\\t| {4})[ \\t]*(?=[^\\s`~])',
+		},
 		'sandbox-block': {
 			name: 'meta.block.sandbox.markdoc',
 			contentName: 'meta.embedded.block.html',

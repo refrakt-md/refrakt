@@ -291,7 +291,8 @@ function highlightNode(
 	const text = node.children.filter((c): c is string => typeof c === 'string').join('');
 
 	try {
-		let html = highlightFn(text, lang);
+		let html =
+			lang === 'markdoc' ? highlightIndented(text, lang, highlightFn) : highlightFn(text, lang);
 		// WORK-304 — apply `data-highlight-lines` after Shiki has produced
 		// `<span class="line">…</span>` rows. The annotation lives on the
 		// same `<code>` node (the fence transform forwards it onto both
@@ -314,6 +315,33 @@ function highlightNode(
 		// Unknown language or highlight failure — leave text unchanged
 		return node;
 	}
+}
+
+/**
+ * SPEC-170 — Markdoc indented with tabs, highlighted as its flat form.
+ *
+ * Content inside a rune is indented by leading tabs to show nesting
+ * (`refrakt format`), and in refrakt an indented line is never a code block.
+ * Markdown's grammar disagrees: an indented heading is not a heading to it, and
+ * an indented paragraph is code. So each line's leading tabs are set aside, the
+ * flat text is highlighted, and the tabs go back at the start of each line as
+ * plain text — the same tokens the flat source gets. Falls back to highlighting
+ * the text as it is when the output's lines do not line up with the input's.
+ */
+function highlightIndented(
+	text: string,
+	lang: string,
+	highlightFn: (code: string, lang: string) => string,
+): string {
+	const lines = text.split('\n');
+	const tabs = lines.map((line) => /^\t*/.exec(line)![0]);
+	if (!tabs.some((t) => t.length > 0)) return highlightFn(text, lang);
+	const html = highlightFn(lines.map((line, i) => line.slice(tabs[i].length)).join('\n'), lang);
+	let row = 0;
+	const out = html.replace(/<span class="line">/g, (open) => open + (tabs[row++] ?? ''));
+	const trailingEmpty = lines[lines.length - 1] === '';
+	const aligned = row === lines.length || (trailingEmpty && row === lines.length - 1);
+	return aligned ? out : highlightFn(text, lang);
 }
 
 /** Parse the leading integer of a `data-lines="N-M"` (or `"N"`) attribute
