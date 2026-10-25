@@ -21,7 +21,8 @@
  * - **A child fence and a child tag's opening** move as a whole: their other
  *   lines are shifted by whatever their first line was shifted by.
  * - **A child tag's body** is laid out the same way, one level down.
- * - **A blank line** is left exactly as it is.
+ * - **A blank line** is left exactly as it is, except inside a fence, where a
+ *   whitespace-only line is content and moves with the fence.
  *
  * Lines outside every block tag, and the tags at the top of the document, are
  * not touched.
@@ -98,7 +99,10 @@ function commonPrefix(values: string[]): string {
 
 /** Shift `line` by what its anchor's shift was: `from` → `to` as a prefix. */
 function shiftWith(line: string, from: string, to: string): string {
-	if (isBlank(line)) return line;
+	// Inside a fence a whitespace-only line is content: the opener's indent is
+	// stripped from it, so it moves with the opener. Only an empty line is
+	// left, having nothing to shift.
+	if (line === '') return line;
 	return line.startsWith(from) ? to + line.slice(from.length) : line;
 }
 

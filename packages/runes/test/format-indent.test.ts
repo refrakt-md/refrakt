@@ -204,6 +204,15 @@ describe('`formatIndentation` applies SPEC-170 D5', () => {
 		);
 	});
 
+	it('moves a whitespace-only line inside a fence with the fence, keeping the code', () => {
+		const input = '{% tabs %}\n{% tab %}\n```js\nf() {\n  \n}\n```\n{% /tab %}\n{% /tabs %}\n';
+		const result = formatIndentation(input);
+		expect(result.refused).toBeUndefined();
+		expect(result.output).toBe(
+			'{% tabs %}\n\t{% tab %}\n\t```js\n\tf() {\n\t  \n\t}\n\t```\n\t{% /tab %}\n{% /tabs %}\n',
+		);
+	});
+
 	it('keeps CRLF line endings', () => {
 		const out = formatIndentation(
 			'{% card %}\r\n{% hint %}\r\nx\r\n{% /hint %}\r\n{% /card %}\r\n',
