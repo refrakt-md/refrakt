@@ -93,6 +93,7 @@ import { SchemaSideTable } from './schema-side-table.js';
 import { declareSlotMarkers, declareSlotMarkersOnNodes } from './slot-markers.js';
 import { registersSources } from './registers.js';
 import type { RegistersDeclaration } from './registers.js';
+import { parse } from '../parse.js';
 
 const { Ast, Tag: MarkdocTag } = Markdoc;
 
@@ -524,7 +525,7 @@ export function compileComposition(
 		fail('invalid-value', '`tag` must be an element name.');
 	}
 
-	const ast = Markdoc.parse(normaliseEach(body));
+	const ast = parse(normaliseEach(body));
 	const fields = slotFields(options.contentModel, fail);
 	const structural = (
 		typeof options.contentModel === 'function' ? options.contentModel({}) : options.contentModel

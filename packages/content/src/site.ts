@@ -44,6 +44,7 @@ import { createPageEntityHooks } from './page-entities.js';
 import { getGitTimestamps, resolveTimestamps, type FileTimestamps } from './timestamps.js';
 import { readFileRoots, type FileRoots } from './file-roots.js';
 import { validatePage, type ValidatePageOptions, type ValidationSettings } from './validate.js';
+import { parse } from '@refrakt-md/runes';
 
 /** Async reader for ad-hoc lookups in virtual (non-FS) hosting environments.
  *  Returns the file content or `null` when the path is unknown. */
@@ -124,10 +125,10 @@ export async function parsePagePartials(
 	if (partialFiles.size === 0 && namespacedPartials.size === 0) return undefined;
 	const parsed: Record<string, Node> = {};
 	for (const [name, partial] of partialFiles) {
-		parsed[name] = Markdoc.parse(escapeFenceTags(partial.raw));
+		parsed[name] = parse(escapeFenceTags(partial.raw));
 	}
 	for (const [name, partial] of namespacedPartials) {
-		parsed[name] = Markdoc.parse(escapeFenceTags(partial.raw));
+		parsed[name] = parse(escapeFenceTags(partial.raw));
 	}
 	return parsed;
 }
@@ -610,7 +611,7 @@ async function processContentTree(
 			gitTimestamps,
 			frontmatter,
 		);
-		let ast = Markdoc.parse(escapeFenceTags(content));
+		let ast = parse(escapeFenceTags(content));
 
 		// Compute the page-variable surface before preprocess so file-reading
 		// preprocessors (snippet) can resolve `path=$file.path` style attribute
@@ -686,7 +687,7 @@ async function processContentTree(
 		// comes from the layout cascade (no per-page tint frontmatter).
 		const layoutPage = { relativePath, raw: '' } as never;
 		const layout = resolveLayouts(layoutPage, tree.root, opts.icons);
-		const ast = Markdoc.parse(escapeFenceTags(cp.content));
+		const ast = parse(escapeFenceTags(cp.content));
 		const contentVariables: Record<string, unknown> = {
 			...opts.variables,
 			frontmatter,

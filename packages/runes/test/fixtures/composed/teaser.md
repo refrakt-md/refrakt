@@ -15,11 +15,11 @@ content:
 ---
 
 {% card %}
-{% slot name="media" /%}
+	{% slot name="media" /%}
 
----
+	---
 
-{% slot name="headline" /%}
+	{% slot name="headline" /%}
 
-{% slot name="blurb" /%}
+	{% slot name="blurb" /%}
 {% /card %}

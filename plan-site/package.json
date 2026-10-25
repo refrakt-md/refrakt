@@ -12,7 +12,7 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
-    "@markdoc/markdoc": "0.4.0",
+    "@markdoc/markdoc": "0.5.10",
     "@refrakt-md/content": "0.41.3",
     "@refrakt-md/highlight": "0.41.3",
     "@refrakt-md/lumina": "0.41.3",

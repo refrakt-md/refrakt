@@ -22,7 +22,7 @@ registers:
 ---
 
 {% hint type="note" %}
-**{% $attrs.from %}** {% if $attrs.bidirectional %}↔{% else /%}→{% /if %} **{% $attrs.to %}**
+	**{% $attrs.from %}** {% if $attrs.bidirectional %}↔{% else /%}→{% /if %} **{% $attrs.to %}**
 
-{% slot name="body" /%}
+	{% slot name="body" /%}
 {% /hint %}

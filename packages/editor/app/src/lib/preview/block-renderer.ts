@@ -4,6 +4,7 @@ import { createTransform, readField, renderToHtml } from '@refrakt-md/transform'
 import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
 import type { SerializedTag, AggregatedData } from '@refrakt-md/types';
 import { baseConfig } from '@refrakt-md/runes';
+import { parse } from '@refrakt-md/runes';
 
 type PostTransformFn = (
 	node: SerializedTag,
@@ -75,7 +76,7 @@ export function renderBlockPreview(
 	aggregated?: AggregatedData,
 	communityStyles?: Record<string, Record<string, unknown>>,
 ): { html: string; isComponent: boolean } {
-	const ast = Markdoc.parse(source);
+	const ast = parse(source);
 	const fullConfig = restoreFunctions(themeConfig, communityPostTransforms, communityStyles);
 	const mergedTags = extraTags
 		? { ...tags, ...(extraTags as Record<string, import('@markdoc/markdoc').Schema>) }

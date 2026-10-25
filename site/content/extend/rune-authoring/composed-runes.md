@@ -25,15 +25,33 @@ content:
 ---
 
 {% hint type="note" %}
-From **{% $attrs.from %}**:
+	From **{% $attrs.from %}**:
 
-{% slot name="body" /%}
+	{% slot name="body" /%}
 {% /hint %}
 ```
 
 - **No name in the frontmatter.** A `rune:` or `name:` key restating the filename is rejected, because two sources for one fact drift. Renaming the rune is renaming the file.
 - **No suffix.** The file is `bond.md`, not `bond.rune.md`: it always sits in a directory that is declared as a rune directory, so the directory already says what it is. Every `.md` there must be named `<rune>.md` with a kebab-case name; anything else is an error, not skipped.
 - **Fixtures go beside it, not in it.** A plugin keeps them in a sibling `fixtures/` directory, as for any rune.
+
+### Indentation
+
+A template nests runes, so indent it to show the nesting. A tag's content may be indented by tabs or by spaces, and four spaces or a tab are **not** a code block in refrakt, as they would be in CommonMark. Indented and flat, a template parses to the same tree. This is true of every refrakt source, pages included.
+
+The convention is to **indent a tag's content by one tab only when it holds another block tag**:
+
+```md
+{% card %}
+	{% slot name="sections" each %}
+		{% details summary=$each.heading %}
+			{% slot /%}
+		{% /details %}
+	{% /slot %}
+{% /card %}
+```
+
+A tag holding only prose and inline tags, such as a `{% hint %}` with paragraphs, stays flat. Other Markdown renderers, GitHub's among them, would show its indented lines as code. Code fences keep their own relative indentation.
 
 ### Frontmatter
 

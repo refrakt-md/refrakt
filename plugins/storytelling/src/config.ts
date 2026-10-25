@@ -239,28 +239,8 @@ export const config: Record<string, RuneConfig> = {
 		},
 		layout: { root: ['eyebrow', 'title'] },
 		editHints: { title: 'inline', beats: 'none' },
-		postTransform(node, { modifiers }) {
-			// Linear plots use connected sequence for beat timeline
-			if (modifiers.structure === 'linear') {
-				const children = [...node.children];
-				for (let i = 0; i < children.length; i++) {
-					const child = children[i];
-					if (
-						typeof child === 'object' &&
-						child !== null &&
-						!Array.isArray(child) &&
-						(child as any).name === 'ol'
-					) {
-						children[i] = {
-							...child,
-							attributes: { ...(child as any).attributes, 'data-sequence': 'connected' },
-						} as any;
-					}
-				}
-				return { ...node, children };
-			}
-			return node;
-		},
+		// A linear plot's beats are a timeline: its ordered list is a connected sequence.
+		sequence: { fromModifier: 'structure', valueMap: { linear: 'connected' } },
 	},
 	Beat: {
 		block: 'beat',

@@ -1,4 +1,4 @@
-{% work id="WORK-645" status="ready" priority="high" complexity="moderate" source="SPEC-170" tags="markdoc, parsing, authoring, composition, tooling" milestone="v0.42.0" %}
+{% work id="WORK-645" status="done" priority="high" complexity="moderate" source="SPEC-170" tags="markdoc, parsing, authoring, composition, tooling" milestone="v0.42.0" pr="refrakt-md/refrakt#716" %}
 
 # Parse every Markdoc source with indentation allowed, through one shared function
 
@@ -13,13 +13,13 @@ validate, or preview, another.
 
 ## Acceptance Criteria
 
-- [ ] A core package exports a `parse` function that tokenizes with `allowIndentation: true`, and every direct `Markdoc.parse` call in packages and plugins uses it
-- [ ] A check reports any new direct `Markdoc.parse` call outside the shared function
-- [ ] A template indented with tabs and one indented with four spaces produce the same AST as the unindented template, including `---`, headings, lists, nested tags and a fence with relative indentation, asserted in a test
-- [ ] Parsing every tracked `.md` file with the shared function gives the same AST as before, measured on Markdoc 0.5.10 and recorded in the resolution
-- [ ] `refrakt validate`, the language server and the editor preview parse an indented page the same way the content loader does
-- [ ] The composed-runes guide documents indentation, and the composed fixtures in `packages/content/test/fixtures/composed-storytelling/runes/` are indented by SPEC-170 D5 with byte-identical rendered output (by hand here; {% ref "WORK-657" /%} enforces it afterwards)
-- [ ] The changeset describes the behaviour change for lines indented four or more spaces
+- [x] A core package exports a `parse` function that tokenizes with `allowIndentation: true`, and every direct `Markdoc.parse` call in packages and plugins uses it
+- [x] A check reports any new direct `Markdoc.parse` call outside the shared function
+- [x] A template indented with tabs and one indented with four spaces produce the same AST as the unindented template, including `---`, headings, lists, nested tags and a fence with relative indentation, asserted in a test
+- [x] Parsing every tracked `.md` file with the shared function gives the same AST as before, measured on Markdoc 0.5.10 and recorded in the resolution
+- [x] `refrakt validate`, the language server and the editor preview parse an indented page the same way the content loader does
+- [x] The composed-runes guide documents indentation, and the composed fixtures in `packages/content/test/fixtures/composed-storytelling/runes/` are indented by SPEC-170 D5 with byte-identical rendered output (by hand here; {% ref "WORK-657" /%} enforces it afterwards)
+- [x] The changeset describes the behaviour change for lines indented four or more spaces
 
 ## Approach
 
@@ -40,5 +40,23 @@ validate, or preview, another.
 
 - {% ref "SPEC-170" /%}: D1–D4.
 - {% ref "SPEC-177" /%}: every template example in it is indented, and assumes this.
+
+## Resolution
+
+Completed: 2026-10-25
+
+Branch: `claude/v0-42-0-planning-t31f5e`
+
+### What was done
+- `packages/runes/src/parse.ts`: `parse(source, args?)`, using a module-level `Markdoc.Tokenizer({ allowIndentation: true })`; exported from `@refrakt-md/runes`.
+- 23 direct `Markdoc.parse` calls replaced: content (`layout`, `site` ×4, `validate-content`), cli (`gallery`, `inspect` ×2; `InspectDeps.Markdoc` no longer carries `parse`), editor (`layout-resolver`, `preview`, app `inline-markdown`, `block-renderer`), language-server (`parser/markdoc` ×2, `inspector`), runes (`collection-helpers`, `collection-resolve`, `deferred-body`, `expand-pipeline`, `lib/composition`), plan (`render`, `scanner-core`).
+- `packages/runes/test/parse.test.ts`: tab- and four-space-indented templates parse to the flat AST (`---`, heading, nested list, two tag levels, a fence with relative indentation). A `git grep` check fails on any direct call outside `parse.ts`.
+- **Measurement on 0.5.10:** `allowIndentation` on vs off over all 1,545 tracked `.md` files gives **0 AST differences**.
+- Surface tests: `content/test/indented-content.test.ts` (loader and `validateContent`), `language-server/test/indentation.test.ts`, `editor/test/indented-preview.test.ts`.
+- The composed fixtures (`bond`, `character`, `faction`, `realm`, plus `teaser` and `steps`) are indented by D5. All 14 storytelling fixture pages render byte-identically from the old and new definitions, and the snippet review markers stay current.
+- The guide has an "Indentation" section, and its first example is indented. The changeset covers the four-space behaviour change.
+
+### Notes
+- The guide does not name `refrakt format` yet. WORK-657 adds it.
 
 {% /work %}

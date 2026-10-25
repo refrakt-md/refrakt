@@ -1,17 +1,17 @@
-import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
+import { parse } from '@refrakt-md/runes';
 
 /**
  * Parse inline markdown source into HTML suitable for contentEditable.
  *
- * Uses Markdoc.parse() on a synthetic paragraph, then walks the inline AST
+ * Uses parse() on a synthetic paragraph, then walks the inline AST
  * to produce clean HTML with only the inline elements we support:
  * strong, em, code, and links.
  */
 export function parseInlineMarkdown(source: string): string {
 	if (!source) return '';
 
-	const ast = Markdoc.parse(source);
+	const ast = parse(source);
 	// The AST is: document > paragraph > inline children
 	const doc = ast;
 	if (!doc.children?.length) return escapeHtml(source);

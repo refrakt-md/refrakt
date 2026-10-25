@@ -8,6 +8,7 @@ import { getMarkdocTags, getMarkdocNodes } from '../registry/loader.js';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
+import { parse } from '@refrakt-md/runes';
 
 const { Tag } = Markdoc;
 
@@ -247,7 +248,7 @@ export function inspectRuneAtPosition(
 	const text = document.getText();
 
 	// Stage 1: Parse to AST
-	const ast = Markdoc.parse(text);
+	const ast = parse(text);
 
 	// Find the rune tag at cursor
 	const runeNode = findRuneAtPosition(ast, position.line);

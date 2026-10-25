@@ -52,10 +52,11 @@ import {
 	checkDimensionCss,
 	type DimensionAuditResult,
 } from '../lib/dimension-audit.js';
+import { parse } from '@refrakt-md/runes';
 
 /** Dependencies injected at runtime via dynamic imports */
 export interface InspectDeps {
-	Markdoc: { parse: (source: string) => any; transform: (ast: any, config: any) => any };
+	Markdoc: { transform: (ast: any, config: any) => any };
 	runes: Record<string, Rune>;
 	tags: Record<string, any>;
 	nodes: Record<string, any>;
@@ -518,7 +519,7 @@ function runPipeline(
 		base !== undefined
 			? applyFixtureOverrides(base, rune.name, flags)
 			: getFixture(rune.name, flags);
-	const ast = deps.Markdoc.parse(source);
+	const ast = parse(source);
 	const headings = deps.extractHeadings(ast);
 
 	const transformed = deps.Markdoc.transform(ast, {
@@ -631,7 +632,7 @@ function showComponentInterface(
 		base !== undefined
 			? applyFixtureOverrides(base, rune.name, options.flags)
 			: getFixture(rune.name, options.flags);
-	const ast = deps.Markdoc.parse(source);
+	const ast = parse(source);
 	const headings = deps.extractHeadings(ast);
 
 	const transformed = deps.Markdoc.transform(ast, {

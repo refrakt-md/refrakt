@@ -4,6 +4,7 @@ const { Tag } = Markdoc;
 import { tags, nodes } from '@refrakt-md/runes';
 import type { ContentDirectory, ContentPage } from './content-tree.js';
 import { parseFrontmatter } from './frontmatter.js';
+import { parse } from '@refrakt-md/runes';
 
 export interface Region {
 	name: string;
@@ -66,7 +67,7 @@ function parseLayout(
 	icons?: Record<string, Record<string, string>>,
 ): { name: string; mode: Region['mode']; content: RenderableTreeNode[] }[] {
 	const { content } = parseFrontmatter(layoutPage.raw);
-	const ast = Markdoc.parse(content);
+	const ast = parse(content);
 	const config = {
 		tags,
 		nodes,

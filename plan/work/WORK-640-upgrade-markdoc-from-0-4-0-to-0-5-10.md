@@ -1,4 +1,4 @@
-{% work id="WORK-640" status="ready" priority="medium" complexity="moderate" source="SPEC-170" tags="markdoc, dependencies, parsing, validation" milestone="v0.42.0" %}
+{% work id="WORK-640" status="done" priority="medium" complexity="moderate" source="SPEC-170" tags="markdoc, dependencies, parsing, validation" milestone="v0.42.0" pr="refrakt-md/refrakt#716" %}
 
 # Upgrade Markdoc from 0.4.0 to 0.5.10
 
@@ -42,14 +42,14 @@ React renderer changes.
 
 ## Acceptance Criteria
 
-- [ ] Every `@markdoc/markdoc` pin is `0.5.10`, and the lockfile is regenerated with npm, not edited by hand
-- [ ] The AST of every tracked `.md` file is compared before and after the upgrade; every difference is listed in the resolution and explained
-- [ ] `npm test`, `npx refrakt contracts --check` (both contract copies) and `npm run seo:baseline:check` pass, or every change they report is explained as a fix
-- [ ] New validation findings from the stricter `if` and table checks are listed, and each is fixed in content or recorded as a breaking change for third-party sites
-- [ ] A test asserts that a schema validator's error with its own location reaches `refrakt validate` with that location, not the whole node's range
-- [ ] A test round-trips an image `src` with two parentheses and a blockquote with two paragraphs through `Markdoc.format` unchanged
-- [ ] The changeset describes the behaviour changes for authors (the `if` condition check, table errors)
-- [ ] The reason for pinning an exact Markdoc version is written down (in RELEASING.md or a short ADR), so the next upgrade knows what to check
+- [x] Every `@markdoc/markdoc` pin is `0.5.10`, and the lockfile is regenerated with npm, not edited by hand
+- [x] The AST of every tracked `.md` file is compared before and after the upgrade; every difference is listed in the resolution and explained
+- [x] `npm test`, `npx refrakt contracts --check` (both contract copies) and `npm run seo:baseline:check` pass, or every change they report is explained as a fix
+- [x] New validation findings from the stricter `if` and table checks are listed, and each is fixed in content or recorded as a breaking change for third-party sites
+- [x] A test asserts that a schema validator's error with its own location reaches `refrakt validate` with that location, not the whole node's range
+- [x] A test round-trips an image `src` with two parentheses and a blockquote with two paragraphs through `Markdoc.format` unchanged
+- [x] The changeset describes the behaviour changes for authors (the `if` condition check, table errors)
+- [x] The reason for pinning an exact Markdoc version is written down (in RELEASING.md or a short ADR), so the next upgrade knows what to check
 
 ## Approach
 
@@ -66,5 +66,23 @@ React renderer changes.
 - {% ref "WORK-556" /%}: Markdoc validation routed into the pipeline.
 - {% ref "SPEC-123" /%}: an earlier parse behaviour confirmed against 0.4.0, to re-check.
 - {% ref "SPEC-145" /%} D30: expansion-time `if` evaluation should match Markdoc's own condition rules, including the new type check.
+
+## Resolution
+
+Completed: 2026-10-25
+
+Branch: `claude/v0-42-0-planning-t31f5e`
+
+### What was done
+- All 18 `@markdoc/markdoc` pins moved from `0.4.0` to `0.5.10`; `package-lock.json` regenerated with `npm install` (`npm ls` shows one copy). `create-refrakt`'s scaffold ranges moved from `^0.4.0` to `^0.5.10`: under 0.x, `^0.4.0` excludes 0.5, so new sites would have installed a second Markdoc.
+- **AST comparison:** every tracked `.md` file (1,545) parsed on 0.4.0 and on 0.5.10, compared as full JSON (positions and errors included). **0 differences**, so there is nothing to explain.
+- Tests, both contract copies, the SEO baseline: unchanged. `refrakt validate --deep`: 0 findings on `main` and `plan`, so the stricter `if` and table checks find nothing here (no tracked file uses `{% table %}`). Both are recorded as author-facing changes in `.changeset/markdoc-0-5-10.md`.
+- `packages/content/test/validate.test.ts`: a validator error with its own `location` is reported at that line (5), not the node's (3).
+- `packages/runes/test/markdoc-format.test.ts`: an image `src` with two parenthesis pairs (0.4.0 gave `/maps/(north`), a blockquote with two paragraphs, and a list inside a blockquote (0.4.0 dropped the `>` on continuation lines).
+- `RELEASING.md`, "The Markdoc pin": why the version is exact, and the checks an upgrade runs.
+
+### Notes
+- The two-paragraph blockquote round-trips on 0.4.0 too. The breaking case was a child spanning several lines, so that case is the one that fails on 0.4.0.
+- SPEC-145 D30 (expansion-time `if` matching Markdoc's condition rules) is not addressed here: a composition template is transformed, not validated.
 
 {% /work %}

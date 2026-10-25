@@ -29,7 +29,7 @@
     "@refrakt-md/runes": "0.41.3",
     "@refrakt-md/types": "0.41.3",
     "@refrakt-md/transform": "0.41.3",
-    "@markdoc/markdoc": "0.4.0",
+    "@markdoc/markdoc": "0.5.10",
     "reflect-metadata": "^0.2.0",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.12"

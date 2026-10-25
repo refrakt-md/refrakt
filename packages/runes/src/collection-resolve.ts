@@ -26,6 +26,7 @@ import {
 	renderGroupAccordion,
 } from './collection-helpers.js';
 import { COLLECTION_SENTINEL } from './tags/collection.js';
+import { parse } from './parse.js';
 
 const { Tag, Ast } = Markdoc;
 type TagNode = InstanceType<typeof Tag>;
@@ -112,7 +113,7 @@ interface ColumnDef {
 
 /** Split a captured body source into table columns by heading (SPEC-070 / WORK-264). */
 function splitColumns(bodySource: string, ctx: PipelineContext, pageUrl: string): ColumnDef[] {
-	const ast = Markdoc.parse(bodySource);
+	const ast = parse(bodySource);
 	const columns: ColumnDef[] = [];
 	let current: { label: string; cellNodes: unknown[] } | null = null;
 	for (const node of ast.children) {

@@ -568,11 +568,12 @@ function transformRune(
 	});
 
 	// 7b. Annotate <ol> elements with data-sequence when config declares sequence style
-	if (config.sequence) {
+	const sequence = resolveSequenceStyle(config.sequence, modifierValues);
+	if (sequence) {
 		const seqDirection = config.sequenceDirection
 			? (modifierValues[config.sequenceDirection.fromModifier] ?? config.sequenceDirection.default)
 			: undefined;
-		annotateSequence(filteredChildren, config.sequence, seqDirection);
+		annotateSequence(filteredChildren, sequence, seqDirection);
 	}
 
 	// 8. Build inline styles from styles config + tint tokens
@@ -769,6 +770,25 @@ function detectCheckboxMarker(li: SerializedTag): SerializedTag | null {
 	}
 
 	return null;
+}
+
+/**
+ * The sequence style a rune's config declares for this instance: a literal, or
+ * a modifier's value read through `valueMap` with `default` as the fallback —
+ * the same resolution `sequenceDirection` uses (SPEC-147).
+ */
+export function resolveSequenceStyle(
+	sequence: RuneConfig['sequence'],
+	modifierValues: Record<string, string | undefined>,
+): string | undefined {
+	if (sequence === undefined || typeof sequence === 'string') return sequence;
+	const value = modifierValues[sequence.fromModifier];
+	const mapped = sequence.valueMap
+		? value === undefined
+			? undefined
+			: sequence.valueMap[value]
+		: value;
+	return mapped ?? sequence.default;
 }
 
 /**

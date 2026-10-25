@@ -10,6 +10,7 @@ import type {
 	PipelineWarning,
 	PipelineContext,
 } from '@refrakt-md/types';
+import { parse } from '@refrakt-md/runes';
 
 export interface PagePreviewData {
 	renderable: unknown;
@@ -67,7 +68,7 @@ export class LayoutResolver {
 		const { frontmatter, content } = parseFrontmatter(rawContent);
 
 		// Run Markdoc pipeline on page content
-		const ast = Markdoc.parse(content);
+		const ast = parse(content);
 		const rendered = Markdoc.transform(ast, {
 			tags: this.mergedTags,
 			nodes,

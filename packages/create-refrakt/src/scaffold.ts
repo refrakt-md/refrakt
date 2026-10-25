@@ -298,7 +298,7 @@ function generatePackageJson(projectName: string, theme: string): string {
 			'@refrakt-md/transform': v,
 			'@refrakt-md/types': v,
 			[theme]: v,
-			'@markdoc/markdoc': '^0.4.0',
+			'@markdoc/markdoc': '^0.5.10',
 		},
 		devDependencies: {
 			'@sveltejs/adapter-static': '^3.0.0',
@@ -375,7 +375,7 @@ function generateHtmlPackageJson(projectName: string, theme: string): string {
 			'@refrakt-md/transform': v,
 			'@refrakt-md/types': v,
 			[theme]: v,
-			'@markdoc/markdoc': '^0.4.0',
+			'@markdoc/markdoc': '^0.5.10',
 		},
 		devDependencies: {
 			esbuild: '^0.25.0',
@@ -531,7 +531,7 @@ function generateAstroPackageJson(projectName: string, theme: string): string {
 			'@refrakt-md/types': v,
 			[theme]: v,
 			astro: '^5.0.0',
-			'@markdoc/markdoc': '^0.4.0',
+			'@markdoc/markdoc': '^0.5.10',
 		},
 		devDependencies: {
 			typescript: '^5.4.0',
@@ -560,7 +560,7 @@ function generateNuxtPackageJson(projectName: string, theme: string): string {
 			'@refrakt-md/transform': v,
 			'@refrakt-md/types': v,
 			[theme]: v,
-			'@markdoc/markdoc': '^0.4.0',
+			'@markdoc/markdoc': '^0.5.10',
 		},
 		devDependencies: {
 			nuxt: '^3.0.0',
@@ -594,7 +594,7 @@ function generateNextPackageJson(projectName: string, theme: string): string {
 			next: '^15.0.0',
 			react: '^19.0.0',
 			'react-dom': '^19.0.0',
-			'@markdoc/markdoc': '^0.4.0',
+			'@markdoc/markdoc': '^0.5.10',
 		},
 		devDependencies: {
 			'@types/react': '^19.0.0',
@@ -623,7 +623,7 @@ function generateEleventyPackageJson(projectName: string, theme: string): string
 			'@refrakt-md/transform': v,
 			'@refrakt-md/types': v,
 			[theme]: v,
-			'@markdoc/markdoc': '^0.4.0',
+			'@markdoc/markdoc': '^0.5.10',
 		},
 		devDependencies: {
 			'@11ty/eleventy': '^3.0.0',
@@ -1711,7 +1711,7 @@ export function scaffoldPlugin(options: PluginScaffoldOptions): void {
 			'@refrakt-md/types': peer,
 		},
 		dependencies: {
-			'@markdoc/markdoc': '^0.4.0',
+			'@markdoc/markdoc': '^0.5.10',
 		},
 		devDependencies: {
 			'@refrakt-md/runes': peer,

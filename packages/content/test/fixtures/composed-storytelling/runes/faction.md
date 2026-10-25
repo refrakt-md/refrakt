@@ -41,21 +41,21 @@ registers:
 ---
 
 {% card media-position=$attrs["media-position"] media-ratio=$attrs["media-ratio"] valign=$attrs.valign collapse=$attrs.collapse %}
-{% slot name="scene" /%}
+	{% slot name="scene" /%}
 
----
+	---
 
-# {% $attrs.name %}
+	# {% $attrs.name %}
 
-{% metablock name="metadata" /%}
+	{% metablock name="metadata" /%}
 
-{% slot name="description" /%}
+	{% slot name="description" /%}
 
-{% slot name="body" /%}
+	{% slot name="body" /%}
 
-{% slot name="sections" each %}
-{% details summary=$each.heading %}
-{% slot /%}
-{% /details %}
-{% /slot %}
+	{% slot name="sections" each %}
+		{% details summary=$each.heading %}
+			{% slot /%}
+		{% /details %}
+	{% /slot %}
 {% /card %}

@@ -13,6 +13,7 @@ import type { RenderableTreeNode, Node } from '@markdoc/markdoc';
 import type { EntityRegistration } from '@refrakt-md/types';
 import { resolveEntityField, type MatchableEntity } from './field-match.js';
 import { transformDeferredTemplate } from './deferred-body.js';
+import { parse } from './parse.js';
 
 const { Tag, Ast } = Markdoc;
 type TagNode = InstanceType<typeof Tag>;
@@ -38,7 +39,7 @@ export function splitBodyZones(bodySource: string): BodyZones {
 	// would swallow the first zone and its delimiter, collapsing everything to
 	// a single zone and dropping the fallback. Zone content is re-formatted
 	// from the segment nodes below, so the extra newline never leaks in.
-	const ast = Markdoc.parse('\n' + bodySource);
+	const ast = parse('\n' + bodySource);
 	const segments: Node[][] = [[]];
 	for (const node of ast.children) {
 		if (node.type === 'hr') segments.push([]);

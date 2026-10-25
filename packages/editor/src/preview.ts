@@ -13,6 +13,7 @@ import type {
 	PipelineWarning,
 	PipelineContext,
 } from '@refrakt-md/types';
+import { parse } from '@refrakt-md/runes';
 
 /**
  * Render a markdown file through the full refrakt.md pipeline,
@@ -63,7 +64,7 @@ export function renderPreviewContent(
 	const { frontmatter, content } = parseFrontmatter(raw);
 
 	// Run the Markdoc pipeline
-	const ast = Markdoc.parse(content);
+	const ast = parse(content);
 	const mergedTags = extraTags ? { ...tags, ...extraTags } : tags;
 	let renderable = Markdoc.transform(ast, {
 		tags: mergedTags,

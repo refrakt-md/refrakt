@@ -33,6 +33,7 @@ import type {
 import { EXPAND_PLACEHOLDER_MARKER } from './tags/expand.js';
 import { readWholeSandboxedFile, SnippetSandboxError } from './lib/read-file.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
+import { parse } from './parse.js';
 
 const { Tag } = Markdoc;
 
@@ -345,7 +346,7 @@ function parseSourceFile(sourceFile: string, files: ProjectFiles, cache: Map<str
 	const cached = cache.get(sourceFile);
 	if (cached) return cached;
 	const raw = readWholeSandboxedFile({ files, relativePath: sourceFile });
-	const ast = Markdoc.parse(raw);
+	const ast = parse(raw);
 	cache.set(sourceFile, ast);
 	return ast;
 }

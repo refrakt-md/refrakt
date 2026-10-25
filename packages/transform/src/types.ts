@@ -140,6 +140,19 @@ export interface MetaField {
 	i18nKey?: string;
 }
 
+/** A `RuneConfig.sequence` style. */
+export type SequenceStyle = 'numbered' | 'connected' | 'plain';
+
+/** `RuneConfig.sequence` read from a modifier's value (SPEC-147). */
+export interface SequenceSource {
+	/** The modifier whose value selects the style. */
+	fromModifier: string;
+	/** Modifier value → style. Without it, the value must itself be a style. */
+	valueMap?: Record<string, SequenceStyle>;
+	/** The style when the value is unset, or has no `valueMap` entry. */
+	default?: SequenceStyle;
+}
+
 /** Configuration for a single rune's identity transform.
  *
  *  ADR-028 splits this interface in two. `block`, `modifiers` and `sections`
@@ -471,8 +484,13 @@ export interface RuneConfig {
 	/** Sequential item style for ordered lists within this rune.
 	 *  The identity transform emits `data-sequence` on `<ol>` elements.
 	 *  'numbered' — counter circle indicators, 'connected' — connector line with dots,
-	 *  'plain' — no visual indicators */
-	sequence?: 'numbered' | 'connected' | 'plain';
+	 *  'plain' — no visual indicators.
+	 *
+	 *  A literal applies always. `{ fromModifier }` reads the style from a
+	 *  modifier's value, as `sequenceDirection` does (SPEC-147): `valueMap`
+	 *  translates a modifier value into a style, and `default` applies when the
+	 *  value is unset or unmapped. When nothing resolves, no `<ol>` is annotated. */
+	sequence?: SequenceStyle | SequenceSource;
 
 	/** Direction source for sequential items.
 	 *  Reads the named modifier value and emits `data-sequence-direction`.
