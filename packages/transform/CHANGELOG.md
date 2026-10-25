@@ -1,5 +1,27 @@
 # @refrakt-md/transform
 
+## 0.42.0
+
+### Minor Changes
+
+- 197cce6: Markdoc is upgraded from 0.4.0 to 0.5.10, pinned exactly in every package. New sites get `^0.5.10`. An existing site that lists `@markdoc/markdoc` itself should move it to `^0.5.10`, so that it does not install a second copy.
+
+  Every tracked `.md` file in this repository parses to the same AST as before, and rendered output, contracts and structured data are unchanged. What authors may notice:
+
+  - **`{% if %}` and `{% else %}` conditions are type-checked.** A string or number written as a condition, such as `{% if "yes" %}`, is now an `attribute-type-invalid` error. Before, any value was accepted. Use a variable, a function such as `equals(…)`, or `true`/`false`.
+  - **`{% table %}` is stricter.** Content between table rows that is not part of a row is now a critical `table-syntax` error, where it was silently dropped before.
+  - **Validation errors point at their own line.** An error that a rune's validator raises with a specific location is now reported at that line, not at the first line of the rune.
+  - **Fewer formatting round-trip bugs.** An image URL with several parentheses no longer loses everything after the first `(`. A list or code fence inside a blockquote no longer falls out of the quote. Both affected content that refrakt formats and re-parses internally, such as collection item bodies.
+
+- 197cce6: `RuneConfig.sequence` can now be read from a modifier: `{ fromModifier, valueMap?, default? }`, the form `sequenceDirection` already has. `valueMap` translates a modifier value into a sequence style, and `default` applies when the value is unset or unmapped. The literal form is unchanged.
+
+  `plot` uses it (`sequence: { fromModifier: 'structure', valueMap: { linear: 'connected' } }`) in place of its `postTransform`. Its rendered HTML is unchanged for every `structure`. `refrakt inspect --audit-dimensions` counts a modifier-sourced rune under each style its map or default can produce.
+
+### Patch Changes
+
+- Updated dependencies [b77f7be]
+  - @refrakt-md/types@0.42.0
+
 ## 0.41.3
 
 ### Patch Changes
