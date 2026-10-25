@@ -4,7 +4,7 @@ description: A content framework built on Markdoc with 100+ semantic runes
 ---
 {% hero align="left" spacing="flush" media-position="bottom" reveal="fade" %}
 	{% bg gradient="to-br" from="transparent" to="muted/0.2" /%}
-	{% codegroup overflow="wrap" title="index.md" %}
+	{% codegroup title="index.md" %}
 		{% snippet path=$file.path lines="5-24" lang="markdoc" /%}
 	{% /codegroup %}
 

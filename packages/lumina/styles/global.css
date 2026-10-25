@@ -175,6 +175,11 @@
 		font-size: var(--rf-text-sm);
 		line-height: var(--rf-leading-relaxed);
 		border: 1px solid var(--rf-color-border);
+		/* Content inside runes is indented with tabs (SPEC-170), and a browser
+		 * renders a tab eight columns wide. Two reads as nesting in a code sample
+		 * without pushing it off a phone screen. A site or theme sets
+		 * `--rf-code-tab-size` to change it; it is a length in columns. */
+		tab-size: var(--rf-code-tab-size, 2);
 	}
 
 	pre code {

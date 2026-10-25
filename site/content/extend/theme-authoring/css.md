@@ -365,6 +365,18 @@ For runes with multiple variant colors, define scoped custom properties and over
 
 This pattern keeps the base styles clean — you define the layout once using the scoped properties, then each variant only overrides the property values.
 
+### Tab width in code (`--rf-code-tab-size`)
+
+Rune content is indented with tabs ([`refrakt format`](/docs/cli/format)), so code samples that show Markdoc contain tabs, and a browser renders a tab eight columns wide. Lumina sets `tab-size` on `pre` from `--rf-code-tab-size`, a width in columns that defaults to `2`. Override it in a theme or a site stylesheet:
+
+```css
+:root {
+  --rf-code-tab-size: 4;
+}
+```
+
+It also works on a single element, for example a `pre` that needs a different width.
+
 ### Theming charts (`--rf-chart-*`)
 
 Charts use a **provider-agnostic theming contract** (SPEC-083): the `rf-chart` renderer holds no palette or dimensions of its own — every paint and geometry value is an `--rf-chart-*` custom property that Lumina ships on `.rf-chart`. Retone one chart (or all of them) by overriding the props alone, with no renderer or selector changes — and a future canvas/d3 provider reads the same vocabulary.

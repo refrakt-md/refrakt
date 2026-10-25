@@ -82,6 +82,14 @@
 		border-left: 3px solid transparent;
 	}
 
+	/* A blank line is an empty `.line`, and in the grid an empty item has no
+ * line box, so its row collapsed to nothing and every blank line in a code
+ * block vanished. A space gives it a row of the normal height. A trailing
+ * empty line (the code's final newline) stays collapsed. */
+	.rf-codeblock pre code .line:empty:not(:last-child)::after {
+		content: " ";
+	}
+
 	/* Line numbers — gutter::before owns the left column. Strip the pre's
  * horizontal padding when linenumbers are on so the gutter sits flush
  * against the codeblock edge; the gutter's own padding + right border
