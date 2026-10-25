@@ -1,4 +1,4 @@
-{% bug id="BUG-038" status="confirmed" severity="major" source="SPEC-145" tags="runes, composition, content-model, dx" milestone="v0.42.0" %}
+{% bug id="BUG-038" status="fixed" severity="major" source="SPEC-145" tags="runes, composition, content-model, dx" milestone="v0.42.0" pr="refrakt-md/refrakt#714" %}
 
 # A composition's `itemModel` patterns are never compiled, so every `$each` field is empty
 
@@ -62,5 +62,18 @@ is empty. There is no error or warning. Patching `parseFields` to compile string
   template only reads `$each.*`. The emitted item then renders nothing. That is harmless, but
   it is noise for this use. Whether a `$each`-only slot may omit it is a question for
   SPEC-165, not part of this fix.
+
+## Resolution
+
+Completed: 2026-10-25
+
+Branch: `claude/v0-42-0-planning-t31f5e`
+
+### What was done
+- `composition.ts`: `parseItemModel` validates a YAML `itemModel` and compiles every `pattern` other than `remainder` into a `RegExp`, recursively through nested `itemModel`s. An invalid regex is `content-model-invalid`, naming the field.
+- Tests in `composition-models.test.ts`: `- Primary: #2563EB` binds `$each.name`/`$each.value`, nested patterns compile, and a bad pattern is reported.
+
+### Notes
+- Whether a `$each`-only slot may omit the bare `{% slot /%}` is left to SPEC-165, as the bug says.
 
 {% /bug %}
