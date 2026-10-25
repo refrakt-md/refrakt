@@ -250,15 +250,15 @@ Three fill layers paint the surface itself. **`tint`** recolours a rune to a nam
 
 {% preview source=true %}
 
-{% card tint="catppuccin" %}
-### `tint="catppuccin"`
-The card adopts the named palette — surface, border, and text in one move.
-{% /card %}
+	{% card tint="catppuccin" %}
+	### `tint="catppuccin"`
+	The card adopts the named palette — surface, border, and text in one move.
+	{% /card %}
 
-{% card tint="solarized" %}
-### `tint="solarized"`
-Same card, a different registered tint. See [tint](/runes/tint) for the palette registry.
-{% /card %}
+	{% card tint="solarized" %}
+	### `tint="solarized"`
+	Same card, a different registered tint. See [tint](/runes/tint) for the palette registry.
+	{% /card %}
 
 {% /preview %}
 
@@ -275,30 +275,30 @@ A substrate fills the rune's **self** surface by default — a banner pattern co
 
 {% preview source=true %}
 
-{% card substrate="dots" %}
-### dots
-A generated dot grid — default size and opacity.
-{% /card %}
+	{% card substrate="dots" %}
+	### dots
+	A generated dot grid — default size and opacity.
+	{% /card %}
 
-{% card substrate="grid" %}
-### grid
-Two tiled gradients.
-{% /card %}
+	{% card substrate="grid" %}
+	### grid
+	Two tiled gradients.
+	{% /card %}
 
-{% card substrate="lines" substrate-opacity="lg" %}
-### lines · opacity="lg"
-Diagonal hatching at heavier ink strength.
-{% /card %}
+	{% card substrate="lines" substrate-opacity="lg" %}
+	### lines · opacity="lg"
+	Diagonal hatching at heavier ink strength.
+	{% /card %}
 
-{% card substrate="checker" substrate-size="lg" %}
-### checker · size="lg"
-Alternating filled cells, scaled up via `substrate-size`.
-{% /card %}
+	{% card substrate="checker" substrate-size="lg" %}
+	### checker · size="lg"
+	Alternating filled cells, scaled up via `substrate-size`.
+	{% /card %}
 
-{% card substrate="cross" substrate-fill="inset" %}
-### cross · fill="inset"
-Pattern over a recessed, tint-tracking fill.
-{% /card %}
+	{% card substrate="cross" substrate-fill="inset" %}
+	### cross · fill="inset"
+	Pattern over a recessed, tint-tracking fill.
+	{% /card %}
 
 {% /preview %}
 
@@ -306,15 +306,15 @@ Pattern over a recessed, tint-tracking fill.
 
 {% preview source=true %}
 
-{% card height="md" bg-gradient="to-br" bg-from="primary" bg-to="info" %}
-### Gradient fill
-A two-stop linear gradient from token colours — no image needed.
-{% /card %}
+	{% card height="md" bg-gradient="to-br" bg-from="primary" bg-to="info" %}
+	### Gradient fill
+	A two-stop linear gradient from token colours — no image needed.
+	{% /card %}
 
-{% card height="md" bg-gradient="to-t" bg-from="surface" bg-via="primary" bg-to="info" bg-gradient-type="radial" %}
-### Radial, three stops
-`bg-gradient-type="radial"` with a `via` middle stop.
-{% /card %}
+	{% card height="md" bg-gradient="to-t" bg-from="surface" bg-via="primary" bg-to="info" bg-gradient-type="radial" %}
+	### Radial, three stops
+	`bg-gradient-type="radial"` with a `via` middle stop.
+	{% /card %}
 
 {% /preview %}
 
@@ -326,25 +326,25 @@ The full fill vocabulary lives in [tint](/runes/tint) and [bg](/runes/bg).
 
 {% preview source=true %}
 
-{% card href="/runes/learning/recipe" media-position="cover" height="lg" %}
-![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
+	{% card href="/runes/learning/recipe" media-position="cover" height="lg" %}
+	![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
 
----
+	---
 
-Brunch classic
+	Brunch classic
 
-### Tequila Sunrise
-A bright, layered cocktail — five minutes, no shaker.
-{% /card %}
+	### Tequila Sunrise
+	A bright, layered cocktail — five minutes, no shaker.
+	{% /card %}
 
-{% card media-position="cover" content-place="center center" height="lg" %}
-![A coastal scene](https://picsum.photos/seed/gallerycover/800/1000)
+	{% card media-position="cover" content-place="center center" height="lg" %}
+	![A coastal scene](https://picsum.photos/seed/gallerycover/800/1000)
 
----
+	---
 
-### Centred hero
-`content-place="center center"` pins the overlay; the gradient scrim follows as a centred radial spot.
-{% /card %}
+	### Centred hero
+	`content-place="center center"` pins the overlay; the gradient scrim follows as a centred radial spot.
+	{% /card %}
 
 {% /preview %}
 
@@ -352,26 +352,26 @@ A `recipe` uses **header scope**: the same `media-position="cover"` switch, but 
 
 {% preview source=true %}
 
-{% recipe prepTime="PT5M" servings=1 difficulty="easy" media-position="cover" scrim-type="frost" scrim-blur="md" %}
-![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
+	{% recipe prepTime="PT5M" servings=1 difficulty="easy" media-position="cover" scrim-type="frost" scrim-blur="md" %}
+	![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
 
----
+	---
 
-A cocktail classic
+	A cocktail classic
 
-## Tequila Sunrise
+	## Tequila Sunrise
 
-A layered showstopper that transitions from deep orange to golden yellow.
+	A layered showstopper that transitions from deep orange to golden yellow.
 
-- 60ml tequila
-- 120ml fresh orange juice
-- 15ml grenadine
-- Orange slice and cherry to garnish
+	- 60ml tequila
+	- 120ml fresh orange juice
+	- 15ml grenadine
+	- Orange slice and cherry to garnish
 
-1. Fill a tall glass with ice; pour in tequila and orange juice. Stir gently.
-2. Slowly pour grenadine over the back of a spoon so it sinks.
-3. Let the layers settle, then garnish.
-{% /recipe %}
+	1. Fill a tall glass with ice; pour in tequila and orange juice. Stir gently.
+	2. Slowly pour grenadine over the back of a spoon so it sinks.
+	3. Let the layers settle, then garnish.
+	{% /recipe %}
 
 {% /preview %}
 
