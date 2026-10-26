@@ -1,5 +1,59 @@
 # @refrakt-md/runes
 
+## 0.42.0
+
+### Minor Changes
+
+- b77f7be: Composed runes can now say more in their content model (SPEC-169):
+
+  - **`type: delimited`** splits content on `---` into fixed, named zones. The slots are all the zones' fields together, and `primary` names the zone that receives content written with no `---`. A field name used in two zones, a delimiter other than `hr`, and `dynamicZones` are each construction errors (`zone-field-twice`, `delimiter-unsupported`, `dynamic-zones`).
+  - **`implicitSection`** on a sections model makes content with no section heading one item of `sections` rather than preamble. Its `attributes` supply `$each` and must give exactly the keys of `emitAttributes` (`implicit-section-mismatch`).
+  - **`each` over a list field** iterates the items of a non-greedy field that matches one list. Each item's content is the bare `{% slot /%}`, and `$each` binds nothing. `each` over a greedy list field is an error (`each-on-list-ambiguous`).
+  - **Fix (BUG-038):** an `itemModel` declared in YAML now compiles its `pattern` strings into regular expressions at every nesting level. Before this, every `$each` field it fed was silently empty. An invalid pattern is reported as `content-model-invalid`, naming the field.
+
+  `refrakt inspect` shows a composed rune's content model and template slots (`composition` in `--json`), and `refrakt reference` lists its template slots and marks a delimited model's `primary` zone.
+
+- 197cce6: Markdoc content may now be indented. A line indented by a tab or by four or more spaces is no longer an indented code block, so the content of a rune can be indented to show its nesting:
+
+  ```md
+  {% card %}
+  {% slot name="sections" each %}
+  {% details summary=$each.heading %}
+  {% slot /%}
+  {% /details %}
+  {% /slot %}
+  {% /card %}
+  ```
+
+  Before, those lines silently became a code block. That broke a tag whose closing line was indented, with no error. Every surface parses this way: the content loader, `refrakt validate`, the language server, the editor preview, composed-rune templates and plan files. They all go through one new shared function, `parse` from `@refrakt-md/runes`, which tokenizes with Markdoc's `allowIndentation`.
+
+  **Behaviour change:** a code sample written as an indented code block, with four spaces or a tab and no fence, now renders as ordinary text. Use a fenced block (` ``` `) instead. Fenced code is unaffected, including its own indentation. Every tracked Markdown file in this repository parses to the same tree as before.
+
+- 197cce6: Markdoc is upgraded from 0.4.0 to 0.5.10, pinned exactly in every package. New sites get `^0.5.10`. An existing site that lists `@markdoc/markdoc` itself should move it to `^0.5.10`, so that it does not install a second copy.
+
+  Every tracked `.md` file in this repository parses to the same AST as before, and rendered output, contracts and structured data are unchanged. What authors may notice:
+
+  - **`{% if %}` and `{% else %}` conditions are type-checked.** A string or number written as a condition, such as `{% if "yes" %}`, is now an `attribute-type-invalid` error. Before, any value was accepted. Use a variable, a function such as `equals(…)`, or `true`/`false`.
+  - **`{% table %}` is stricter.** Content between table rows that is not part of a row is now a critical `table-syntax` error, where it was silently dropped before.
+  - **Validation errors point at their own line.** An error that a rune's validator raises with a specific location is now reported at that line, not at the first line of the rune.
+  - **Fewer formatting round-trip bugs.** An image URL with several parentheses no longer loses everything after the first `(`. A list or code fence inside a blockquote no longer falls out of the quote. Both affected content that refrakt formats and re-parses internally, such as collection item bodies.
+
+- 1fcf30c: New `refrakt format [paths]` re-indents nested runes. A rune's content is indented one tab only when the rune holds another block rune. A rune holding only prose stays flat, and inline runes do not count. Only leading whitespace changes, and fenced code moves as a block with its own indentation kept. Before writing, the formatter checks that the file still parses to the same tree; if it would not, the file is left alone and reported with its line.
+
+  - `refrakt format --check` writes nothing and exits 1 if any file would change, for CI. `--format json` gives a machine-readable report.
+  - The language server provides document formatting with the same rule, so editors can format on save.
+  - The MCP server adds a `refrakt.format` tool.
+  - `formatIndentation` is exported from `@refrakt-md/runes` for other tools.
+
+### Patch Changes
+
+- a9bb611: Rune tags inside an indented code fence are no longer processed as real tags. refrakt escapes `{% … %}` inside fences before parsing, but it only recognised a fence that started at the beginning of a line. A fence inside a list item, or inside a rune whose content is indented, had its tags parsed: for example, an `md` example showing `{% hero %}` became a real `hero`. `refrakt format` now also checks its rewrites against the tree the site actually builds from, with tags inside fences escaped.
+- Updated dependencies [b77f7be]
+- Updated dependencies [197cce6]
+- Updated dependencies [197cce6]
+  - @refrakt-md/types@0.42.0
+  - @refrakt-md/transform@0.42.0
+
 ## 0.41.3
 
 ### Patch Changes
