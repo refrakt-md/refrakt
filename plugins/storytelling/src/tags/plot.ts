@@ -154,7 +154,6 @@ export const plot = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'plot',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				plotType: plotTypeMeta,
 				structure: structureMeta,

@@ -224,7 +224,6 @@ export const itinerary = createContentModelSchema({
 			// typing, not a flat mapping. Without `itemListElement` the type is
 			// the definitional gap rather than a thin entry.
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				variant: variantMeta,
 				direction: directionMeta,

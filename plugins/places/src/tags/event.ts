@@ -86,7 +86,6 @@ export const event = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'event',
 			tag: 'article',
-			property: 'contentSection',
 			properties: fieldMetas(attrs, config, {
 				date: '',
 				endDate: '',

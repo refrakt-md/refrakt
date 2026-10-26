@@ -157,7 +157,6 @@ export const faction = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'faction',
 			tag: 'article',
-			property: 'contentSection',
 			properties: {
 				factionType: factionTypeMeta,
 				alignment: alignmentMeta,

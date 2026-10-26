@@ -1460,7 +1460,6 @@ exports[`plan entity runes: output is pinned across the slot-declaration migrati
          "$$mdtype": "Tag",
          "name": "section",
          "attributes": {
-          "data-field": "content-section",
           "data-rune": "hint",
           "data-rune-fields": "{\\"hintType\\":\\"warning\\"}"
          },
@@ -1745,7 +1744,6 @@ exports[`plan entity runes: output is pinned across the slot-declaration migrati
          "$$mdtype": "Tag",
          "name": "section",
          "attributes": {
-          "data-field": "content-section",
           "data-rune": "hint",
           "data-rune-fields": "{\\"hintType\\":\\"warning\\"}"
          },
@@ -3308,7 +3306,6 @@ exports[`plan entity runes: output is pinned across the slot-declaration migrati
          "$$mdtype": "Tag",
          "name": "section",
          "attributes": {
-          "data-field": "content-section",
           "data-rune": "hint",
           "data-rune-fields": "{\\"hintType\\":\\"warning\\"}"
          },
@@ -3593,7 +3590,6 @@ exports[`plan entity runes: output is pinned across the slot-declaration migrati
          "$$mdtype": "Tag",
          "name": "section",
          "attributes": {
-          "data-field": "content-section",
           "data-rune": "hint",
           "data-rune-fields": "{\\"hintType\\":\\"warning\\"}"
          },
@@ -5160,7 +5156,6 @@ exports[`plan entity runes: output is pinned across the slot-declaration migrati
          "$$mdtype": "Tag",
          "name": "section",
          "attributes": {
-          "data-field": "content-section",
           "data-rune": "hint",
           "data-rune-fields": "{\\"hintType\\":\\"warning\\"}"
          },
@@ -5445,7 +5440,6 @@ exports[`plan entity runes: output is pinned across the slot-declaration migrati
          "$$mdtype": "Tag",
          "name": "section",
          "attributes": {
-          "data-field": "content-section",
           "data-rune": "hint",
           "data-rune-fields": "{\\"hintType\\":\\"warning\\"}"
          },
@@ -7012,7 +7006,6 @@ exports[`plan entity runes: output is pinned across the slot-declaration migrati
          "$$mdtype": "Tag",
          "name": "section",
          "attributes": {
-          "data-field": "content-section",
           "data-rune": "hint",
           "data-rune-fields": "{\\"hintType\\":\\"warning\\"}"
          },
@@ -7297,7 +7290,6 @@ exports[`plan entity runes: output is pinned across the slot-declaration migrati
          "$$mdtype": "Tag",
          "name": "section",
          "attributes": {
-          "data-field": "content-section",
           "data-rune": "hint",
           "data-rune-fields": "{\\"hintType\\":\\"warning\\"}"
          },
@@ -8857,7 +8849,6 @@ exports[`plan entity runes: output is pinned across the slot-declaration migrati
          "$$mdtype": "Tag",
          "name": "section",
          "attributes": {
-          "data-field": "content-section",
           "data-rune": "hint",
           "data-rune-fields": "{\\"hintType\\":\\"warning\\"}"
          },
@@ -9146,7 +9137,6 @@ exports[`plan entity runes: output is pinned across the slot-declaration migrati
          "$$mdtype": "Tag",
          "name": "section",
          "attributes": {
-          "data-field": "content-section",
           "data-rune": "hint",
           "data-rune-fields": "{\\"hintType\\":\\"warning\\"}"
          },
@@ -10707,7 +10697,6 @@ exports[`plan entity runes: output is pinned across the slot-declaration migrati
          "$$mdtype": "Tag",
          "name": "section",
          "attributes": {
-          "data-field": "content-section",
           "data-rune": "hint",
           "data-rune-fields": "{\\"hintType\\":\\"warning\\"}"
          },
@@ -10996,7 +10985,6 @@ exports[`plan entity runes: output is pinned across the slot-declaration migrati
          "$$mdtype": "Tag",
          "name": "section",
          "attributes": {
-          "data-field": "content-section",
           "data-rune": "hint",
           "data-rune-fields": "{\\"hintType\\":\\"warning\\"}"
          },

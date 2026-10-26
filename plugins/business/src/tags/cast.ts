@@ -129,7 +129,6 @@ export const cast = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'cast',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				member: members,
 				layout: layoutMeta,

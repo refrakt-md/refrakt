@@ -457,7 +457,6 @@ export const budget = createContentModelSchema({
 			// Mapping only `name` from the headline would leave an `ItemList` that
 			// still claims "list" and lists nothing.
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				currency: currencyMeta,
 				duration: durationMeta,

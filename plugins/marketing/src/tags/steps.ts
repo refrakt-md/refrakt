@@ -166,7 +166,6 @@ export const steps = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'steps',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				step: stepItems,
 			},

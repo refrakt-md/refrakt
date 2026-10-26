@@ -66,7 +66,7 @@ describe('emits: the generated transform', () => {
 		emits: entityEmits,
 	});
 
-	it('carries the renderable identity — rune, tag and property', () => {
+	it('carries the renderable identity — rune and tag; a deprecated property is ignored', () => {
 		const hint = createContentModelSchema({
 			attributes: { type: { type: String } },
 			contentModel: bodyOnly(),
@@ -81,7 +81,8 @@ describe('emits: the generated transform', () => {
 		const out = render({ note: hint }, '{% note %}\nHello\n{% /note %}');
 		expect(out.name).toBe('section');
 		expect(out.attributes['data-rune']).toBe('note');
-		expect(out.attributes['data-field']).toBe('content-section');
+		// `property` is deprecated and ignored (WORK-650): still accepted, never emitted.
+		expect(out.attributes['data-field']).toBeUndefined();
 		expect(JSON.parse(out.attributes['data-rune-fields'])).toEqual({ hintType: 'note' });
 	});
 

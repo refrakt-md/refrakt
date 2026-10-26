@@ -55,7 +55,6 @@ export const cta = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'call-to-action',
 			tag: 'section',
-			property: 'contentSection',
 			class: attrs.class,
 			properties: {},
 			refs: {

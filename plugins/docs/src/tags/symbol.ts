@@ -217,7 +217,6 @@ export const symbol = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'symbol',
 			tag: 'article',
-			property: 'contentSection',
 			properties: {
 				kind: kindMeta,
 				lang: langMeta,

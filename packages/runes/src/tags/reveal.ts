@@ -89,7 +89,6 @@ export const reveal = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'reveal',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				step: steps,
 			},

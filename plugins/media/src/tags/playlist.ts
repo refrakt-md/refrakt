@@ -431,7 +431,6 @@ export const playlist = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'playlist',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				type: typeMeta,
 				'media-position': mediaPositionMeta,

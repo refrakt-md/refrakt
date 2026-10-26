@@ -94,7 +94,6 @@ export const organization = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'organization',
 			tag: 'article',
-			property: 'contentSection',
 			properties: fieldMetas(attrs, config, {
 				type: 'Organization',
 			}),

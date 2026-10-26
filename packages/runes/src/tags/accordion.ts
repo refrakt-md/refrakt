@@ -169,7 +169,6 @@ export const accordion = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'accordion',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				item: items,
 			},

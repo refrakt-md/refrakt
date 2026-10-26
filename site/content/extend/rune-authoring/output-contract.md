@@ -17,7 +17,6 @@ import { createComponentRenderable } from '../lib/index.js';
 return createComponentRenderable({
   rune: 'hint',
   tag: 'section',
-  property: 'contentSection',
   properties: {
     hintType,
   },
@@ -39,7 +38,7 @@ return createComponentRenderable({
 | `children` | `RenderableTreeNodes` | Content children — the actual output |
 | `properties` | `Record<string, Tag \| RenderableNodeCursor>` | Metadata tags consumed by the engine (each gets `data-field="kebab-name"`) |
 | `refs` | `Record<string, Tag \| RenderableNodeCursor>` | Named structural elements (each gets `data-name="key"`) |
-| `property` | `string` (optional) | Semantic role for the root tag (e.g., `'contentSection'`) — becomes `data-field` |
+| `property` | `string` (optional) | **Deprecated, ignored.** It once set `data-field` on the root, which nothing read; it is removed in the release after v0.43.0 |
 | `id` | `string` (optional) | HTML id attribute |
 | `class` | `string` (optional) | CSS class to add |
 
@@ -223,7 +222,7 @@ When every property is an attribute read, `fieldMetas` builds the whole `propert
 The root tag gets `data-rune="kebab-name"`:
 
 ```html
-<section data-rune="hint" data-field="content-section">
+<section data-rune="hint">
 ```
 
 The identity transform engine uses `data-rune` to look up the rune config (keyed by the matching `typeName` in `packages/runes/src/config.ts`), then applies BEM classes, modifiers, and structure. The Renderer outputs the transformed tree as generic HTML.
@@ -436,7 +435,7 @@ Here's the full flow for a Hint with `type="warning"`:
 
 ```
 Rune transform():
-  <section data-rune="hint" data-field="content-section">
+  <section data-rune="hint">
     <meta data-field="hint-type" content="warning">
     <div data-name="body">
       <p>Be careful about this.</p>
@@ -488,7 +487,7 @@ Removes the consumed meta tag from the output.
 ```
 
 Final output:
-  <section data-rune="hint" data-field="content-section" class="rf-hint rf-hint--warning" data-hint-type="warning">
+  <section data-rune="hint" class="rf-hint rf-hint--warning" data-hint-type="warning">
     <div data-name="header" class="rf-hint__header">
       <span data-name="icon" class="rf-hint__icon"></span>
       <span data-name="title" class="rf-hint__title">warning</span>

@@ -241,7 +241,6 @@ export const recipe = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'recipe',
 			tag: 'article',
-			property: 'contentSection',
 			properties: {
 				prepTime: prepTimeMeta,
 				cookTime: cookTimeMeta,

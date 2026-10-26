@@ -12097,6 +12097,14 @@
 		},
 		{
 			"rune": "section",
+			"axis": "dropcap",
+			"available": true,
+			"description": "Per-instance drop-cap opt-in (SPEC-108).",
+			"query": "axis:dropcap",
+			"page": "section"
+		},
+		{
+			"rune": "section",
 			"axis": "elevation",
 			"available": true,
 			"description": "The chrome/depth ladder (SPEC-107). The skin maps each rung to a chrome bundle by attribute, so there is no BEM class.",
@@ -12125,6 +12133,14 @@
 			"available": true,
 			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
+			"page": "section"
+		},
+		{
+			"rune": "section",
+			"axis": "reading",
+			"available": true,
+			"description": "Editorial register for body text (SPEC-108). The author picks the register; the theme owns the magnitude.",
+			"query": "axis:reading",
 			"page": "section"
 		},
 		{
@@ -15387,13 +15403,6 @@
 			"axes": "prominence",
 			"reason": "this rune has no page-section header",
 			"page": "sandbox"
-		},
-		{
-			"rune": "section",
-			"available": false,
-			"axes": "dropcap, reading",
-			"reason": "this rune declares no prose body",
-			"page": "section"
 		},
 		{
 			"rune": "section",

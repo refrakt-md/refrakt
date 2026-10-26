@@ -167,7 +167,6 @@ export const character = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'character',
 			tag: 'article',
-			property: 'contentSection',
 			properties: {
 				role: roleMeta,
 				status: statusMeta,

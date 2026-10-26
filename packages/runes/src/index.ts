@@ -14,9 +14,6 @@ import {
 	td,
 } from './nodes.js';
 
-export { Page } from './documents/page.js';
-import { DocPage } from './documents/doc.js';
-
 import { grid } from './tags/grid.js';
 import { codegroup } from './tags/codegroup.js';
 import { snippet } from './tags/snippet.js';
@@ -518,10 +515,6 @@ export type {
 	TextBlockProps,
 	TableOfContentsProps,
 } from './props.js';
-
-export const documents = {
-	doc: new DocPage(),
-};
 
 export const runes = {
 	nav: defineRune({

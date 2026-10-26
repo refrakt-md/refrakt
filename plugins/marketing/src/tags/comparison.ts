@@ -576,7 +576,6 @@ export const comparison = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'comparison',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				layout: layoutMeta,
 			},

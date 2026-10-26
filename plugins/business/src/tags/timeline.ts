@@ -138,7 +138,6 @@ export const timeline = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'timeline',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				direction: directionMeta,
 				entry: items,

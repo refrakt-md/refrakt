@@ -33,7 +33,6 @@ export const hint = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'hint',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				hintType,
 			},

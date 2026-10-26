@@ -45,6 +45,28 @@ function findTag(node: unknown, pred: (t: any) => boolean): any {
 const byName = (node: unknown, name: string) =>
 	findTag(node, (t) => t.attributes?.['data-name'] === name);
 
+describe('section — the body slot is the body role (SPEC-160 D1)', () => {
+	// `sectionSections` declared `preamble`, `headline` and `blurb` but no `body`,
+	// so `reading` and `dropcap` did nothing on a section, silently (WORK-651).
+	const src = (attrs: string) =>
+		`{% section ${attrs} %}\n## Heading\n\nThe blurb.\n\nThe body paragraph.\n{% /section %}`;
+
+	it('emits data-section="body" on the body slot', () => {
+		const out = identity(src(''), 'section');
+		expect(byName(out, 'body')?.attributes['data-section']).toBe('body');
+	});
+
+	it('reading lands on the section body', () => {
+		const body = byName(identity(src('reading="prose"'), 'section'), 'body');
+		expect(body?.attributes['data-reading']).toBe('prose');
+	});
+
+	it('dropcap lands on the section body', () => {
+		const out = identity(src('reading="prose" dropcap=true'), 'section');
+		expect(byName(out, 'body')?.attributes['data-dropcap']).toBe('true');
+	});
+});
+
 describe('card — the body slot is the body role', () => {
 	// The content model is literally "body (optional, repeatable any block)".
 	// The role was never declared, so `data-section="body"` never landed and
