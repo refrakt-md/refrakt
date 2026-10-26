@@ -1,5 +1,68 @@
 # @refrakt-md/runes
 
+## 0.43.0
+
+### Minor Changes
+
+- 514583a: New core rune `{% actions %}`: a row of actions from a plain list of links, with an optional fence as a copyable command line (SPEC-160 D6).
+
+  - **Rank is a data attribute.** Each link item is `<li data-name="action">` with `data-rank="primary"` on the first link of the row and `secondary` on the rest. Themes style the rank, not the list position.
+  - **`hero` and `cta` render their buttons through it.** Their actions region is now a nested `data-rune="actions"`. It keeps `rf-hero__actions` / `rf-cta__actions` beside `rf-actions`.
+  - **Button CSS lives in `actions.css`** in Lumina and the skeleton. It is no longer copied into `hero.css` and `cta.css`, which now set only `--action-padding`, `--action-font-size` and `--actions-justify`.
+
+  Three visible changes:
+
+  - **The primary button's text follows the colour scheme** (`--rf-color-on-primary`). In dark mode it was white on a near-white fill and barely readable. It now has proper contrast, and the cover hero's override for the same problem is gone.
+  - **Narrower selectors.** `hero` and `cta` used to style any list or `nav` inside them as a row of buttons. Only their actions list is styled now.
+  - **One primary per row.** "Primary" was the first item of _each_ list, so a hero written as list, fence, list had two primary buttons. It is now the first link of the whole row.
+
+- 514583a: The eyebrow is a section role (WORK-656). Every rune with an eyebrow (`hero`, `cta`, `section`, `card`, `feature`, `pricing`, `reveal`, `tabs`, `accordion`, `steps`) now stamps `data-section="eyebrow"` on it.
+
+  - **The eyebrow's type and its linked pill are styled once**, by `[data-section="eyebrow"]` in the sections dimension: the stretched link in the skeleton, the pill in Lumina. The copies in nine runes, two packages each, are gone. A rune keeps only its own spacing, and `card` keeps a one-step-smaller size.
+  - **A linked eyebrow in `card` now renders as a pill**, as it already did in the other nine.
+  - `eyebrow` joins the section-role vocabulary (`RuneConfig.sections`). It does not count as a header role, so it does not offer `prominence` on its own.
+
+- 422fee5: `{% link %}` now wraps blocks, and linked cards and bento cells are reachable by keyboard and screen readers (SPEC-160 D8).
+
+  - **Linked cards and bento cells are real links now.** Their whole-card `href` overlay used to be `aria-hidden="true" tabindex="-1"`, so a keyboard or screen-reader user could not reach it. It is now a focusable link with one tab stop per card, named by the card's title (`aria-labelledby`), with a visible focus ring in Lumina.
+  - **`{% link %}` around blocks makes the whole region a link.**
+    - With nothing interactive inside, the region is wrapped in a real `<a data-link="wrap">`.
+    - With links or controls inside, a stretched `<a data-link="stretch">` is laid over the region instead, so no `<a>` is nested.
+    - The choice is made in the identity transform, so it sees links that `postProcess` adds.
+    - The link is named by `aria-label` when given, else by the content's title.
+    - An empty `href` leaves the content unlinked.
+    - It adds no `data-rune`, so structured data inside it still publishes.
+  - **Unchanged:** the inline form, `{% link href=… %}text{% /link %}` in a line of text, renders a plain `<a>` as before.
+  - **Shared CSS.** The stretched-link positioning moved from `card.css` and `bento.css` into a shared `dimensions/link.css` keyed on `data-link`, so it works around any rune.
+
+- 4e18e29: The `data-field="content-section"` attribute is gone from every rune root (SPEC-133). Nothing read it. It came from `property: 'contentSection'` in 28 transforms, which are now cleaned up.
+
+  - **Removed outright:** the `documents` and `Page` exports of `@refrakt-md/runes`. The `Page` document node was never registered by any Markdoc config, and it compared the attribute with the wrong casing, so it never ran. The `PageSection` config entry and `page-section.css` in Lumina and the skeleton went with it.
+  - **Deprecated:** `property` on `createComponentRenderable` and on an `emits` declaration is still accepted, so a plugin that passes it keeps type-checking, but it is ignored and renders nothing. It is removed in the release after this one.
+
+- 4e18e29: `section` declares its body as the `body` section role (SPEC-160 D1). `reading` and `dropcap` now take effect on a section's body. Before this they were accepted and silently did nothing. The body region now carries `data-section="body"`.
+- e65efb9: `section`'s header is now anchored to its headline (ADR-046).
+
+  - **Content with no heading changes.** A section that does not start with a heading, or with one paragraph and then a heading, has no header: all of its content renders as body. Before this, its first paragraph was lifted into a `<header>` as the blurb. The site's own sections all start with a heading and render as before, but check third-party content that writes a `section` with paragraphs only, or an image and paragraphs.
+  - **Eyebrow and blurb exist only beside the headline.** An eyebrow is a paragraph directly before the heading, and a blurb a paragraph directly after it.
+  - **New `header` attribute** (`auto | headline | none`, default `auto`). `headline` lifts only a leading heading and keeps the paragraph after it in the body. `none` reads no header.
+  - **New `slot-header-role` warning.** A composed rune whose slot content a placed `section` reads as a header role the slot is not named for (for example a `description` slot read as the blurb) now gets a build warning. It names the rune, the slot, the role and both remedies. It is on by default, can be demoted with `validation.disableIds`, and changes nothing that renders.
+
+- 1a1d991: `section` gains the media split, cover and a media kind (SPEC-160 D2, ADR-041). A titled region with media no longer needs `card`, which draws a surface.
+
+  - **Split.** `media-position` (`top | bottom | start | end | cover`), `media-ratio`, `valign` and `collapse` work as on `card`. With `media-position`, a section splits on `---` into a media zone, the content and an optional footer. The header stays in the content column, and an empty leading zone leaves the media out.
+  - **Opt-in.** Without `media-position`, a section renders exactly as before, and a `---` stays an ordinary rule in its body.
+  - **Cover.** `media-position="cover"` overlays the content on the media, with `content-place`, `height` and `aspect`, as on `card`.
+  - **Media kind.** `media` (`portrait | cover | thumbnail | hero | icon`) stamps `data-media` on the media zone, so the media dimension styles it. A portrait is cropped round with no CSS of its own.
+  - **Card.** `card`'s output does not change.
+
+### Patch Changes
+
+- Updated dependencies [514583a]
+- Updated dependencies [422fee5]
+  - @refrakt-md/transform@0.43.0
+  - @refrakt-md/types@0.43.0
+
 ## 0.42.0
 
 ### Minor Changes
