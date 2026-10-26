@@ -1,4 +1,4 @@
-{% work id="WORK-656" status="draft" priority="medium" complexity="moderate" source="SPEC-160" tags="lumina, skeleton, css, section, dimensions, composition" milestone="v0.43.0" %}
+{% work id="WORK-656" status="ready" priority="medium" complexity="moderate" source="SPEC-160" tags="lumina, skeleton, css, section, dimensions, composition" milestone="v0.43.0" %}
 
 # The eyebrow is a section role, and its linked pill moves into the sections dimension
 
@@ -20,6 +20,7 @@ This follows the same pattern as {% ref "WORK-654" /%}, which moves button CSS o
 ## Acceptance Criteria
 
 - [ ] `eyebrow` is a section role: header anatomy stamps `data-section="eyebrow"` on the eyebrow of every rune that has one, `section` and `card` included
+- [ ] The closed role vocabulary admits it: the `RuneConfig.sections` role union in `packages/transform/src/types.ts`, `HEADER_ROLES` in `packages/transform/src/section-roles.ts`, and any contract or `inspect` code that lists the roles
 - [ ] The stretched link moves to `packages/skeleton/styles/dimensions/sections.css` and the pill to `packages/lumina/styles/dimensions/sections.css`, keyed on `[data-section="eyebrow"]:has(a)`
 - [ ] The per-rune `__eyebrow:has(a)` rules are deleted from all nine runes in both packages; only rune-specific adjustments stay (for example hero's `margin: 0 0 1rem` and `max-width: none`)
 - [ ] The plain eyebrow's type (size, weight, tracking, uppercase, primary colour) moves to the dimension too where the nine copies agree, and stays per rune where they differ, each difference listed in the resolution

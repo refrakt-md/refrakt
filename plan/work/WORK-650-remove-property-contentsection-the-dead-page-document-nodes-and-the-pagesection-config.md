@@ -1,4 +1,4 @@
-{% work id="WORK-650" status="draft" priority="medium" complexity="simple" source="SPEC-133" tags="runes, transform, contract, cleanup" milestone="v0.43.0" %}
+{% work id="WORK-650" status="ready" priority="medium" complexity="simple" source="SPEC-133" tags="runes, transform, contract, cleanup" milestone="v0.43.0" %}
 
 # Remove property contentSection, the dead Page document nodes and the PageSection config
 
@@ -17,13 +17,13 @@ before {% ref "WORK-653" /%} re-runs those comparisons.
 ## Acceptance Criteria
 
 - [ ] `property: 'contentSection'` is gone from every transform in `packages/runes/src/tags/` and `plugins/*/src/tags/`
-- [ ] `packages/runes/src/documents/page.ts` and `doc.ts` are deleted and `documents` is no longer exported from `@refrakt-md/runes`
-- [ ] The `PageSection` config entry, `packages/lumina/styles/runes/page-section.css` and its import in `packages/lumina/index.css` are removed, and the CSS coverage test passes
-- [ ] `TransformResult.property` stays accepted but is ignored and marked `@deprecated` for one minor release, so a third-party plugin that still passes it keeps type-checking; its removal is noted for the release after. Before that, check whether any user besides `contentSection` remains (SPEC-133 names `error.ts`, which the 2026-10-22 audit could not find)
+- [ ] `packages/runes/src/documents/page.ts` and `doc.ts` are deleted, and neither `documents` nor `Page` (`export { Page }` in `packages/runes/src/index.ts`) is exported from `@refrakt-md/runes` any more
+- [ ] The `PageSection` config entry, `page-section.css` in both `packages/lumina/styles/runes/` and `packages/skeleton/styles/runes/`, and their imports in `packages/lumina/index.css` and `packages/skeleton/index.css` are removed, and the CSS coverage test passes
+- [ ] `TransformResult.property` stays accepted but is ignored and marked `@deprecated` for one minor release, so a third-party plugin that still passes it keeps type-checking; its removal is noted for the release after. Before that, check whether any user besides `contentSection` remains (SPEC-133 names `error.ts`, which no longer exists; the 2026-10-26 review found all 28 `property` arguments to `createComponentRenderable` are `contentSection`)
 - [ ] Tests that assert the attribute are updated, and the composed-storytelling tests no longer record `data-field="content-section"` as a difference
 - [ ] The four rune-authoring docs pages no longer document `contentSection`
 - [ ] Contracts are regenerated on both copies and the diff reviewed; the SEO baseline does not move
-- [ ] The changeset names the removed attribute, the removed `documents` export (it never ran, so it is removed outright) and the deprecated `property` field
+- [ ] The changeset names the removed attribute, the removed `documents` and `Page` exports (they never ran, so they are removed outright) and the deprecated `property` field
 
 ## References
 

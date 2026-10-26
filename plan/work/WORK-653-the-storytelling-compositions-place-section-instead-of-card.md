@@ -1,4 +1,4 @@
-{% work id="WORK-653" status="draft" priority="medium" complexity="moderate" source="SPEC-160,SPEC-147" tags="runes, composition, storytelling, section" milestone="v0.43.0" %}
+{% work id="WORK-653" status="ready" priority="medium" complexity="moderate" source="SPEC-160,SPEC-147" tags="runes, composition, storytelling, section" milestone="v0.43.0" %}
 
 # The storytelling compositions place section instead of card
 
@@ -11,6 +11,8 @@ classes, a real `<header>` for title and description, no surface, and the portra
 ## Acceptance Criteria
 
 - [ ] `character`, `realm` and `faction` place `{% section %}` with `media-position` passed through, and `character` passes `media="portrait"`
+- [ ] The composed `character` declares a `media-position` attribute with `default: top` (today it writes a bare `{% card %}` and declares none), so its output position matches the card default it had
+- [ ] The three compositions raise no slot-role warning ({% ref "WORK-659" /%}) on `section`, asserted in a test
 - [ ] The composed `character` renders its portrait with `data-media="portrait"` again
 - [ ] The JSON-LD, RDFa and registry comparisons against the plugin are re-run, not re-recorded, and any movement is explained in the resolution
 - [ ] The recorded rendered-tree differences in the composed-storytelling tests are updated, each change explained

@@ -1,4 +1,4 @@
-{% work id="WORK-651" status="draft" priority="high" complexity="trivial" source="SPEC-160" tags="runes, section, composition, primitives" milestone="v0.43.0" %}
+{% work id="WORK-651" status="ready" priority="high" complexity="trivial" source="SPEC-160" tags="runes, section, composition, primitives" milestone="v0.43.0" %}
 
 # section declares its body role
 

@@ -230,6 +230,18 @@ output and look do not change.
 **Rank stays positional for now.** That matches today's output. An authorable rank (for example
 a trailing `{.primary}` annotation or an attribute on `actions`) is left until a rune needs one.
 
+Settled in the 2026-10-26 review ({% ref "WORK-654" /%} carries the detail):
+
+- `hero` and `cta` emit `actions` as a nested rune rather than calling a shared builder, so the
+  composed `hero` of D7 produces the same actions region they already do;
+- `data-rank` goes on the `<li>`, and primary is the first link of the whole region (today it is
+  the first item of each list);
+- both skeleton and Lumina get `actions.css`; button size comes from custom properties that
+  `hero` and `cta` set, because the two copies differ today, until D7 decides where size comes
+  from;
+- the primary action's text uses a scheme-following token instead of `white`, which removes
+  `hero`'s cover override.
+
 ### D7 — `hero` and `cta` become compositions with no rune CSS of their own
 
 With D2 and D6, `hero` is a `section` with a split, `cover`, the header anatomy and `actions`;
@@ -243,7 +255,7 @@ spec, a home that is not the rune:
 | What the rune CSS does | Where it lives instead |
 |---|---|
 | Display-size headline and blurb | `prominence="display"`, which exists (`quiet` / `normal` / `prominent` / `display`, SPEC-107) |
-| The pill eyebrow when it holds a link | `section.css`, which already has it; it is copied three times today |
+| The pill eyebrow when it holds a link | the sections dimension ({% ref "WORK-656" /%}); it is copied into nine runes in both skeleton and Lumina today |
 | Buttons by list position (`li:first-child a`, …) | `actions` (D6) |
 | `data-align` on the header, blurb and actions | `section`'s `align` |
 | Media above or below, image fill | the shared split layout (`skeleton/styles/layouts/split.css`) |
@@ -325,6 +337,12 @@ for no gain. The shorthand is also what a composition writes anyway: once `card`
 composition (D3), `href` is an attribute its template forwards to `{% link %}`, so it never needs
 retiring. Rendering through `link` gives both runes the focusable, labelled overlay above, which
 adds one tab stop per linked card. That is the intended fix, and the changeset names it.
+
+**The shorthand always takes the stretched form.** An outer `<a>` around a `bento-cell` takes the
+cell out of its grid track (the `grid-column` / `grid-row` span is on the cell), and an `<a>`
+inside the root breaks the `> .rf-bento-cell__content` split rules. `card` has the same child
+selectors. So `href` on either rune renders the focusable stretched anchor whatever the content,
+and the wrap form is for an authored `{% link %}` (2026-10-26 review).
 
 ### D9 — `section`'s header grammar is anchored to the headline, and explicit
 
