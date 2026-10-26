@@ -20,6 +20,8 @@ tint-lock: false
 
 		## Content
 
+		- link
+		- actions
 		- hint
 		- figure
 		- sidenote
@@ -49,6 +51,7 @@ tint-lock: false
 
 		## Layout
 
+		- section
 		- grid
 		- gallery
 		- tabs
@@ -168,6 +171,7 @@ tint-lock: false
 		- plan/decision-log
 		- plan/plan-progress
 		- plan/plan-activity
+		- plan/plan-history
 
 		{% /nav %}
 	{% /region %}

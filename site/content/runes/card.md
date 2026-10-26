@@ -56,7 +56,7 @@ The body divides on `---` (a horizontal rule) into up to three zones — here al
 
 Zones are assigned by count: **1 zone → body**; **2 → media + body**; **3 → media + body + footer**. To have a footer with no media, lead with an empty zone (`--- body --- footer`).
 
-In the body zone, a leading paragraph immediately followed by a heading is treated as an **eyebrow** — the small uppercase kicker above the title (the same pattern as [`page-section`](/runes/layout) and `recipe`). Above, `Brunch classic` is the eyebrow over the `Tequila Sunrise` heading.
+In the body zone, a leading paragraph immediately followed by a heading is treated as an **eyebrow** — the small uppercase kicker above the title (the same pattern as [`section`](/runes/section) and `recipe`). Above, `Brunch classic` is the eyebrow over the `Tequila Sunrise` heading.
 
 ### The media zone isn't just images
 
@@ -93,21 +93,7 @@ Read the five-minute guide.
 {% /card %}
 ```
 
-Any block can be made a link the same way, with [`{% link %}`](#linking-any-block) around it.
-
-### Linking any block
-
-`{% link %}` around blocks makes the whole region a link. When the content has no links or controls of its own, the region is wrapped in a real `<a>`. When it does, an `<a>` would nest them, so a stretched link is laid over the region instead, as on a card. The choice is made when the page is rendered, so links added late (entity cross-links, resolved refs) are taken into account.
-
-```markdoc
-{% link href="/gallery/harbour/" %}
-{% figure %}
-![The harbour at dawn](harbour.jpg)
-{% /figure %}
-{% /link %}
-```
-
-The link is named by `aria-label` when you give one, else by the content's title. An empty `href` leaves the content unlinked, so a template can write `{% link href=$item.url %}` unconditionally.
+Any block can be made a link the same way, with [`{% link %}`](/runes/link) around it.
 
 ### Media guests in a linked card
 
