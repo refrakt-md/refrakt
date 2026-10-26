@@ -1,4 +1,4 @@
-{% work id="WORK-665" status="draft" priority="high" complexity="complex" source="SPEC-160" tags="runes, composition, marketing, hero, section" milestone="v0.44.0" %}
+{% work id="WORK-665" status="ready" priority="high" complexity="complex" source="SPEC-160" tags="runes, composition, marketing, hero, section" milestone="v0.44.0" %}
 
 # hero is a composition over section
 
@@ -12,18 +12,10 @@ this item completes it and compares it with the plugin.
 - [ ] It declares `defaults: { width: full, elevation: flush, prominence: display }` and writes `guest-fit="bleed"` on its `section`
 - [ ] It reads no heading as an eyebrow ({% ref "ADR-046" /%}), and a second leading heading is body rather than dropped ({% ref "BUG-047" /%})
 - [ ] Rendered beside the plugin `hero` for every gallery fixture, light and dark, including cover; every difference is listed and explained
-- [ ] The button size decision below is made and recorded in SPEC-160 D7
+- [ ] `actions.css` in skeleton and Lumina sets the button-size custom properties from the enclosing section's `data-prominence`: `display` and `prominent` give today's hero size (`0.7rem 1.75rem` at `--rf-text`), and anything else gives today's cta size (SPEC-160 D7)
+- [ ] The size rules reach only an `actions` whose nearest enclosing rune carries the `prominence`, asserted with a card holding `actions` inside a display hero, which keeps default buttons
+- [ ] The composed `hero`'s buttons match the plugin `hero`'s in size, with no `hero.css`
 - [ ] The plugin `hero` is unchanged; replacing it is a later step, taken once the comparison is reviewed
-
-## Open before ready
-
-**Button size.** `hero` and `cta` size their buttons differently: hero `0.7rem 1.75rem` at
-`--rf-text`, cta `0.625rem 1.5rem` at `--rf-text-sm`. WORK-654 moves this into custom properties
-that `hero.css` and `cta.css` each set, and defers the real answer to D7. With no rune CSS, the
-size must come from something a composition can set. The options:
-
-- `actions` takes `size="md | lg"`, and the composition writes it;
-- `actions` reads the enclosing section's `prominence`, so `display` gives large buttons.
 
 ## Blocked by
 

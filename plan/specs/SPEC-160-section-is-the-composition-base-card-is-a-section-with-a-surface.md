@@ -299,6 +299,28 @@ D14 is decided, with the `section` as the carrier.
 >
 > `density` needs nothing: `section` already resolves to `full`, as `hero` and `cta` do.
 
+**Button size follows the section's `prominence`.** `hero` and `cta` size their buttons
+differently: `hero` `0.7rem 1.75rem` at `--rf-text`, `cta` `0.625rem 1.5rem` at `--rf-text-sm`.
+{% ref "WORK-654" /%} moves each size into custom properties that `hero.css` and `cta.css` set.
+Once those files are deleted, the size has to come from something a composition can set. Decided
+on 2026-10-26: `actions` takes its size from the enclosing section's `prominence`, not from a
+`size` attribute of its own.
+
+- **`display` and `prominent` give the large size**, which is today's `hero` buttons. `normal`
+  and `quiet`, and an `actions` with no `prominence` around it, give the default size, which is
+  today's `cta` buttons. The composed `hero` declares `prominence: display` (SPEC-145 D34), so it
+  needs nothing more. A `cta` written with `prominence="display"` gets hero-sized buttons, which
+  is the intent.
+- **It needs no new attribute.** The emphasis of a region's header and of its calls to action
+  are one choice, and the composition already declares it.
+- **It follows the nearest section only.** `density.css` clears `--rf-prominence-size` at every
+  rune root, and `actions` is a rune, so the size cannot ride that variable. The `actions.css`
+  rules key on the enclosing section's `data-prominence` instead, and must not reach an
+  `actions` inside a nested rune: a raised card in a display hero keeps default buttons. The
+  same protection is what `density.css` gives titles.
+- The custom properties WORK-654 introduces stay as the mechanism. The prominence rules set
+  them, in place of `hero.css` and `cta.css`.
+
 **`guestFit` becomes `section`'s `guest-fit` attribute.** The native `hero` hosts a media guest
 with `guestFit: 'bleed'`: a rune guest keeps its own chrome and may spill past the zone, rather
 than being clipped to a framed well. `card` uses `clip`. `guestFit` is a config field, and the
