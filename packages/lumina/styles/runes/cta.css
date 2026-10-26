@@ -16,37 +16,13 @@
 		gap: 0.25rem;
 		margin-bottom: 1.5rem;
 	}
-	/* Higher specificity needed to override .rf-cta p (0,1,1) */
+	/* The eyebrow's type and its linked pill are the sections dimension's
+ * (`[data-section="eyebrow"]`); the cta sets only its spacing. */
 	.rf-cta .rf-cta__eyebrow {
-		font-size: var(--rf-text-sm);
-		font-weight: var(--rf-weight-semibold);
-		letter-spacing: var(--rf-tracking-wider);
-		text-transform: uppercase;
-		color: var(--rf-color-primary);
 		margin: 0 0 0.75rem;
 		max-width: none;
-	}
-	/* Pill-badge variant when eyebrow contains a link */
-	.rf-cta .rf-cta__eyebrow:has(a) {
-		padding: 0.25rem 0.875rem;
-		border: 1px solid var(--rf-color-border);
-		border-radius: var(--rf-radius-full);
-		color: var(--rf-color-text);
-		font-weight: var(--rf-weight-normal);
-		text-transform: none;
-		letter-spacing: var(--rf-tracking-normal);
-		transition: border-color 150ms ease;
-	}
-	.rf-cta .rf-cta__eyebrow:has(a):hover {
-		border-color: var(--rf-color-muted);
-	}
-	.rf-cta .rf-cta__eyebrow:has(a) a {
-		color: var(--rf-color-primary);
-		font-weight: var(--rf-weight-semibold);
-		text-decoration: none;
-	}
-	.rf-cta .rf-cta__eyebrow:has(a) a::before {
-		border-radius: inherit;
+		/* What it inherited from `.rf-cta p` before it was excluded from it. */
+		line-height: var(--rf-leading-relaxed);
 	}
 	.rf-cta__image {
 		margin-bottom: 1.5rem;
@@ -70,7 +46,8 @@
 		background-clip: text;
 	}
 	/* Higher specificity needed to override .rf-cta p (0,1,1) */
-	.rf-cta p,
+	/* The eyebrow is a paragraph too; it is left to the sections dimension. */
+	.rf-cta p:not([data-section="eyebrow"]),
 	.rf-cta .rf-cta__blurb {
 		font-size: var(--rf-text-lg);
 		color: var(--rf-color-muted);
@@ -78,45 +55,8 @@
 		margin: 0 auto 2rem;
 		line-height: var(--rf-leading-relaxed);
 	}
-	.rf-cta ul {
-		gap: 0.75rem;
-		padding: 0;
-		margin: 0;
-	}
-	.rf-cta li {
-		padding: 0;
-		margin: 0;
-	}
-	.rf-cta li a,
-	.rf-cta nav a {
-		padding: 0.625rem 1.5rem;
-		border-radius: var(--rf-radius-sm);
-		text-decoration: none;
-		font-weight: var(--rf-weight-semibold);
-		font-size: var(--rf-text-sm);
-		transition: all 200ms ease;
-	}
-	.rf-cta li:first-child a {
-		background: var(--rf-color-primary);
-		color: white;
-		box-shadow: var(--rf-shadow-sm);
-	}
-	.rf-cta li:first-child a:hover {
-		background: var(--rf-color-primary-hover);
-		box-shadow: var(--rf-shadow-md);
-		transform: translateY(-1px);
-		text-decoration: none;
-	}
-	.rf-cta li:not(:first-child) a {
-		background: var(--rf-color-surface);
-		color: var(--rf-color-text);
-		border: 1px solid var(--rf-color-border);
-	}
-	.rf-cta li:not(:first-child) a:hover {
-		background: var(--rf-color-surface-hover);
-		border-color: var(--rf-color-surface-active);
-		text-decoration: none;
-	}
+	/* The actions row is the `actions` rune's (styles/runes/actions.css), whose
+ * default size is the cta's own. */
 
 	/* Context-aware: CTA inside a hero gets more vertical space */
 	.rf-cta--in-hero {

@@ -46,7 +46,9 @@ import {
 // dropped on every card. `title` is deliberately not mapped: the leading
 // heading lives *inside* the body slot, so a `title` role would nest one
 // section inside another and resize every card heading via `--rf-title-size`.
-export const cardSections = { media: 'media', body: 'body' } as const;
+// `eyebrow` is the shared role (WORK-656), so the sections dimension styles it,
+// the linked pill included, rather than `card.css`.
+export const cardSections = { media: 'media', eyebrow: 'eyebrow', body: 'body' } as const;
 
 export const card = createContentModelSchema({
 	sections: cardSections,

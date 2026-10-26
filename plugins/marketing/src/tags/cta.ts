@@ -1,12 +1,9 @@
-import Markdoc from '@markdoc/markdoc';
-import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
-const { Tag } = Markdoc;
+import type { Node } from '@markdoc/markdoc';
 import {
+	buildActions,
 	createContentModelSchema,
 	createComponentRenderable,
 	renderNodes,
-	RenderableNodeCursor,
-	linkItem,
 	pageSectionProperties,
 } from '@refrakt-md/runes';
 
@@ -15,6 +12,7 @@ import {
 // what a section *is* (ADR-028).
 export const ctaSections = {
 	preamble: 'preamble',
+	eyebrow: 'eyebrow',
 	headline: 'title',
 	blurb: 'description',
 } as const;
@@ -31,26 +29,17 @@ export const cta = createContentModelSchema({
 	transform(resolved, attrs, config) {
 		const header = renderNodes(resolved.header, config);
 
-		// Transform actions with custom node overrides (same pattern as hero)
-		const baseConfig = config;
-		const actionConfig = {
-			...config,
-			nodes: {
-				...config.nodes,
-				item: linkItem,
-				fence: {
-					transform(node: Node) {
-						const output = new RenderableNodeCursor([
-							Markdoc.transform(node, baseConfig),
-						] as RenderableTreeNode[]);
-						return new Tag('div', {}, [output.next()]);
-					},
-				},
-			},
-		};
-		const actions = renderNodes(resolved.actions, actionConfig);
-
-		const actionsDiv = actions.wrap('div');
+		// SPEC-160 D6 — the actions region is the `actions` rune, nested. It
+		// keeps `data-name="actions"`, so `rf-cta__actions` survives beside
+		// `rf-actions`, and names its own items `action` and `command`.
+		const actionNodes = (
+			Array.isArray(resolved.actions)
+				? resolved.actions
+				: resolved.actions
+					? [resolved.actions]
+					: []
+		) as Node[];
+		const actions = buildActions(actionNodes, config);
 
 		return createComponentRenderable({
 			rune: 'call-to-action',
@@ -59,12 +48,10 @@ export const cta = createContentModelSchema({
 			properties: {},
 			refs: {
 				...pageSectionProperties(header),
-				actions: actionsDiv,
+				actions,
 				body: header.wrap('div'),
-				action: actions.flatten().tags('li'),
-				command: actions.flatten().tags('div'),
 			},
-			children: [header.wrap('header').next(), actionsDiv.next()],
+			children: [header.wrap('header').next(), actions],
 		});
 	},
 });

@@ -68,6 +68,7 @@ import './file-ref-resolve.js';
 import './xref-preview-resolve.js';
 import { progress } from './tags/progress.js';
 import { card } from './tags/card.js';
+import { actions } from './tags/actions.js';
 import { badge } from './tags/badge.js';
 import { bar } from './tags/bar.js';
 import { deflist } from './tags/deflist.js';
@@ -276,6 +277,7 @@ export {
 } from './collection-helpers.js';
 export type { CollectionEmbedConfig } from './collection-helpers.js';
 export { COLLECTION_SENTINEL } from './tags/collection.js';
+export { buildActions } from './tags/actions.js';
 export { functions, currency, date, number, join, concat, humanize } from './functions.js';
 export {
 	linkItem,
@@ -1221,6 +1223,20 @@ export const runes = {
 			'### ${2:Title}',
 			'${3:A short summary.}',
 			'{% /card %}',
+		],
+	}),
+	actions: defineRune({
+		name: 'actions',
+		schema: actions,
+		description:
+			'A row of actions: each link of a list becomes a button, the first link primary and the rest secondary (`data-rank`), and a fence becomes a copyable command line. What `hero` and `cta` render their buttons with.',
+		typeName: 'Actions',
+		category: 'Content',
+		snippet: [
+			'{% actions %}',
+			'- [${1:Get started}](${2:/docs/})',
+			'- [${3:Learn more}](${4:/about/})',
+			'{% /actions %}',
 		],
 	}),
 };

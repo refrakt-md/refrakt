@@ -706,6 +706,12 @@ export const coreConfig: ThemeConfig = {
 			rootAttributes: { 'data-state': 'closed' },
 			editHints: { body: 'none' },
 		},
+		// SPEC-160 D6 — a row of actions. Rank rides `data-rank` on each item, so
+		// themes style it rather than list position.
+		Actions: {
+			block: 'actions',
+			editHints: { action: 'link', command: 'code' },
+		},
 		Section: {
 			block: 'section',
 			modifiers: {

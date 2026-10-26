@@ -82,6 +82,7 @@ function convertHeadings(nodes: Node[]): Node[] {
 // what a section *is* (ADR-028).
 export const tabGroupSections = {
 	preamble: 'preamble',
+	eyebrow: 'eyebrow',
 	headline: 'title',
 	blurb: 'description',
 } as const;

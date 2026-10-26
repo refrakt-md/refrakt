@@ -1,6 +1,6 @@
 @layer skin {
 	/* ─── Section Anatomy Dimension — skin ──────────────────────────────────
- * Zone rhythm (margins, gaps, padding), typography, and borders for the 6
+ * Zone rhythm (margins, gaps, padding), typography, and borders for the
  * standard section roles. The flex zone *containers* (header / preamble /
  * footer) live in @refrakt-md/skeleton (dimensions/sections.css). Rhythm stays
  * here so rune zone overrides resolve against it by source order.
@@ -15,6 +15,39 @@
 	/* ─── Preamble: intro section (eyebrow, headline, blurb) ─────────── */
 	[data-section="preamble"] {
 		gap: 0.25rem;
+	}
+
+	/* ─── Eyebrow: a kicker above the title (WORK-656) ───────────────── */
+	/* Shared by every rune with an eyebrow; a rune sets only its spacing (and
+ * `card` a smaller size). An eyebrow holding a link is a pill whose link
+ * covers it; the stretched link itself is structure (skeleton). */
+	[data-section="eyebrow"] {
+		font-size: var(--rf-text-sm);
+		font-weight: var(--rf-weight-semibold);
+		letter-spacing: var(--rf-tracking-wider);
+		text-transform: uppercase;
+		color: var(--rf-color-primary);
+	}
+	[data-section="eyebrow"]:has(a) {
+		padding: 0.25rem 0.875rem;
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-full);
+		color: var(--rf-color-text);
+		font-weight: var(--rf-weight-normal);
+		text-transform: none;
+		letter-spacing: var(--rf-tracking-normal);
+		transition: border-color 150ms ease;
+	}
+	[data-section="eyebrow"]:has(a):hover {
+		border-color: var(--rf-color-muted);
+	}
+	[data-section="eyebrow"]:has(a) a {
+		color: var(--rf-color-primary);
+		font-weight: var(--rf-weight-semibold);
+		text-decoration: none;
+	}
+	[data-section="eyebrow"]:has(a) a::before {
+		border-radius: inherit;
 	}
 
 	/* ─── Title: primary heading ──────────────────────────────────────── */

@@ -202,7 +202,7 @@ describe('section header grammar — the recorded cases (ADR-046)', () => {
 		expect(
 			html('{% section %}\nKicker\n\n## Heading\n\nThe blurb.\n\nThe body.\n{% /section %}'),
 		).toMatchInlineSnapshot(
-			`"<article><section class="rf-section rf-section--start" data-align="start" data-rune="section" data-density="full"><header data-name="preamble" class="rf-section__preamble" data-section="preamble"><p data-name="eyebrow" class="rf-section__eyebrow">Kicker</p><h2 id="heading" data-name="headline" class="rf-section__headline" data-section="title">Heading</h2><p data-name="blurb" class="rf-section__blurb" data-section="description">The blurb.</p></header><div data-name="body" class="rf-section__body" data-section="body"><p>The body.</p></div></section></article>"`,
+			`"<article><section class="rf-section rf-section--start" data-align="start" data-rune="section" data-density="full"><header data-name="preamble" class="rf-section__preamble" data-section="preamble"><p data-name="eyebrow" class="rf-section__eyebrow" data-section="eyebrow">Kicker</p><h2 id="heading" data-name="headline" class="rf-section__headline" data-section="title">Heading</h2><p data-name="blurb" class="rf-section__blurb" data-section="description">The blurb.</p></header><div data-name="body" class="rf-section__body" data-section="body"><p>The body.</p></div></section></article>"`,
 		);
 	});
 });

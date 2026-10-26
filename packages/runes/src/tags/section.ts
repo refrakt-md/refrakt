@@ -31,6 +31,7 @@ const mediaKinds = ['portrait', 'cover', 'thumbnail', 'hero', 'icon'] as const;
 // `media-position` is given.
 export const sectionSections = {
 	preamble: 'preamble',
+	eyebrow: 'eyebrow',
 	headline: 'title',
 	blurb: 'description',
 	body: 'body',

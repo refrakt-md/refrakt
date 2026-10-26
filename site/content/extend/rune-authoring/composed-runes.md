@@ -244,7 +244,7 @@ Every rune here may be placed by any composition. The set is derived from the ca
 
 | Package | Placeable runes |
 |---|---|
-| core | `aggregate`, `annotate`, `badge`, `bar`, `bg`, `budget-category`, `budget-line-item`, `card`, `chart`, `code`, `codegroup`, `collection`, `compare`, `conversation`, `conversation-message`, `deflist`, `details`, `diagram`, `diff`, `drawer`, `embed`, `expand`, `figure`, `file-ref`, `form`, `form-field`, `gallery`, `grid`, `hint`, `icon`, `juxtapose`, `layout`, `mediatext`, `nav`, `note`, `pagination`, `progress`, `pullquote`, `region`, `relationships`, `reveal`, `reveal-step`, `sandbox`, `section`, `showcase`, `sidenote`, `tabs`, `textblock`, `tint`, `toc`, `xref` |
+| core | `actions`, `aggregate`, `annotate`, `badge`, `bar`, `bg`, `budget-category`, `budget-line-item`, `card`, `chart`, `code`, `codegroup`, `collection`, `compare`, `conversation`, `conversation-message`, `deflist`, `details`, `diagram`, `diff`, `drawer`, `embed`, `expand`, `figure`, `file-ref`, `form`, `form-field`, `gallery`, `grid`, `hint`, `icon`, `juxtapose`, `layout`, `mediatext`, `nav`, `note`, `pagination`, `progress`, `pullquote`, `region`, `relationships`, `reveal`, `reveal-step`, `sandbox`, `section`, `showcase`, `sidenote`, `tabs`, `textblock`, `tint`, `toc`, `xref` |
 | @refrakt-md/marketing | `bento`, `comparison`, `comparison-column`, `comparison-row`, `cta`, `feature`, `hero`, `steps` |
 | @refrakt-md/docs | `api`, `changelog`, `changelog-release`, `symbol-group`, `symbol-member` |
 | @refrakt-md/storytelling | `beat`, `bond`, `character-section`, `faction-section`, `realm-section`, `storyboard`, `storyboard-panel` |
