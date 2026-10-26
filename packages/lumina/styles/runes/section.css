@@ -6,6 +6,23 @@
 		gap: 1.5rem;
 	}
 
+	/* With a split, the content column keeps the header-to-body rhythm. */
+	.rf-section__content {
+		gap: 1.5rem;
+	}
+	.rf-section__footer {
+		padding-top: var(--rf-spacing-sm);
+		border-top: 1px solid var(--rf-color-border);
+		font-size: 0.8125em;
+		color: var(--rf-color-muted);
+	}
+	.rf-section__footer > :first-child {
+		margin-top: 0;
+	}
+	.rf-section__footer > :last-child {
+		margin-bottom: 0;
+	}
+
 	/* Header */
 	.rf-section__preamble {
 		gap: 0.5rem;

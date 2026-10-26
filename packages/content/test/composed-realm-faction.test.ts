@@ -37,15 +37,16 @@ import {
  * plugin's and never in place of them (SPEC-147 D1).
  *
  * Both definitions (`fixtures/composed-storytelling/runes/{realm,faction}.md`)
- * have `character`'s shape: `card` with the scene in its media zone, the name as
- * card's title, the declared `metadata` block placed with `{% metablock %}`, the
+ * have `character`'s shape: `section` with the scene in its media zone, the name as
+ * section's headline, the declared `metadata` block placed with `{% metablock %}`, the
  * description, a catch-all `body` (WORK-631 has not landed), and each H2 section
  * as a `{% details %}` placed by `{% slot name="sections" each %}`. The
  * `realm-section` and `faction-section` child runes are gone.
  *
  * SPEC-147 says their split maps to `{% mediatext %}`. Measured, it does not:
- * the last block below records why, and the definitions place `card` (SPEC-145
- * D18's canonical split primitive) instead.
+ * the last block below records why. The definitions placed `card` (SPEC-145
+ * D18's canonical split primitive) and, since WORK-653, place `section`, which
+ * has the same split without a surface (SPEC-160 D4, ADR-041).
  *
  * The gate is SPEC-147 D2's: every difference from the plugin is explained.
  * Each is asserted below and recorded with its reason in WORK-636's resolution.
@@ -160,8 +161,8 @@ describe.each(RUNE_NAMES)('composed %s — the definition', (rune) => {
 		// No child rune of its own, and no placed badge or deflist for metadata.
 		expect(def).not.toContain(`${rune}-section`);
 		expect(def).not.toMatch(/\{% (badge|deflist|bar)\b/);
-		// The split is `card`'s, not `mediatext`'s (see the last block).
-		expect(def).toMatch(/^\{% card media-position=\$attrs\["media-position"\]/m);
+		// The split is `section`'s, not `mediatext`'s (see the last block).
+		expect(def).toMatch(/^\{% section media-position=\$attrs\["media-position"\]/m);
 		expect(def).not.toContain('mediatext');
 	});
 
@@ -333,7 +334,7 @@ describe('composed realm and faction — registration (SPEC-144, against the sto
 	it('realm: keeps the character written inside it, registered from the realm’s page', async () => {
 		// `aldermere.md` nests `{% character name="King Edric" %}` in the realm's
 		// preamble. The plugin matches it as an `items` tag; the composed realm
-		// places it through the catch-all `body` slot, inside `card`.
+		// places it through the catch-all `body` slot, inside `section`.
 		const { snapshot } = await capture(composed('realm'));
 		const edric = snapshot.registrations.find((r: Json) => r.id === 'King Edric');
 		expect(edric).toMatchObject({ type: 'character', sourceUrl: '/realms/aldermere' });
@@ -345,11 +346,11 @@ describe('composed realm and faction — registration (SPEC-144, against the sto
 		expect(committed().links).not.toHaveProperty('/realms/aldermere');
 	});
 
-	it('faction: loses the cross-link inside its page — the prose now sits in a placed `card`', async () => {
+	it('faction: loses the cross-link inside its page — the prose now sits in a placed `section`', async () => {
 		const { snapshot } = await capture(composed('faction'));
 		// As for `character` (WORK-625, SPEC-147 Finding 4): the plugin's
 		// `postProcess` skips nested runes, and the composed faction's prose is
-		// inside `{% card %}`.
+		// inside `{% section %}`.
 		const lost = { ...committed().links };
 		delete lost['/factions/silver'];
 		expect(snapshot.links).toEqual(lost);
@@ -385,9 +386,9 @@ describe.each(RUNE_NAMES)(
 				for (const attr of spec.sameData) {
 					expect(out.attributes[attr], attr).toBe(plugin.attributes[attr] || undefined);
 				}
-				// The split reaches `card`, which is what lays the media out.
-				const [card] = all(out, (n) => n.attributes?.['data-rune'] === 'card');
-				expect(card.attributes['data-media-position']).toBe(out.attributes['data-media-position']);
+				// The split reaches `section`, which is what lays the media out.
+				const [host] = all(out, (n) => n.attributes?.['data-rune'] === 'section');
+				expect(host.attributes['data-media-position']).toBe(out.attributes['data-media-position']);
 			},
 		);
 
@@ -420,7 +421,7 @@ describe.each(RUNE_NAMES)(
 		);
 
 		it.each(scenarios)(
-			"%s: the metadata block renders as the plugin's does, under card's classes and keyed `type`",
+			"%s: the metadata block renders as the plugin's does, under section's classes and keyed `type`",
 			(scenario) => {
 				const [block] = named(mine(scenario), 'metadata');
 				const [projected] = named(theirs(scenario), 'metadata');
@@ -439,19 +440,26 @@ describe.each(RUNE_NAMES)(
 					),
 				);
 				expect(unclassed(block)).toEqual(rekeyed);
-				expect(block.attributes.class).toBe('rf-card__metadata');
+				expect(block.attributes.class).toBe('rf-section__metadata');
 				expect(projected.attributes.class).toBe(`rf-${rune}__metadata`);
 			},
 		);
 
-		it("the name is card's title heading, not a span in a preamble header", () => {
+		it("the name is section's headline in a real header, where the plugin's is a span", () => {
+			// Inside `card` the name was an `<h1>` in the body (`rf-card__title`).
+			// `section` lifts it into its `<header>`, as the plugin does with its
+			// span (SPEC-160 D4). The metablock after it keeps the description out
+			// of the blurb role, so there is no blurb.
 			const [span] = named(theirs('canonical'), 'name');
 			expect(span.name).toBe('span');
 			expect(named(theirs('canonical'), 'preamble')[0].name).toBe('header');
-			const [title] = named(mine('canonical'), 'title');
-			expect(title.name).toBe('h1');
-			expect(text(title)).toBe(spec.baselineName);
-			expect(named(mine('canonical'), 'preamble')).toEqual([]);
+			const [headline] = named(mine('canonical'), 'headline');
+			expect(headline.name).toBe('h1');
+			expect(text(headline)).toBe(spec.baselineName);
+			const [header] = named(mine('canonical'), 'preamble');
+			expect(header.name).toBe('header');
+			expect(header.children).toEqual([headline]);
+			expect(named(mine('canonical'), 'blurb')).toEqual([]);
 		});
 
 		it('sections are `details`, with no `data-field="section"` (SPEC-147 D6)', () => {
@@ -503,7 +511,7 @@ describe.each(RUNE_NAMES)(
 			expect(out).toContain(note);
 		});
 
-		it('the scene leaves the root for card\'s media zone, keeping `property="image"`', () => {
+		it('the scene leaves the root for section\'s media zone, keeping `property="image"`', () => {
 			const plugin = theirs('canonical');
 			const out = mine('canonical');
 			const [scene] = named(plugin, 'scene');
@@ -522,7 +530,7 @@ describe.each(RUNE_NAMES)(
 			expect(named(theirs('defaults'), 'scene')).toEqual([]);
 		});
 
-		it('the description is a slot-named paragraph in card’s body, not a `body` wrapper of its own', () => {
+		it('the description is a slot-named paragraph in section’s body, not a `body` wrapper of its own', () => {
 			const [body] = named(theirs('canonical'), 'body').filter(
 				(n) => n.attributes.class === `rf-${rune}__body`,
 			);
@@ -543,27 +551,27 @@ describe('composed realm and faction — both trees, recorded', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Why `card` and not `mediatext` — SPEC-147's mapping, measured
+// Why a split primitive and not `mediatext` — SPEC-147's mapping, measured
 // ---------------------------------------------------------------------------
 
 describe('the split over `{% mediatext %}`, as SPEC-147 states it', () => {
-	// The same definition with `card` (and its `---` delimiter) swapped for
+	// The same definition with `section` (and its `---` delimiter) swapped for
 	// `mediatext`, which splits image paragraphs from text in its own transform.
 	const overMediatext = definitions.realm
-		.replace(/^\{% card [^\n]*%\}\n/m, '{% mediatext %}\n')
+		.replace(/^\{% section [^\n]*%\}\n/m, '{% mediatext %}\n')
 		.replace('{% slot name="scene" /%}\n\n---\n', '{% slot name="scene" /%}\n')
-		.replace('{% /card %}', '{% /mediatext %}');
+		.replace('{% /section %}', '{% /mediatext %}');
 	const viaMediatext = () => composedWith({ realm: overMediatext });
 	const realmOf = (pkg: Plugin, source: string) => render(pkg, 'realm', source);
 
 	it('constructs, and publishes the same graph', () => {
 		expect(overMediatext).toContain('{% mediatext %}');
-		expect(overMediatext).not.toContain('{% card');
+		expect(overMediatext).not.toContain('{% section');
 		expect(harvestWith(viaMediatext(), 'realm').jsonLd).toEqual(recorded('realm').jsonLd);
 	});
 
 	it('1. cannot carry the split: `mediatext` speaks `align`/`ratio`, not `media-position`', () => {
-		// The baseline fixture writes `media-position="start"`. `card` takes the
+		// The baseline fixture writes `media-position="start"`. `section` takes the
 		// SplitLayoutModel attributes realm and faction declare; `mediatext` does
 		// not, and `top`/`bottom`/`cover` and `valign`/`collapse` have no
 		// counterpart in its vocabulary at all.
@@ -590,7 +598,7 @@ describe('the split over `{% mediatext %}`, as SPEC-147 states it', () => {
 		const [img] = named(out, 'media')[0].children;
 		expect(img.attributes.src).toBe('map.png');
 		expect(img.attributes).not.toHaveProperty('data-slot');
-		// `card` and the plugin both keep it in the body, where it was written.
+		// `section` and the plugin both keep it in the body, where it was written.
 		const [mapP] = all(realmOf(composed('realm'), source), (n) =>
 			n.children?.some((c: Json) => c?.attributes?.src === 'map.png'),
 		);

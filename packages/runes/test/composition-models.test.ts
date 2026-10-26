@@ -165,8 +165,9 @@ content:
 // WORK-646 — SPEC-169 D1
 // ---------------------------------------------------------------------------
 
-/** The composition consumes the `---`; the template re-emits one where `card`
- *  should split (D1 rule 4). The file is the guide's example. */
+/** The composition consumes the `---`; the template re-emits one where
+ *  `section` should split (D1 rule 4). The file is the guide's example. It
+ *  placed `card` until WORK-652 gave `section` the split (ADR-041). */
 const TEASER = fixture('teaser');
 
 describe('a delimited content model with fixed zones (SPEC-169 D1)', () => {
@@ -176,30 +177,31 @@ describe('a delimited content model with fixed zones (SPEC-169 D1)', () => {
 		expect(compositionFor(teaser.rune.schema)!.slots).toEqual(['media', 'headline', 'blurb']);
 	});
 
-	it('splits a placed `card` into media and body where the template re-emits `---`', () => {
+	it('splits a placed `section` into media and content where the template re-emits `---`', () => {
 		const tree = render(
 			'{% teaser %}\n![Harbour](/harbour.jpg)\n\n---\n\n# The harbour\n\nSalt and rope.\n{% /teaser %}',
 			{ teaser },
 		);
-		const [card] = byRune(tree, 'card');
-		const [media] = byName(card, 'media');
-		const [body] = byName(card, 'body');
+		const [host] = byRune(tree, 'section');
+		const [media] = byName(host, 'media');
+		const [content] = byName(host, 'content');
 		expect(find(media, (n) => n.name === 'img')[0].attributes.src).toBe('/harbour.jpg');
-		expect(find(body, (n) => n.name === 'h1').map(textOf)).toEqual(['The harbour']);
-		expect(textOf(body)).toContain('Salt and rope.');
+		// Slots named for `section`'s header roles fill them.
+		expect(byName(content, 'headline').map(textOf)).toEqual(['The harbour']);
+		expect(byName(content, 'blurb').map(textOf)).toEqual(['Salt and rope.']);
 		// The author's delimiter is consumed, not rendered.
 		expect(find(tree, (n) => n.name === 'hr')).toHaveLength(0);
 		// Each placed node keeps its slot name.
-		expect(find(card, (n) => n.attributes?.[SLOT_ATTR] === 'headline')).toHaveLength(1);
+		expect(find(host, (n) => n.attributes?.[SLOT_ATTR] === 'headline')).toHaveLength(1);
 	});
 
 	it('honours `primary`: content written with no `---` is the content zone', () => {
 		const tree = render('{% teaser %}\n# The harbour\n\nSalt and rope.\n{% /teaser %}', {
 			teaser,
 		});
-		const [card] = byRune(tree, 'card');
-		expect(byName(card, 'media')).toHaveLength(0);
-		expect(find(byName(card, 'body'), (n) => n.name === 'h1').map(textOf)).toEqual(['The harbour']);
+		const [host] = byRune(tree, 'section');
+		expect(byName(host, 'media')).toHaveLength(0);
+		expect(byName(host, 'headline').map(textOf)).toEqual(['The harbour']);
 	});
 
 	it('rejects a field name in two zones', () => {

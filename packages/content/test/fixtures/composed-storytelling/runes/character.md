@@ -1,13 +1,14 @@
 ---
 tag: article
 aliases: [npc, pc]
-description: A character profile, composed over `card`, `details` and a placed meta block. SPEC-145's full worked example, kept beside the storytelling plugin's `character` rather than shipped in place of it (SPEC-147 D1).
+description: A character profile, composed over `section`, `details` and a placed meta block. SPEC-145's full worked example, kept beside the storytelling plugin's `character` rather than shipped in place of it (SPEC-147 D1).
 attributes:
   name:    { type: string, required: true, description: "Display name shown in the character header." }
   role:    { type: string, matches: [protagonist, antagonist, supporting, minor], default: supporting, description: "Narrative importance." }
   status:  { type: string, matches: [alive, dead, unknown, missing], default: alive, description: "Whether the character is alive, dead, unknown, or missing." }
   aliases: { type: string, description: "Comma-separated alternate names or titles for this character." }
   tags:    { type: string, description: "Comma-separated keywords for filtering and cross-referencing." }
+  media-position: { type: string, matches: [top, bottom, start, end], default: top, description: "Where the portrait sits relative to the content: above (top), below (bottom), or beside (start/end)" }
 provides: [prose]
 content:
   type: sections
@@ -35,7 +36,7 @@ registers:
     aliases: { from: aliases, separator: "," }
 ---
 
-{% card %}
+{% section media-position=$attrs["media-position"] media="portrait" %}
 	{% slot name="portrait" /%}
 
 	---
@@ -53,4 +54,4 @@ registers:
 			{% slot /%}
 		{% /details %}
 	{% /slot %}
-{% /card %}
+{% /section %}
