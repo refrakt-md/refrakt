@@ -1,7 +1,7 @@
 ---
 tag: article
 aliases: [location, place]
-description: A realm profile, composed over `card`, `details` and a placed meta block. SPEC-145 D7's worked example, kept beside the storytelling plugin's `realm` rather than shipped in place of it (SPEC-147 D1).
+description: A realm profile, composed over `section`, `details` and a placed meta block. SPEC-145 D7's worked example, kept beside the storytelling plugin's `realm` rather than shipped in place of it (SPEC-147 D1).
 attributes:
   name:   { type: string, required: true, description: "Display name shown in the realm header." }
   type:   { type: string, default: place, description: "Kind of location (e.g. city, forest, dungeon, plane, continent)." }
@@ -35,7 +35,7 @@ registers:
     data: [{ realmType: type }, scale, tags, parent, name]
 ---
 
-{% card media-position=$attrs["media-position"] media-ratio=$attrs["media-ratio"] valign=$attrs.valign collapse=$attrs.collapse %}
+{% section media-position=$attrs["media-position"] media-ratio=$attrs["media-ratio"] valign=$attrs.valign collapse=$attrs.collapse %}
 	{% slot name="scene" /%}
 
 	---
@@ -53,4 +53,4 @@ registers:
 			{% slot /%}
 		{% /details %}
 	{% /slot %}
-{% /card %}
+{% /section %}

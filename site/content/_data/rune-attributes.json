@@ -4101,6 +4101,46 @@
 			"page": "section"
 		},
 		{
+			"rune": "section",
+			"plugin": "core",
+			"scope": "own",
+			"name": "media",
+			"type": "\"portrait\" | \"cover\" | \"thumbnail\" | \"hero\" | \"icon\"",
+			"required": false,
+			"description": "What the media zone holds, stamped as `data-media` so the media dimension styles it (portrait is cropped round)",
+			"page": "section"
+		},
+		{
+			"rune": "section",
+			"plugin": "core",
+			"scope": "own",
+			"name": "content-place",
+			"type": "string",
+			"required": false,
+			"description": "Cover overlay anchor: \"<block> <inline>\" (e.g. \"end start\") or \"auto\"",
+			"page": "section"
+		},
+		{
+			"rune": "section",
+			"plugin": "core",
+			"scope": "own",
+			"name": "height",
+			"type": "\"sm\" | \"md\" | \"lg\" | \"xl\"",
+			"required": false,
+			"description": "Intrinsic section height (named scale) for cover sections",
+			"page": "section"
+		},
+		{
+			"rune": "section",
+			"plugin": "core",
+			"scope": "own",
+			"name": "aspect",
+			"type": "string",
+			"required": false,
+			"description": "Intrinsic section aspect ratio (e.g. \"16/9\") for cover sections",
+			"page": "section"
+		},
+		{
 			"rune": "showcase",
 			"plugin": "core",
 			"scope": "own",
@@ -5322,6 +5362,50 @@
 			"description": "Breakpoint at which side-by-side layouts collapse to a single stacked column",
 			"preset": "split layout",
 			"page": "recipe"
+		},
+		{
+			"rune": "section",
+			"plugin": "core",
+			"scope": "base",
+			"name": "media-position",
+			"type": "\"top\" | \"bottom\" | \"start\" | \"end\" | \"cover\"",
+			"required": false,
+			"description": "Where the media zone sits relative to the content: above (top), below (bottom), or beside (start/end)",
+			"preset": "split layout",
+			"page": "section"
+		},
+		{
+			"rune": "section",
+			"plugin": "core",
+			"scope": "base",
+			"name": "media-ratio",
+			"type": "\"1/3\" | \"2/5\" | \"1/2\" | \"3/5\" | \"2/3\"",
+			"required": false,
+			"description": "Media zone’s share of the row width when media is beside content (start/end)",
+			"preset": "split layout",
+			"page": "section"
+		},
+		{
+			"rune": "section",
+			"plugin": "core",
+			"scope": "base",
+			"name": "valign",
+			"type": "\"top\" | \"center\" | \"bottom\" | \"stretch\"",
+			"required": false,
+			"description": "Cross-axis alignment when media is beside content (start/end); applies to the shorter zone",
+			"preset": "split layout",
+			"page": "section"
+		},
+		{
+			"rune": "section",
+			"plugin": "core",
+			"scope": "base",
+			"name": "collapse",
+			"type": "\"sm\" | \"md\" | \"lg\" | \"never\"",
+			"required": false,
+			"description": "Breakpoint at which side-by-side layouts collapse to a single stacked column",
+			"preset": "split layout",
+			"page": "section"
 		},
 		{
 			"rune": "step",
@@ -12123,6 +12207,14 @@
 		},
 		{
 			"rune": "section",
+			"axis": "frame",
+			"available": true,
+			"description": "Surface chrome (SPEC-086): a named preset from the theme registry with inline `frame-*` overrides layered on top.",
+			"query": "axis:frame",
+			"page": "section"
+		},
+		{
+			"rune": "section",
 			"axis": "inset",
 			"available": true,
 			"description": "Internal padding override.",
@@ -15413,13 +15505,6 @@
 			"axes": "prominence",
 			"reason": "this rune has no page-section header",
 			"page": "sandbox"
-		},
-		{
-			"rune": "section",
-			"available": false,
-			"axes": "frame",
-			"reason": "this rune declares neither a `frameTarget` nor a media section",
-			"page": "section"
 		},
 		{
 			"rune": "showcase",

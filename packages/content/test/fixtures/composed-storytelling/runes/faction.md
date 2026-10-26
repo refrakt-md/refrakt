@@ -1,7 +1,7 @@
 ---
 tag: article
 aliases: [guild, order]
-description: A faction profile, composed over `card`, `details` and a placed meta block. Kept beside the storytelling plugin's `faction` rather than shipped in place of it (SPEC-147 D1).
+description: A faction profile, composed over `section`, `details` and a placed meta block. Kept beside the storytelling plugin's `faction` rather than shipped in place of it (SPEC-147 D1).
 attributes:
   name:      { type: string, required: true, description: "Display name shown in the faction header." }
   type:      { type: string, description: "Classification of the group (e.g. guild, kingdom, cult, order)." }
@@ -40,7 +40,7 @@ registers:
     data: [{ factionType: type }, alignment, size, tags, name]
 ---
 
-{% card media-position=$attrs["media-position"] media-ratio=$attrs["media-ratio"] valign=$attrs.valign collapse=$attrs.collapse %}
+{% section media-position=$attrs["media-position"] media-ratio=$attrs["media-ratio"] valign=$attrs.valign collapse=$attrs.collapse %}
 	{% slot name="scene" /%}
 
 	---
@@ -58,4 +58,4 @@ registers:
 			{% slot /%}
 		{% /details %}
 	{% /slot %}
-{% /card %}
+{% /section %}

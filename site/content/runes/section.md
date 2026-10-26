@@ -64,6 +64,42 @@ Every header slot is optional. With no leading heading the section is just a sty
 
 A [composed rune](/extend/rune-authoring/composed-runes) that places a `section` gets the same grammar for its slots. When a slot's content lands in a header role the slot is not named for, the build reports `slot-header-role` and names both remedies: name the field for the role, or set `header` on the section.
 
+## Media beside or above the content
+
+Give a section `media-position` and it splits on `---` the way [`card`](/runes/card) does: a leading media zone, the content, and an optional trailing footer. The header stays in the content column, beside or below the media. Without `media-position` the section reads no zones, and a `---` is an ordinary rule in the body.
+
+{% preview source=true %}
+
+	{% section media-position="start" media-ratio="1/3" %}
+	![A harbour at dawn](placeholder:landscape)
+
+	---
+
+	Field notes
+
+	## The harbour at dawn
+
+	Salt, rope and the first boats going out.
+
+	The tide turns an hour after sunrise, and the market opens with it.
+	{% /section %}
+
+{% /preview %}
+
+| Attribute | Values | What it does |
+|---|---|---|
+| `media-position` | `top`, `bottom`, `start`, `end`, `cover` | Where the media zone sits. Turns zoning on. |
+| `media-ratio` | `1/3` … `2/3` | The media's share of the row, beside the content |
+| `valign` | `top`, `center`, `bottom`, `stretch` | Cross-axis alignment, beside the content |
+| `collapse` | `sm`, `md`, `lg`, `never` | When a side-by-side split stacks |
+| `media` | `portrait`, `cover`, `thumbnail`, `hero`, `icon` | What the media zone holds, so the media dimension styles it. `portrait` is cropped round. |
+
+The zones count as `card`'s do: one zone is the content, two are media and content, and three or more add the last as the footer. An empty leading zone means no media, and the media element is left out.
+
+### Cover
+
+`media-position="cover"` lays the content over the media, as on `card`. `content-place` anchors the content (`"end start"`, or `auto`), and `height` (`sm` to `xl`) or `aspect` gives a section with little content its shape.
+
 ## Align the header
 
 `align` positions the header (the body always spans the section). Use `center` for marquee sections, `end` to right-align.
@@ -100,5 +136,8 @@ A [composed rune](/extend/rune-authoring/composed-runes) that places a `section`
 | Headline | a heading at the start, or after the eyebrow | `.rf-section__headline` |
 | Blurb | a paragraph directly after the headline | `.rf-section__blurb` |
 | Body | everything else | `.rf-section__body` |
+| Media | the leading zone, with `media-position` | `.rf-section__media` |
+| Content | the header, body and footer, with `media-position` | `.rf-section__content` |
+| Footer | a trailing zone after a second `---`, with `media-position` | `.rf-section__footer` |
 
 The header slots are wrapped in `.rf-section__preamble`; the whole block is `.rf-section`.
