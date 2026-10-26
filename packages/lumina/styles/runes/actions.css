@@ -47,7 +47,11 @@
 		border-color: var(--rf-color-surface-active);
 		text-decoration: none;
 	}
-	/* A command line sits in the row at a button's height. */
+	/* A command line sits in the row at a button's height, without the margin a
+ * code block takes in prose. */
+	.rf-actions__command .rf-codeblock {
+		margin: 0;
+	}
 	.rf-actions__command pre {
 		margin: 0;
 		padding: var(--action-padding, 0.625rem 1.5rem);

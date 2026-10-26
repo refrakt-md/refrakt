@@ -14,7 +14,7 @@ status: stable
 
 In a line of text the tag renders a plain `<a>`. Its main use is in templates, where the target comes from a variable:
 
-```md
+```markdoc
 Read {% link href=$item.url %}{% $item.data.title %}{% /link %} next.
 ```
 

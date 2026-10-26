@@ -48,7 +48,7 @@ Rank is positional over the whole row: the first link is primary, wherever it is
 
 A composition places `actions` around a slot, so its authors keep writing a plain list:
 
-```md
+```markdoc
 {% section media-position=$attrs["media-position"] %}
 	{% slot name="media" /%}
 
