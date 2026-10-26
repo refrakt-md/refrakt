@@ -21,6 +21,7 @@ import {
 	declaredPlanIds,
 	unresolvedRefs,
 	releaseRefFindings,
+	recordedDate,
 } from './generate-changelog.mjs';
 import { fileURLToPath } from 'node:url';
 
@@ -144,24 +145,98 @@ describe('parseChangelog — a wrapped sub-bullet stays one entry', () => {
 - A short one.`;
 
 	it('keeps each bullet whole, with its continuation attached', () => {
-		const entries = entriesFor(BODY);
-		expect(entries).toContain(
-			'- The first one, whose explanation is long enough that the line wraps onto a second line and then a third.',
+		const lines = entriesFor(BODY).flatMap((e) => e.split('\n'));
+		expect(lines).toContain(
+			'  - The first one, whose explanation is long enough that the line wraps onto a second line and then a third.',
 		);
-		expect(entries).toContain('- The second one, which also wraps onto another line.');
-		expect(entries).toContain('- A short one.');
+		expect(lines).toContain('  - The second one, which also wraps onto another line.');
+		expect(lines).toContain('  - A short one.');
 	});
 
 	it('invents no entry out of the orphaned tails', () => {
 		// The shape of the old bug: a bullet built from continuation text alone.
-		for (const entry of entriesFor(BODY)) {
-			expect(entry, `"${entry}" begins mid-sentence`).not.toMatch(/^- (wraps|onto) /);
+		for (const line of entriesFor(BODY).flatMap((e) => e.split('\n'))) {
+			expect(line, `"${line}" begins mid-sentence`).not.toMatch(/^\s*- (wraps|onto) /);
 		}
 	});
 
 	it('still unwraps a plain wrapped paragraph into one entry', () => {
 		const entries = entriesFor('A title\n\nA paragraph that wraps\nacross two lines.');
 		expect(entries).toContain('- A paragraph that wraps across two lines.');
+	});
+});
+
+describe('parseChangelog — sub-bullets stay with the sentence that introduces them', () => {
+	it("nests a changeset's list under its lead, as one entry", () => {
+		const entries = entriesFor(`Composed runes can now say more:
+
+- **Zones** split content on \`---\`.
+- **Lists** can be iterated.
+
+A closing paragraph.`);
+		expect(entries).toEqual([
+			'- Composed runes can now say more:\n  - **Zones** split content on `---`.\n  - **Lists** can be iterated.',
+			'- A closing paragraph.',
+		]);
+	});
+
+	it('keeps a list with no sentence before it as entries of their own', () => {
+		const versions = new Map();
+		parseChangelog(
+			[
+				'## 0.35.0',
+				'',
+				'### Minor Changes',
+				'',
+				'- ### Editor',
+				'  - One thing.',
+				'  - Another.',
+			].join('\n'),
+			versions,
+		);
+		expect([...versions.get('0.35.0')]).toEqual(['- One thing.', '- Another.']);
+	});
+});
+
+describe('parseChangelog — a sentence introducing a dropped example', () => {
+	it('ends with a full stop instead of a colon pointing at nothing', () => {
+		const entries = entriesFor(`Content may be indented, to show its nesting:
+
+\`\`\`md
+{% card %}
+\t{% hint %}x{% /hint %}
+{% /card %}
+\`\`\`
+
+Fences are unaffected.`);
+		expect(entries).toEqual([
+			'- Content may be indented, to show its nesting.',
+			'- Fences are unaffected.',
+		]);
+	});
+});
+
+describe('recordedDate', () => {
+	let dir;
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'rf-release-date-'));
+	});
+	afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+	it('reads the date a previous run wrote on the release page', () => {
+		const page = join(dir, 'v0.37.0.md');
+		writeFileSync(
+			page,
+			renderReleasePage({ version: '0.37.0', date: 'October 6, 2026', changes: ['- x'] }),
+		);
+		expect(recordedDate(page)).toBe('October 6, 2026');
+	});
+
+	it('is empty for an undated page or no page', () => {
+		const page = join(dir, 'v0.38.0.md');
+		writeFileSync(page, renderReleasePage({ version: '0.38.0', date: '', changes: ['- x'] }));
+		expect(recordedDate(page)).toBe('');
+		expect(recordedDate(join(dir, 'missing.md'))).toBe('');
 	});
 });
 

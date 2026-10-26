@@ -44,6 +44,22 @@ describe('`refrakt format`', () => {
 		expect(readFileSync(join(cwd, 'content/node_modules/pkg/readme.md'), 'utf-8')).toBe(NESTED);
 	});
 
+	it('leaves out an ignored directory and an ignored file', () => {
+		const cwd = project({
+			'content/page.md': NESTED,
+			'content/releases/index.md': NESTED,
+			'content/generated.md': NESTED,
+		});
+		const report = runFormat({
+			paths: ['content'],
+			ignore: ['content/releases', 'content/generated.md'],
+			check: true,
+			cwd,
+		});
+		expect(report.files).toBe(1);
+		expect(report.changed).toEqual(['content/page.md']);
+	});
+
 	it('`--check` writes nothing, names each file that would change, and exits 1', () => {
 		quiet();
 		const cwd = project({ 'a.md': NESTED, 'b.md': FORMATTED });

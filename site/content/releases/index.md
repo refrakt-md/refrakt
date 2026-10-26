@@ -6,7 +6,7 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.42.0 · What a composition can express
+## v0.42.0 · What a composition can express - October 26, 2026
 
 Since v0.41.0, anyone can write a composed rune. This milestone widens what a definition can
 say. Templates may be indented, and `refrakt format` indents nested runes for you. Content may be split on `---` into named zones, a sections
@@ -14,7 +14,7 @@ model may treat content with no headings as one section, and `each` can walk the
 plain list. An `itemModel` declared in YAML now extracts its fields instead of leaving every
 one empty (SPEC-169, SPEC-170).
 
-[All 29 changes in v0.42.0 →](/releases/v0.42.0)
+[All 13 changes in v0.42.0 →](/releases/v0.42.0)
 
 ## v0.41.3 · A fresh scaffold works - October 24, 2026
 
@@ -51,7 +51,7 @@ v0.40.0 let a rune be defined as a template that places existing runes, but only
 Plugin authors: a `by` schema table now needs a row for every value in its attribute's `matches`, or the rune fails to build.
 {% /hint %}
 
-[All 33 changes in v0.41.0 →](/releases/v0.41.0)
+[All 12 changes in v0.41.0 →](/releases/v0.41.0)
 
 ## v0.40.0 · The first composed rune - October 8, 2026
 
@@ -61,7 +61,7 @@ A rune can now be defined as a Markdoc template that places existing runes, inst
 **Action needed for theme authors:** a theme can no longer override a rune's `sequence`, a meta field's `metaType`, or a layout wrapper attribute that a rune's identity emits. Each is part of what the rune means, not how it looks. Such an override is now dropped and reported; the presentation keys beside it still apply.
 {% /hint %}
 
-[All 18 changes in v0.40.0 →](/releases/v0.40.0)
+[All 15 changes in v0.40.0 →](/releases/v0.40.0)
 
 ## v0.39.0 · Declarations, part two - October 7, 2026
 
@@ -71,19 +71,19 @@ More of what runes did in code is now declared as data: a rune can declare what 
 **Action needed:** a standalone `{% snippet %}` no longer renders inside `<figure class="rf-snippet">`. It is now the `<pre data-source>` a fenced code block produces, so CSS or tooling that selects `.rf-snippet` or `[data-source-path]` must move to `pre[data-source]`. And `parentUrl` is now spelled exactly like the parent page's `url`: a query on `parentUrl:/docs/` must use `parentUrl:/docs`.
 {% /hint %}
 
-[All 46 changes in v0.39.0 →](/releases/v0.39.0)
+[All 37 changes in v0.39.0 →](/releases/v0.39.0)
 
 ## v0.38.0 · Rune transform consolidation - October 7, 2026
 
 Rune transforms lose code that did nothing: metas emitted only to be filtered back out, an unused schema.org channel, and guards that guarded nothing, with rendered output unchanged. Two declarations now reach the author: a mixed list-and-tag field no longer drops the tags written in it, and `refrakt reference` shows each field's authoring grammar.
 
-[All 29 changes in v0.38.0 →](/releases/v0.38.0)
+[All 17 changes in v0.38.0 →](/releases/v0.38.0)
 
-## v0.37.0 · Documentation drift
+## v0.37.0 · Documentation drift - October 6, 2026
 
 `snippet`, `file-ref` and `expand` can name the code they embed, by symbol or by match, instead of counting lines that move whenever the file is edited, and `refrakt migrate snippets --fix` converts existing line ranges. A `reviewed=` marker records that a person read an embedded slice, and `refrakt snippet review --check` reports when it changes. `refrakt stale` ranks documentation by how far the code it describes has moved since the page last changed.
 
-[All 24 changes in v0.37.0 →](/releases/v0.37.0)
+[All 22 changes in v0.37.0 →](/releases/v0.37.0)
 
 ## v0.36.0 · Validation reach - September 21, 2026
 
@@ -93,7 +93,7 @@ The findings v0.34.0 started producing now reach you: the dev server prints pipe
 **Action needed:** `refrakt validate` used to check refrakt's own built-in config, so it always passed. It now validates your project and exits non-zero when a finding is at error severity. A CI step that runs it may start failing on problems that were always there.
 {% /hint %}
 
-[All 45 changes in v0.36.0 →](/releases/v0.36.0)
+[All 41 changes in v0.36.0 →](/releases/v0.36.0)
 
 ## v0.35.0 · Declarative schema.org mapping - September 17, 2026
 
@@ -103,7 +103,7 @@ This milestone turns that channel into data keyed by the rune's own names — th
 same shape BEM, modifiers and `editHints` already use — and builds the review
 surface it has never had.
 
-[All 66 changes in v0.35.0 →](/releases/v0.35.0)
+[All 49 changes in v0.35.0 →](/releases/v0.35.0)
 
 ## v0.34.0 · Content validation - September 15, 2026
 
@@ -112,7 +112,7 @@ enums. Markdoc can check all of them, and has been able to the entire time.
 Nothing in the build ever asked it to. This milestone connects the validator
 that exists to the content it was written for.
 
-[All 40 changes in v0.34.0 →](/releases/v0.34.0)
+[All 32 changes in v0.34.0 →](/releases/v0.34.0)
 
 ## v0.33.0 · Generated reference docs - September 13, 2026
 
@@ -121,7 +121,7 @@ claims to enumerate a complete set — configuration fields, frontmatter fields,
 a rune's attributes — renders from the source that already knows the answer,
 guarded by a test that fails when the two diverge.
 
-[All 87 changes in v0.33.0 →](/releases/v0.33.0)
+[All 69 changes in v0.33.0 →](/releases/v0.33.0)
 
 ## v0.32.0 · Narrowed rune schemas - September 10, 2026
 
@@ -130,13 +130,13 @@ universal attributes that can affect it, so `refrakt reference`, editor
 completion and Markdoc validation stop over-promising — **without any of them
 loading theme config**.
 
-[All 71 changes in v0.32.0 →](/releases/v0.32.0)
+[All 65 changes in v0.32.0 →](/releases/v0.32.0)
 
 ## v0.31.0 · Section-role correctness - September 8, 2026
 
 `reading` and `dropcap` now work on runes where they were silently ignored, most visibly `card`, because eleven runes now declare which of their parts is the body or the header. No build breaks, but those runes gain `data-section` and can render differently. Which universal attributes apply to a rune is now part of the rune itself, so a theme cannot change it.
 
-[All 38 changes in v0.31.0 →](/releases/v0.31.0)
+[All 35 changes in v0.31.0 →](/releases/v0.31.0)
 
 ## v0.30.1 · Transform engine facet decomposition - September 5, 2026
 
@@ -149,7 +149,7 @@ registry** (SPEC-124): one module per axis, dependencies declared
 rather than implied by statement order, and a driver that merges their
 contributions.
 
-[All 68 changes in v0.30.1 →](/releases/v0.30.1)
+[All 59 changes in v0.30.1 →](/releases/v0.30.1)
 
 ## v0.30.0 · Plan lifecycle validation & render-stack removal - August 27, 2026
 
@@ -162,7 +162,7 @@ lifecycle checks already in place. Second, **remove the bespoke `plan build` /
 kept alive — with the SPEC-071 plan-site transition shipped, a plan
 site is now an ordinary refrakt site, so the parallel SSG can go.
 
-[All 12 changes in v0.30.0 →](/releases/v0.30.0)
+[All 6 changes in v0.30.0 →](/releases/v0.30.0)
 
 ## v0.29.0 · Multi-language support (i18n foundation) - July 23, 2026
 
@@ -173,13 +173,13 @@ delivers the **string-resolution foundation** of SPEC-035. Serving the same site
 multiple languages (route trees, switcher, auto-detect) remains a deliberate Non-Goal that this
 foundation is explicitly constrained to allow later without breaking changes.
 
-[All 10 changes in v0.29.0 →](/releases/v0.29.0)
+[All 2 changes in v0.29.0 →](/releases/v0.29.0)
 
 ## v0.28.0 · Plan model hardening - July 17, 2026
 
 Tighten the plan runes' data model along three axes: status vocabulary, spec/PR traceability, and the dependency graph — then sweep the existing content to match.
 
-[All 27 changes in v0.28.0 →](/releases/v0.28.0)
+[All 7 changes in v0.28.0 →](/releases/v0.28.0)
 
 ## v0.27.0 · External data & hosted content
 
@@ -188,7 +188,7 @@ run **without a local filesystem**. The first feeds charts and sortable tables f
 files; the second consolidates the remaining ad-hoc fs seams into one injectable interface so a
 hosted renderer (the GitHub-app product) can build a tenant's repo straight from the API.
 
-[All 6 changes in v0.27.0 →](/releases/v0.27.0)
+[All 2 changes in v0.27.0 →](/releases/v0.27.0)
 
 ## v0.26.0 · Editorial reading & shared layout modes - June 30, 2026
 
@@ -216,7 +216,7 @@ starting templates, robust install from anywhere, and presets shippable independ
 
 ## v0.24.6 - June 23, 2026
 
-[All 8 changes in v0.24.6 →](/releases/v0.24.6)
+[All 4 changes in v0.24.6 →](/releases/v0.24.6)
 
 ## v0.24.5 - June 22, 2026
 
@@ -236,13 +236,13 @@ starting templates, robust install from anywhere, and presets shippable independ
 
 ## v0.24.1 - June 17, 2026
 
-[All 11 changes in v0.24.1 →](/releases/v0.24.1)
+[All 2 changes in v0.24.1 →](/releases/v0.24.1)
 
 ## v0.24.0 · Live backdrops & scroll-reveal motion - June 16, 2026
 
 `bg` can host a live `sandbox` as a full-bleed animated backdrop behind a surface's content. A new `reveal` attribute, with `stagger`, animates runes into view as they scroll in, driven by theme tokens and skipped when motion is reduced or scripts are off.
 
-[All 13 changes in v0.24.0 →](/releases/v0.24.0)
+[All 6 changes in v0.24.0 →](/releases/v0.24.0)
 
 ## v0.23.0 · Surface axes & the skeleton/skin extraction - June 16, 2026
 
@@ -251,7 +251,7 @@ type and built the gallery safety net, v0.23.0 attacks the **differentiation sur
 extracts skeleton from skin and replaces the last cross-rune rune-name lists with
 engine-emitted, theme-overridable config.
 
-[All 15 changes in v0.23.0 →](/releases/v0.23.0)
+[All 8 changes in v0.23.0 →](/releases/v0.23.0)
 
 ## v0.22.0 · Theme platform foundations - June 15, 2026
 
@@ -289,7 +289,7 @@ with per-rune reference docs; this milestone makes it *land* — a cohesive
 showcase of the vocabulary as a system — and consolidates the composition docs.
 No new runtime features.
 
-[All 7 changes in v0.20.1 →](/releases/v0.20.1)
+[All 2 changes in v0.20.1 →](/releases/v0.20.1)
 
 ## v0.20.0 · Surface model: chrome, fills, cover layout & engine variants - June 10, 2026
 
@@ -307,7 +307,7 @@ base along several threads: visual polish of the Lumina theme, making rune
 *bento* into a proper composition substrate (SPEC-085), and improving
 the cross-page *aggregation* runes that the plan plugin leans on.
 
-[All 53 changes in v0.19.0 →](/releases/v0.19.0)
+[All 23 changes in v0.19.0 →](/releases/v0.19.0)
 
 ## v0.18.0 · Contract hardening - June 3, 2026
 
@@ -315,7 +315,7 @@ Follows v0.17.0's declarative metadata-and-layout model. The release hardens
 the rune output contract before third-party themes build against it, and lands
 the one breaking change held back from v0.17.0.
 
-[All 12 changes in v0.18.0 →](/releases/v0.18.0)
+[All 6 changes in v0.18.0 →](/releases/v0.18.0)
 
 ## v0.17.0 · Declarative metadata & layout - June 2, 2026
 
@@ -326,11 +326,11 @@ orthogonal config vocabulary (`metaFields` + `blocks` + `layout`) and giving
 every rune a consistent, theme-overridable metadata treatment. It also lands
 the `file-ref` rune and the shared `preview` drawer.
 
-[All 17 changes in v0.17.0 →](/releases/v0.17.0)
+[All 5 changes in v0.17.0 →](/releases/v0.17.0)
 
 ## v0.16.1 - May 31, 2026
 
-[All 20 changes in v0.16.1 →](/releases/v0.16.1)
+[All 11 changes in v0.16.1 →](/releases/v0.16.1)
 
 ## v0.16.0 · Registry-driven sites - May 29, 2026
 
@@ -341,13 +341,13 @@ and proves the system by scaffolding a real plan site from refrakt's own
 `plan/` content. Builds directly on v0.15.0's embedding primitives
 (`ref` / `expand`).
 
-[All 16 changes in v0.16.0 →](/releases/v0.16.0)
+[All 2 changes in v0.16.0 →](/releases/v0.16.0)
 
 ## v0.15.0 · Composable embedding - May 25, 2026
 
 The v0.15.0 milestone delivers the cluster of runes and infrastructure that makes refrakt's "embed anything inline" story real: a body-only drawer rune with xref-as-trigger (SPEC-060), an `expand` rune that inlines registered entities (SPEC-066), a `snippet` rune that embeds project files as syntax-highlighted code (SPEC-062), and the supporting plumbing that ties them together: `$page.*`/`$file.*` page variables (SPEC-061), generic file roots for namespaced file resolution (SPEC-063), unconditional plan-entity registration (SPEC-064), and configurable xref resolution with patterns and decoupled entity/URL lookup (SPEC-065).
 
-[All 56 changes in v0.15.0 →](/releases/v0.15.0)
+[All 34 changes in v0.15.0 →](/releases/v0.15.0)
 
 ## v0.14.4 · Framework adapter parity with the SvelteKit reference - May 22, 2026
 
@@ -383,15 +383,15 @@ The v0.14.0 milestone establishes refrakt's design tokens contract as a typed, t
 
 Rune packages are now plugins throughout: `site.packages[]` becomes `site.plugins[]`, and the old field is rewritten automatically while it is deprecated. The config's JSON Schema is published at a versioned URL, and an opt-in security policy lets a hosted product render untrusted content with layered defences.
 
-[All 35 changes in v0.12.0 →](/releases/v0.12.0)
+[All 9 changes in v0.12.0 →](/releases/v0.12.0)
 
 ## v0.11.3 - May 4, 2026
 
-[All 8 changes in v0.11.3 →](/releases/v0.11.3)
+[All 3 changes in v0.11.3 →](/releases/v0.11.3)
 
 ## v0.11.2 - May 3, 2026
 
-[All 4 changes in v0.11.2 →](/releases/v0.11.2)
+[All 2 changes in v0.11.2 →](/releases/v0.11.2)
 
 ## v0.11.1 - May 3, 2026
 
@@ -401,7 +401,7 @@ Rune packages are now plugins throughout: `site.packages[]` becomes `site.plugin
 
 `refrakt.config.json` becomes one root config for plugins, the plan and one or more sites, and every framework adapter can pick its site. The new `@refrakt-md/mcp` package exposes the refrakt CLI as a Model Context Protocol server, so agents get typed tools instead of parsing command output.
 
-[All 10 changes in v0.11.0 →](/releases/v0.11.0)
+[All 1 change in v0.11.0 →](/releases/v0.11.0)
 
 ## v0.10.1 - April 29, 2026
 
@@ -413,7 +413,7 @@ Rune packages are now plugins throughout: `site.packages[]` becomes `site.plugin
 
 ## v0.9.9 - April 19, 2026
 
-[All 7 changes in v0.9.9 →](/releases/v0.9.9)
+[All 2 changes in v0.9.9 →](/releases/v0.9.9)
 
 ## v0.9.8 - April 15, 2026
 
@@ -425,11 +425,11 @@ Rune packages are now plugins throughout: `site.packages[]` becomes `site.plugin
 
 ## v0.9.6 - April 14, 2026
 
-[All 27 changes in v0.9.6 →](/releases/v0.9.6)
+[All 1 change in v0.9.6 →](/releases/v0.9.6)
 
 ## v0.9.5 - April 10, 2026
 
-[All 9 changes in v0.9.5 →](/releases/v0.9.5)
+[All 1 change in v0.9.5 →](/releases/v0.9.5)
 
 ## v0.9.4 - April 9, 2026
 
@@ -437,7 +437,7 @@ Rune packages are now plugins throughout: `site.packages[]` becomes `site.plugin
 
 ## v0.9.3 - April 9, 2026
 
-[All 28 changes in v0.9.3 →](/releases/v0.9.3)
+[All 1 change in v0.9.3 →](/releases/v0.9.3)
 
 ## v0.9.2 - April 7, 2026
 

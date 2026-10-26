@@ -1,4 +1,4 @@
-{% spec id="SPEC-170" status="implemented" tags="markdoc, parsing, authoring, composition, tooling" %}
+{% spec id="SPEC-170" status="shipped" tags="markdoc, parsing, authoring, composition, tooling" released-in="v0.42.0" %}
 
 # Markdoc sources may be indented
 

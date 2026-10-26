@@ -107,9 +107,11 @@ jobs:
       # formatting failure reports in seconds. The paths are `format:md`'s, so
       # the gate and the command a contributor runs to fix it cannot disagree.
       #
-      # `plan/` is not covered: three specs embed `{% sandbox %}` blocks, and
-      # the rule would indent their whole bodies, which GitHub then renders as
-      # code (recorded on WORK-657).
+      # `plan/` is not covered: five specs hold nested block tags such as
+      # `{% sandbox %}`, and the rule would indent their whole bodies, which
+      # GitHub then renders as code (recorded on WORK-657). Nor are the release
+      # pages (`site/content/releases/`): `generate-changelog.mjs` rewrites them
+      # on every version PR, so they follow the generator, not the rule.
       - name: refrakt format --check
         run: npm run format:md:check
 
