@@ -4,7 +4,6 @@ description: A link around any content — a word in a sentence, or a whole bloc
 category: Content
 plugin: core
 status: stable
-type: rune
 ---
 
 # Link
