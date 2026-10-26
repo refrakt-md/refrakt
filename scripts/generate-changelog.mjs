@@ -38,7 +38,7 @@ function main() {
 	for (const version of sorted) {
 		const release = {
 			version,
-			date: getTagDate(version),
+			date: getTagDate(version) || recordedDate(join(outDir, `v${version}.md`)),
 			summary: summaryFor(version, notes, milestones),
 			changes: [...versions.get(version)],
 		};
@@ -429,7 +429,7 @@ function processBulletBlock(lines, versionSet) {
 	// particular throws at transform time by design. Stripping fences keeps the
 	// changelog inert. Inline `` `{% x %}` `` code spans are untouched (Markdoc
 	// doesn't parse tags inside inline code), so prose examples still render.
-	lines = stripTables(stripCodeFences(lines));
+	lines = stripTables(stripCodeFences(endIntroductionsBeforeFences(lines)));
 	if (!lines.length) return;
 
 	const firstContent = lines[0].replace(/^- /, '');
@@ -461,6 +461,13 @@ function processBulletBlock(lines, versionSet) {
 	}
 	if (current.length) paragraphs.push(current);
 
+	// The entries this changeset contributes, in order. A sub-bullet nests under
+	// the nearest prose entry before it from the same changeset: a changeset
+	// that opens "X now does more:" and lists what reads as one change with its
+	// details, not as a lead ending in a colon followed by unrelated bullets.
+	// A sub-bullet with no prose before it is an entry of its own, as before.
+	const entries = [];
+
 	for (const para of paragraphs) {
 		// Separate sub-bullets from prose lines.
 		//
@@ -477,6 +484,8 @@ function processBulletBlock(lines, versionSet) {
 			else proseLines.push(l);
 		}
 
+		addProse(proseLines, entries);
+
 		// Process sub-bullets individually, each unwrapped across its own lines
 		for (const sb of subBullets) {
 			const content = sb
@@ -486,32 +495,62 @@ function processBulletBlock(lines, versionSet) {
 			if (/^#{1,6}\s/.test(content)) continue;
 			if (/^@[\w-]+\/[\w-]+@\d/.test(content)) continue;
 			const cleaned = cleanEntry(`- ${content}`);
-			if (cleaned) versionSet.add(cleaned);
+			if (!cleaned) continue;
+			const lead = entries[entries.length - 1];
+			if (lead) lead.subs.push(cleaned);
+			else entries.push({ text: cleaned, subs: [] });
 		}
-
-		if (!proseLines.length) continue;
-
-		// Skip inline heading labels (  ### Section Name)
-		if (proseLines.length === 1 && /^\s+#{1,6}\s/.test(proseLines[0])) continue;
-
-		// Skip category labels (single short line ending with ":")
-		if (
-			proseLines.length === 1 &&
-			/^\s+\S.*:\s*$/.test(proseLines[0]) &&
-			proseLines[0].trim().length < 80
-		)
-			continue;
-
-		// Prose paragraph: unwrap into a single line
-		const unwrapped = proseLines
-			.map((l) => l.replace(/^- /, '').replace(/^\s+/, ''))
-			.join(' ')
-			.trim();
-
-		if (!unwrapped) continue;
-		const cleaned = cleanEntry(`- ${unwrapped}`);
-		if (cleaned) versionSet.add(cleaned);
 	}
+
+	for (const { text, subs } of entries) {
+		versionSet.add([text, ...subs.map((sub) => `  ${sub}`)].join('\n'));
+	}
+}
+
+/** A prose paragraph of a changeset, unwrapped into one entry — unless it is
+ *  only a heading or a short category label, which introduces what follows
+ *  rather than saying anything itself. */
+function addProse(proseLines, entries) {
+	if (!proseLines.length) return;
+
+	// Skip inline heading labels (  ### Section Name)
+	if (proseLines.length === 1 && /^\s+#{1,6}\s/.test(proseLines[0])) return;
+
+	// Skip category labels (single short line ending with ":")
+	if (
+		proseLines.length === 1 &&
+		/^\s+\S.*:\s*$/.test(proseLines[0]) &&
+		proseLines[0].trim().length < 80
+	)
+		return;
+
+	// Prose paragraph: unwrap into a single line
+	const unwrapped = proseLines
+		.map((l) => l.replace(/^- /, '').replace(/^\s+/, ''))
+		.join(' ')
+		.trim();
+
+	if (!unwrapped) return;
+	const cleaned = cleanEntry(`- ${unwrapped}`);
+	if (cleaned) entries.push({ text: cleaned, subs: [] });
+}
+
+/**
+ * A sentence that introduced a code example ends with a colon, and the example
+ * is about to be dropped (`stripCodeFences`). Left as it is, the entry would end
+ * by pointing at nothing, so the colon becomes a full stop.
+ */
+export function endIntroductionsBeforeFences(lines) {
+	const out = [...lines];
+	for (let i = 0; i < out.length; i++) {
+		if (!/^\s*```/.test(out[i])) continue;
+		let j = i - 1;
+		while (j >= 0 && out[j].trim() === '') j--;
+		if (j >= 0 && !/^\s*```/.test(out[j])) out[j] = out[j].replace(/:\s*$/, '.');
+		// Skip to the fence's closing line, so a closer is not read as an opener.
+		for (i++; i < out.length && !/^\s*```/.test(out[i]); i++);
+	}
+	return out;
 }
 
 /** Remove fenced code blocks (``` … ```) from a block of changelog lines,
@@ -567,6 +606,21 @@ function cleanEntry(line) {
 	text = text.replace(/^(- )[a-f0-9]{7,}\s*[-–—]\s*/, '$1');
 
 	return text.trim() || null;
+}
+
+/**
+ * The release date a previous run wrote on the release's page.
+ *
+ * `getTagDate` can only date a release whose tag it can see, and the release
+ * workflow checks out one commit with no tags: what it can see changes from
+ * run to run, and a date that was there could vanish on the next version PR
+ * (v0.37.0's did, in the v0.42.0 one). A release's date never changes once
+ * recorded, so the page itself is the fallback, and a date is only ever added.
+ */
+export function recordedDate(pagePath) {
+	if (!existsSync(pagePath)) return '';
+	const match = /^Released (.+?) · \[All releases\]/m.exec(readFileSync(pagePath, 'utf8'));
+	return match ? match[1] : '';
 }
 
 function getTagDate(version) {
