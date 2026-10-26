@@ -489,6 +489,12 @@ export interface CompiledComposition {
 		node: Node,
 	) => RenderableTreeNodes;
 	info: CompositionInfo;
+	/**
+	 * The template expanded for one instance: what `transform` hands Markdoc,
+	 * before it is transformed. Validation reads it to see which slot each
+	 * placed node came from (ADR-046 decision 3).
+	 */
+	place: (resolved: ResolvedContent, attrs: Record<string, any>) => Node[];
 }
 
 export interface CompileCompositionOptions {
@@ -798,11 +804,7 @@ export function compileComposition(
 	};
 
 	const attributeNames = [...declared];
-	const transform = (
-		resolved: ResolvedContent,
-		attrs: Record<string, any>,
-		config: Config,
-	): RenderableTreeNodes => {
+	const place = (resolved: ResolvedContent, attrs: Record<string, any>): Node[] => {
 		const bound: Record<string, unknown> = {};
 		for (const name of attributeNames) bound[name] = attrs[name];
 		const ctx: ExpandContext = {
@@ -818,6 +820,14 @@ export function compileComposition(
 		for (const n of placed) {
 			if (n.attributes[OWNER_ATTR] === undefined) n.attributes[OWNER_ATTR] = rune;
 		}
+		return placed;
+	};
+	const transform = (
+		resolved: ResolvedContent,
+		attrs: Record<string, any>,
+		config: Config,
+	): RenderableTreeNodes => {
+		const placed = place(resolved, attrs);
 
 		const children = Markdoc.transform(placed, templateConfig(config)) as RenderableTreeNode[];
 
@@ -841,7 +851,7 @@ export function compileComposition(
 		return root;
 	};
 
-	return { transform, info };
+	return { transform, info, place };
 }
 
 // ---------------------------------------------------------------------------

@@ -137,6 +137,8 @@ A slot leaves no element of its own. Its content is placed where the tag stands,
 
 Fallback content renders only when the field is empty: `{% slot name="description" %}No description yet.{% /slot %}`.
 
+**A placed `section` reads its header by position, slots included.** A paragraph directly before the section's first heading is its eyebrow, and one directly after it is its blurb ([`section`](/runes/section)). A slot placed in either position fills that role, whatever its name. When the slot's name is not the role's, the build reports `slot-header-role`: *"slot `description` of `profile` is read as `section`'s blurb; name the field `blurb`, or set `header="headline"` on the section"*. Either remedy works. Naming the field for the role keeps it in the header, and `header` on the section keeps it out. The warning changes nothing that renders.
+
 ### `each` and `$each`
 
 `{% slot name="sections" each %}` does not put a loop in the template. The engine iterates and the template describes **one** item. `sections` is the field a `sections` content model fills, and an ordinary slot name like any other.

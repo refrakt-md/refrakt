@@ -4091,6 +4091,16 @@
 			"page": "section"
 		},
 		{
+			"rune": "section",
+			"plugin": "core",
+			"scope": "own",
+			"name": "header",
+			"type": "\"auto\" | \"headline\" | \"none\"",
+			"required": false,
+			"description": "Which header roles to read: auto (eyebrow, headline and blurb around a leading heading; the default), headline (only the heading), or none (all content is body)",
+			"page": "section"
+		},
+		{
 			"rune": "showcase",
 			"plugin": "core",
 			"scope": "own",
