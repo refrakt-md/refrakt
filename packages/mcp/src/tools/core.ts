@@ -438,14 +438,24 @@ export const formatTool: McpTool = {
 				type: 'boolean',
 				description: 'Report the files that would change and write nothing. Default: false.',
 			},
+			ignore: {
+				type: 'array',
+				items: { type: 'string' },
+				description: 'Files or directories to leave out, such as generated content.',
+			},
 		},
 		additionalProperties: false,
 	},
 	async handler(input, ctx) {
-		const o = input as { paths?: string[]; check?: boolean };
+		const o = input as { paths?: string[]; check?: boolean; ignore?: string[] };
 		// The CLI's own function, as `refrakt.validate` calls it.
 		const { runFormat } = await import('@refrakt-md/cli/format.js');
-		const report = runFormat({ paths: o.paths ?? [], check: o.check, cwd: ctx.cwd });
+		const report = runFormat({
+			paths: o.paths ?? [],
+			check: o.check,
+			ignore: o.ignore,
+			cwd: ctx.cwd,
+		});
 		return { check: !!o.check, ...report };
 	},
 };

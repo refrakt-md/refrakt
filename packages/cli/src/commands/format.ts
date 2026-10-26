@@ -16,6 +16,9 @@ export interface FormatOptions {
 	paths: string[];
 	/** Report what would change and write nothing. */
 	check?: boolean;
+	/** Paths to leave out — files, or directories and everything under them.
+	 *  For generated content, which its generator rewrites. */
+	ignore?: string[];
 	format?: 'text' | 'json';
 	cwd?: string;
 }
@@ -32,7 +35,8 @@ export interface FormatReport {
 /** Directories a walk never enters: generated output and dependencies. */
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'build', '.svelte-kit', '.git']);
 
-function collect(path: string, out: string[]): void {
+function collect(path: string, out: string[], ignored: Set<string>): void {
+	if (ignored.has(path)) return;
 	const stat = statSync(path);
 	if (stat.isFile()) {
 		if (path.endsWith('.md')) out.push(path);
@@ -40,7 +44,7 @@ function collect(path: string, out: string[]): void {
 	}
 	for (const entry of readdirSync(path).sort()) {
 		if (entry.startsWith('.') || SKIP_DIRS.has(entry)) continue;
-		collect(join(path, entry), out);
+		collect(join(path, entry), out, ignored);
 	}
 }
 
@@ -48,8 +52,9 @@ function collect(path: string, out: string[]): void {
 export function runFormat(options: FormatOptions): FormatReport {
 	const cwd = options.cwd ?? process.cwd();
 	const files: string[] = [];
+	const ignored = new Set((options.ignore ?? []).map((p) => resolve(cwd, p)));
 	for (const p of options.paths.length > 0 ? options.paths : ['.']) {
-		collect(resolve(cwd, p), files);
+		collect(resolve(cwd, p), files, ignored);
 	}
 	const report: FormatReport = { files: files.length, changed: [], refused: [] };
 	for (const file of files) {

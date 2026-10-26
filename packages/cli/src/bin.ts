@@ -1664,12 +1664,20 @@ async function buildReferenceContext(
 
 function runFormat(formatArgs: string[]): void {
 	const paths: string[] = [];
+	const ignore: string[] = [];
 	let check = false;
 	let format: 'text' | 'json' = 'text';
 	for (let i = 0; i < formatArgs.length; i++) {
 		const arg = formatArgs[i];
 		if (arg === '--check') {
 			check = true;
+		} else if (arg === '--ignore') {
+			const value = formatArgs[++i];
+			if (!value) {
+				console.error('Error: --ignore requires a path');
+				process.exit(1);
+			}
+			ignore.push(value);
 		} else if (arg === '--format') {
 			const value = formatArgs[++i];
 			if (value !== 'text' && value !== 'json') {
@@ -1690,7 +1698,7 @@ function runFormat(formatArgs: string[]): void {
 	}
 
 	import('./commands/format.js')
-		.then(({ formatCommand }) => process.exit(formatCommand({ paths, check, format })))
+		.then(({ formatCommand }) => process.exit(formatCommand({ paths, check, format, ignore })))
 		.catch((err) => {
 			console.error(`\nError: ${(err as Error).message}`);
 			process.exit(1);
@@ -1708,6 +1716,7 @@ walked for .md files; the default path is the current directory.
 
 Options:
   --check                  Write nothing; exit 1 if any file would change
+  --ignore <path>          Leave out a file or directory (repeatable), e.g. generated content
   --format <text|json>     Output format (default: text)
   --help, -h               Show this help message
 `);

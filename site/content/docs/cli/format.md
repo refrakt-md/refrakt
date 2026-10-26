@@ -39,6 +39,7 @@ Before writing a file, it parses the result and compares it with the original. I
 | Option | Effect |
 |--------|--------|
 | `--check` | Write nothing. List each file that would change, and exit 1 if there is any |
+| `--ignore <path>` | Leave out a file, or a directory and everything under it. Repeat it for several. Use it for generated content, which its generator rewrites |
 | `--format json` | Print `{ check, files, changed, refused }` instead of text |
 
 ## In an editor and for agents
