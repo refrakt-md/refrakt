@@ -1,4 +1,4 @@
-{% work id="WORK-659" status="draft" priority="high" complexity="moderate" source="ADR-046,SPEC-160" tags="runes, section, composition, content-model, diagnostics" milestone="v0.43.0" %}
+{% work id="WORK-659" status="ready" priority="high" complexity="moderate" source="ADR-046,SPEC-160" tags="runes, section, composition, content-model, diagnostics" milestone="v0.43.0" %}
 
 # section's header grammar is anchored to the headline, with a header attribute and a slot-role warning
 
@@ -13,11 +13,11 @@ It lands before {% ref "WORK-653" /%} and {% ref "WORK-654" /%}, which both comp
 
 ## Acceptance Criteria
 
-- [ ] Before anything changes, fixtures record today's output for: SPEC-169 D4's `steps` example, a composed `testimonial` placing quote and attribution slots, `character` with and without its `metablock`, a standalone `section` with only paragraphs, and a standalone `section` with media and paragraphs
+- [ ] Before anything changes, fixtures record today's output for: a `steps` variant that places each step in `{% section %}{% slot /%}{% /section %}` as SPEC-169 D4's text does (the shipped `packages/runes/test/fixtures/composed/steps.md` places `textblock`, so it does not exercise `section`), a composed `testimonial` placing quote and attribution slots, a `character`-shaped template placing `section` with and without its `metablock` (the composed `character` places `card` until {% ref "WORK-653" /%}), a standalone `section` with only paragraphs, and a standalone `section` with an image and paragraphs
 - [ ] With no heading, a `section` has no header and all content is body; an eyebrow is only a paragraph directly before the headline, and a blurb only a paragraph directly after it
 - [ ] `section` accepts `header` (`auto | headline | none`, default `auto`); `headline` lifts only the headline, and `none` reads no header
 - [ ] Content carrying a slot marker that fills a header role whose name differs from the slot's produces a build warning naming the composed rune, the slot, the role and both remedies; the rendered output is unchanged by the warning
-- [ ] The existing composed fixtures (`bond`, `character`, `lore`, `realm`, `faction`) render unchanged and raise no warning
+- [ ] The existing composed fixtures (`bond`, `character`, `lore`, `realm`, `faction`, `teaser`, `steps`) render unchanged and raise no warning. None of them places `section` yet, so this only guards against collateral change; the real check that the storytelling compositions raise no warning on `section` is {% ref "WORK-653" /%}'s
 - [ ] The recorded fixtures' new output is reviewed and every change explained in the resolution
 - [ ] `inspect`, `reference` and the section docs page show the `header` attribute and the anchored grammar
 - [ ] Contracts are regenerated on both copies and the diff reviewed; the SEO baseline does not move
