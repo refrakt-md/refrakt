@@ -269,6 +269,14 @@ for third-party themes that targeted those classes, which ships as a migration n
 dimension each rule moved to. A composition keeping its own element classes is not needed for
 these two runes, and this spec does not propose it.
 
+**No heading eyebrow.** The eyebrow of a composed `hero` or `cta` is `section`'s: a paragraph
+directly before the headline ({% ref "ADR-046" /%}, which resolves its open question here). The
+native runes are documented as also reading two leading headings as eyebrow and headline. Only
+`cta` does; `hero` drops the second heading and the blurb ({% ref "BUG-047" /%}). So the visible
+change is `cta`'s: when it is composed, the first of two leading headings is the headline and the
+second is body. The changeset says so. No use of the form is known outside the docs' own
+example.
+
 **The real prerequisite is defaults.** A hero is `prominence="display"`, `width="full"` and
 `elevation="flush"` unless the author says otherwise. The template can hard-code those on its
 `{% section %}`, but then the author cannot override them: a universal attribute written on the
