@@ -285,6 +285,37 @@ the `section` that carries the header. That is SPEC-145 D14's open question, whi
 composed rune's universal attributes apply to (its "chrome carrier"). `hero` and `cta` move once
 D14 is decided, with the `section` as the carrier.
 
+> **Decided in SPEC-145 D31–D34.** The `section` is the carrier by default, being the template's
+> single top-level rune (D31). It also owns the header, body and media roles, so every universal
+> attribute except `width`, `spacing` and `inset` lands on it (D33). The defaults are a
+> definition `defaults` key (D34):
+>
+> ```yaml
+> defaults:
+>   width: full
+>   elevation: flush
+>   prominence: display
+> ```
+>
+> `density` needs nothing: `section` already resolves to `full`, as `hero` and `cta` do.
+
+**`guestFit` becomes `section`'s `guest-fit` attribute.** The native `hero` hosts a media guest
+with `guestFit: 'bleed'`: a rune guest keeps its own chrome and may spill past the zone, rather
+than being clipped to a framed well. `card` uses `clip`. `guestFit` is a config field, and the
+engine reads it into `data-guest-fit` on the `[data-section="media"]` zone and into `frame`'s
+default `frame-displace-mode`. A config field cannot vary between compositions that place the same
+`section`, and `hero` needs `bleed` where a card-like composition needs `clip`. So:
+
+- `section` gains `guest-fit="clip | bleed"`, default `clip`, emitted as today's
+  `data-guest-fit` on its media zone. It is meaningful only with a media zone, so it lands with
+  the split ({% ref "WORK-652" /%}) or immediately after it.
+- `frame`'s default displace mode and its `frame-overflow="bleed"` check read the resolved
+  attribute, falling back to the config field, which native runes keep.
+- The composed `hero` writes `guest-fit="bleed"` on its `section`. It is `section`'s own
+  attribute, not a universal axis, so it takes no part in D34's defaults.
+- It is named for the data attribute and the existing "clip host" and "bleed host" vocabulary,
+  not `media-fit`, so one concept keeps one name.
+
 ### D8 — `link` wraps blocks
 
 A whole-region link is useful far beyond `card`: a `figure` that opens the full image, a
@@ -409,6 +440,7 @@ linked-eyebrow pill moves into the sections dimension.
 - [ ] `{% link %}` wraps a block as a real `<a>` when it holds nothing interactive and as a focusable, labelled stretched link when it does, decided in the identity transform; a schema property inside it still publishes; `card` and `bento-cell` `href` render through it
 - [ ] `section`'s header grammar is anchored to the headline, `header` is accepted, and slot content filling a header role it is not named for is reported (D9, ADR-046)
 - [ ] SPEC-145 D14's chrome carrier is decided before `hero` or `cta` is composed, and the composed `hero` and `cta` ship with no rune CSS in Lumina
+- [ ] `section` takes `guest-fit="clip | bleed"` (default `clip`), emitted as `data-guest-fit` on its media zone, and `frame`'s displace-mode default and bleed check read the resolved value (D7)
 
 ## References
 
