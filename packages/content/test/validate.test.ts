@@ -12,6 +12,14 @@ import {
 	validatePageDetailed,
 } from '../src/validate.js';
 import type { PipelineWarning } from '@refrakt-md/types';
+import {
+	declareSlotMarkers,
+	declareSlotMarkersOnNodes,
+	defineComposedRune,
+	nodes as coreNodes,
+	parse,
+	tags as coreTags,
+} from '@refrakt-md/runes';
 
 /**
  * Content validation in the build pipeline (SPEC-132 / WORK-556).
@@ -115,7 +123,7 @@ describe('content validation reports what the schemas already declared', () => {
 });
 
 describe('the id allow-list is explicit, so enabling an id is deliberate', () => {
-	it('ships the phase 1 and phase 2 ids, the registers source audit and the unmatched-content audit', () => {
+	it('ships the phase 1 and phase 2 ids, the registers source audit, the unmatched-content audit and the slot-role audit', () => {
 		expect([...DEFAULT_VALIDATION_IDS]).toEqual([
 			'tag-undefined',
 			'attribute-undefined',
@@ -126,6 +134,8 @@ describe('the id allow-list is explicit, so enabling an id is deliberate', () =>
 			'registers-source-unresolved',
 			// WORK-631 — an authored node no content-model field matches.
 			'content-unmatched',
+			// WORK-659 — composed slot content read as a header role it is not named for.
+			'slot-header-role',
 		]);
 	});
 
@@ -442,5 +452,34 @@ describe('a validator error keeps its own location (Markdoc 0.5, WORK-640)', () 
 		expect(finding.id).toBe('pinpoint');
 		expect(finding.line).toBe(5);
 		expect(finding.warning.message).toContain('(line 5)');
+	});
+});
+
+describe('slot-header-role (ADR-046 / WORK-659)', () => {
+	// A composition placing its `description` slot where `section` reads a blurb.
+	const composed = defineComposedRune(
+		'bare-profile',
+		'---\ntag: article\nattributes:\n  name: { type: string, required: true }\ncontent:\n  type: sequence\n  fields:\n    description: { match: paragraph, optional: true }\n---\n\n{% section %}\n# {% $attrs.name %}\n\n{% slot name="description" /%}\n{% /section %}\n',
+	);
+	const config = {
+		tags: declareSlotMarkers({ ...coreTags, 'bare-profile': composed.rune.schema } as never),
+		nodes: declareSlotMarkersOnNodes(coreNodes as never),
+		variables: { generatedIds: new Set<string>(), path: '/', headings: [] },
+	};
+	const ast = parse('{% bare-profile name="Veshra" %}\nA necromancer.\n{% /bare-profile %}\n');
+	const run = (settings?: { enabled: boolean; disableIds?: string[] }) =>
+		validatePageDetailed(ast, config, { url: '/', settings }).filter(
+			(f) => f.id === 'slot-header-role',
+		);
+
+	it('is reported by default, as a warning', () => {
+		expect(DEFAULT_VALIDATION_IDS).toContain('slot-header-role');
+		const [finding] = run();
+		expect(finding.warning.severity).toBe('warning');
+	});
+
+	it('is demoted to info through validation.disableIds', () => {
+		const [finding] = run({ enabled: true, disableIds: ['slot-header-role'] });
+		expect(finding.warning.severity).toBe('info');
 	});
 });

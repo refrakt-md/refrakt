@@ -56,6 +56,10 @@ export const DEFAULT_VALIDATION_IDS: readonly string[] = [
 	// transform drops from the page. Raised by every content-model schema's own
 	// `validate`, against the rune's line, naming the dropped node's line.
 	'content-unmatched',
+	// ADR-046 / WORK-659 — composed slot content a placed `section` reads as a
+	// header role the slot is not named for. Raised by the composition's own
+	// `validate` against its expanded template; the rendered output is unchanged.
+	'slot-header-role',
 ];
 
 /** How a finding's Markdoc level maps onto `PipelineWarning.severity`.
