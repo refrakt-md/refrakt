@@ -3147,7 +3147,7 @@ which wants `prominence="display"`. On a composed rune's root today:
 | Placement | Axes | Lands on |
 |---|---|---|
 | Root | `width`, `spacing`, `inset` | the composed rune's root (D14) |
-| Carrier | `elevation`, `substrate`, `bg` (with `scrim`), `motion` (`reveal`, `stagger`), `tint`'s paint half | the paint carrier (D14, D24, D31) |
+| Carrier | `elevation`, `substrate`, `bg` (with `scrim`), `motion` (`reveal`, `stagger`), `tint`'s paint half, and `density` (default-only, D34) | the paint carrier (D14, D24, D31) |
 | Role owner: header | `prominence` | the placed rune that owns a header role (`header`, `preamble`, `title` or `description`) |
 | Role owner: prose body | `reading`, `dropcap` | the placed rune that declares `prose` and owns the `body` role |
 | Role owner: media | `frame` | the placed rune that owns the media role, or names a `frameTarget` |
@@ -3221,6 +3221,15 @@ defaults:
    axis against the author: an author's universal attribute is always honoured.
 5. **A default is not an author's value** for D32. A `defaults` entry never counts as passing an
    attribute down.
+6. **`density` is accepted, as a default only.** It is a registered axis with no author-facing
+   attribute (it is absent from `AXIS_ATTRIBUTES`), so point 1's "universal axes" would exclude
+   it. But the native `testimonial`, `tier` and `featured-tier` default to `compact`, and
+   {% ref "ADR-042" /%} expects compact density to be a default a composition sets. So `defaults`
+   may name `density` (`full | compact | minimal`). It lands on the carrier (D33), where expansion
+   writes it as an attribute. The density facet already reads one (`ctx.tag.attributes.density`),
+   so only the placed rune's schema has to admit it from a template. With no author attribute
+   there is nothing to override it. Whether authors may write `density` themselves is a separate
+   decision this does not make.
 
 **Why both a literal and a key.** A literal is the natural way to write a default for an
 attribute that lands on something the template places. Only `defaults` can reach the root, and
@@ -3394,6 +3403,7 @@ D28 keeps today's rule.
 - [ ] A composed rune offers a role-bound axis only when an owner resolves; `reference` omits it otherwise and `inspect` gives the reason (D33)
 - [ ] `scrim` lands with `bg` on the carrier; a composition with a background and a scrim and no media slot is accepted, and a cover-mode rune that is not the carrier draws a warning naming both runes (D33)
 - [ ] A definition's `defaults` accepts universal axes only, with values checked; any other key or value is rejected at definition load, naming it (D34)
+- [ ] `defaults: { density: compact }` lands `data-density="compact"` on the carrier, asserted on a composition placing one `section` (D34)
 - [ ] A definition default lands where the author's attribute would, and the order author value > template literal > definition default is asserted for one root-placed and one carrier-placed axis (D34)
 - [ ] A rune may declare several templates in one file, keyed by the values of a declared attribute, selected at transform time (D15)
 - [ ] The selecting attribute must declare `matches`; one without it is rejected, naming the rune (D15)
