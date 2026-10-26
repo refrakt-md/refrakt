@@ -154,7 +154,6 @@ export const realm = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'realm',
 			tag: 'article',
-			property: 'contentSection',
 			properties: {
 				realmType: realmTypeMeta,
 				scale: scaleMeta,

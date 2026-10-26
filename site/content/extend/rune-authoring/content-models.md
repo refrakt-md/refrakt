@@ -301,7 +301,6 @@ transform(resolved, attrs, config) {
   return createComponentRenderable({
     rune: 'my-rune',
     tag: 'section',
-    property: 'contentSection',
     properties: { type: typeMeta },
     refs: { ...pageSectionProperties(header), body: bodyDiv },
     children: [typeMeta, header.wrap('header').next(), bodyDiv.next()],
@@ -375,7 +374,6 @@ export const recipe = createContentModelSchema({
     return createComponentRenderable({
       rune: 'recipe',
       tag: 'article',
-      property: 'contentSection',
       properties: { prepTime: prepTimeMeta, difficulty: difficultyMeta, ... },
       refs: { ...pageSectionProperties(header), ingredients, steps, tips, ... },
       children: [prepTimeMeta, ..., mainContent.next()],

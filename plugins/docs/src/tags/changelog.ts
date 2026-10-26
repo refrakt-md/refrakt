@@ -134,7 +134,6 @@ export const changelog = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'changelog',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				project: projectMeta,
 				release: releases,

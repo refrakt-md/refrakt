@@ -185,7 +185,6 @@ export const coreConfig: ThemeConfig = {
 			rootAttributes: { 'data-code-host': 'true' },
 			editHints: { panel: 'code' },
 		},
-		PageSection: { block: 'page-section' },
 		TableOfContents: { block: 'toc', defaultElevation: 'flush' },
 		/* Snippet doesn't have a normal schema transform — its preprocess
 		 * hook replaces the tag with a `fence` node, which renders as a
@@ -713,6 +712,7 @@ export const coreConfig: ThemeConfig = {
 				align: { source: 'meta', default: 'start' },
 			},
 			sections: sectionSections,
+			provides: ['prose'],
 			autoLabel: pageSectionAutoLabel,
 			editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', body: 'none' },
 		},

@@ -16,14 +16,18 @@ const alignType = ['start', 'center', 'end'] as const;
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
+// `body` is the region after the header (SPEC-160 D1, WORK-651). It went
+// undeclared, so `reading` and `dropcap` did nothing on a section, silently.
 export const sectionSections = {
 	preamble: 'preamble',
 	headline: 'title',
 	blurb: 'description',
+	body: 'body',
 } as const;
 
 export const section = createContentModelSchema({
 	sections: sectionSections,
+	provides: ['prose'],
 	attributes: {
 		align: {
 			type: String,
@@ -59,7 +63,6 @@ export const section = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'section',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				align: alignMeta,
 			},

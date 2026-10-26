@@ -59,7 +59,6 @@ transform(resolved, attrs, config) {
   return createComponentRenderable({
     rune: 'my-rune',
     tag: 'section',
-    property: 'contentSection',
     refs: {
       ...pageSectionProperties(header),
       // adds: eyebrow, headline, image, blurb

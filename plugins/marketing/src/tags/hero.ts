@@ -174,7 +174,6 @@ export const hero = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'hero',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				align: alignMeta,
 				'media-position': mediaPositionMeta,

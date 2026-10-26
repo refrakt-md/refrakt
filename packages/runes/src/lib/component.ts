@@ -10,7 +10,11 @@ export interface TransformResult {
 	tag: NodeType;
 	id?: string;
 	class?: string;
-	/** Structural property name — becomes data-field on the wrapper (BEM/theming) */
+	/**
+	 * @deprecated Ignored since v0.43.0 and removed in the release after. It
+	 * stamped `data-field` on the rune root, which nothing read (SPEC-133,
+	 * WORK-650). Kept so a plugin that still passes it type-checks.
+	 */
 	property?: string;
 	/** A `null` or `undefined` slot value is skipped, so pass optional tags directly. */
 	properties?: Record<string, RenderableNodeCursor<Tag> | Tag | Tag[] | null | undefined>;
@@ -95,7 +99,6 @@ export function createComponentRenderable(result: InlineTransformResult): Tag {
 		result.tag,
 		{
 			id: result.id,
-			'data-field': result.property ? toKebabCase(result.property) : result.property,
 			'data-rune': runeName,
 			class: result.class,
 			...(Object.keys(fields).length > 0 ? { 'data-rune-fields': JSON.stringify(fields) } : {}),

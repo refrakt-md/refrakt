@@ -295,7 +295,6 @@ export const feature = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'feature',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				'media-position': mediaPositionMeta,
 				layout: layoutMeta,

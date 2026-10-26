@@ -131,7 +131,6 @@ export const tabs = createContentModelSchema({
 			rune: 'tab-group',
 			tag: 'section',
 			class: attrs.class,
-			property: 'contentSection',
 			properties: {},
 			refs: { ...pageSectionProperties(headerNodes), tabs: tabList, panels: panelList },
 			children,

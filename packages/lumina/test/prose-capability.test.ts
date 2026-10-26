@@ -80,7 +80,10 @@ describe('the audit of the body-role runes', () => {
 		// an alias of `playlist`, so it needed a duplicate config entry that this
 		// audit then had to keep in sync. BUG-009 made it a real alias; it now
 		// resolves to the primary's config and is no longer a separate body role.
-		expect(bodyRunes.length).toBe(32);
+		//
+		// 33 since WORK-651: `section` declares its `body` role (SPEC-160 D1). Its
+		// body is authored prose, so it provides `prose` like `card`.
+		expect(bodyRunes.length).toBe(33);
 	});
 
 	it('the five non-prose bodies declare no prose capability', () => {

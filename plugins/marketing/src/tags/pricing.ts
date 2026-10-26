@@ -133,7 +133,6 @@ export const pricing = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'pricing',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				tier: tiers,
 			},

@@ -110,7 +110,6 @@
 @import "./styles/runes/file-ref.css" layer(skeleton);
 @import "./styles/runes/form.css" layer(skeleton);
 @import "./styles/runes/mediatext.css" layer(skeleton);
-@import "./styles/runes/page-section.css" layer(skeleton);
 @import "./styles/runes/placeholder.css" layer(skeleton);
 @import "./styles/runes/pullquote.css" layer(skeleton);
 @import "./styles/runes/relationships.css" layer(skeleton);

@@ -413,8 +413,8 @@ describe.each(RUNE_NAMES)(
 				// The plugin config's `defaultElevation: 'flat'` has no counterpart.
 				expect(plugin.attributes['data-elevation']).toBe('flat');
 				expect(out.attributes).not.toHaveProperty('data-elevation');
-				// The plugin publishes its root under `property: 'contentSection'`.
-				expect(plugin.attributes['data-field']).toBe('content-section');
+				// Neither root carries `data-field` since `contentSection` went (WORK-650).
+				expect(plugin.attributes['data-field']).toBeUndefined();
 				expect(out.attributes['data-field']).toBeUndefined();
 			},
 		);
