@@ -18,7 +18,7 @@ It is what [`hero`](/runes/marketing/hero) and [`cta`](/runes/marketing/cta) ren
 {% preview source=true %}
 
 	{% actions %}
-	- [Get started](/docs/getting-started/)
+	- [Get started](/docs/getting-started)
 	- [View on GitHub](https://github.com/refrakt-md/refrakt)
 	{% /actions %}
 
@@ -35,7 +35,7 @@ A fence is a `command` block, unranked, beside the buttons. On a narrow screen t
 	npm create refrakt@latest
 	```
 
-	- [Read the docs](/docs/)
+	- [Read the docs](/docs/getting-started)
 	{% /actions %}
 
 {% /preview %}
