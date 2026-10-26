@@ -8,6 +8,7 @@ import {
 	strong,
 	text,
 	link,
+	linkTag,
 	hardbreak,
 	image,
 	table,
@@ -285,6 +286,7 @@ export {
 	buildLayoutMetas,
 	splitMediaBodyFooter,
 	extractMediaImage,
+	stretchedLink,
 	unwrapParagraphImages,
 	isMediaNode,
 	isSchemeMediaNode,
@@ -1250,7 +1252,8 @@ export const runes = {
  * cells, partials, etc. */
 export const tags = {
 	...runeTagMap(runes),
-	link,
+	// The tag form also wraps blocks (SPEC-160 D8); the node form is unchanged.
+	link: linkTag,
 	...Markdoc.tags,
 	// Markdoc's `if` / `else` declare `primary: { type: Object }`, which is a
 	// statement about *expression syntax*: `{% if $var %}` and

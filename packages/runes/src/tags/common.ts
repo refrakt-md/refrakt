@@ -84,6 +84,18 @@ export const linkItem = createContentModelSchema({
 	},
 });
 
+/**
+ * The stretched whole-region link `card` and `bento-cell` render for `href`
+ * (SPEC-160 D8, WORK-655) — the same anchor `{% link %}` gives interactive
+ * content. It is a real, focusable link: the identity transform labels it from
+ * the host's title (`aria-labelledby`), and the shared link CSS stretches it
+ * over the host. The shorthand always stretches, so the host stays the grid
+ * item and its `>` child selectors keep matching.
+ */
+export function stretchedLink(href: string): Tag {
+	return new Markdoc.Tag('a', { 'data-name': 'link', href, 'data-link': 'stretch' }, []);
+}
+
 export function name(cursor: RenderableNodeCursor) {
 	return cursor.tags('h1', 'h2', 'h3', 'h4', 'h5', 'h6').limit(1);
 }

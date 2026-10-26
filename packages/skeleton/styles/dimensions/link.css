@@ -1,0 +1,25 @@
+/* link — structure (SPEC-160 D8, WORK-655). Whole-region links, keyed on the
+ * `data-link` attribute the identity transform writes, so they work around any
+ * rune and need no rune CSS.
+ *
+ * - wrap: a real `<a>` around content with nothing interactive in it.
+ * - stretch: an `<a>` laid over its host (`card`/`bento-cell` `href`, or a
+ *   `{% link %}` around interactive content); the content's own links and
+ *   controls sit above it and stay clickable. */
+
+a[data-link="wrap"] {
+	display: block;
+}
+
+:has(> [data-link="stretch"]) {
+	position: relative;
+}
+[data-link="stretch"] {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+}
+:has(> [data-link="stretch"]) :is(a, button, input, select, textarea, summary):not([data-link]) {
+	position: relative;
+	z-index: 1;
+}

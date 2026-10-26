@@ -61,7 +61,8 @@ export function buildActions(nodes: readonly Node[], config: Config): AnyTag {
 			// inside it (`rf-actions__list`, `rf-actions__action`).
 			list: rendered.tags('ul', 'ol').toArray() as AnyTag[],
 			action: items,
-			command: rendered.flatten().tags('div').toArray() as AnyTag[],
+			// The wrapper each fence gets above, not the code block inside it.
+			command: rendered.tags('div').toArray() as AnyTag[],
 		},
 		children: rendered.toArray(),
 	}) as AnyTag;

@@ -229,6 +229,43 @@ export const link: Schema = {
 	},
 };
 
+/**
+ * `{% link %}` as a tag (SPEC-160 D8, WORK-655). Inline, it is the `link` node:
+ * a plain `<a>`. Around blocks it makes the whole region a link, and how is
+ * decided in the identity transform rather than here, because links can be added
+ * after this transform runs (entity auto-links, resolved refs). So the block
+ * form emits a marker, `data-link-href`, which the engine turns into a wrapping
+ * `<a>` or a stretched one (`packages/transform/src/link-regions.ts`). It emits
+ * no `data-rune`, so a schema property inside it still publishes. An empty
+ * `href` renders the content unchanged.
+ */
+export const linkTag: Schema = {
+	attributes: {
+		href: { type: String },
+		title: { type: String },
+		'aria-label': {
+			type: String,
+			description: 'Accessible name for a whole-region link; defaults to the content’s title',
+		},
+	},
+	transform(node, config) {
+		if (node.inline) return link.transform!.call(link, node, config);
+		const { urls, path } = config.variables || {};
+		const dirName = path ? dirname(path) : '/';
+		const raw = String(node.attributes.href ?? '');
+		const absPath = dirName !== '/' && raw ? join(dirName, raw) : raw;
+		const href = absPath in (urls || {}) ? urls[absPath] : raw;
+		const children = node.transformChildren(config);
+		if (!href) return children;
+		const label = node.attributes['aria-label'];
+		return new Tag(
+			'div',
+			{ 'data-link-href': href, ...(label ? { 'data-link-label': label } : {}) },
+			children,
+		);
+	},
+};
+
 export const hardbreak = Markdoc.nodes.hardbreak;
 
 export const image: Schema = {

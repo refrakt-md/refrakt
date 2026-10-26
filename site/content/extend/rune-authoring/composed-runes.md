@@ -13,7 +13,7 @@ This page is the reference for writing one. Everything on it applies whether the
 
 One file per rune, and **the file's name is the rune's name**: `runes/bond.md` defines `{% bond %}`. The frontmatter declares the rune's input, the body is its output template, and **slot names are the join** between them — a field the content model produces is placed where the template names it.
 
-```md
+```markdoc
 ---
 tag: aside
 attributes:
@@ -41,7 +41,7 @@ A template nests runes, so indent it to show the nesting. A tag's content may be
 
 The convention, which [`refrakt format`](/docs/cli/format) applies and `refrakt format --check` verifies, is to **indent a tag's content by one tab only when it holds another block tag**:
 
-```md
+```markdoc
 {% section %}
 	{% slot name="sections" each %}
 		{% details summary=$each.heading %}
@@ -145,7 +145,7 @@ Fallback content renders only when the field is empty: `{% slot name="descriptio
 
 `{% slot name="sections" each %}` does not put a loop in the template. The engine iterates and the template describes **one** item. `sections` is the field a `sections` content model fills, and an ordinary slot name like any other.
 
-```md
+```markdoc
 {% slot name="sections" each %}
 	{% details summary=$each.heading %}
 		{% slot /%}
@@ -204,7 +204,7 @@ Markdoc's conditional works — `bond` uses it for its arrow. Its limit: content
 
 The case that bites is a split's media zone. This does not work — the `---` sits inside the `if`, `section` never sees it, and the section silently gets one zone instead of two:
 
-```md
+```markdoc
 {% section media-position="top" %}
 	{% if $attrs.image %}
 		{% slot name="portrait" /%}
@@ -216,7 +216,7 @@ The case that bites is a split's media zone. This does not work — the `---` si
 
 Emit both unconditionally and rely on the consuming rune's empty-input guard instead — `section` omits an empty media zone:
 
-```md
+```markdoc
 {% section media-position="top" %}
 	{% slot name="portrait" /%}
 
