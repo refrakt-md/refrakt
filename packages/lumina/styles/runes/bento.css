@@ -1,8 +1,8 @@
 @layer skin {
 	/* Bento — skin. A grid of cells, each a card-in-a-grid-track (SPEC-085). The
  * container-query grid system, cell flex layout, media placement, sizing knobs,
- * collapse queries, and the stretched link live in @refrakt-md/skeleton
- * (styles/runes/bento.css). What remains here is skin: the grid gap, the cell
+ * and collapse queries live in @refrakt-md/skeleton (styles/runes/bento.css),
+ * and the stretched `href` link in its dimensions/link.css. What remains here is skin: the grid gap, the cell
  * surface chrome + spacing vars, the media-well chrome, type, and bleed resets. */
 
 	.rf-bento__grid {

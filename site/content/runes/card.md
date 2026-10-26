@@ -84,7 +84,7 @@ The media zone holds *any* content — it's ordinary markdown, transformed in pl
 
 ## Whole-card links
 
-`href` makes the entire card clickable. It's rendered as a stretched-link overlay, so real links inside the body or footer stay clickable too (no invalid nested `<a>`).
+`href` makes the entire card clickable. It's rendered as a stretched-link overlay, so real links inside the body or footer stay clickable too (no invalid nested `<a>`). The overlay is a real link: it takes one tab stop, and screen readers announce it by the card's title (`aria-labelledby`).
 
 ```markdoc
 {% card href="/guide/getting-started/" %}
@@ -92,6 +92,22 @@ The media zone holds *any* content — it's ordinary markdown, transformed in pl
 Read the five-minute guide.
 {% /card %}
 ```
+
+Any block can be made a link the same way, with [`{% link %}`](#linking-any-block) around it.
+
+### Linking any block
+
+`{% link %}` around blocks makes the whole region a link. When the content has no links or controls of its own, the region is wrapped in a real `<a>`. When it does, an `<a>` would nest them, so a stretched link is laid over the region instead, as on a card. The choice is made when the page is rendered, so links added late (entity cross-links, resolved refs) are taken into account.
+
+```markdoc
+{% link href="/gallery/harbour/" %}
+{% figure %}
+![The harbour at dawn](harbour.jpg)
+{% /figure %}
+{% /link %}
+```
+
+The link is named by `aria-label` when you give one, else by the content's title. An empty `href` leaves the content unlinked, so a template can write `{% link href=$item.url %}` unconditionally.
 
 ### Media guests in a linked card
 
@@ -203,8 +219,8 @@ In a `grid`, every card in a row shares the height of the tallest one, and the b
     </div>
     <footer data-name="footer">…</footer>
   </div>
-  <!-- only when href is set -->
-  <a data-name="link" href="…" aria-hidden="true" tabindex="-1"></a>
+  <!-- only when href is set: focusable, labelled by the card's title -->
+  <a data-name="link" href="…" data-link="stretch" aria-labelledby="…"></a>
 </div>
 ```
 

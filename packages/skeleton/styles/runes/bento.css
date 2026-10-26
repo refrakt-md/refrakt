@@ -1,6 +1,7 @@
 /* bento — structure. The container-query grid system: the grid track + cell
  * spans, the cell flex layout + media placement, the row/content sizing knobs,
- * the collapse queries, the stretched link, and metadata hiding. The cell surface
+ * the collapse queries, and metadata hiding (the stretched `href` link is the
+ * shared dimensions/link.css). The cell surface
  * chrome, spacing vars (padding/edge/gap), type, and the media-well chrome stay
  * skin (Lumina's styles/runes/bento.css). bento-cell is a hand-rolled surface
  * outside the data-elevation axis, so its padding has no surfaces competitor. */
@@ -155,17 +156,6 @@
 .rf-bento-cell__body img {
 	width: 100%;
 	height: auto;
-}
-
-/* Whole-cell link — stretched overlay; nested links stay clickable. */
-.rf-bento-cell__link {
-	position: absolute;
-	inset: 0;
-	z-index: 0;
-}
-.rf-bento-cell a:not(.rf-bento-cell__link) {
-	position: relative;
-	z-index: 1;
 }
 
 /* ─── Binary collapse — single stacked column with auto rows below breakpoint. ─── */

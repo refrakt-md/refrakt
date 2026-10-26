@@ -25,6 +25,7 @@ import {
 	resolveGap,
 } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
+import { resolveLinkRegions } from './link-regions.js';
 import { DEFAULT_READING, type ReadingRegister } from './reading.js';
 import {
 	createLocaleContext,
@@ -185,7 +186,17 @@ export function createTransform(config: ThemeConfig) {
 		return { ...tree, children: tree.children.map((n) => identityTransform(n, parentRune)) };
 	}
 
-	return (tree: RendererNode) => identityTransform(tree);
+	// WORK-655 — runes whose output is interactive once behaviours run (tabs,
+	// accordion, …): a whole-region link around one cannot wrap it.
+	const interactiveRunes = new Set(
+		Object.entries(runes)
+			.filter(([, cfg]) => cfg.interactive)
+			.map(([key]) => toKebabCase(key)),
+	);
+
+	// Whole-region links resolve last, on the final tree, so a link added after
+	// a rune's transform (an entity auto-link, a resolved ref) is seen.
+	return (tree: RendererNode) => resolveLinkRegions(identityTransform(tree), interactiveRunes);
 }
 
 /** Parse the SPEC-082 `data-rune-fields` channel (a JSON object) once per node.
