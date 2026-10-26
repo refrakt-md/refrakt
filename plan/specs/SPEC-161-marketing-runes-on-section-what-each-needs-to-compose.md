@@ -283,6 +283,13 @@ skin emphasises the lead and makes the rest secondary (smaller, muted). Its cont
 without naming a rune ("a primary value with secondary values beneath it"), and it fits more
 than people: a title over a date, a product over a price.
 
+**"Secondary" here is visual, never `data-meta-rank`.** `[data-density="compact"]
+[data-meta-rank="secondary"]` hides an element, and a composed `testimonial` is compact
+(D1). If `stack` marked its non-lead values with that rank, every compact byline would lose
+the role. Today no code emits `data-meta-rank` ({% ref "BUG-023" /%}), so nothing is hidden. The
+lead is marked with `data-lead`, and the skin styles the rest by `:not([data-lead])`, so a fix
+for BUG-023 cannot reach the byline. Checked on 2026-10-26.
+
 The engine change is one layout branch beside `bar`; the CSS is a few lines in
 `skeleton/styles/dimensions/metadata.css` and Lumina's. `testimonial`'s author rules and
 `cast`'s name and role rules are deleted when those runes compose.
