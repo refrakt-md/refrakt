@@ -1766,6 +1766,10 @@ mechanism.
 
 ### D14 — universal attributes apply to a nominated chrome carrier, not the empty root
 
+> **Nomination is D31's**: exactly one carrier, marked with `chrome` on a placed tag in the
+> template. **D32** decides what happens when a template passes a paint-group attribute down
+> instead.
+
 A composed rune gets the universal attribute surface — `width`, `spacing`, `inset`,
 `elevation`, `substrate`, `scrim`, `reveal`, `tint` — and its *applicability* resolves
 correctly, because that derives from `sections` / `mediaSlots` / `frameTarget`, which a
@@ -3016,6 +3020,110 @@ bound values are `$attrs.*`, `$each.*` and, once it exists, `$slots.*`.
   template is the worked case: only the featured card gets a "Recommended" eyebrow, written
   as content.
 
+### D31 — the paint group has exactly one carrier, nominated in the template
+
+D14 sends the paint group (`elevation`, `substrate`, `reveal`, `tint`'s paint half) to a
+nominated carrier and rejects a template with several top-level placed runes and no
+nomination. It did not say how a template nominates, or whether a template may nominate more
+than one. Both are settled here.
+
+**Exactly one carrier.** An attribute written on a rune describes that rune as one region:
+`elevation="raised"` raises the region. Painting several placed runes instead draws several
+separate surfaces with gaps between them, so the rune as a whole is not raised; its parts are.
+That is a different statement, and it belongs to D32 and not to the carrier.
+
+So a template with several top-level placed runes almost always wants a wrapper, not a second
+carrier. If the whole should be painted, the template places one `section` around them
+({% ref "ADR-041" /%}) and that `section` is the single top-level rune, the carrier by default.
+
+**Nomination is a marker on the placed tag, in the template.**
+
+```markdoc
+{% section chrome %}
+  {% slot name="intro" /%}
+{% /section %}
+{% grid %}
+  {% slot name="items" /%}
+{% /grid %}
+```
+
+1. **The marker is a bare `chrome` attribute**, written the way D26's `each` is. It names no
+   value and takes none.
+2. **It goes on a rune the template places itself.** Content placed by a slot belongs to the
+   author and cannot be nominated (D3). The nominated rune need not be top-level; a template may
+   nominate a rune nested inside another rune it places, and the equivalence test below still
+   applies to it.
+3. **It is consumed at expansion.** It never reaches the placed rune's schema or the rendered
+   HTML. A placeable rune that declares an attribute named `chrome` is a collision, reported at
+   schema construction naming the rune.
+4. **Placing the marker on two runes is rejected** at schema construction, naming both.
+5. **The default stands.** A template with exactly one top-level placed rune needs no marker.
+   Writing one on that rune is allowed and changes nothing.
+
+**Why the template and not the frontmatter.** The frontmatter is the input half of a
+definition and the template is the output half. Two later mechanisms replace the output half
+while keeping the input:
+
+- **D15's several templates** each place different runes, and its cost note already counts "N
+  chrome carriers to nominate". A nomination in the frontmatter would have to name a rune in
+  every template at once.
+- **{% ref "ADR-045" /%}'s template replacement** lets a theme or site swap the template and
+  keep the frontmatter. A frontmatter nomination could name a rune the replacement no longer
+  places. A marker in the template goes with the template that uses it.
+
+**Counting top-level runes under a conditional.** An expansion-bound `{% if %}` (D30) is
+resolved before any rune is painted, so its branches are alternatives, not siblings. The count
+is taken per branch: a branch that places one rune has a default carrier, a branch that places
+several needs its own marker, and a branch that places none falls under D24's warn-and-drop. A
+conditional on a page-scope value survives expansion, so it counts as written.
+
+**How it is likely built, and why the test falls out of it.** Expansion already knows the
+composed rune's own attributes, since it substitutes `$attrs.*` (`composition.ts`, `expand`).
+It can move each paint-group attribute off the root and write it onto the carrier tag as an
+ordinary attribute. The carrier then receives it exactly as if the author had written it there,
+which is D24's equivalence test. Delegation also comes free: when the carrier is an inner
+composition, its own expansion moves the attribute again. This is the expected route, not a
+requirement; the requirement is the equivalence.
+
+**What the rejection says.** D14's error for several top-level runes and no nomination names the
+runes and offers both remedies: wrap them in a `section`, or mark one with `chrome`.
+
+### D32 — an attribute passed down goes only where the template puts it
+
+Some compositions do want their parts painted: a bento whose cells share one look
+({% ref "SPEC-171" /%}), or `comparison`'s cards template ({% ref "SPEC-167" /%}). That is not
+the rune's chrome. It is a container extending a treatment to the items it holds, which is
+{% ref "SPEC-159" /%}'s part 1. A composition expresses it by passing the attribute down
+explicitly where it wants it, `{% card elevation=$attrs.elevation %}`, never by having it
+inferred.
+
+**Decision.** When a template passes a paint-group attribute down to any placed rune, that
+attribute goes only where the template puts it. The carrier does not also receive it.
+
+1. **Per attribute, not per group.** Passing `elevation` down to the cards leaves `tint` going to
+   the carrier.
+2. **Any explicit use counts.** Passing it to one rune or to many, inside an `each` slot or not,
+   all mean the template has taken the attribute over.
+3. **A literal is not passing down.** `{% card elevation="raised" %}` in a template is a fixed
+   part of the design and has nothing to do with the author's attribute. How a literal on the
+   carrier interacts with the author's value is a question about chrome defaults, which
+   {% ref "SPEC-169" /%} D6 routes to D14, and it is not decided here.
+
+**Why the carrier stops receiving it.** Otherwise the region and every item in it are painted:
+a raised region holding raised cards, the double paint D14 exists to prevent, reintroduced one
+level down by the mechanism meant to fix a different problem.
+
+**What this does not open.** `$attrs` names only attributes the rune declares
+(`composition.ts`, error `attrs-undeclared`), and universal attributes are not declared, so
+`$attrs.elevation` is rejected today. Opening it is {% ref "SPEC-159" /%}'s to decide, with its
+cascade. This decision fixes what passing down means once it is possible, so the carrier and
+the cascade cannot both claim the same attribute.
+
+**Consequence for D24's note.** When `$attrs` is opened to universals, it is opened to the paint
+group only. Passing `width`, `spacing` or `inset` down sets a data attribute on a node outside
+the article's direct-child position, where none of their CSS matches (D24). It reads as working
+and does nothing, so it is rejected at schema construction rather than left as a warning.
+
 ## Non-goals
 
 - Replacing {% ref "SPEC-143" /%}'s declared tier — the two tiers coexist, and D5 keeps them distinct
@@ -3165,6 +3273,13 @@ D28 keeps today's rule.
 - [ ] Literal text in a template has a stated translation story, even if that story is "it has none" (D13)
 - [ ] Whether universal attributes on a composed root produce double chrome is verified against Lumina before the carrier mechanism is designed (D14)
 - [ ] Universal attributes apply to the nominated chrome carrier; a template with several top-level placed runes and no nomination is rejected (D14)
+- [ ] A bare `chrome` attribute on a rune the template places nominates it as the paint group's carrier; it is consumed at expansion and appears neither in the placed rune's attributes nor in the rendered HTML (D31)
+- [ ] Marking two placed runes with `chrome` is rejected at schema construction, naming both; marking a slot-placed node is impossible, and a placeable rune declaring a `chrome` attribute is reported as a collision (D31)
+- [ ] The rejection for several top-level runes and no nomination names the runes and offers both remedies: wrap them in a `section`, or mark one with `chrome` (D31)
+- [ ] Top-level runes are counted per branch of an expansion-bound conditional, asserted on a template whose two branches each place one different rune and need no marker (D31)
+- [ ] A paint-group attribute on the composed rune lands on the nominated carrier exactly as if written there, asserted on a template with two top-level runes and a nominated, non-default carrier (D31)
+- [ ] A paint-group attribute that the template passes down to placed runes reaches only those runes; the carrier does not also receive it, and other paint-group attributes still reach the carrier (D32, once `$attrs` admits universals)
+- [ ] Passing `width`, `spacing` or `inset` down through `$attrs` is rejected at schema construction, naming the attribute (D32, once `$attrs` admits universals)
 - [ ] A rune may declare several templates in one file, keyed by the values of a declared attribute, selected at transform time (D15)
 - [ ] The selecting attribute must declare `matches`; one without it is rejected, naming the rune (D15)
 - [ ] Every `matches` value of the selecting attribute is covered by exactly one `{% template %}` block, each template names only known values, and each mismatch is reported by name (D15)
