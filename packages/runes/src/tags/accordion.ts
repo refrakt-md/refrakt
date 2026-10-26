@@ -78,6 +78,7 @@ export const accordionItem = createContentModelSchema({
 // what a section *is* (ADR-028).
 export const accordionSections = {
 	preamble: 'preamble',
+	eyebrow: 'eyebrow',
 	headline: 'title',
 	blurb: 'description',
 } as const;

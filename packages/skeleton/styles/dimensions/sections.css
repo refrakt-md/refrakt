@@ -20,3 +20,17 @@
 	display: flex;
 	flex-wrap: wrap;
 }
+
+/* An eyebrow holding a link is a pill whose link covers it (WORK-656). The
+ * stretched link is structure; the pill's chrome is skin (Lumina's
+ * dimensions/sections.css). Keyed on the role, so every rune with an eyebrow
+ * gets it, `card` included. */
+[data-section="eyebrow"]:has(a) {
+	display: inline-block;
+	position: relative;
+}
+[data-section="eyebrow"]:has(a) a::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+}

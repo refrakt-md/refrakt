@@ -1,0 +1,39 @@
+/* actions — structure (SPEC-160 D6). The action row, the button-shaped link, and
+ * the mobile stack. The look (padding, fill, rank) is skin: Lumina's
+ * styles/runes/actions.css. A host positions the row by setting
+ * `--actions-justify` (hero and cta do, from their alignment). */
+
+.rf-actions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	justify-content: var(--actions-justify, flex-start);
+}
+.rf-actions__list {
+	display: flex;
+	flex-wrap: wrap;
+	list-style: none;
+	justify-content: var(--actions-justify, flex-start);
+}
+.rf-actions__action > a {
+	display: inline-flex;
+	align-items: center;
+}
+
+/* Mobile: stack actions full-width so a command line and the buttons line up. */
+@media (max-width: 640px) {
+	.rf-actions,
+	.rf-actions__list {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.rf-actions__command pre {
+		width: 100%;
+		box-sizing: border-box;
+	}
+	.rf-actions__action > a {
+		justify-content: center;
+		width: 100%;
+		box-sizing: border-box;
+	}
+}

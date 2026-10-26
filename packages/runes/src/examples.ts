@@ -4,6 +4,7 @@
 /** Generated example Markdoc snippets, keyed by rune name. Source: fixtures/*.md. */
 export const RUNE_EXAMPLES: Record<string, string> = {
 	"accordion": "{% accordion %}\n## What is refrakt.md?\n\nA content framework that extends Markdown with semantic runes.\n\n## How do I install it?\n\nRun `npm install @refrakt-md/runes` to get started.\n\n## Is it free?\n\nYes, refrakt.md is open source and free to use.\n{% /accordion %}",
+	"actions": "{% actions %}\n- [Get started](/docs/getting-started)\n- [View on GitHub](https://github.com/refrakt-md/refrakt)\n{% /actions %}",
 	"annotate": "{% annotate %}\nThe refrakt.md framework builds on Markdoc to provide a semantic content transformation pipeline.\n\n{% note %}\nMarkdoc is a Markdown-based authoring system that extends Markdown with a custom tag syntax for structured content.\n{% /note %}\n\nRunes wrap ordinary Markdown and reinterpret it based on context — a heading inside a nav becomes a group title.\n{% /annotate %}",
 	"badge": "This release is {% badge sentiment=\"positive\" %}New{% /badge %}, the API is {% badge sentiment=\"caution\" %}Beta{% /badge %}, and the old endpoint is {% badge sentiment=\"negative\" %}Deprecated{% /badge %}.",
 	"bar": "{% bar %}\nWORK-051\n---\n{% badge sentiment=\"positive\" %}done{% /badge %}\n{% /bar %}",
@@ -52,6 +53,7 @@ export interface RuneFixtureMeta {
 }
 
 export const RUNE_FIXTURE_META: Record<string, RuneFixtureMeta> = {
+	"actions": {"role":"canonical"},
 	"annotate": {"role":"canonical"},
 	"badge": {"role":"canonical","notes":"Inline rune — embed within prose, never as a standalone block (a block paragraph inside the inline span renders invalid)."},
 	"bar": {"role":"canonical"},

@@ -1,19 +1,10 @@
-/* accordion — structure. The eyebrow stretched-link, the items passthrough, the
+/* accordion — structure. The items passthrough, the
  * item-header flex + native-marker hide + chevron box/glyph/open-rotate mechanism,
  * the title/count flex, and the ::details-content collapse mechanism. Type,
  * borders, spacing, the chevron tint, transitions, and prose are skin (Lumina's
  * styles/runes/accordion.css). The chevron glyph is the registry mask
  * --rf-icon-accordion-chevron (SPEC-094 §8 / WORK-437). */
 
-.rf-accordion__eyebrow:has(a) {
-	display: inline-block;
-	position: relative;
-}
-.rf-accordion__eyebrow:has(a) a::before {
-	content: "";
-	position: absolute;
-	inset: 0;
-}
 .rf-accordion__items {
 	display: contents;
 }

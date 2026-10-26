@@ -17,7 +17,7 @@ Universal theming dimensions solve this. A handful of semantic data attributes d
 | **Sentiment** | `data-meta-sentiment` | `positive`, `negative`, `caution`, `neutral` | Badge / value color | `MetaField.sentimentMap` (or legacy `StructureEntry.sentimentMap`) |
 | **Zone layout** | `data-zone-layout` | `bar`, `definition-list` | Geometric shape of a metadata block (flex row, dt/dd grid) | A block's `layout` primitive in `blocks` (SPEC-080) |
 | **Density** | `data-density` | `full`, `compact`, `minimal` | Spacing and detail level | `RuneConfig.defaultDensity` + context |
-| **Section** | `data-section` | `header`, `preamble`, `title`, `description`, `body`, `footer`, `media` | Structural anatomy | `RuneConfig.sections` |
+| **Section** | `data-section` | `header`, `preamble`, `eyebrow`, `title`, `description`, `body`, `footer`, `media` | Structural anatomy | `RuneConfig.sections` |
 | **Media** | `data-media` | `portrait`, `cover`, `thumbnail`, `hero`, `icon` | Image treatment | `RuneConfig.mediaSlots` |
 | **Checklist** | `data-checked` | `checked`, `unchecked`, `active`, `skipped` | Checkbox list items | `RuneConfig.checklist` |
 | **Sequence** | `data-sequence` | `numbered`, `connected`, `plain` | Ordered item indicators | `RuneConfig.sequence` |
@@ -289,6 +289,7 @@ Hero: {
 |------|----------------|-----------------|
 | `header` | Chrome row (badges, status) | Flex wrap, gap |
 | `preamble` | Intro block (eyebrow + headline + blurb) | Flex column |
+| `eyebrow` | Kicker above the title | Small, uppercase, primary colour; a pill when it holds a link |
 | `title` | Primary heading | 1.5rem, bold, scales with density |
 | `description` | Secondary text | Muted color, truncated in compact |
 | `body` | Main content | Standard line height |
@@ -316,6 +317,30 @@ Hero: {
   border-top: 1px solid var(--rf-color-border);
 }
 ```
+
+**The eyebrow and its linked pill.** Every rune with an eyebrow (`hero`, `cta`, `section`, `card`, `feature`, `pricing`, `reveal`, `tabs`, `accordion`, `steps`) maps it to the `eyebrow` role, so one rule styles them all. An eyebrow that holds a link becomes a pill whose link covers it. The stretched link is structure, and the pill's chrome is skin:
+
+```css
+/* skeleton — dimensions/sections.css */
+[data-section="eyebrow"]:has(a) {
+  display: inline-block;
+  position: relative;
+}
+[data-section="eyebrow"]:has(a) a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+/* theme — the pill */
+[data-section="eyebrow"]:has(a) {
+  padding: 0.25rem 0.875rem;
+  border: 1px solid var(--rf-color-border);
+  border-radius: var(--rf-radius-full);
+}
+```
+
+A theme restyles the pill once, here, rather than in each rune. A rune keeps only what is its own: its spacing, and `card`'s one-step-smaller size.
 
 ### Reading register (SPEC-108)
 

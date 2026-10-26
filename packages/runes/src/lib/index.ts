@@ -196,6 +196,7 @@ export function declareUniversalPosture(schema: Schema, posture: UniversalAttrib
 export type SectionRole =
 	| 'header'
 	| 'preamble'
+	| 'eyebrow'
 	| 'title'
 	| 'description'
 	| 'body'

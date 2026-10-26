@@ -49,6 +49,7 @@ export type SlotKind = 'value' | 'region';
 const SECTION_ROLES = [
 	'header',
 	'preamble',
+	'eyebrow',
 	'title',
 	'description',
 	'body',

@@ -387,7 +387,7 @@ export interface RuneConfig {
 	/** Maps structural ref names to standard section roles.
 	 *  The identity transform emits `data-section` on elements whose
 	 *  `data-name` matches a key in this map, enabling generic theme styling.
-	 *  Roles: 'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media'
+	 *  Roles: 'header' | 'preamble' | 'eyebrow' | 'title' | 'description' | 'body' | 'footer' | 'media'
 	 *
 	 *  **Identity (ADR-028)** — not theme-overridable. A join table, not a
 	 *  posture: the keys are `data-name`s the rune's own transform emits and the
@@ -397,7 +397,7 @@ export interface RuneConfig {
 	 *  emitted `data-section` freely; it just does not define the roles. */
 	sections?: Record<
 		string,
-		'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media'
+		'header' | 'preamble' | 'eyebrow' | 'title' | 'description' | 'body' | 'footer' | 'media'
 	>;
 
 	/** Capabilities this rune declares about its own content — SPEC-125 Phase 4.

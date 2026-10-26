@@ -121,14 +121,14 @@ const KNOWN_DUPLICATES: Record<string, string[]> = {
 		'shadow-sample',
 		'shadow-label',
 	],
-	// Repeated item elements only.
-	'call-to-action': ['action'],
+	// Repeated item elements only. `actions` took over `hero`'s and `cta`'s
+	// `action` items when they began to nest it (WORK-654).
+	actions: ['action'],
 	'code-group': ['tab', 'panel'],
 	diff: ['line', 'gutter-num', 'line-content'],
 	feature: ['feature-item'],
 	gallery: ['item'],
 	grid: ['cell'],
-	hero: ['action'],
 	'how-to': ['tool', 'step'],
 	mockup: ['traffic-light'],
 	pagination: ['marker', 'label'],

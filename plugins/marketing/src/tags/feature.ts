@@ -135,6 +135,7 @@ const alignType = ['left', 'center', 'right'] as const;
 // what a section *is* (ADR-028).
 export const featureSections = {
 	preamble: 'preamble',
+	eyebrow: 'eyebrow',
 	headline: 'title',
 	blurb: 'description',
 	media: 'media',

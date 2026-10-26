@@ -204,6 +204,35 @@ describe('a delimited content model with fixed zones (SPEC-169 D1)', () => {
 		expect(byName(host, 'headline').map(textOf)).toEqual(['The harbour']);
 	});
 
+	it('places a composed `hero` over `section`, its actions list wrapped in `{% actions %}` (WORK-654)', () => {
+		// SPEC-169 D1's acceptance fixture: the delimited model addresses the
+		// trailing list inside the content zone, which a single greedy slot could
+		// not.
+		const hero = defineComposedRune('hero', fixture('hero'));
+		const tree = render(
+			'{% hero %}\n![Harbour](/harbour.jpg)\n\n---\n\nNew in 0.43\n\n# Ship faster\n\nOne file per page.\n\n- [Start](/start)\n- [Docs](/docs)\n{% /hero %}',
+			{ hero },
+		);
+		const [host] = byRune(tree, 'section');
+		expect(host.attributes['data-rune-fields']).toContain('"media-position":"bottom"');
+		const [media] = byName(host, 'media');
+		expect(find(media, (n) => n.name === 'img')[0].attributes.src).toBe('/harbour.jpg');
+		const [content] = byName(host, 'content');
+		// The slots named for `section`'s header roles fill them.
+		expect(byName(content, 'eyebrow').map(textOf)).toEqual(['New in 0.43']);
+		expect(byName(content, 'headline').map(textOf)).toEqual(['Ship faster']);
+		expect(byName(content, 'blurb').map(textOf)).toEqual(['One file per page.']);
+		// The author's list sits inside `actions`, ranked.
+		const [actions] = byRune(content, 'actions');
+		expect(byName(actions, 'action').map((n: Json) => n.attributes['data-rank'])).toEqual([
+			'primary',
+			'secondary',
+		]);
+		expect(find(actions, (n) => n.attributes?.[SLOT_ATTR] === 'actions')).toHaveLength(1);
+		// No `---` reaches the output.
+		expect(find(tree, (n) => n.name === 'hr')).toHaveLength(0);
+	});
+
 	it('rejects a field name in two zones', () => {
 		const err = failure(
 			'twice',
