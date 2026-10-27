@@ -73,7 +73,7 @@ of items.
 ### D1 — `testimonial` composes once `section` has a portrait zone, with its author as attributes
 
 **Built from:** `section` with a split and `media="portrait"` ({% ref "SPEC-160" /%} D2), the
-rating `metablock`, and a byline `metablock` in the `stack` layout (D6).
+rating `metablock`, and a byline `metablock` in the `lead` layout (D6).
 
 **Its only missing prerequisite is SPEC-160 D2.** Measured part by part:
 
@@ -87,7 +87,7 @@ rating `metablock`, and a byline `metablock` in the `stack` layout (D6).
 | The surface and compact spacing | `defaults: { elevation: flat, density: compact }` (SPEC-145 D34) | `density` needs D34's extension (SPEC-145 D33, D34) |
 | Round avatar | a media zone marked `data-media="portrait"` | **missing**: `section` has no media zone until {% ref "WORK-652" /%} (v0.43.0) |
 
-`stack` (D6) is what makes the byline look as it does today, name emphasised and role beneath;
+`lead` (D6) is what makes the byline look as it does today, name emphasised and role beneath;
 without it the byline renders in a `bar`, which is correct but reads as one line. `pull-quote`'s
 attribution (D2) is not on this path.
 
@@ -112,7 +112,7 @@ metaFields:
   role:   { condition: role }
 blocks:
   rating: { fields: [rating], layout: bar }
-  byline: { fields: [author, role], layout: stack }
+  byline: { fields: [author, role], layout: lead }
 schema:
   type: Review
   properties: { quote: reviewBody }
@@ -268,7 +268,7 @@ The rest is in place:
 
 So `steps` follows SPEC-156, not SPEC-160.
 
-### D6 — a `stack` layout for blocks: a lead value with secondary values beneath
+### D6 — a `lead` layout for blocks: a lead value with secondary values beneath
 
 A `blocks` entry renders its fields through a layout primitive, and there are two
 (`LayoutPrimitive = 'definition-list' | 'bar'`, `packages/transform/src/types.ts`): `bar`, a row,
@@ -278,14 +278,19 @@ hand-roll in their own CSS:
 - `testimonial.css`: `__author-name` bold, `__author-role` small and muted, `0.125rem` below it;
 - `cast.css`: `__name` semibold, `__role` small and muted, `0.125rem` below it.
 
-`stack` is a third layout: the block's fields in a column, the first marked `data-lead`. The
+**Named `lead`, not `stack`** (renamed 2026-10-27). {% ref "SPEC-156" /%} D11 keeps `stack` unnamed,
+because a column with nothing else to say is ordinary block flow, and naming it invites
+`stack-tight` and `stack-loose`. This layout is named for the one thing that sets it apart from
+flow: a lead value.
+
+`lead` is a third layout: the block's fields in a column, the first marked `data-lead`. The
 skin emphasises the lead and makes the rest secondary (smaller, muted). Its contract is statable
 without naming a rune ("a primary value with secondary values beneath it"), and it fits more
 than people: a title over a date, a product over a price.
 
 **"Secondary" here is visual, never `data-meta-rank`.** `[data-density="compact"]
 [data-meta-rank="secondary"]` hides an element, and a composed `testimonial` is compact
-(D1). If `stack` marked its non-lead values with that rank, every compact byline would lose
+(D1). If `lead` marked its non-lead values with that rank, every compact byline would lose
 the role. Today no code emits `data-meta-rank` ({% ref "BUG-023" /%}), so nothing is hidden. The
 lead is marked with `data-lead`, and the skin styles the rest by `:not([data-lead])`, so a fix
 for BUG-023 cannot reach the byline. Checked on 2026-10-26.
@@ -294,18 +299,18 @@ The engine change is one layout branch beside `bar`; the CSS is a few lines in
 `skeleton/styles/dimensions/metadata.css` and Lumina's. `testimonial`'s author rules and
 `cast`'s name and role rules are deleted when those runes compose.
 
-**Open question, to come back to: a `{% stack %}` rune for authored content.** `bar` and
+**Open question, to come back to: a `{% lead %}` rune for authored content.** `bar` and
 `deflist` ship twice, as a layout the engine fills from declared fields and as a rune that
-renders the same structure over author-written markdown (SPEC-145 D7). `stack` could follow
+renders the same structure over author-written markdown (SPEC-145 D7). `lead` could follow
 suit: each top-level paragraph is an item, the first is the lead, and the output is the same
-`data-zone-layout="stack"` element with `data-lead`, so one set of CSS styles both.
+`data-zone-layout="lead"` element with `data-lead`, so one set of CSS styles both.
 
 ```md
-{% stack %}
+{% lead %}
 **Ada Lovelace**
 
 Analyst, Babbage & Co
-{% /stack %}
+{% /lead %}
 ```
 
 Inline markup would survive (links, bold, an icon), which the field-fed block cannot carry.
@@ -361,7 +366,7 @@ can use the byline instead; the choice is presentational.
 |---|---|---|
 | Rating | none needed: `metaFields` + `metablock` | `testimonial`; any rated thing |
 | `pull-quote` attribution (D2) | extends a core rune | any attributed quote |
-| `stack` block layout (D6) | a third layout primitive | the `testimonial` byline; any lead-over-secondary pair |
+| `lead` block layout (D6) | a third layout primitive | the `testimonial` byline; any lead-over-secondary pair |
 | `section` portrait zone | SPEC-160 D2 | `testimonial`, `cast-member`, `character` |
 | `deflist` feature terms (D3) | extends a core rune | `feature` |
 | `actions` | SPEC-160 D6 | `hero`, `cta`, `tier` |
@@ -373,7 +378,7 @@ can use the byline instead; the choice is presentational.
 
 ## Order
 
-1. `testimonial` (D1, D6): needs SPEC-160 D2 ({% ref "WORK-652" /%}, v0.43.0), `stack`, the
+1. `testimonial` (D1, D6): needs SPEC-160 D2 ({% ref "WORK-652" /%}, v0.43.0), `lead`, the
    codemod, and `density` in SPEC-145 D34.
 2. `steps` (D5): needs SPEC-156's ladder.
 3. `feature` (D3): needs `deflist`'s terms and SPEC-156's arrangements.
@@ -391,7 +396,7 @@ difference explained. The plugin runes stay until that comparison is reviewed.
 - [ ] The composed `testimonial` places one `section` with no `{% if %}`, draws its surface from `defaults: { elevation: flat, density: compact }`, keeps the round avatar for every `variant`, and emits `variant` as `data-variant` on its root
 - [ ] A codemod rewrites `**Name** — Role` testimonial paragraphs into `author` / `role` attributes, and is run over this repo's content
 - [ ] `pull-quote` renders an attribution as `figcaption` inside a `figure`, and is unchanged without one
-- [ ] `blocks` accept a `stack` layout with the first field marked `data-lead`; `testimonial`'s byline renders through it and the hand-rolled author and cast name/role CSS is deleted
+- [ ] `blocks` accept a `lead` layout with the first field marked `data-lead`; `testimonial`'s byline renders through it and the hand-rolled author and cast name/role CSS is deleted
 - [ ] `cast-member` composes over `section` with its name as the header and its role as the blurb, publishing the plugin's `Person` graph
 - [ ] `deflist` reads `definition`'s term shapes, keeps the `**Term:**` form, and `feature` composes over it with matching output
 - [ ] `tier` composes over `card` with authored `price` / `currency`, publishes `Offer` price and priceCurrency, and `29 kr` publishes `SEK` (or the stated currency)

@@ -11,7 +11,7 @@
 - [ ] A composed `testimonial` definition, per SPEC-161 D1's sketch, places one `section` with `media-position="start"` and `media="portrait"`, with no `{% if %}`
 - [ ] It declares `defaults: { elevation: flat, density: compact }`, and renders a surface and the round avatar for every `variant`
 - [ ] `variant` is a declared attribute emitted as `data-variant` on the root
-- [ ] The byline renders through the `stack` layout ({% ref "WORK-667" /%}), with the author name as lead and the role visible at compact density
+- [ ] The byline renders through the `lead` layout ({% ref "WORK-667" /%}), with the author name as lead and the role visible at compact density
 - [ ] Its JSON-LD matches the plugin's `Review` graph (`reviewBody`, `Person` author, `Rating`) at both harvest points, compared against the SEO baseline rather than re-recorded
 - [ ] A codemod rewrites `**Name** — Role` paragraphs into `author` and `role` attributes, using the plugin's own parser, and is run over this repository's content
 - [ ] A page still written the old way reports `content-unmatched` at error severity rather than rendering the paragraph
