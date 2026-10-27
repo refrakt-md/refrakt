@@ -39,6 +39,13 @@
         "injectTo": [
           "text.html.markdown"
         ]
+      },
+      {
+        "scopeName": "text.html.markdown.refrakt.indentation",
+        "path": "./syntaxes/refrakt-indentation.tmLanguage.json",
+        "injectTo": [
+          "text.html.markdown"
+        ]
       }
     ],
     "snippets": [

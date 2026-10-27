@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "comment": "refrakt parses with allowIndentation (SPEC-170 D1): a line indented four spaces or a tab is not an indented code block. The built-in Markdown grammar disagrees, so this claims indented lines before its raw_block rule does, consumes the indentation, and tokenizes the rest as ordinary Markdown blocks. The region lasts while lines stay indented or blank, so blank lines inside an indented fence do not end it; its patterns are the same blocks as the document's top level.",
+  "scopeName": "text.html.markdown.refrakt.indentation",
+  "injectionSelector": "L:text.html.markdown -markup.fenced_code -markup.raw -meta.embedded -comment",
+  "patterns": [{ "include": "#indented" }],
+  "repository": {
+    "indented": {
+      "begin": "(^|\\G)(?:[ ]{4}|\\t)+",
+      "while": "(^|\\G)(?:(?:[ ]{4}|\\t)+|(?=[ \\t]*$))",
+      "patterns": [{ "include": "text.html.markdown#block" }]
+    }
+  }
+}
