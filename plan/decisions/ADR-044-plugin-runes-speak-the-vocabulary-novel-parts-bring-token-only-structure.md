@@ -1,6 +1,9 @@
-{% decision id="ADR-044" status="proposed" date="2026-10-12" source="SPEC-145" tags="theme, plugins, composition, vocabulary, css, tokens, architecture" %}
+{% decision id="ADR-044" status="accepted" date="2026-10-12" source="SPEC-145" tags="theme, plugins, composition, vocabulary, css, tokens, architecture" %}
 
 # Plugin runes speak the vocabulary; novel parts bring token-only structure
+
+> **Accepted on 2026-10-28** as written. The two checks it calls for are
+> {% ref "WORK-673" /%}, and the plugin-authoring guide's rewrite goes with it.
 
 ## Context
 

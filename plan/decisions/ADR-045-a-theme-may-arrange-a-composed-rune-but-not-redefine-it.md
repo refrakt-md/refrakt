@@ -1,6 +1,10 @@
-{% decision id="ADR-045" status="proposed" date="2026-10-20" source="SPEC-145" tags="theme, composition, template, identity, architecture" %}
+{% decision id="ADR-045" status="accepted" date="2026-10-20" source="SPEC-145" tags="theme, composition, template, identity, architecture" %}
 
 # A theme may arrange a composed rune, but not redefine it
+
+> **Accepted on 2026-10-28**, with one amendment: decision 1's input list names `sequence`
+> ({% ref "SPEC-156" /%} D12). The mechanism is {% ref "SPEC-177" /%}; {% ref "SPEC-145" /%} D31
+> and D34 already assume this decision.
 
 ## Context
 
@@ -48,7 +52,9 @@ A site has the same need, more often: "keep this rune's input, but lay it out my
 1. **Arrangement is presentation; input is identity.**
    - A theme or a site may supply a template for a composed rune.
    - Neither may change any part of its input: attributes and their values, content model,
-     slots, fields, `metaFields`, presets, translation keys, or schema row.
+     slots, fields, `metaFields`, presets, translation keys, schema row, or `sequence`
+     (*amended 2026-10-28*, {% ref "SPEC-156" /%} D12: whether an ordinal is information is a
+     fact about the content, so a replaced template cannot remove it).
 
 2. **The template speaks the vocabulary.** It is written in the template language every
    definition uses, and places only the rune's own slots and fields, core primitives, and runes

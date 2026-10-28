@@ -1,6 +1,11 @@
-{% decision id="ADR-042" status="proposed" date="2026-10-10" source="SPEC-145" tags="runes, composition, metadata, theme, config, identity, architecture" %}
+{% decision id="ADR-042" status="accepted" date="2026-10-10" source="SPEC-145" tags="runes, composition, metadata, theme, config, identity, architecture" %}
 
 # Metadata belongs to a rune's definition; themes override native runes only
+
+> **Accepted on 2026-10-28.** Two corrections, marked *Amended* where they land: `hint`'s
+> chrome-carrier prerequisite is decided ({% ref "SPEC-145" /%} D31–D34), and compact density is
+> a definition default an author cannot override, since `density` has no author attribute
+> (D34). The guard in Implementation is {% ref "WORK-669" /%}.
 
 ## Context
 
@@ -133,7 +138,9 @@ three native runes that do use it as chrome, not as a description of an entity:
     - SPEC-145 D13's keyed strings, which give a composition translatable enum labels such as
       "Warning";
     - D14's chrome carrier, so the `sunken` surface and compact density are defaults an author
-      can override;
+      can override. *Amended 2026-10-28:* decided by SPEC-145 D31–D34. The surface is a carrier
+      default the author overrides; compact density is a definition default with no author
+      override (D34);
     - {% ref "SPEC-163" /%}'s `sentiment` axis, which replaces `hint.css`'s per-type colours
       with a value a theme keys without knowing the rune.
 
