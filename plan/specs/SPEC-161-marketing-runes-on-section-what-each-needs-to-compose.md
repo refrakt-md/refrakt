@@ -201,6 +201,8 @@ code; only a composition must be declarative. So:
   today's empty-`<dt>` fallback and warning.
 - The arrangement (grid, list, carousel) is not `deflist`'s. It comes from
   {% ref "SPEC-156" /%}'s row and ladder arrangements, placed around it.
+  *Noted 2026-10-28:* a feature list is usually a grid, and SPEC-156 D1 leaves `grid` to its own
+  spec, so `feature` waits for that spec as well as for `deflist`'s terms.
 - `feature` is then `section` with a split (`media-position` defaulting to `bottom`, as today),
   its header, and the arranged `deflist` over a `definitions` slot. Its chrome is hero's:
   `defaults: { width: full, elevation: flush }` (SPEC-145 D34) and `guest-fit="bleed"` on the

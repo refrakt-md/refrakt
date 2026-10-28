@@ -1,4 +1,4 @@
-{% work id="WORK-583" status="ready" priority="medium" complexity="moderate" source="ADR-029" tags="runes, sequence, dom, a11y, theme, layout" %}
+{% work id="WORK-583" status="ready" priority="medium" complexity="moderate" source="ADR-029" tags="runes, sequence, dom, a11y, theme, layout" milestone="v0.45.0" %}
 
 # Emit sequence ordinals as nodes, not CSS counters
 

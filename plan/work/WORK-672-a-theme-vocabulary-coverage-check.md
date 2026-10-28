@@ -1,4 +1,4 @@
-{% work id="WORK-672" status="ready" priority="medium" complexity="moderate" source="ADR-043" tags="theme, vocabulary, css, coverage, tooling, lumina" %}
+{% work id="WORK-672" status="ready" priority="medium" complexity="moderate" source="ADR-043" tags="theme, vocabulary, css, coverage, tooling, lumina" milestone="v0.46.0" %}
 
 # A theme vocabulary coverage check
 

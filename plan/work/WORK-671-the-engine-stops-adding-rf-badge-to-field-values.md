@@ -1,4 +1,4 @@
-{% work id="WORK-671" status="ready" priority="medium" complexity="moderate" source="ADR-043" tags="engine, theme, skeleton, lumina, metadata, vocabulary" %}
+{% work id="WORK-671" status="ready" priority="medium" complexity="moderate" source="ADR-043" tags="engine, theme, skeleton, lumina, metadata, vocabulary" milestone="v0.46.0" %}
 
 # The engine stops adding rf-badge to field values
 

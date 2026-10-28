@@ -1,4 +1,4 @@
-{% work id="WORK-674" status="ready" priority="low" complexity="simple" source="ADR-047" tags="runes, composition, content-model, schema, validation" %}
+{% work id="WORK-674" status="ready" priority="low" complexity="simple" source="ADR-047" tags="runes, composition, content-model, schema, validation" milestone="v0.46.0" %}
 
 # A composition's narrative field is checked at definition load
 

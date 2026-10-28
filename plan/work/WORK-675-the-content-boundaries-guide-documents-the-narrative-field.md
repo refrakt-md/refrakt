@@ -1,4 +1,4 @@
-{% work id="WORK-675" status="ready" priority="low" complexity="simple" source="ADR-047" tags="docs, runes, composition, content-model, authoring" %}
+{% work id="WORK-675" status="ready" priority="low" complexity="simple" source="ADR-047" tags="docs, runes, composition, content-model, authoring" milestone="v0.46.0" %}
 
 # The content-boundaries guide documents the narrative field
 

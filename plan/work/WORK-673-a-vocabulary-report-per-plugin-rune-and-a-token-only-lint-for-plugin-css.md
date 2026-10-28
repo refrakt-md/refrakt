@@ -1,4 +1,4 @@
-{% work id="WORK-673" status="ready" priority="low" complexity="moderate" source="ADR-044" tags="plugins, vocabulary, css, tokens, lint, tooling, docs" %}
+{% work id="WORK-673" status="ready" priority="low" complexity="moderate" source="ADR-044" tags="plugins, vocabulary, css, tokens, lint, tooling, docs" milestone="v0.46.0" %}
 
 # A vocabulary report per plugin rune and a token-only lint for plugin CSS
 

@@ -1,4 +1,4 @@
-{% work id="WORK-660" status="ready" priority="medium" complexity="simple" source="ADR-046" tags="docs, section, eyebrow, page-sections" %}
+{% work id="WORK-660" status="ready" priority="medium" complexity="simple" source="ADR-046" tags="docs, section, eyebrow, page-sections" milestone="v0.44.0" %}
 
 # Stop documenting heading eyebrows
 

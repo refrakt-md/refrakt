@@ -1,4 +1,4 @@
-{% work id="WORK-670" status="ready" priority="medium" complexity="simple" source="ADR-043" tags="theme, identity, metadata, config" %}
+{% work id="WORK-670" status="ready" priority="medium" complexity="simple" source="ADR-043" tags="theme, identity, metadata, config" milestone="v0.46.0" %}
 
 # All of metaFields is identity
 

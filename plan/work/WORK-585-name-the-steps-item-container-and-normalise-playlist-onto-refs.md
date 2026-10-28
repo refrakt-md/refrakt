@@ -1,4 +1,4 @@
-{% work id="WORK-585" status="ready" priority="medium" complexity="trivial" source="ADR-030" tags="runes, output-contract, refs, data-name, marketing, media, hygiene" %}
+{% work id="WORK-585" status="ready" priority="medium" complexity="trivial" source="ADR-030" tags="runes, output-contract, refs, data-name, marketing, media, hygiene" milestone="v0.45.0" %}
 
 # Name the Steps item container, and normalise Playlist onto refs
 
