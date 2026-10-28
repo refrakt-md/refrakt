@@ -1766,6 +1766,12 @@ mechanism.
 
 ### D14 — universal attributes apply to a nominated chrome carrier, not the empty root
 
+> **Nomination is D31's**: exactly one carrier, marked with `chrome` on a placed tag in the
+> template. **D32** decides what happens when a template passes a paint-group attribute down
+> instead. **D33** places the universal attributes this table leaves out, and revises `scrim`:
+> it follows `bg` to the carrier rather than the media slot. **D34** gives a definition
+> defaults for them.
+
 A composed rune gets the universal attribute surface — `width`, `spacing`, `inset`,
 `elevation`, `substrate`, `scrim`, `reveal`, `tint` — and its *applicability* resolves
 correctly, because that derives from `sections` / `mediaSlots` / `frameTarget`, which a
@@ -1871,7 +1877,8 @@ ADR-030 draws a deliberate line between two words, and a whole-rune template sit
 both:
 
 - **Rule 1** — an arrangement names a *topology*, "the shape of the relationship between
-  a container and its children": `stack`, `row`, `grid`, `split`, `ladder`, `rail`. It is
+  a container and its children": `stack`, `row`, `grid`, `split`, `ladder`, `rail` (`rail` was
+  withdrawn when ADR-030 was accepted on 2026-10-28, for lack of a contract). It is
   explicit that `timeline`, `steps` and `playlist` are **not** arrangements, they are
   "runes that use one". **Rule 5b** requires an enabling topology to have "a contract
   statable **without naming any rune**". A `character`'s compact assembly is
@@ -3028,6 +3035,225 @@ bound values are `$attrs.*`, `$each.*` and, once it exists, `$slots.*`.
   template is the worked case: only the featured card gets a "Recommended" eyebrow, written
   as content.
 
+### D31 — the paint group has exactly one carrier, nominated in the template
+
+D14 sends the paint group (`elevation`, `substrate`, `reveal`, `tint`'s paint half) to a
+nominated carrier and rejects a template with several top-level placed runes and no
+nomination. It did not say how a template nominates, or whether a template may nominate more
+than one. Both are settled here.
+
+**Exactly one carrier.** An attribute written on a rune describes that rune as one region:
+`elevation="raised"` raises the region. Painting several placed runes instead draws several
+separate surfaces with gaps between them, so the rune as a whole is not raised; its parts are.
+That is a different statement, and it belongs to D32 and not to the carrier.
+
+So a template with several top-level placed runes almost always wants a wrapper, not a second
+carrier. If the whole should be painted, the template places one `section` around them
+({% ref "ADR-041" /%}) and that `section` is the single top-level rune, the carrier by default.
+
+**Nomination is a marker on the placed tag, in the template.**
+
+```markdoc
+{% section chrome %}
+  {% slot name="intro" /%}
+{% /section %}
+{% grid %}
+  {% slot name="items" /%}
+{% /grid %}
+```
+
+1. **The marker is a bare `chrome` attribute**, written the way D26's `each` is. It names no
+   value and takes none.
+2. **It goes on a rune the template places itself.** Content placed by a slot belongs to the
+   author and cannot be nominated (D3). The nominated rune need not be top-level; a template may
+   nominate a rune nested inside another rune it places, and the equivalence test below still
+   applies to it.
+3. **It is consumed at expansion.** It never reaches the placed rune's schema or the rendered
+   HTML. A placeable rune that declares an attribute named `chrome` is a collision, reported at
+   schema construction naming the rune.
+4. **Placing the marker on two runes is rejected** at schema construction, naming both.
+5. **The default stands.** A template with exactly one top-level placed rune needs no marker.
+   Writing one on that rune is allowed and changes nothing.
+
+**Why the template and not the frontmatter.** The frontmatter is the input half of a
+definition and the template is the output half. Two later mechanisms replace the output half
+while keeping the input:
+
+- **D15's several templates** each place different runes, and its cost note already counts "N
+  chrome carriers to nominate". A nomination in the frontmatter would have to name a rune in
+  every template at once.
+- **{% ref "ADR-045" /%}'s template replacement** lets a theme or site swap the template and
+  keep the frontmatter. A frontmatter nomination could name a rune the replacement no longer
+  places. A marker in the template goes with the template that uses it.
+
+**Counting top-level runes under a conditional.** An expansion-bound `{% if %}` (D30) is
+resolved before any rune is painted, so its branches are alternatives, not siblings. The count
+is taken per branch: a branch that places one rune has a default carrier, a branch that places
+several needs its own marker, and a branch that places none falls under D24's warn-and-drop. A
+conditional on a page-scope value survives expansion, so it counts as written.
+
+**How it is likely built, and why the test falls out of it.** Expansion already knows the
+composed rune's own attributes, since it substitutes `$attrs.*` (`composition.ts`, `expand`).
+It can move each paint-group attribute off the root and write it onto the carrier tag as an
+ordinary attribute. The carrier then receives it exactly as if the author had written it there,
+which is D24's equivalence test. Delegation also comes free: when the carrier is an inner
+composition, its own expansion moves the attribute again. This is the expected route, not a
+requirement; the requirement is the equivalence.
+
+**What the rejection says.** D14's error for several top-level runes and no nomination names the
+runes and offers both remedies: wrap them in a `section`, or mark one with `chrome`.
+
+### D32 — an attribute passed down goes only where the template puts it
+
+Some compositions do want their parts painted: a bento whose cells share one look
+({% ref "SPEC-171" /%}), or `comparison`'s cards template ({% ref "SPEC-167" /%}). That is not
+the rune's chrome. It is a container extending a treatment to the items it holds, which is
+{% ref "SPEC-159" /%}'s part 1. A composition expresses it by passing the attribute down
+explicitly where it wants it, `{% card elevation=$attrs.elevation %}`, never by having it
+inferred.
+
+**Decision.** When a template passes a paint-group attribute down to any placed rune, that
+attribute goes only where the template puts it. The carrier does not also receive it.
+
+1. **Per attribute, not per group.** Passing `elevation` down to the cards leaves `tint` going to
+   the carrier.
+2. **Any explicit use counts.** Passing it to one rune or to many, inside an `each` slot or not,
+   all mean the template has taken the attribute over.
+3. **A literal is not passing down.** `{% card elevation="raised" %}` in a template is a fixed
+   part of the design and has nothing to do with the author's attribute. A literal on the
+   carrier is a default the author's value overrides (D34).
+
+**Why the carrier stops receiving it.** Otherwise the region and every item in it are painted:
+a raised region holding raised cards, the double paint D14 exists to prevent, reintroduced one
+level down by the mechanism meant to fix a different problem.
+
+**What this does not open.** `$attrs` names only attributes the rune declares
+(`composition.ts`, error `attrs-undeclared`), and universal attributes are not declared, so
+`$attrs.elevation` is rejected today. Opening it is {% ref "SPEC-159" /%}'s to decide, with its
+cascade. This decision fixes what passing down means once it is possible, so the carrier and
+the cascade cannot both claim the same attribute.
+
+**Consequence for D24's note.** When `$attrs` is opened to universals, it is opened to the paint
+group only. Passing `width`, `spacing` or `inset` down sets a data attribute on a node outside
+the article's direct-child position, where none of their CSS matches (D24). It reads as working
+and does nothing, so it is rejected at schema construction rather than left as a warning.
+
+### D33 — every universal attribute has a placement, and `scrim` follows `bg`
+
+D14 placed eight universal attributes. The registry (`AXIS_ATTRIBUTES`,
+`packages/runes/src/universal-attributes.ts`) has twelve axes. The four it left out, and two
+attributes of axes it did place, were found while checking {% ref "SPEC-160" /%} D7's `hero`,
+which wants `prominence="display"`. On a composed rune's root today:
+
+- **`prominence`** is dropped with a `prominence-unsupported` warning. The facet requires a
+  header section role, and a composed rune's generated config declares no `sections`. Emitting
+  it would not help: `density.css` clears `--rf-prominence-size` at every rune root, so the
+  placed `section`'s title would never see it.
+- **`reading`** and **`dropcap`** do nothing. Both target `[data-section="body"]` and require
+  `provides: prose`.
+- **`frame`** is dropped with a "no frame target" warning.
+- **`bg`** paints its background layer on the empty root.
+- **`stagger`** belongs to the `motion` axis with `reveal`, and D14 placed only `reveal`.
+
+**Decision.** Placement is a property of the axis, and there are four placements:
+
+| Placement | Axes | Lands on |
+|---|---|---|
+| Root | `width`, `spacing`, `inset` | the composed rune's root (D14) |
+| Carrier | `elevation`, `substrate`, `bg` (with `scrim`), `motion` (`reveal`, `stagger`), `tint`'s paint half, and `density` (default-only, D34) | the paint carrier (D14, D24, D31) |
+| Role owner: header | `prominence` | the placed rune that owns a header role (`header`, `preamble`, `title` or `description`) |
+| Role owner: prose body | `reading`, `dropcap` | the placed rune that declares `prose` and owns the `body` role |
+| Role owner: media | `frame` | the placed rune that owns the media role, or names a `frameTarget` |
+
+1. **An axis is placed whole.** Every attribute an axis owns in `AXIS_ATTRIBUTES` goes where the
+   axis goes: `tint-mode` with `tint`, `substrate-*` with `substrate`, `frame-*` with `frame`,
+   and the `bg-*` and `scrim*` family with `bg`. `tint` stays the one axis D14 splits.
+2. **A role owner is found the way the carrier is.** The carrier comes first: if it owns the
+   role, it is the owner. Otherwise the owner is the single rune the template places itself
+   that owns the role. Resolution descends through compositions as D24's does, since a
+   composition owns no roles of its own. Each composition decides for itself, so nomination
+   delegates here too.
+3. **Applicability follows the owner.** A composed rune offers a role-bound axis exactly when an
+   owner resolves. Schema narrowing ({% ref "SPEC-125" /%}) then removes it from what `reference`
+   and the editor offer, and `inspect` and `contracts` say why, as they do for a native rune.
+   When no owner resolves, or several do and none is the carrier, the attribute is not offered.
+   An author who writes it anyway gets the same warn-and-drop a native rune gives.
+4. **A new axis must declare its placement.** The placement is recorded on the axis
+   (`UniversalAxisFacet`), not in a list beside it, and a test fails on an axis with none.
+   {% ref "SPEC-163" /%}'s `sentiment` is the next axis, and it is carrier-placed.
+
+**`scrim` follows `bg`, which revises D14.** D14 sent `scrim` to the rune owning the media slot
+and rejected it where none did. The registry files `scrim` under `bg`, not `cover`: the
+background layer builds the scrim on any rune, and cover mode only moves it onto the media area.
+WORK-536 corrected the same misfiling in the schema, where filing `scrim` under `cover` had
+removed a working attribute from 82 of 83 runes. Under D14's rule, a hero with a background
+image, a scrim and no media would have been rejected, and that is an ordinary hero.
+
+So `scrim` goes with `bg` to the carrier. One case is reported: when the rune the template puts
+in cover mode is not the carrier, the author's scrim cannot reach that rune's media. Expansion
+warns, naming both runes, rather than moving the scrim away from its background.
+
+**Consequence for `hero` and `cta`.** Each places one `section`, which is the carrier and owns
+the header, body and media roles. Every attribute except `width`, `spacing` and `inset` lands on
+it. The table matters for compositions that place several runes, and for the errors when no
+rune owns a role.
+
+### D34 — a definition declares defaults for universal axes
+
+A composed rune needs chrome defaults, as a native rune has them in its config
+(`defaultWidth`, `defaultElevation`). {% ref "SPEC-169" /%} D6 routed them here. `hero` is the
+first case: full width, flush elevation and display prominence unless the author says
+otherwise.
+
+Two of those can already be written as literals on the template's `section`, but `width` cannot.
+It is root-placed (D33), and a template never writes on the root.
+
+**Decision.** A definition's frontmatter takes `defaults`, naming universal axes only:
+
+```yaml
+defaults:
+  width: full
+  elevation: flush
+  prominence: display
+```
+
+1. **Only universal axes.** A rune's own attribute takes its default where it is declared, in
+   `attributes`. A `defaults` key that is not a universal axis is rejected at definition load,
+   naming the key. So is a value the axis does not accept.
+2. **A default lands where the author's attribute would**, by D33's placement: `width` on the
+   root, `elevation` on the carrier, `prominence` on the header's owner.
+3. **Precedence**, highest first. This is {% ref "SPEC-177" /%} D3's order, of which this
+   decision is the definition's layer:
+   1. the author's explicit value;
+   2. a literal the template writes on the rune where the attribute lands;
+   3. the site's default, then the theme's (SPEC-177; not built);
+   4. the definition's `defaults`.
+4. **A literal is a default the author overrides.** When the author writes a carrier-placed
+   attribute, expansion writes it onto the carrier (D31) and it replaces the template's literal.
+   D32's literals are therefore defaults, not fixed values. A template cannot pin a universal
+   axis against the author: an author's universal attribute is always honoured.
+5. **A default is not an author's value** for D32. A `defaults` entry never counts as passing an
+   attribute down.
+6. **`density` is accepted, as a default only.** It is a registered axis with no author-facing
+   attribute (it is absent from `AXIS_ATTRIBUTES`), so point 1's "universal axes" would exclude
+   it. But the native `testimonial`, `tier` and `featured-tier` default to `compact`, and
+   {% ref "ADR-042" /%} expects compact density to be a default a composition sets. So `defaults`
+   may name `density` (`full | compact | minimal`). It lands on the carrier (D33), where expansion
+   writes it as an attribute. The density facet already reads one (`ctx.tag.attributes.density`),
+   so only the placed rune's schema has to admit it from a template. With no author attribute
+   there is nothing to override it. Whether authors may write `density` themselves is a separate
+   decision this does not make.
+
+**Why both a literal and a key.** A literal is the natural way to write a default for an
+attribute that lands on something the template places. Only `defaults` can reach the root, and
+only `defaults` is visible in the definition's input half, which is what `reference` documents
+and what SPEC-177's theme and site layers change. A literal and a `defaults` entry for the same
+axis is allowed. The literal wins, by the order above, and `inspect` shows both.
+
+**Likely route.** Root-placed defaults become the generated config's `defaultWidth`,
+`defaultSpacing` and `defaultInset`. The rest are written onto their target tag at expansion when
+neither the author nor a literal has set them.
+
 ## Non-goals
 
 - Replacing {% ref "SPEC-143" /%}'s declared tier — the two tiers coexist, and D5 keeps them distinct
@@ -3177,6 +3403,21 @@ D28 keeps today's rule.
 - [ ] Literal text in a template has a stated translation story, even if that story is "it has none" (D13)
 - [ ] Whether universal attributes on a composed root produce double chrome is verified against Lumina before the carrier mechanism is designed (D14)
 - [ ] Universal attributes apply to the nominated chrome carrier; a template with several top-level placed runes and no nomination is rejected (D14)
+- [ ] A bare `chrome` attribute on a rune the template places nominates it as the paint group's carrier; it is consumed at expansion and appears neither in the placed rune's attributes nor in the rendered HTML (D31)
+- [ ] Marking two placed runes with `chrome` is rejected at schema construction, naming both; marking a slot-placed node is impossible, and a placeable rune declaring a `chrome` attribute is reported as a collision (D31)
+- [ ] The rejection for several top-level runes and no nomination names the runes and offers both remedies: wrap them in a `section`, or mark one with `chrome` (D31)
+- [ ] Top-level runes are counted per branch of an expansion-bound conditional, asserted on a template whose two branches each place one different rune and need no marker (D31)
+- [ ] A paint-group attribute on the composed rune lands on the nominated carrier exactly as if written there, asserted on a template with two top-level runes and a nominated, non-default carrier (D31)
+- [ ] A paint-group attribute that the template passes down to placed runes reaches only those runes; the carrier does not also receive it, and other paint-group attributes still reach the carrier (D32, once `$attrs` admits universals)
+- [ ] Passing `width`, `spacing` or `inset` down through `$attrs` is rejected at schema construction, naming the attribute (D32, once `$attrs` admits universals)
+- [ ] Every universal axis declares its placement (root, carrier, or a role owner) on its `UniversalAxisFacet`, and a test fails on an axis with none (D33)
+- [ ] An axis is placed whole: each attribute an axis owns in `AXIS_ATTRIBUTES` lands on the same rune as the axis, `tint`'s D14 split aside (D33)
+- [ ] `prominence`, `reading`, `dropcap` and `frame` on a composed rune land on the placed rune that owns their role, asserted with `prominence` on a composition placing one `section`, where the title scales exactly as on a `section` written directly (D33)
+- [ ] A composed rune offers a role-bound axis only when an owner resolves; `reference` omits it otherwise and `inspect` gives the reason (D33)
+- [ ] `scrim` lands with `bg` on the carrier; a composition with a background and a scrim and no media slot is accepted, and a cover-mode rune that is not the carrier draws a warning naming both runes (D33)
+- [ ] A definition's `defaults` accepts universal axes only, with values checked; any other key or value is rejected at definition load, naming it (D34)
+- [ ] `defaults: { density: compact }` lands `data-density="compact"` on the carrier, asserted on a composition placing one `section` (D34)
+- [ ] A definition default lands where the author's attribute would, and the order author value > template literal > definition default is asserted for one root-placed and one carrier-placed axis (D34)
 - [ ] A rune may declare several templates in one file, keyed by the values of a declared attribute, selected at transform time (D15)
 - [ ] The selecting attribute must declare `matches`; one without it is rejected, naming the rune (D15)
 - [ ] Every `matches` value of the selecting attribute is covered by exactly one `{% template %}` block, each template names only known values, and each mismatch is reported by name (D15)

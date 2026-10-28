@@ -13,8 +13,18 @@ name-over-role shape is the same as `testimonial`'s byline.
 Two questions were checked by experiment rather than assumed, and the results change the plan
 (see Measurements).
 
-`hero` and `cta` are SPEC-160 D7's, and wait on its theme-class question. `bento` and
-`comparison` stay plugin runes for the reasons SPEC-151 gives.
+`hero` and `cta` are SPEC-160 D7's, now unblocked: {% ref "SPEC-145" /%} D31–D34 settle where
+their universal attributes and defaults land. `bento` and `comparison` stay plugin runes for the
+reasons SPEC-151 gives.
+
+**Revised on 2026-10-26** against the code after v0.42.0 and SPEC-145 D31–D34:
+
+- D1's `variant` is no longer a branch: no stylesheet styles it;
+- D5's `steps` needs SPEC-156's ladder for its numbering;
+- D4's `SPEC-146` gate has lifted;
+- D7 depends on SPEC-145 D30;
+- each composition states its chrome defaults with D34;
+- the Order changes as a result.
 
 ## Measurements
 
@@ -63,7 +73,7 @@ of items.
 ### D1 — `testimonial` composes once `section` has a portrait zone, with its author as attributes
 
 **Built from:** `section` with a split and `media="portrait"` ({% ref "SPEC-160" /%} D2), the
-rating `metablock`, and a byline `metablock` in the `stack` layout (D6).
+rating `metablock`, and a byline `metablock` in the `lead` layout (D6).
 
 **Its only missing prerequisite is SPEC-160 D2.** Measured part by part:
 
@@ -73,10 +83,11 @@ rating `metablock`, and a byline `metablock` in the `stack` layout (D6).
 | Stars | the `rating` field shape and `{% metablock %}` | available, measured |
 | `Review` / `Person` / `Rating` | a frontmatter schema table, author from attributes | available, measured at both harvest points |
 | Author name and role | `metaFields` from attributes, in a byline block | available as `bar`; the stacked look needs D6 |
-| `variant` | `{% if %}` around a whole `{% card %}` or `{% section %}` | available (SPEC-145 D17) |
-| Round avatar | a media zone marked `data-media="portrait"` | **missing**: `section` has no media zone yet, and `card`'s cannot be marked as a portrait |
+| `variant` | a declared attribute, emitted as `data-variant` on the root; no branch | available |
+| The surface and compact spacing | `defaults: { elevation: flat, density: compact }` (SPEC-145 D34) | `density` needs D34's extension (SPEC-145 D33, D34) |
+| Round avatar | a media zone marked `data-media="portrait"` | **missing**: `section` has no media zone until {% ref "WORK-652" /%} (v0.43.0) |
 
-`stack` (D6) is what makes the byline look as it does today, name emphasised and role beneath;
+`lead` (D6) is what makes the byline look as it does today, name emphasised and role beneath;
 without it the byline renders in a `bar`, which is correct but reads as one line. `pull-quote`'s
 attribution (D2) is not on this path.
 
@@ -101,13 +112,16 @@ metaFields:
   role:   { condition: role }
 blocks:
   rating: { fields: [rating], layout: bar }
-  byline: { fields: [author, role], layout: stack }
+  byline: { fields: [author, role], layout: lead }
 schema:
   type: Review
   properties: { quote: reviewBody }
   entities:
     author: { type: Person, property: author, properties: { author: name, role: jobTitle } }
     rating: { type: Rating, property: reviewRating, properties: { rating: ratingValue } }
+defaults:
+  elevation: flat
+  density: compact
 ---
 
 {% section media-position="start" media="portrait" %}
@@ -141,10 +155,22 @@ migration loud, and it must stay so: adding a `body` field would quietly render 
 and publish no author. The fix is a codemod, since the plugin's own parser already knows the
 shape and can rewrite the paragraph into `author` and `role` attributes once.
 
-**`variant` is SPEC-159's `materiality`.** `card` is an object; `inline` and `quote` are regions.
-Until `materiality` exists, the definition places `{% card %}` for `variant="card"` and
-`{% section %}` otherwise, with `{% if %}` around the whole invocation, which SPEC-145 D17
-allows. The duplication goes away with `materiality`.
+**`variant` is not a branch.** An earlier draft placed `{% card %}` for `variant="card"` and
+`{% section %}` otherwise, with `{% if %}` around the whole invocation. That had two problems:
+
+- **The default lost its avatar.** {% ref "WORK-652" /%} gives `media="portrait"` to `section`
+  only, so the `card` branch, which is the default, could not draw a round portrait.
+- **There is nothing to branch on.** `variant` emits `rf-testimonial--card`, `--inline` and
+  `--quote`, and no stylesheet in the repository styles any of them: not Lumina, not skeleton,
+  not the plugin. The surface every testimonial draws comes from `defaultElevation: 'flat'`, and
+  `elevation="flat"` on any rune draws a complete surface: fill, border, radius and padding
+  (`surfaces.css`).
+
+So the composition places one `section`, gets its surface from D34's `elevation: flat` default,
+and keeps `variant` as a declared attribute that the root emits as `data-variant`. A theme that
+keyed on the old classes can key on that. An author who wants the borderless look writes
+`elevation="flush"`. Whether `variant` is retired outright is {% ref "SPEC-159" /%}'s
+`materiality` question, and nothing here depends on it.
 
 ### D2 — `pull-quote` gains an attribution
 
@@ -175,8 +201,13 @@ code; only a composition must be declarative. So:
   today's empty-`<dt>` fallback and warning.
 - The arrangement (grid, list, carousel) is not `deflist`'s. It comes from
   {% ref "SPEC-156" /%}'s row and ladder arrangements, placed around it.
+  *Noted 2026-10-28:* a feature list is usually a grid, and SPEC-156 D1 leaves `grid` to its own
+  spec, so `feature` waits for that spec as well as for `deflist`'s terms.
 - `feature` is then `section` with a split (`media-position` defaulting to `bottom`, as today),
-  its header, and the arranged `deflist` over a `definitions` slot.
+  its header, and the arranged `deflist` over a `definitions` slot. Its chrome is hero's:
+  `defaults: { width: full, elevation: flush }` (SPEC-145 D34) and `guest-fit="bleed"` on the
+  `section` ({% ref "SPEC-160" /%} D7). Today's native `feature` drops a second leading heading
+  ({% ref "BUG-047" /%}), and composing it fixes that.
 
 This does not replace the `segmented` model. `plot` and `storyboard` still need a content model
 that splits on a boundary predicate, because their panels are the rune's own structure. It
@@ -208,20 +239,38 @@ marketing rune where ADR-041's rule points the other way, and the reason `card` 
 
 `pricing` itself is a `section` header and an arranged list of tiers. Its `Product` `name` and
 `description` come from the headline and blurb, which is SPEC-151 D3's `pageSectionProperties`
-case and still gated on {% ref "SPEC-146" /%} Problem 2.
+case. That was gated on {% ref "SPEC-146" /%} Problem 2, which shipped in v0.39.0
+({% ref "WORK-610" /%}), so the gate has lifted. `tier` defaults to
+`elevation: flat, density: compact` (SPEC-145 D34), as the native `tier` and `featured-tier`
+do.
 
 **What authors give up:** the `## Pro — $19` heading shorthand, which the plugin parses into a
 tier. It cannot be expressed declaratively, and keeping it means keeping the plugin rune. That
 regression is the main reason `pricing` is last.
 
-### D5 — `steps` composes as SPEC-151 found
+### D5 — `steps` composes once the ladder exists
 
 `steps` is a `section` with a numbered sequence of `step`s, and `step` is a `section` with a
-split. It has no schema table (only the `Step` typeof) and no imperative residue beyond its
-conditional content model, which a definition can declare. It is the cheapest marketing
-composition after SPEC-160's own `hero` and `cta`.
+split. It has no schema table (only the `Step` typeof).
 
-### D6 — a `stack` layout for blocks: a lead value with secondary values beneath
+An earlier draft called it the cheapest marketing composition, with nothing new needed. That was
+wrong on one point: **numbering**. The native `steps` numbers its items through
+`sequence: 'numbered'` in its config. A composition's generated config has no `sequence`, and
+{% ref "SPEC-169" /%} D6 sends `sequence` to {% ref "SPEC-156" /%}'s ladder,
+`{% group layout="ladder" %}`, which SPEC-169 D4's own `steps` example places. No `group`
+primitive or ladder arrangement exists yet, and SPEC-156 is a draft.
+
+The rest is in place:
+
+- `each` over a list's items shipped in v0.42.0 ({% ref "WORK-648" /%}), so the
+  conditional content model is not needed (SPEC-169 D4);
+- a step written as a list item with no heading renders as body ({% ref "ADR-046" /%});
+- the chrome is `defaults: { elevation: flush }` (SPEC-145 D34). `section` already resolves to
+  `full` density, as `steps` does.
+
+So `steps` follows SPEC-156, not SPEC-160.
+
+### D6 — a `lead` layout for blocks: a lead value with secondary values beneath
 
 A `blocks` entry renders its fields through a layout primitive, and there are two
 (`LayoutPrimitive = 'definition-list' | 'bar'`, `packages/transform/src/types.ts`): `bar`, a row,
@@ -231,27 +280,39 @@ hand-roll in their own CSS:
 - `testimonial.css`: `__author-name` bold, `__author-role` small and muted, `0.125rem` below it;
 - `cast.css`: `__name` semibold, `__role` small and muted, `0.125rem` below it.
 
-`stack` is a third layout: the block's fields in a column, the first marked `data-lead`. The
+**Named `lead`, not `stack`** (renamed 2026-10-27). {% ref "SPEC-156" /%} D11 keeps `stack` unnamed,
+because a column with nothing else to say is ordinary block flow, and naming it invites
+`stack-tight` and `stack-loose`. This layout is named for the one thing that sets it apart from
+flow: a lead value.
+
+`lead` is a third layout: the block's fields in a column, the first marked `data-lead`. The
 skin emphasises the lead and makes the rest secondary (smaller, muted). Its contract is statable
 without naming a rune ("a primary value with secondary values beneath it"), and it fits more
 than people: a title over a date, a product over a price.
+
+**"Secondary" here is visual, never `data-meta-rank`.** `[data-density="compact"]
+[data-meta-rank="secondary"]` hides an element, and a composed `testimonial` is compact
+(D1). If `lead` marked its non-lead values with that rank, every compact byline would lose
+the role. Today no code emits `data-meta-rank` ({% ref "BUG-023" /%}), so nothing is hidden. The
+lead is marked with `data-lead`, and the skin styles the rest by `:not([data-lead])`, so a fix
+for BUG-023 cannot reach the byline. Checked on 2026-10-26.
 
 The engine change is one layout branch beside `bar`; the CSS is a few lines in
 `skeleton/styles/dimensions/metadata.css` and Lumina's. `testimonial`'s author rules and
 `cast`'s name and role rules are deleted when those runes compose.
 
-**Open question, to come back to: a `{% stack %}` rune for authored content.** `bar` and
+**Open question, to come back to: a `{% lead %}` rune for authored content.** `bar` and
 `deflist` ship twice, as a layout the engine fills from declared fields and as a rune that
-renders the same structure over author-written markdown (SPEC-145 D7). `stack` could follow
+renders the same structure over author-written markdown (SPEC-145 D7). `lead` could follow
 suit: each top-level paragraph is an item, the first is the lead, and the output is the same
-`data-zone-layout="stack"` element with `data-lead`, so one set of CSS styles both.
+`data-zone-layout="lead"` element with `data-lead`, so one set of CSS styles both.
 
 ```md
-{% stack %}
+{% lead %}
 **Ada Lovelace**
 
 Analyst, Babbage & Co
-{% /stack %}
+{% /lead %}
 ```
 
 Inline markup would survive (links, bold, an icon), which the field-fed block cannot carry.
@@ -290,6 +351,13 @@ writes its heading as `# {% $attrs.name %}`. `Person` maps `name` and `role` fro
 {% ref "SPEC-149" /%} found. The portrait is SPEC-160 D2's, and an `image` attribute rendered there
 still needs SPEC-149 D4's scheme resolution.
 
+**This depends on {% ref "SPEC-145" /%} D30.** With no `role`, the paragraph after the headline
+is the first paragraph of `body`, so `section`'s grammar reads it as the blurb, and
+{% ref "ADR-046" /%}'s slot-role warning fires. The template must guard the role with
+`{% if $attrs.role %}`. Until D30 resolves an expansion-bound conditional during expansion, the
+`if` stays a tag, and `section` does not see the paragraph inside it (SPEC-145 D17). So the role
+would never be a blurb. `cast-member` waits on D30.
+
 In `testimonial` the subject is the quote and the person is its source, so a heading would be
 wrong there; that is the byline's case. If the two should look identical regardless, `cast-member`
 can use the byline instead; the choice is presentational.
@@ -300,19 +368,25 @@ can use the byline instead; the choice is presentational.
 |---|---|---|
 | Rating | none needed: `metaFields` + `metablock` | `testimonial`; any rated thing |
 | `pull-quote` attribution (D2) | extends a core rune | any attributed quote |
-| `stack` block layout (D6) | a third layout primitive | the `testimonial` byline; any lead-over-secondary pair |
+| `lead` block layout (D6) | a third layout primitive | the `testimonial` byline; any lead-over-secondary pair |
 | `section` portrait zone | SPEC-160 D2 | `testimonial`, `cast-member`, `character` |
 | `deflist` feature terms (D3) | extends a core rune | `feature` |
 | `actions` | SPEC-160 D6 | `hero`, `cta`, `tier` |
 | Authored price + `{% amount %}` (D4) | core rune from SPEC-162 | `tier`, `pricing` |
 | `segmented` content model | SPEC-147 | `plot`, `storyboard` (no longer `feature`) |
+| Ladder arrangement | {% ref "SPEC-156" /%} | `steps` (its numbering), `feature` |
+| Chrome defaults, `density` included | SPEC-145 D34 | every composition here |
+| Expansion-bound conditionals | SPEC-145 D30 | `cast-member` |
 
 ## Order
 
-1. `steps` (D5): nothing new needed once SPEC-160 D2 lands.
-2. `testimonial` (D1, D6): needs SPEC-160 D2, `stack`, and the codemod.
+1. `testimonial` (D1, D6): needs SPEC-160 D2 ({% ref "WORK-652" /%}, v0.43.0), `lead`, the
+   codemod, and `density` in SPEC-145 D34.
+2. `steps` (D5): needs SPEC-156's ladder.
 3. `feature` (D3): needs `deflist`'s terms and SPEC-156's arrangements.
-4. `pricing` and `tier` (D4): needs `actions`, `amount` (SPEC-162), and SPEC-146 for the `Product` header.
+4. `pricing` and `tier` (D4): needs `actions` (v0.43.0), `amount` ({% ref "SPEC-162" /%}) and
+   `featured` ({% ref "SPEC-167" /%}).
+5. `cast-member` (D7): needs SPEC-145 D30, and can go whenever D30 is built.
 
 Each composition is compared with the plugin's output before it replaces anything, as
 {% ref "SPEC-147" /%} D2 set: JSON-LD against the SEO baseline, rendered HTML, and every
@@ -321,13 +395,14 @@ difference explained. The plugin runes stay until that comparison is reviewed.
 ## Acceptance Criteria
 
 - [ ] `testimonial` exists as a composition whose JSON-LD matches the plugin's `Review` graph (reviewBody, Person author, Rating) with the author given as attributes
+- [ ] The composed `testimonial` places one `section` with no `{% if %}`, draws its surface from `defaults: { elevation: flat, density: compact }`, keeps the round avatar for every `variant`, and emits `variant` as `data-variant` on its root
 - [ ] A codemod rewrites `**Name** — Role` testimonial paragraphs into `author` / `role` attributes, and is run over this repo's content
 - [ ] `pull-quote` renders an attribution as `figcaption` inside a `figure`, and is unchanged without one
-- [ ] `blocks` accept a `stack` layout with the first field marked `data-lead`; `testimonial`'s byline renders through it and the hand-rolled author and cast name/role CSS is deleted
+- [ ] `blocks` accept a `lead` layout with the first field marked `data-lead`; `testimonial`'s byline renders through it and the hand-rolled author and cast name/role CSS is deleted
 - [ ] `cast-member` composes over `section` with its name as the header and its role as the blurb, publishing the plugin's `Person` graph
 - [ ] `deflist` reads `definition`'s term shapes, keeps the `**Term:**` form, and `feature` composes over it with matching output
 - [ ] `tier` composes over `card` with authored `price` / `currency`, publishes `Offer` price and priceCurrency, and `29 kr` publishes `SEK` (or the stated currency)
-- [ ] `steps` exists as a composition matching the plugin's output
+- [ ] `steps` exists as a composition matching the plugin's output, numbered by SPEC-156's ladder rather than a `sequence` config field
 - [ ] SPEC-151's open question on `testimonial`'s author sources is closed with a pointer to this spec
 
 ## References
@@ -337,6 +412,7 @@ difference explained. The plugin runes stay until that comparison is reviewed.
 - {% ref "SPEC-146" /%}: reachability, which `pricing`'s header still waits on.
 - {% ref "SPEC-147" /%}: the `segmented` model, and the comparison discipline.
 - {% ref "SPEC-156" /%}: the arrangements `feature` and `pricing` place their items in.
-- {% ref "SPEC-159" /%}: `materiality`, which retires testimonial's `variant` switch.
+- {% ref "SPEC-159" /%}: `materiality`, which decides whether testimonial's `variant` is retired.
+- {% ref "SPEC-145" /%}: D30 (`cast-member`), D31–D34 (carrier, placement, defaults).
 
 {% /spec %}

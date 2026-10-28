@@ -1,6 +1,17 @@
-{% decision id="ADR-043" status="proposed" date="2026-10-12" source="SPEC-145" tags="theme, composition, metadata, vocabulary, config, identity, architecture" %}
+{% decision id="ADR-043" status="accepted" date="2026-10-12" source="SPEC-145" tags="theme, composition, metadata, vocabulary, config, identity, architecture" %}
 
 # A theme renders a vocabulary; it configures no rune
+
+> **Accepted on 2026-10-28**, with three amendments, marked *Amended* where they land:
+>
+> 1. `data-sentiment` and `data-glyph` are not yet in the output; their specs are drafts.
+> 2. `[data-field]` stays a theme hook because `data-field` gets one meaning, "this node carries
+>    field X", in {% ref "SPEC-133" /%}.
+> 3. `formats` is specified as {% ref "SPEC-166" /%} D6, not a spec of its own.
+>
+> The work this decision owes: {% ref "WORK-670" /%} (all of `metaFields` is identity),
+> {% ref "WORK-671" /%} (the engine stops adding `rf-badge`), {% ref "WORK-672" /%} (the
+> vocabulary coverage check).
 
 ## Context
 
@@ -27,6 +38,8 @@ Three facts frame the answer:
   `data-zone-layout`, `data-meta-type`, `data-meta-sentiment`, `data-media`, `data-sentiment`
   ({% ref "SPEC-163" /%}), `data-glyph` ({% ref "SPEC-164" /%}) and the universal axes are all
   closed sets. SPEC-145 D28 makes the value element of a field part of that contract.
+  *Amended 2026-10-28:* `data-sentiment` and `data-glyph` are not in the output yet; SPEC-163 and
+  SPEC-164 are drafts. The rest of the list is.
 - **One presentation decision is still made by the engine, not the theme.** `CHIP_METATYPES`
   in `packages/transform/src/engine.ts` gives `status`, `category` and `tag` values the
   `rf-badge` class, so the engine decides that those values look like pills.
@@ -58,6 +71,12 @@ Three facts frame the answer:
    | How each kind of value is formatted | `formats` (decision 4) |
    | Page chrome and interactive behaviour | layouts, components |
    | Special cases | CSS on `[data-rune]`, `[data-field]`, `[data-value]` |
+
+   *Amended 2026-10-28.* `[data-field]` is a hook only if `data-field` survives into the output.
+   {% ref "SPEC-133" /%} first narrowed it to a meta about to be consumed. It now has one meaning,
+   "this node carries field X", which covers both the consumed meta and the rendered value
+   element of SPEC-145 D28, so the hook stands. SPEC-133's other uses (a root's role, repeated
+   item markers, the engine's row keys) still go.
 
    What it does not supply:
 
@@ -146,7 +165,8 @@ Three facts frame the answer:
   its pill. The contract diff is reviewed.
 - **`formats` needs a spec.** It names the value kinds (duration, date, time, number,
   currency), the styles each accepts, how a style combines with the locale, and how a site
-  overrides it.
+  overrides it. *Amended 2026-10-28:* specified as {% ref "SPEC-166" /%} D6, beside the value
+  kinds it is keyed on, rather than as a spec of its own.
 - **The theme-authoring docs are reorganised around the vocabulary.** They say:
   - what a theme supplies and what it does not (decision 1);
   - styling meaning before special cases (SPEC-145 D28's reading order);

@@ -134,12 +134,71 @@ question in SPEC-165 that `design-context` breaks when a site redefines `palette
   `metaType` with sentiment rather than a new rune. *Decided by {% ref "SPEC-167" /%} D4: a
   `metaType` with sentiment, read from task-list markers, with no rune of its own.*
 
+### D6 — `formats` sets the display style of each value kind, theme-wide
+
+{% ref "ADR-043" /%} decision 4 makes formatting style a theme-wide setting and asked for a spec.
+It is specified here, beside the kinds it is keyed on, because three things only this spec can
+settle decide whether it works: the list of kinds, the formatter it feeds, and where formatting
+runs.
+
+**Today the style is chosen in four places, none of them theme-wide:**
+
+| Where | What | Style |
+|---|---|---|
+| `formatDurationLocale` (`packages/transform/src/engine.ts`) | fields with `transform: 'duration'` | fixed in code |
+| `formatBudgetAmount` (`packages/runes/src/tags/budget.ts`) | budget amounts | fixed `Intl.NumberFormat` currency style |
+| `currency`, `date`, `number` (`packages/runes/src/functions.ts`) | Markdoc functions | fixed options, and `const LOCALE = 'en-US'`, so the site's locale is ignored |
+| `LayoutStructureEntry.dateFormat` (`packages/transform/src/types.ts`) | dates in layout chrome | `Intl.DateTimeFormatOptions` per layout entry |
+
+**Decision.**
+
+1. **`formats` maps a kind to a named style.** Only kinds with a display choice take one:
+
+   | Kind | Styles | Default |
+   |---|---|---|
+   | `date` | `short`, `medium`, `long`, `iso` | `medium` |
+   | `time` | `short`, `long` | `short` |
+   | `duration` | `short` ("15m"), `long` ("15 minutes") | `short` |
+   | `number` | `standard`, `compact` ("1.2M") | `standard` |
+   | `currency` | `symbol` ("€40"), `code` ("EUR 40"), `name` ("40 euros") | `symbol` |
+
+   Each style is a fixed set of `Intl` options, defined once in the kind's formatter. A style is
+   a name, never a pattern string, so a theme cannot write a format that breaks in another
+   locale. `color`, `typeface`, marks, `progress` and `badge` have nothing to format and take no
+   key.
+2. **Style and locale are separate.** The style picks the options; the site's locale
+   ({% ref "SPEC-035" /%}) picks the language. "medium" is "Oct 12, 2026" in English and
+   "12 okt. 2026" in Swedish.
+3. **Precedence:** the site's `formats`, then the theme's, then the defaults above, resolved per
+   key. A theme declares `formats` in its config; a site overrides in `refrakt.config.json`, as
+   it overrides tokens. An unknown kind or style is reported when the config loads, naming it.
+4. **Display text is formatted at stage 4, for primitives and fields alike.** A field is
+   formatted by the engine, which has the theme's config and the locale. A primitive's transform
+   runs at stage 2, which has neither: `functions.ts` cannot even see the site's locale. If a
+   primitive formatted its own display text, the same value would follow the theme as a field
+   and ignore it as a primitive, breaking D1.8. So a primitive emits its element with the raw
+   value and the author's text as a fallback, and the engine replaces the display text through
+   the kind's formatter, exactly as it does for a field. Without the engine (a renderer that
+   skips the identity transform), the author's text shows, which is correct and readable.
+5. **An author's explicit format is not overridden.** A primitive written with a `format`
+   attribute keeps it; `formats` sets the default, as D34 of {% ref "SPEC-145" /%} does for axes.
+   Whether primitives take `format` at all is left to each primitive's spec.
+6. **What it replaces.**
+   - `formatDurationLocale`'s fixed style becomes the `duration` formatter.
+   - Budget's formatter becomes the `currency` formatter, which {% ref "SPEC-162" /%}'s `amount`
+     uses.
+   - The Markdoc functions call the same formatters, with the site's locale and `formats`. Their
+     explicit arguments still win.
+   - A layout entry's `dateFormat` stays as an explicit value for that entry, and without one the
+     entry uses `formats.date`.
+7. **It ships with the first kind module.** There is nothing to configure before a formatter
+   reads it. `amount` and `date` are the first.
+
 ## Not in scope
 
 - `mediatext` and floated images. They were discussed beside this, and are held for a
   separate spec.
 - Units other than currency on `amount` (SPEC-162's open question).
-- Writing the `formats` spec itself. This spec depends on it but does not define it.
 
 ## Open questions
 
@@ -162,6 +221,10 @@ question in SPEC-165 that `design-context` breaks when a site redefines `palette
 - [ ] `progress` gains `data-meta-type` and `data-value` and passes the contract test
 - [ ] A container reads values only through raw values: `tally` from amounts, and `design-context` from rendered `color` and `font` elements
 - [ ] The new `metaType` values are added to the vocabulary and to ADR-043's coverage check
+- [ ] `formats` maps `date`, `time`, `duration`, `number` and `currency` to named styles with the defaults in D6; an unknown kind or style is reported at config load (D6)
+- [ ] A site's `formats` overrides the theme's per key, and the locale and the style combine as D6.2 states (D6)
+- [ ] A value placed as a field and the same value written as a primitive render identical display text under any `formats`, asserted for a date and an amount (D6.4)
+- [ ] The duration, budget-currency and Markdoc-function formatting paths go through the shared formatters, and `functions.ts` uses the site's locale (D6.6)
 
 ## References
 

@@ -131,6 +131,19 @@ plus the postprocess-sentinel case, which is a genuinely different job and
 should say so — either a distinct attribute or a documented, named exception
 rather than a footnote in another spec.
 
+> **Amended 2026-10-28, with {% ref "ADR-043" /%}'s acceptance.** `data-field` has one
+> meaning: **this node carries field X.** That covers two of the six uses above, the consumed
+> meta (1) and the value-bearing visible element (3), because both are the carrier of a named
+> field, one removed and one rendered. {% ref "SPEC-145" /%} D28 puts `data-field` on every
+> rendered field value, and ADR-043 gives themes `[data-field]` as a hook, so the rendered
+> carrier keeps it.
+>
+> The other uses still go: the root's semantic role (5, {% ref "WORK-650" /%}), repeated item
+> markers such as `<li data-field="item">` (4), which move to `refs`, and the engine's row key
+> (6), which takes another name or goes. The sentinel (2) stays the named exception it already
+> is. Value elements gain no `data-name` for being values; a value that is also a named part
+> carries both.
+
 Consequences worth naming up front, because they are what make this a spec
 rather than a refactor:
 
@@ -249,7 +262,7 @@ is worth doing is this spec's own open question.
 ## Acceptance Criteria
 - [x] `properties` and `refs` have a stated rule that predicts which map a node belongs in, and the authoring docs describe what the catalog actually emits
 - [ ] Nodes that survive into the output are addressed by `data-name` and carry a BEM element class — the ~97 content markers and value-bearing elements included
-- [ ] `data-field` on rune output means one thing: a meta about to be consumed and removed
+- [ ] `data-field` on rune output means one thing: the node carries that field, as a meta about to be consumed or as its rendered value element (amended 2026-10-28)
 - [x] The postprocess sentinels are either given their own attribute or documented as a named exception, not left as a footnote in another spec
 - [ ] `data-field` casing is consistent between rune-emitted and engine-emitted output, or the engine stops emitting it
 - [ ] `property: 'contentSection'` is gone from all 29 transforms, along with the dead `Page` / `DocPage` nodes, the `PageSection` config entry and its CSS — and `TransformResult.property` with them

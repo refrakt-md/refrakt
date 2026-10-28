@@ -269,6 +269,14 @@ for third-party themes that targeted those classes, which ships as a migration n
 dimension each rule moved to. A composition keeping its own element classes is not needed for
 these two runes, and this spec does not propose it.
 
+**No heading eyebrow.** The eyebrow of a composed `hero` or `cta` is `section`'s: a paragraph
+directly before the headline ({% ref "ADR-046" /%}, which resolves its open question here). The
+native runes are documented as also reading two leading headings as eyebrow and headline. Only
+`cta` does; `hero` drops the second heading and the blurb ({% ref "BUG-047" /%}). So the visible
+change is `cta`'s: when it is composed, the first of two leading headings is the headline and the
+second is body. The changeset says so. No use of the form is known outside the docs' own
+example.
+
 **The real prerequisite is defaults.** A hero is `prominence="display"`, `width="full"` and
 `elevation="flush"` unless the author says otherwise. The template can hard-code those on its
 `{% section %}`, but then the author cannot override them: a universal attribute written on the
@@ -276,6 +284,59 @@ composed rune (`{% hero prominence="prominent" %}`) lands on the composition's e
 the `section` that carries the header. That is SPEC-145 D14's open question, which element a
 composed rune's universal attributes apply to (its "chrome carrier"). `hero` and `cta` move once
 D14 is decided, with the `section` as the carrier.
+
+> **Decided in SPEC-145 D31–D34.** The `section` is the carrier by default, being the template's
+> single top-level rune (D31). It also owns the header, body and media roles, so every universal
+> attribute except `width`, `spacing` and `inset` lands on it (D33). The defaults are a
+> definition `defaults` key (D34):
+>
+> ```yaml
+> defaults:
+>   width: full
+>   elevation: flush
+>   prominence: display
+> ```
+>
+> `density` needs nothing: `section` already resolves to `full`, as `hero` and `cta` do.
+
+**Button size follows the section's `prominence`.** `hero` and `cta` size their buttons
+differently: `hero` `0.7rem 1.75rem` at `--rf-text`, `cta` `0.625rem 1.5rem` at `--rf-text-sm`.
+{% ref "WORK-654" /%} moves each size into custom properties that `hero.css` and `cta.css` set.
+Once those files are deleted, the size has to come from something a composition can set. Decided
+on 2026-10-26: `actions` takes its size from the enclosing section's `prominence`, not from a
+`size` attribute of its own.
+
+- **`display` and `prominent` give the large size**, which is today's `hero` buttons. `normal`
+  and `quiet`, and an `actions` with no `prominence` around it, give the default size, which is
+  today's `cta` buttons. The composed `hero` declares `prominence: display` (SPEC-145 D34), so it
+  needs nothing more. A `cta` written with `prominence="display"` gets hero-sized buttons, which
+  is the intent.
+- **It needs no new attribute.** The emphasis of a region's header and of its calls to action
+  are one choice, and the composition already declares it.
+- **It follows the nearest section only.** `density.css` clears `--rf-prominence-size` at every
+  rune root, and `actions` is a rune, so the size cannot ride that variable. The `actions.css`
+  rules key on the enclosing section's `data-prominence` instead, and must not reach an
+  `actions` inside a nested rune: a raised card in a display hero keeps default buttons. The
+  same protection is what `density.css` gives titles.
+- The custom properties WORK-654 introduces stay as the mechanism. The prominence rules set
+  them, in place of `hero.css` and `cta.css`.
+
+**`guestFit` becomes `section`'s `guest-fit` attribute.** The native `hero` hosts a media guest
+with `guestFit: 'bleed'`: a rune guest keeps its own chrome and may spill past the zone, rather
+than being clipped to a framed well. `card` uses `clip`. `guestFit` is a config field, and the
+engine reads it into `data-guest-fit` on the `[data-section="media"]` zone and into `frame`'s
+default `frame-displace-mode`. A config field cannot vary between compositions that place the same
+`section`, and `hero` needs `bleed` where a card-like composition needs `clip`. So:
+
+- `section` gains `guest-fit="clip | bleed"`, default `clip`, emitted as today's
+  `data-guest-fit` on its media zone. It is meaningful only with a media zone, so it lands with
+  the split ({% ref "WORK-652" /%}) or immediately after it.
+- `frame`'s default displace mode and its `frame-overflow="bleed"` check read the resolved
+  attribute, falling back to the config field, which native runes keep.
+- The composed `hero` writes `guest-fit="bleed"` on its `section`. It is `section`'s own
+  attribute, not a universal axis, so it takes no part in D34's defaults.
+- It is named for the data attribute and the existing "clip host" and "bleed host" vocabulary,
+  not `media-fit`, so one concept keeps one name.
 
 ### D8 — `link` wraps blocks
 
@@ -401,6 +462,7 @@ linked-eyebrow pill moves into the sections dimension.
 - [ ] `{% link %}` wraps a block as a real `<a>` when it holds nothing interactive and as a focusable, labelled stretched link when it does, decided in the identity transform; a schema property inside it still publishes; `card` and `bento-cell` `href` render through it
 - [ ] `section`'s header grammar is anchored to the headline, `header` is accepted, and slot content filling a header role it is not named for is reported (D9, ADR-046)
 - [ ] SPEC-145 D14's chrome carrier is decided before `hero` or `cta` is composed, and the composed `hero` and `cta` ship with no rune CSS in Lumina
+- [ ] `section` takes `guest-fit="clip | bleed"` (default `clip`), emitted as `data-guest-fit` on its media zone, and `frame`'s displace-mode default and bleed check read the resolved value (D7)
 
 ## References
 

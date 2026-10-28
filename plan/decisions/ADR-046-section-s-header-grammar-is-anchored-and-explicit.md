@@ -105,14 +105,53 @@ Chosen, together with an anchored grammar and a diagnostic.
 - {% ref "SPEC-169" /%} D4's `steps` example renders its steps as body.
 - `header` is a new attribute on `section`. `reference` documents it, and the editor offers it.
 
-## Open questions
+## Resolved: a heading is never an eyebrow
 
-- **A heading used as an eyebrow.** `hero`, `cta` and `feature` read two headings as an eyebrow
-  heading and a headline. `section`'s eyebrow is a paragraph only, so a composed `hero` that
-  places a heading eyebrow would get the wrong headline. This is the one case where (b)'s
-  binding by name is cleaner. It is decided with {% ref "SPEC-160" /%} D7, when `hero` and `cta`
-  become compositions. The options are an eyebrow field that also takes a heading followed by
-  another heading, or a composed `hero` that turns its heading eyebrow into a paragraph.
+This was left open: `hero`, `cta` and `feature` were documented as reading two leading headings
+as an eyebrow heading and a headline, and `section`'s eyebrow is a paragraph only. The options
+were an eyebrow field that also takes a heading followed by another heading, or a composed
+`hero` that turns a heading eyebrow into a paragraph.
+
+**Decided on 2026-10-26: neither. An eyebrow is a paragraph directly before the headline
+(decision 1), with no heading form, in `section` and in every composition over it.**
+
+What was measured, rendering `## What's new in v2`, `# Build with refrakt.md` and a paragraph:
+
+| Rune | Today |
+|---|---|
+| `cta` | `<h2 data-name="eyebrow">`, `<h1 data-name="headline">`, `<p data-name="blurb">`: works |
+| `hero` | `<h2 data-name="headline">What's new in v2</h2>`; the real headline and the blurb are dropped with no warning |
+| `feature` | the same as `hero` |
+
+`hero` and `feature` read their content with a sequence whose eyebrow matches a paragraph only,
+so the second heading matches nothing and is discarded before `pageSectionProperties` runs
+({% ref "BUG-047" /%}). Of 43 `hero`, `cta` and `feature` blocks in the site, the plugins and the
+scaffolds, one writes a heading eyebrow: the documented example in
+`site/content/docs/authoring/page-sections.md`, which uses `hero` and so renders wrongly.
+
+Why the form is dropped rather than carried into `section`:
+
+- **Nothing relies on it.** Two of its three runes lose content when it is written, and its only
+  example is one of those.
+- **It is the positional misreading this decision removes.** Two headings in a row is also how
+  an author writes a title followed by a subsection. `pageSectionProperties` is looser still: it
+  takes the first heading as an eyebrow whenever any second heading follows, after any amount of
+  prose.
+- **It is wrong in the outline.** A heading eyebrow renders as a heading, an `h2` ahead of the
+  `h1` in `cta`, so heading navigation lists a label as a section and out of order. An eyebrow
+  is a label, and a paragraph is the element for it.
+- **Both options cost more than they save.** The first puts the misreading back into the grammar
+  every composition inherits. The second still has to guess which heading is the headline.
+
+Consequences:
+
+- {% ref "SPEC-160" /%} D7's composed `hero` and `cta` place no heading eyebrow. `cta` is the one
+  rune where the form works today: when it is composed, the first of two leading headings is the
+  headline and the second is body. The changeset names this; no deprecation warning is planned,
+  since no use is known.
+- Decision 4 is unchanged: the native page-section runes keep `pageSectionProperties` until each
+  is composed.
+- The docs stop describing the form ({% ref "WORK-660" /%}).
 
 ## References
 

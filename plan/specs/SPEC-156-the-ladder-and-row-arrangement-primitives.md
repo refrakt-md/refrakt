@@ -1,4 +1,4 @@
-{% spec id="SPEC-156" status="draft" tags="runes, theme, layout, arrangements, composition, vocabulary" %}
+{% spec id="SPEC-156" status="draft" tags="runes, theme, layout, arrangements, composition, vocabulary, sequence" %}
 
 # The ladder and row arrangement primitives
 
@@ -7,21 +7,24 @@
 {% ref "ADR-030" /%} governs how an arrangement vocabulary may grow and closes by saying
 *"this decision does not authorise building anything. It constrains a later spec."* This is
 that spec, scoped deliberately narrow: **two topologies, `ladder` and `row`**, because those
-are the two the evidence already supports and the two {% ref "SPEC-145" /%}'s composed runes
-need first.
+are the two the evidence supports and the two {% ref "SPEC-145" /%}'s composed runes need
+first.
 
-The finding that sets the scope: **both are already implemented, repeatedly, by hand.** One
-of them is already generic and merely out of reach; the other is written out five times. So
-this is rule 5a work — consolidating what exists — not rule 5b speculation, and the bar is
-met with room to spare.
+**Revised on 2026-10-27** against the code after v0.42.0. The first draft found both
+topologies hand-written and missing generically. Re-read, **both already exist generically**:
+the row as `[data-zone-layout="bar"]`, and the ladder as the `sequence` dimension
+(`[data-sequence]`). What is missing is **aperture**: a composition template cannot reach
+either. So the deliverable shrinks to one template tag, `{% group %}`, with two arrangement
+values. The two identity holes the first draft found were closed by {% ref "SPEC-158" /%}
+in v0.40.0.
 
-It also answers two questions composition raised and neither {% ref "ADR-030" /%} nor
-{% ref "SPEC-145" /%} settles: where a *variant* of an item's arrangement comes from, and
-which grouping device is safe to use when a rune publishes structured data.
+Decision numbers are kept from the first draft, because other specs cite them. D2, D3 and D8
+are revised in place; D4 and D5 are recorded as shipped; D10 was settled in the ADR-030 review;
+D12–D14 are new.
 
-## The row already exists three times, once generically
+## The row exists, once generically
 
-**Generic**, `packages/skeleton/styles/dimensions/metadata.css:17-26`:
+**Generic**, `packages/skeleton/styles/dimensions/metadata.css`:
 
 ```css
 [data-zone-layout="bar"]                    { display: flex; flex-wrap: wrap; align-items: center; }
@@ -29,103 +32,67 @@ which grouping device is safe to use when a rune publishes structured data.
 [data-zone-layout="bar"] [data-align="end"] { margin-left: auto; }
 ```
 
-**Rune-specific**, `packages/skeleton/styles/runes/track.css` (55 lines), whose own header
-says it holds *"the row flex + counter, the number box, the cell flex sizing + ellipsis
-overflow + duration auto-push"*:
+`symbol`, `bar` and `api` key on it. **Rune-specific copies** live in
+`packages/skeleton/styles/runes/track.css` and `playlist.css`: the same flex, the same marker
+box, the same `flex: 1; min-width: 0` name cell, and `margin-left: auto` on the duration, which
+*is* the bar's right-push. A track row is a bar, confirmed in CSS rather than by analogy.
 
-```css
-.rf-track                    { display: flex; align-items: center; counter-increment: track; }
-.rf-track::before            { content: counter(track); min-width: 1.5rem; flex-shrink: 0; }
-.rf-track__track-name        { flex: 1; min-width: 0; overflow: hidden; }
-.rf-track__track-duration    { flex-shrink: 0; margin-left: auto; min-width: 3rem; }
-.rf-track__track-description { flex-basis: 100%; }
-.rf-track:has(.rf-track__track-description) { flex-wrap: wrap; }
-```
+Today a bar is reachable from the `bar` rune, or from `blocks[].layout` over
+`metaFields`-projected fields. It is not reachable over ordinary named slots, which is what a
+composition template has.
 
-**And again**, `packages/skeleton/styles/runes/playlist.css` (61 lines), on
-`.rf-playlist__tracks > li` — the same flex, the same `::before` marker box with
-`min-width: 1.5rem; flex-shrink: 0`, the same `flex: 1; min-width: 0; overflow: hidden` on
-the name cell. Twice rune-specifically because the markup has two forms
-({% ref "SPEC-155" /%} D3).
+## The ladder exists too: it is the `sequence` dimension
 
-`margin-left: auto` *is* the bar's right-push. **A track row is a bar, confirmed in CSS
-rather than by analogy** — which is what {% ref "ADR-030" /%} rule 4 was pointing at when it
-named this exact file as *"the track's inner arrangement, which no mechanism can declare."*
+The first draft said the ladder container "exists five times, and generically nowhere." That
+was wrong. The generic container is the `sequence` dimension:
 
-## The ladder container exists five times, and generically nowhere
+- **Values:** `numbered`, `connected` and `plain` (`RuneConfig.sequence`,
+  `packages/transform/src/types.ts`).
+- **Structure**, `packages/skeleton/styles/dimensions/sequence.css`: the list reset, the
+  counter origin, the item gutter and the marker box for `numbered`; the item geometry and
+  marker box for `connected`; the reset alone for `plain`. **Look**,
+  `packages/lumina/styles/dimensions/sequence.css`: marker fill, connector lines, type.
+- **Stamping:** the engine's `annotateSequence` (`packages/transform/src/engine.ts`) sets
+  `data-sequence` on every `<ol>` inside a rune whose config declares `sequence`. Seven runes do:
+  `howto`, `recipe`, `steps`, `playlist` (`numbered`), `timeline`, `itinerary` (`connected`),
+  and `plot` through a modifier.
 
-The between-item treatment — list-marker reset, counter origin, clipping, column flow — is
-hand-written in `packages/skeleton/styles/runes/` for **`playlist`, `steps`, `timeline`,
-`itinerary` and `cast`**, each with its own `list-style: none` and its own
-`counter-reset` / column flex. Nothing generic exists.
+**What the per-rune CSS is.** Seven skeleton files reset a list for their items: `playlist`,
+`steps`, `timeline`, `itinerary`, `howto`, `recipe` and `cast`. Four of them also hand-roll a
+counter that the dimension already provides, which {% ref "BUG-024" /%} records: the two land at
+different specificities, so which one wins differs per rune. That is duplication of a generic
+contract, not the absence of one.
 
-So on {% ref "ADR-030" /%} rule 5a's bar — *"a consolidating topology needs three existing
-implementations… Two is a coincidence; three is a pattern"* — `row` has three and `ladder`
-has five.
+**`cast` is a weaker case than the first draft said.** It was called the strongest single piece
+of evidence, a ladder no config knows about. Its container has three arrangements, `grid`,
+`list` and `carousel` (`packages/skeleton/styles/runes/cast.css`). Only `list` is a ladder.
 
-**Re-verified, with one correction and one addition.** All five files exist and all five
-reset the marker (61 / 78 / 39 / 57 / 47 lines, one `list-style` each). The *counter* half is
-narrower than "each with its own": only `playlist` and `steps` carry a `counter-reset`, so
-two of five. The row's three consumers verify too — `symbol`, `bar` and `api` key on
-`[data-zone-layout="bar"]`, beside the one generic definition in
-`skeleton/styles/dimensions/metadata.css`.
+So the one genuinely missing generic part is small: **a ladder with no sequence**, a list of peer
+items in a column with the marker reset and nothing else. `plain` is close, but it is stamped
+only through a rune's `sequence` config.
 
-**The addition is `cast`, and it is the strongest single piece of 5a evidence here.** `cast`
-hand-writes 47 lines of ladder CSS and its config declares **no `sequence` at all** — six
-`sequence:` sites exist across five plugins and none of them is `Cast`
-(`plugins/business/src/config.ts:20`). So the config-level and CSS-level populations are
-different sets, and `cast` is a ladder that nothing in config knows is one. That is
-{% ref "ADR-030" /%} rule 5b's warning instanced exactly — *"every would-be rail became
-bespoke CSS and does not register as an implementation of anything"* — except that here it
-happened to a shape rule 5a does count, so it was recoverable by reading the CSS rather than
-the configs. Counting declarations alone would have found four.
+## What a composition cannot do
 
-## What is actually missing
+A composed `steps` needs an `<ol>` of its steps, stamped `data-sequence="numbered"`. It has no
+way to get one:
 
-| Part | Status | Contract |
-|---|---|---|
-| **Row** (the item) | **exists** — `[data-zone-layout="bar"]` + the `bar` rune | flex row; `data-wrap`; child `data-align="end"` |
-| **Ladder** (the container) | **missing** | marker reset, counter origin, clip, column flow, item separation hook |
-| **Marker gutter** | exists as `data-sequence`, hand-written per rune | `::before` box with `min-width` + `flex-shrink: 0` |
-| **Overflow line** | hand-written, not generic | a named part at `flex-basis: 100%`, container wraps |
+- **No `sequence`.** `composedRuneConfig` generates `modifiers`, `metaFields`, `blocks` and
+  `provides` ({% ref "SPEC-169" /%}, What the parser accepts). {% ref "SPEC-169" /%} D6 routes
+  `sequence` to this spec.
+- **No list around an `each` slot.** A template writes Markdoc. It cannot wrap the items an
+  `each` slot produces in an `<ol>` with one `<li>` per item.
+- **No row over slots.** A template that wants bar geometry must place the `bar` rune, which
+  carries `data-rune="bar"`, a name-resolution boundary ({% ref "SPEC-145" /%} D19).
 
-Four parts, one genuinely absent, and it is about six declarations. Everything else is
-**aperture**: today a bar is reachable only from the `bar` rune or from `blocks[].layout`
-over `metaFields`-projected fields, never over ordinary named slots.
-
-## The shape, and what a composed playlist looks like
-
-{% ref "ADR-030" /%} rule 6 already supplies the container's author-facing form — a
-conventional, open set of group names carrying no geometry, *"its shape comes from the
-arrangement it declares… skeleton styles the arrangement, never the name"*:
+SPEC-169 D4's own `steps` example already writes the answer:
 
 ```md
-{% group name="tracks" layout="ladder" %}
-  {% slot name="tracks" /%}
+{% group name="steps" layout="ladder" %}
+{% slot name="items" each %}
+{% section %}{% slot /%}{% /section %}
+{% /slot %}
 {% /group %}
 ```
-
-and a composed `track`:
-
-```md
-{% bar %}
-{% slot name="name" /%} {% slot name="artist" /%}
----
-{% slot name="duration" /%} {% slot name="date" /%}
-{% /bar %}
-```
-
-That is the whole track list, for **one new arrangement value**. Rule 6's own consequence
-note says this half is *"separable and costs almost nothing… can ship before any arrangement
-work"* and is *"the one part of this decision with an immediate audience, plugin authors
-included."*
-
-**Why `emitTag` is a prerequisite rather than a convenience.** A markdown list item cannot
-contain a top-level `---`, so an author writing `- **Name** (3:45)` has no way to say
-"duration goes to the end" — which is why `playlist` resolves it with `itemModel` regexes and
-hand-built spans. Promote the items to `track` runes ({% ref "SPEC-155" /%} D3) and duration
-becomes an *attribute*, so the delimiter lives in **track's** template. The promotion is what
-makes per-item arrangement expressible at all.
 
 ## Variants of an item's arrangement
 
@@ -137,253 +104,227 @@ byline form:  [1] Speak to Me
                   Pink Floyd · 1973 · 1:13
 ```
 
-The parts are identical. Two things change: the item's topology goes **row → stack**, and
-three sibling parts are **grouped**. That is rule 4 nesting — a stack whose second child is a
-row — not a new topology, so the vocabulary stays closed. And `byline` is one of the four
-group names rule 6 already names (`byline`, `meta`, `actions`, `aside`).
+The parts are identical. The item's topology goes row → column, and three sibling parts are
+grouped. That is rule 4 nesting, not a new topology, and `byline` is one of the group names
+rule 6 names (`byline`, `meta`, `actions`, `aside`).
 
-### It needs no new mechanism on the declared path
+On the declared path, `blocks` already does it: a `BlockDef` is a named group of meta-fields
+with a layout, and `{ field: 'duration', align: 'end' }` emits `data-align="end"`, which is the
+right-push `track.css` hand-writes. **Measured on 2026-10-27:** `Track`'s config is still
+`{ block, parent, defaultElevation, editHints }`, with no `metaFields` and no `blocks`. Its
+artist, duration and date are hand-built spans.
 
-Two grouping devices exist, and **they differ in whether the group gets geometry**:
-
-**`blocks` — geometry included.** `BlockDef` is *"a named group of meta-fields rendered by a
-layout primitive"*, with per-field `align` and `wrap`:
-
-```ts
-metaFields: { artist: {…}, date: {…}, duration: {…} },
-blocks:     { byline: { fields: ['artist', 'date', 'duration'], layout: 'bar' } },
-layout:     { root: ['track-name', 'byline'] },                          // byline form
-//           { root: ['track-name', 'artist', 'duration', 'date'] }      // row form
-```
-
-`{ field: 'duration', align: 'end' }` emits `data-align="end"`, which the skeleton turns into
-`margin-left: auto` — declaratively, exactly what `track.css` hand-writes.
-
-**Measured**: `Track`'s config is `{ block, parent, defaultElevation, editHints }` — **no
-`metaFields`, no `blocks`.** Its artist, duration and date are hand-built spans. Repo-wide
-adoption is 20 runes with `blocks`, which is the gap {% ref "SPEC-143" /%} records at 20 of
-126. **So the byline variant is available today the moment `Track` adopts the primitive** —
-the seventh instance in this series of *the primitive exists, adoption is partial*.
-
-**A created `layout` wrapper — geometry not included.** `LayoutEntry`'s `{ tag, children }`
-*"creates a wrapper element (`<tag data-name=key>`) and fills it with the resolved children,
-pulled from the flat transform slots"*, which groups ordinary named slots rather than
-meta-fields. But the result is a plain `<div>`: **a created wrapper cannot declare an
-arrangement**, which is the asymmetry this spec closes.
-
-**Selection** is `variants` ({% ref "SPEC-091" /%}) on the declared path — `recipe`'s
-`media-position="cover"` proves a variant delta can restructure `layout` and create
-containers — and {% ref "SPEC-145" /%} D15's multi-template on the composed path. Which one
-applies follows from who wants the change:
+Selection follows who wants the change:
 
 | Wants it | Mechanism | Status |
 |---|---|---|
-| The **theme** | `variants` over `layout` | ships today |
-| The **composition author** | {% ref "SPEC-145" /%} D15 multi-template | proposed |
-| The **page author**, per instance | a parent attribute reaching its items | **nothing** — see below |
+| The **theme** | `variants` over `layout` ({% ref "SPEC-091" /%}) | ships |
+| The **composition author** | {% ref "SPEC-145" /%} D15, several templates | decided, not built |
+| The **page author**, per instance | a parent attribute reaching its items | D8 |
 
-## The `attrs` back door, measured
+## The grouping-device hazard
 
-`LayoutEntry` carries `attrs?: Record<string, string>`, spread onto the created wrapper at
-`packages/transform/src/engine.ts:1532`:
-
-```ts
-out.push(makeTag(entry.tag, { 'data-name': name, ...(entry.attrs ?? {}) }, kids));
-```
-
-Unconditional, and **unvalidated** — no schema checks `attrs` at config load or at plugin
-validation. Probed with a two-slot `Track` and
-`attrs: { 'data-zone-layout': 'bar' }`:
-
-```html
-<article class="rf-track" data-rune="track" data-density="full">
-  <span data-name="track-name" class="rf-track__track-name">Speak to Me</span>
-  <div data-name="byline" data-zone-layout="bar" class="rf-track__byline">
-    <span data-name="track-artist" class="rf-track__track-artist">Pink Floyd</span>
-    <span data-name="track-duration" class="rf-track__track-duration">1:13</span>
-  </div>
-</article>
-```
-
-The attribute lands, and the skeleton rule is a bare attribute selector, so **the wrapper has
-bar geometry today**. What it does *not* get is `data-align="end"` on a child:
-`LayoutEntry.children` is `string[]` with no per-child attributes, so the right-push stays
-unreachable. **Half the capability, by accident.**
-
-That cuts two ways, and both belong in this spec. The arrangement half is the thing to
-legitimise — it is this spec's feature arriving early by the wrong route. The rest is a hole:
-an unvalidated attribute writer on a **theme-overridable** field can stamp `data-section`, or
-`typeof`, onto a node — attributes whose configured sources (`sections`, `schema`) are
-identity-guarded precisely so a theme cannot set them ({% ref "ADR-028" /%}). Whether each is
-*honoured* downstream was not probed; that the spread cannot refuse them was.
-
-## Two identity-guard holes this work has to close
-
-**1. `sequence` is not identity-guarded.** `RuneConfig.sequence` is
-`'numbered' | 'connected' | 'plain'` (`packages/transform/src/types.ts:456`), and
-`IDENTITY_FIELDS` is `block, modifiers, sections, mediaSlots, frameTarget,
-universalAttributes, provides, schema` — re-read at `identity-fields.ts:41`, those eight and
-no others. So a theme override can flip a playlist from `numbered` to `connected` today.
-
-That is {% ref "ADR-030" /%} rule 3's founding example, and the reason it gives: doing so
-*"does not change how it looks. It deletes the track numbers."* **Rule 3 is currently
-unenforced**, independently of any arrangement work.
-
-**2. `layout.attrs` is an unguarded attribute writer**, per the section above. `layout` is
-presentation and correctly theme-overridable; an arbitrary attribute map inside it is a way
-around every guard that works by controlling a field's source.
-
-## The grouping-device hazard, which is not obvious
-
-An engine-made group — a `blocks` zone or a created `layout` wrapper — carries `data-name`
-and no `data-rune`. A group made by **placing a rune** in a composed template
-(`{% bar %}…{% /bar %}`) carries `data-rune="bar"`, which is a **name-resolution boundary**:
-`findAllByName` stops at it, so any schema property sourced from a node inside that group
-silently disappears ({% ref "SPEC-146" /%} Problem 2).
-
-`track` survives by luck — every property in `trackSchema` is attribute-sourced, so they ride
-the field bag. A rune harvesting its meta from content would lose them, with no diagnostic.
-**So a composed template groups with an engine wrapper, not with a placed rune, wherever
-schema is involved**, and that rule belongs in the authoring guide beside
-{% ref "SPEC-148" /%}'s delimiter rule.
-
-## Naming, before either vocabulary ships
-
-**`carousel` and `rail` are one topology under two names.** {% ref "ADR-018" /%} ships
-`carousel` as a canonical author-facing token with a real contract
-({% ref "SPEC-100" /%}: `[data-layout="carousel"]` + `data-name="items"` + a shared behavior,
-three adopters). {% ref "ADR-030" /%} rule 1 lists `rail` as a topology name. Rule 6 says a
-wrong *name* costs nothing — but two names for one *mechanism* is a mechanism problem, and
-{% ref "ADR-038" /%} makes that contract the model for how any behavior binds.
-
-**`track` is both a topology name in rule 1 and a rune in `@refrakt-md/media`.** Cheap to
-rename now.
+An engine-made group (a `blocks` zone, a created `layout` wrapper, or the `{% group %}` of D2)
+carries `data-name` and no `data-rune`. A group made by **placing a rune**, `{% bar %}…{% /bar %}`,
+carries `data-rune="bar"`, which is a name-resolution boundary: `findAllByName` stops at it, so a
+schema property sourced from a node inside that group disappears with no diagnostic
+({% ref "SPEC-146" /%} Problem 2). `track` survives by luck: every property in `trackSchema` is
+attribute-sourced. SPEC-145 D19 states the rule for templates; D9 here records it.
 
 ## Decisions
 
 ### D1 — scope is `ladder` and `row`, and both are consolidations
 
-Rule 5a, not 5b: `row` has three implementations and `ladder` five, all measured above. Both
-ship **stable**. No other topology is in scope — `grid` and `split` are plausible
+{% ref "ADR-030" /%} rule 5a, not 5b. Both topologies have generic implementations already and
+several hand-written copies. No other topology is in scope: `grid` and `split` are plausible
 consolidations with their own evidence and their own spec.
 
-### D2 — the row is `bar`; what is missing is aperture, not a primitive
+### D2 — a template reaches both through `{% group %}`, an engine wrapper with an arrangement
 
-`[data-zone-layout="bar"]` already has the geometry and two modifiers. The work is letting a
-rune point it at a slot or a list item rather than only at `metaFields`-projected fields.
+*Revised 2026-10-27.* The first draft said the row needed aperture and the ladder needed a new
+contract. Both need the same thing: a way for a template to declare an arrangement on an
+engine-made group. That is ADR-030 rule 6's form, made a template tag:
 
-### D3 — the ladder is the one new contract, and it is stated without naming a rune
+```md
+{% group name="byline" layout="bar" %}…{% /group %}
+{% group name="steps" layout="ladder" %}…{% /group %}
+```
 
-*A container whose direct children are peer items, with a shared marker gutter, optional
-separation between items, and each item free to declare its own inner arrangement.* That
-passes rule 5b's first test. "Optional separation" is the phrase to watch: if it becomes
-three modifiers, the topology is really two and this decision is wrong.
+1. **It is an engine wrapper.** It renders with `data-name` and no `data-rune`, so it is safe
+   where the rune publishes schema (D9, SPEC-145 D19). A composed rune has no block
+   (SPEC-145 D2), so a group gets no BEM class: themes see its `data-name` and
+   `data-zone-layout`.
+2. **`name` is required**, and a convention, not a type: it carries no geometry (D6).
+3. **`layout` takes `bar` or `ladder`.** Nothing else, until a topology clears ADR-030 rule 5a
+   in its own spec. An unknown value is rejected at schema construction, naming it.
+4. **`bar`** renders a `<div data-zone-layout="bar">` over whatever the group holds, the
+   existing row contract. A child that should push to the end is written in its own
+   `{% group name="…" align="end" %}`, which renders `data-align="end"`.
+5. **`ladder`** renders a list (D3).
+6. **It is a template tag only.** Authors do not write `{% group %}` on a page; the `bar` rune
+   remains the author-facing row ({% ref "SPEC-145" /%} D12's placement set is unchanged).
 
-### D4 — `marker` is rune-locked, and `sequence` enters `IDENTITY_FIELDS`
+### D3 — the ladder is the `sequence` dimension, plus a reset for the unsequenced case
 
-Rule 3 says whether an ordinal is information is a fact about content. The enforcement list
-does not currently include it, so the rule is unenforced. Closing that is a prerequisite here
-and worth doing regardless.
+*Revised 2026-10-27.* The contract, stated without naming a rune: *a list whose direct children
+are peer items, each free to declare its own inner arrangement, with a shared marker gutter when
+the rune declares a sequence.*
 
-### D5 — `layout.attrs` gains a guard; its arrangement use is legitimised
+1. **Element.** `<ol>` when the definition declares a `sequence` (D12), `<ul>` otherwise, with
+   `data-name` and `data-zone-layout="ladder"`.
+2. **Items.** Each iteration of an `each` slot placed directly in the group, or else each
+   top-level node the group holds, is wrapped in an `<li>`.
+3. **Markers** are the `sequence` dimension's: the ladder carries `data-sequence` with the
+   definition's value. No second marker contract is written.
+4. **The unsequenced ladder** gets the one missing rule: `[data-zone-layout="ladder"]` resets the
+   list and flows its items in a column, about six declarations in skeleton. `cast`'s `list`
+   mode is its first native consumer.
+5. "Optional separation between items" stays one hook, not modifiers. If it becomes three
+   modifiers, the topology is really two and this decision is wrong.
 
-The arrangement half becomes a first-class declaration (D2). The general capability is
-narrowed: an `attrs` map may not set an attribute whose configured source is identity-guarded.
-An unvalidated writer on a theme-overridable field defeats guards that work by owning a
-field's source.
+### D4 — `sequence` is identity: shipped
+
+Closed by {% ref "SPEC-158" /%} D2 in v0.40.0: `sequence` is in `IDENTITY_FIELDS`
+(`packages/transform/src/identity-fields.ts`), and `sequenceDirection` stays presentational.
+
+### D5 — `layout.attrs` cannot write an identity attribute: shipped
+
+Closed by {% ref "SPEC-158" /%} in v0.40.0: a layout `attrs` entry that writes an attribute an
+identity field derives is rejected (`identity-fields.ts`, cited there as SPEC-156 D5).
 
 ### D6 — a group's geometry comes from its declared arrangement, never from its name
 
-Rule 6, restated because this spec makes it operative: `byline` is a group *named* byline
-that *arranges* as a row. Nothing is stamped on a node for being called something, so a rune
-part sharing a conventional name inherits nothing and no reserved-name rule is needed.
+ADR-030 rule 6, made operative by D2: `byline` is a group *named* byline that *arranges* as a
+row. Nothing is stamped on a node for being called something, so no reserved-name rule is
+needed.
 
 ### D7 — the byline variant needs no new mechanism, only adoption
 
-`metaFields` + `blocks` + two `layout` values + a `variants` axis, all shipping. It is
-blocked only by `Track` not declaring its meta fields. Recorded so the arrangement work is
-not credited with capability the repo already has.
+`metaFields`, `blocks`, two `layout` values and a `variants` axis all ship. It is blocked only
+by `Track` not declaring its meta fields, which is still true on 2026-10-27.
 
-### D8 — the per-instance cascade is real, evidenced, and out of scope
+### D8 — the per-instance cascade is narrowed to author-written children
 
-> **To be re-checked, per {% ref "SPEC-171" /%} D4.** All three cases below have parents that
-> become compositions, which pass values to the children they place. Re-check the evidence
-> against those compositions before specifying `childDefaults`.
+*Revised 2026-10-27, as {% ref "SPEC-171" /%} D4 asked.* Three cases were found: `bento`'s
+`media-position`, `playlist`'s default `artist` (`track.artist ?? artistValue`), and
+`playlist`'s child kind.
 
-{% ref "SPEC-151" /%} left `bento`'s parent→child attribute cascade needing *"its own
-justification rather than being invented for one rune."* It now has **three** instances, two
-shipped and hand-rolled: `bento`'s `media-position`; `playlist`'s `artist` (*"Default artist
-applied to tracks that omit their own"* — `track.artist ?? artistValue`); and `playlist`'s
-child kind (`CHILD_KIND[playlistTypeValue]`, passed to `adoptNestedTrack`). That clears rule
-5a's bar for a `childDefaults` mechanism, which is a separate spec.
+{% ref "SPEC-145" /%} D32 now covers a parent passing a value to children **the template
+places**: the template writes it on them. What D32 cannot reach is children **the author
+writes** inside a slot: the tracks in a playlist, the cells in a bento. A template places the
+slot, not the runes inside it. All three cases are of that kind, so the `childDefaults`
+mechanism is still needed, scoped to author-written children, and remains a separate spec.
+{% ref "SPEC-159" /%} keeps the theme-owned half.
 
 ### D9 — a composed template groups with an engine wrapper, not a placed rune
 
-Where schema is involved. The hazard section says why; the exception is a rune with no
-schema table, where either device is safe.
+Where schema is involved; with no schema table, either device is safe. `{% group %}` (D2) is the
+engine wrapper a template writes. SPEC-145 D19 states the same rule.
 
-### D10 — `carousel` and `rail` name one topology, and the duplicate is resolved before ships
+### D10 — there is no `carousel` / `rail` collision; both stray names are withdrawn
 
-Either `rail` is dropped for `carousel`, or `carousel` is deprecated to `rail` with the
-author-facing token aliased. Not left to be discovered when both vocabularies exist.
+*Revised 2026-10-28.* The first draft said `carousel` and `rail` named one topology. They do
+not. ADR-030 never defined `rail`, but its cited cases (`progress`, `tolerance`, and `budget`,
+ruled out for having "no proportional bars") point at items placed along a scale by value, not
+a scrolling strip. Neither name had a contract, and `track` also collided with the `track` rune.
+
+Settled in the ADR-030 review: `rail` and `track` leave its topology list until a spec proposes
+them with a contract. `carousel` stays {% ref "ADR-018" /%}'s author-facing layout with
+{% ref "SPEC-100" /%}'s contract, and is not a value of `{% group layout %}` until a spec places
+it there.
 
 ### D11 — `stack` is not named
 
-It is default block flow. Naming the null case invites `stack-tight` and `stack-loose`,
-which is rule 2's combinatorial explosion arriving by the back door.
+It is default block flow. Naming the null case invites `stack-tight` and `stack-loose`, which
+is rule 2's combinatorial explosion arriving by the back door. {% ref "SPEC-161" /%} D6's block
+layout is therefore named `lead`, after the one thing that distinguishes it.
+
+### D12 — a composition declares `sequence` in its definition, not its template
+
+A composed rune's frontmatter takes `sequence` (`numbered | connected | plain`), and the
+generated config carries it.
+
+- **Why the frontmatter.** `sequence` is identity: whether an ordinal is information is a fact
+  about the content (SPEC-158 D2, ADR-030 rule 3). {% ref "ADR-045" /%} and
+  {% ref "SPEC-177" /%} let a theme or site replace a composition's template while keeping its
+  frontmatter. A `sequence` written in the template would travel with the template, so a
+  theme's replacement could delete the step numbers, which is rule 3's founding example.
+- **The template marks where.** The `{% group layout="ladder" %}` is where the definition's
+  sequence is stamped.
+- **A definition that declares `sequence` must place a ladder**, or it is rejected at schema
+  construction, naming the rune. A sequence with nowhere to go is the silent loss this guards
+  against.
+- **SPEC-177's checks apply the same rule** to a replacement template: one that drops the
+  ladder group of a definition declaring a sequence is rejected when the site loads.
+
+### D13 — ordinals arrive as nodes, and the per-rune counters go first
+
+{% ref "WORK-583" /%} (ready, from {% ref "ADR-029" /%}) emits a numbered sequence's ordinal as a
+DOM node instead of a CSS counter: information belongs in the document. Composed ladders should
+get node ordinals from the start rather than be migrated afterwards, so WORK-583 lands before or
+with D2. {% ref "BUG-024" /%}'s removal of the four vestigial per-rune counters is the "proved by
+deletion" step this spec asks for, and goes with it.
+
+### D14 — a ladder stamps its own list, not every list inside it
+
+`annotateSequence` recurses through every descendant of a rune declaring `sequence` and stamps
+every `<ol>` it finds. For a ladder that would include an ordered list an author wrote inside a
+step's body, which would then be numbered as steps. The ladder's `data-sequence` is set on the
+ladder element only. Whether native runes already mis-stamp nested author lists is checked
+during implementation and filed as a bug if they do.
 
 ## Implementation notes, deliberately not yet work items
 
-1. **Close the two identity holes** (D4, D5). Independent of everything else, and one of them
-   makes a shipped rule real.
-2. **Verify the `attrs` reach** — whether `data-section` and `typeof` set through it are
-   honoured downstream, which decides how urgent D5's guard is.
-3. **Declare the ladder contract** and adopt it in the five hand-written containers, so the
-   consolidation claim is proved by deletion.
-4. **Widen the row's aperture** (D2), then let `Track` adopt `metaFields` + `blocks` (D7),
-   which is the byline variant and the deletion of `track.css`'s hand-written push.
-5. **Resolve the names** (D10) before either vocabulary is published.
+1. WORK-583 and BUG-024 first (D13).
+2. The `{% group %}` template tag with `bar` and `ladder`, and the unsequenced ladder rule (D2,
+   D3).
+3. `sequence` in the definition's frontmatter, and the ladder requirement (D12).
+4. A composed `steps` over it, compared with the plugin ({% ref "SPEC-161" /%} D5).
+5. `Track` adopts `metaFields` and `blocks` (D7), deleting `track.css`'s hand-written push.
+6. The five hand-written list resets that remain after BUG-024 are re-expressed through the
+   ladder or the dimension, with their CSS deleted.
 
 ## Non-goals
 
 - `grid`, `split`, `tree` or any topology beyond `ladder` and `row` (D1)
-- `childDefaults` / the per-instance cascade (D8)
-- Promoting `layout` to a universal attribute — every universal today is decoration, so a
+- `childDefaults`, the per-instance cascade for author-written children (D8)
+- Promoting `layout` to a universal attribute: every universal today is decoration, so a
   structural one is a category change that needs its own argument
-- {% ref "SPEC-145" /%} D15's multi-template mechanism, which this spec's variants section
-  describes but does not specify
-- Retiring `bar` as a rune; it stays as the author-facing exposure of the row
+- {% ref "SPEC-145" /%} D15's several templates, which the variants section describes but does
+  not specify
+- Retiring `bar` as a rune; it stays as the author-facing row
+- `{% group %}` as an author-facing rune (D2)
 
 ## Acceptance Criteria
 
-- [ ] `sequence` is in `IDENTITY_FIELDS`, and a theme override attempting to change it is dropped and reported, asserted by a test naming ADR-030 rule 3 (D4)
-- [ ] An `attrs` map cannot set an attribute whose configured source is identity-guarded; the attempt is rejected at config normalisation with the rune and key named (D5)
-- [ ] Whether `data-section` / `typeof` set via `attrs` are honoured downstream is determined and recorded, before D5's guard is written
-- [ ] A container can declare the `ladder` arrangement, and the five hand-written containers (`playlist`, `steps`, `timeline`, `itinerary`, `cast`) are re-expressed through it with their skeleton CSS deleted rather than duplicated
-- [ ] A rune can point the `bar` arrangement at a named slot or list item, not only at `metaFields`-projected fields (D2)
-- [ ] `Track` declares `metaFields` + `blocks`, its byline variant is a `variants` entry over `layout`, and `track.css`'s hand-written `margin-left: auto` is gone (D7)
-- [ ] `refrakt contracts --check` and `npm run seo:baseline:check` report no drift across the ladder migration, on both contract copies
-- [ ] The CSS-coverage test's known-gap sets shrink rather than grow, so a consolidation cannot be recorded as an exemption
-- [ ] The authoring guide states D9's grouping-device rule, with `track`'s attribute-sourced escape named as luck rather than design
-- [ ] `carousel` / `rail` resolve to one name, and the topology list no longer collides with the `track` rune (D10)
+- [ ] A composition template can place `{% group name layout="bar" %}` and `{% group name layout="ladder" %}`; both render with `data-name` and no `data-rune`, and an unknown `layout` is rejected at schema construction (D2)
+- [ ] A `bar` group's child written as `{% group align="end" %}` renders `data-align="end"` and pushes to the end (D2)
+- [ ] A ladder renders `<ol>` when the definition declares a `sequence` and `<ul>` otherwise, with each `each` iteration or top-level node in an `<li>` (D3)
+- [ ] `[data-zone-layout="ladder"]` resets the list and flows items in a column in skeleton; `cast`'s `list` mode uses it and its own reset is deleted (D3)
+- [ ] A composition's frontmatter accepts `sequence`; the generated config carries it, and a definition declaring `sequence` without a ladder group is rejected, naming the rune (D12)
+- [ ] The ladder's `data-sequence` is set on the ladder element only; an ordered list in an item's body is not stamped (D14)
+- [ ] {% ref "WORK-583" /%} and {% ref "BUG-024" /%} are done before or with the ladder (D13)
+- [ ] A composed `steps` places a numbered ladder and matches the plugin's output, every difference explained
+- [ ] `Track` declares `metaFields` and `blocks`, its byline variant is a `variants` entry over `layout`, and `track.css`'s hand-written `margin-left: auto` is gone (D7)
+- [ ] `refrakt contracts --check` and `npm run seo:baseline:check` report no unexplained drift, on both contract copies
+- [ ] The CSS-coverage test's known-gap sets shrink rather than grow
+- [ ] The authoring guide documents `{% group %}` and states D9's rule
 
 ## References
 
-- {% ref "ADR-030" /%} — the six rules this spec is the "later spec" for; rule 4 named `track.css`, rule 5a sets the bar both topologies clear, rule 6 supplies the group form
-- {% ref "ADR-018" /%} — the canonical author-facing layout vocabulary, and half of D10's collision
-- {% ref "SPEC-080" /%} — `metaFields` / `blocks` / `LayoutPrimitive`; the row's existing aperture
-- {% ref "SPEC-081" /%} — `layout` projection and the `{ tag, children }` creating form the `attrs` back door lives in
-- {% ref "SPEC-091" /%} — `variants`; how the declared path selects between two arrangements
-- {% ref "SPEC-145" /%} — composed runes; D2's no-CSS rule is why this became load-bearing, D15 is the composed selection path, and D9 here is a template-authoring constraint like D17's
-- {% ref "SPEC-155" /%} — the media audit; `emitTag` as this spec's prerequisite, and the two rune-specific row implementations
-- {% ref "SPEC-151" /%} — the marketing audit; where D8's cascade question was left open
-- {% ref "SPEC-146" /%} — name resolution; the boundary that makes D9's hazard silent
-- {% ref "SPEC-143" /%} — the 20-of-126 `blocks` adoption gap D7 turns on
-- {% ref "SPEC-094" /%} — the `@layer skeleton, skin` split that separates arrangement from decoration
-- {% ref "SPEC-100" /%} — the `carousel` contract; the model for a block-agnostic arrangement
-- {% ref "ADR-028" /%} — identity fields; what D4 and D5 both restore
-- {% ref "SPEC-159" /%} — the surface treatment a container shares with its items; takes D8's theme-owned half and leaves the author-driven cascade here
-- {% ref "SPEC-158" /%} — the identity guard's granularity; owns D4's `sequence` move and D5's `attrs` guard, so this spec inherits them rather than specifying them
-- {% ref "ADR-038" /%} — behaviors bind on a data contract; the same rune-agnostic principle for behaviour
+- {% ref "ADR-030" /%}: the rules this spec is the "later spec" for; accepted on 2026-10-28, with D10 settled there.
+- {% ref "SPEC-158" /%}: shipped D4 and D5.
+- {% ref "SPEC-169" /%}: D4's `steps` example, and D6, which routes `sequence` here.
+- {% ref "SPEC-145" /%}: D19 (grouping), D32 (passing down), D15 (several templates).
+- {% ref "SPEC-177" /%} and {% ref "ADR-045" /%}: template replacement, which D12 guards against.
+- {% ref "WORK-583" /%}, {% ref "ADR-029" /%}: ordinals as nodes.
+- {% ref "BUG-024" /%}: the vestigial per-rune counters.
+- {% ref "SPEC-161" /%}: D5 (`steps`), D6 (`lead`).
+- {% ref "SPEC-080" /%}: `metaFields`, `blocks`, `LayoutPrimitive`.
+- {% ref "SPEC-091" /%}: `variants`.
+- {% ref "SPEC-146" /%}: the boundary that makes D9's hazard silent.
+- {% ref "SPEC-155" /%}: the media audit, and the two rune-specific row implementations.
+- {% ref "SPEC-159" /%}, {% ref "SPEC-171" /%}: the cascade, D8.
+- {% ref "SPEC-100" /%}, {% ref "ADR-018" /%}: `carousel`, which D10 keeps out of this vocabulary.
 
 {% /spec %}

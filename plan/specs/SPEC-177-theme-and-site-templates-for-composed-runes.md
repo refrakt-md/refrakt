@@ -131,7 +131,10 @@ defaults:
   `elevation="raised"` on its card. To change that, the theme sets recipe's own default or
   replaces its template.
 - **Where an axis default lands.** On a composed rune, an axis default applies where the
-  author's attribute would ({% ref "SPEC-145" /%} D14).
+  author's attribute would ({% ref "SPEC-145" /%} D14, D33).
+- **The definition's layer exists already.** {% ref "SPEC-145" /%} D34 gives a definition its own
+  `defaults` key for universal axes, with this order, so `hero` can ship before this spec. This
+  spec adds the site and theme layers above it and the template selector as a defaultable key.
 - **Primitives that are still native** (`card`, `section`) keep the existing per-rune axis
   defaults in theme config (`defaultElevation`, {% ref "SPEC-107" /%}), the legacy path
   {% ref "ADR-043" /%} decision 6 keeps. When `card` becomes a composition
@@ -170,6 +173,7 @@ Each replacement is checked against the definition it replaces, after layering:
 | a slot or field name the definition does not have | `template-override-unknown-slot`, `template-override-unknown-field` |
 | a slot the template does not place | `template-override-unplaced`, naming the slot |
 | a placed rune the site does not have | `template-override-unknown-rune` |
+| no ladder group, where the definition declares a `sequence` ({% ref "SPEC-156" /%} D12) | `template-override-no-ladder`, naming the rune and its sequence |
 
 - **There is no `omit`.** Not showing authored content changes what the rune contains, which
   {% ref "ADR-045" /%} keeps on the definition's side. `template-override-unplaced` says so in
