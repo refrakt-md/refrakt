@@ -1,4 +1,4 @@
-{% spec id="SPEC-162" status="draft" tags="runes, composition, primitives, budget, core, metadata" %}
+{% spec id="SPEC-162" status="accepted" tags="runes, composition, primitives, budget, core, metadata" %}
 
 # Amount and tally primitives, and budget as a composition
 
@@ -23,6 +23,11 @@ already reads it.
 This also resolves one of the three native runes {% ref "ADR-042" /%} left open. Budget's
 duration/currency bar is metadata declared in a native rune's config. As a composition, that
 metadata belongs to its definition.
+
+**Accepted on 2026-10-29**, with revisions marked *Revised 2026-10-29*: `amount` reads only
+unambiguous currencies (D1); formatting follows {% ref "SPEC-166" /%} D6; the prerequisites are
+updated; `budget`'s metadata bar is a `{% group %}` and it declares its elevation default;
+`ledger`'s attributes are kebab-case. The name `ledger` stays.
 
 ## What budget does today, and what each part needs
 
@@ -52,7 +57,7 @@ Two facts make the migration safe:
 ### D1 — `amount` is a core value primitive
 
 ```md
-{% amount value="¥15,000" /%}
+{% amount value="¥15,000" currency="JPY" /%}
 {% amount value="€100–200" /%}
 {% amount value="19" currency="USD" /%}
 ```
@@ -62,11 +67,22 @@ value element.
 
 - **It reads** a currency symbol or code, grouping separators, and a range (`100–200`, with an
   en dash or a hyphen). `currency` names the currency when the value does not.
-- **It emits** `<data value="15000" data-currency="JPY" data-meta-type="quantity">¥15,000</data>`.
+- **It never guesses a currency.** *Revised 2026-10-29.* An ISO code (`SEK 29`, `29 SEK`) or an
+  unambiguous symbol (`€`, `£`, `₹`) sets the currency. An ambiguous symbol (`$`, `¥`, `kr`)
+  needs `currency`: `kr` is the Swedish, Norwegian and Danish krona, and budget's own symbol
+  table maps all three to it (`budget.ts`, `BUDGET_CURRENCY_SYMBOLS`). Without `currency`, the
+  number is still read, no `data-currency` is set, and `amount-currency-ambiguous` is reported.
+  When both are given, `currency` wins if the symbol is consistent with it (`kr` with `SEK`);
+  otherwise the mismatch is reported. This is the rule {% ref "SPEC-166" /%} D4 gives `date` for
+  ambiguous forms.
+- **It emits** `<data value="15000" data-currency="JPY" data-meta-type="quantity">¥15,000</data>`
+  for the first example.
   A range emits `data-low` and `data-high`, and its `value` is empty, because a range has no
   single value.
-- **It formats** by locale, through budget's existing currency path (`formatBudgetAmount`,
-  moved and renamed), and through {% ref "ADR-043" /%}'s `formats` once that exists.
+- **It formats** through the shared currency kind ({% ref "SPEC-166" /%} D2, D6), which
+  `formatBudgetAmount` becomes. *Revised 2026-10-29:* display text is formatted at stage 4 by the
+  engine, with the locale and `formats`, so `amount` emits the raw value and the author's text as
+  the fallback. A total `tally` computes (D2) is emitted the same way.
 - **A value it cannot read** reports `amount-invalid`, naming the text, and is rendered as the
   author wrote it, with no `data-value`.
 - **It works anywhere**: in a row, a heading, a table cell or a sentence ("costs
@@ -115,9 +131,9 @@ written as a Markdown table gets a total by wrapping it in `{% tally %}`.
 ---
 tag: section
 attributes:
-  currency: { type: string, description: "Currency code or symbol." }
-  per:      { type: string, description: "Divisor for a rate, e.g. \"5 days\"." }
-  showRate: { type: boolean, default: true }
+  currency:  { type: string, description: "Currency code or symbol." }
+  per:       { type: string, description: "Divisor for a rate, e.g. \"5 days\"." }
+  show-rate: { type: boolean, default: true }
   ranges:   { type: string, matches: [range, midpoint], default: range }
   detail:   { type: string, matches: [items, totals], default: items }
 content:
@@ -140,7 +156,7 @@ content:
         emitAttributes: { label: $label, value: $value }
 ---
 
-{% tally per=$attrs.per show-rate=$attrs.showRate ranges=$attrs.ranges detail=$attrs.detail %}
+{% tally per=$attrs.per show-rate=$attrs.show-rate ranges=$attrs.ranges detail=$attrs.detail %}
 {% slot name="sections" each %}
 ## {% $each.heading %}
 
@@ -155,11 +171,16 @@ content:
 {% /tally %}
 ```
 
-Its prerequisites are already recorded elsewhere:
+Its prerequisites, *revised 2026-10-29*:
 
-- {% ref "BUG-038" /%}: YAML `itemModel` patterns are compiled;
-- SPEC-165 D6: one level of nested `each`;
-- the estimate marker removed from the displayed heading (D5).
+- {% ref "BUG-038" /%}: `itemModel` patterns are compiled. Fixed in v0.42.0.
+- SPEC-165 D6: one level of nested `each`. Today a slot inside an `each` is rejected
+  (`slot-inside-each`), so `ledger` waits for SPEC-165 D6 to be accepted and built.
+- The estimate marker removed from the displayed heading (D5).
+
+Attributes are kebab-case, as across refrakt (`media-position`, `rating-total`): `ledger` is new,
+so its rate switch is `show-rate`, matching `tally`'s. `budget` keeps `showPerDay`, which existing
+content uses.
 
 `ledger` is generic: invoices, quotes, cost breakdowns. It stays in core beside its primitives.
 
@@ -211,26 +232,34 @@ content:
 metaFields:
   duration: { metaType: category, condition: duration }
   currency: { metaType: category, condition: currency }
+defaults:
+  elevation: flat
 ---
 
 {% section %}
-{% bar %}
+{% group name="meta" layout="bar" %}
 {% field name="duration" /%}
-{% field name="currency" /%}
-{% /bar %}
+{% group name="currency" align="end" %}{% field name="currency" /%}{% /group %}
+{% /group %}
 {% slot name="eyebrow" /%}
 {% slot name="headline" /%}
 {% slot name="blurb" /%}
 
-{% ledger currency=$attrs.currency per=$attrs.duration showRate=$attrs.showPerDay ranges="midpoint" detail=$attrs.detail %}
+{% ledger currency=$attrs.currency per=$attrs.duration show-rate=$attrs.showPerDay ranges="midpoint" detail=$attrs.detail %}
 {% slot name="body" /%}
 {% /ledger %}
 {% /section %}
 ```
 
 - The metadata bar is placed with `{% field %}` (SPEC-145 D28), so the bar's empty items drop
-  out when there is no duration.
-- `showPerDay` passes through as `ledger`'s `showRate`.
+  out when there is no duration. D28 is not built yet; it is {% ref "SPEC-166" /%}'s first
+  prerequisite too.
+- *Revised 2026-10-29:* the bar is a `{% group layout="bar" %}` ({% ref "SPEC-156" /%} D2), not a
+  placed `{% bar %}`, so the currency can be pushed to the end with `align="end"`, as the native
+  budget does. A placed `bar` rune cannot align one field.
+- `defaults: { elevation: flat }` keeps the native `defaultElevation: 'flat'` (SPEC-145 D34).
+  `density` needs nothing: `section` already resolves to `full`.
+- `showPerDay` passes through as `ledger`'s `show-rate`.
 - `variant="summary"` today is a modifier that CSS reads to hide the line items. It becomes
   `detail="totals"`, a generic `tally` setting the base stylesheet understands, so no theme needs
   to know `budget`. `variant` stays accepted for one release and maps `summary` to
@@ -248,8 +277,11 @@ amount, so `tier` uses `{% amount value=$attrs.price currency=$attrs.currency /%
 
 - The published `Offer` price still comes from the attributes, through the field bag (SPEC-145
   D28's "the bag is the record"), never from the rendered element.
-- `amount`'s reading of a currency from the value fixes the defect SPEC-161 D4 records: `29 kr`
-  is no longer published as USD.
+- `tier` publishes its authored `currency` attribute, so a tier priced in kronor publishes `SEK`
+  (or `NOK`, `DKK`) because its author says so. *Revised 2026-10-29:* an earlier draft said
+  `amount` would read `SEK` from `29 kr`. It cannot, because `kr` is three currencies (D1). What
+  fixes SPEC-161 D4's defect is that nothing guesses: the plugin's `inferCurrency` defaults `kr`
+  to USD today, and `amount` reports it instead.
 - `amount` could display the `## Pro — $19` heading shorthand, but it cannot publish it,
   because the value would come from the tree, not the bag. SPEC-161 D4's conclusion about the
   shorthand stands.
@@ -309,15 +341,16 @@ did for storytelling.
 
 ## Acceptance Criteria
 
-- [ ] `{% amount %}` exists as a core rune: reads symbols, codes, separators and ranges; emits a value element with `data-value` (or `data-low`/`data-high`) and `data-currency`; formats by locale; reports `amount-invalid` for text it cannot read
+- [ ] `{% amount %}` exists as a core rune: reads symbols, codes, separators and ranges; emits a value element with `data-value` (or `data-low`/`data-high`) and `data-currency`; formats through the shared currency kind; reports `amount-invalid` for text it cannot read
+- [ ] `amount` sets a currency only from an ISO code, an unambiguous symbol, or `currency`; an ambiguous symbol without `currency` reports `amount-currency-ambiguous` and sets no `data-currency`, and a `currency` that contradicts the symbol is reported (D1)
 - [ ] `{% tally %}` exists as a core rune: sums only `amount` elements inside it; appends a total, subtotal and rate in the vocabulary; nests as subtotals without double counting; handles ranges and `ranges="midpoint"`; propagates `approximate`; supports `show-rate` and `detail="totals"`; reports `tally-rate-unit` and `tally-currency-mixed`
 - [ ] With `detail="totals"`, line rows are still summed and only hidden by the base stylesheet, asserted against a fixture whose total includes them
 - [ ] `tally` totals a Markdown table column of amounts, asserted in a test
-- [ ] `ledger` is a core composition over `section`, `deflist`, `amount` and `tally`; BUG-038 and SPEC-165 D6 are its stated prerequisites
-- [ ] `budget` is a core composition over `ledger`, with its duration/currency bar placed by `{% field %}` as definition-owned metadata; `variant="summary"` maps to `detail="totals"` for one release, with a deprecation report
+- [ ] `ledger` is a core composition over `section`, `deflist`, `amount` and `tally`, with kebab-case attributes; SPEC-165 D6 (nested `each`) is built first
+- [ ] `budget` is a core composition over `ledger`, with its duration/currency bar placed by `{% field %}` in a `{% group layout="bar" %}`, the currency at the end, and `defaults: { elevation: flat }`; `variant="summary"` maps to `detail="totals"` for one release, with a deprecation report
 - [ ] Every figure in budget's fixtures and site examples is unchanged; the SEO baseline does not move; the visible changes in D8 are recorded
 - [ ] A codemod rewrites tilde estimate markers to `(estimate)`, and `content-unmatched` reports any missed
-- [ ] `tier` (SPEC-161 D4) uses `amount` for its price; `29 kr` publishes `SEK` through the authored attributes
+- [ ] `tier` (SPEC-161 D4) uses `amount` for its price and publishes its authored `currency`; `kr` with no `currency` is reported, not guessed
 - [ ] Lumina's `budget.css` is replaced by vocabulary rules, and the theme migration note lists the removed `rf-budget*` classes
 - [ ] ADR-042's follow-up records `budget` as resolved
 
@@ -329,7 +362,9 @@ did for storytelling.
 - {% ref "SPEC-161" /%}: D3, a primitive may own imperative code; D4, the price `amount` replaces.
 - {% ref "SPEC-165" /%}: `color` and `font`, the other value primitives; D5's item extraction and D6's nested `each`.
 - {% ref "SPEC-145" /%}: D28's `{% field %}` and "the bag is the record"; D29's translated labels.
-- {% ref "BUG-038" /%}: YAML `itemModel` patterns, which `ledger` depends on.
+- {% ref "BUG-038" /%}: `itemModel` patterns, fixed in v0.42.0.
+- {% ref "SPEC-166" /%}: the shared value kinds, `formats` (D6), and D28 as the shared prerequisite.
+- {% ref "SPEC-156" /%}: D2's `{% group %}`, which places budget's metadata bar.
 - {% ref "ADR-036" /%}: why aggregation belongs in a named primitive, not an expression language.
 
 {% /spec %}
