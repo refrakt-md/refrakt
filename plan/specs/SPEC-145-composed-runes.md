@@ -1877,7 +1877,8 @@ ADR-030 draws a deliberate line between two words, and a whole-rune template sit
 both:
 
 - **Rule 1** — an arrangement names a *topology*, "the shape of the relationship between
-  a container and its children": `stack`, `row`, `grid`, `split`, `ladder`, `rail`. It is
+  a container and its children": `stack`, `row`, `grid`, `split`, `ladder`, `rail` (`rail` was
+  withdrawn when ADR-030 was accepted on 2026-10-28, for lack of a contract). It is
   explicit that `timeline`, `steps` and `playlist` are **not** arrangements, they are
   "runes that use one". **Rule 5b** requires an enabling topology to have "a contract
   statable **without naming any rune**". A `character`'s compact assembly is

@@ -19,7 +19,7 @@ values. The two identity holes the first draft found were closed by {% ref "SPEC
 in v0.40.0.
 
 Decision numbers are kept from the first draft, because other specs cite them. D2, D3 and D8
-are revised in place; D4 and D5 are recorded as shipped; D10 moves to the ADR-030 review;
+are revised in place; D4 and D5 are recorded as shipped; D10 was settled in the ADR-030 review;
 D12–D14 are new.
 
 ## The row exists, once generically
@@ -221,12 +221,17 @@ mechanism is still needed, scoped to author-written children, and remains a sepa
 Where schema is involved; with no schema table, either device is safe. `{% group %}` (D2) is the
 engine wrapper a template writes. SPEC-145 D19 states the same rule.
 
-### D10 — `carousel` and `rail`: moved to the ADR-030 review
+### D10 — there is no `carousel` / `rail` collision; both stray names are withdrawn
 
-`rail` appears only in ADR-030's vocabulary table, marked provisional, and nowhere in code.
-`carousel` has a contract and three adopters ({% ref "SPEC-100" /%}). ADR-030 also lists `track`
-as a topology name while `track` is a rune in `@refrakt-md/media`. Both are edits to ADR-030,
-which is still `proposed`, so they are settled when it is reviewed, not here.
+*Revised 2026-10-28.* The first draft said `carousel` and `rail` named one topology. They do
+not. ADR-030 never defined `rail`, but its cited cases (`progress`, `tolerance`, and `budget`,
+ruled out for having "no proportional bars") point at items placed along a scale by value, not
+a scrolling strip. Neither name had a contract, and `track` also collided with the `track` rune.
+
+Settled in the ADR-030 review: `rail` and `track` leave its topology list until a spec proposes
+them with a contract. `carousel` stays {% ref "ADR-018" /%}'s author-facing layout with
+{% ref "SPEC-100" /%}'s contract, and is not a value of `{% group layout %}` until a spec places
+it there.
 
 ### D11 — `stack` is not named
 
@@ -307,7 +312,7 @@ during implementation and filed as a bug if they do.
 
 ## References
 
-- {% ref "ADR-030" /%}: the rules this spec is the "later spec" for; still `proposed`, and the home of D10.
+- {% ref "ADR-030" /%}: the rules this spec is the "later spec" for; accepted on 2026-10-28, with D10 settled there.
 - {% ref "SPEC-158" /%}: shipped D4 and D5.
 - {% ref "SPEC-169" /%}: D4's `steps` example, and D6, which routes `sequence` here.
 - {% ref "SPEC-145" /%}: D19 (grouping), D32 (passing down), D15 (several templates).
@@ -320,6 +325,6 @@ during implementation and filed as a bug if they do.
 - {% ref "SPEC-146" /%}: the boundary that makes D9's hazard silent.
 - {% ref "SPEC-155" /%}: the media audit, and the two rune-specific row implementations.
 - {% ref "SPEC-159" /%}, {% ref "SPEC-171" /%}: the cascade, D8.
-- {% ref "SPEC-100" /%}, {% ref "ADR-018" /%}: `carousel`, half of D10.
+- {% ref "SPEC-100" /%}, {% ref "ADR-018" /%}: `carousel`, which D10 keeps out of this vocabulary.
 
 {% /spec %}

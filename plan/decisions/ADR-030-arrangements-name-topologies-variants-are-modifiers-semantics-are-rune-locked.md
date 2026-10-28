@@ -1,6 +1,16 @@
-{% decision id="ADR-030" status="proposed" date="2026-09-19" source="SPEC-080" tags="theme, layout, arrangements, vocabulary, architecture, governance" %}
+{% decision id="ADR-030" status="accepted" date="2026-09-19" source="SPEC-080" tags="theme, layout, arrangements, vocabulary, architecture, governance" %}
 
 # Arrangements name topologies; variants are modifiers; semantics are rune-locked
+
+> **Accepted on 2026-10-28, with four amendments**, each marked *Amended* where it lands:
+>
+> 1. Rule 3 names the mechanism that shipped: `sequence` as a whole identity key
+>    ({% ref "SPEC-158" /%} D2), not a `marker` modifier.
+> 2. The `data-arrange` rename is withdrawn. `data-zone-layout` and `data-sequence` stay
+>    separate, because one carries a theme-free arrangement and the other a rune-locked fact.
+> 3. `rail` and `track` leave rule 1's list. Neither has a contract, and `track` collides with
+>    a rune.
+> 4. No rule-5b term ships until the provisional tier exists in the contract and the build.
 
 ## Context
 
@@ -50,9 +60,24 @@ why.
 ### 1. Topologies get names
 
 An arrangement names a *topology* — the shape of the relationship between a
-container and its children. `stack`, `row`, `grid`, `split`, `ladder`, `tree`,
-`rail`, `track` are topologies. `timeline`, `steps`, `playlist` are not; they
+container and its children. `stack`, `row`, `grid`, `split`, `ladder`, `tree`
+are topologies. `timeline`, `steps`, `playlist` are not; they
 are runes that use one.
+
+*Amended 2026-10-28.* `rail` and `track` were on this list and are removed. Neither was ever
+given a contract, which rule 5b requires before a term is admitted, and the cases cited for
+them do not supply one:
+
+- **`rail`**'s cases are `progress`, `tolerance` and the `budget` near-miss below, ruled out
+  for having "no proportional bars". That points at items placed along a scale by value. It is
+  not a scrolling strip, so it is not {% ref "SPEC-100" /%}'s `carousel`. `tolerance` exists
+  nowhere in the code or the specs.
+- **`track`**'s case is `mix`, a playlist type in {% ref "SPEC-008" /%} that has not been built.
+  The name also collides with the `track` rune in `@refrakt-md/media`.
+
+Rule 6 makes a name cheap to add back. A later spec may propose either with a contract.
+`carousel` stays {% ref "ADR-018" /%}'s author-facing layout, with its own contract, and is not
+part of this vocabulary until a spec places it here.
 
 ### 2. Variants are modifiers, not names
 
@@ -70,6 +95,14 @@ collapse are entirely the theme's.
 
 This is {% ref "ADR-028" /%}'s principle one level down: a theme may not redefine
 what a section is, and it may not redefine whether an index is information.
+
+*Amended 2026-10-28.* The lock shipped as a whole key, not a modifier: `sequence`
+(`numbered | connected | plain`) is in `IDENTITY_FIELDS` ({% ref "SPEC-158" /%} D2, v0.40.0),
+so a theme override that changes it is dropped and reported. `numbered` is the ordinal-is-data
+case, `connected` the positional one, `plain` neither. `sequenceDirection` is the responsive
+collapse this rule hands the theme, and stays overridable. No `marker` modifier exists or is
+planned. For a composed rune, `sequence` is declared in the definition, where a replaced
+template cannot reach it ({% ref "SPEC-156" /%} D12).
 
 ### 4. Arrangements nest
 
@@ -172,8 +205,8 @@ Rule 5 is the load-bearing one, and splitting it changes the answer materially:
 | `ladder` | howto, recipe, steps, track, timeline, itinerary | 5a | consolidation — it already exists as `data-sequence` |
 | `grid` | bento, gallery, grid, palette, swatch | 5a | **stable, and genuinely new capability** |
 | `split` | compare, comparison | 5a | 2 — wait for a third |
-| `rail` | progress | 5b | **provisional** — contract is statable, `tolerance` is the case |
-| `track` | — | 5b | **provisional** — `mix` is the case |
+| `rail` | progress | 5b | *withdrawn 2026-10-28*: no contract was written (rule 1) |
+| `track` | — | 5b | *withdrawn 2026-10-28*: no contract, and the name is a rune's (rule 1) |
 | `radial` | — | — | not a topology; a `ladder` direction (rule 2) |
 
 Under the single old bar, everything below `grid` was blocked and the honest
@@ -203,12 +236,26 @@ vocabulary; `grid` lands stable; `rail` and `track` land provisional. Theme
 authors learn one vocabulary with uniform applicability instead of three with
 different coupling rules.
 
+*Amended 2026-10-28: withdrawn.* The two attributes stay separate. `data-zone-layout` carries
+an arrangement, which is the theme's. `data-sequence` carries whether an ordinal is information,
+which rule 3 locks to the rune. One attribute holding both would put a locked value and a free
+one in the same place, which is the line rule 3 draws. The rename would also move every theme's
+selectors for no gain in capability. {% ref "SPEC-156" /%} ships the ladder and the row on the
+existing attributes; `grid` follows the same pattern when its spec comes. `rail` and `track` are
+withdrawn (rule 1).
+
 **The provisional tier needs teeth or it is a comment nobody reads.** If nothing
 marks a provisional arrangement as unstable, it becomes stable by adoption and
 the tier has achieved nothing. Minimally: the theme contract records each
 arrangement's tier, and a theme using a provisional one is told so at build
 time. Without that, 5b is strictly worse than the old rule, because it ships
 guesses with the appearance of a guarantee.
+
+*Amended 2026-10-28: a gate, not a recommendation.* No term admitted under rule 5b ships, in
+this vocabulary or in {% ref "SPEC-159" /%}'s chrome axes, until the theme contract records each
+term's tier and the build tells a theme that it uses a provisional one. With `rail` and `track`
+withdrawn, nothing is waiting in this vocabulary, so the gate costs nothing now and would cost
+a retrofit later.
 
 **Provisional is not a parking space.** An arrangement that sits provisional
 across several releases with no second consumer is evidence the contract was
