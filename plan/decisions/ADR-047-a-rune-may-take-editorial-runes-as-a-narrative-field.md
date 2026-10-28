@@ -1,6 +1,11 @@
-{% decision id="ADR-047" status="proposed" date="2026-10-23" source="SPEC-160" tags="runes, composition, content-model, content-boundaries, recipe, authoring" %}
+{% decision id="ADR-047" status="accepted" date="2026-10-23" source="SPEC-160" tags="runes, composition, content-model, content-boundaries, recipe, authoring" %}
 
 # A rune may take editorial runes as a narrative field
+
+> **Accepted on 2026-10-28**, with one amendment to decision 1: the narrative field is inferred
+> from its match, and the "one field" and "never published" rules are checked when the definition
+> loads ({% ref "WORK-674" /%}). The guide's rewrite does not wait for `recipe`
+> ({% ref "WORK-675" /%}), because a site's own composed rune can declare the field today.
 
 ## Context
 
@@ -69,6 +74,12 @@ columns, or an image beside the text.
 
    The resolver already supports this: `tag:NAME`, pipe-separated alternatives, and a greedy field
    that collects a run of mixed blocks in source order (`packages/runes/src/lib/resolver.ts`).
+
+   *Amended 2026-10-28.* A field is the narrative field when its match names editorial runes and
+   nothing else. That is inferred, so no new key is needed. Without it, "one narrative field"
+   and decision 2 were guidance nothing could check: a definition could declare two, or map one
+   in its schema table and publish the story. So a definition is rejected at load, naming the
+   field, when it declares more than one such field, or when its schema row maps one.
 2. **The narrative field is never mapped to structured data.** The rune's schema row describes the
    rune, not the editorial around it.
 3. **Everything else the rune contains, it reinterprets.** Loose prose inside the rune remains
@@ -93,6 +104,8 @@ columns, or an image beside the text.
   fourth case is added, an editorial rune as a declared narrative field, with the recipe layout as
   its example. The "What goes where" table gains a column or note for it.
 - A recipe composition (SPEC-160 D5) can declare `story`. Until then, nothing changes.
+  *Amended 2026-10-28:* the guide's rewrite is not tied to `recipe`. A site's own composed rune
+  can declare a narrative field today, so the guide says how ({% ref "WORK-675" /%}).
 
 ## Open questions
 
