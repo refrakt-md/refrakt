@@ -53,7 +53,15 @@ export interface DimensionCssCoverage {
 }
 
 const DENSITY_LEVELS = ['full', 'compact', 'minimal'] as const;
-const SECTION_ROLES = ['header', 'title', 'description', 'body', 'footer', 'media'] as const;
+const SECTION_ROLES = [
+	'header',
+	'eyebrow',
+	'title',
+	'description',
+	'body',
+	'footer',
+	'media',
+] as const;
 const STATE_VALUES = ['open', 'closed', 'active', 'inactive', 'selected', 'disabled'] as const;
 const MEDIA_SLOTS = ['portrait', 'cover', 'thumbnail', 'hero', 'icon'] as const;
 const SEQUENCE_VALUES = ['numbered', 'connected', 'plain'] as const;

@@ -125,7 +125,6 @@ export const howto = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'how-to',
 			tag: 'article',
-			property: 'contentSection',
 			properties: {
 				estimatedTime: estimatedTimeMeta,
 				difficulty: difficultyMeta,

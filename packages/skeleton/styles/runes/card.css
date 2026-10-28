@@ -1,11 +1,11 @@
-/* card — structure (SPEC-070). Pure layout only: the stretched-link positioning,
- * the clip, the split vertical-align, the collection-grid height filling, and the
- * intrinsic-height scale. ALL spacing stays skin in Lumina's card.css — the root
+/* card — structure (SPEC-070). Pure layout only: the clip, the split
+ * vertical-align, the collection-grid height filling, and the intrinsic-height
+ * scale. The stretched `href` link is the shared dimensions/link.css. ALL spacing stays skin in Lumina's card.css — the root
  * `padding` overrides the surface-elevation padding (skin) by source order, and
  * the split gaps + zone-reset margins are same-layer rhythm contests. */
 
 .rf-card {
-	position: relative; /* anchor for the stretched link */
+	position: relative; /* anchor for the stretched link (dimensions/link.css) */
 	overflow: hidden; /* clip non-media layers to the rounded box */
 }
 
@@ -45,15 +45,4 @@
 }
 .rf-card[data-height="xl"] {
 	min-height: 34rem;
-}
-
-/* Whole-card stretched link; real links in body/footer sit above it. */
-.rf-card__link {
-	position: absolute;
-	inset: 0;
-	z-index: 0;
-}
-.rf-card a:not(.rf-card__link) {
-	position: relative;
-	z-index: 1;
 }

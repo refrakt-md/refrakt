@@ -49,6 +49,7 @@ export type SlotKind = 'value' | 'region';
 const SECTION_ROLES = [
 	'header',
 	'preamble',
+	'eyebrow',
 	'title',
 	'description',
 	'body',
@@ -91,7 +92,10 @@ export interface EmitsDeclaration {
 	rune: string;
 	/** The root element. */
 	tag: string;
-	/** Structural property name, set as `data-field` on the root. */
+	/**
+	 * @deprecated Ignored since v0.43.0 and removed in the release after, as
+	 * `TransformResult.property` is (SPEC-133, WORK-650).
+	 */
 	property?: string;
 	/** Attributes and file variables rendered as property metas — `fieldMetas`' data form. */
 	properties?: FieldMetaSpec;
@@ -502,7 +506,6 @@ export function makeSlotTransform(
 		return createComponentRenderable({
 			rune,
 			tag: tag as never,
-			property,
 			properties: properties ? fieldMetas(attrs, config, properties) : undefined,
 			refs,
 			children,

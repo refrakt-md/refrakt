@@ -229,7 +229,7 @@ describe('composed lore — rendered tree against the plugin (SPEC-147 D2)', () 
 		expect({ plugin, composed }).toMatchInlineSnapshot(`
 			{
 			  "composed": "<article typeof="Article" data-category="prophecy" data-rune="lore" data-density="full"><h1 id="the-prophecy-of-the-chosen-one">The Prophecy of the Chosen One</h1><div data-name="metadata" data-zone="metadata" data-zone-layout="bar"><span class="rf-badge" data-meta-type="category">prophecy</span></div><p data-slot="body">An ancient text found in the ruins of the First Temple.</p><blockquote data-slot="body"><p><em marker="*">When darkness covers the land and the last star fades, one shall rise from forgotten blood to forge the world anew.</em></p></blockquote><meta property="headline" content="The Prophecy of the Chosen One"><meta property="articleSection" content="prophecy"></article>",
-			  "plugin": "<article data-field="content-section" class="rf-lore rf-lore--prophecy rf-lore--true rf-lore--ancient" typeof="Article" data-category="prophecy" data-spoiler="true" data-tags="ancient" data-elevation="flat" data-rune="lore" data-density="full"><span data-name="title" property="headline" class="rf-lore__title" data-section="title">The Prophecy of the Chosen One</span><div data-name="metadata" data-zone="metadata" data-zone-layout="bar" class="rf-lore__metadata"><span class="rf-badge" data-meta-type="category">prophecy</span></div><div data-name="body" class="rf-lore__body" data-section="body" data-reading="prose"><p>An ancient text found in the ruins of the First Temple.</p><blockquote><p><em marker="*">When darkness covers the land and the last star fades, one shall rise from forgotten blood to forge the world anew.</em></p></blockquote></div><meta property="articleSection" content="prophecy"></article>",
+			  "plugin": "<article class="rf-lore rf-lore--prophecy rf-lore--true rf-lore--ancient" typeof="Article" data-category="prophecy" data-spoiler="true" data-tags="ancient" data-elevation="flat" data-rune="lore" data-density="full"><span data-name="title" property="headline" class="rf-lore__title" data-section="title">The Prophecy of the Chosen One</span><div data-name="metadata" data-zone="metadata" data-zone-layout="bar" class="rf-lore__metadata"><span class="rf-badge" data-meta-type="category">prophecy</span></div><div data-name="body" class="rf-lore__body" data-section="body" data-reading="prose"><p>An ancient text found in the ruins of the First Temple.</p><blockquote><p><em marker="*">When darkness covers the land and the last star fades, one shall rise from forgotten blood to forge the world anew.</em></p></blockquote></div><meta property="articleSection" content="prophecy"></article>",
 			}
 		`);
 	});
@@ -272,8 +272,8 @@ describe('composed lore — rendered tree against the plugin (SPEC-147 D2)', () 
 			// The plugin config's `defaultElevation: 'flat'` has no counterpart.
 			expect(plugin.attributes['data-elevation']).toBe('flat');
 			expect(composed.attributes).not.toHaveProperty('data-elevation');
-			// The plugin publishes its root under `property: 'contentSection'`.
-			expect(plugin.attributes['data-field']).toBe('content-section');
+			// Neither root carries `data-field` since `contentSection` went (WORK-650).
+			expect(plugin.attributes['data-field']).toBeUndefined();
 			expect(composed.attributes['data-field']).toBeUndefined();
 		},
 	);

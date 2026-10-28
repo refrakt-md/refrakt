@@ -91,7 +91,6 @@ export const blog = createContentModelSchema({
 			// explicitly out of scope — so the type is dropped here rather than
 			// kept alive by a rune-level mapping invented to justify it.
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				folder: folderMeta,
 				sort: sortMeta,

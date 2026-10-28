@@ -13,6 +13,7 @@ import {
 	buildLayoutMetas,
 	splitMediaBodyFooter,
 	extractMediaImage,
+	stretchedLink,
 } from './common.js';
 
 /**
@@ -33,7 +34,8 @@ import {
  * body + footer. A leading empty zone (`--- body --- footer`) means "no media".
  *
  * `href` makes the whole card a link (a stretched link overlay, so real links
- * inside body/footer stay clickable). The card carries no `$item`/registry
+ * inside body/footer stay clickable). The overlay is a focusable, labelled link
+ * (WORK-655), rendered by `stretchedLink`, the same anchor `{% link %}` uses. The card carries no `$item`/registry
  * knowledge — it's plain and composable, standalone or fed by a collection
  * body template.
  */
@@ -46,7 +48,9 @@ import {
 // dropped on every card. `title` is deliberately not mapped: the leading
 // heading lives *inside* the body slot, so a `title` role would nest one
 // section inside another and resize every card heading via `--rf-title-size`.
-export const cardSections = { media: 'media', body: 'body' } as const;
+// `eyebrow` is the shared role (WORK-656), so the sections dimension styles it,
+// the linked pill included, rather than `card.css`.
+export const cardSections = { media: 'media', eyebrow: 'eyebrow', body: 'body' } as const;
 
 export const card = createContentModelSchema({
 	sections: cardSections,
@@ -191,11 +195,7 @@ export const card = createContentModelSchema({
 		let linkTag: InstanceType<typeof Tag> | undefined;
 		const href = String(attrs.href ?? '');
 		if (href) {
-			linkTag = new Tag(
-				'a',
-				{ 'data-name': 'link', href, 'aria-hidden': 'true', tabindex: '-1' },
-				[],
-			);
+			linkTag = stretchedLink(href);
 			children.push(linkTag);
 		}
 

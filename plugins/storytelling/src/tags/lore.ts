@@ -52,7 +52,6 @@ export const lore = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'lore',
 			tag: 'article',
-			property: 'contentSection',
 			properties: {
 				category: categoryMeta,
 				spoiler: spoilerMeta,

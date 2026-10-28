@@ -8,14 +8,12 @@ import {
 	strong,
 	text,
 	link,
+	linkTag,
 	hardbreak,
 	image,
 	table,
 	td,
 } from './nodes.js';
-
-export { Page } from './documents/page.js';
-import { DocPage } from './documents/doc.js';
 
 import { grid } from './tags/grid.js';
 import { codegroup } from './tags/codegroup.js';
@@ -71,6 +69,7 @@ import './file-ref-resolve.js';
 import './xref-preview-resolve.js';
 import { progress } from './tags/progress.js';
 import { card } from './tags/card.js';
+import { actions } from './tags/actions.js';
 import { badge } from './tags/badge.js';
 import { bar } from './tags/bar.js';
 import { deflist } from './tags/deflist.js';
@@ -279,6 +278,7 @@ export {
 } from './collection-helpers.js';
 export type { CollectionEmbedConfig } from './collection-helpers.js';
 export { COLLECTION_SENTINEL } from './tags/collection.js';
+export { buildActions } from './tags/actions.js';
 export { functions, currency, date, number, join, concat, humanize } from './functions.js';
 export {
 	linkItem,
@@ -286,6 +286,7 @@ export {
 	buildLayoutMetas,
 	splitMediaBodyFooter,
 	extractMediaImage,
+	stretchedLink,
 	unwrapParagraphImages,
 	isMediaNode,
 	isSchemeMediaNode,
@@ -518,10 +519,6 @@ export type {
 	TextBlockProps,
 	TableOfContentsProps,
 } from './props.js';
-
-export const documents = {
-	doc: new DocPage(),
-};
 
 export const runes = {
 	nav: defineRune({
@@ -1230,6 +1227,20 @@ export const runes = {
 			'{% /card %}',
 		],
 	}),
+	actions: defineRune({
+		name: 'actions',
+		schema: actions,
+		description:
+			'A row of actions: each link of a list becomes a button, the first link primary and the rest secondary (`data-rank`), and a fence becomes a copyable command line. What `hero` and `cta` render their buttons with.',
+		typeName: 'Actions',
+		category: 'Content',
+		snippet: [
+			'{% actions %}',
+			'- [${1:Get started}](${2:/docs/})',
+			'- [${3:Learn more}](${4:/about/})',
+			'{% /actions %}',
+		],
+	}),
 };
 
 /** Markdoc-compatible tags map derived from runes + Markdoc built-in tags.
@@ -1241,7 +1252,8 @@ export const runes = {
  * cells, partials, etc. */
 export const tags = {
 	...runeTagMap(runes),
-	link,
+	// The tag form also wraps blocks (SPEC-160 D8); the node form is unchanged.
+	link: linkTag,
 	...Markdoc.tags,
 	// Markdoc's `if` / `else` declare `primary: { type: Object }`, which is a
 	// statement about *expression syntax*: `{% if $var %}` and

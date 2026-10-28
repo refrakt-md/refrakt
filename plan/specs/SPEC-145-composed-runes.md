@@ -2118,6 +2118,12 @@ frontmatter. The only gap is `headline` / `blurb`, which is
 > composition parser accepted only `sequence` and `sections`. SPEC-169 D1 adds it, with fixed
 > zones only, and {% ref "WORK-646" /%} implements it, so the statement above now holds.
 
+> **Superseded in part by {% ref "ADR-041" /%}.** `section`, not `card`, is now the primitive a
+> composition places for a titled region with media: since {% ref "WORK-652" /%} it carries the
+> same split, opt-in through `media-position`, without `card`'s surface ({% ref "SPEC-160" /%}
+> D2). `card` keeps its split and its output (SPEC-160 D3), and the argument above about the
+> work composing deletes holds for either.
+
 This corrects a claim that reached {% ref "SPEC-151" /%}: {% ref "SPEC-143" /%} D4 gates
 the *declared* emit path, not composability, so its exclusion of `recipe` and `howto` says
 nothing about this path.
@@ -2132,6 +2138,12 @@ authored shape, several schema.org types*, which is `playlist`'s five and
 a different thing.
 
 ### D20 — the canonical primitive owes its composers a placeable preamble
+
+> **Superseded in part by {% ref "ADR-041" /%}.** The canonical split primitive is now
+> `section`, which already has the page-section anatomy and gained the split in
+> {% ref "WORK-652" /%} ({% ref "SPEC-160" /%} D2). A composition gets a placeable preamble from
+> it without this decision's migration of `card`. SPEC-160 D3 records that if `card` becomes a
+> composition over `section`, D20 is never implemented.
 
 `card` is D18's canonical media-split primitive and **the only split-layout rune without the
 page-section anatomy.** Measured across every rune declaring `base: SplitLayoutModel`:

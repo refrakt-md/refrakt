@@ -41,6 +41,7 @@ export const revealStep = createContentModelSchema({
 // what a section *is* (ADR-028).
 export const revealSections = {
 	preamble: 'preamble',
+	eyebrow: 'eyebrow',
 	headline: 'title',
 	blurb: 'description',
 } as const;
@@ -89,7 +90,6 @@ export const reveal = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'reveal',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				step: steps,
 			},

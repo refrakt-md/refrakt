@@ -640,36 +640,6 @@
 				}
 			}
 		},
-		"PageSection": {
-			"block": "page-section",
-			"root": ".rf-page-section",
-			"dataRune": "page-section",
-			"childOrder": [
-				"{content}"
-			],
-			"universalAxes": {
-				"axes": {
-					"tint": {
-						"selectors": [
-							".rf-page-section--tinted"
-						]
-					},
-					"bg": {
-						"selectors": [
-							".rf-page-section--has-bg"
-						]
-					}
-				},
-				"unavailable": {
-					"reading": "this rune declares no prose body",
-					"dropcap": "this rune declares no prose body",
-					"prominence": "this rune has no page-section header",
-					"content-place": "this rune declares no `content-place` modifier",
-					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
-					"frame": "this rune declares neither a `frameTarget` nor a media section"
-				}
-			}
-		},
 		"TableOfContents": {
 			"block": "toc",
 			"root": ".rf-toc",
@@ -3003,6 +2973,36 @@
 				}
 			}
 		},
+		"Actions": {
+			"block": "actions",
+			"root": ".rf-actions",
+			"dataRune": "actions",
+			"childOrder": [
+				"{content}"
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-actions--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-actions--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
+		},
 		"Section": {
 			"block": "section",
 			"root": ".rf-section",
@@ -3016,6 +3016,34 @@
 					"default": "start",
 					"classPattern": ".rf-section--{value}",
 					"dataAttribute": "data-align"
+				},
+				"media-position": {
+					"source": "meta",
+					"dataAttribute": "data-media-position"
+				},
+				"media-ratio": {
+					"source": "meta",
+					"dataAttribute": "data-media-ratio"
+				},
+				"valign": {
+					"source": "meta",
+					"dataAttribute": "data-valign"
+				},
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
+				},
+				"content-place": {
+					"source": "meta",
+					"dataAttribute": "data-content-place"
+				},
+				"height": {
+					"source": "meta",
+					"dataAttribute": "data-height"
+				},
+				"aspect": {
+					"source": "meta",
+					"dataAttribute": "data-aspect"
 				}
 			},
 			"universalAxes": {
@@ -3025,18 +3053,14 @@
 							".rf-section--tinted"
 						]
 					},
+					"frame": {
+						"target": "[data-section=\"media\"]"
+					},
 					"bg": {
 						"selectors": [
 							".rf-section--has-bg"
 						]
 					}
-				},
-				"unavailable": {
-					"reading": "this rune declares no prose body",
-					"dropcap": "this rune declares no prose body",
-					"content-place": "this rune declares no `content-place` modifier",
-					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
-					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			},
 			"elements": {
@@ -3064,6 +3088,118 @@
 					"tag": "image",
 					"selector": ".rf-section__image",
 					"source": "autoLabel"
+				}
+			},
+			"inlineStyles": {
+				"valign": {
+					"prop": "--split-valign",
+					"transform": "align"
+				},
+				"aspect": "aspect-ratio"
+			},
+			"variants": {
+				"media-position": {
+					"cover": {
+						"block": "section",
+						"root": ".rf-section",
+						"dataRune": "section",
+						"childOrder": [
+							"{content}"
+						],
+						"modifiers": {
+							"align": {
+								"source": "meta",
+								"default": "start",
+								"classPattern": ".rf-section--{value}",
+								"dataAttribute": "data-align"
+							},
+							"media-position": {
+								"source": "meta",
+								"dataAttribute": "data-media-position"
+							},
+							"media-ratio": {
+								"source": "meta",
+								"dataAttribute": "data-media-ratio"
+							},
+							"valign": {
+								"source": "meta",
+								"dataAttribute": "data-valign"
+							},
+							"collapse": {
+								"source": "meta",
+								"dataAttribute": "data-collapse"
+							},
+							"content-place": {
+								"source": "meta",
+								"dataAttribute": "data-content-place"
+							},
+							"height": {
+								"source": "meta",
+								"dataAttribute": "data-height"
+							},
+							"aspect": {
+								"source": "meta",
+								"dataAttribute": "data-aspect"
+							}
+						},
+						"staticModifiers": [
+							{
+								"name": "cover",
+								"selector": ".rf-section--cover"
+							}
+						],
+						"universalAxes": {
+							"axes": {
+								"tint": {
+									"selectors": [
+										".rf-section--tinted"
+									]
+								},
+								"frame": {
+									"target": "[data-section=\"media\"]"
+								},
+								"bg": {
+									"selectors": [
+										".rf-section--has-bg"
+									]
+								}
+							}
+						},
+						"elements": {
+							"preamble": {
+								"tag": "header",
+								"selector": ".rf-section__preamble",
+								"source": "autoLabel"
+							},
+							"eyebrow": {
+								"tag": "eyebrow",
+								"selector": ".rf-section__eyebrow",
+								"source": "autoLabel"
+							},
+							"headline": {
+								"tag": "headline",
+								"selector": ".rf-section__headline",
+								"source": "autoLabel"
+							},
+							"blurb": {
+								"tag": "blurb",
+								"selector": ".rf-section__blurb",
+								"source": "autoLabel"
+							},
+							"image": {
+								"tag": "image",
+								"selector": ".rf-section__image",
+								"source": "autoLabel"
+							}
+						},
+						"inlineStyles": {
+							"valign": {
+								"prop": "--split-valign",
+								"transform": "align"
+							},
+							"aspect": "aspect-ratio"
+						}
+					}
 				}
 			}
 		},

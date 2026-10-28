@@ -1,4 +1,4 @@
-/* feature — structure. The preamble flex + eyebrow stretched-link, the content
+/* feature — structure. The preamble flex, the content
  * display reset, the definitions grid, the feature-item icon stack, and the
  * media-position flip. Spacing, type, surface chrome, alignment (text-align), and
  * colour stay skin (Lumina's styles/runes/feature.css). */
@@ -6,16 +6,6 @@
 .rf-feature__preamble {
 	flex-direction: column;
 	align-items: flex-start;
-}
-
-.rf-feature__eyebrow:has(a) {
-	display: inline-block;
-	position: relative;
-}
-.rf-feature__eyebrow:has(a) a::before {
-	content: "";
-	position: absolute;
-	inset: 0;
 }
 
 .rf-feature__content {

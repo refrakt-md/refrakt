@@ -66,14 +66,11 @@
 		margin-bottom: 0;
 	}
 
-	/* Eyebrow — a leading paragraph immediately before a heading, the same kicker
- * treatment as page-section / recipe. */
+	/* Eyebrow — a leading paragraph immediately before a heading. Its type and its
+ * linked pill are the sections dimension's (`[data-section="eyebrow"]`); a card
+ * sets it one step smaller. */
 	.rf-card__eyebrow {
 		font-size: var(--rf-text-xs);
-		font-weight: var(--rf-weight-semibold);
-		letter-spacing: var(--rf-tracking-wider);
-		text-transform: uppercase;
-		color: var(--rf-color-primary);
 		margin: 0 0 var(--rf-spacing-xs);
 	}
 

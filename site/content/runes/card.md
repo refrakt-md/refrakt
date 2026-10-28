@@ -56,7 +56,7 @@ The body divides on `---` (a horizontal rule) into up to three zones — here al
 
 Zones are assigned by count: **1 zone → body**; **2 → media + body**; **3 → media + body + footer**. To have a footer with no media, lead with an empty zone (`--- body --- footer`).
 
-In the body zone, a leading paragraph immediately followed by a heading is treated as an **eyebrow** — the small uppercase kicker above the title (the same pattern as [`page-section`](/runes/layout) and `recipe`). Above, `Brunch classic` is the eyebrow over the `Tequila Sunrise` heading.
+In the body zone, a leading paragraph immediately followed by a heading is treated as an **eyebrow** — the small uppercase kicker above the title (the same pattern as [`section`](/runes/section) and `recipe`). Above, `Brunch classic` is the eyebrow over the `Tequila Sunrise` heading.
 
 ### The media zone isn't just images
 
@@ -84,7 +84,7 @@ The media zone holds *any* content — it's ordinary markdown, transformed in pl
 
 ## Whole-card links
 
-`href` makes the entire card clickable. It's rendered as a stretched-link overlay, so real links inside the body or footer stay clickable too (no invalid nested `<a>`).
+`href` makes the entire card clickable. It's rendered as a stretched-link overlay, so real links inside the body or footer stay clickable too (no invalid nested `<a>`). The overlay is a real link: it takes one tab stop, and screen readers announce it by the card's title (`aria-labelledby`).
 
 ```markdoc
 {% card href="/guide/getting-started/" %}
@@ -92,6 +92,8 @@ The media zone holds *any* content — it's ordinary markdown, transformed in pl
 Read the five-minute guide.
 {% /card %}
 ```
+
+Any block can be made a link the same way, with [`{% link %}`](/runes/link) around it.
 
 ### Media guests in a linked card
 
@@ -203,8 +205,8 @@ In a `grid`, every card in a row shares the height of the tallest one, and the b
     </div>
     <footer data-name="footer">…</footer>
   </div>
-  <!-- only when href is set -->
-  <a data-name="link" href="…" aria-hidden="true" tabindex="-1"></a>
+  <!-- only when href is set: focusable, labelled by the card's title -->
+  <a data-name="link" href="…" data-link="stretch" aria-labelledby="…"></a>
 </div>
 ```
 

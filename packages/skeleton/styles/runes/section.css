@@ -1,23 +1,38 @@
-/* section — structure. The column stack, the preamble flex + eyebrow stretched-
- * link, the responsive image box, the full-width body, and the header alignment
+/* section — structure. The column stack, the preamble flex, the responsive image
+ * box, the full-width body, and the header alignment
  * (align-items + auto-margins). Type, gaps, max-width, radii, and text-align are
- * skin. */
-.rf-section {
+ * skin.
+ *
+ * The split (`media-position`, SPEC-160 D2) is the shared layout's, keyed on
+ * `[data-media-position]` in layouts/split.css and the cover dimension. The
+ * column stack is `:where()` so it never outranks those attribute selectors,
+ * which this file loads after. */
+:where(.rf-section) {
 	display: flex;
 	flex-direction: column;
+}
+.rf-section__content {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+/* Intrinsic-height scale (SPEC-089), as on `card` — for cover sections. */
+.rf-section[data-height="sm"] {
+	min-height: 12rem;
+}
+.rf-section[data-height="md"] {
+	min-height: 18rem;
+}
+.rf-section[data-height="lg"] {
+	min-height: 26rem;
+}
+.rf-section[data-height="xl"] {
+	min-height: 34rem;
 }
 .rf-section__preamble {
 	display: flex;
 	flex-direction: column;
-}
-.rf-section__eyebrow:has(a) {
-	display: inline-block;
-	position: relative;
-}
-.rf-section__eyebrow:has(a) a::before {
-	content: "";
-	position: absolute;
-	inset: 0;
 }
 .rf-section__image {
 	max-width: 100%;

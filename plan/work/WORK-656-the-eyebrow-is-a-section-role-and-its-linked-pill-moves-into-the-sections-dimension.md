@@ -1,4 +1,4 @@
-{% work id="WORK-656" status="ready" priority="medium" complexity="moderate" source="SPEC-160" tags="lumina, skeleton, css, section, dimensions, composition" milestone="v0.43.0" %}
+{% work id="WORK-656" status="done" priority="medium" complexity="moderate" source="SPEC-160" tags="lumina, skeleton, css, section, dimensions, composition" milestone="v0.43.0" pr="refrakt-md/refrakt#724" %}
 
 # The eyebrow is a section role, and its linked pill moves into the sections dimension
 
@@ -19,15 +19,15 @@ This follows the same pattern as {% ref "WORK-654" /%}, which moves button CSS o
 
 ## Acceptance Criteria
 
-- [ ] `eyebrow` is a section role: header anatomy stamps `data-section="eyebrow"` on the eyebrow of every rune that has one, `section` and `card` included
-- [ ] The closed role vocabulary admits it: the `RuneConfig.sections` role union in `packages/transform/src/types.ts`, `HEADER_ROLES` in `packages/transform/src/section-roles.ts`, and any contract or `inspect` code that lists the roles
-- [ ] The stretched link moves to `packages/skeleton/styles/dimensions/sections.css` and the pill to `packages/lumina/styles/dimensions/sections.css`, keyed on `[data-section="eyebrow"]:has(a)`
-- [ ] The per-rune `__eyebrow:has(a)` rules are deleted from all nine runes in both packages; only rune-specific adjustments stay (for example hero's `margin: 0 0 1rem` and `max-width: none`)
-- [ ] The plain eyebrow's type (size, weight, tracking, uppercase, primary colour) moves to the dimension too where the nine copies agree, and stays per rune where they differ, each difference listed in the resolution
-- [ ] The nine runes look unchanged in the gallery, in light and dark, with and without a linked eyebrow; a linked eyebrow in `card` now renders as a pill, which the changeset names
-- [ ] The CSS coverage test passes, with `UNSTYLED_BLOCKS` / `KNOWN_MISSING_SELECTORS` updated if the per-rune selectors leave them
-- [ ] Contracts are regenerated on both copies and the diff reviewed; the SEO baseline does not move
-- [ ] The theme-authoring dimensions page documents the `eyebrow` role
+- [x] `eyebrow` is a section role: header anatomy stamps `data-section="eyebrow"` on the eyebrow of every rune that has one, `section` and `card` included
+- [x] The closed role vocabulary admits it: the `RuneConfig.sections` role union in `packages/transform/src/types.ts`, `HEADER_ROLES` in `packages/transform/src/section-roles.ts`, and any contract or `inspect` code that lists the roles
+- [x] The stretched link moves to `packages/skeleton/styles/dimensions/sections.css` and the pill to `packages/lumina/styles/dimensions/sections.css`, keyed on `[data-section="eyebrow"]:has(a)`
+- [x] The per-rune `__eyebrow:has(a)` rules are deleted from all nine runes in both packages; only rune-specific adjustments stay (for example hero's `margin: 0 0 1rem` and `max-width: none`)
+- [x] The plain eyebrow's type (size, weight, tracking, uppercase, primary colour) moves to the dimension too where the nine copies agree, and stays per rune where they differ, each difference listed in the resolution
+- [x] The nine runes look unchanged in the gallery, in light and dark, with and without a linked eyebrow; a linked eyebrow in `card` now renders as a pill, which the changeset names
+- [x] The CSS coverage test passes, with `UNSTYLED_BLOCKS` / `KNOWN_MISSING_SELECTORS` updated if the per-rune selectors leave them
+- [x] Contracts are regenerated on both copies and the diff reviewed; the SEO baseline does not move
+- [x] The theme-authoring dimensions page documents the `eyebrow` role
 
 ## Approach
 
@@ -45,5 +45,38 @@ This follows the same pattern as {% ref "WORK-654" /%}, which moves button CSS o
 
 - {% ref "SPEC-160" /%}: D7, a composed `hero` and `cta` with no rune CSS.
 - {% ref "ADR-041" /%}.
+
+## Resolution
+
+Completed: 2026-10-26
+
+Branch: `claude/v0-43-0-review-ny4nl1`
+
+### What was done
+- `eyebrow` added to the role vocabulary:
+  - `RuneConfig.sections` (`packages/transform/src/types.ts`);
+  - `SectionRole` (`packages/runes/src/lib/index.ts`);
+  - the slot roles (`slots.ts`);
+  - the dimension audit's list (`packages/cli/src/lib/dimension-audit.ts`).
+- `eyebrow: 'eyebrow'` added to the `sections` maps of `hero`, `cta`, `section`, `card`, `feature`, `pricing`, `reveal`, `tabs`, `accordion` and `steps`.
+- Stretched link: `packages/skeleton/styles/dimensions/sections.css`. Type and pill: `packages/lumina/styles/dimensions/sections.css`. Both keyed on `[data-section="eyebrow"]`.
+- The 18 per-rune pill copies are deleted, and the per-rune type declarations removed.
+- `hero` and `cta`: their `p` rules exclude the eyebrow (`p:not([data-section="eyebrow"])`), because `.rf-hero p` (0,1,1) would otherwise beat the attribute selector.
+- Docs: `site/content/extend/theme-authoring/dimensions.md` documents the role and the pill.
+
+### Differences kept per rune
+- **Margin.** `0 0 0.5rem` for `feature`, `pricing`, `reveal`, `tabs`, `accordion` and `steps`; `0` for `section`; `0 0 1rem` for `hero`; `0 0 0.75rem` for `cta`; `0 0 var(--rf-spacing-xs)` for `card`.
+- **`max-width: none`** on `hero` and `cta`, plus `line-height: relaxed`, which they used to inherit from their `p` rules.
+- **`card`'s size**, `--rf-text-xs`.
+- The nine copies agreed on size `sm`, semibold, tracking wider, uppercase and primary, which are now the dimension's.
+
+### Notes
+- **Deviation from criterion 2:** `eyebrow` is *not* in `HEADER_ROLES` (`section-roles.ts`) or prominence's header set.
+  - Both decide whether a rune "has a header": one gates `prominence`, the other the missing-header-role lint for `title`/`header`/`headline`/`name` slots.
+  - An eyebrow alone is not a title. Adding it would have offered `card` a `prominence` it cannot honour, and would let an eyebrow satisfy the title lint.
+- **Contracts do not change** for the role: the contract does not record `sections`.
+- **Gallery check, light and dark, with and without linked eyebrows:**
+  - unchanged for the nine;
+  - `card`'s linked eyebrow is now a pill, 10px taller, as intended and named in the changeset.
 
 {% /work %}

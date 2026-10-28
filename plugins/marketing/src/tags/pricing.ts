@@ -82,6 +82,7 @@ function convertHeadings(nodes: Node[]): Node[] {
 // what a section *is* (ADR-028).
 export const pricingSections = {
 	preamble: 'preamble',
+	eyebrow: 'eyebrow',
 	headline: 'title',
 	blurb: 'description',
 } as const;
@@ -133,7 +134,6 @@ export const pricing = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'pricing',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				tier: tiers,
 			},

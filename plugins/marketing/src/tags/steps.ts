@@ -99,6 +99,7 @@ export const step = createContentModelSchema({
 // what a section *is* (ADR-028).
 export const stepsSections = {
 	preamble: 'preamble',
+	eyebrow: 'eyebrow',
 	headline: 'title',
 	blurb: 'description',
 } as const;
@@ -166,7 +167,6 @@ export const steps = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'steps',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				step: stepItems,
 			},

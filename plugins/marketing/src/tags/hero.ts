@@ -7,8 +7,8 @@ import {
 	createComponentRenderable,
 	RenderableNodeCursor,
 	SplitLayoutModel,
+	buildActions,
 	buildLayoutMetas,
-	linkItem,
 	pageSectionProperties,
 	extractMediaImage,
 	unwrapParagraphImages,
@@ -19,6 +19,7 @@ import {
 // what a section *is* (ADR-028).
 export const heroSections = {
 	preamble: 'preamble',
+	eyebrow: 'eyebrow',
 	headline: 'title',
 	blurb: 'description',
 	media: 'media',
@@ -99,28 +100,10 @@ export const hero = createContentModelSchema({
 					? [contentZone.actions]
 					: []
 		) as Node[];
-		// Use the original config inside the fence handler to avoid recursion
-		// (same pattern as NodeStream.useNode — the inner transform uses the
-		// base config, not the config with custom overrides)
-		const baseConfig = config;
-		const actionConfig = {
-			...config,
-			nodes: {
-				...config.nodes,
-				item: linkItem,
-				fence: {
-					transform(node: Node) {
-						const output = new RenderableNodeCursor([
-							Markdoc.transform(node, baseConfig),
-						] as RenderableTreeNode[]);
-						return new Tag('div', {}, [output.next()]);
-					},
-				},
-			},
-		};
-		const actions = new RenderableNodeCursor(
-			Markdoc.transform(actionAstNodes, actionConfig) as RenderableTreeNode[],
-		);
+		// SPEC-160 D6 — the actions region is the `actions` rune, nested. It
+		// keeps `data-name="actions"`, so `rf-hero__actions` survives beside
+		// `rf-actions`, and names its own items `action` and `command`.
+		const actions = actionAstNodes.length > 0 ? buildActions(actionAstNodes, config) : undefined;
 
 		// Transform media AST nodes. Markdoc wraps inline-level media (a bare image,
 		// or a single block rune like `{% sandbox %}`) in a `<p>`; unwrap those so
@@ -158,11 +141,10 @@ export const hero = createContentModelSchema({
 		const aspectMeta = aspect ? new Tag('meta', { content: aspect }) : undefined;
 
 		// Structural wrapping
-		const actionsDiv = actions.wrap('div');
 		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
 		const mainContent = new RenderableNodeCursor([
 			...headerContent,
-			...(actions.count() > 0 ? [actionsDiv.next()] : []),
+			...(actions ? [actions] : []),
 		]).wrap('div');
 		// SPEC-101 — in cover mode unwrap a bare `<p><img></p>` to a direct `img`
 		// child so the shared cover fill rules (`> img` object-fit) apply. Scoped
@@ -174,7 +156,6 @@ export const hero = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'hero',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				align: alignMeta,
 				'media-position': mediaPositionMeta,
@@ -187,11 +168,9 @@ export const hero = createContentModelSchema({
 			},
 			refs: {
 				...pageSectionProperties(header),
-				actions: actionsDiv,
+				actions,
 				content: mainContent,
 				media: mediaDiv,
-				action: actions.flatten().tags('li'),
-				command: actions.flatten().tags('div'),
 			},
 			children: [mainContent.next(), ...(side.toArray().length > 0 ? [mediaDiv.next()] : [])],
 		});

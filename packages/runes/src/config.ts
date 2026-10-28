@@ -185,7 +185,6 @@ export const coreConfig: ThemeConfig = {
 			rootAttributes: { 'data-code-host': 'true' },
 			editHints: { panel: 'code' },
 		},
-		PageSection: { block: 'page-section' },
 		TableOfContents: { block: 'toc', defaultElevation: 'flush' },
 		/* Snippet doesn't have a normal schema transform — its preprocess
 		 * hook replaces the tag with a `fence` node, which renders as a
@@ -707,12 +706,39 @@ export const coreConfig: ThemeConfig = {
 			rootAttributes: { 'data-state': 'closed' },
 			editHints: { body: 'none' },
 		},
+		// SPEC-160 D6 — a row of actions. Rank rides `data-rank` on each item, so
+		// themes style it rather than list position.
+		Actions: {
+			block: 'actions',
+			editHints: { action: 'link', command: 'code' },
+		},
 		Section: {
 			block: 'section',
 			modifiers: {
 				align: { source: 'meta', default: 'start' },
+				// SPEC-160 D2 — the split, as on `card`. No `media-position` default:
+				// zoning is opt-in, so a section without one renders as it always did.
+				'media-position': { source: 'meta', noBemClass: true },
+				'media-ratio': { source: 'meta', noBemClass: true },
+				valign: { source: 'meta', noBemClass: true },
+				collapse: { source: 'meta', noBemClass: true },
+				'content-place': { source: 'meta', noBemClass: true },
+				height: { source: 'meta', noBemClass: true },
+				aspect: { source: 'meta', noBemClass: true },
+			},
+			// `media-position="cover"` reuses the shared full-scope cover layer
+			// (SPEC-089), exactly as `card` and `hero` do.
+			variants: {
+				'media-position': {
+					cover: { staticModifiers: ['cover'], rootAttributes: { 'data-cover-scope': 'full' } },
+				},
+			},
+			styles: {
+				valign: { prop: '--split-valign', transform: 'align' },
+				aspect: 'aspect-ratio',
 			},
 			sections: sectionSections,
+			provides: ['prose'],
 			autoLabel: pageSectionAutoLabel,
 			editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', body: 'none' },
 		},

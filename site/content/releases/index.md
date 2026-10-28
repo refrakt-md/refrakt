@@ -6,6 +6,17 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
+## v0.43.0 · Section is the composition base
+
+A composition that wants a titled region with media places `{% section %}`, not
+`{% card %}`. `section` gains a body role, a header grammar that no longer reads prose as a
+header, the media split, `cover` and a media kind. The composed storytelling runes move onto
+it, and two new primitives arrive: `{% actions %}` for rows of buttons and a block-level
+`{% link %}`. `card` renders exactly as it does today (ADR-041,
+ADR-046, SPEC-160).
+
+[All 8 changes in v0.43.0 →](/releases/v0.43.0)
+
 ## v0.42.0 · What a composition can express - October 26, 2026
 
 Since v0.41.0, anyone can write a composed rune. This milestone widens what a definition can

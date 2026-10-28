@@ -7,6 +7,7 @@ import {
 	bodyOnly,
 	RenderableNodeCursor,
 	asNodes,
+	stretchedLink,
 	unwrapParagraphImages,
 } from '@refrakt-md/runes';
 
@@ -181,11 +182,7 @@ export const bentoCell = createContentModelSchema({
 		const href = String(attrs.href ?? '');
 		let linkTag: InstanceType<typeof Tag> | undefined;
 		if (href) {
-			linkTag = new Tag(
-				'a',
-				{ 'data-name': 'link', href, 'aria-hidden': 'true', tabindex: '-1' },
-				[],
-			);
+			linkTag = stretchedLink(href);
 			refs.link = linkTag;
 			children.push(linkTag);
 		}

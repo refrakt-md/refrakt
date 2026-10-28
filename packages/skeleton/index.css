@@ -36,6 +36,7 @@
 @import "./styles/dimensions/cover.css" layer(skeleton);
 @import "./styles/dimensions/metadata.css" layer(skeleton);
 @import "./styles/dimensions/sections.css" layer(skeleton);
+@import "./styles/dimensions/link.css" layer(skeleton);
 @import "./styles/dimensions/reading.css" layer(skeleton);
 @import "./styles/dimensions/checklist.css" layer(skeleton);
 @import "./styles/dimensions/sequence.css" layer(skeleton);
@@ -54,6 +55,7 @@
 @import "./styles/layouts/plan.css" layer(skeleton);
 
 /* ── Rune structure ── */
+@import "./styles/runes/actions.css" layer(skeleton);
 @import "./styles/runes/card.css" layer(skeleton);
 @import "./styles/runes/hint.css" layer(skeleton);
 @import "./styles/runes/steps.css" layer(skeleton);
@@ -110,7 +112,6 @@
 @import "./styles/runes/file-ref.css" layer(skeleton);
 @import "./styles/runes/form.css" layer(skeleton);
 @import "./styles/runes/mediatext.css" layer(skeleton);
-@import "./styles/runes/page-section.css" layer(skeleton);
 @import "./styles/runes/placeholder.css" layer(skeleton);
 @import "./styles/runes/pullquote.css" layer(skeleton);
 @import "./styles/runes/relationships.css" layer(skeleton);

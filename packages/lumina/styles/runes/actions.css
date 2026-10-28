@@ -1,0 +1,65 @@
+@layer skin {
+	/* actions — skin (SPEC-160 D6). Buttons styled by rank (`data-rank`), not by
+ * list position. Size comes from custom properties a host may set
+ * (`--action-padding`, `--action-font-size`); the defaults are cta's. The
+ * row, the button shape and the mobile stack are structure, in
+ * @refrakt-md/skeleton (styles/runes/actions.css). */
+	.rf-actions,
+	.rf-actions__list {
+		gap: 0.75rem;
+	}
+	.rf-actions__list {
+		padding: 0;
+		margin: 0;
+	}
+	.rf-actions__action {
+		padding: 0;
+		margin: 0;
+	}
+	.rf-actions__action > a {
+		padding: var(--action-padding, 0.625rem 1.5rem);
+		border-radius: var(--rf-radius-sm);
+		text-decoration: none;
+		font-weight: var(--rf-weight-semibold);
+		font-size: var(--action-font-size, var(--rf-text-sm));
+		transition: all 200ms ease;
+	}
+	/* The primary action's text follows the colour scheme, so it stays legible in
+ * dark mode and over a cover scrim, where `--rf-color-primary` flips. */
+	.rf-actions__action[data-rank="primary"] > a {
+		background: var(--rf-color-primary);
+		color: var(--rf-color-on-primary);
+		box-shadow: var(--rf-shadow-sm);
+	}
+	.rf-actions__action[data-rank="primary"] > a:hover {
+		background: var(--rf-color-primary-hover);
+		box-shadow: var(--rf-shadow-md);
+		transform: translateY(-1px);
+		text-decoration: none;
+	}
+	.rf-actions__action[data-rank="secondary"] > a {
+		background: var(--rf-color-surface);
+		color: var(--rf-color-text);
+		border: 1px solid var(--rf-color-border);
+	}
+	.rf-actions__action[data-rank="secondary"] > a:hover {
+		background: var(--rf-color-surface-hover);
+		border-color: var(--rf-color-surface-active);
+		text-decoration: none;
+	}
+	/* A command line sits in the row at a button's height, without the margin a
+ * code block takes in prose. */
+	.rf-actions__command .rf-codeblock {
+		margin: 0;
+	}
+	.rf-actions__command pre {
+		margin: 0;
+		padding: var(--action-padding, 0.625rem 1.5rem);
+		font-size: var(--action-font-size, var(--rf-text-sm));
+		border-radius: var(--rf-radius-sm);
+		background: var(--rf-color-code-bg);
+		color: var(--rf-color-code-text);
+		border: 1px solid var(--rf-color-border);
+		white-space: nowrap;
+	}
+}

@@ -14,7 +14,7 @@ content:
         blurb:    { match: paragraph, optional: true, greedy: true }
 ---
 
-{% card %}
+{% section media-position="top" %}
 	{% slot name="media" /%}
 
 	---
@@ -22,4 +22,4 @@ content:
 	{% slot name="headline" /%}
 
 	{% slot name="blurb" /%}
-{% /card %}
+{% /section %}

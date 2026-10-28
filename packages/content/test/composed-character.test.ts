@@ -37,7 +37,7 @@ import {
  * `character` and never in place of it (SPEC-147 D1).
  *
  * The definition, `fixtures/composed-storytelling/runes/character.md`, places
- * `card`, `details` and its declared `metadata` block (`{% metablock %}`,
+ * `section` (WORK-653; it placed `card` before), `details` and its declared `metadata` block (`{% metablock %}`,
  * WORK-630). It drops the `character-section` child rune: each H2 section is a
  * `{% details %}`, placed by an ordinary `{% slot name="sections" each %}` (D26).
  *
@@ -195,10 +195,13 @@ describe('composed character — `image` from a slot-placed portrait (D10)', () 
 		]);
 	});
 
-	it("the portrait lands in card's media zone, unwrapped, carrying its slot name and the property", () => {
+	it("the portrait lands in section's media zone, unwrapped, carrying its slot name and the property", () => {
 		const out = render(composedStorytelling(), fixture('portrait'));
 		const [media] = named(out, 'media');
 		expect(media.attributes['data-section']).toBe('media');
+		// `media="portrait"` gives it back the kind the plugin's portrait has, so
+		// the media dimension crops it round (SPEC-160 D2, D4).
+		expect(media.attributes['data-media']).toBe('portrait');
 		const [img] = media.children;
 		expect(img.name).toBe('img');
 		expect(img.attributes).toMatchObject({
@@ -231,7 +234,7 @@ describe('composed character — registration (SPEC-144, against the storytellin
 		// The plugin's `postProcess` links `**Name**` in prose but skips nested
 		// runes, letting only the page's top-level rune through. The plugin's
 		// character holds its prose directly; the composed one places it inside
-		// `{% card %}`, which is nested, so the walk never reaches it.
+		// `{% section %}`, which is nested, so the walk never reaches it.
 		const lost = { ...committed.links };
 		delete lost['/characters/aria'];
 		delete lost['/characters/old-tom'];
@@ -265,8 +268,8 @@ describe('composed character — rendered tree against the plugin (SPEC-145 spik
 		const composed = html(render(composedStorytelling(), fixture('portrait')));
 		expect({ plugin, composed }).toMatchInlineSnapshot(`
 			{
-			  "composed": "<article typeof="Person" data-role="antagonist" data-status="alive" data-rune="character" data-density="full"><div class="rf-card" data-media-position="top" data-rune="card" data-density="full"><div data-section="media" data-name="media" class="rf-card__media" data-guest-fit="clip"><img src="veshra.jpg" alt="Veshra" data-slot="portrait" property="image"></div><div data-name="content" class="rf-card__content"><div data-name="body" class="rf-card__body" data-section="body"><h1 id="veshra" data-name="title" class="rf-card__title">Veshra</h1><dl data-name="metadata" data-zone="metadata" data-zone-layout="definition-list" class="rf-card__metadata"><div data-name="row" data-field="role" class="rf-card__row"><dt data-meta-label="">Role</dt><dd><span class="rf-badge" data-meta-type="category">antagonist</span></dd></div><div data-name="row" data-field="status" class="rf-card__row"><dt data-meta-label="">Status</dt><dd><span class="rf-badge" data-meta-type="status" data-meta-sentiment="positive">alive</span></dd></div></dl><p data-slot="description">A necromancer raised in the shadow of the Ashen Spire.</p><details class="rf-details" data-elevation="flush" data-rune="details" data-density="full"><summary data-field="summary" data-name="summary" class="rf-details__summary">Backstory</summary><div data-name="body" class="rf-details__body"><p data-slot="sections">She discovered her gift young.</p></div></details></div></div></div><meta property="name" content="Veshra"><meta property="jobTitle" content="antagonist"></article>",
-			  "plugin": "<article data-field="content-section" class="rf-character rf-character--antagonist rf-character--alive" typeof="Person" data-role="antagonist" data-status="alive" data-aliases="" data-tags="" data-elevation="flat" data-rune="character" data-density="full"><div data-name="portrait" class="rf-character__portrait" data-section="media" data-media="portrait" data-guest-fit="clip"><img src="veshra.jpg" alt="Veshra"></div><div data-name="content" class="rf-character__content"><header data-name="preamble" class="rf-character__preamble" data-section="preamble"><span data-name="name" property="name" class="rf-character__name" data-section="title">Veshra</span></header><dl data-name="metadata" data-zone="metadata" data-zone-layout="definition-list" class="rf-character__metadata"><div data-name="row" data-field="role" class="rf-character__row"><dt data-meta-label="">Role</dt><dd><span class="rf-badge" data-meta-type="category">antagonist</span></dd></div><div data-name="row" data-field="status" class="rf-character__row"><dt data-meta-label="">Status</dt><dd><span class="rf-badge" data-meta-type="status" data-meta-sentiment="positive">alive</span></dd></div></dl><div data-name="body" class="rf-character__body" data-section="body"><p>A necromancer raised in the shadow of the Ashen Spire.</p></div><div data-name="sections" class="rf-character__sections"><div data-field="section" class="rf-character-section" data-rune="character-section" data-density="full"><span data-name="name" class="rf-character-section__name">Backstory</span><div data-name="body" class="rf-character-section__body" data-section="body"><p>She discovered her gift young.</p></div></div></div></div><meta property="jobTitle" content="antagonist"></article>",
+			  "composed": "<article typeof="Person" data-role="antagonist" data-status="alive" data-media-position="top" data-rune="character" data-density="full"><section class="rf-section rf-section--start" data-align="start" data-media-position="top" data-rune="section" data-density="full"><div data-media="portrait" data-name="media" class="rf-section__media" data-section="media" data-guest-fit="clip"><img src="veshra.jpg" alt="Veshra" data-slot="portrait" property="image"></div><div data-name="content" class="rf-section__content"><header data-name="preamble" class="rf-section__preamble" data-section="preamble"><h1 id="veshra" data-name="headline" class="rf-section__headline" data-section="title">Veshra</h1></header><div data-name="body" class="rf-section__body" data-section="body"><dl data-name="metadata" data-zone="metadata" data-zone-layout="definition-list" class="rf-section__metadata"><div data-name="row" data-field="role" class="rf-section__row"><dt data-meta-label="">Role</dt><dd><span class="rf-badge" data-meta-type="category">antagonist</span></dd></div><div data-name="row" data-field="status" class="rf-section__row"><dt data-meta-label="">Status</dt><dd><span class="rf-badge" data-meta-type="status" data-meta-sentiment="positive">alive</span></dd></div></dl><p data-slot="description">A necromancer raised in the shadow of the Ashen Spire.</p><details class="rf-details" data-elevation="flush" data-rune="details" data-density="full"><summary data-field="summary" data-name="summary" class="rf-details__summary">Backstory</summary><div data-name="body" class="rf-details__body"><p data-slot="sections">She discovered her gift young.</p></div></details></div></div></section><meta property="name" content="Veshra"><meta property="jobTitle" content="antagonist"></article>",
+			  "plugin": "<article class="rf-character rf-character--antagonist rf-character--alive" typeof="Person" data-role="antagonist" data-status="alive" data-aliases="" data-tags="" data-elevation="flat" data-rune="character" data-density="full"><div data-name="portrait" class="rf-character__portrait" data-section="media" data-media="portrait" data-guest-fit="clip"><img src="veshra.jpg" alt="Veshra"></div><div data-name="content" class="rf-character__content"><header data-name="preamble" class="rf-character__preamble" data-section="preamble"><span data-name="name" property="name" class="rf-character__name" data-section="title">Veshra</span></header><dl data-name="metadata" data-zone="metadata" data-zone-layout="definition-list" class="rf-character__metadata"><div data-name="row" data-field="role" class="rf-character__row"><dt data-meta-label="">Role</dt><dd><span class="rf-badge" data-meta-type="category">antagonist</span></dd></div><div data-name="row" data-field="status" class="rf-character__row"><dt data-meta-label="">Status</dt><dd><span class="rf-badge" data-meta-type="status" data-meta-sentiment="positive">alive</span></dd></div></dl><div data-name="body" class="rf-character__body" data-section="body"><p>A necromancer raised in the shadow of the Ashen Spire.</p></div><div data-name="sections" class="rf-character__sections"><div class="rf-character-section" data-field="section" data-rune="character-section" data-density="full"><span data-name="name" class="rf-character-section__name">Backstory</span><div data-name="body" class="rf-character-section__body" data-section="body"><p>She discovered her gift young.</p></div></div></div></div><meta property="jobTitle" content="antagonist"></article>",
 			}
 		`);
 	});
@@ -302,14 +305,14 @@ describe('composed character — rendered tree against the plugin (SPEC-145 spik
 			// The plugin config's `defaultElevation: 'flat'` has no counterpart.
 			expect(plugin.attributes['data-elevation']).toBe('flat');
 			expect(composed.attributes).not.toHaveProperty('data-elevation');
-			// The plugin publishes its root under `property: 'contentSection'`.
-			expect(plugin.attributes['data-field']).toBe('content-section');
+			// Neither root carries `data-field` since `contentSection` went (WORK-650).
+			expect(plugin.attributes['data-field']).toBeUndefined();
 			expect(composed.attributes['data-field']).toBeUndefined();
 		},
 	);
 
 	it.each(scenarios)(
-		"%s: the metadata block renders as the plugin's does, under card's classes",
+		"%s: the metadata block renders as the plugin's does, under section's classes",
 		(scenario) => {
 			const unclassed = (n: Json): Json => {
 				if (Array.isArray(n)) return n.map(unclassed);
@@ -320,21 +323,28 @@ describe('composed character — rendered tree against the plugin (SPEC-145 spik
 			const [mine] = named(render(composedStorytelling(), fixture(scenario)), 'metadata');
 			const [theirs] = named(render(storytelling, fixture(scenario)), 'metadata');
 			expect(unclassed(mine)).toEqual(unclassed(theirs));
-			expect(mine.attributes.class).toBe('rf-card__metadata');
+			expect(mine.attributes.class).toBe('rf-section__metadata');
 			expect(theirs.attributes.class).toBe('rf-character__metadata');
 		},
 	);
 
-	it("the name is card's title heading, not a span in a preamble header", () => {
+	it("the name is section's headline in a real header, where the plugin's is a span", () => {
+		// Inside `card` the name was an `<h1>` in the body (`rf-card__title`).
+		// `section` lifts it into its `<header>`, as the plugin does with its span
+		// (SPEC-160 D4). The metablock after it keeps the description out of the
+		// blurb role.
 		const plugin = render(storytelling, fixture('canonical'));
 		const composed = render(composedStorytelling(), fixture('canonical'));
 		const [span] = named(plugin, 'name');
 		expect(span.name).toBe('span');
 		expect(named(plugin, 'preamble')[0].name).toBe('header');
-		const [title] = named(composed, 'title');
-		expect(title.name).toBe('h1');
-		expect(text(title)).toBe('Veshra');
-		expect(named(composed, 'preamble')).toEqual([]);
+		const [headline] = named(composed, 'headline');
+		expect(headline.name).toBe('h1');
+		expect(text(headline)).toBe('Veshra');
+		const [header] = named(composed, 'preamble');
+		expect(header.name).toBe('header');
+		expect(header.children).toEqual([headline]);
+		expect(named(composed, 'blurb')).toEqual([]);
 	});
 
 	it('sections are `details`, with no `data-field="section"` (SPEC-147 D6)', () => {
@@ -369,7 +379,7 @@ describe('composed character — rendered tree against the plugin (SPEC-145 spik
 		expect(html(composed)).toContain('A wanderer from the southern marches.');
 	});
 
-	it("the description is a slot-named paragraph in card's body, not a `body` wrapper of its own", () => {
+	it("the description is a slot-named paragraph in section's body, not a `body` wrapper of its own", () => {
 		const plugin = render(storytelling, fixture('portrait'));
 		const composed = render(composedStorytelling(), fixture('portrait'));
 		const [body] = named(plugin, 'body').filter((n) => n.attributes.class === 'rf-character__body');
@@ -379,7 +389,7 @@ describe('composed character — rendered tree against the plugin (SPEC-145 spik
 		expect(text(p)).toBe('A necromancer raised in the shadow of the Ashen Spire.');
 	});
 
-	it("the portrait leaves the root for card's media zone", () => {
+	it("the portrait leaves the root for section's media zone, as a portrait again", () => {
 		const plugin = render(storytelling, fixture('portrait'));
 		const composed = render(composedStorytelling(), fixture('portrait'));
 		const [portrait] = named(plugin, 'portrait');
@@ -389,8 +399,12 @@ describe('composed character — rendered tree against the plugin (SPEC-145 spik
 			'data-media': 'portrait',
 		});
 		expect(named(composed, 'portrait')).toEqual([]);
-		const [card] = all(composed, (n) => n.attributes?.['data-rune'] === 'card');
-		expect(card.children[0].attributes['data-name']).toBe('media');
+		const [host] = all(composed, (n) => n.attributes?.['data-rune'] === 'section');
+		expect(host.children[0].attributes).toMatchObject({
+			'data-name': 'media',
+			'data-section': 'media',
+			'data-media': 'portrait',
+		});
 	});
 });
 

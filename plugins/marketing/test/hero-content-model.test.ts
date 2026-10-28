@@ -31,7 +31,7 @@ describe('hero content model', () => {
 		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(hero).toBeDefined();
 		expect(hero!.name).toBe('section');
-		expect(hero!.attributes['data-field']).toBe('content-section');
+		expect(hero!.attributes['data-field']).toBeUndefined();
 	});
 
 	// -----------------------------------------------------------------

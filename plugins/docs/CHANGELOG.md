@@ -1,5 +1,25 @@
 # @refrakt-md/docs
 
+## 0.43.0
+
+### Patch Changes
+
+- 4e18e29: The `data-field="content-section"` attribute is gone from every rune root (SPEC-133). Nothing read it. It came from `property: 'contentSection'` in 28 transforms, which are now cleaned up.
+
+  - **Removed outright:** the `documents` and `Page` exports of `@refrakt-md/runes`. The `Page` document node was never registered by any Markdoc config, and it compared the attribute with the wrong casing, so it never ran. The `PageSection` config entry and `page-section.css` in Lumina and the skeleton went with it.
+  - **Deprecated:** `property` on `createComponentRenderable` and on an `emits` declaration is still accepted, so a plugin that passes it keeps type-checking, but it is ignored and renders nothing. It is removed in the release after this one.
+
+- Updated dependencies [514583a]
+- Updated dependencies [514583a]
+- Updated dependencies [422fee5]
+- Updated dependencies [4e18e29]
+- Updated dependencies [4e18e29]
+- Updated dependencies [e65efb9]
+- Updated dependencies [1a1d991]
+  - @refrakt-md/runes@0.43.0
+  - @refrakt-md/transform@0.43.0
+  - @refrakt-md/types@0.43.0
+
 ## 0.42.0
 
 ### Minor Changes

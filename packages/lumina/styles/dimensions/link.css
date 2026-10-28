@@ -1,0 +1,21 @@
+@layer skin {
+	/* link — skin (SPEC-160 D8, WORK-655). A wrapped region reads as its content,
+ * not as link text; both forms show where focus is, since a stretched link is
+ * now reachable by keyboard. Positioning is structure, in @refrakt-md/skeleton
+ * (styles/dimensions/link.css). */
+	a[data-link="wrap"],
+	a[data-link="wrap"]:hover {
+		color: inherit;
+		text-decoration: none;
+	}
+	a[data-link]:focus-visible {
+		outline: 2px solid var(--rf-color-primary);
+		outline-offset: 2px;
+		border-radius: inherit;
+	}
+	/* A stretched link fills its host, which may clip (`card`'s overflow), so its
+ * ring is drawn inside the box rather than around it. */
+	a[data-link="stretch"]:focus-visible {
+		outline-offset: -3px;
+	}
+}

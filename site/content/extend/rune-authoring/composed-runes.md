@@ -5,7 +5,7 @@ description: Define a rune as a Markdown file that places existing runes — the
 
 # Composed Runes
 
-A composed rune is a rune written as a Markdown file instead of code. It has no `transform`, ships no CSS, and has no hand-written engine config. Its output is other runes — a `card`, a `hint`, a `details` per section — arranged by a template, and the rune itself is the name and the claim around them.
+A composed rune is a rune written as a Markdown file instead of code. It has no `transform`, ships no CSS, and has no hand-written engine config. Its output is other runes — a `section`, a `hint`, a `details` per section — arranged by a template, and the rune itself is the name and the claim around them.
 
 This page is the reference for writing one. Everything on it applies whether the file ships in a plugin or sits in your own project; [Where definitions go](#where-definitions-go) covers the two differences.
 
@@ -13,7 +13,7 @@ This page is the reference for writing one. Everything on it applies whether the
 
 One file per rune, and **the file's name is the rune's name**: `runes/bond.md` defines `{% bond %}`. The frontmatter declares the rune's input, the body is its output template, and **slot names are the join** between them — a field the content model produces is placed where the template names it.
 
-```md
+```markdoc
 ---
 tag: aside
 attributes:
@@ -41,14 +41,14 @@ A template nests runes, so indent it to show the nesting. A tag's content may be
 
 The convention, which [`refrakt format`](/docs/cli/format) applies and `refrakt format --check` verifies, is to **indent a tag's content by one tab only when it holds another block tag**:
 
-```md
-{% card %}
+```markdoc
+{% section %}
 	{% slot name="sections" each %}
 		{% details summary=$each.heading %}
 			{% slot /%}
 		{% /details %}
 	{% /slot %}
-{% /card %}
+{% /section %}
 ```
 
 A tag holding only prose and inline tags, such as a `{% hint %}` with paragraphs, stays flat. Other Markdown renderers, GitHub's among them, would show its indented lines as code. Code fences keep their own relative indentation.
@@ -90,7 +90,9 @@ A delimited model splits the content at each `---` into zones, and each zone is 
 - **The slots are the zones' fields together**, here `media`, `headline` and `blurb`. A field name belongs to one zone; using it in two is an error.
 - **`primary` names the zone that receives content written with no `---` at all.** Without it, that content goes to the first zone. Here a teaser written without a picture is all `content`, not all `media`.
 - **Only `hr` is a delimiter**, and **zones are fixed**. `dynamicZones` is rejected: its zones have no names, so a template has nothing to place.
-- **The composition consumes the author's `---`.** The template re-emits one where a placed rune should split. Here `card` gets a media zone and a body. The template's `---` is unconditional, and an empty media zone is one `card` omits, as the `{% if %}` section below explains.
+- **The composition consumes the author's `---`.** The template re-emits one where a placed rune should split. Here `section`, given `media-position`, gets a media zone and a content zone, and its header reads the slots named `headline` and `blurb` (a slot named for its role fills it with no warning). The template's `---` is unconditional, and an empty media zone is one `section` omits, as the `{% if %}` section below explains.
+
+**A titled region with media places `section`, not `card`.** Both split on `---`, but `card` draws a surface, which a composition rarely wants under its content (ADR-041). `section` reads zones only when `media-position` is given, so a composition opts in by passing the attribute through, with a default: `{% section media-position=$attrs["media-position"] %}`. Its `media` attribute (`portrait | cover | thumbnail | hero | icon`) names what the media zone holds, so a portrait is cropped round with no CSS of the composition's own.
 
 Use a delimited model when the template must **address a field inside a zone**: wrap a zone's trailing list, place one list here and another there. A composition that only passes the zones through to one rune that splits them itself needs one greedy field, not zones.
 
@@ -123,7 +125,7 @@ The body is ordinary Markdoc with **two tags and two bindings** of its own. This
 | `$attrs.name` | A resolved attribute, in content or in an attribute position. |
 | `$each.name` | Inside an `each` slot: one field of the current item — exactly the content model's `emitAttributes`. |
 
-Every rune the template places — `card`, `hint`, `details`, `grid` — is ordinary rune vocabulary, not part of this list. [What a template may place](#what-a-template-may-place) bounds which.
+Every rune the template places — `section`, `hint`, `details`, `grid` — is ordinary rune vocabulary, not part of this list. [What a template may place](#what-a-template-may-place) bounds which.
 
 ### `{% slot %}`
 
@@ -137,11 +139,13 @@ A slot leaves no element of its own. Its content is placed where the tag stands,
 
 Fallback content renders only when the field is empty: `{% slot name="description" %}No description yet.{% /slot %}`.
 
+**A placed `section` reads its header by position, slots included.** A paragraph directly before the section's first heading is its eyebrow, and one directly after it is its blurb ([`section`](/runes/section)). A slot placed in either position fills that role, whatever its name. When the slot's name is not the role's, the build reports `slot-header-role`: *"slot `description` of `profile` is read as `section`'s blurb; name the field `blurb`, or set `header="headline"` on the section"*. Either remedy works. Naming the field for the role keeps it in the header, and `header` on the section keeps it out. The warning changes nothing that renders.
+
 ### `each` and `$each`
 
 `{% slot name="sections" each %}` does not put a loop in the template. The engine iterates and the template describes **one** item. `sections` is the field a `sections` content model fills, and an ordinary slot name like any other.
 
-```md
+```markdoc
 {% slot name="sections" each %}
 	{% details summary=$each.heading %}
 		{% slot /%}
@@ -198,27 +202,27 @@ Use it when the value is an **attribute**: `metaFields` gives each field its mea
 
 Markdoc's conditional works — `bond` uses it for its arrow. Its limit: content models match the AST **before** it is transformed, and an `{% if %}` is still an unresolved tag then. So anything a template wraps in a conditional is invisible to the structural matching of the rune it sits inside.
 
-The case that bites is `card`'s media zone. This does not work — the `---` sits inside the `if`, `card` never sees it, and the card silently gets one zone instead of two:
+The case that bites is a split's media zone. This does not work — the `---` sits inside the `if`, `section` never sees it, and the section silently gets one zone instead of two:
 
-```md
-{% card %}
+```markdoc
+{% section media-position="top" %}
 	{% if $attrs.image %}
 		{% slot name="portrait" /%}
 		---
 	{% /if %}
 	…
-{% /card %}
+{% /section %}
 ```
 
-Emit both unconditionally and rely on the consuming rune's empty-input guard instead — `card` omits an empty media zone:
+Emit both unconditionally and rely on the consuming rune's empty-input guard instead — `section` omits an empty media zone:
 
-```md
-{% card %}
+```markdoc
+{% section media-position="top" %}
 	{% slot name="portrait" /%}
 
 	---
 	…
-{% /card %}
+{% /section %}
 ```
 
 Use `{% if %}` around whole rune invocations and around content; never around anything a nested rune matches structurally — delimiters, and positional fields alike.
@@ -240,7 +244,7 @@ Every rune here may be placed by any composition. The set is derived from the ca
 
 | Package | Placeable runes |
 |---|---|
-| core | `aggregate`, `annotate`, `badge`, `bar`, `bg`, `budget-category`, `budget-line-item`, `card`, `chart`, `code`, `codegroup`, `collection`, `compare`, `conversation`, `conversation-message`, `deflist`, `details`, `diagram`, `diff`, `drawer`, `embed`, `expand`, `figure`, `file-ref`, `form`, `form-field`, `gallery`, `grid`, `hint`, `icon`, `juxtapose`, `layout`, `mediatext`, `nav`, `note`, `pagination`, `progress`, `pullquote`, `region`, `relationships`, `reveal`, `reveal-step`, `sandbox`, `section`, `showcase`, `sidenote`, `tabs`, `textblock`, `tint`, `toc`, `xref` |
+| core | `actions`, `aggregate`, `annotate`, `badge`, `bar`, `bg`, `budget-category`, `budget-line-item`, `card`, `chart`, `code`, `codegroup`, `collection`, `compare`, `conversation`, `conversation-message`, `deflist`, `details`, `diagram`, `diff`, `drawer`, `embed`, `expand`, `figure`, `file-ref`, `form`, `form-field`, `gallery`, `grid`, `hint`, `icon`, `juxtapose`, `layout`, `mediatext`, `nav`, `note`, `pagination`, `progress`, `pullquote`, `region`, `relationships`, `reveal`, `reveal-step`, `sandbox`, `section`, `showcase`, `sidenote`, `tabs`, `textblock`, `tint`, `toc`, `xref` |
 | @refrakt-md/marketing | `bento`, `comparison`, `comparison-column`, `comparison-row`, `cta`, `feature`, `hero`, `steps` |
 | @refrakt-md/docs | `api`, `changelog`, `changelog-release`, `symbol-group`, `symbol-member` |
 | @refrakt-md/storytelling | `beat`, `bond`, `character-section`, `faction-section`, `realm-section`, `storyboard`, `storyboard-panel` |
@@ -363,7 +367,7 @@ Both definitions below are the files the tests build, compare against the storyt
 
 ### `bond` — the small end
 
-{% snippet path="packages/content/test/fixtures/composed-storytelling/runes/bond.md" reviewed="a31ffc525b99:ac1c69086d7b" /%}
+{% snippet path="packages/content/test/fixtures/composed-storytelling/runes/bond.md" reviewed="156c48d955e7:ac1c69086d7b" /%}
 
 - The whole rune is a `hint`: the template is the output, and there is nothing else.
 - `{% if $attrs.bidirectional %}` picks the arrow. It wraps text, never a delimiter, so it is safe.
@@ -376,13 +380,14 @@ A page using it:
 
 ### `character` — the full case
 
-{% snippet path="packages/content/test/fixtures/composed-storytelling/runes/character.md" reviewed="90cd5b8fb032:c2fb0aa936bd" /%}
+{% snippet path="packages/content/test/fixtures/composed-storytelling/runes/character.md" reviewed="741480f4a3d2:c233a206df9f" /%}
 
 - **Sections become `details`** through `{% slot name="sections" each %}`. `emitAttributes: { heading: $heading }` is what makes `$each.heading` exist.
 - **Role and status are a meta block**, not badges: they are attribute values, so `metaFields` gives them their meaning and sentiment.
-- **The portrait sits in `card`'s media zone**, before the `---`, unconditionally — an absent portrait leaves the zone empty and `card` omits it.
+- **The portrait sits in `section`'s media zone**, before the `---`, unconditionally — an absent portrait leaves the zone empty and `section` omits it. `media="portrait"` crops it round through the media dimension.
+- **The name is `section`'s headline.** The meta block placed after it keeps the description out of the blurb role, so the description stays body and no `slot-header-role` warning is raised.
 - **A catch-all `body` field** keeps content written before the first section; without a field to match it, it would be dropped.
-- **It declares `schema`**, `Person`, so it can only ship in a plugin. Placed inside, `card` and `details` declare no type, so nothing competes with it.
+- **It declares `schema`**, `Person`, so it can only ship in a plugin. Placed inside, `section` and `details` declare no type, so nothing competes with it.
 
 A page using it:
 

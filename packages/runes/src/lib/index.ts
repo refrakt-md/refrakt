@@ -32,7 +32,8 @@ import {
 } from './registers.js';
 import type { RegistersDeclaration } from './registers.js';
 import { compileComposition, schemaCompositions } from './composition.js';
-import type { CompositionTemplate } from './composition.js';
+import type { CompiledComposition, CompositionTemplate } from './composition.js';
+import { auditSlotHeaderRoles } from './header-roles.js';
 export {
 	applySchemaTable,
 	validateSchemaTable,
@@ -195,6 +196,7 @@ export function declareUniversalPosture(schema: Schema, posture: UniversalAttrib
 export type SectionRole =
 	| 'header'
 	| 'preamble'
+	| 'eyebrow'
 	| 'title'
 	| 'description'
 	| 'body'
@@ -1018,6 +1020,41 @@ function auditUnmatchedContent(
 }
 
 /**
+ * The validate-time audit of a composition's header roles — ADR-046 decision 3.
+ *
+ * Expands the template for this instance, as the transform does, and reports
+ * slot content a placed host reads as a header role the slot is not named for.
+ * The expansion is the AST the transform would hand Markdoc, so the finding
+ * names exactly what renders, with no static guess at what a slot may hold.
+ */
+function auditCompositionHeaderRoles(
+	options: ContentModelSchemaOptions,
+	composition: CompiledComposition,
+	node: Node,
+	config: Config,
+): ValidationError[] {
+	try {
+		const attrs: Record<string, any> = { ...node.transformAttributes(config) };
+		for (const [oldName, rule] of Object.entries(options.deprecations ?? {})) {
+			if (attrs[oldName] !== undefined && attrs[rule.newName] === undefined) {
+				attrs[rule.newName] = rule.transform
+					? rule.transform(attrs[oldName], attrs)
+					: attrs[oldName];
+			}
+		}
+		const model =
+			typeof options.contentModel === 'function'
+				? options.contentModel(attrs)
+				: options.contentModel;
+		const { content } = resolveContentModel(node.children, model, attrs);
+		return auditSlotHeaderRoles(composition.info.rune, composition.place(content, attrs), config);
+	} catch {
+		// A rune that cannot resolve here reports that through its own path.
+		return [];
+	}
+}
+
+/**
  * Create a Markdoc Schema from a declarative content model.
  *
  * The rune declares a content model and provides a transform function
@@ -1260,6 +1297,15 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 		schema.validate = (node, config) => [
 			...((ownValidate?.(node, config) as ValidationError[] | undefined) ?? []),
 			...auditUnmatchedContent(options, node, config),
+		];
+	}
+
+	// ADR-046 — a composition's slot read as a header role it is not named for.
+	if (composition) {
+		const ownValidate = schema.validate;
+		schema.validate = (node, config) => [
+			...((ownValidate?.(node, config) as ValidationError[] | undefined) ?? []),
+			...auditCompositionHeaderRoles(options, composition, node, config),
 		];
 	}
 
