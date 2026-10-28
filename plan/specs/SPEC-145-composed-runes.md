@@ -771,6 +771,23 @@ Follow-ups filed:
 
 The spec stays `accepted`.
 
+## Status on 2026-10-29
+
+Since v0.40.0: v0.42.0 shipped {% ref "SPEC-169" /%}'s parser additions (the delimited model,
+`implicitSection`, `each` over a list's items) and fixed `itemModel` compilation
+({% ref "BUG-038" /%}); v0.43.0 moved the storytelling compositions onto `section`. v0.44.0 plans
+D14, D24 and D31–D34 (the carrier, placement and defaults).
+
+**D28 is decided and not built, and nothing plans it.** Found while reviewing
+{% ref "SPEC-166" /%}, which depends on it:
+
+- `{% field %}` does not exist; `field` is only a reserved modifier name (`composition.ts`);
+- the value element does not carry `data-field` (decision 7); only definition-list rows do;
+- the engine's field rendering emits no `data-value` (decision 9).
+
+SPEC-166's value primitives promise the same element a placed field emits (its D1.8), so D28's
+value element is their first prerequisite. It is planned with them.
+
 ## Decisions
 
 ### D1 — the template is Markdoc, not a new syntax

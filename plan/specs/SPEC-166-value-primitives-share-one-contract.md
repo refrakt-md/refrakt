@@ -1,4 +1,4 @@
-{% spec id="SPEC-166" status="draft" tags="runes, primitives, composition, vocabulary, theme, accessibility, i18n" %}
+{% spec id="SPEC-166" status="accepted" tags="runes, primitives, composition, vocabulary, theme, accessibility, i18n" %}
 
 # Value primitives share one contract
 
@@ -32,9 +32,28 @@ plans found three value kinds that runes read by hand, each with its own parsing
 The forms on the site include partial and written dates: `## 2023 - Founded`, `## v1.2.0 -
 January 2025`, and times such as `### 9:00 AM — Narita Airport`.
 
-`timeline` and `itinerary` already read their items with `itemModel`, so once {% ref "BUG-038" /%}
-is fixed they are close to compositions. What they lack is a primitive that turns the extracted
-text into a value.
+`timeline` and `itinerary` already read their items with `itemModel`, and {% ref "BUG-038" /%}
+(composition `itemModel` patterns were never compiled) was fixed in v0.42.0, so they are close to
+compositions. What they lack is a primitive that turns the extracted text into a value.
+
+## Prerequisites
+
+Added on 2026-10-29, when this spec was accepted. Neither exists yet:
+
+1. **{% ref "SPEC-145" /%} D28's value element.** D1.8 promises that a primitive emits the same
+   element a placed field does, and D2 routes the engine's field rendering through the shared
+   kinds. Both assume D28. Today `{% field %}` does not exist, the value element carries no
+   `data-field` (only definition-list rows do), and the engine emits no `data-value` for a field.
+   D28's value element comes first, or primitives and fields would emit different elements from
+   their first release.
+2. **One source for the `metaType` vocabulary.** `packages/transform/src/types.ts` declares it
+   twice, and the two have drifted: the union on `MetaField` includes `code`, and the one beside
+   `sentimentMap` does not. D1.2 calls the vocabulary closed and expects additions, and
+   {% ref "WORK-672" /%}'s coverage check must derive it from one registry. The list becomes one
+   exported constant that the types and the checks both read.
+
+`data-value` already has a compatible meaning elsewhere: the data pipeline puts a normalised
+`data-value` on table cells for charts (`packages/runes/src/data-emit.ts`). D1.3 generalises it.
 
 ## Decisions
 
@@ -117,6 +136,10 @@ question in SPEC-165 that `design-context` breaks when a site redefines `palette
 - **It does not guess ambiguous forms.** `03/04/2024` is March 4 in one locale and April 3 in
   another, so it reports `date-invalid` and renders as written. An author who wants it read
   writes it unambiguously.
+- **It reads ISO and English written forms only.** A written date in another language
+  (`januari 2025`) reports `date-invalid` and renders as written, with no `datetime`, like an
+  ambiguous form. Per-locale month tables can be added later without changing the contract.
+  *(Decided 2026-10-29; was an open question.)*
 - **Consumers:** `timeline` and `itinerary` place it on their extracted `date` and `time`
   fields; `changelog` places it on the date it extracts from a version heading with
   `headingExtract`; plan history and activity format their commit dates through the same kind.
@@ -132,7 +155,8 @@ question in SPEC-165 that `design-context` breaks when a site redefines `palette
   not a glyph, and needs a text alternative. The skeleton already has a checklist dimension for
   task lists (`packages/skeleton/styles/dimensions/checklist.css`), so this may be a
   `metaType` with sentiment rather than a new rune. *Decided by {% ref "SPEC-167" /%} D4: a
-  `metaType` with sentiment, read from task-list markers, with no rune of its own.*
+  `metaType` with sentiment, read from task-list markers, with no rune of its own.* That
+  decision is provisional while SPEC-167 is a draft.
 
 ### D6 — `formats` sets the display style of each value kind, theme-wide
 
@@ -202,21 +226,20 @@ runs.
 
 ## Open questions
 
-- **Written dates in other languages.** D4 reads English month names. Reading `januari 2025` on
-  a Swedish site means reading in the site's locale. The month names are available through
-  `Intl`, but parsing them is not, so this needs a small table per locale or is left to
-  authors writing ISO dates.
 - **`typeface` and `color` as `metaType` values.** They are proposed in D3 so the design
   primitives meet D1.2, but they widen a vocabulary every theme is expected to cover
   (ADR-043's coverage check). The alternative is a `metaType` of `swatch` or no `metaType` at
-  all for design-only primitives.
+  all for design-only primitives. *Settled with {% ref "SPEC-165" /%}*, because only the design
+  primitives use them and the choice depends on how `palette` and `typography` compose.
 
 ## Acceptance Criteria
 
+- [ ] {% ref "SPEC-145" /%} D28's value element is built first: the engine's field values carry `data-field` and `data-value`, and `{% field %}` places a field in a template (Prerequisites)
+- [ ] The `metaType` vocabulary is one exported constant read by the types, the engine and the coverage check, with `code` resolved in or out on purpose (Prerequisites)
 - [ ] The value-element contract (D1) is documented in the theme-authoring and rune-authoring guides, with the attribute list a theme reads
 - [ ] Value kinds are shared modules (reader, formatter, element builder) used by both value primitives and the engine's field rendering; `transform: 'duration'` goes through the shared temporal kind
 - [ ] `color`, `font` and `amount` are built on the shared kinds and meet every point of D1, asserted by one contract test that runs against every value primitive
-- [ ] `{% date %}` exists as a core rune: reads ISO, partial and written English dates, times and ranges; keeps the written precision in `datetime`; formats by locale and `formats`; reports `date-invalid` for ambiguous forms
+- [ ] `{% date %}` exists as a core rune: reads ISO, partial and written English dates, times and ranges; keeps the written precision in `datetime`; formats by locale and `formats`; reports `date-invalid` for ambiguous forms and for written dates in other languages
 - [ ] `timeline`, `itinerary` and `changelog` read their dates through the temporal kind, asserted against their current fixtures with no change in displayed text
 - [ ] `progress` gains `data-meta-type` and `data-value` and passes the contract test
 - [ ] A container reads values only through raw values: `tally` from amounts, and `design-context` from rendered `color` and `font` elements
@@ -234,6 +257,6 @@ runs.
 - {% ref "ADR-043" /%}: `formats`, and the theme's vocabulary coverage.
 - {% ref "ADR-044" /%}: tier 3, where a map's drawing belongs.
 - {% ref "WORK-639" /%}: marks as a field shape.
-- {% ref "BUG-038" /%}: item extraction from YAML, which `timeline` and `itinerary` depend on.
+- {% ref "BUG-038" /%}: composition `itemModel` patterns, fixed in v0.42.0, which `timeline` and `itinerary` depend on.
 
 {% /spec %}
