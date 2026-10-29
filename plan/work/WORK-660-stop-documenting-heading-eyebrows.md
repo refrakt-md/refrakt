@@ -1,4 +1,4 @@
-{% work id="WORK-660" status="ready" priority="medium" complexity="simple" source="ADR-046" tags="docs, section, eyebrow, page-sections" milestone="v0.44.0" %}
+{% work id="WORK-660" status="done" priority="medium" complexity="simple" source="ADR-046" tags="docs, section, eyebrow, page-sections" milestone="v0.44.0" pr="refrakt-md/refrakt#729" %}
 
 # Stop documenting heading eyebrows
 
@@ -34,5 +34,16 @@ the eyebrow docs, but it does not depend on it.
 - {% ref "ADR-046" /%}: the resolved open question.
 - {% ref "SPEC-160" /%}: D7, no heading eyebrow in the composed `hero` and `cta`.
 - {% ref "BUG-047" /%}: the documented example renders wrongly today.
+
+## Resolution
+
+Completed: 2026-10-29
+
+Branch: `claude/milestone-v0-44-0-ism7ni`
+
+### What was done
+- `site/content/docs/authoring/page-sections.md`: removed "Heading eyebrow + headline" and its example; added that a heading is never read as an eyebrow.
+- Nineteen rune pages: "a short paragraph or heading before" → "a short paragraph before".
+- `site/content/extend/rune-authoring/patterns.md`: the eyebrow is a paragraph directly before the main heading, not the first of two headings.
 
 {% /work %}

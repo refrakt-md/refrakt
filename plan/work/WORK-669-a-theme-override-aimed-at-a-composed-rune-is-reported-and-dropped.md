@@ -1,4 +1,4 @@
-{% work id="WORK-669" status="ready" priority="high" complexity="simple" source="ADR-042" tags="theme, composition, config, identity, merge" milestone="v0.44.0" %}
+{% work id="WORK-669" status="done" priority="high" complexity="simple" source="ADR-042" tags="theme, composition, config, identity, merge" milestone="v0.44.0" pr="refrakt-md/refrakt#729" %}
 
 # A theme override aimed at a composed rune is reported and dropped
 
@@ -28,5 +28,21 @@ without inspecting its shape.
 ## References
 
 - {% ref "ADR-042" /%}: Decision 1, and Implementation.
+
+## Resolution
+
+Completed: 2026-10-29
+
+Branch: `claude/milestone-v0-44-0-ism7ni`
+
+### What was done
+- `RuneConfig.composed` (provenance marker), set by `composedRuneConfig`.
+- `mergeThemeConfig` (`packages/transform/src/merge.ts`): an override of a composed rune is reported through the identity sink (once per path, `runes.<Rune>`, naming the theme) and dropped whole; a composed declaration replaces the entry under its key rather than merging over it, and reports a non-composed entry it displaces.
+- `mergeThemeConfig` takes `{ themeName }`; `assembleThemeConfig` takes `themeName`; Lumina passes `'lumina'`.
+- Tests: `packages/transform/test/identity-fields.test.ts`, `packages/lumina/test/identity-guard.test.ts`.
+- Docs: `site/content/extend/theme-authoring/config-api.md` ("Composed runes").
+
+### Notes
+- The marker is a plain field rather than a symbol so it survives a JSON boundary; the merge never infers it from the config's shape.
 
 {% /work %}

@@ -1,4 +1,4 @@
-{% work id="WORK-667" status="ready" priority="medium" complexity="simple" source="SPEC-161" tags="transform, metadata, layout, blocks, skeleton, lumina" milestone="v0.44.0" %}
+{% work id="WORK-667" status="done" priority="medium" complexity="simple" source="SPEC-161" tags="transform, metadata, layout, blocks, skeleton, lumina" milestone="v0.44.0" pr="refrakt-md/refrakt#729" %}
 
 # A lead layout for blocks
 
@@ -17,5 +17,21 @@ Neither draws a byline, a lead value with secondary values beneath, which `testi
 ## References
 
 - {% ref "SPEC-161" /%}: D6.
+
+## Resolution
+
+Completed: 2026-10-29
+
+Branch: `claude/milestone-v0-44-0-ism7ni`
+
+### What was done
+- `packages/transform/src/types.ts`: `LayoutPrimitive` gains `lead`; `BlockDef.layout` is typed as `LayoutPrimitive`.
+- `packages/transform/src/engine.ts`: `renderLeadLayout` — fields in their intrinsic shape, `data-zone-layout="lead"`, first present field marked `data-lead`.
+- `packages/skeleton/styles/dimensions/metadata.css`: column layout. `packages/lumina/styles/dimensions/metadata.css`: lead emphasised, `:not([data-lead])` smaller and muted.
+- Tests in `packages/transform/test/engine-blocks.test.ts`, including that no `data-meta-rank` is emitted.
+- `site/content/extend/theme-authoring/blocks-and-layout.md` documents `lead`.
+
+### Notes
+- No rune uses `lead` yet (WORK-668's testimonial will), so contracts regenerate unchanged.
 
 {% /work %}

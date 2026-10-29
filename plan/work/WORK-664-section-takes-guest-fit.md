@@ -1,4 +1,4 @@
-{% work id="WORK-664" status="ready" priority="medium" complexity="simple" source="SPEC-160" tags="runes, section, media, frame" milestone="v0.44.0" %}
+{% work id="WORK-664" status="done" priority="medium" complexity="simple" source="SPEC-160" tags="runes, section, media, frame" milestone="v0.44.0" pr="refrakt-md/refrakt#729" %}
 
 # section takes guest-fit
 
@@ -20,5 +20,19 @@ needs `bleed` where a card-like composition needs `clip` ({% ref "SPEC-160" /%} 
 ## References
 
 - {% ref "SPEC-160" /%}: D7.
+
+## Resolution
+
+Completed: 2026-10-29
+
+Branch: `claude/milestone-v0-44-0-ism7ni`
+
+### What was done
+- `packages/runes/src/tags/section.ts`: `guest-fit` attribute (`clip | bleed`), emitted into the field bag in the split path.
+- `packages/transform/src/engine.ts`: reads `guest-fit` from the field bag and folds it over `config.guestFit` before facets run, so the media zone's `data-guest-fit`, `frame`'s displace-mode default and the `frame-overflow` check all see the resolved value. Not a modifier, so nothing lands on the root.
+- Tests in `packages/runes/test/section-split.test.ts`; docs on `site/content/runes/section.md`; `rune-attributes.json` regenerated.
+
+### Notes
+- Native `hero`/`feature` keep `guestFit: 'bleed'` in config; contracts are unchanged on both copies.
 
 {% /work %}
