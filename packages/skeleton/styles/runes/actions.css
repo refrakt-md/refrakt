@@ -37,3 +37,14 @@
 		box-sizing: border-box;
 	}
 }
+
+/* Size follows the nearest enclosing rune's `prominence` (SPEC-160 D7). The skin
+ * sets `--action-padding` / `--action-font-size` on a `[data-prominence]` rune;
+ * every other rune root clears them, so they reach only an `actions` whose
+ * nearest enclosing rune carries the prominence. A raised card inside a display
+ * hero keeps default buttons — the same protection density.css gives titles.
+ * `actions` itself is exempt: it is what reads them. */
+[data-rune]:not([data-prominence], [data-rune="actions"]) {
+	--action-padding: initial;
+	--action-font-size: initial;
+}

@@ -15,9 +15,12 @@
 	grid-template-columns: var(--media-share, 50%) 1fr;
 	align-items: var(--split-valign, start);
 }
-/* "end" flips the grid so media lands in column 2 (source order is media-first). */
+/* "end" flips the grid so media lands in column 2 (source order is media-first).
+ * `dense` backfills the content into row 1, column 1: placed after the media,
+ * it would otherwise start a second row. */
 [data-media-position="end"] {
 	grid-template-columns: 1fr var(--media-share, 50%);
+	grid-auto-flow: dense;
 }
 [data-media-position="end"] > [data-section="media"],
 [data-media-position="end"] > [data-name="media"] {

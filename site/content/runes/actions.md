@@ -74,7 +74,7 @@ A composition places `actions` around a slot, so its authors keep writing a plai
 </div>
 ```
 
-The row's alignment comes from `--actions-justify`, which a host sets (`hero` from its `align`, `cta` to centre). Button size comes from `--action-padding` and `--action-font-size`. The primary button's text uses `--rf-color-on-primary`, so it follows the colour scheme, a cover scrim's included.
+The row's alignment comes from `--actions-justify`, which a host sets (`hero` from its `align`, `cta` to centre, and a `section` from its `align` for its own row). Button size comes from `--action-padding` and `--action-font-size`. Lumina sets them from the enclosing rune's `prominence`: `display` and `prominent` give large buttons, anything else the default size. Only the nearest enclosing rune counts, so a card inside a display section keeps default buttons. The primary button's text uses `--rf-color-on-primary`, so it follows the colour scheme, a cover scrim's included.
 
 ## Attributes
 

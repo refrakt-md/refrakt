@@ -1,4 +1,13 @@
 @layer skin {
+	/* Button size by the enclosing rune's prominence (SPEC-160 D7): `display` and
+ * `prominent` give the large size, today's hero buttons; anything else falls
+ * back to the defaults below, today's cta buttons. The skeleton clears these at
+ * every other rune root, so they never reach an `actions` inside a nested rune. */
+	:is([data-prominence="display"], [data-prominence="prominent"]) {
+		--action-padding: 0.7rem 1.75rem;
+		--action-font-size: var(--rf-text);
+	}
+
 	/* actions — skin (SPEC-160 D6). Buttons styled by rank (`data-rank`), not by
  * list position. Size comes from custom properties a host may set
  * (`--action-padding`, `--action-font-size`); the defaults are cta's. The
