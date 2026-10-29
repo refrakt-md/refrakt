@@ -9,12 +9,13 @@ reference page on both sites and switching tabs.
 
 Each rune goes live on its own once its review is accepted. Going live moves the definition
 into the plugin, in a work item of its own. This is the convention for every conversion,
-starting with `hero` and `cta` in v0.44.0.
+starting with `hero`, `cta` and `testimonial` in v0.44.0.
 
 ## Why
 
 **A composition has no page where anyone can look at it.**
-- The composed `hero` and `cta` are test fixtures in `packages/runes/test/fixtures/composed/`.
+- The composed `hero`, `cta` and `testimonial` are test fixtures in
+  `packages/runes/test/fixtures/composed/`.
   The five composed storytelling runes are in
   `packages/content/test/fixtures/composed-storytelling/runes/`.
 - The only code that loads them is the test harnesses.
@@ -81,6 +82,25 @@ unaffected by anything staged.
 - The comparison test harnesses read the definition from there. The reviewed file and the
   tested file are the same file.
 
+### Content both sites can render
+
+The two sites share one `contentDir`. When a composition changes how an author writes the rune,
+the shared content can only suit one of them:
+- `hero`: the composed rune takes `align="start | center | end"`, while the homepage and the
+  hero reference page write `align="left"`;
+- `testimonial`: the composed rune takes `author` and `role` attributes and reports the
+  `**Name** — Role` paragraph as `content-unmatched`, while the plugin rune takes no `author`
+  attribute.
+
+So the plugin rune learns the new form first. It accepts the composition's authoring form as
+well as its own, as an additive change. This repository's content is then migrated on `main`
+(with the codemod, where there is one), and both sites render the same source.
+- `hero` accepts `start` and `end` as synonyms for `left` and `right`.
+- `testimonial` accepts `author` and `role`, and parses the paragraph only when neither is set.
+
+This also gives users a migration window. Authors can move to the new form while the plugin
+rune is still live, so the go-live removes only the old form.
+
 ### Going live
 
 Going live is a work item of its own, never part of the conversion:
@@ -134,7 +154,7 @@ live, or become documented project runes, together.
    on every other page that uses it;
 2. every difference listed in its conversion item is either accepted or fixed;
 3. any authored content whose meaning changes has a codemod, run over this repository's
-   content;
+   content, and the plugin rune has accepted the new form for at least one release (D7);
 4. it does not depend on a primitive whose spec is still `draft`.
 
 ## Decisions
@@ -173,6 +193,13 @@ live as a whole, by the SPEC-147 decision.
 - A test fails when a composed definition under a test fixture directory has the name of a
   shipping plugin rune.
 
+### D7 — the plugin rune accepts the composition's authoring form before the rune is staged
+
+A staged composition must render the shared content without errors. Where its authoring form
+differs from the plugin rune's, the plugin rune gains the new form additively, and this
+repository's content is migrated on `main` before the rune is staged. The staging site's
+validation (`refrakt validate --site staging`) reports nothing that `main`'s does not.
+
 ## Not in scope
 
 - Staging a replacement for a core rune. Core names are not shadowable (SPEC-153 D8).
@@ -186,7 +213,8 @@ live as a whole, by the SPEC-147 decision.
 
 - [ ] The `staging` site serves the docs content with staged runes in place of plugin runes, through existing configuration only, and a test holds it equal to `main` apart from `runes`
 - [ ] `main`'s output, the contracts and the SEO baseline are unchanged by anything staged
-- [ ] `hero` and `cta` are staged in `site/staged-runes/`, their tests read them there, and their reference pages render with them on the staging site
+- [ ] The plugin `hero` and `testimonial` accept their compositions' authoring forms, and this repository's content uses them
+- [ ] `hero`, `cta` and `testimonial` are staged in `site/staged-runes/`, their tests read them there, and their reference pages render with them on the staging site with no validation findings beyond `main`'s
 - [ ] The storytelling compositions are staged likewise
 - [ ] The convention and rollout are documented, and a test catches a composed definition of a plugin rune outside staging
 
