@@ -8,10 +8,10 @@ needs `bleed` where a card-like composition needs `clip` ({% ref "SPEC-160" /%} 
 
 ## Acceptance Criteria
 
-- [ ] `section` accepts `guest-fit="clip | bleed"`, default `clip`, emitted as `data-guest-fit` on its media zone, as the config field emits it today
-- [ ] `frame`'s default `frame-displace-mode` and its `frame-overflow="bleed"` check read the resolved attribute, falling back to the config field
-- [ ] Native runes keep `guestFit` in config, and their output is unchanged on both contract copies
-- [ ] The section docs page documents `guest-fit`
+- [x] `section` accepts `guest-fit="clip | bleed"`, default `clip`, emitted as `data-guest-fit` on its media zone, as the config field emits it today
+- [x] `frame`'s default `frame-displace-mode` and its `frame-overflow="bleed"` check read the resolved attribute, falling back to the config field
+- [x] Native runes keep `guestFit` in config, and their output is unchanged on both contract copies
+- [x] The section docs page documents `guest-fit`
 
 ## Blocked by
 

@@ -48,7 +48,7 @@ A complete recipe with ingredients, instructions, and a tip.
 
 ## Section header
 
-Recipe supports an optional eyebrow, headline, and blurb above the section above ingredients and method. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+Recipe supports an optional eyebrow, headline, and blurb above the section above ingredients and method. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ### Layout attributes
 

@@ -44,5 +44,5 @@ A how-to guide with required tools and numbered steps.
 
 ## Section header
 
-How-to supports an optional eyebrow, headline, and blurb above the section above the steps. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+How-to supports an optional eyebrow, headline, and blurb above the section above the steps. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 

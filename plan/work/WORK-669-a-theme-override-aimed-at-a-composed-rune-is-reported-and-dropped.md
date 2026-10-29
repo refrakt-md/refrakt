@@ -13,11 +13,11 @@ v0.44.0 adds the first composed runes a theme could try to override (`hero`, `ct
 
 ## Acceptance Criteria
 
-- [ ] A theme override keyed to a rune whose config came from `composedRuneConfig` is reported, naming the theme, the rune and the path, and dropped whole
-- [ ] It is reported through the same sink and once-per-path rule as identity violations
-- [ ] Native runes' overrides are unaffected: identity fields stay guarded and the rest stays overridable
-- [ ] A test pins that an override of a composed rune's `blocks` is reported and dropped, and that Lumina's config trips nothing
-- [ ] The theme-authoring docs say a composed rune's config cannot be overridden, and point to ADR-042 and to template replacement ({% ref "ADR-045" /%}) as the route a theme has
+- [x] A theme override keyed to a rune whose config came from `composedRuneConfig` is reported, naming the theme, the rune and the path, and dropped whole
+- [x] It is reported through the same sink and once-per-path rule as identity violations
+- [x] Native runes' overrides are unaffected: identity fields stay guarded and the rest stays overridable
+- [x] A test pins that an override of a composed rune's `blocks` is reported and dropped, and that Lumina's config trips nothing
+- [x] The theme-authoring docs say a composed rune's config cannot be overridden, and point to ADR-042 and to template replacement ({% ref "ADR-045" /%}) as the route a theme has
 
 ## Approach
 

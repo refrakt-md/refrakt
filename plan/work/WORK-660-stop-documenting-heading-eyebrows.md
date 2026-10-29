@@ -14,10 +14,10 @@ not.
 
 ## Acceptance Criteria
 
-- [ ] The "Heading eyebrow + headline" section of `site/content/docs/authoring/page-sections.md` is removed, and the guide says an eyebrow is a short paragraph directly before the headline
-- [ ] The boilerplate sentence on every rune page that links to page sections says "a short paragraph", not "a short paragraph or heading" (nineteen pages, found with `grep -rn "paragraph or heading" site/content`)
-- [ ] No page under `site/content` describes or shows two leading headings as an eyebrow and a headline
-- [ ] `npm run format:md:check` passes
+- [x] The "Heading eyebrow + headline" section of `site/content/docs/authoring/page-sections.md` is removed, and the guide says an eyebrow is a short paragraph directly before the headline
+- [x] The boilerplate sentence on every rune page that links to page sections says "a short paragraph", not "a short paragraph or heading" (nineteen pages, found with `grep -rn "paragraph or heading" site/content`)
+- [x] No page under `site/content` describes or shows two leading headings as an eyebrow and a headline
+- [x] `npm run format:md:check` passes
 
 ## Approach
 

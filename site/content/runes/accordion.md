@@ -53,7 +53,7 @@ Headings are automatically converted into accordion items — no explicit tags n
 
 ## Section header
 
-Accordion supports an optional eyebrow, headline, and blurb above the panels. Place a short paragraph or heading before your content heading to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+Accordion supports an optional eyebrow, headline, and blurb above the panels. Place a short paragraph before your content heading to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ### When the panels are not a FAQ
 

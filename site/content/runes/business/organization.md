@@ -59,5 +59,5 @@ A corporation profile with structured data.
 
 ## Section header
 
-Organization supports an optional eyebrow, headline, and blurb above the section above details. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+Organization supports an optional eyebrow, headline, and blurb above the section above details. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 

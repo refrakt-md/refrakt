@@ -1756,6 +1756,7 @@ export function composedRuneConfig(def: CompositionDefinition): RuneConfig {
 		};
 	}
 	return {
+		composed: true,
 		...(Object.keys(modifiers).length > 0 ? { modifiers } : {}),
 		...(def.metaFields ? { metaFields: def.metaFields as RuneConfig['metaFields'] } : {}),
 		...(def.blocks ? { blocks: def.blocks as RuneConfig['blocks'] } : {}),

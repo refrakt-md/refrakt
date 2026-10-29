@@ -362,6 +362,15 @@ function transformRune(
 	// config, so the rest of the transform sees the variant-merged structure.
 	config = resolveVariantConfig(config, tag, fields);
 
+	// SPEC-160 D7 — `guest-fit` written on the instance wins over the config
+	// field: compositions placing the same `section` need different fits. Read
+	// from the field bag rather than declared as a modifier, so it lands where
+	// the config field always emitted it (the media zone), never on the root.
+	const authoredGuestFit = readField(tag, fields, 'guest-fit');
+	if (authoredGuestFit === 'clip' || authoredGuestFit === 'bleed') {
+		config = { ...config, guestFit: authoredGuestFit };
+	}
+
 	const modifierClasses: string[] = [];
 	const modifierValues: Record<string, string> = {};
 
@@ -1391,6 +1400,38 @@ function renderBarLayout(
 	return makeTag('div', attrs, children);
 }
 
+/** `lead` block (SPEC-161 D6) — a byline: the fields in a column, each in its
+ *  intrinsic shape, the first marked `data-lead`. The skin emphasises the lead
+ *  and mutes the rest by `:not([data-lead])`; nothing here ranks the values, so
+ *  a compact container never hides the secondary ones. */
+function renderLeadLayout(
+	blockName: string,
+	items: BarItem[],
+	locale?: LocaleContext,
+	config?: RuneConfig,
+): SerializedTag | null {
+	if (items.length === 0) return null;
+
+	const children: RendererNode[] = [];
+	for (const { resolved } of items) {
+		const els: SerializedTag[] =
+			resolved.field.splitOn && resolved.value
+				? splitFieldValue(resolved).map((part) =>
+						renderBlockValue({ ...resolved, value: part }, false, locale, config),
+					)
+				: [renderBlockValue(resolved, false, locale, config)];
+		children.push(...els);
+	}
+	const first = children[0] as SerializedTag;
+	children[0] = { ...first, attributes: { ...first.attributes, 'data-lead': '' } };
+
+	return makeTag(
+		'div',
+		{ 'data-name': blockName, 'data-zone': blockName, 'data-zone-layout': 'lead' },
+		children,
+	);
+}
+
 /** `definition-list` block — labelled `<dt>`/`<dd>` pairs, with the dd value
  *  in its intrinsic shape. Mirrors the legacy def-list DOM but selects
  *  chip-vs-bare from the field's metaType rather than `sentimentMap`. */
@@ -1459,6 +1500,7 @@ function makeBlockRenderer(
 		}
 		if (items.length === 0) return null;
 		if (def.layout === 'bar') return renderBarLayout(name, items, def.wrap ?? true, locale, config);
+		if (def.layout === 'lead') return renderLeadLayout(name, items, locale, config);
 		return renderDefListBlock(
 			name,
 			items.map((i) => i.resolved),

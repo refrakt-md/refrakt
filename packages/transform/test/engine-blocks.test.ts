@@ -533,3 +533,54 @@ describe('SPEC-080 block-and-layout assembly', () => {
 		});
 	});
 });
+
+describe('SPEC-161 D6 — the lead layout', () => {
+	const bylineConfig: RuneConfig = {
+		block: 'quote',
+		modifiers: { name: { source: 'meta' }, role: { source: 'meta' }, org: { source: 'meta' } },
+		// Each field is optional, gated on its own value, as a byline's are.
+		metaFields: {
+			name: { condition: 'name' },
+			role: { condition: 'role' },
+			org: { condition: 'org' },
+		},
+		blocks: { byline: { fields: ['name', 'role', 'org'], layout: 'lead' } },
+		layout: { root: ['body', 'byline'] },
+	} as RuneConfig;
+
+	function render(attrs: Record<string, string>): SerializedTag {
+		const metas = Object.entries(attrs).map(([field, value]) =>
+			makeTag('meta', { 'data-field': field, content: value }),
+		);
+		const transform = createTransform(baseConfig({ Quote: bylineConfig }));
+		return asTag(
+			transform(
+				makeTag('figure', { 'data-rune': 'quote' }, [
+					...metas,
+					makeTag('div', { 'data-name': 'body' }, [makeTag('p', {}, ['Quote'])]),
+				]),
+			),
+		);
+	}
+
+	it('renders the fields in a column, the first marked as the lead', () => {
+		const byline = findByName(render({ name: 'Ada', role: 'CTO', org: 'Acme' }), 'byline')!;
+		expect(byline.name).toBe('div');
+		expect(byline.attributes['data-zone-layout']).toBe('lead');
+		const values = byline.children.filter(isT);
+		expect(values.map((v) => v.children[0])).toEqual(['Ada', 'CTO', 'Acme']);
+		expect(values.map((v) => 'data-lead' in v.attributes)).toEqual([true, false, false]);
+	});
+
+	it('leads with the first field present when an earlier one is absent', () => {
+		const byline = findByName(render({ role: 'CTO', org: 'Acme' }), 'byline')!;
+		const values = byline.children.filter(isT);
+		expect(values[0].children[0]).toBe('CTO');
+		expect('data-lead' in values[0].attributes).toBe(true);
+	});
+
+	it('ranks no value, so a compact container hides none (BUG-023)', () => {
+		const byline = findByName(render({ name: 'Ada', role: 'CTO' }), 'byline')!;
+		expect(JSON.stringify(byline)).not.toContain('data-meta-rank');
+	});
+});

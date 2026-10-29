@@ -40,5 +40,5 @@ An event with date, location, agenda, and a registration link.
 
 ## Section header
 
-Event supports an optional eyebrow, headline, and blurb above the section above event details. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+Event supports an optional eyebrow, headline, and blurb above the section above event details. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 

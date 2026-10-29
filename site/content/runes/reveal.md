@@ -35,7 +35,7 @@ Headings automatically split content into reveal steps.
 
 ## Section header
 
-Reveal supports an optional eyebrow, headline, and blurb above the steps. Place a short paragraph or heading before your step headings to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+Reveal supports an optional eyebrow, headline, and blurb above the steps. Place a short paragraph before your step headings to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ### Attributes
 

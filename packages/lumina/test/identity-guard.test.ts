@@ -32,6 +32,22 @@ describe('ADR-028 identity guard — shipped configs', () => {
 		expect(violations).toEqual([]);
 	});
 
+	it('Lumina overrides no composed rune (ADR-042)', () => {
+		// A composed config in the base, as a plugin's composed rune puts one
+		// there: Lumina's overrides must leave it, and report nothing.
+		const composed = { composed: true, modifiers: { tier: { source: 'meta' } } } as RuneConfig;
+		const violations: IdentityViolation[] = [];
+		const merged = mergeThemeConfig(
+			{ ...baseConfig, runes: { ...baseConfig.runes, ComposedProbe: composed } },
+			luminaOverrides,
+			undefined,
+			(v) => violations.push(v),
+			{ themeName: 'lumina' },
+		);
+		expect(violations).toEqual([]);
+		expect(merged.runes.ComposedProbe).toEqual(composed);
+	});
+
 	it('Lumina merges unchanged — the guarded merge equals the unguarded one', () => {
 		// SPEC-158 rests its inertness claim on this: the path-granular guard
 		// (`sequence`, `metaFields.*.metaType`, layout `attrs`) must not move a
