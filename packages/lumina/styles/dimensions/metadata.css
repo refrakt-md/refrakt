@@ -94,8 +94,11 @@
 		gap: 0.125rem;
 	}
 
+	/* Emphasised by weight alone: a lead is often a `<cite>`, whose italic would
+	 * compete with it. */
 	[data-zone-layout="lead"] > [data-lead] {
 		font-weight: var(--rf-weight-semibold);
+		font-style: normal;
 		color: var(--rf-color-text);
 	}
 
