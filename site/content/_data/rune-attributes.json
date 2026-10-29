@@ -4114,6 +4114,16 @@
 			"rune": "section",
 			"plugin": "core",
 			"scope": "own",
+			"name": "guest-fit",
+			"type": "\"clip\" | \"bleed\"",
+			"required": false,
+			"description": "How the media zone holds its guest: clip (default) crops it to the zone, bleed lets it spill past",
+			"page": "section"
+		},
+		{
+			"rune": "section",
+			"plugin": "core",
+			"scope": "own",
 			"name": "content-place",
 			"type": "string",
 			"required": false,

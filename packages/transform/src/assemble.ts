@@ -24,6 +24,9 @@ export interface AssembleInput {
 	/** Theme-level overrides (e.g., Lumina adding icons, prefix changes) */
 	themeOverrides?: ThemeConfigOverrides;
 
+	/** The theme's name, for the diagnostics its overrides can raise (ADR-042). */
+	themeName?: string;
+
 	/** Plugin-contributed rune configs (keyed by typeof name) */
 	pluginRunes?: Record<string, RuneConfig>;
 
@@ -85,6 +88,7 @@ export function assembleThemeConfig(input: AssembleInput): AssembleResult {
 	const {
 		coreConfig,
 		themeOverrides,
+		themeName,
 		pluginRunes,
 		pluginIcons,
 		pluginBackgrounds,
@@ -111,7 +115,7 @@ export function assembleThemeConfig(input: AssembleInput): AssembleResult {
 	}
 
 	if (themeOverrides) {
-		config = mergeThemeConfig(config, themeOverrides, presetMap);
+		config = mergeThemeConfig(config, themeOverrides, presetMap, undefined, { themeName });
 	}
 
 	if (extensions && Object.keys(extensions).length > 0) {

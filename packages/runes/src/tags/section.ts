@@ -120,6 +120,16 @@ export const section = createContentModelSchema({
 			description:
 				'What the media zone holds, stamped as `data-media` so the media dimension styles it (portrait is cropped round)',
 		},
+		// SPEC-160 D7 — whether a media guest bleeds past its zone. A config
+		// field on the native runes; an attribute here, since compositions placing
+		// the same `section` need different fits.
+		'guest-fit': {
+			type: String,
+			required: false,
+			matches: ['clip', 'bleed'],
+			description:
+				'How the media zone holds its guest: clip (default) crops it to the zone, bleed lets it spill past',
+		},
 		// SPEC-089 cover knobs, as on `card`: `media-position="cover"` overlays the
 		// content on the media well.
 		'content-place': {
@@ -238,6 +248,7 @@ export const section = createContentModelSchema({
 				'content-place': meta('content-place'),
 				height: meta('height'),
 				aspect: meta('aspect'),
+				'guest-fit': meta('guest-fit'),
 			},
 			refs: {
 				eyebrow,

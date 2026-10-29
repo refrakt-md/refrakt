@@ -100,3 +100,31 @@ describe('section cover', () => {
 		expect(out).toContain('data-height="lg"');
 	});
 });
+
+// SPEC-160 D7 / WORK-664 — `guest-fit` is an attribute on `section`, since the
+// compositions placing it need different fits; native runes keep the field.
+describe('section guest-fit', () => {
+	it('defaults to clip on the media zone', () => {
+		expect(zoned('media-position="start"')).toContain('data-section="media" data-guest-fit="clip"');
+	});
+
+	it('emits bleed on the media zone, and nothing on the root', () => {
+		const out = zoned('media-position="start" guest-fit="bleed"');
+		expect(out).toContain('data-section="media" data-guest-fit="bleed"');
+		expect(out).not.toMatch(/<section[^>]*data-guest-fit/);
+	});
+
+	it('defaults a displaced guest to bleed on a bleed section, and not on a clip one', () => {
+		const bleed = zoned('media-position="start" guest-fit="bleed" frame-displace="end"');
+		expect(bleed).toContain('data-displace-mode="bleed"');
+		const clip = zoned('media-position="start" frame-displace="end"');
+		expect(clip).not.toContain('data-displace-mode="bleed"');
+	});
+
+	it('keeps frame-overflow="bleed" only on a bleed section', () => {
+		const bleed = zoned('media-position="start" guest-fit="bleed" frame-overflow="bleed"');
+		expect(bleed).toContain('data-frame-overflow="bleed"');
+		const clip = zoned('media-position="start" frame-overflow="bleed"');
+		expect(clip).not.toContain('data-frame-overflow');
+	});
+});

@@ -55,6 +55,12 @@ The guard is **path-granular** ({% ref "SPEC-158" /%}): a whole key where the wh
 
 A `layout` wrapper's `attrs` may not write an attribute an identity field emits — `data-section` (`sections`), `data-media` (`mediaSlots`), `typeof` / `property` (`schema`), `data-sequence` (`sequence`), `data-meta-type` (`metaFields.*.metaType`), or `data-{name}` for a declared modifier. The refused attribute is dropped and reported; the wrapper's other attributes stand. Presentation attributes such as `data-zone-layout` or `data-color-scheme` are unaffected. This is checked once, when the config is assembled, and `refrakt plugin validate` reports it as an error.
 
+#### Composed runes
+
+A [composed rune](/extend/rune-authoring/composed-runes)'s config cannot be overridden at all. It is generated from its definition, and a theme cannot know which definition it faces, so an override of its `blocks` or `metaFields` would be a guess that silently resolves to nothing. An entry under `runes:` keyed to a composed rune is reported at build time, naming the theme, the rune and the path, and dropped whole ({% ref "ADR-042" /%}). Native runes are unaffected: only their identity paths above are guarded.
+
+A theme has two routes instead. It styles a composed rune through the vocabulary it is built from, targeting `[data-rune="…"]` in CSS where it wants to special-case one, or it replaces the rune's template ({% ref "ADR-045" /%}).
+
 ### block
 
 The BEM block name, without the prefix.

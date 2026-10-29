@@ -1,4 +1,4 @@
-{% work id="WORK-660" status="ready" priority="medium" complexity="simple" source="ADR-046" tags="docs, section, eyebrow, page-sections" milestone="v0.44.0" %}
+{% work id="WORK-660" status="done" priority="medium" complexity="simple" source="ADR-046" tags="docs, section, eyebrow, page-sections" milestone="v0.44.0" pr="refrakt-md/refrakt#729" %}
 
 # Stop documenting heading eyebrows
 
@@ -14,10 +14,10 @@ not.
 
 ## Acceptance Criteria
 
-- [ ] The "Heading eyebrow + headline" section of `site/content/docs/authoring/page-sections.md` is removed, and the guide says an eyebrow is a short paragraph directly before the headline
-- [ ] The boilerplate sentence on every rune page that links to page sections says "a short paragraph", not "a short paragraph or heading" (nineteen pages, found with `grep -rn "paragraph or heading" site/content`)
-- [ ] No page under `site/content` describes or shows two leading headings as an eyebrow and a headline
-- [ ] `npm run format:md:check` passes
+- [x] The "Heading eyebrow + headline" section of `site/content/docs/authoring/page-sections.md` is removed, and the guide says an eyebrow is a short paragraph directly before the headline
+- [x] The boilerplate sentence on every rune page that links to page sections says "a short paragraph", not "a short paragraph or heading" (nineteen pages, found with `grep -rn "paragraph or heading" site/content`)
+- [x] No page under `site/content` describes or shows two leading headings as an eyebrow and a headline
+- [x] `npm run format:md:check` passes
 
 ## Approach
 
@@ -34,5 +34,16 @@ the eyebrow docs, but it does not depend on it.
 - {% ref "ADR-046" /%}: the resolved open question.
 - {% ref "SPEC-160" /%}: D7, no heading eyebrow in the composed `hero` and `cta`.
 - {% ref "BUG-047" /%}: the documented example renders wrongly today.
+
+## Resolution
+
+Completed: 2026-10-29
+
+Branch: `claude/milestone-v0-44-0-ism7ni`
+
+### What was done
+- `site/content/docs/authoring/page-sections.md`: removed "Heading eyebrow + headline" and its example; added that a heading is never read as an eyebrow.
+- Nineteen rune pages: "a short paragraph or heading before" → "a short paragraph before".
+- `site/content/extend/rune-authoring/patterns.md`: the eyebrow is a paragraph directly before the main heading, not the first of two headings.
 
 {% /work %}
