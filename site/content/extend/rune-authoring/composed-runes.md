@@ -66,6 +66,7 @@ A tag holding only prose and inline tags, such as a `{% hint %}` with paragraphs
 | `metaFields`, `blocks` | Metadata about attribute values, and the blocks that group them — placed with `{% metablock %}`. |
 | `registers` | Entities and edges the rune puts in the site registry. See [Declaring Registration](/extend/rune-authoring/registration). |
 | `schema` | The schema.org row for the rune — in a plugin only, see [why](#why-schema-is-allowed-in-a-plugin-and-not-in-a-project). |
+| `defaults` | Defaults for universal attributes (`width: full`, `elevation: flush`, `density: compact`), each landing where the author's attribute would. See [defaults](#defaults). |
 
 Some keys are refused because they would contradict what a composed rune is: styles (`css`, `style`, `styles`, `stylesheet`, `block`, `class`) — its appearance is the primitives'; a second emit path (`transform`, `emits`, `slots`) — the template is its emit path; and `layout` — a composed rune's containers belong to the runes it places, so the template arranges them.
 
@@ -230,6 +231,66 @@ Use `{% if %}` around whole rune invocations and around content; never around an
 ### There is no iteration tag
 
 `each` is a slot modifier, not a loop, and there is no `{% for %}`. The binding is deliberately shallow — bind an item, render a block — the same line `collection` and `data` templates hold.
+
+## Where universal attributes land
+
+A composed rune takes the universal attributes (`width`, `elevation`, `tint`, `prominence`, …) like any rune, but its own root is an empty wrapper around what the template places. An attribute painted there would draw a second surface around the first. So each attribute lands where it acts, decided by its axis:
+
+| Axis | Lands on |
+|---|---|
+| `width`, `spacing`, `inset` | the composed rune's own root, the box in page flow |
+| `elevation`, `substrate`, `bg` (with the `scrim` family), `reveal` and `stagger`, `tint` | the **paint carrier** |
+| `prominence` | the placed rune that owns a page-section header |
+| `reading`, `dropcap` | the placed rune that declares prose and owns the body |
+| `frame` and the `frame-*` family | the placed rune that owns the media zone, or names a frame target |
+
+An axis moves whole: `tint-mode` goes with `tint`, `frame-aspect` with `frame`. The attribute is written onto the target as an ordinary attribute, so it renders exactly as if the author had written it on that rune. When the target is itself a composition, its own template moves the attribute again, down to the first rune with a block.
+
+### The paint carrier
+
+A template with exactly one rune at its top level needs nothing: that rune is the carrier. A template that places several marks one with a bare `chrome`:
+
+```markdoc
+{% section chrome %}
+	{% slot name="intro" /%}
+{% /section %}
+{% grid %}
+	{% slot name="items" /%}
+{% /grid %}
+```
+
+- **The marker is consumed.** It reaches neither the placed rune's attributes nor the HTML.
+- **It goes on a rune the template places**, once. Not on slot content, and not inside an `each` slot, which would place it once per item.
+- **Several top-level runes and no marker is rejected** (`chrome-ambiguous`). Usually the template wants one region painted, so the better fix is to wrap the runes in one `{% section %}`, which then carries the paint by default.
+- **A template that places no rune** has no carrier. A paint attribute written on it is ignored with a warning, rather than painting the empty root.
+- An `{% if %}` is counted as written: a rune inside one counts as placed.
+
+### Role-bound axes
+
+`prominence`, `reading`, `dropcap` and `frame` land on the rune that owns the role: the carrier when it owns it, else the single placed rune that does. When no placed rune owns the role, or several do and none is the carrier, the composed rune does not offer the attribute. `refrakt reference` leaves it out, and `inspect` and `contracts` say why. A composition that places no rune keeps an axis on its own root when it meets the axis's gate itself, as `provides: [prose]` does for `reading`.
+
+So a composition placing one `section` offers `prominence` and the `section`'s title scales exactly as it would on a `section` written directly.
+
+A scrim lands with its background on the carrier. When the template puts a different rune in cover mode, the scrim cannot reach that rune's media, and validation warns, naming both.
+
+### Defaults
+
+A native rune states its chrome defaults in its config. A composed rune states them under `defaults`:
+
+```yaml
+defaults:
+  width: full
+  elevation: flush
+  prominence: display
+  density: compact
+```
+
+- **Universal attributes only.** A rune's own attribute takes its default under `attributes`. A key that is not a universal attribute, or a value its axis does not accept, is rejected when the definition loads (`defaults-invalid`).
+- **A default lands where the author's attribute would.** `width` on the root, `elevation` on the paint carrier, `prominence` on the header's owner. A default that would land nowhere, because no placed rune takes the axis, is rejected too.
+- **`density` is a default only** (`full`, `compact`, `minimal`). Authors cannot write it, so nothing overrides it. It lands on the carrier.
+- **The order is author, then template literal, then default.** A literal the template writes on the rune where the attribute lands, `{% section elevation="sunken" %}`, beats the definition's default. The author's attribute beats both: it replaces the literal at expansion. **A template cannot pin a universal attribute against the author.**
+
+`refrakt inspect` shows each default with its source, and the literal that beats it; `refrakt reference` lists the defaults.
 
 ## What a template may place
 
@@ -442,6 +503,11 @@ Each error has a code. The fix column assumes the cause in the meaning column.
 | `metablock-inside-each` | A `{% metablock %}` is inside an `each` slot. | Move it outside. |
 | `metablock-undeclared` | It names no block declared under `blocks`. | Declare the block, or fix the name. |
 | `metablock-placed-twice` | The same block is placed twice. | Place it once. |
+| `chrome-invalid` | A `chrome` marker has a value, or marks a rune inside an `each` slot. | Write it bare, on a rune the template places once. |
+| `chrome-marked-twice` | Two placed runes are marked `chrome`. | Mark one: a rune has one paint carrier. |
+| `chrome-ambiguous` | The template places several runes at its top level and marks none `chrome`, so the paint attributes have nowhere to land. | Wrap them in one `{% section %}`, or mark one of them `chrome`. |
+| `defaults-invalid` | A `defaults` entry names no universal attribute, gives a value its axis does not accept, or lands nowhere (no placed rune takes the axis). | Default a rune's own attribute under `attributes`; fix the value; or place a rune that takes the axis. |
+| `chrome-collision` | A rune the template places declares an attribute named `chrome`, which the marker would shadow. | Rename that rune's attribute. |
 | `composition-cycle` | The rune places itself, directly or through another composed rune. | Break the cycle. |
 | `parent-required` | The template places a rune that requires a parent it does not get. | Place the parent and let its content model produce the child — see [the placeable set](#the-placeable-set). |
 | `peer-schema-type` | The rune declares a schema type and places a rune declaring a peer type. | Place primitives that declare no type, or drop the outer `schema` and wrap. |

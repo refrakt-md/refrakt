@@ -22,10 +22,12 @@ import {
 } from './lib/composition.js';
 import type { CompositionErrorCode } from './lib/composition-errors.js';
 import type {
+	AxisPlacementInfo,
 	CompositionCatalogEntry,
 	CompositionDefinition,
 	CompositionOutlineNode,
 } from './lib/composition.js';
+import { registerPlaceableSchema } from './lib/composition-placement.js';
 import { defineRune } from './rune.js';
 import type { Rune } from './rune.js';
 
@@ -58,6 +60,7 @@ export function defineComposedRune(name: string, source: string): ComposedRune {
 				...(definition.aliases ? { aliases: definition.aliases } : {}),
 				body: definition.template,
 				...(definition.blocks ? { blocks: Object.keys(definition.blocks) } : {}),
+				...(definition.defaults ? { defaults: definition.defaults } : {}),
 			},
 			...(definition.schema ? { schema: definition.schema } : {}),
 			...(definition.registers ? { registers: definition.registers } : {}),
@@ -80,6 +83,7 @@ export function defineComposedRune(name: string, source: string): ComposedRune {
 		...(definition.aliases ? { aliases: definition.aliases } : {}),
 		description: definition.description ?? `Composed rune "${name}"`,
 	});
+	registerPlaceable(name, rune);
 	return { rune, config, typeName, definition };
 }
 
@@ -93,7 +97,7 @@ function locate(e: Error, name: string, definition: CompositionDefinition): Comp
 	const message = e.message.startsWith(`Rune "${name}"`)
 		? e.message
 		: `Rune "${name}": ${e.message}`;
-	const section = (['registers', 'schema', 'provides'] as const).find((key) =>
+	const section = (['registers', 'schema', 'provides', 'defaults'] as const).find((key) =>
 		new RegExp(`\\b${key}\\b`).test(e.message),
 	);
 	// The compiler's own errors carry their code; the schema table's and the
@@ -165,6 +169,17 @@ export function registerCoreCatalog(
 	configs: Record<string, RuneConfig>,
 ): void {
 	coreCatalog = { runes, configs };
+	for (const [name, rune] of Object.entries(runes)) registerPlaceable(name, rune);
+}
+
+/** Make a rune placeable by name, and by each alias, for a later composition's
+ *  carrier and role-owner resolution (SPEC-145 D33). */
+export function registerPlaceable(
+	name: string,
+	rune: { schema?: Schema; aliases?: readonly string[] },
+): void {
+	registerPlaceableSchema(name, rune.schema);
+	for (const alias of rune.aliases ?? []) registerPlaceableSchema(alias, rune.schema);
 }
 
 /** The core runes, as registered by the package entry; empty before it runs. */
@@ -206,6 +221,8 @@ export function checkComposedCatalog(
 export interface CompositionContract {
 	slots: string[];
 	outline: CompositionOutlineNode[];
+	/** Where each universal axis lands (SPEC-145 D33). */
+	axes: Record<string, AxisPlacementInfo>;
 }
 
 /** The compositions in a rune catalog, keyed by `data-rune`, for `contracts`. */
@@ -215,7 +232,7 @@ export function collectCompositions(
 	const out: Record<string, CompositionContract> = {};
 	for (const rune of Object.values(runes)) {
 		const info = compositionFor(rune.schema);
-		if (info) out[info.rune] = { slots: [...info.slots], outline: info.outline };
+		if (info) out[info.rune] = { slots: [...info.slots], outline: info.outline, axes: info.axes };
 	}
 	return out;
 }

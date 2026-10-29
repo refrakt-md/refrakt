@@ -184,6 +184,7 @@ export {
 export type {
 	CompositionTemplate,
 	CompositionInfo,
+	AxisPlacementInfo,
 	CompositionOutlineNode,
 	CompositionDefinition,
 	CompositionCatalogEntry,

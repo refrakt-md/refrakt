@@ -3,7 +3,12 @@ import type { Plugin, PluginRune, RuneExtension } from '@refrakt-md/types';
 import type { RuneConfig, RuneProvenance, LocalizedValue } from '@refrakt-md/transform';
 import { selectLocaleBundle } from '@refrakt-md/transform';
 import { Rune, defineRune, runeTagMap } from './rune.js';
-import { checkComposedCatalog, composedPluginRune, coreCatalogRunes } from './composed-rune.js';
+import {
+	checkComposedCatalog,
+	composedPluginRune,
+	coreCatalogRunes,
+	registerPlaceable,
+} from './composed-rune.js';
 import { PROJECT_RUNES, readRuneDefinitions, withRuneDefinitions } from './rune-dir.js';
 import { CompositionError } from './lib/composition-errors.js';
 import type { RuneDirReader } from './rune-dir.js';
@@ -130,6 +135,13 @@ export async function loadPlugin(
 
 	const runes: Record<string, Rune> = {};
 	const fixtures: Record<string, string> = {};
+	// SPEC-145 D33 — the plugin's own runes are placeable before any of its
+	// compositions is built, whatever order the entries are listed in.
+	for (const [runeName, entry] of Object.entries(pkg.runes)) {
+		if (entry.transform) {
+			registerPlaceable(runeName, { schema: entry.transform as Schema, aliases: entry.aliases });
+		}
+	}
 	for (const [runeName, entry] of Object.entries(pkg.runes)) {
 		runes[runeName] = pluginRune(runeName, entry, pkg);
 		if (entry.fixture) fixtures[runeName] = entry.fixture;

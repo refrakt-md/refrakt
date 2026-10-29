@@ -163,6 +163,7 @@ export const frameFacet: Facet = {
  *  neither a `frameTarget` nor a media section can carry no frame at all. */
 export const frameAxis: UniversalAxisFacet = {
 	axis: 'frame',
+	placement: 'media',
 	contract: {
 		description:
 			'Surface chrome (SPEC-086): a named preset from the theme registry with inline `frame-*` overrides layered on top.',

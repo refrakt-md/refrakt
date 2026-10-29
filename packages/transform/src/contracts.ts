@@ -7,7 +7,7 @@ import {
 	UNIVERSAL_POSTURE_REASONS,
 } from './facets/index.js';
 import { modifiersDescribe } from './facets/modifiers.js';
-import type { UniversalAxisContract, RuneAxisContract } from './facets/describe.js';
+import type { AxisPlacement, UniversalAxisContract, RuneAxisContract } from './facets/describe.js';
 
 /** Structure contract for a single rune */
 export interface RuneContract {
@@ -111,7 +111,22 @@ export interface RuneContract {
 	composition?: {
 		slots: string[];
 		expansion: CompositionContractNode[];
+		/** SPEC-145 D33 — where each universal axis lands, by axis: `root`, or the
+		 *  placement and the placed rune it lands on. An axis no placed rune takes
+		 *  is in `universalAxes.unavailable` instead, with the reason. */
+		placements?: Record<string, ComposedAxisPlacement>;
 	};
+}
+
+/** One axis's placement on a composed rune (SPEC-145 D33). */
+export interface ComposedAxisPlacement {
+	placement: AxisPlacement;
+	/** The placed rune the axis lands on. */
+	rune?: string;
+	/** Offered but ignored, with a warning: the composition has no carrier. */
+	dropped?: string;
+	/** Not offered, and why. */
+	unavailable?: string;
 }
 
 /** One node of a composed rune's expansion (D6). */
@@ -169,7 +184,14 @@ export interface StructureContractOptions {
 	 * the same reason as `schemaRows`: a composition is declared on the rune's
 	 * schema, which this package cannot reach.
 	 */
-	compositions?: Record<string, { slots: string[]; outline: CompositionContractNode[] }>;
+	compositions?: Record<
+		string,
+		{
+			slots: string[];
+			outline: CompositionContractNode[];
+			axes?: Record<string, ComposedAxisPlacement>;
+		}
+	>;
 }
 
 export function generateStructureContract(
@@ -189,6 +211,7 @@ export function generateStructureContract(
 				slots: [...composition.slots],
 				expansion: expandComposition(composition.outline, runes, prefix),
 			};
+			if (composition.axes) applyComposedPlacements(contract, composition.axes);
 		}
 		result[runeName] = contract;
 	}
@@ -205,6 +228,44 @@ export function generateStructureContract(
 		),
 		runes: result,
 	};
+}
+
+/**
+ * SPEC-145 D33 — a composed rune's axes are available by placement, not by its
+ * own config: an axis lands on the rune its template places, so the root's
+ * structural gate is the wrong question for every axis but the root-placed
+ * ones. Record each placement, and let it settle availability.
+ */
+function applyComposedPlacements(
+	contract: RuneContract,
+	axes: Record<string, ComposedAxisPlacement>,
+): void {
+	const unavailable = { ...contract.universalAxes?.unavailable };
+	const placements: Record<string, ComposedAxisPlacement> = {};
+	for (const [axis, target] of Object.entries(axes)) {
+		if (target.placement === 'root') {
+			placements[axis] = { placement: 'root' };
+			continue;
+		}
+		if (target.unavailable) {
+			// No placed rune takes it: the root's own gate decides, as the schema's.
+			if (!(axis in unavailable)) placements[axis] = { placement: 'root' };
+			else unavailable[axis] = target.unavailable;
+			continue;
+		}
+		delete unavailable[axis];
+		placements[axis] = { ...target };
+	}
+	contract.composition!.placements = placements;
+	const axesOut = contract.universalAxes?.axes;
+	if (axesOut || Object.keys(unavailable).length > 0) {
+		contract.universalAxes = {
+			...(axesOut ? { axes: axesOut } : {}),
+			...(Object.keys(unavailable).length > 0 ? { unavailable } : {}),
+		};
+	} else {
+		delete contract.universalAxes;
+	}
 }
 
 /** Annotate a composition's outline with each placed rune's root selector. */

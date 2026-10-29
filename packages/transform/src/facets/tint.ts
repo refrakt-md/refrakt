@@ -93,6 +93,7 @@ export const tintFacet: Facet = {
  *  {@link TINT_TOKENS} — the same list the facet resolves against. */
 export const tintAxis: UniversalAxisFacet = {
 	axis: 'tint',
+	placement: 'carrier',
 	contract: {
 		description:
 			'Per-rune colour override (SPEC-053): a named tint from the theme registry, with inline per-token overrides layered on top.',

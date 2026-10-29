@@ -120,6 +120,7 @@ export const dropcapFacet: Facet = {
 
 export const readingAxis: UniversalAxisFacet = {
 	axis: 'reading',
+	placement: 'prose-body',
 	contract: {
 		description:
 			'Editorial register for body text (SPEC-108). The author picks the register; the theme owns the magnitude.',
@@ -140,6 +141,7 @@ export const readingAxis: UniversalAxisFacet = {
 
 export const dropcapAxis: UniversalAxisFacet = {
 	axis: 'dropcap',
+	placement: 'prose-body',
 	contract: {
 		description: 'Per-instance drop-cap opt-in (SPEC-108).',
 		source: 'attribute',

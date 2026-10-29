@@ -166,28 +166,17 @@ describe.each(RUNE_NAMES)('composed %s — the definition', (rune) => {
 		expect(def).not.toContain('mediatext');
 	});
 
-	it('accepts the same attributes as the plugin, less `prominence` and the `frame` family', () => {
+	it('accepts the same attributes as the plugin', () => {
 		const attributes = (pkg: Plugin) => Object.keys(merge(pkg).tags[rune].attributes ?? {}).sort();
-		// Universal attributes are offered by section role (SPEC-125 Phase 3).
-		// The plugin's `sections` maps `name` to `title`, a header-ish role, so it
-		// is offered `prominence`; its `mediaSlots: { scene: 'cover' }` makes it a
-		// media surface, so it is offered `frame-*`. A composition declares
-		// neither. The split attributes are declared by hand: `base` is not a
+		// Universal attributes are offered by section role (SPEC-125 Phase 3). The
+		// plugin's `sections` maps `name` to `title`, a header-ish role, and its
+		// `mediaSlots` make it a media surface, so it is offered `prominence` and
+		// `frame-*`. The composition declares neither, but the `section` it places
+		// owns both roles, so it offers them too and they land there (SPEC-145
+		// D33). The split attributes are declared by hand: `base` is not a
 		// definition key.
 		const missing = attributes(storytelling).filter((a) => !attributes(composed(rune)).includes(a));
-		expect(missing).toEqual([
-			'frame',
-			'frame-anchor',
-			'frame-aspect',
-			'frame-displace',
-			'frame-displace-mode',
-			'frame-offset',
-			'frame-overflow',
-			'frame-oversize',
-			'frame-place',
-			'frame-shadow',
-			'prominence',
-		]);
+		expect(missing).toEqual([]);
 		expect(attributes(composed(rune)).filter((a) => !attributes(storytelling).includes(a))).toEqual(
 			[],
 		);

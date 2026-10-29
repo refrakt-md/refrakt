@@ -421,9 +421,12 @@ describe('the generated block-less config renders in full (D2a, WORK-622)', () =
 		// Modifiers.
 		expect(root.attributes['data-realm-type']).toBe('kingdom');
 		expect(root.attributes['data-scale']).toBe('vast');
-		// Universal attributes.
-		expect(root.attributes['data-tint']).toBe('warm');
+		// Universal attributes: `width` stays on the root, `tint` is paint and
+		// lands on the carrier, the card (SPEC-145 D14).
 		expect(root.attributes['data-width']).toBe('wide');
+		expect(root.attributes['data-tint']).toBeUndefined();
+		const [card] = all(root, (n) => n.attributes?.['data-rune'] === 'card');
+		expect(card.attributes['data-tint']).toBe('warm');
 		// Meta blocks.
 		const [dl] = byName(root, 'metadata');
 		expect(all(dl, (n) => n.name === 'dd').map((n) => html(n))).toEqual([

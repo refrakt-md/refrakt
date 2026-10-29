@@ -32,7 +32,7 @@ registers:
 
 {% breadcrumb auto=true /%}
 
-{% card %}
+{% card chrome %}
 {% slot name="name" /%}
 
 {% slot name="body" /%}

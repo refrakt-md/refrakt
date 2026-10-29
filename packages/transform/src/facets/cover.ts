@@ -130,6 +130,7 @@ export const coverFacet: Facet = {
  *  or a target. */
 export const coverAxis: UniversalAxisFacet = {
 	axis: 'cover',
+	placement: 'carrier',
 	contract: {
 		description:
 			'Cover-mode chrome (SPEC-089): with `media-position="cover"` the media fills the surface and the content sits over it, so the scrim is rerouted from the background layer to the media well.',
