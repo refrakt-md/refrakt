@@ -32,6 +32,8 @@ import {
 } from './registers.js';
 import type { RegistersDeclaration } from './registers.js';
 import { compileComposition, schemaCompositions } from './composition.js';
+import { placementAvailability } from './composition-placement.js';
+import { universalAttributes } from './universal-attribute-defs.js';
 import type { CompiledComposition, CompositionTemplate } from './composition.js';
 import { auditSlotHeaderRoles } from './header-roles.js';
 export {
@@ -60,6 +62,7 @@ export {
 export type {
 	CompositionTemplate,
 	CompositionInfo,
+	AxisPlacementInfo,
 	CompositionOutlineNode,
 	CompositionDefinition,
 	CompositionCatalogEntry,
@@ -245,234 +248,8 @@ export interface DeprecationRule {
 // Universal attribute definitions
 // ---------------------------------------------------------------------------
 
-const universalAttributes: Record<string, SchemaAttribute> = {
-	tint: { type: String, required: false, description: 'Color tint preset applied to this block' },
-	'tint-mode': {
-		type: String,
-		required: false,
-		matches: ['auto', 'dark', 'light'],
-		description: 'Whether the tint adapts to auto, dark, or light mode',
-	},
-	bg: { type: String, required: false, description: 'Background preset applied to this block' },
-	width: {
-		type: String,
-		required: false,
-		matches: ['compact', 'narrow', 'content', 'wide', 'full'],
-		description: 'Maximum width constraint for this block',
-	},
-	reading: {
-		type: String,
-		required: false,
-		matches: ['fine', 'ui', 'prose'],
-		description:
-			'Reading register for this block’s body (SPEC-108): fine | ui | prose. The theme owns the editorial treatment.',
-	},
-	dropcap: {
-		type: Boolean,
-		required: false,
-		description:
-			'Style the opening letter of a prose body as a drop cap (SPEC-108). Honoured only when the body reads as prose; ignored otherwise.',
-	},
-	spacing: {
-		type: String,
-		required: false,
-		matches: ['flush', 'tight', 'default', 'loose', 'breathe'],
-		description: 'Vertical spacing above and below this block',
-	},
-	inset: {
-		type: String,
-		required: false,
-		matches: ['flush', 'tight', 'default', 'loose', 'breathe'],
-		description: 'Inner padding of this block',
-	},
-	// SPEC-107 — `elevation` is a depth ladder. The legacy shadow-scale values
-	// (none/sm/md/lg) stay in `matches` so authored content still validates during
-	// the deprecation window; the engine maps them onto the ladder with a warning.
-	elevation: {
-		type: String,
-		required: false,
-		matches: ['sunken', 'flush', 'flat', 'raised', 'floating', 'overlay', 'none', 'sm', 'md', 'lg'],
-		description:
-			'Surface depth on the SPEC-107 ladder (sunken→overlay); none/sm/md/lg are deprecated aliases',
-	},
-	prominence: {
-		type: String,
-		required: false,
-		matches: ['quiet', 'normal', 'prominent', 'display'],
-		description: 'Section-header emphasis (only on page-section-header family runes)',
-	},
-	// SPEC-105 — scroll-reveal motion. `reveal` is a closed entrance vocabulary
-	// (author declares intent; the theme owns choreography, a behaviour owns
-	// timing); an unknown value is a build error via Markdoc `matches`. `stagger`
-	// cascades a multi-child block's items in — a silent no-op on single-child runes.
-	reveal: {
-		type: String,
-		required: false,
-		matches: ['none', 'fade', 'slide', 'scale', 'blur'],
-		description:
-			'Scroll-reveal entrance character (none|fade|slide|scale|blur); the theme owns the choreography',
-	},
-	stagger: {
-		type: Boolean,
-		required: false,
-		description: "Cascade this block's items in as it reveals (no-op on single-child runes)",
-	},
-	// SPEC-086 — frame: media-surface chrome preset + inline facet overrides.
-	frame: {
-		type: String,
-		required: false,
-		description: "Named frame preset presenting this block's media surface",
-	},
-	'frame-aspect': {
-		type: String,
-		required: false,
-		description: 'Aspect ratio of the framed media, e.g. "16/9"',
-	},
-	'frame-displace': {
-		type: String,
-		required: false,
-		// `both` was missing until SPEC-132's validation pass reported
-		// `{% showcase frame-displace="both" %}` as out-of-enum — while Lumina
-		// has styled `[data-displace="both"]` all along. The schema and the
-		// stylesheet disagreed, the page rendered correctly, and nothing else in
-		// the toolchain compares those two.
-		matches: ['top', 'bottom', 'end', 'bottom-end', 'top-end', 'both'],
-		description: 'Edge/corner the framed guest moves toward',
-	},
-	'frame-displace-mode': {
-		type: String,
-		required: false,
-		matches: ['peek', 'bleed'],
-		description:
-			'How displacement renders: `peek` (default) translates the guest visually inside its frame target; `bleed` uses negative margin on the media zone so following layout pulls up — extends past a section like a hero without leaving a gap above',
-	},
-	'frame-offset': {
-		type: String,
-		required: false,
-		matches: ['none', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl'],
-		description:
-			'Displacement distance (non-linear named scale: sm…xl ride the block-spacing tokens, 2xl/3xl/4xl step up to section-spacing for bleed-mode displacements that clear a section edge)',
-	},
-	'frame-oversize': {
-		type: String,
-		required: false,
-		description: 'How far the guest exceeds its slot (scale factor)',
-	},
-	'frame-place': {
-		type: String,
-		required: false,
-		description: 'Guest-box alignment in the slot (e.g. "left top")',
-	},
-	'frame-anchor': {
-		type: String,
-		required: false,
-		description: 'Crop focal point when the guest is cut (object-position)',
-	},
-	'frame-overflow': {
-		type: String,
-		required: false,
-		matches: ['clip', 'bleed'],
-		description:
-			'How the frame handles a guest whose content is wider than it: `clip` (default) keeps it inside the rounded frame; `bleed` runs an overflowing guest out to the layout edge on a narrow viewport so it reads as cropped by the screen (a bleed host only — hero/feature)',
-	},
-	'frame-shadow': {
-		type: String,
-		required: false,
-		matches: ['none', 'sm', 'md', 'lg'],
-		description: 'Silhouette drop-shadow strength for the framed media',
-	},
-	// SPEC-087 — substrate: generated surface pattern + inline facet overrides.
-	substrate: {
-		type: String,
-		required: false,
-		matches: ['dots', 'grid', 'lines', 'cross', 'checker', 'none'],
-		description: 'Generated surface pattern',
-	},
-	'substrate-size': {
-		type: String,
-		required: false,
-		matches: ['sm', 'md', 'lg'],
-		description: 'Pattern cell size',
-	},
-	'substrate-opacity': {
-		type: String,
-		required: false,
-		matches: ['sm', 'md', 'lg'],
-		description: 'Pattern ink strength',
-	},
-	'substrate-fill': {
-		type: String,
-		required: false,
-		matches: ['inherit', 'inset'],
-		description: 'Surface fill the pattern sits on (full colour stays with tint)',
-	},
-	'substrate-target': {
-		type: String,
-		required: false,
-		matches: ['self', 'media'],
-		description: 'Which surface the pattern fills (overrides the rune/theme default)',
-	},
-	// SPEC-088 — bg gradient fill facets (token-driven; colours stay token-owned).
-	'bg-gradient': {
-		type: String,
-		required: false,
-		matches: ['to-t', 'to-b', 'to-l', 'to-r', 'to-tr', 'to-br', 'to-bl', 'to-tl'],
-		description: 'Gradient direction (bounded named set)',
-	},
-	'bg-from': {
-		type: String,
-		required: false,
-		description: 'Gradient start colour — a semantic token name (→ var(--rf-color-*))',
-	},
-	'bg-to': {
-		type: String,
-		required: false,
-		description: 'Gradient end colour — a semantic token name',
-	},
-	'bg-via': {
-		type: String,
-		required: false,
-		description: 'Optional middle gradient stop — a semantic token name',
-	},
-	'bg-gradient-type': {
-		type: String,
-		required: false,
-		matches: ['linear', 'radial', 'conic'],
-		description: 'Gradient type',
-	},
-	// SPEC-088 — structured scrim (legibility treatment behind overlaid text).
-	scrim: {
-		type: String,
-		required: false,
-		matches: ['top', 'bottom', 'left', 'right', 'none'],
-		description:
-			'Scrim direction (heaviest edge); presence turns the scrim on, "none" opts out of the default cover scrim',
-	},
-	'scrim-type': {
-		type: String,
-		required: false,
-		matches: ['gradient', 'frost'],
-		description: 'Scrim treatment: gradient (default) or frost (backdrop blur)',
-	},
-	'scrim-strength': {
-		type: String,
-		required: false,
-		matches: ['sm', 'md', 'lg'],
-		description: 'Gradient scrim strength',
-	},
-	'scrim-blur': {
-		type: String,
-		required: false,
-		matches: ['none', 'sm', 'md', 'lg'],
-		description: 'Frost scrim blur amount',
-	},
-	'scrim-tone': {
-		type: String,
-		required: false,
-		matches: ['dark', 'light'],
-		description: 'Whether the scrim darkens (for light text) or lightens (for dark text)',
-	},
-};
+// Defined in `universal-attribute-defs.ts`, which a composition definition's
+// `defaults` also reads (SPEC-145 D34).
 
 /** SPEC-088 bg gradient + scrim facet attribute names (host-level). */
 const BG_GRADIENT_FACET_NAMES = [
@@ -1055,6 +832,73 @@ function auditCompositionHeaderRoles(
 }
 
 /**
+ * The validate-time warnings of a composition's placements (SPEC-145 D24, D33):
+ * a carrier-placed attribute on a composition that places no rune, and a scrim
+ * that cannot reach the media of a rune put in cover mode that is not the
+ * carrier.
+ */
+function auditCompositionPlacements(
+	composition: CompiledComposition,
+	node: Node,
+	declared: Record<string, SchemaAttribute>,
+): ValidationError[] {
+	const { placements, info } = composition;
+	const errors: ValidationError[] = [];
+	const written = Object.keys(node.attributes ?? {});
+	const dropped = written.filter((name) => {
+		const axis = placements.axisOf[name];
+		const target = axis ? placements.axes[axis] : undefined;
+		return target && 'dropped' in target;
+	});
+	if (dropped.length > 0) {
+		errors.push({
+			id: 'composition-no-carrier',
+			level: 'warning',
+			message: `${dropped.map((n) => `\`${n}\``).join(', ')} on \`${info.rune}\` ${dropped.length > 1 ? 'are' : 'is'} ignored: \`${info.rune}\` places no rune to carry ${dropped.length > 1 ? 'them' : 'it'}, and its own root is an empty wrapper (SPEC-145 D24).`,
+		});
+	}
+
+	const scrim = written.find((name) => name === 'scrim' || name.startsWith('scrim-'));
+	if (scrim) {
+		for (const covered of coverRunes(composition, node, declared)) {
+			errors.push({
+				id: 'composition-scrim-cover',
+				level: 'warning',
+				message: `\`${scrim}\` on \`${info.rune}\` lands with its background on \`${placements.carrier?.tag ?? info.rune}\`, but \`${covered}\` is the rune in cover mode, so the scrim cannot reach its media (SPEC-145 D33).`,
+			});
+		}
+	}
+	return errors;
+}
+
+/** The placed runes other than the carrier that this instance puts in cover
+ *  mode: `media-position="cover"`, written or bound to one of the rune's own
+ *  attributes. */
+function coverRunes(
+	composition: CompiledComposition,
+	node: Node,
+	declared: Record<string, SchemaAttribute>,
+): string[] {
+	const out: string[] = [];
+	const visit = (nodes: readonly Node[]) => {
+		for (const n of nodes) {
+			if (n.type === 'tag' && n !== composition.placements.carrier) {
+				let value = n.attributes?.['media-position'];
+				const v = value as { $$mdtype?: string; path?: unknown[] } | undefined;
+				if (v?.$$mdtype === 'Variable' && v.path?.[0] === 'attrs') {
+					const name = String(v.path[1]);
+					value = node.attributes?.[name] ?? declared[name]?.default;
+				}
+				if (value === 'cover') out.push(n.tag!);
+			}
+			visit(n.children ?? []);
+		}
+	};
+	visit(composition.templateNodes);
+	return out;
+}
+
+/**
  * Create a Markdoc Schema from a declarative content model.
  *
  * The rune declares a content model and provides a transform function
@@ -1142,8 +986,17 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 		},
 		declaredAttributes: Object.keys(attributes),
 	});
+	// SPEC-145 D33 — a composition offers a non-root axis exactly when a rune it
+	// places takes it; root-placed axes keep the structural gates above.
+	const composedOffer = composition ? placementAvailability(composition.placements) : undefined;
 	for (const [name, def] of Object.entries(universalAttributes)) {
-		if (applicableUniversals.has(name)) attributes[name] = def;
+		const axis = composition?.placements.axisOf[name];
+		const target = axis ? composition!.placements.axes[axis] : undefined;
+		const viaPlacement = target && target.placement !== 'root' && !('unavailable' in target);
+		const offered = viaPlacement
+			? composedOffer!.offered.has(name)
+			: applicableUniversals.has(name);
+		if (offered) attributes[name] = def;
 	}
 
 	// deferBody: declare the stash attribute so the loader-captured body source
@@ -1237,37 +1090,38 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 				stripSchemaOrg(result);
 			}
 
+			// SPEC-145 D14 / D33 — a composition's universal attributes went to the
+			// runes it places at expansion; its root keeps only what stays there.
+			const own = composition ? composition.rootAttributes(attrs) : attrs;
+
 			// Inject tint / bg metas
 			const tintBgCtx: TintBgContext = {
 				tintNode,
 				bgNode,
-				tint: attrs.tint,
-				'tint-mode': attrs['tint-mode'],
-				bg: attrs.bg,
+				tint: own.tint,
+				'tint-mode': own['tint-mode'],
+				bg: own.bg,
 				config,
 			};
 			const output = injectBgMetasFrom(injectTintMetasFrom(result, tintBgCtx), tintBgCtx);
 
 			// Forward universal layout/surface attributes
 			if (Markdoc.Tag.isTag(output)) {
-				if (attrs.width) output.attributes.width = attrs.width;
-				if (attrs.spacing) output.attributes.spacing = attrs.spacing;
-				if (attrs.inset) output.attributes.inset = attrs.inset;
-				if (attrs.elevation) output.attributes.elevation = attrs.elevation;
-				if (attrs.prominence) output.attributes.prominence = attrs.prominence;
-				if (attrs.reveal) output.attributes.reveal = attrs.reveal;
-				if (attrs.stagger) output.attributes.stagger = attrs.stagger;
+				if (own.width) output.attributes.width = own.width;
+				if (own.spacing) output.attributes.spacing = own.spacing;
+				if (own.inset) output.attributes.inset = own.inset;
+				if (own.elevation) output.attributes.elevation = own.elevation;
+				if (own.prominence) output.attributes.prominence = own.prominence;
+				if (own.reveal) output.attributes.reveal = own.reveal;
+				if (own.stagger) output.attributes.stagger = own.stagger;
 				// SPEC-108 reading register + drop cap. The engine reads these off the
 				// rune tag (resolveReading author input + the dropcap gate); forward them
 				// so an author `reading=`/`dropcap=` override actually reaches it.
-				if (attrs.reading) output.attributes.reading = attrs.reading;
-				if (attrs.dropcap) output.attributes.dropcap = attrs.dropcap;
+				if (own.reading) output.attributes.reading = own.reading;
+				if (own.dropcap) output.attributes.dropcap = own.dropcap;
 			}
 
-			return injectBgFacetMetas(
-				injectSubstrateMetas(injectFrameMetas(output, attrs), attrs),
-				attrs,
-			);
+			return injectBgFacetMetas(injectSubstrateMetas(injectFrameMetas(output, own), own), own);
 		},
 	};
 
@@ -1306,6 +1160,7 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 		schema.validate = (node, config) => [
 			...((ownValidate?.(node, config) as ValidationError[] | undefined) ?? []),
 			...auditCompositionHeaderRoles(options, composition, node, config),
+			...auditCompositionPlacements(composition, node, attributes),
 		];
 	}
 

@@ -64,6 +64,7 @@ export const elevationFacet: Facet = {
  *  itself — the contract restates nothing. */
 export const elevationAxis: UniversalAxisFacet = {
 	axis: 'elevation',
+	placement: 'carrier',
 	contract: {
 		description:
 			'The chrome/depth ladder (SPEC-107). The skin maps each rung to a chrome bundle by attribute, so there is no BEM class.',

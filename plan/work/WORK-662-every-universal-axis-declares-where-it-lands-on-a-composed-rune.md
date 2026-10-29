@@ -1,4 +1,4 @@
-{% work id="WORK-662" status="ready" priority="high" complexity="moderate" source="SPEC-145" tags="runes, composition, universals, transform, facets" milestone="v0.44.0" %}
+{% work id="WORK-662" status="in-progress" priority="high" complexity="moderate" source="SPEC-145" tags="runes, composition, universals, transform, facets" milestone="v0.44.0" %}
 
 # Every universal axis declares where it lands on a composed rune
 

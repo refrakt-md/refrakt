@@ -53,6 +53,7 @@ export const prominenceFacet: Facet = {
  *  a warning. The contract now says so ahead of the warning. */
 export const prominenceAxis: UniversalAxisFacet = {
 	axis: 'prominence',
+	placement: 'header',
 	contract: {
 		description:
 			"Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",

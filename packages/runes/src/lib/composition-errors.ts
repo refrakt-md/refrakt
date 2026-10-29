@@ -56,6 +56,12 @@ export const COMPOSITION_ERRORS = {
 	'metablock-inside-each': 'A `{% metablock %}` is placed inside an `each` slot.',
 	'metablock-undeclared': 'A `{% metablock %}` names no declared block.',
 	'metablock-placed-twice': 'The same meta block is placed twice.',
+	'chrome-invalid': 'A `chrome` marker has a value, or marks a rune inside an `each` slot.',
+	'chrome-marked-twice': 'Two placed runes are marked `chrome`.',
+	'chrome-ambiguous': 'Several runes are placed at the top level and none is marked `chrome`.',
+	'chrome-collision': 'A rune the template places declares an attribute named `chrome`.',
+	'defaults-invalid':
+		'A `defaults` entry names no universal attribute, has a value its axis does not accept, or lands nowhere.',
 
 	// Across the catalog, once every rune is loaded
 	'composition-cycle': 'A composed rune places itself, directly or through another.',

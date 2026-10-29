@@ -75,6 +75,7 @@ export type {
 	DescribableFacet,
 	FacetContract,
 	UniversalAxisFacet,
+	AxisPlacement,
 	UniversalAxisContract,
 	RuneAxisContract,
 } from './describe.js';

@@ -213,10 +213,12 @@ describe('composed bond — rendered tree against the plugin (SPEC-147 D2)', () 
 		expect(text(header)).toBe('note');
 	});
 
-	it('accepts the same attributes, except that `status` is now a closed set', () => {
+	it('accepts the same attributes, plus `prominence`, except that `status` is now a closed set', () => {
 		const attrs = (pkg: Plugin) =>
 			Object.keys((assembleMarkdocSchemas(merge(pkg).tags).tags as Json).bond.attributes).sort();
-		expect(attrs(composedStorytelling())).toEqual(attrs(storytelling));
+		// SPEC-145 D33 — `prominence` lands on the placed `hint`, which has a
+		// header; the plugin rune has none, so it is not offered there.
+		expect(attrs(composedStorytelling())).toEqual([...attrs(storytelling), 'prominence'].sort());
 
 		const validate = (pkg: Plugin, src: string) =>
 			Markdoc.validate(parse(src), {

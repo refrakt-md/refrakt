@@ -39,6 +39,7 @@ export const densityFacet: Facet = {
  *  the contract claiming a value it cannot know. */
 export const densityAxis: UniversalAxisFacet = {
 	axis: 'density',
+	placement: 'carrier',
 	contract: {
 		description: 'How tightly a rune packs its content (SPEC-025).',
 		source: 'attribute',

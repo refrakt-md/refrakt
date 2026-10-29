@@ -1,4 +1,4 @@
-{% work id="WORK-663" status="ready" priority="high" complexity="moderate" source="SPEC-145" tags="runes, composition, universals, defaults, density" milestone="v0.44.0" %}
+{% work id="WORK-663" status="in-progress" priority="high" complexity="moderate" source="SPEC-145" tags="runes, composition, universals, defaults, density" milestone="v0.44.0" %}
 
 # A composition definition declares defaults for universal axes
 

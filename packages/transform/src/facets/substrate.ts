@@ -105,6 +105,7 @@ export const substrateFacet: Facet = {
  *  its configured target varies. */
 export const substrateAxis: UniversalAxisFacet = {
 	axis: 'substrate',
+	placement: 'carrier',
 	contract: {
 		description:
 			'Generated pattern fills (SPEC-087). Markers only — the engine sets the attributes and cell/opacity custom properties, CSS draws the pattern.',

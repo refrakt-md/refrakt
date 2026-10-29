@@ -524,7 +524,9 @@ blocks:
 		expect(root.attributes['data-rune-fields']).toBeUndefined();
 		expect(root.attributes['data-status']).toBe('broken');
 		expect(root.attributes['data-width']).toBe('wide');
-		expect(root.attributes['data-tint']).toBe('warm');
+		// `tint` is paint: it lands on the carrier, the hint (SPEC-145 D14).
+		expect(root.attributes['data-tint']).toBeUndefined();
+		expect(byRune(root, 'hint')[0].attributes['data-tint']).toBe('warm');
 	});
 });
 

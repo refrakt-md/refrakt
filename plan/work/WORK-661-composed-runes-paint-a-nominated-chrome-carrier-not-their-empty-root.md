@@ -1,4 +1,4 @@
-{% work id="WORK-661" status="ready" priority="high" complexity="complex" source="SPEC-145" tags="runes, composition, universals, chrome, transform" milestone="v0.44.0" %}
+{% work id="WORK-661" status="in-progress" priority="high" complexity="complex" source="SPEC-145" tags="runes, composition, universals, chrome, transform" milestone="v0.44.0" %}
 
 # Composed runes paint a nominated chrome carrier, not their empty root
 

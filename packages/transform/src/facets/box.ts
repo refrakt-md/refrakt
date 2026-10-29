@@ -40,7 +40,7 @@ export const spacingFacet: Facet = {
 	name: 'spacing',
 	attributes: ['spacing'],
 	resolve(ctx) {
-		const value = ctx.tag.attributes?.spacing;
+		const value = ctx.tag.attributes?.spacing ?? ctx.config.defaultSpacing;
 		if (!value || value === 'default') return null;
 		return { axes: { spacing: value }, classes: [`${ctx.block}--spacing-${value}`] };
 	},
@@ -51,7 +51,7 @@ export const insetFacet: Facet = {
 	name: 'inset',
 	attributes: ['inset'],
 	resolve(ctx) {
-		const value = ctx.tag.attributes?.inset;
+		const value = ctx.tag.attributes?.inset ?? ctx.config.defaultInset;
 		if (!value || value === 'default') return null;
 		return { axes: { inset: value }, classes: [`${ctx.block}--inset-${value}`] };
 	},
@@ -67,6 +67,7 @@ export const insetFacet: Facet = {
 
 export const widthAxis: UniversalAxisFacet = {
 	axis: 'width',
+	placement: 'root',
 	contract: {
 		description: 'The track a block rune occupies.',
 		source: 'attribute',
@@ -80,6 +81,7 @@ export const widthAxis: UniversalAxisFacet = {
 
 export const contentMeasureAxis: UniversalAxisFacet = {
 	axis: 'content-measure',
+	placement: 'root',
 	contract: {
 		description:
 			'A page-section rune anchors its content to the text measure when bled to the `wide` track; only the surface and background widen.',
@@ -96,6 +98,7 @@ export const contentMeasureAxis: UniversalAxisFacet = {
 
 export const spacingAxis: UniversalAxisFacet = {
 	axis: 'spacing',
+	placement: 'root',
 	contract: {
 		description: 'Block-level rhythm override.',
 		source: 'attribute',
@@ -104,11 +107,12 @@ export const spacingAxis: UniversalAxisFacet = {
 		classPattern: '.{block}--spacing-{value}',
 		condition: 'suppressed at the `default` value',
 	},
-	describeForRune: () => null,
+	describeForRune: (config) => (config.defaultSpacing ? { default: config.defaultSpacing } : null),
 };
 
 export const insetAxis: UniversalAxisFacet = {
 	axis: 'inset',
+	placement: 'root',
 	contract: {
 		description: 'Internal padding override.',
 		source: 'attribute',
@@ -117,5 +121,5 @@ export const insetAxis: UniversalAxisFacet = {
 		classPattern: '.{block}--inset-{value}',
 		condition: 'suppressed at the `default` value',
 	},
-	describeForRune: () => null,
+	describeForRune: (config) => (config.defaultInset ? { default: config.defaultInset } : null),
 };

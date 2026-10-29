@@ -76,6 +76,7 @@ export const motionFacet: Facet = {
  *  here would create a second source of truth the contract cannot keep honest. */
 export const motionAxis: UniversalAxisFacet = {
 	axis: 'motion',
+	placement: 'carrier',
 	contract: {
 		description:
 			'Scroll-reveal entrance (SPEC-105). The author declares the character, the theme owns the choreography, a behaviour owns the timing.',

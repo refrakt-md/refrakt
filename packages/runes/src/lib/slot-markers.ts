@@ -69,6 +69,10 @@ function withMarkers(schema: Schema): Schema {
 		...(schema.attributes ?? {}),
 		[OWNER_ATTR]: { type: String },
 		[SLOT_ATTR]: { type: String },
+		// SPEC-145 D34.6 — a composition's `density` default, written on the rune
+		// it places. Template-only like the markers: no rune's own schema
+		// declares it, so no authoring surface offers it.
+		...(schema.attributes?.density ? {} : { density: { type: String } }),
 	};
 	// Declaring the markers keeps them only where Markdoc renders attributes
 	// itself. A schema with its own `transform` builds its root from scratch —
@@ -92,9 +96,13 @@ function withMarkers(schema: Schema): Schema {
 function carryMarkers(from: Record<string, unknown> | undefined, out: unknown): void {
 	const owner = from?.[OWNER_ATTR];
 	const slot = from?.[SLOT_ATTR];
-	if (owner === undefined && slot === undefined) return;
+	const density = from?.density;
+	if (owner === undefined && slot === undefined && density === undefined) return;
 	for (const tag of Array.isArray(out) ? out : [out]) {
 		if (!Markdoc.Tag.isTag(tag)) continue;
+		if (density !== undefined && tag.attributes.density === undefined) {
+			tag.attributes.density = density;
+		}
 		if (owner !== undefined && tag.attributes[OWNER_ATTR] === undefined) {
 			tag.attributes[OWNER_ATTR] = owner;
 		}

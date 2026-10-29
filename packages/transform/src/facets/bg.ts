@@ -304,6 +304,7 @@ export const bgFacet: Facet = {
  *  the elements themselves rather than flattening two surfaces into one list. */
 export const bgAxis: UniversalAxisFacet = {
 	axis: 'bg',
+	placement: 'carrier',
 	contract: {
 		description:
 			"The background layer (SPEC-088): image, video, gradient, flat overlay wash and legibility scrim, in a single injected layer behind the rune's content.",

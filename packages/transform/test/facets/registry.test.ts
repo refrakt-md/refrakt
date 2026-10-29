@@ -74,6 +74,37 @@ describe('UNIVERSAL_AXIS_FACETS', () => {
 	});
 });
 
+// SPEC-145 D33 — placement is a property of the axis, so a new axis cannot be
+// registered without deciding where it lands on a composed rune.
+describe('axis placement', () => {
+	const PLACEMENTS = ['root', 'carrier', 'header', 'prose-body', 'media'];
+
+	it('every registered axis declares a placement', () => {
+		for (const facet of UNIVERSAL_AXIS_FACETS) {
+			expect(PLACEMENTS, `axis \`${facet.axis}\` has no placement`).toContain(facet.placement);
+		}
+	});
+
+	it('places the axes as D33 tabulates them', () => {
+		const by = Object.fromEntries(UNIVERSAL_AXIS_FACETS.map((f) => [f.axis, f.placement]));
+		expect(by).toMatchObject({
+			width: 'root',
+			spacing: 'root',
+			inset: 'root',
+			elevation: 'carrier',
+			substrate: 'carrier',
+			bg: 'carrier',
+			motion: 'carrier',
+			tint: 'carrier',
+			density: 'carrier',
+			prominence: 'header',
+			reading: 'prose-body',
+			dropcap: 'prose-body',
+			frame: 'media',
+		});
+	});
+});
+
 describe('FACET_ATTRIBUTES', () => {
 	// Derived from the registry, not hand-maintained in the engine — adding an
 	// axis with a fixed attribute name is a file plus a registry entry.

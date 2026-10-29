@@ -320,6 +320,15 @@ export function describeRune(rune: RuneInfo): string {
 	// model, the union of its zones' fields).
 	const composition = compositionFor(rune.schema);
 	if (composition) lines.push(`Template slots: ${composition.slots.join(', ')}`);
+	// SPEC-145 D34 — what the definition sets unless the author does.
+	if (composition?.defaults) {
+		lines.push('Defaults (the author’s attribute overrides each):');
+		for (const [name, d] of Object.entries(composition.defaults)) {
+			const where = d.rune ? ` on \`${d.rune}\`` : '';
+			const literal = d.literal ? `; the template writes \`${d.literal}\` there, which wins` : '';
+			lines.push(`  - ${name}: ${d.value}${where}${literal}`);
+		}
+	}
 
 	// SPEC-143 — a declaratively-labelled rune states its output slots as data,
 	// so the reference can say what a hand-written transform never let it: which

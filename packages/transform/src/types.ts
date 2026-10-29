@@ -346,6 +346,14 @@ export interface RuneConfig {
 	 *  Omit or set to 'content' for standard content-width runes. */
 	defaultWidth?: 'content' | 'wide' | 'full';
 
+	/** Default `spacing` for this rune, when the author sets none. Generated for a
+	 *  composed rune from its definition's `defaults` (SPEC-145 D34); a native
+	 *  rune has not needed one. */
+	defaultSpacing?: string;
+
+	/** Default `inset` for this rune, when the author sets none (SPEC-145 D34). */
+	defaultInset?: string;
+
 	/** Default reading register (SPEC-108) for this rune's body — `fine | ui | prose`.
 	 *  Editorial-body runes (pullquote/lore/blockquote/textblock) default to `prose`,
 	 *  captions to `fine`; omit for UI runes (resolves to `ui`). The engine emits

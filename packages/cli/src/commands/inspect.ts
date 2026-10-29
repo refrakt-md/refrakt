@@ -18,7 +18,7 @@ import {
 	renderContentModel,
 	serializeContentModel,
 } from '@refrakt-md/runes';
-import type { RegistersDeclaration } from '@refrakt-md/runes';
+import type { AxisPlacementInfo, RegistersDeclaration } from '@refrakt-md/runes';
 import type { ResolvedSchemaRow } from '@refrakt-md/runes';
 import { auditSchemaSources } from '../lib/schema-row.js';
 import { discoverVariants } from '../lib/variants.js';
@@ -354,7 +354,19 @@ function compositionOf(rune: Rune) {
 	return {
 		slots: [...info.slots],
 		contentModel: raw ? (serializeContentModel(raw) ?? null) : null,
+		axes: info.axes,
+		defaults: info.defaults,
 	};
+}
+
+/** SPEC-145 D33 — one line per axis: where it lands, or why it is not offered. */
+function formatAxisPlacements(axes: Record<string, AxisPlacementInfo>): string[] {
+	return Object.entries(axes).map(([axis, t]) => {
+		if (t.placement === 'root') return `  ${axis}: root`;
+		if (t.rune) return `  ${axis}: ${t.placement} → ${t.rune}`;
+		if (t.dropped) return `  ${axis}: ${t.placement} — ignored, ${t.dropped}`;
+		return `  ${axis}: not offered — ${t.unavailable}`;
+	});
 }
 
 /** A declaratively-labelled rune's slots, defaults explicit (SPEC-143). */
@@ -411,6 +423,19 @@ function outputFormatted(
 			);
 		}
 		console.log(`  Template slots: ${composition.slots.join(', ')}`);
+		console.log(heading('Universal attributes (where they land)'));
+		console.log(formatAxisPlacements(composition.axes).join('\n'));
+		// SPEC-145 D34 — each default with its source, and the literal that beats it.
+		if (composition.defaults) {
+			console.log(heading('Defaults'));
+			for (const [name, d] of Object.entries(composition.defaults)) {
+				const where = d.rune ? `${d.placement} → ${d.rune}` : 'root';
+				const source = d.literal
+					? `template literal ${d.literal} (definition default ${d.value} yields to it)`
+					: `definition default ${d.value}`;
+				console.log(`  ${name}: ${source}, on ${where}`);
+			}
+		}
 	}
 
 	// WORK-566 — the review surface. SPEC-130 D5 dispenses with validating a

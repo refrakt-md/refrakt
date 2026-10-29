@@ -94,6 +94,9 @@ import { declareSlotMarkers, declareSlotMarkersOnNodes } from './slot-markers.js
 import { registersSources } from './registers.js';
 import type { RegistersDeclaration } from './registers.js';
 import { parse } from '../parse.js';
+import { universalAttributeDefinition } from './universal-attribute-defs.js';
+import { moveAttributes, resolvePlacements } from './composition-placement.js';
+import type { AxisTarget, CompositionPlacements, TemplateRune } from './composition-placement.js';
 
 const { Ast, Tag: MarkdocTag } = Markdoc;
 
@@ -116,6 +119,8 @@ export interface CompositionTemplate {
 	body: string;
 	/** The `blocks` the rune declares — what `{% metablock %}` may name (D7). */
 	blocks?: readonly string[];
+	/** D34 — the definition's defaults for universal axes, by attribute. */
+	defaults?: Readonly<Record<string, string>>;
 }
 
 /** One node of a composition's expansion, as the contract records it (D6). */
@@ -152,6 +157,33 @@ export interface CompositionInfo {
 	config?: RuneConfig;
 	/** The config key the engine finds it under. */
 	typeName?: string;
+	/** Where each universal axis lands (D33): its placement, the rune it lands
+	 *  on, or why it is not offered. For `inspect`, `contracts` and `reference`. */
+	axes: Record<string, AxisPlacementInfo>;
+	/** D34 — the definition's defaults, each with where it lands and any literal
+	 *  the template writes there, which wins over it. */
+	defaults?: Record<string, CompositionDefaultInfo>;
+}
+
+/** One `defaults` entry, as tooling reads it (D34). */
+export interface CompositionDefaultInfo {
+	value: string;
+	placement: AxisTarget['placement'];
+	/** The placed rune it lands on; absent for a root-placed axis. */
+	rune?: string;
+	/** A literal the template writes on that rune, which the default yields to. */
+	literal?: string;
+}
+
+/** One axis's placement on a composed rune, as tooling reads it. */
+export interface AxisPlacementInfo {
+	placement: AxisTarget['placement'];
+	/** The placed rune it lands on. */
+	rune?: string;
+	/** Offered, but dropped with a warning: there is no carrier (D24). */
+	dropped?: string;
+	/** Not offered, and why (D33.3). */
+	unavailable?: string;
 }
 
 /** Compositions by schema — the same pattern as `schemaTables`: tooling has only
@@ -399,46 +431,59 @@ function slotValues(model: StructuralContentModel, resolved: ResolvedContent): R
 // ---------------------------------------------------------------------------
 
 /**
- * `{% slot name="x" each %}` is the spec's spelling, and Markdoc's tag grammar
- * has no bare boolean attribute. Rewrite it to `each=true` inside slot tags
- * only, outside quoted values, before parsing.
+ * `{% slot name="x" each %}` and `{% section chrome %}` are the spec's
+ * spellings (D26, D31), and Markdoc's tag grammar has no bare boolean
+ * attribute. Rewrite `each` inside slot tags, and `chrome` inside any tag, to
+ * `=true`, outside quoted values, before parsing.
  */
 export function normaliseEach(body: string): string {
-	return body.replace(/\{%-?\s*slot\b([^%]*?)(-?%\})/g, (whole, inner: string, close: string) => {
-		let out = '';
-		let quote: string | null = null;
-		let i = 0;
-		while (i < inner.length) {
-			const ch = inner[i];
-			if (quote) {
-				if (ch === '\\') {
-					out += inner.slice(i, i + 2);
-					i += 2;
-					continue;
-				}
-				if (ch === quote) quote = null;
-				out += ch;
-				i++;
+	return body.replace(
+		/\{%-?\s*([a-z][\w-]*)\b([^%]*?)(-?%\})/g,
+		(whole, tag: string, inner: string, close: string) => {
+			const bare = tag === 'slot' ? ['each', 'chrome'] : ['chrome'];
+			const out = bareToTrue(inner, bare);
+			return out === inner ? whole : whole.replace(inner + close, out + close);
+		},
+	);
+}
+
+/** Rewrite each bare word in `words` to `word=true`, outside quoted values. */
+function bareToTrue(inner: string, words: readonly string[]): string {
+	let out = '';
+	let quote: string | null = null;
+	let i = 0;
+	while (i < inner.length) {
+		const ch = inner[i];
+		if (quote) {
+			if (ch === '\\') {
+				out += inner.slice(i, i + 2);
+				i += 2;
 				continue;
 			}
-			if (ch === '"' || ch === "'") {
-				quote = ch;
-				out += ch;
-				i++;
-				continue;
-			}
-			const rest = inner.slice(i);
-			const m = /^each(?![\w=-])/.exec(rest);
-			if (m && (i === 0 || /\s/.test(inner[i - 1]))) {
-				out += 'each=true';
-				i += m[0].length;
-				continue;
-			}
+			if (ch === quote) quote = null;
 			out += ch;
 			i++;
+			continue;
 		}
-		return whole.replace(inner + close, out + close);
-	});
+		if (ch === '"' || ch === "'") {
+			quote = ch;
+			out += ch;
+			i++;
+			continue;
+		}
+		if (i === 0 || /\s/.test(inner[i - 1])) {
+			const rest = inner.slice(i);
+			const word = words.find((w) => new RegExp(`^${w}(?![\\w=-])`).test(rest));
+			if (word) {
+				out += `${word}=true`;
+				i += word.length;
+				continue;
+			}
+		}
+		out += ch;
+		i++;
+	}
+	return out;
 }
 
 /** Variables a template node reads, by path, in attribute or content position. */
@@ -495,6 +540,13 @@ export interface CompiledComposition {
 	 * placed node came from (ADR-046 decision 3).
 	 */
 	place: (resolved: ResolvedContent, attrs: Record<string, any>) => Node[];
+	/** Where the universal attributes land (D14, D31, D33). */
+	placements: CompositionPlacements;
+	/** One instance's attributes less the universal ones that moved off the root
+	 *  (or were dropped for want of a carrier). What the root keeps. */
+	rootAttributes: (attrs: Record<string, any>) => Record<string, any>;
+	/** The parsed template, as construction checked it. */
+	templateNodes: readonly Node[];
 }
 
 export interface CompileCompositionOptions {
@@ -542,6 +594,8 @@ export function compileComposition(
 	const placedSlots = new Map<string, Node>();
 	const slotOrder: string[] = [];
 	const placements: Array<{ rune: string; parent?: string }> = [];
+	/** Every rune the template places, for the paint carrier and role owners. */
+	const templateRunes: TemplateRune[] = [];
 
 	/** The `each` slot a node sits inside, with what `$each` exposes there. */
 	interface Scope {
@@ -634,6 +688,7 @@ export function compileComposition(
 				);
 			}
 			placements.push({ rune: n.tag, ...(scope.parentRune ? { parent: scope.parentRune } : {}) });
+			templateRunes.push({ node: n, top: !scope.parentRune, inEach: !!scope.each });
 			const children = outlineOf(n.children, { ...scope, parentRune: n.tag });
 			return [{ rune: n.tag, ...(children.length > 0 ? { children } : {}) }];
 		}
@@ -779,6 +834,48 @@ export function compileComposition(
 
 	const outline = outlineOf(ast.children, {});
 
+	// D14, D31, D33 — the paint carrier and every axis's target.
+	const plan = resolvePlacements(rune, templateRunes, (code, msg, at) => {
+		current = at ?? current;
+		return fail(code, msg);
+	});
+	current = undefined;
+
+	// D34 — each default lands where the author's attribute would. One that
+	// lands nowhere is a definition error, not a silent no-op.
+	const defaultsByNode = new Map<Node, Record<string, unknown>>();
+	const defaultInfo: Record<string, CompositionDefaultInfo> = {};
+	for (const [name, value] of Object.entries(template.defaults ?? {})) {
+		const target: AxisTarget | undefined =
+			name === 'density'
+				? plan.carrier
+					? { placement: 'carrier', node: plan.carrier, rune: plan.carrier.tag! }
+					: { placement: 'carrier', dropped: `\`${rune}\` places no rune to carry it` }
+				: plan.axes[plan.axisOf[name]];
+		if (!target) continue;
+		if (target.placement === 'root') {
+			defaultInfo[name] = { value, placement: 'root' };
+			continue;
+		}
+		if (!('node' in target)) {
+			const why = 'dropped' in target ? target.dropped : target.unavailable;
+			throw new CompositionError(
+				'defaults-invalid',
+				`Rune "${rune}": \`defaults.${name}\` lands nowhere: ${why} (D34).`,
+			);
+		}
+		const into = defaultsByNode.get(target.node) ?? {};
+		into[name] = value;
+		defaultsByNode.set(target.node, into);
+		const literal = target.node.attributes[name];
+		defaultInfo[name] = {
+			value,
+			placement: target.placement,
+			rune: target.rune,
+			...(literal !== undefined && typeof literal !== 'object' ? { literal: String(literal) } : {}),
+		};
+	}
+
 	// D11 — a field no slot places parses and then silently does not render.
 	const unplaced = [...fields.keys()].filter((f) => !placedSlots.has(f));
 	if (unplaced.length > 0) {
@@ -795,11 +892,22 @@ export function compileComposition(
 		Object.values(options.schema?.rows ?? {}).find((r) => r.type)?.type;
 	const nodeSources = registersNodeSources(options.registers, fields, declared);
 
+	const axes: Record<string, AxisPlacementInfo> = {};
+	for (const [axis, target] of Object.entries(plan.axes)) {
+		axes[axis] = {
+			placement: target.placement,
+			...('rune' in target ? { rune: target.rune } : {}),
+			...('dropped' in target ? { dropped: target.dropped } : {}),
+			...('unavailable' in target ? { unavailable: target.unavailable } : {}),
+		};
+	}
 	const info: CompositionInfo = {
 		rune,
 		slots: slotOrder,
 		placements,
 		outline,
+		axes,
+		...(Object.keys(defaultInfo).length > 0 ? { defaults: defaultInfo } : {}),
 		...(schemaType ? { schemaType } : {}),
 	};
 
@@ -812,6 +920,8 @@ export function compileComposition(
 			resolved: slotValues(structural, resolved),
 			attrs: bound,
 			fields,
+			moves: moveAttributes(plan, attrs).moves,
+			defaults: defaultsByNode,
 		};
 
 		const placed = expand(ast.children, ctx);
@@ -851,7 +961,22 @@ export function compileComposition(
 		return root;
 	};
 
-	return { transform, info, place };
+	const rootAttributes = (attrs: Record<string, any>): Record<string, any> => {
+		const { moved } = moveAttributes(plan, attrs);
+		if (moved.size === 0) return attrs;
+		const out: Record<string, any> = {};
+		for (const [name, value] of Object.entries(attrs)) if (!moved.has(name)) out[name] = value;
+		return out;
+	};
+
+	return {
+		transform,
+		info,
+		place,
+		placements: plan,
+		rootAttributes,
+		templateNodes: ast.children,
+	};
 }
 
 // ---------------------------------------------------------------------------
@@ -865,6 +990,12 @@ interface ExpandContext {
 	fields: Map<string, SlotField>;
 	/** Inside an `each` slot: the slot's name, the item's bindings and content. */
 	item?: { slot: string; each: Record<string, unknown>; content: Node[] };
+	/** Universal attributes the author wrote, by the template node they land on
+	 *  (D14, D33). The author's value replaces the template's literal. */
+	moves?: Map<Node, Record<string, unknown>>;
+	/** D34 — the definition's defaults, by the template node they land on. They
+	 *  fill only what neither the author nor a template literal set. */
+	defaults?: Map<Node, Record<string, unknown>>;
 }
 
 function asNodes(value: unknown): Node[] {
@@ -930,6 +1061,17 @@ function substituteNode(node: Node, ctx: ExpandContext): Node {
 			continue;
 		}
 		attributes[key] = resolved;
+	}
+	if (node.type === 'tag') {
+		// D31 — the marker is the template's, consumed here: it reaches neither
+		// the placed rune's attributes nor the HTML.
+		delete attributes.chrome;
+		// D34.3 — author > template literal > definition default.
+		for (const [name, value] of Object.entries(ctx.defaults?.get(node) ?? {})) {
+			if (attributes[name] === undefined) attributes[name] = value;
+		}
+		const moved = ctx.moves?.get(node);
+		if (moved) Object.assign(attributes, moved);
 	}
 	return cloneNode(node, attributes, expand(node.children, ctx));
 }
@@ -1148,6 +1290,8 @@ export interface CompositionDefinition {
 	metaFields?: Record<string, unknown>;
 	blocks?: Record<string, unknown>;
 	provides?: string[];
+	/** D34 — defaults for universal axes, by attribute name. */
+	defaults?: Record<string, string>;
 	template: string;
 	/** 1-based line of the source on which the template body starts. */
 	templateLine: number;
@@ -1166,6 +1310,7 @@ const DEFINITION_KEYS = new Set([
 	'metaFields',
 	'blocks',
 	'provides',
+	'defaults',
 ]);
 
 /** Keys that would give a composed rune styles of its own (D2). */
@@ -1325,6 +1470,9 @@ export function parseCompositionDefinition(rune: string, source: string): Compos
 	) {
 		fail('invalid-value', '`provides` must be a list of names.', ['provides']);
 	}
+	const defaults = parseDefaults(fm.defaults, (code, msg, at) =>
+		fail(code, msg, ['defaults', ...(at ?? [])]),
+	);
 
 	return {
 		rune,
@@ -1338,6 +1486,7 @@ export function parseCompositionDefinition(rune: string, source: string): Compos
 		...(fm.metaFields ? { metaFields: fm.metaFields as Record<string, unknown> } : {}),
 		...(fm.blocks ? { blocks: fm.blocks as Record<string, unknown> } : {}),
 		...(fm.provides ? { provides: fm.provides as string[] } : {}),
+		...(defaults ? { defaults } : {}),
 		template: match![2],
 		// `---`, the frontmatter's lines, `---`: the body starts on the next.
 		templateLine: frontmatter.split(/\r?\n/).length + 3,
@@ -1347,6 +1496,49 @@ export function parseCompositionDefinition(rune: string, source: string): Compos
 
 /** Locates a failure inside a frontmatter section: the key path under it. */
 type SectionFail = (code: CompositionErrorCode, msg: string, at?: readonly string[]) => never;
+
+/** D34.6 — `density` has no author-facing attribute, so its scale is stated here. */
+const DENSITY_VALUES = ['full', 'compact', 'minimal'];
+
+/**
+ * D34 — `defaults`: universal axes only, each with a value the axis accepts.
+ * A rune's own attribute takes its default where it is declared.
+ */
+function parseDefaults(raw: unknown, fail: SectionFail): Record<string, string> | undefined {
+	if (raw === undefined) return undefined;
+	if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+		fail('defaults-invalid', '`defaults` must be a mapping of universal attributes to values.');
+	}
+	const out: Record<string, string> = {};
+	for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+		if (value === null || typeof value === 'object') {
+			fail('defaults-invalid', `\`defaults.${key}\` must be a single value.`, [key]);
+		}
+		const text = String(value);
+		const accepted =
+			key === 'density'
+				? DENSITY_VALUES
+				: universalAttributeDefinition(key) === undefined
+					? undefined
+					: (universalAttributeDefinition(key)!.matches as string[] | undefined);
+		if (key !== 'density' && universalAttributeDefinition(key) === undefined) {
+			fail(
+				'defaults-invalid',
+				`\`defaults\` takes universal attributes only, and \`${key}\` is not one. A rune's own attribute takes its default where it is declared, under \`attributes\` (D34).`,
+				[key],
+			);
+		}
+		if (Array.isArray(accepted) && !accepted.includes(text)) {
+			fail(
+				'defaults-invalid',
+				`\`defaults.${key}\` is \`${text}\`, which \`${key}\` does not accept (${accepted.join(', ')}).`,
+				[key],
+			);
+		}
+		out[key] = text;
+	}
+	return out;
+}
 
 function parseAttributes(raw: unknown, sectionFail: SectionFail): Record<string, SchemaAttribute> {
 	const fail = (code: CompositionErrorCode, msg: string) => sectionFail(code, msg);
@@ -1755,8 +1947,14 @@ export function composedRuneConfig(def: CompositionDefinition): RuneConfig {
 			...(attr.default !== undefined ? { default: String(attr.default) } : {}),
 		};
 	}
+	// D34 — a root-placed axis's default is the generated config's, since a
+	// template never writes on the root.
+	const d = def.defaults ?? {};
 	return {
 		composed: true,
+		...(d.width ? { defaultWidth: d.width as RuneConfig['defaultWidth'] } : {}),
+		...(d.spacing ? { defaultSpacing: d.spacing } : {}),
+		...(d.inset ? { defaultInset: d.inset } : {}),
 		...(Object.keys(modifiers).length > 0 ? { modifiers } : {}),
 		...(def.metaFields ? { metaFields: def.metaFields as RuneConfig['metaFields'] } : {}),
 		...(def.blocks ? { blocks: def.blocks as RuneConfig['blocks'] } : {}),

@@ -109,9 +109,27 @@ export interface RuneAxisContract {
  *  from a mutating consumer, but the vocabularies it embeds are shared module
  *  constants either way, so the protection would stop one level short of where
  *  it matters. `UNIVERSAL_AXIS_FACETS` deep-freezes instead. */
+/**
+ * Where an axis lands when it is written on a composed rune — SPEC-145 D33.
+ *
+ * - `root` — the composed rune's own root, the box in page flow (`width`,
+ *   `spacing`, `inset`): their CSS needs the article's direct-child position.
+ * - `carrier` — the paint carrier the template nominates (D14, D24, D31).
+ * - `header` — the placed rune owning a page-section header role.
+ * - `prose-body` — the placed rune declaring `prose` and owning `body`.
+ * - `media` — the placed rune owning the media role, or naming a `frameTarget`.
+ *
+ * Every axis declares one, here on the axis rather than in a list beside it,
+ * so a new axis cannot be added without deciding where it goes.
+ */
+export type AxisPlacement = 'root' | 'carrier' | 'header' | 'prose-body' | 'media';
+
 export interface UniversalAxisFacet {
 	/** Axis name, as it appears in the contract. Matches the facet name. */
 	readonly axis: string;
+	/** Where the axis lands on a composed rune (SPEC-145 D33). An axis is placed
+	 *  whole: every attribute it owns goes to the same rune. */
+	readonly placement: AxisPlacement;
 	/** The registry-level description. Config-independent, and frozen by the
 	 *  registry — `generateStructureContract` emits it by reference. */
 	readonly contract: UniversalAxisContract;

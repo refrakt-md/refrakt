@@ -97,6 +97,7 @@ export const contentPlaceFacet: Facet = {
  *  The two halves are genuinely different output. */
 export const contentPlaceAxis: UniversalAxisFacet = {
 	axis: 'content-place',
+	placement: 'carrier',
 	contract: {
 		description:
 			'The cover overlay anchor (SPEC-089): a 2-axis logical placement (block × inline) that also steers the default scrim so it follows the content edge.',

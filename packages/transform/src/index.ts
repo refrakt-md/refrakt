@@ -40,6 +40,7 @@ export type {
 	StructureContract,
 	RuneContract,
 	CompositionContractNode,
+	ComposedAxisPlacement,
 	StructureContractOptions,
 } from './contracts.js';
 
@@ -102,6 +103,7 @@ export {
 } from './facets/index.js';
 export type {
 	UniversalAxisFacet,
+	AxisPlacement,
 	UniversalAxisContract,
 	RuneAxisContract,
 	DescribableFacet,
