@@ -366,7 +366,7 @@ describe.each(RUNE_NAMES)(
 				const out = mine(scenario);
 				expect(out.name).toBe('article');
 				expect(out.name).toBe(plugin.name);
-				for (const attr of ['data-rune', 'typeof', 'data-density', 'data-media-position']) {
+				for (const attr of ['data-rune', 'typeof', 'data-density']) {
 					expect(out.attributes[attr], attr).toBe(plugin.attributes[attr]);
 				}
 				// Enum attributes and attributes a metaField reads are modifiers of the
@@ -375,9 +375,15 @@ describe.each(RUNE_NAMES)(
 				for (const attr of spec.sameData) {
 					expect(out.attributes[attr], attr).toBe(plugin.attributes[attr] || undefined);
 				}
-				// The split reaches `section`, which is what lays the media out.
+				// The split reaches `section`, which is what lays the media out. The
+				// root does not carry it: the template forwards it, so it is the
+				// section's input and not a modifier of the composition, and on the
+				// empty root it would lay that wrapper out as a split too.
 				const [host] = all(out, (n) => n.attributes?.['data-rune'] === 'section');
-				expect(host.attributes['data-media-position']).toBe(out.attributes['data-media-position']);
+				expect(host.attributes['data-media-position']).toBe(
+					plugin.attributes['data-media-position'],
+				);
+				expect(out.attributes['data-media-position']).toBeUndefined();
 			},
 		);
 

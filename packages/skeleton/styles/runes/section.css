@@ -49,3 +49,48 @@
 	align-items: flex-end;
 	margin-inline-start: auto;
 }
+
+/* The section's `align` positions its own actions row too (SPEC-160 D7), whether
+ * it sits in the body or the content column — never an `actions` inside a
+ * nested rune, which has its own alignment. */
+.rf-section[data-align="center"] > .rf-section__body > .rf-actions,
+.rf-section[data-align="center"] > .rf-section__content > .rf-section__body > .rf-actions {
+	--actions-justify: center;
+}
+.rf-section[data-align="end"] > .rf-section__body > .rf-actions,
+.rf-section[data-align="end"] > .rf-section__content > .rf-section__body > .rf-actions {
+	--actions-justify: flex-end;
+}
+
+/* Cover band (SPEC-160 D7). A section is a page band, not a card: in cover mode
+ * its height comes from its content and `height` / `aspect`, never from the
+ * cover layer's portrait default, and an unplaced overlay sits mid-band. These
+ * win over the shared cover layer (dimensions/cover.css) by specificity. */
+.rf-section--cover[data-media-position="cover"] {
+	--cover-aspect: auto;
+	container-type: normal;
+	min-height: clamp(22rem, 55vh, 40rem);
+}
+.rf-section--cover[data-media-position="cover"][data-aspect] {
+	min-height: 0;
+}
+.rf-section--cover[data-media-position="cover"][data-height="sm"] {
+	min-height: 12rem;
+}
+.rf-section--cover[data-media-position="cover"][data-height="md"] {
+	min-height: 18rem;
+}
+.rf-section--cover[data-media-position="cover"][data-height="lg"] {
+	min-height: 26rem;
+}
+.rf-section--cover[data-media-position="cover"][data-height="xl"] {
+	min-height: 34rem;
+}
+.rf-section--cover[data-media-position="cover"]:is(
+		[data-content-place="auto"],
+		:not([data-content-place])
+	)
+	> [data-name="content"] {
+	align-self: center;
+	justify-self: stretch;
+}

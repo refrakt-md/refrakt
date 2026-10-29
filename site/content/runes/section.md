@@ -101,11 +101,11 @@ The zones count as `card`'s do: one zone is the content, two are media and conte
 
 ### Cover
 
-`media-position="cover"` lays the content over the media, as on `card`. `content-place` anchors the content (`"end start"`, or `auto`), and `height` (`sm` to `xl`) or `aspect` gives a section with little content its shape.
+`media-position="cover"` lays the content over the media, as on `card`. A section is a page band rather than a card, so its height comes from its content, with a minimum of about half the viewport, never from the media's shape. `height` (`sm` to `xl`) sets a taller minimum and `aspect` a fixed ratio. With no `content-place` the content sits mid-band over an evenly darkened scrim, and `content-place` anchors it elsewhere (`"end start"`). A flush cover section's media runs edge to edge, with no radius.
 
 ## Align the header
 
-`align` positions the header (the body always spans the section). Use `center` for marquee sections, `end` to right-align.
+`align` positions the header and the section's own row of [`actions`](/runes/actions) (the body always spans the section). Use `center` for marquee sections, `end` to right-align.
 
 {% preview source=true %}
 

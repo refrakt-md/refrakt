@@ -1,4 +1,4 @@
-{% work id="WORK-666" status="ready" priority="medium" complexity="moderate" source="SPEC-160" tags="runes, composition, marketing, cta, section" milestone="v0.44.0" %}
+{% work id="WORK-666" status="in-progress" priority="medium" complexity="moderate" source="SPEC-160" tags="runes, composition, marketing, cta, section" milestone="v0.44.0" %}
 
 # cta is a composition over section
 

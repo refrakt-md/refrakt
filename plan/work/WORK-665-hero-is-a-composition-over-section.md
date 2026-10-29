@@ -1,4 +1,4 @@
-{% work id="WORK-665" status="ready" priority="high" complexity="complex" source="SPEC-160" tags="runes, composition, marketing, hero, section" milestone="v0.44.0" %}
+{% work id="WORK-665" status="in-progress" priority="high" complexity="complex" source="SPEC-160" tags="runes, composition, marketing, hero, section" milestone="v0.44.0" %}
 
 # hero is a composition over section
 

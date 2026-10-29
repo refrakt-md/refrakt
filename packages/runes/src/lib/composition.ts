@@ -1925,6 +1925,13 @@ function parseDelimitedModel(c: Record<string, unknown>, fail: SectionFail): Del
  * resolves a field against the rune's modifier values, exactly as it does for a
  * tree-owning rune — which must declare the same attributes as modifiers for
  * its own blocks to fill.
+ *
+ * An enum attribute the template only forwards to a placed rune
+ * (`{% section media-position=$attrs["media-position"] %}`) is that rune's
+ * input, not a modifier of the composition: as a `data-*` on the empty root it
+ * would match the dimension rules meant for the rune it is forwarded to — a
+ * `data-media-position="cover"` root is laid out as a cover well. It stays in
+ * the field bag, which the schema row and registration read.
  */
 export function composedRuneConfig(def: CompositionDefinition): RuneConfig {
 	const read = new Set<string>();
@@ -1939,9 +1946,10 @@ export function composedRuneConfig(def: CompositionDefinition): RuneConfig {
 			if (typeof ref === 'string') read.add(ref);
 		}
 	}
+	const forwarded = forwardedAttributes(def.template);
 	const modifiers: Record<string, { source: 'meta'; default?: string }> = {};
 	for (const [name, attr] of Object.entries(def.attributes)) {
-		if (!attr.matches && !read.has(name)) continue;
+		if (!read.has(name) && (!attr.matches || forwarded.has(name))) continue;
 		modifiers[name] = {
 			source: 'meta',
 			...(attr.default !== undefined ? { default: String(attr.default) } : {}),
@@ -1960,6 +1968,18 @@ export function composedRuneConfig(def: CompositionDefinition): RuneConfig {
 		...(def.blocks ? { blocks: def.blocks as RuneConfig['blocks'] } : {}),
 		...(def.provides ? { provides: def.provides } : {}),
 	} as RuneConfig;
+}
+
+/** The attributes a template passes to a placed rune as an attribute value:
+ *  `name=$attrs.x` or `name=$attrs["x"]`. */
+function forwardedAttributes(template: string): Set<string> {
+	const out = new Set<string>();
+	for (const m of template.matchAll(
+		/[\w-]+\s*=\s*\$attrs(?:\.([\w-]+)|\[\s*["']([^"']+)["']\s*\])/g,
+	)) {
+		out.add(m[1] ?? m[2]);
+	}
+	return out;
 }
 
 // ---------------------------------------------------------------------------
