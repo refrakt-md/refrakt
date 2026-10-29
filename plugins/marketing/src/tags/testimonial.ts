@@ -42,6 +42,34 @@ export const testimonialSchema = {
 	},
 } as const;
 
+/**
+ * The `**Name** — Role, Company` attribution paragraph, read: the first
+ * `<strong>`'s text is the name, and the text after it, less a leading dash,
+ * the role. Only string children count, as they always have. `undefined` when
+ * the paragraph holds no `<strong>`.
+ *
+ * Exported for the codemod that rewrites the paragraph into the composed
+ * `testimonial`'s `author` and `role` attributes (SPEC-161 D1), so the
+ * migration reads it exactly as this rune does.
+ */
+export function parseAttribution(paragraph: {
+	children: unknown[];
+}): { name: string; role?: string } | undefined {
+	for (const child of paragraph.children) {
+		if (!Tag.isTag(child) || child.name !== 'strong') continue;
+		const name = child.children.filter((c: any) => typeof c === 'string').join('');
+		const idx = paragraph.children.indexOf(child);
+		const role = paragraph.children
+			.slice(idx + 1)
+			.filter((c: any) => typeof c === 'string')
+			.join('')
+			.replace(/^\s*[-–—]\s*/, '')
+			.trim();
+		return { name, ...(role ? { role } : {}) };
+	}
+	return undefined;
+}
+
 export const testimonial = createContentModelSchema({
 	sections: testimonialSections,
 	mediaSlots: testimonialMediaSlots,
@@ -79,25 +107,10 @@ export const testimonial = createContentModelSchema({
 			if (node.name === 'blockquote' && !quoteTag) {
 				quoteTag = node;
 			} else if (node.name === 'p' && !authorNameTag) {
-				// Parse "**Name** — Role, Company" pattern from paragraph
-				for (const child of node.children) {
-					if (Tag.isTag(child) && child.name === 'strong' && !authorNameTag) {
-						const nameText = child.children.filter((c: any) => typeof c === 'string').join('');
-						authorNameTag = new Tag('span', {}, [nameText]);
-
-						// Get the role text after the strong tag
-						const idx = node.children.indexOf(child);
-						const rest = node.children
-							.slice(idx + 1)
-							.filter((c: any) => typeof c === 'string')
-							.join('')
-							.replace(/^\s*[-–—]\s*/, '')
-							.trim();
-
-						if (rest) {
-							authorRoleTag = new Tag('span', {}, [rest]);
-						}
-					}
+				const attribution = parseAttribution(node);
+				if (attribution) {
+					authorNameTag = new Tag('span', {}, [attribution.name]);
+					if (attribution.role) authorRoleTag = new Tag('span', {}, [attribution.role]);
 				}
 			} else if (
 				isMediaNode(node) ||

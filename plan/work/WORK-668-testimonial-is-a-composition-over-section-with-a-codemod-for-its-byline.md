@@ -1,4 +1,4 @@
-{% work id="WORK-668" status="ready" priority="medium" complexity="complex" source="SPEC-161" tags="runes, composition, marketing, testimonial, section, seo, codemod" milestone="v0.44.0" %}
+{% work id="WORK-668" status="in-progress" priority="medium" complexity="complex" source="SPEC-161" tags="runes, composition, marketing, testimonial, section, seo, codemod" milestone="v0.44.0" %}
 
 # testimonial is a composition over section, with a codemod for its byline
 

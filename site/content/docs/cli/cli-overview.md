@@ -75,5 +75,6 @@ Plugins can extend the CLI with additional subcommands. These are available when
 |--------|---------|---------|
 | [`@refrakt-md/docs`](/runes/docs) | [`refrakt docs extract`](/runes/docs/cli) | Generate API reference docs from TypeScript or Python source |
 | [`@refrakt-md/plan`](/runes/plan) | [`refrakt plan`](/runes/plan/cli) | Project planning — status, next item, update, create, next-id, validate, init, history, migrate |
+| [`@refrakt-md/marketing`](/runes/marketing) | `refrakt marketing migrate-testimonial [paths…] [--apply]` | Rewrite a testimonial's `**Name** — Role` paragraph into `author` and `role` attributes, read by the plugin's own parser. A dry run unless `--apply` is passed. This is the form the composed `testimonial` takes; the shipping `testimonial` still reads the paragraph. |
 
 Run `refrakt --help` to see all available commands and options.

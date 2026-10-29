@@ -30,6 +30,15 @@
 	grid-column: 1;
 }
 
+/* A portrait media zone (a round avatar) takes its portrait's width rather than
+ * a share of the row, unless a `media-ratio` asks for one. */
+[data-media-position="start"]:not([data-media-ratio]):has(> [data-media="portrait"]) {
+	grid-template-columns: auto 1fr;
+}
+[data-media-position="end"]:not([data-media-ratio]):has(> [data-media="portrait"]) {
+	grid-template-columns: 1fr auto;
+}
+
 /* `media-ratio` → media's share of the row width. */
 [data-media-ratio="1/3"] {
 	--media-share: 33.333%;
