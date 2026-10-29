@@ -229,8 +229,8 @@ runs.
 - **`typeface` and `color` as `metaType` values.** They are proposed in D3 so the design
   primitives meet D1.2, but they widen a vocabulary every theme is expected to cover
   (ADR-043's coverage check). The alternative is a `metaType` of `swatch` or no `metaType` at
-  all for design-only primitives. *Settled with {% ref "SPEC-165" /%}*, because only the design
-  primitives use them and the choice depends on how `palette` and `typography` compose.
+  all for design-only primitives. *Settled 2026-10-29 in {% ref "SPEC-165" /%}:* both are added,
+  because D1.8's field/primitive equivalence works only through a `metaType`.
 
 ## Acceptance Criteria
 

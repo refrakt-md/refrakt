@@ -1,4 +1,4 @@
-{% spec id="SPEC-165" status="draft" tags="runes, composition, primitives, design, inline, core, typography, fonts" %}
+{% spec id="SPEC-165" status="accepted" tags="runes, composition, primitives, design, inline, core, typography, fonts" %}
 
 # A color primitive, inline compositions, and the design runes
 
@@ -27,13 +27,18 @@ This spec adds:
 
 1. a core `color` primitive, inline or block by context;
 2. inline compositions, measured as nearly working;
-3. `swatch` and `palette` rebuilt on them. Palette also needs item extraction to work from YAML
-   ({% ref "BUG-038" /%}), one level of nested `each` (D6) and grid cells from an `each` (D7).
-   With those, it needs no imperative code of its own;
+3. `swatch` and `palette` rebuilt on them. Palette also needs one level of nested `each` (D6) and
+   grid cells from an `each` (D7). Item extraction from YAML patterns ({% ref "BUG-038" /%}) was
+   fixed in v0.42.0. With those, it needs no imperative code of its own;
 4. a core `font` primitive, with `typography` as a composition over it, and font loading made
    explicit (D8, D9);
 5. `spacing` over a design-plugin `sample` primitive, converted last because it needs an
    authoring change (D10).
+
+**Accepted on 2026-10-29**, with revisions marked *Revised 2026-10-29*: palette places a
+`section` per group, because of {% ref "ADR-046" /%}'s header grammar (D5); BUG-038 is fixed;
+D2 defers to {% ref "SPEC-173" /%}'s shared media-item reader; D7 is input to the `grid` spec;
+each composition declares its native chrome defaults; and two open questions are settled.
 
 ## Measured: compositions used inline
 
@@ -97,6 +102,10 @@ colour.
 `card` unwraps a bare image in its media zone (`packages/runes/src/tags/card.ts`), and
 {% ref "SPEC-160" /%} D2 gives `section` the same zone. The unwrap learns two more bare media
 elements: `color`, and `{% icon %}`, which has the same need.
+
+*Revised 2026-10-29.* {% ref "SPEC-173" /%} defines one shared media-item reader for every media
+zone, and already lists a colour (citing this decision) and an icon among its item kinds. The
+unwrap is built there, once, not as a patch to today's helpers.
 
 A colour card then needs nothing new:
 
@@ -202,6 +211,7 @@ content:
 
 {% section %}
 {% slot name="sections" each %}
+{% section %}
 ## {% $each.heading %}
 
 {% grid mode="auto" min="8rem" cells="each" %}
@@ -209,6 +219,7 @@ content:
 {% color value=$each.value label=$each.name contrast=$attrs.showContrast a11y=$attrs.showA11y /%}
 {% /slot %}
 {% /grid %}
+{% /section %}
 {% /slot %}
 {% /section %}
 ```
@@ -217,7 +228,7 @@ A probe measured each piece:
 
 | Piece | Measured | Needed |
 |---|---|---|
-| Extracting name and value from `- Primary: #2563EB` | Works once the patterns are compiled: `$each.name = Primary`, `$each.value = #2563EB`. Today a YAML pattern is silently ignored and every field is empty ({% ref "BUG-038" /%}). | BUG-038's fix |
+| Extracting name and value from `- Primary: #2563EB` | Works once the patterns are compiled: `$each.name = Primary`, `$each.value = #2563EB`. When measured, a YAML pattern was silently ignored and every field was empty ({% ref "BUG-038" /%}). | BUG-038's fix, shipped in v0.42.0 |
 | An item `each` inside a `##` group `each` | Rejected at construction: *"slot `colors` is placed inside the `each` slot `sections`, which would place it once per item."* | D6 |
 | Grid taking the cells an `each` produces | Every item lands in one cell, because grid splits only on `---`. Emitting a `---` per item gives one cell each, plus an empty trailing cell. | D7 |
 | Scales (`Accent: #F59E0B, #D97706`) | `$each.value` is the whole string. | D1's list form |
@@ -229,6 +240,18 @@ row-shaped runes that do arithmetic: {% ref "SPEC-162" /%} reads rows the same w
 too.
 
 The `title` attribute stays as a fallback heading for pages that use it.
+
+**Each group is its own `section`.** *Revised 2026-10-29.* The first draft wrote each group's
+`## {% $each.heading %}` straight into the one outer `section`. Under {% ref "ADR-046" /%}'s
+header grammar, shipped in v0.43.0, a section's first heading is its headline, so the first
+group's name ("Brand") would have become the whole palette's title, and the other group headings
+body. A nested `section` per group makes each group name that region's headline, which is also
+what a group is: a titled region of colours. The palette's own `title` is the outer section's
+headline.
+
+`palette`'s native config declares `defaultElevation: 'flat'`, so the composition declares
+`defaults: { elevation: flat }` ({% ref "SPEC-145" /%} D34). `typography` and `spacing` declare
+their native defaults the same way.
 
 ### D6 — an `each` may iterate a field of the item it is inside
 
@@ -258,6 +281,12 @@ exception to SPEC-145 D11's "every field placed": the field is placed through it
 `grid` splits its content into cells on `---` (`packages/runes/src/tags/grid.ts`). `cells="each"`
 makes each top-level child a cell instead, which is what a composition's `each` produces. An
 empty trailing zone is dropped in either mode, because it is never meant as a cell.
+
+*Revised 2026-10-29.* This is input to the `grid` arrangement spec that {% ref "SPEC-156" /%} D1
+leaves open. {% ref "ADR-030" /%} names `grid` as a topology, and `palette`, `typography`,
+`feature`, `bento` and `cast` all want a grid of items from an `each`. That spec decides whether
+`{% group layout="grid" %}` is the same thing under another name; this decision stands either
+way, because the `grid` rune is what authors already write.
 
 The same mode serves any composition that lays out a list as a grid: cast members, feature
 cells, a team page.
@@ -436,14 +465,25 @@ None of these runes emits structured data, so the SEO baseline does not apply.
 - **Tech chips and mentions.** D4 makes them a few lines of definition. Shipping them is a
   separate choice.
 
+## Settled questions
+
+- **`design-context` reads output, not source.** *Settled 2026-10-29.* It got its tokens by
+  parsing each rune's source with plugin code (`extractPaletteTokens`, `extractTypographyTokens`,
+  `extractSpacingTokens`), so a site that redefines `palette` with a different syntax would break
+  extraction without a warning. {% ref "SPEC-166" /%} D2 says a container reads raw values from
+  rendered elements, so `design-context` reads `color`'s value, `font`'s family and `sample`'s
+  value from the rendered primitives. The source extractors stay for one release, with a
+  deprecation report.
+- **`color` and `typeface` are `metaType` values.** *Settled 2026-10-29, handed over from
+  SPEC-166.* SPEC-166 D1.8 makes a field and a primitive of the same kind emit the same element,
+  which only works through a `metaType`: a composed rune whose `hex` field is a colour renders a
+  chip only if the field can say so. Both are added to the vocabulary. Each has a natural default
+  in skeleton (a chip; text set in the face), so a theme that does nothing renders them sensibly,
+  and {% ref "ADR-043" /%}'s coverage check reports them. A single `swatch` type was rejected,
+  because it loses which kind a value is.
+
 ## Open questions
 
-- **`design-context` reads source, not output.** It gets its tokens by parsing each rune's
-  source with plugin code (`extractPaletteTokens`, `extractTypographyTokens`,
-  `extractSpacingTokens`). Once these runes are compositions, a site that redefines `palette`
-  with a different syntax breaks token extraction without a warning. Reading tokens from the
-  rendered primitives (`color`'s value, `font`'s family, `sample`'s value) would make
-  extraction independent of syntax.
 - **Whether `sample` and `color` are one primitive.** Both draw a design value. They are kept
   apart because `color` means something outside design documentation and `sample` does not
   yet.
@@ -455,7 +495,7 @@ None of these runes emits structured data, so the SEO baseline does not apply.
 
 - [ ] `{% color %}` exists as a core rune: `--color`, `data-on`, contrast data, a chip inline and a fill as a block
 - [ ] A value that is not a CSS colour reports `color-invalid` and emits no style; contrast is computed for every value resolvable to sRGB
-- [ ] `card`'s media zone, and `section`'s once SPEC-160 D2 lands, unwrap a bare `color` and a bare `{% icon %}` as they unwrap a bare image
+- [ ] `card`'s and `section`'s media zones unwrap a bare `color` and a bare `{% icon %}` through SPEC-173's shared media-item reader
 - [ ] A definition may declare `inline: true`; the template's paragraph is unwrapped, block content is rejected with `composition-inline-block`, `schema.inline` is set, and the universal posture is `inline`
 - [ ] A test pins that an inline composition inside a sentence renders with no nested `<p>`, and that block use reports `tag-placement-invalid`
 - [ ] `swatch` is a composition over `badge` and `color` with its current attributes; the site's uses render without change in content
@@ -463,7 +503,9 @@ None of these runes emits structured data, so the SEO baseline does not apply.
 - [ ] Inside an `each` over `sections`, a slot may iterate a `sectionModel` field (one level); deeper nesting and top-level fields inside an `each` are still rejected, naming the slots
 - [ ] An `each` whose template reads only `$each.*` may omit the bare `{% slot /%}`
 - [ ] `grid cells="each"` makes each top-level child a cell; an empty trailing zone is dropped in both modes
-- [ ] `palette` is a composition over `section`, `grid` and `color` with no imperative code (BUG-038 fixed first); D11's comparison is recorded, including the column-count difference; `design-context` extracts identical tokens
+- [ ] `palette` is a composition over `section`, `grid` and `color` with no imperative code, placing a nested `section` per group so each group name is that region's headline; it declares `defaults: { elevation: flat }`; D11's comparison is recorded, including the column-count difference; `design-context` extracts identical tokens
+- [ ] `design-context` reads tokens from rendered `color`, `font` and `sample` elements; its source extractors remain for one release with a deprecation report
+- [ ] `color` and `typeface` are added to the single-source `metaType` vocabulary ({% ref "SPEC-166" /%} Prerequisites), with default skeleton rules
 - [ ] `{% font %}` exists as a core rune: a specimen as a block, text in the face inline; a weights list renders one sample per weight; an invalid family reports `font-invalid` and emits no style
 - [ ] `font` loads from Google only with `source="google"`; its default is `none`
 - [ ] `typography` is a composition over `section`, `grid` and `font`, passing `source="google"` by default; D11's comparison is recorded; `design-context` extracts identical font tokens
@@ -478,6 +520,9 @@ None of these runes emits structured data, so the SEO baseline does not apply.
 - {% ref "SPEC-161" /%} D3: a primitive may own imperative code, and a composition may not.
 - {% ref "SPEC-162" /%}: `amount` and `tally`, the same split for money: a value primitive, an aggregation primitive, and `ledger` as a composition.
 - {% ref "SPEC-145" /%}: compositions. D3 here extends its definition format, and D6 amends its D26.
-- {% ref "BUG-038" /%}: YAML `itemModel` patterns are never compiled; palette depends on the fix.
+- {% ref "BUG-038" /%}: YAML `itemModel` patterns were never compiled; fixed in v0.42.0.
+- {% ref "SPEC-166" /%}: the value-primitive contract `color` and `font` meet, and D2's raw values.
+- {% ref "SPEC-173" /%}: the shared media-item reader D2 is built in.
+- {% ref "ADR-046" /%}: the header grammar that sets palette's section per group.
 
 {% /spec %}
