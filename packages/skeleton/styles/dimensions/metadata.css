@@ -1,4 +1,4 @@
-/* metadata — structure. The zone-layout primitives (bar, definition-list) and the
+/* metadata — structure. The zone-layout primitives (bar, definition-list, lead) and the
  * visually-hidden label mechanism. [data-zone-layout] is layout-uncontested (no
  * layout file targets it), and a rune overriding these resolves correctly (skin
  * beats skeleton). Spacing values (gap / padding / rhythm margins), borders,
@@ -24,6 +24,15 @@
 }
 [data-zone-layout="bar"] [data-align="end"] {
 	margin-left: auto;
+}
+
+/* ── Layout: lead (SPEC-161 D6) ──
+ * A byline: the fields in a column, the lead (`data-lead`) first and the rest
+ * beneath it. No value is ranked, so a compact container hides none of them. */
+[data-zone-layout="lead"] {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
 }
 
 /* ── Layout: definition-list ──

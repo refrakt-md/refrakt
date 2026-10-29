@@ -105,4 +105,4 @@ Without H2 headings, all stops are grouped into a single implicit day.
 
 ## Section header
 
-Itinerary supports an optional eyebrow, headline, and blurb above the section above itinerary stops. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+Itinerary supports an optional eyebrow, headline, and blurb above the section above itinerary stops. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.

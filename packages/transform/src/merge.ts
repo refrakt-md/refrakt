@@ -89,10 +89,30 @@ export function mergeThemeConfig(
 	overrides: ThemeConfigOverrides,
 	presetMap?: Record<string, ThemeTokensConfig>,
 	onIdentityViolation?: (violation: IdentityViolation) => void,
+	options: { themeName?: string } = {},
 ): ThemeConfig {
 	const mergedRunes = { ...base.runes };
 	if (overrides.runes) {
 		for (const [key, value] of Object.entries(overrides.runes)) {
+			// ADR-042 — a composed rune's config is its definition's. An override
+			// keyed to one is a guess at a definition the theme cannot see, so it
+			// is reported and dropped whole.
+			const existing = mergedRunes[key];
+			if (existing?.composed && !value.composed) {
+				reportComposedOverride(key, value, options.themeName, onIdentityViolation);
+				continue;
+			}
+			// A composed config arriving here is a declaration (a plugin
+			// contributing its composed rune), never merged over what stood under
+			// its key: a theme's entry merged in earlier would otherwise leak into
+			// the definition's config field by field.
+			if (value.composed) {
+				if (existing && !existing.composed) {
+					reportComposedOverride(key, existing, options.themeName, onIdentityViolation);
+				}
+				mergedRunes[key] = value as RuneConfig;
+				continue;
+			}
 			// ADR-028 — this is the theme-override path, so identity is guarded.
 			// A key with no base entry is a *new* rune (a plugin contributing its
 			// own), not an override: `mergeRuneConfig` short-circuits there and
@@ -233,6 +253,26 @@ function stripIdentityFields(
 	}
 
 	return cleaned;
+}
+
+/** ADR-042 — report a theme override of a composed rune, through the identity
+ *  sink and its once-per-path rule. The path is the rune's entry, since the
+ *  entry is what is dropped; `field` lists what it tried to set. */
+function reportComposedOverride(
+	rune: string,
+	override: Partial<RuneConfig>,
+	themeName: string | undefined,
+	onViolation: ((violation: IdentityViolation) => void) | undefined,
+): void {
+	const field = Object.keys(override).join(', ');
+	const path = `runes.${rune}`;
+	const theme = themeName ? `theme "${themeName}"` : 'the theme';
+	(onViolation ?? defaultIdentityViolationReporter)({
+		path,
+		rune,
+		field,
+		message: `${path}: ${theme} overrides \`${rune}\`, a composed rune. A composed rune's config is its definition's and cannot be overridden (ADR-042); the whole override is ignored. Style it through the vocabulary, or replace its template (ADR-045).`,
+	});
 }
 
 /** Delete a concrete dotted path, copying each object along the way so the

@@ -87,6 +87,23 @@
 		gap: 0.5rem;
 	}
 
+	/* ─── Layout: lead — emphasis ──────────────────────────────────────── */
+	/* The column is structure (skeleton); the lead's weight and the secondary
+	 * values' size and colour are skin. */
+	[data-zone-layout="lead"] {
+		gap: 0.125rem;
+	}
+
+	[data-zone-layout="lead"] > [data-lead] {
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-text);
+	}
+
+	[data-zone-layout="lead"] > :not([data-lead]) {
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+	}
+
 	/* ─── Layout: definition-list — spacing + chrome ───────────────────── */
 	/* The grid + row stacking are structure (skeleton); the gaps, the per-row
  * border/padding/radius card chrome, and the dt/dd type are skin. */

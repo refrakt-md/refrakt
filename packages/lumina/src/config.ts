@@ -103,4 +103,6 @@ export const luminaOverrides: ThemeConfigOverrides = {
 };
 
 /** Lumina theme configuration — extends base with icon SVGs and tint presets */
-export const luminaConfig = mergeThemeConfig(baseConfig, luminaOverrides);
+export const luminaConfig = mergeThemeConfig(baseConfig, luminaOverrides, undefined, undefined, {
+	themeName: 'lumina',
+});

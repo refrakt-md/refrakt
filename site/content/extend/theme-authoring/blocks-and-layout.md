@@ -14,7 +14,7 @@ whole picture:
    field, describing *what* the field means. No layout, no placement.
 2. **`blocks`** — named metadata blocks projected *from* `metaFields`.
    Each block picks which fields it contains and one layout primitive
-   (`bar` or `definition-list`).
+   (`bar`, `definition-list` or `lead`).
 3. **`layout`** — the recursive skeleton tree. A map keyed by container
    name; an entry either *creates* a wrapper element or *orders* an
    existing one. This is the only thing that decides *where* anything
@@ -67,7 +67,7 @@ block's `data-name` is its key, so it gets the BEM element class
 ```typescript
 interface BlockDef {
   fields: (string | { field: string; align?: 'start' | 'end' })[];
-  layout: 'bar' | 'definition-list';
+  layout: 'bar' | 'definition-list' | 'lead';
   wrap?: boolean;
 }
 ```
@@ -75,7 +75,7 @@ interface BlockDef {
 - **`fields`** — ordered list of `metaFields` keys. An entry may be a
   bare string or `{ field, align }` to right-align a field within a
   `bar` (see below).
-- **`layout`** — the primitive: `bar` or `definition-list`.
+- **`layout`** — the primitive: `bar`, `definition-list` or `lead`.
 - **`wrap`** — `bar` only; defaults `true`. Set `false` to keep the row
   on one line.
 
@@ -198,7 +198,7 @@ than a plain value. Precedence, highest first:
 
 ## Layout primitives — emitted DOM
 
-`LayoutPrimitive` is `'bar' | 'definition-list'`.
+`LayoutPrimitive` is `'bar' | 'definition-list' | 'lead'`.
 
 ### `bar`
 
@@ -245,6 +245,27 @@ field, each holding a `<dt data-meta-label>` and a `<dd>`.
 - Bare types render plain in the `<dd>`, carrying `data-meta-type`.
 - A multi-value (`splitOn`) `<dd>` gets `data-multi-value`.
 - The `data-field="{name}"` lets themes target a specific row.
+
+### `lead`
+
+A byline: a lead value with secondary values beneath it, as a quote's
+attribution or a person's name over their role. The fields render in a
+column, each in its intrinsic shape and **unlabelled**, like `bar`. The
+first field present carries `data-lead`.
+
+```html
+<div class="rf-testimonial__byline" data-name="byline" data-zone-layout="lead">
+  <span data-lead>Ada Lovelace</span>
+  <span>CTO</span>
+  <span>Analytical Engines</span>
+</div>
+```
+
+- The skeleton lays the fields out in a column; Lumina emphasises
+  `[data-lead]` and sets the rest, by `:not([data-lead])`, smaller and
+  muted.
+- Nothing ranks the values (`data-meta-rank`), so a compact container
+  hides none of them.
 
 ## Composable rune handles
 

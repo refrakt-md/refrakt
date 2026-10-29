@@ -70,6 +70,8 @@ function resolveFrameChrome(
 
 	// A displaced guest defaults to its host's containment mode: a bleed host
 	// (guestFit: 'bleed', e.g. hero/feature) spills, a clip host crops to a peek.
+	// `guestFit` is the resolved one: a `section`'s `guest-fit=` attribute, else
+	// the config field (SPEC-160 D7; the engine folds the attribute in).
 	// An explicit `frame-displace-mode=` still wins. This is the displace face of
 	// the same clip-vs-bleed axis as `data-guest-fit`, so a hero no longer needs
 	// `frame-displace-mode="bleed"` spelled out.

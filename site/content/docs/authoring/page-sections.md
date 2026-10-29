@@ -58,19 +58,7 @@ A content framework for semantic Markdown.
 {% /hero %}
 ```
 
-### Heading eyebrow + headline
-
-Two consecutive headings: the first becomes the eyebrow, the second becomes the headline.
-
-```markdoc
-{% hero %}
-## What's new in v2
-
-# Build with refrakt.md
-
-A content framework for semantic Markdown.
-{% /hero %}
-```
+An eyebrow is always a short paragraph directly before the headline. A heading is never read as an eyebrow: write the label as a paragraph, not as a second, smaller heading.
 
 ### Headline + blurb
 

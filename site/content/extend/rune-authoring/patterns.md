@@ -69,10 +69,10 @@ transform(resolved, attrs, config) {
 ```
 
 This pattern gives you:
-- **Eyebrow** — the first heading when there are 2+ headings (small label above the main heading)
+- **Eyebrow** — a short paragraph directly before the main heading (small label above it); a heading is never read as an eyebrow
 - **Headline** — the main heading
 - **Image** — first image in the header area
-- **Blurb** — first paragraph
+- **Blurb** — the paragraph directly after the main heading
 
 ---
 

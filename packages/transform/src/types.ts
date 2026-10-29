@@ -11,8 +11,11 @@ import type { LocalizedValue } from './i18n.js';
  *  - `bar` — horizontal flex row of fields, each in its intrinsic shape
  *    (chip vs bare from `metaType`); supports `wrap` + per-field `align`.
  *  - `definition-list` — `<dl>` with `<dt>` / `<dd>` per field; the dd
- *    value renders as a chip for chip-type fields, bare otherwise. */
-export type LayoutPrimitive = 'definition-list' | 'bar';
+ *    value renders as a chip for chip-type fields, bare otherwise.
+ *  - `lead` — a byline: the fields in a column, the first marked `data-lead`
+ *    as the emphasised value and the rest beneath it, smaller and muted
+ *    (SPEC-161 D6). Unlabelled, like `bar`. */
+export type LayoutPrimitive = 'definition-list' | 'bar' | 'lead';
 
 /**
  * A value transform, by name. The one vocabulary for every place config
@@ -37,8 +40,9 @@ export interface BlockDef {
 	/** Field names (from `metaFields`), in order. A field may be given as
 	 *  `{ field, align }` to push it to the row end (`bar` layout). */
 	fields: (string | { field: string; align?: 'start' | 'end' })[];
-	/** `definition-list` (labeled pairs grid) or `bar` (horizontal flex row). */
-	layout: 'definition-list' | 'bar';
+	/** `definition-list` (labeled pairs grid), `bar` (horizontal flex row) or
+	 *  `lead` (a lead value with secondary values beneath it). */
+	layout: LayoutPrimitive;
 	/** `bar` only — wrap onto multiple lines. Default true. */
 	wrap?: boolean;
 }
@@ -442,6 +446,14 @@ export interface RuneConfig {
 	 *  `generateStructureContract` reads it so the contract's `unavailable` map
 	 *  and the narrowed schema agree. */
 	universalAttributes?: 'auto' | 'inline' | 'configurator' | 'none';
+
+	/** ADR-042 — set on a config `composedRuneConfig` generated from a
+	 *  composition definition, and on no hand-written config. A composed rune's
+	 *  config is its definition's: `mergeThemeConfig` reports a theme override
+	 *  keyed to it and drops the override whole, rather than letting a guess at
+	 *  a definition it cannot see resolve to nothing. The provenance marker, so
+	 *  the merge never has to infer it from the config's shape. */
+	composed?: true;
 
 	/** SPEC-125 — deliberate decisions *not* to map a declared slot to a section
 	 *  role, keyed by slot name, valued by the reason. `lintSectionRoles` flags a

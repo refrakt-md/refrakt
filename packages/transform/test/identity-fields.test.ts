@@ -262,3 +262,87 @@ describe('the variant-delta path still enforces the same rule', () => {
 		expect(res.valid).toBe(true);
 	});
 });
+
+// ADR-042 — a composed rune's config is its definition's. A theme cannot know
+// which definition it faces, so any override keyed to one is reported and
+// dropped whole; native runes keep ADR-028's rules.
+describe('ADR-042 — a theme override of a composed rune', () => {
+	const composedHero: RuneConfig = {
+		composed: true,
+		modifiers: { tier: { source: 'meta' } },
+		blocks: { byline: { fields: ['name', 'role'], layout: 'bar' } },
+	} as RuneConfig;
+
+	it('is reported, naming the theme, the rune and the path, and dropped whole', () => {
+		const { violations, sink } = collect();
+		const merged = mergeThemeConfig(
+			themeConfig({ Hero: composedHero, Card: baseCard }),
+			{
+				runes: {
+					Hero: {
+						blocks: { byline: { fields: ['name'], layout: 'definition-list' } },
+						styles: { tier: '--x' },
+					} as Partial<RuneConfig>,
+				},
+			},
+			undefined,
+			sink,
+			{ themeName: 'acme' },
+		);
+
+		expect(merged.runes.Hero).toEqual(composedHero);
+		expect(violations).toHaveLength(1);
+		expect(violations[0]).toMatchObject({ rune: 'Hero', path: 'runes.Hero' });
+		expect(violations[0].field).toBe('blocks, styles');
+		expect(violations[0].message).toContain('theme "acme"');
+		expect(violations[0].message).toContain('composed rune');
+		expect(violations[0].message).toContain('ADR-042');
+	});
+
+	it('reports through the identity sink once per path when none is supplied', () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const base = themeConfig({ OnceHero: composedHero });
+		mergeThemeConfig(base, { runes: { OnceHero: { styles: {} } } });
+		mergeThemeConfig(base, { runes: { OnceHero: { styles: {} } } });
+		expect(warn).toHaveBeenCalledOnce();
+		expect(warn.mock.calls[0][0]).toContain('runes.OnceHero');
+	});
+
+	it('a composed declaration replaces what stood under its key, never merging over it', () => {
+		// assembleThemeConfig merges the theme before the plugins: a theme entry
+		// for a plugin's composed rune must not leak into the generated config.
+		const { violations, sink } = collect();
+		const merged = mergeThemeConfig(
+			themeConfig({ Hero: { block: 'hero', styles: { tier: '--x' } } as RuneConfig }),
+			{ runes: { Hero: composedHero } },
+			undefined,
+			sink,
+		);
+		expect(merged.runes.Hero).toEqual(composedHero);
+		expect(violations.map((v) => v.path)).toEqual(['runes.Hero']);
+	});
+
+	it('a composed declaration over a composed one is not an override', () => {
+		const { violations, sink } = collect();
+		mergeThemeConfig(
+			themeConfig({ Hero: composedHero }),
+			{ runes: { Hero: composedHero } },
+			undefined,
+			sink,
+		);
+		expect(violations).toEqual([]);
+	});
+
+	it('leaves native runes on ADR-028: identity guarded, the rest overridable', () => {
+		const { violations, sink } = collect();
+		const merged = mergeThemeConfig(
+			themeConfig({ Hero: composedHero, Card: baseCard }),
+			{ runes: { Card: { block: 'other', staticModifiers: ['x'] } } },
+			undefined,
+			sink,
+		);
+		expect(merged.runes.Card.block).toBe('card');
+		expect(merged.runes.Card.staticModifiers).toEqual(['x']);
+		expect(violations.map((v) => v.path)).toEqual(['runes.Card.block']);
+	});
+});

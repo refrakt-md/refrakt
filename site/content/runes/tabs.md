@@ -59,7 +59,7 @@ Use `{% tab %}` tags for more control over tab names and content.
 
 ## Section header
 
-Tabs supports an optional eyebrow, headline, and blurb above the tab bar. Place a short paragraph or heading before your tab headings to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+Tabs supports an optional eyebrow, headline, and blurb above the tab bar. Place a short paragraph before your tab headings to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ## Attributes
 
