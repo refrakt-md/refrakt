@@ -72,6 +72,10 @@ them do not supply one:
   for having "no proportional bars". That points at items placed along a scale by value. It is
   not a scrolling strip, so it is not {% ref "SPEC-100" /%}'s `carousel`. `tolerance` exists
   nowhere in the code or the specs.
+- *Noted 2026-10-29:* `ladder` is the topology {% ref "ADR-018" /%}'s canonical `list` token emits.
+  Authors and themes see `list` (`data-layout="list"`, {% ref "SPEC-181" /%} D3); `ladder` is this
+  decision's name for its shape. Two names at two levels for one thing is intended; two
+  author-facing names would not be.
 - **`track`**'s case is `mix`, a playlist type in {% ref "SPEC-008" /%} that has not been built.
   The name also collides with the `track` rune in `@refrakt-md/media`.
 

@@ -286,7 +286,8 @@ empty trailing zone is dropped in either mode, because it is never meant as a ce
 leaves open. {% ref "ADR-030" /%} names `grid` as a topology, and `palette`, `typography`,
 `feature`, `bento` and `cast` all want a grid of items from an `each`. That spec decides whether
 `{% group layout="grid" %}` is the same thing under another name; this decision stands either
-way, because the `grid` rune is what authors already write.
+way, because the `grid` rune is what authors already write. {% ref "SPEC-181" /%} D5 keeps it, and
+gives the `grid` rune and `{% group layout="grid" %}` the same output contract.
 
 The same mode serves any composition that lays out a list as a grid: cast members, feature
 cells, a team page.

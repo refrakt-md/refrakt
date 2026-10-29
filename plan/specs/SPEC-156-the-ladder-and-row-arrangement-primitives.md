@@ -18,6 +18,11 @@ either. So the deliverable shrinks to one template tag, `{% group %}`, with two 
 values. The two identity holes the first draft found were closed by {% ref "SPEC-158" /%}
 in v0.40.0.
 
+**Renamed on 2026-10-29** ({% ref "SPEC-181" /%}): the ladder is {% ref "ADR-018" /%}'s canonical
+`list`, so templates write `{% group layout="list" %}` and it emits `data-layout="list"` with an
+items track, not `data-zone-layout="ladder"`. `ladder` stays {% ref "ADR-030" /%}'s name for the
+topology. SPEC-181 also owns the list contract D3 describes; the decisions here otherwise stand.
+
 Decision numbers are kept from the first draft, because other specs cite them. D2, D3 and D8
 are revised in place; D4 and D5 are recorded as shipped; D10 was settled in the ADR-030 review;
 D12–D14 are new.
@@ -87,7 +92,7 @@ way to get one:
 SPEC-169 D4's own `steps` example already writes the answer:
 
 ```md
-{% group name="steps" layout="ladder" %}
+{% group name="steps" layout="list" %}
 {% slot name="items" each %}
 {% section %}{% slot /%}{% /section %}
 {% /slot %}
@@ -147,20 +152,21 @@ engine-made group. That is ADR-030 rule 6's form, made a template tag:
 
 ```md
 {% group name="byline" layout="bar" %}…{% /group %}
-{% group name="steps" layout="ladder" %}…{% /group %}
+{% group name="steps" layout="list" %}…{% /group %}
 ```
 
 1. **It is an engine wrapper.** It renders with `data-name` and no `data-rune`, so it is safe
    where the rune publishes schema (D9, SPEC-145 D19). A composed rune has no block
    (SPEC-145 D2), so a group gets no BEM class: themes see its `data-name` and
-   `data-zone-layout`.
+   `data-zone-layout` (`bar`) or `data-layout` (`list`, and SPEC-181's `grid` and `carousel`).
 2. **`name` is required**, and a convention, not a type: it carries no geometry (D6).
-3. **`layout` takes `bar` or `ladder`.** Nothing else, until a topology clears ADR-030 rule 5a
+3. **`layout` takes `bar` or `list`** (renamed from `ladder`; {% ref "SPEC-181" /%} D4 adds
+   `grid` and `carousel`). Nothing else, until a topology clears ADR-030 rule 5a
    in its own spec. An unknown value is rejected at schema construction, naming it.
 4. **`bar`** renders a `<div data-zone-layout="bar">` over whatever the group holds, the
    existing row contract. A child that should push to the end is written in its own
    `{% group name="…" align="end" %}`, which renders `data-align="end"`.
-5. **`ladder`** renders a list (D3).
+5. **`list`** renders a list (D3).
 6. **It is a template tag only.** Authors do not write `{% group %}` on a page; the `bar` rune
    remains the author-facing row ({% ref "SPEC-145" /%} D12's placement set is unchanged).
 
@@ -171,12 +177,14 @@ are peer items, each free to declare its own inner arrangement, with a shared ma
 the rune declares a sequence.*
 
 1. **Element.** `<ol>` when the definition declares a `sequence` (D12), `<ul>` otherwise, with
-   `data-name` and `data-zone-layout="ladder"`.
+   `data-name` and `data-zone-layout="ladder"`. *Renamed 2026-10-29:* a host `data-layout="list"`
+   holding the `<ol>` or `<ul>` as its `data-name="items"` track ({% ref "SPEC-181" /%} D3).
 2. **Items.** Each iteration of an `each` slot placed directly in the group, or else each
    top-level node the group holds, is wrapped in an `<li>`.
 3. **Markers** are the `sequence` dimension's: the ladder carries `data-sequence` with the
    definition's value. No second marker contract is written.
-4. **The unsequenced ladder** gets the one missing rule: `[data-zone-layout="ladder"]` resets the
+4. **The unsequenced ladder** gets the one missing rule (*renamed 2026-10-29:* SPEC-181 D3's
+   `[data-layout="list"] [data-name="items"]`): `[data-zone-layout="ladder"]` resets the
    list and flows its items in a column, about six declarations in skeleton. `cast`'s `list`
    mode is its first native consumer.
 5. "Optional separation between items" stays one hook, not modifiers. If it becomes three
@@ -249,7 +257,7 @@ generated config carries it.
   {% ref "SPEC-177" /%} let a theme or site replace a composition's template while keeping its
   frontmatter. A `sequence` written in the template would travel with the template, so a
   theme's replacement could delete the step numbers, which is rule 3's founding example.
-- **The template marks where.** The `{% group layout="ladder" %}` is where the definition's
+- **The template marks where.** The `{% group layout="list" %}` is where the definition's
   sequence is stamped.
 - **A definition that declares `sequence` must place a ladder**, or it is rejected at schema
   construction, naming the rune. A sequence with nowhere to go is the silent loss this guards
@@ -297,10 +305,10 @@ during implementation and filed as a bug if they do.
 
 ## Acceptance Criteria
 
-- [ ] A composition template can place `{% group name layout="bar" %}` and `{% group name layout="ladder" %}`; both render with `data-name` and no `data-rune`, and an unknown `layout` is rejected at schema construction (D2)
+- [ ] A composition template can place `{% group name layout="bar" %}` and `{% group name layout="list" %}`; both render with `data-name` and no `data-rune`, and an unknown `layout` is rejected at schema construction (D2)
 - [ ] A `bar` group's child written as `{% group align="end" %}` renders `data-align="end"` and pushes to the end (D2)
 - [ ] A ladder renders `<ol>` when the definition declares a `sequence` and `<ul>` otherwise, with each `each` iteration or top-level node in an `<li>` (D3)
-- [ ] `[data-zone-layout="ladder"]` resets the list and flows items in a column in skeleton; `cast`'s `list` mode uses it and its own reset is deleted (D3)
+- [ ] `[data-layout="list"] [data-name="items"]` ({% ref "SPEC-181" /%} D3) resets the list and flows items in a column in skeleton; `cast`'s `list` mode uses it and its own reset is deleted (D3)
 - [ ] A composition's frontmatter accepts `sequence`; the generated config carries it, and a definition declaring `sequence` without a ladder group is rejected, naming the rune (D12)
 - [ ] The ladder's `data-sequence` is set on the ladder element only; an ordered list in an item's body is not stamped (D14)
 - [ ] {% ref "WORK-583" /%} and {% ref "BUG-024" /%} are done before or with the ladder (D13)
