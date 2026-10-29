@@ -1,13 +1,15 @@
-{% spec id="SPEC-181" status="draft" tags="runes, composition, site, staging, review, plugins" %}
+{% spec id="SPEC-181" status="draft" tags="runes, composition, site, staging, review, plugins, rollout" %}
 
 # Staged runes: a composition is reviewed on its own reference page before it replaces a plugin rune
 
-A composition that will replace a plugin rune is written in a staging directory inside
-that plugin. The docs site renders every page that uses the rune a second time with the
-staged definition, at the same path under `/staging`. You compare the two by switching
-browser tabs. Going live is a `git mv` from the staging directory to the plugin's rune
-directory. This is the convention for every such conversion, starting with `hero` and
-`cta` in v0.44.0.
+A composition that will replace a plugin rune is first written as a project rune of a second
+docs site, `staging`. That site renders the same content as `main`, with the staged
+compositions in place of the plugin runes they replace. You review a rune by opening its
+reference page on both sites and switching tabs.
+
+Each rune goes live on its own once its review is accepted. Going live moves the definition
+into the plugin, in a work item of its own. This is the convention for every conversion,
+starting with `hero` and `cta` in v0.44.0.
 
 ## Why
 
@@ -15,174 +17,185 @@ directory. This is the convention for every such conversion, starting with `hero
 - The composed `hero` and `cta` are test fixtures in `packages/runes/test/fixtures/composed/`.
   The five composed storytelling runes are in
   `packages/content/test/fixtures/composed-storytelling/runes/`.
-- The only code that loads them is the test harnesses (`composed-marketing.ts`,
-  `composed-storytelling.ts`). These build a fixture copy of the plugin with the composed
-  runes swapped in.
+- The only code that loads them is the test harnesses.
 - {% ref "SPEC-147" /%} D2 and the v0.44.0 milestone gate each replacement on a reviewed
-  comparison with the plugin rune. Today that review means reading a list of differences in
-  a work item's resolution. Nobody can see the differences.
+  comparison with the plugin rune. Today that review means reading a list of differences in a
+  work item's resolution. Nobody can see the differences.
 
-**A side-by-side gallery is the wrong place to review a rune.**
+**The reference page is the right review surface; a gallery is not.**
 - The gallery fixtures cover a few attribute combinations and are not yet solid.
-- The reference page under `site/content/runes/` is what a user reads. It already shows each
-  attribute, variant and pairing. It is also the page that must still render correctly once
-  the rune goes live.
-- So the review surface should be the reference page, rendered once with the live rune and
-  once with the staged one.
+- The reference page under `site/content/runes/` is what users read. It already shows each
+  attribute, variant and pairing. It is also the page that must render correctly once the
+  rune goes live.
+- Other pages that use the rune (the homepage uses `hero`) are reviewed for free.
 
-**Prefixed names (`lab-hero`) would review the wrong thing.**
-- A prefixed rune emits `data-rune="lab-hero"`, not the `data-rune="hero"` that ships.
-- Every reference page would need a hand-edited copy that uses the prefixed tag, and those
-  copies would drift from the real pages.
-- Going live would need a rename and a content migration, not a move.
+**The mechanism already exists.**
+- A site can declare a project rune directory (`runes.dir`). A project rune may replace a plugin
+  rune when `runes.prefer` names `__project__` for it ({% ref "SPEC-153" /%} D8). A project rune
+  that takes a plugin rune's name without that entry is a build error (`project-plugin-name`).
+- `refrakt.config.json` already declares several sites.
+- So a second site over the same content needs no new configuration option, and no new code in
+  any package. It is what any refrakt user would do to replace a plugin rune with their own.
+  That means this repository exercises the path itself instead of only testing it.
 
-**Fixtures in test directories hide the definition from its future home.**
-- A composed plugin rune ships from the plugin's declared `runeDir` ({% ref "SPEC-153" /%} D2).
-- Its draft should already be in the plugin, so the only step between draft and shipped
-  is moving the file.
+**A prefixed name (`lab-hero`) would review the wrong thing.**
+- It emits `data-rune="lab-hero"`, not the `hero` that ships.
+- Every reference page would need a hand-edited copy that uses the prefix.
+- A staged rune here keeps its real name and its real output.
 
 ## Design
 
-### Where a staged definition lives
+### The staging site
 
-```
-plugins/marketing/
-  src/            — the shipping plugin, unchanged while a rune is staged
-  staging/
-    hero.md       — the composed hero, named after the rune it replaces (SPEC-153 D9)
-    cta.md
-  runes/          — the plugin's declared runeDir, once a rune goes live
-```
-
-- `staging/` is not in the package's `files` (every plugin publishes `dist` only), so a staged
-  rune is never published.
-- The test harnesses read their definitions from `staging/`. That makes the reviewed file and
-  the tested file the same file.
-
-### How the site loads it
-
-The site configuration names the staging directories:
+`refrakt.config.json` gains a `staging` site:
+- the same `contentDir` (`./site/content`), theme, tints, plugins, route rules and icons as
+  `main`;
+- plus `runes.dir` set to `site/staged-runes` and a `runes.prefer` entry of `__project__` for
+  each staged rune.
 
 ```json
-"runes": {
-  "staging": {
-    "dirs": ["plugins/marketing/staging", "plugins/storytelling/staging"],
-    "mount": "/staging"
+"staging": {
+  "contentDir": "./site/content",
+  "runes": {
+    "dir": "site/staged-runes",
+    "prefer": { "hero": "__project__", "cta": "__project__" }
   }
 }
 ```
 
-The loader builds a second, **staged** rune set: the site's plugins, plus each staging
-directory loaded as project runes, with `prefer` set to `__project__` for each staged name.
-This reuses the SPEC-153 D8 machinery.
-- A staged rune replaces the plugin rune's schema, its generated theme config and its
-  aliases.
-- It does this only in the staged set. The live site is byte-identical to a build without
-  `staging`.
+The other fields are elided above. Sites cannot extend each other, so they are a copy of
+`main`'s, and a test asserts that `staging` equals `main` apart from `runes`.
 
-### Mirror pages
+`site/vite.config.ts` reads the site name from `REFRAKT_SITE`, defaulting to `main`.
+- `npm run dev:staging` serves the staging site on its own port.
+- `npm run build:staging` builds it into its own output directory.
+- Paths are identical on both sites, so comparing is switching between two tabs.
 
-Every page whose source uses a staged rune (by name or alias) gets a mirror at
-`<mount><url>`. For example, `/staging/runes/marketing/hero` mirrors `/runes/marketing/hero`.
-A mirror page:
-- is rendered from the same source file, with the same frontmatter and the same layout
-  cascade (resolved from the original path). Nav, header and sidebar are therefore
-  identical, and switching between the two tabs changes only the runes;
-- is transformed by the staged rune set and the staged engine config;
-- is built in a production build, so a deployed preview can be reviewed;
-- is kept out of every site-wide index:
-  - not in `sitemap.xml`, `llms.txt`, `llms-full.txt` or the search index;
-  - not in the page tree;
-  - does not register entities (the live page already does), and reads the live
-    aggregates in post-process;
-- emits `<meta name="robots" content="noindex">` and a canonical link to the live page;
-- carries a banner naming the staged runes on the page, with a link to the live page.
+`main` never reads `site/staged-runes`, so its output, the contracts and the SEO baseline are
+unaffected by anything staged.
 
-The mount root (`/staging`) is a generated index. It lists each staged rune, its plugin and
-the pages that mirror it. This is the entry point; nothing in the site nav links to it.
+### Where a staged definition lives
+
+- `site/staged-runes/<rune>.md`, named after the plugin rune it replaces (SPEC-153 D9).
+- One directory for all plugins, because `runes.dir` is a single directory.
+- The comparison test harnesses read the definition from there. The reviewed file and the
+  tested file are the same file.
 
 ### Going live
 
-Replacing the plugin rune is a work item of its own, separate from the conversion
-(SPEC-147 D1):
-- `git mv plugins/<p>/staging/<rune>.md plugins/<p>/runes/<rune>.md`.
-- The plugin declares `runeDir` if it does not yet.
-- The rune's `transform`, theme entry and CSS are removed.
-- `contracts/` and the SEO baseline are regenerated, and their diffs are explained.
+Going live is a work item of its own, never part of the conversion:
+- `git mv site/staged-runes/<rune>.md plugins/<plugin>/runes/<rune>.md`;
+- the plugin declares `runeDir` (SPEC-153 D2) if it does not yet;
+- the rune's `transform`, theme entry and CSS are removed, and so is its `prefer` entry;
+- both copies of the contracts and the SEO baseline are regenerated, and every diff is
+  explained;
+- the changeset carries a migration note. It also carries a codemod (`refrakt migrate`) when
+  authored content changes meaning;
+- the rune's reference page is updated for any attribute whose vocabulary changed.
 
-The mirror pages disappear on their own, because the rune is no longer staged.
+## Rollout
+
+**Runes go live one at a time, as each review is accepted. Nothing waits for the other
+conversions.**
+
+Waiting until every intended conversion is staged was considered and rejected:
+- **The wait would be long.** Marketing alone needs {% ref "SPEC-156" /%} (`steps`, `feature`),
+  {% ref "SPEC-162" /%} and {% ref "SPEC-167" /%} (`pricing`, `tier`) and SPEC-145 D30
+  (`cast-member`). The first staged rune would wait several milestones.
+- **Reviews would go stale.** `section`, `actions` and the composition machinery keep changing
+  under staged runes. A rune approved early would need reviewing again before a single
+  switch-over.
+- **Everything would be maintained twice.** Each plugin rune keeps its transform, config and
+  CSS until it goes live, and every fix lands in both versions.
+- **Problems would surface late, and all together.** The first go-live is what exercises the
+  plugin `runeDir`, the contract and baseline diffs, and {% ref "WORK-669" /%}'s reporting of
+  theme overrides. A single switch-over would find their problems at once, in the largest
+  breaking release possible.
+
+Going live one at a time costs authors more, smaller migrations. Each is a breaking change
+(no `rf-<rune>` classes, and some vocabulary differs, e.g. `align` takes `start | end` rather
+than `left | right`). Each ships with its own migration note, and with a codemod where content
+must change. A plugin is mixed while this happens, part composed and part native. That is
+acceptable: nothing promises that a plugin's runes are built the same way.
+
+**Runes go live together only when they cannot be migrated separately.**
+- That is the case when one migration step must change several runes at once, or a theme or
+  author could not follow the intermediate state.
+- A shared vocabulary change is not by itself such a case. The codemod is per rune and
+  idempotent, so running it at each go-live is cheap.
+
+**Storytelling is a plugin-level decision.** SPEC-147 D1 replaces that plugin alongside and
+deletes it separately. Its compositions stay staged until that decision is taken, and then go
+live, or become documented project runes, together.
+
+### A rune goes live when
+
+1. its mirror on the staging site has been reviewed, light and dark, on its reference page and
+   on every other page that uses it;
+2. every difference listed in its conversion item is either accepted or fixed;
+3. any authored content whose meaning changes has a codemod, run over this repository's
+   content;
+4. it does not depend on a primitive whose spec is still `draft`.
 
 ## Decisions
 
-### D1 — a composition that replaces a plugin rune is staged in that plugin, under its final name
+### D1 — a staged composition is a project rune of a second site, under its final name
 
-`plugins/<plugin>/staging/<rune>.md`. There is no prefix, so the staged output is the
-shipped output (`data-rune="<rune>"`), and going live is a move. A composition that replaces
-nothing (`teaser`, the section-grammar fixtures) is not staged; it stays a test fixture.
+`site/staged-runes/<rune>.md`, loaded only by the `staging` site, preferred over the plugin
+rune through `runes.prefer`. There is no new configuration option and no prefix. A composition
+that replaces nothing (`teaser`, the section-grammar fixtures) is not staged; it stays a test
+fixture.
 
-### D2 — the reference page is the review surface, rendered twice
+### D2 — the reference page is the review surface
 
-The docs site mirrors every page that uses a staged rune. It does not maintain a separate
-gallery of staged runes. Comparison is by switching between the live URL and the mirror
-URL, which differ only by the mount prefix.
+The staging site renders the whole docs site. A rune is reviewed on its reference page and on
+every other page that uses it. There is no separate gallery of staged runes.
 
-### D3 — staging is opt-in site configuration and never changes the live build
+### D3 — `staging` is a copy of `main` apart from `runes`, and a test holds it there
 
-`runes.staging` is absent by default. With it set, the live pages, the indexes, the
-contracts and the SEO baseline are identical to a build without it. Mirror pages are
-additive and excluded from every index (Design: mirror pages).
+This is the price of not having site inheritance. A test fails when the two sites differ in any
+field other than `runes`.
 
-### D4 — a staged name must name an existing plugin rune
+### D4 — the test harnesses read the staged definition
 
-A staged file whose name no loaded plugin provides is an error. Without a rune to replace
-it is just a project rune, and it belongs in `runes.dir`. A core rune's name is an error,
-as SPEC-153 D8 already rules.
+The comparison tests (SPEC-147 D2) and the reviewed page read the same file. A staged rune may
+not also have a copy in a test fixture directory.
 
-### D5 — the staged set is built from the same merge as the live set
+### D5 — going live is its own work item, one rune at a time
 
-The staged rune set is the live merge plus the staged runes preferred over the plugin
-runes they replace. A difference between a mirror and its live page is then the staged
-rune's doing, never a loader difference.
+Going live is never part of a conversion. A rune goes live once the four gates in the rollout
+are met. Runes are grouped only when they cannot be migrated separately. Storytelling goes
+live as a whole, by the SPEC-147 decision.
 
-### D6 — the test harnesses read the staged definition
-
-The comparison tests (SPEC-147 D2) and the reviewed page read the same file. A definition
-copied into a test fixture is not allowed for a staged rune.
-
-### D7 — going live is its own work item
-
-It is never part of the conversion item. The plugin rune stays until a person has reviewed
-the mirror pages, as SPEC-147 D1 and the v0.44.0 milestone already require.
-
-### D8 — the convention is stated where conversions are planned and checked where they are tested
+### D6 — the convention is stated where conversions are planned and checked where they are tested
 
 - `CLAUDE.md` and the rune authoring docs describe it.
 - A test fails when a composed definition under a test fixture directory has the name of a
-  shipping plugin rune. That is how a future conversion that skips staging is caught.
+  shipping plugin rune.
 
 ## Not in scope
 
 - Staging a replacement for a core rune. Core names are not shadowable (SPEC-153 D8).
-- A diff view or in-page comparison widget. Tab switching between identical layouts is the
-  comparison.
-- Staging in published plugins or for third-party sites. `staging/` is a monorepo
-  convention, and `runes.staging` is general enough that a project could use it, but it is
-  documented only for this repository.
+- A hosted staging deploy. `build:staging` makes one possible; deploying it is a separate
+  decision.
+- Site inheritance in `refrakt.config.json`. D3's test is the stand-in.
+- Fixing {% ref "BUG-037" /%}. The staging site uses `__project__`, which that bug does not
+  affect.
 
 ## Acceptance Criteria
 
-- [ ] `runes.staging` loads staged definitions into a separate rune set, and the live build is unchanged with it set
-- [ ] Every page using a staged rune has a mirror at the mount, rendered with the staged rune, with the live page's layout, and excluded from every site-wide index
-- [ ] The mount root lists the staged runes and their mirror pages
-- [ ] `hero` and `cta` are staged in `plugins/marketing/staging/`, their tests read them there, and `/staging/runes/marketing/hero` and `/staging/runes/marketing/cta` render
-- [ ] The storytelling compositions are staged in `plugins/storytelling/staging/`
-- [ ] The convention is documented, and a test catches a composed definition of a plugin rune outside staging
+- [ ] The `staging` site serves the docs content with staged runes in place of plugin runes, through existing configuration only, and a test holds it equal to `main` apart from `runes`
+- [ ] `main`'s output, the contracts and the SEO baseline are unchanged by anything staged
+- [ ] `hero` and `cta` are staged in `site/staged-runes/`, their tests read them there, and their reference pages render with them on the staging site
+- [ ] The storytelling compositions are staged likewise
+- [ ] The convention and rollout are documented, and a test catches a composed definition of a plugin rune outside staging
 
 ## References
 
 - {% ref "SPEC-145" /%}: composed runes.
 - {% ref "SPEC-147" /%}: D1 replace alongside, D2 every difference explained.
-- {% ref "SPEC-153" /%}: D2 plugin `runeDir`, D8 precedence, D9 the filename is the name, D10 rune-edit invalidation.
+- {% ref "SPEC-153" /%}: D2 plugin `runeDir`, D8 precedence, D9 the filename is the name.
 - {% ref "SPEC-160" /%}, {% ref "SPEC-161" /%}: the marketing conversions.
+- {% ref "ADR-042" /%}, {% ref "WORK-669" /%}: theme overrides of composed runes.
 
 {% /spec %}
