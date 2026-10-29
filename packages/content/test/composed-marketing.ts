@@ -39,6 +39,8 @@ export function composedMarketing(composed: Record<string, string>, drop: string
 	for (const key of drop) delete themeRunes[key];
 	const runes = { ...marketing.runes };
 	for (const [rune, template] of Object.entries(composed)) {
+		// The composition declares its own aliases, if any (`review`); the
+		// plugin's `call-to-action` belongs to the plugin's own `cta`.
 		const { aliases: _a, transform: _t, ...rest } = runes[rune];
 		runes[rune] = { ...rest, template };
 	}
@@ -69,8 +71,8 @@ export function merge(pkg: Plugin) {
 // biome-ignore lint/suspicious/noExplicitAny: rendered trees are untyped JSON
 export type Json = any;
 
-/** One page through the per-page assembly with `pkg`: schemas, theme, engine. */
-export function renderPage(pkg: Plugin, source: string): Json {
+/** The per-page assembly with `pkg`: the tag map and the identity transform. */
+export function pageContext(pkg: Plugin) {
 	const merged = merge(pkg);
 	const { config: theme } = assembleThemeConfig({
 		coreConfig: baseConfig,
@@ -78,11 +80,17 @@ export function renderPage(pkg: Plugin, source: string): Json {
 		provenance: merged.provenance,
 	});
 	const schemas = assembleMarkdocSchemas(merged.tags);
+	return { schemas, tags: schemas.tags, identity: createTransform(theme) };
+}
+
+/** One page through the per-page assembly with `pkg`: schemas, theme, engine. */
+export function renderPage(pkg: Plugin, source: string): Json {
+	const { schemas, identity } = pageContext(pkg);
 	const rendered = Markdoc.transform(parse(source), {
 		...schemas,
 		variables: { generatedIds: new Set<string>(), path: '/p', headings: [] },
 	} as never);
-	return createTransform(theme)(serializeTree(rendered) as never);
+	return identity(serializeTree(rendered) as never);
 }
 
 /** HTML as a renderer emits it: an attribute left `undefined` is not written. */

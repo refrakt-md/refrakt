@@ -1,6 +1,6 @@
 {
   "name": "@refrakt-md/marketing",
-  "description": "Marketing runes for refrakt.md — hero, CTA, pricing, and more",
+  "description": "Marketing runes for refrakt.md \u2014 hero, CTA, pricing, and more",
   "version": "0.43.0",
   "type": "module",
   "license": "MIT",
@@ -14,6 +14,17 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./cli-plugin": {
+      "types": "./dist/cli-plugin.d.ts",
+      "default": "./dist/cli-plugin.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist"
   ],

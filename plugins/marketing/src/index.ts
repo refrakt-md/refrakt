@@ -288,6 +288,11 @@ Select the plan that best fits your needs.
 
 export default marketing;
 
+// SPEC-161 D1 — the attribution codemod, and the parser it shares with the rune.
+export { migrateTestimonialAttribution } from './migrate-testimonial.js';
+export type { TestimonialMigration } from './migrate-testimonial.js';
+export { parseAttribution } from './tags/testimonial.js';
+
 export type {
 	FeatureProps,
 	CtaProps,
