@@ -225,8 +225,10 @@ Select the plan that best fits your needs.
 			seoType: 'Review',
 			category: 'Section',
 			snippet: [
-				'{% testimonial author="${2:Author Name}" role="${3:Role or company}" %}',
+				'{% testimonial %}',
 				'> ${1:Quote text goes here.}',
+				'',
+				'**${2:Author Name}** — ${3:Role or company}',
 				'{% /testimonial %}',
 			],
 			fixture: `{% testimonial %}
@@ -285,8 +287,6 @@ Select the plan that best fits your needs.
 export default marketing;
 
 // SPEC-161 D1 — the attribution codemod, and the parser it shares with the rune.
-export { migrateTestimonialAttribution } from './migrate-testimonial.js';
-export type { TestimonialMigration } from './migrate-testimonial.js';
 export { parseAttribution } from './tags/testimonial.js';
 
 export type {

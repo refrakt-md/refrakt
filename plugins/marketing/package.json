@@ -19,10 +19,6 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./cli-plugin": {
-      "types": "./dist/cli-plugin.d.ts",
-      "default": "./dist/cli-plugin.js"
-    },
     "./package.json": "./package.json"
   },
   "files": [

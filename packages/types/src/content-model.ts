@@ -40,8 +40,19 @@ export interface ContentFieldDefinition {
 	/** Human-readable description for editor UI (future). */
 	description?: string;
 
-	/** For list fields: declares how to extract structured data from each list item. */
+	/** For list fields: declares how to extract structured data from each list item.
+	 *  On a `paragraph` field (SPEC-182 D1), it reads one record from the
+	 *  paragraph's inline content, and the field matches only a paragraph in which
+	 *  every non-optional item field is found. */
 	itemModel?: ItemModel;
+
+	/**
+	 * SPEC-182 D2 — on a paragraph field with an `itemModel`, the rune's own
+	 * declared attributes this field supplies when the author did not set them:
+	 * `{ author: '$name' }`. The author's attribute always wins. A composition
+	 * counts a filling field as placed, into values rather than by a slot.
+	 */
+	fills?: Record<string, string>;
 
 	/**
 	 * When set alongside `itemModel` on a list field, each extracted item is

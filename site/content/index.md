@@ -148,8 +148,10 @@ Core ships with essentials like `hint`, `tabs`, and `accordion`. Community packa
   `spec`, `work`, `bug`, `decision`, `milestone`
 {% /feature %}
 
-{% testimonial variant="quote" spacing="breathe" width="content" reveal="blur" author="Claude Opus" role="AI, Anthropic" %}
+{% testimonial variant="quote" spacing="breathe" width="content" reveal="blur" %}
 > Once you see content through the refrakt lens, plain Markdown starts feeling like it's leaving so much on the table.
+
+**Claude Opus** — AI, Anthropic
 {% /testimonial %}
 
 {% cta spacing="breathe" reveal="fade" %}

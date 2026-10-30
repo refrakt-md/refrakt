@@ -72,6 +72,11 @@ of items.
 
 ### D1 — `testimonial` composes once `section` has a portrait zone, with its author as attributes
 
+> **Amended by {% ref "SPEC-182" /%} D6–D7.** The byline stays text: a paragraph field takes an
+> item model and `fills` the rune's `author` and `role`, which remain as the alternative form.
+> "What authors give up" below no longer holds, and the paragraph form is not reported as
+> `content-unmatched`.
+
 **Built from:** `section` with a split and `media="portrait"` ({% ref "SPEC-160" /%} D2), the
 rating `metablock`, and a byline `metablock` in the `lead` layout (D6).
 

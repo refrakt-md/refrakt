@@ -1,4 +1,4 @@
-{% spec id="SPEC-182" status="draft" tags="runes, composition, content-model, testimonial, reinterpretation, seo" %}
+{% spec id="SPEC-182" status="accepted" tags="runes, composition, content-model, testimonial, reinterpretation, seo" %}
 
 # A paragraph is reinterpreted into a rune's own values, so testimonial keeps its byline as text
 
@@ -119,7 +119,7 @@ only ever sees one value. There is no `{% if %}` on the form the author chose.
 
 When both are written, the attribute wins, the paragraph is consumed, and validation reports a
 warning (`fill-overridden`), naming the attribute and the line, because content an author wrote
-then does not render. A paragraph that fills nothing is never consumed.
+then does not render. *(Severity settled 2026-10-30: a warning, not an info.)* A paragraph that fills nothing is never consumed.
 
 ### D5 — a filling field is placed into values, not by a slot
 
@@ -198,8 +198,6 @@ D6 the paragraph is the documented form, so both point the wrong way. Neither is
 
 ## Open questions
 
-- **Severity of `fill-overridden`** (D4): a warning, as proposed, or an info. A warning is
-  proposed because content the author wrote does not render.
 - **Whether `fills` should also be allowed on a list field without `emitTag`**, filling from the
   first item. No rune needs it; left out until one does.
 
