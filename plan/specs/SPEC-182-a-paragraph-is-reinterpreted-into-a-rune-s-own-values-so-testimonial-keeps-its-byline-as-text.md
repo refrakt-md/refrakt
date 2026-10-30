@@ -1,4 +1,4 @@
-{% spec id="SPEC-182" status="accepted" tags="runes, composition, content-model, testimonial, reinterpretation, seo" %}
+{% spec id="SPEC-182" status="implemented" tags="runes, composition, content-model, testimonial, reinterpretation, seo" %}
 
 # A paragraph is reinterpreted into a rune's own values, so testimonial keeps its byline as text
 

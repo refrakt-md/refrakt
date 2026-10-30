@@ -1,4 +1,4 @@
-{% spec id="SPEC-181" status="draft" tags="runes, composition, site, staging, review, plugins, rollout" %}
+{% spec id="SPEC-181" status="accepted" tags="runes, composition, site, staging, review, plugins, rollout" %}
 
 # Staged runes: a composition is reviewed on its own reference page before it replaces a plugin rune
 

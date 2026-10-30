@@ -1,4 +1,4 @@
-{% spec id="SPEC-160" status="accepted" tags="runes, composition, primitives, section, card, marketing, storytelling" %}
+{% spec id="SPEC-160" status="implemented" tags="runes, composition, primitives, section, card, marketing, storytelling" %}
 
 # Section is the composition base; card is a section with a surface
 
