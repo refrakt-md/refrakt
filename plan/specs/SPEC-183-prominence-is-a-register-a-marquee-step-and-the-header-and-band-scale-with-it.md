@@ -77,7 +77,7 @@ A prominence step publishes the header's values, not just the title's:
 |---|---|---|---|---|
 | `--rf-prominence-size` | the title (exists) | ramp | ramp | ramp |
 | `--rf-prominence-blurb-size` | `[data-section="description"]` | `text` | `text-lg` | `text-lg` at `display`, `text-xl` at `marquee` |
-| `--rf-prominence-header-gap` | the space after the title, and after the blurb | the section's own | 1.25× | 2× |
+| `--rf-prominence-header-scale` | a multiplier of the header's gaps (after the title, and after the header) | the section's own | 1.25× | 2× |
 
 - **The values are Lumina's**, written as custom properties in `dimensions/surfaces.css` beside the
   title ramp. Another theme sets its own or none. They are not added to the typed token contract
@@ -173,7 +173,7 @@ on staging finds it wrong.
 ## Acceptance Criteria
 
 - [ ] `prominence` accepts `marquee`, from one value list, with a title ramp of 13/6 in Lumina; `display` and the lower steps are unchanged
-- [ ] Each step publishes `--rf-prominence-blurb-size` and `--rf-prominence-header-gap`, cleared at every rune root, and `normal` sets nothing
+- [ ] Each step publishes `--rf-prominence-blurb-size` and `--rf-prominence-header-scale`, cleared at every rune root, and `normal` sets nothing
 - [ ] A flush section at `display` or `marquee` takes the block padding of D3, at both widths, and a cover band moves it onto the overlaid content
 - [ ] Lumina draws a `display` or `marquee` title with the gradient through `--rf-prominence-title-fill`, never on a nested rune's title, and not under forced colours
 - [ ] The large buttons apply at `marquee` only

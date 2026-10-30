@@ -10,7 +10,7 @@ the large buttons apply at `marquee` only (D5).
 ## Acceptance Criteria
 - [x] `PROMINENCE_VALUES` gains `marquee`, and the universal attribute definition, `RuneConfig.defaultProminence` and the editor read it (D1)
 - [x] Lumina ramps the `marquee` title at 13/6 of the resting size, and `display` and the lower steps are unchanged (D1)
-- [x] Each step publishes `--rf-prominence-blurb-size` and `--rf-prominence-header-gap`, `normal` sets neither, and both are cleared at every rune root (D2)
+- [x] Each step publishes `--rf-prominence-blurb-size` and `--rf-prominence-header-scale`, `normal` sets neither, and both are cleared at every rune root (D2)
 - [x] A flush section at `display` or `marquee` takes D3's block padding at both widths, and a cover band moves it onto the overlaid content (D3)
 - [x] The `display` and `marquee` titles take the gradient through `--rf-prominence-title-fill`, never on a nested rune's title, and not under `forced-colors` (D4)
 - [x] `actions.css` gives the large buttons at `marquee` only (D5)
