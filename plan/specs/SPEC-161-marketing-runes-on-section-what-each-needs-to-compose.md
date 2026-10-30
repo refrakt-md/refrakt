@@ -1,4 +1,4 @@
-{% spec id="SPEC-161" status="draft" tags="runes, composition, marketing, primitives, section, seo" %}
+{% spec id="SPEC-161" status="accepted" tags="runes, composition, marketing, primitives, section, seo" %}
 
 # Marketing runes on section: what each needs to compose
 
