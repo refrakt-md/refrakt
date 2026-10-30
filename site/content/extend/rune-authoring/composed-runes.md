@@ -62,7 +62,7 @@ A tag holding only prose and inline tags, such as a `{% hint %}` with paragraphs
 | `description` | What the rune is for — shown by `refrakt reference` and in prompts. |
 | `attributes` | The rune's attributes: each `{ type, required, default, matches, description }`, `type` one of `string`, `number`, `boolean`. An attribute with `matches` becomes a `data-*` modifier on the root. |
 | `provides` | Capabilities the rune bears. `[prose]` admits the prose attributes (`reading`, `dropcap`) on it. |
-| `content` | The content model: how authored Markdown becomes named fields. `type: sequence` with `fields`; `type: sections` with a `preamble` and per-section `sectionModel`, `emitAttributes`, `headingExtract`, `knownSections`, `implicitSection`; or `type: delimited` with `zones`. Each field is `{ match, optional, greedy, description, itemModel, emitTag, emitAttributes }`. See [the content models a composition takes](#the-content-models-a-composition-takes) and [Content Models](/extend/rune-authoring/content-models). |
+| `content` | The content model: how authored Markdown becomes named fields. `type: sequence` with `fields`; `type: sections` with a `preamble` and per-section `sectionModel`, `emitAttributes`, `headingExtract`, `knownSections`, `implicitSection`; or `type: delimited` with `zones`. Each field is `{ match, optional, greedy, description, itemModel, emitTag, emitAttributes, fills }`. See [the content models a composition takes](#the-content-models-a-composition-takes) and [Content Models](/extend/rune-authoring/content-models). |
 | `metaFields`, `blocks` | Metadata about attribute values, and the blocks that group them — placed with `{% metablock %}`. |
 | `registers` | Entities and edges the rune puts in the site registry. See [Declaring Registration](/extend/rune-authoring/registration). |
 | `schema` | The schema.org row for the rune — in a plugin only, see [why](#why-schema-is-allowed-in-a-plugin-and-not-in-a-project). |
@@ -188,6 +188,38 @@ rows:
 
 - **A `pattern` is a regular expression, written as a YAML string.** Capture group 1 is the value, or the whole match without one. `remainder` takes what is left.
 - **Patterns consume the text they match, in order.** In the example `value` must be `remainder`: a second pattern expecting the colon would find it already gone.
+
+### A paragraph read into the rune's own values
+
+A field matching `paragraph` takes an `itemModel` too, in the same vocabulary. It reads the paragraph's inline content into one record, and `fills` names the rune's declared attributes those values supply:
+
+```yaml
+attributes:
+  author: { type: string }
+  role:   { type: string }
+content:
+  type: sequence
+  fields:
+    quote: { match: blockquote }
+    attribution:
+      match: paragraph
+      optional: true
+      itemModel:
+        fields:
+          - { name: name, match: strong }
+          - { name: role, match: text, pattern: '^\s*[-–—,]\s*(.+)$', optional: true }
+      fills: { author: $name, role: $role }
+```
+
+`**Ada Lovelace** — Analyst` fills `author` = `Ada Lovelace` and `role` = `Analyst`, exactly as `author="Ada Lovelace" role="Analyst"` would. The values land in the rune's field bag, so `{% metablock %}`, `$attrs`, the schema row and `registers` read them the same way, whichever form the author wrote.
+
+- **The field matches only a paragraph whose required item fields match.** A paragraph with no `strong` is not a byline: it is left for the next field.
+- **The author's attribute wins.** A value written as an attribute is never replaced by one read from content. Writing both is a `fill-overridden` warning, because the paragraph then does not render.
+- **Values are flattened text.** `**Ada** _Lovelace_` fills `Ada Lovelace`.
+- **A filling field is placed into values, not by a slot.** It does not need a `{% slot %}`, and placing it with one as well is an error: the byline would render twice.
+- `fills` may name only declared attributes, and only `$` fields of its own item model.
+
+Use it when the reader sees the values as text: a byline, a credit, a caption line. What configures the rune and is never read as prose (a rating, a variant) stays an attribute.
 
 ### `$attrs`
 
@@ -518,6 +550,8 @@ Each error has a code. The fix column assumes the cause in the meaning column.
 | `each-on-list-ambiguous` | `each` iterates a greedy field that can collect several lists. | Make the field match one list, not greedily, and `each` iterates its items. |
 | `each-item-unplaced` | An `each` slot has no bare `{% slot /%}`, so each item's content would be dropped. | Add `{% slot /%}` where the item's content goes. |
 | `field-unplaced` | A content-model field is placed by no slot, so its content would be dropped. | Place it, or remove the field. |
+| `fills-invalid` | A field's `fills` names an attribute the definition does not declare, references a `$` field its item model does not declare, or sits on a field without an `itemModel`. | Declare the attribute, fix the reference, or give the field an `itemModel`. |
+| `fill-placed` | A field with `fills` is also placed by a slot, so its content would render as well as fill the rune's values. | Remove the slot; the filled values are placed through `{% metablock %}` or `$attrs`. |
 | `metablock-invalid` | A `{% metablock %}` has no `name`, has content, has another attribute, or sits inside a line of text. | `{% metablock name="x" /%}` on its own line. |
 | `metablock-inside-each` | A `{% metablock %}` is inside an `each` slot. | Move it outside. |
 | `metablock-undeclared` | It names no block declared under `blocks`. | Declare the block, or fix the name. |

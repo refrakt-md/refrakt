@@ -187,7 +187,18 @@ export function resolveSequence(
 
 		const child = children[childIndex];
 
-		if (matchesType(child, field.match)) {
+		// SPEC-182 D1, D3 — a paragraph field with an item model reads one record
+		// from the paragraph's inline content, and takes the paragraph only when
+		// the record's required fields are there: prose without them is left for
+		// the next field.
+		const paragraphRecord =
+			field.itemModel && !(field as any).emitTag && child.type === 'paragraph'
+				? resolveParagraphItem(child, field.itemModel)
+				: undefined;
+		const recordMissing =
+			paragraphRecord !== undefined && !hasRequiredItemFields(paragraphRecord, field.itemModel!);
+
+		if (matchesType(child, field.match) && !recordMissing) {
 			// A field matching exactly `image` should resolve to the bare image
 			// node, unwrapping the `paragraph > inline > image` Markdown produces.
 			// Scoped to the exact match so `heading|paragraph|image` header fields
@@ -208,8 +219,10 @@ export function resolveSequence(
 				childIndex++;
 			}
 
-			// If this list field has an itemModel, extract structured data
-			if (field.itemModel) {
+			if (paragraphRecord !== undefined && !field.greedy) {
+				result[`${field.name}Data`] = paragraphRecord;
+			} else if (field.itemModel) {
+				// If this list field has an itemModel, extract structured data
 				if ((field as any).emitTag) {
 					// listToTags: convert list items to emitted tag nodes
 					const listNodes = field.greedy
@@ -816,6 +829,24 @@ export function resolveListItems(listNode: Node, itemModel: ItemModel): Record<s
 // ---------------------------------------------------------------------------
 // Top-level resolver
 // ---------------------------------------------------------------------------
+
+/**
+ * SPEC-182 D1 — one record from a paragraph's inline content, read with a list
+ * item's vocabulary: the paragraph stands where the list item would.
+ */
+export function resolveParagraphItem(
+	paragraph: Node,
+	itemModel: ItemModel,
+): Record<string, unknown> {
+	return resolveListItems({ children: [paragraph] } as unknown as Node, itemModel)[0] ?? {};
+}
+
+/** Every non-optional field of an item model found a value in the record. */
+function hasRequiredItemFields(record: Record<string, unknown>, itemModel: ItemModel): boolean {
+	return itemModel.fields.every(
+		(f) => f.optional || (record[f.name] !== undefined && record[f.name] !== ''),
+	);
+}
 
 /**
  * Resolve a content model against AST children.

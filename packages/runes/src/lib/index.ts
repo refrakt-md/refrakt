@@ -832,6 +832,37 @@ function auditCompositionHeaderRoles(
 }
 
 /**
+ * SPEC-182 D4 — an attribute the author wrote that a paragraph would also have
+ * filled. The attribute wins and the paragraph does not render, so the author
+ * is told which content went unused.
+ */
+function auditCompositionFills(
+	options: ContentModelSchemaOptions,
+	composition: CompiledComposition,
+	node: Node,
+	config: Config,
+): ValidationError[] {
+	try {
+		const attrs: Record<string, any> = { ...node.transformAttributes(config) };
+		const model =
+			typeof options.contentModel === 'function'
+				? options.contentModel(attrs)
+				: options.contentModel;
+		const { content } = resolveContentModel(node.children, model, attrs);
+		return composition
+			.overriddenFills(content, node.attributes ?? {})
+			.map(({ attribute, field }) => ({
+				id: 'fill-overridden',
+				level: 'warning' as const,
+				message: `\`${attribute}\` on \`${composition.info.rune}\` is written as an attribute and also by the \`${field}\` paragraph. The attribute wins, and the paragraph does not render: remove one of them (SPEC-182 D4).`,
+			}));
+	} catch {
+		// A rune that cannot resolve here reports that through its own path.
+		return [];
+	}
+}
+
+/**
  * The validate-time warnings of a composition's placements (SPEC-145 D24, D33):
  * a carrier-placed attribute on a composition that places no rune, and a scrim
  * that cannot reach the media of a rune put in cover mode that is not the
@@ -1161,6 +1192,7 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 			...((ownValidate?.(node, config) as ValidationError[] | undefined) ?? []),
 			...auditCompositionHeaderRoles(options, composition, node, config),
 			...auditCompositionPlacements(composition, node, attributes),
+			...auditCompositionFills(options, composition, node, config),
 		];
 	}
 

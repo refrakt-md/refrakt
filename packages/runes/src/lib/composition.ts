@@ -288,6 +288,11 @@ interface SlotField {
 	/** The field may hold several lists, so `each` could not say whose items it
 	 *  iterates: `each` on it is an error rather than a guess (SPEC-169 D4). */
 	ambiguousList?: boolean;
+	/** SPEC-182 D2 — the rune attributes this field fills, attribute → `$field`.
+	 *  A filling field is placed into values, never by a slot (D5). */
+	fills?: Record<string, string>;
+	/** The fields its item model declares, which `fills` may reference. */
+	itemFields?: string[];
 }
 
 /** `match` alternatives that are a Markdown list. */
@@ -386,6 +391,8 @@ function slotFields(
 			refs,
 			...(listItems ? { listItems } : {}),
 			...(ambiguousList ? { ambiguousList } : {}),
+			...(f.fills ? { fills: f.fills } : {}),
+			...(f.itemModel ? { itemFields: f.itemModel.fields.map((i) => i.name) } : {}),
 		});
 	};
 	if (s.type === 'sequence') {
@@ -547,6 +554,12 @@ export interface CompiledComposition {
 	rootAttributes: (attrs: Record<string, any>) => Record<string, any>;
 	/** The parsed template, as construction checked it. */
 	templateNodes: readonly Node[];
+	/** SPEC-182 D4 — the filled attributes the author also wrote, for the
+	 *  `fill-overridden` warning. */
+	overriddenFills: (
+		resolved: ResolvedContent,
+		written: Record<string, unknown>,
+	) => Array<{ attribute: string; field: string }>;
 }
 
 export interface CompileCompositionOptions {
@@ -737,6 +750,16 @@ export function compileComposition(
 				`slot \`${name}\` names no field of the content model (fields: ${[...fields.keys()].join(', ') || 'none'}) (D26).`,
 			);
 		}
+		if (field?.fills) {
+			fail(
+				'fill-placed',
+				`slot \`${name}\` places field \`${name}\`, which fills ${Object.keys(field.fills)
+					.map((a) => `\`${a}\``)
+					.join(
+						', ',
+					)}. A filling field is placed into the rune's values, which the template places through a meta block or \`$attrs\`; a slot as well would render it twice. Remove the slot (SPEC-182 D5).`,
+			);
+		}
 		if (placedSlots.has(name)) {
 			fail(
 				'slot-placed-twice',
@@ -876,8 +899,35 @@ export function compileComposition(
 		};
 	}
 
-	// D11 — a field no slot places parses and then silently does not render.
-	const unplaced = [...fields.keys()].filter((f) => !placedSlots.has(f));
+	// SPEC-182 D2 — `fills` names declared attributes and item-model fields.
+	for (const [name, field] of fields) {
+		if (!field.fills) continue;
+		if (!field.itemFields) {
+			fail(
+				'fills-invalid',
+				`field \`${name}\` declares \`fills\` but no \`itemModel\`: there is nothing to fill from. Give it an item model that reads the values (SPEC-182 D1).`,
+			);
+		}
+		for (const [attr, ref] of Object.entries(field.fills)) {
+			if (!declared.has(attr)) {
+				fail(
+					'fills-invalid',
+					`field \`${name}\` fills \`${attr}\`, which the rune does not declare (declared: ${[...declared].join(', ') || 'none'}). Declare it under \`attributes\` (SPEC-182 D2).`,
+				);
+			}
+			const source = typeof ref === 'string' && ref.startsWith('$') ? ref.slice(1) : undefined;
+			if (!source || !field.itemFields!.includes(source)) {
+				fail(
+					'fills-invalid',
+					`field \`${name}\` fills \`${attr}\` from \`${ref}\`, which names no field of its item model (fields: ${field.itemFields!.join(', ')}). Write it as \`$<field>\` (SPEC-182 D2).`,
+				);
+			}
+		}
+	}
+
+	// D11 — a field no slot places parses and then silently does not render. A
+	// filling field is placed into the rune's values (SPEC-182 D5).
+	const unplaced = [...fields.keys()].filter((f) => !placedSlots.has(f) && !fields.get(f)!.fills);
 	if (unplaced.length > 0) {
 		fail(
 			'field-unplaced',
@@ -936,7 +986,12 @@ export function compileComposition(
 		resolved: ResolvedContent,
 		attrs: Record<string, any>,
 		config: Config,
+		node?: Node,
 	): RenderableTreeNodes => {
+		// SPEC-182 D2 — values a paragraph fills become the rune's own, before
+		// anything reads them. `attrs` is the caller's object, filled in place, so
+		// the schema table applied after this transform reads them too.
+		Object.assign(attrs, filledAttributes(resolved, node?.attributes ?? {}));
 		const placed = place(resolved, attrs);
 
 		const children = Markdoc.transform(placed, templateConfig(config)) as RenderableTreeNode[];
@@ -961,6 +1016,44 @@ export function compileComposition(
 		return root;
 	};
 
+	/** SPEC-182 D2, D4 — what the filling fields supply, for the attributes the
+	 *  author did not write. The author's attribute always wins. */
+	const filledAttributes = (
+		resolved: ResolvedContent,
+		written: Record<string, unknown>,
+	): Record<string, unknown> => {
+		const out: Record<string, unknown> = {};
+		const values = slotValues(structural, resolved);
+		for (const [name, field] of fields) {
+			if (!field.fills) continue;
+			const record = values[`${name}Data`] as Record<string, unknown> | undefined;
+			if (!record) continue;
+			for (const [attr, ref] of Object.entries(field.fills)) {
+				if (written[attr] !== undefined) continue;
+				const value = record[ref.slice(1)];
+				if (value !== undefined && value !== '') out[attr] = value;
+			}
+		}
+		return out;
+	};
+
+	/** SPEC-182 D4 — attributes the author wrote that a paragraph would also have
+	 *  filled: the paragraph is consumed and does not render. */
+	const overriddenFills = (
+		resolved: ResolvedContent,
+		written: Record<string, unknown>,
+	): Array<{ attribute: string; field: string }> => {
+		const out: Array<{ attribute: string; field: string }> = [];
+		const values = slotValues(structural, resolved);
+		for (const [name, field] of fields) {
+			if (!field.fills || !values[`${name}Data`]) continue;
+			for (const attr of Object.keys(field.fills)) {
+				if (written[attr] !== undefined) out.push({ attribute: attr, field: name });
+			}
+		}
+		return out;
+	};
+
 	const rootAttributes = (attrs: Record<string, any>): Record<string, any> => {
 		const { moved } = moveAttributes(plan, attrs);
 		if (moved.size === 0) return attrs;
@@ -975,6 +1068,7 @@ export function compileComposition(
 		place,
 		placements: plan,
 		rootAttributes,
+		overriddenFills,
 		templateNodes: ast.children,
 	};
 }
@@ -1595,6 +1689,7 @@ const FIELD_KEYS = new Set([
 	'itemModel',
 	'emitTag',
 	'emitAttributes',
+	'fills',
 ]);
 
 /** A field list as YAML writes it: a mapping keyed by name, or a list with `name`. */

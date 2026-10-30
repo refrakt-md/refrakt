@@ -60,6 +60,9 @@ export const COMPOSITION_ERRORS = {
 	'chrome-marked-twice': 'Two placed runes are marked `chrome`.',
 	'chrome-ambiguous': 'Several runes are placed at the top level and none is marked `chrome`.',
 	'chrome-collision': 'A rune the template places declares an attribute named `chrome`.',
+	'fills-invalid':
+		'A field’s `fills` has no item model, names an undeclared attribute, or a field its item model lacks.',
+	'fill-placed': 'A slot places a field that fills attributes.',
 	'defaults-invalid':
 		'A `defaults` entry names no universal attribute, has a value its axis does not accept, or lands nowhere.',
 
