@@ -2,7 +2,7 @@
 title: refrakt.md
 description: A content framework built on Markdoc with 100+ semantic runes
 ---
-{% hero align="left" spacing="flush" media-position="bottom" reveal="fade" %}
+{% hero align="start" spacing="flush" media-position="bottom" reveal="fade" %}
 	{% bg gradient="to-br" from="transparent" to="muted/0.2" /%}
 	{% codegroup title="index.md" %}
 		{% snippet path=$file.path lines="5-24" lang="markdoc" /%}
@@ -148,10 +148,8 @@ Core ships with essentials like `hint`, `tabs`, and `accordion`. Community packa
   `spec`, `work`, `bug`, `decision`, `milestone`
 {% /feature %}
 
-{% testimonial variant="quote" spacing="breathe" width="content" reveal="blur" %}
+{% testimonial variant="quote" spacing="breathe" width="content" reveal="blur" author="Claude Opus" role="AI, Anthropic" %}
 > Once you see content through the refrakt lens, plain Markdown starts feeling like it's leaving so much on the table.
-
-**Claude Opus** — AI, Anthropic
 {% /testimonial %}
 
 {% cta spacing="breathe" reveal="fade" %}

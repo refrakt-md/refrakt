@@ -1,4 +1,4 @@
-{% work id="WORK-684" status="ready" priority="high" complexity="simple" source="SPEC-181" tags="runes, marketing, hero, staging, migration" milestone="v0.44.0" %}
+{% work id="WORK-684" status="done" priority="high" complexity="simple" source="SPEC-181" tags="runes, marketing, hero, staging, migration" milestone="v0.44.0" pr="refrakt-md/refrakt#736" %}
 
 # The plugin hero accepts start and end for align, and the site content uses them
 
@@ -10,11 +10,11 @@ content moves to them.
 
 ## Acceptance Criteria
 
-- [ ] The plugin `hero` accepts `start` and `end` for `align`, rendering them exactly as `left` and `right`; `left` and `right` keep working
-- [ ] `site/content/index.md` and `site/content/runes/marketing/hero.md` use `start` / `end`, and nothing else in `site/content` writes `left` / `right` on a `hero`
-- [ ] The hero reference page documents `start | center | end`, and notes that `left` / `right` still work for now
-- [ ] `main`'s rendered output for those pages, the contracts and the SEO baseline are unchanged, or any diff is explained
-- [ ] A changeset records the new values
+- [x] The plugin `hero` accepts `start` and `end` for `align`, rendering them exactly as `left` and `right`; `left` and `right` keep working
+- [x] `site/content/index.md` and `site/content/runes/marketing/hero.md` use `start` / `end`, and nothing else in `site/content` writes `left` / `right` on a `hero`
+- [x] The hero reference page documents `start | center | end`, and notes that `left` / `right` still work for now
+- [x] `main`'s rendered output for those pages, the contracts and the SEO baseline are unchanged, or any diff is explained
+- [x] A changeset records the new values
 
 ## Approach
 
@@ -31,5 +31,20 @@ content moves to them.
 
 - {% ref "SPEC-181" /%}: D7, the rollout's gate 3.
 - {% ref "WORK-665" /%}: the `align` difference.
+
+## Resolution
+
+Completed: 2026-10-30
+
+Branch: `claude/milestone-v0-44-0-ism7ni`
+
+### What was done
+- `plugins/marketing/src/tags/hero.ts`: `align` matches `start | center | end | left | right`; `start` / `end` are mapped to `left` / `right` before the modifier reads them, so `data-align` and `hero.css` are unchanged.
+- `site/content/index.md` and `site/content/runes/marketing/hero.md` use `start`; no hero in `site/content` writes `left` / `right`. The reference page documents `start | center | end` and notes `left` / `right` still work.
+- Test in `plugins/marketing/test/hero.test.ts`: `start` / `end` render a tree identical to `left` / `right`.
+- Changeset `hero-align-start-end`.
+
+### Notes
+- Rendered output is unchanged by construction (the identical-tree test); contracts and the SEO baseline are unchanged.
 
 {% /work %}

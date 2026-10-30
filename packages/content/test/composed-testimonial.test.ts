@@ -159,10 +159,10 @@ describe('the attribution codemod (SPEC-161 D1)', () => {
 		]);
 	});
 
-	it('migrates every testimonial in this repository’s content and fixtures', () => {
-		// The site and the SEO fixtures still render through the plugin, which
-		// takes no `author` attribute, so the codemod is run here rather than
-		// applied to them: replacing the plugin is a later step.
+	it('has migrated every testimonial in this repository’s content and fixtures', () => {
+		// WORK-685 applied the codemod once the plugin accepted `author` / `role`
+		// (SPEC-181 D7). A further run finds nothing left to rewrite, and the
+		// content renders through the composition with nothing unmatched.
 		const files = [
 			'site/content/index.md',
 			'site/content/runes/marketing/testimonial.md',
@@ -171,8 +171,13 @@ describe('the attribution codemod (SPEC-161 D1)', () => {
 		];
 		for (const file of files) {
 			const source = readFileSync(join(ROOT, file), 'utf-8');
-			const { output, skipped } = migrateTestimonialAttribution(source);
-			expect(skipped, file).toEqual([]);
+			const { output, count, skipped } = migrateTestimonialAttribution(source);
+			expect(count, file).toBe(0);
+			expect(output, file).toBe(source);
+			expect(
+				skipped.every((s) => s.reason === 'already has an `author` attribute'),
+				file,
+			).toBe(true);
 			const { schemas } = pageContext(pkg);
 			const ast = parse(output);
 			const unmatched = Markdoc.validate(ast, { ...schemas, variables: {} } as never).filter(

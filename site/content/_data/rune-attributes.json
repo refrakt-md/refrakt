@@ -2625,9 +2625,9 @@
 			"plugin": "@refrakt-md/marketing",
 			"scope": "own",
 			"name": "align",
-			"type": "\"left\" | \"center\" | \"right\"",
+			"type": "\"start\" | \"center\" | \"end\" | \"left\" | \"right\"",
 			"required": false,
-			"description": "Horizontal alignment of headline and body text",
+			"description": "Horizontal alignment of headline and body text: start, center (default) or end. `left` and `right` still work.",
 			"page": "hero"
 		},
 		{
@@ -4578,6 +4578,26 @@
 			"type": "number",
 			"required": false,
 			"description": "Star rating value (1-5) shown alongside the testimonial",
+			"page": "testimonial"
+		},
+		{
+			"rune": "testimonial",
+			"plugin": "@refrakt-md/marketing",
+			"scope": "own",
+			"name": "author",
+			"type": "string",
+			"required": false,
+			"description": "The person quoted. Replaces the `**Name** — Role` paragraph.",
+			"page": "testimonial"
+		},
+		{
+			"rune": "testimonial",
+			"plugin": "@refrakt-md/marketing",
+			"scope": "own",
+			"name": "role",
+			"type": "string",
+			"required": false,
+			"description": "Their role or organisation, shown beneath the name.",
 			"page": "testimonial"
 		},
 		{

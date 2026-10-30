@@ -55,13 +55,13 @@ Code fences inside a hero become copyable command blocks — great for install c
 
 {% /preview %}
 
-## Left-aligned
+## Start-aligned
 
-Use `align="left"` for a more editorial feel.
+Use `align="start"` for a more editorial feel. `align` takes `start`, `center` (the default) or `end`; the older `left` and `right` still work for now.
 
 {% preview source=true %}
 
-	{% hero align="left" %}
+	{% hero align="start" %}
 	# Documentation that writes itself
 
 	Semantic runes transform your Markdown into structured, accessible content.

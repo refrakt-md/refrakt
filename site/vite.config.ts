@@ -15,7 +15,9 @@ export default defineConfig({
 		sveltekit(),
 		refrakt({
 			configPath: '../refrakt.config.json',
-			site: 'main',
+			// SPEC-181 — `REFRAKT_SITE=staging` renders the same content with the
+			// staged runes in `site/staged-runes/` (`npm run dev:staging`).
+			site: process.env.REFRAKT_SITE ?? 'main',
 			variables: { version: '__REFRAKT_VERSION__' },
 		}),
 	],

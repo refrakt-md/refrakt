@@ -1,4 +1,4 @@
-{% work id="WORK-680" status="ready" priority="high" complexity="simple" source="SPEC-181" tags="runes, composition, staging, site, config" milestone="v0.44.0" %}
+{% work id="WORK-680" status="done" priority="high" complexity="simple" source="SPEC-181" tags="runes, composition, staging, site, config" milestone="v0.44.0" pr="refrakt-md/refrakt#736" %}
 
 # A staging site renders the docs with staged runes in place of plugin runes
 
@@ -8,12 +8,12 @@ configuration: `runes.dir` and `runes.prefer` (`__project__`).
 
 ## Acceptance Criteria
 
-- [ ] `refrakt.config.json` declares a `staging` site with `main`'s `contentDir`, theme, tints, plugins, route rules and icons, plus `runes.dir: "site/staged-runes"`
-- [ ] A test fails when `staging` differs from `main` in any field other than `runes` (SPEC-181 D3)
-- [ ] `site/vite.config.ts` reads the site from `REFRAKT_SITE`, defaulting to `main`; `npm run dev:staging` serves the staging site on its own port and `npm run build:staging` builds it into its own output directory
-- [ ] A test with a staged rune that shadows a plugin rune shows that the staged schema, generated config and aliases replace the plugin's, and that the plugin's hand-written theme entry for it is not applied
-- [ ] `main`'s build output, `contracts --check` and `seo:baseline:check` are unchanged with runes staged
-- [ ] Every other site-scoped command that defaults to a single site (`refrakt validate`, `inspect`, `contracts`) still resolves `main` here, or is pointed at it explicitly where it would now be ambiguous
+- [x] `refrakt.config.json` declares a `staging` site with `main`'s `contentDir`, theme, tints, plugins, route rules and icons, plus `runes.dir: "site/staged-runes"`
+- [x] A test fails when `staging` differs from `main` in any field other than `runes` (SPEC-181 D3)
+- [x] `site/vite.config.ts` reads the site from `REFRAKT_SITE`, defaulting to `main`; `npm run dev:staging` serves the staging site on its own port and `npm run build:staging` builds it into its own output directory
+- [x] A test with a staged rune that shadows a plugin rune shows that the staged schema, generated config and aliases replace the plugin's, and that the plugin's hand-written theme entry for it is not applied
+- [x] `main`'s build output, `contracts --check` and `seo:baseline:check` are unchanged with runes staged
+- [x] Every other site-scoped command that defaults to a single site (`refrakt validate`, `inspect`, `contracts`) still resolves `main` here, or is pointed at it explicitly where it would now be ambiguous
 
 ## Approach
 
@@ -31,5 +31,24 @@ configuration: `runes.dir` and `runes.prefer` (`__project__`).
 
 - {% ref "SPEC-181" /%}: D1, D3.
 - {% ref "SPEC-153" /%}: D4, D8, D10.
+
+## Resolution
+
+Completed: 2026-10-30
+
+Branch: `claude/milestone-v0-44-0-ism7ni`
+
+### What was done
+- `refrakt.config.json`: a `staging` site that copies `main` field for field and adds `runes: { dir: "site/staged-runes" }`. It was inserted as text, so `main` is untouched.
+- `site/vite.config.ts` reads the site from `REFRAKT_SITE` (default `main`). `site/svelte.config.js` writes `build-staging/` for it, which is gitignored.
+- `npm run dev:staging` (port 5174) and `npm run build:staging` are available at the root and in `site`.
+- `packages/content/test/staging-site.test.ts`:
+  - `staging` equals `main` apart from `runes` (SPEC-181 D3);
+  - a staged rune preferred with `__project__` replaces the plugin's schema, its generated config replaces the hand-written `Hero` entry entirely, and its aliases replace the plugin's (`call-to-action` is dropped with a staged `cta`).
+- `scripts/generate-rune-attributes.mjs` leaves `staging` out, since the reference pages document what ships.
+
+### Notes
+- Site-scoped commands needed no change. `inspect` / `contracts` / `reference` already required `--site` because `plan` was a second site, and every script names `main`. `refrakt validate` validates every site, so CI now validates `staging` too.
+- Dev rebuild on a staged rune edit uses SPEC-153 D10's watch on `runes.dir`, which the plugin already resolves per site.
 
 {% /work %}

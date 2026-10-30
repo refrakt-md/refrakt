@@ -103,3 +103,44 @@ Custom terms.
 		expect(rest).toEqual([expect.objectContaining({ '@type': 'Offer', name: 'Enterprise' })]);
 	});
 });
+
+// SPEC-181 D7 / WORK-685 — the composed testimonial's attribution form, which
+// the plugin accepts so this repository's content can move to it first.
+describe('SEO: testimonial attribution as attributes', () => {
+	const paragraph = `{% testimonial rating=4 %}
+> This product changed our workflow completely.
+
+**Jane Doe** — CEO, Acme Corp
+
+![Jane](/jane.png)
+{% /testimonial %}`;
+	const attributes = `{% testimonial rating=4 author="Jane Doe" role="CEO, Acme Corp" %}
+> This product changed our workflow completely.
+
+![Jane](/jane.png)
+{% /testimonial %}`;
+
+	it('publishes the same Review graph either way', () => {
+		expect(seo(attributes).jsonLd).toEqual(seo(paragraph).jsonLd);
+		expect((seo(attributes).jsonLd[0] as any).author).toEqual({
+			'@type': 'Person',
+			name: 'Jane Doe',
+			jobTitle: 'CEO, Acme Corp',
+		});
+	});
+
+	it('renders the same tree either way', () => {
+		expect(JSON.stringify(parse(attributes))).toBe(JSON.stringify(parse(paragraph)));
+	});
+
+	it('reads the attributes, not the paragraph, when either is set', () => {
+		const both = `{% testimonial author="Ada" %}
+> Q.
+
+**Jane Doe** — CEO
+{% /testimonial %}`;
+		const review = seo(both).jsonLd[0] as any;
+		expect(review.author.name).toBe('Ada');
+		expect(review.author.jobTitle).toBeUndefined();
+	});
+});
