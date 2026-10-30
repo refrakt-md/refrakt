@@ -100,6 +100,7 @@ export {
 	UNIVERSAL_AXIS_FACETS,
 	DESCRIBABLE_FACETS,
 	UNIVERSAL_POSTURE_REASONS,
+	PROMINENCE_VALUES,
 } from './facets/index.js';
 export type {
 	UniversalAxisFacet,

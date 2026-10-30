@@ -16228,7 +16228,7 @@
 		{
 			"axis": "prominence",
 			"name": "prominence",
-			"type": "\"quiet\" | \"normal\" | \"prominent\" | \"display\"",
+			"type": "\"quiet\" | \"normal\" | \"prominent\" | \"display\" | \"marquee\"",
 			"required": false,
 			"description": "Section-header emphasis (only on page-section-header family runes)"
 		},

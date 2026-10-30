@@ -4,8 +4,8 @@
 
 `prominence` sizes a section header's title and nothing else. This spec adds a fifth step above
 `display`, called `marquee`, and widens each step to the whole header: the blurb, the space
-between the title and what follows it, and the padding of a flush band. Lumina gives the marquee
-title its gradient. With that, the composed `hero` is `section` at `marquee` and the composed `cta`
+between the title and what follows it, and the padding of a flush band. Lumina gives the `display`
+and `marquee` titles their gradient. With that, the composed `hero` is `section` at `marquee` and the composed `cta`
 is `section` at `display`, and neither needs CSS of its own.
 
 It corrects one row of {% ref "SPEC-160" /%} D7, which said a display-size headline and blurb
@@ -23,8 +23,8 @@ the blurb is body size, the band is tight and the headline is solid. Each is a v
 
 | | plugin `hero` | plugin `cta` | `section` at `display` today |
 |---|---|---|---|
-| Title | 3.25rem, gradient | 2.5rem (`4xl`), solid | 1.5rem × 5/3 = 2.5rem |
-| Blurb | `text-xl` | `text-xl` | `text` |
+| Title | 3.25rem, gradient | 2.5rem (`4xl`), gradient | 1.5rem × 5/3 = 2.5rem, solid |
+| Blurb | `text-xl` | `text-lg` | `text` |
 | Block padding | 7rem / 6.5rem | 3.5rem / 3rem | `--rune-padding` (`spacing-sm`) |
 | Buttons | large | default | large (SPEC-160 D7) |
 
@@ -76,8 +76,8 @@ A prominence step publishes the header's values, not just the title's:
 | custom property | what it sizes | `quiet`, `normal` | `prominent` | `display`, `marquee` |
 |---|---|---|---|---|
 | `--rf-prominence-size` | the title (exists) | ramp | ramp | ramp |
-| `--rf-prominence-blurb-size` | `[data-section="description"]` | `text` | `text-lg` | `text-xl` |
-| `--rf-prominence-header-gap` | the space after the title, and after the blurb | the section's own | 1.25× | 2× |
+| `--rf-prominence-blurb-size` | `[data-section="description"]` | `text` | `text-lg` | `text-lg` at `display`, `text-xl` at `marquee` |
+| `--rf-prominence-header-scale` | a multiplier of the header's gaps (after the title, and after the header) | the section's own | 1.25× | 2× |
 
 - **The values are Lumina's**, written as custom properties in `dimensions/surfaces.css` beside the
   title ramp. Another theme sets its own or none. They are not added to the typed token contract
@@ -114,14 +114,19 @@ These are the plugin `cta`'s and `hero`'s own values, and the plugin `hero`'s mo
 This is the one place the axis reaches past type. The alternative, a padding attribute on the
 composition, would make every composed band restate what its prominence already says.
 
-### D4 — Lumina gives the marquee title its gradient
+### D4 — Lumina gives the display and marquee titles their gradient
 
-Lumina draws a `marquee` title with the plugin `hero`'s gradient, text to muted at 135°, clipped to
-the text. It is a theme choice, not part of the step: another theme draws `marquee` however it
-likes, and Lumina's own `display` stays solid, as the plugin `cta` is.
+Lumina draws a `display` or `marquee` title with the gradient the plugin `hero` and `cta` both use,
+text to muted at 135°, clipped to the text. It is a theme choice, not part of the step: another
+theme draws them however it likes.
 
-- It rides a custom property, `--rf-prominence-title-fill`, set by `marquee` and cleared at every
-  rune root (D2), so a nested rune's title is never painted.
+*(Amended 2026-10-30, implementing WORK-689: this first gave the gradient to `marquee` alone, on the
+belief that the plugin `cta` is solid. It is not. The `display` blurb was also first `text-xl`; the
+plugin `cta`'s is `text-lg`, which D2 now gives `display`. Both were settled to match the plugins.
+The surfaces page's `display` examples take the gradient too.)*
+
+- It rides custom properties (`--rf-prominence-title-fill`, `-clip`, `-ink`), set by the two steps
+  and cleared at every rune root (D2), so a nested rune's title is never painted.
 - **Forced colours and a tint drop it.** Under `forced-colors: active` the title is plain text. When
   the section carries a tint whose text colour differs from the page's, the gradient is computed from
   the tint's tokens, since it is built from `--rf-color-text` and `--rf-color-muted`.
@@ -168,9 +173,9 @@ on staging finds it wrong.
 ## Acceptance Criteria
 
 - [ ] `prominence` accepts `marquee`, from one value list, with a title ramp of 13/6 in Lumina; `display` and the lower steps are unchanged
-- [ ] Each step publishes `--rf-prominence-blurb-size` and `--rf-prominence-header-gap`, cleared at every rune root, and `normal` sets nothing
+- [ ] Each step publishes `--rf-prominence-blurb-size` and `--rf-prominence-header-scale`, cleared at every rune root, and `normal` sets nothing
 - [ ] A flush section at `display` or `marquee` takes the block padding of D3, at both widths, and a cover band moves it onto the overlaid content
-- [ ] Lumina draws a `marquee` title with the gradient through `--rf-prominence-title-fill`, never on a nested rune's title, and not under forced colours
+- [ ] Lumina draws a `display` or `marquee` title with the gradient through `--rf-prominence-title-fill`, never on a nested rune's title, and not under forced colours
 - [ ] The large buttons apply at `marquee` only
 - [ ] The staged `hero` defaults to `marquee` and the staged `cta` declares `display`, and their comparison tests assert the title size, blurb size, spacing, gradient and button size against the plugin, with each remaining difference explained
 - [ ] The surfaces reference page, the theme-authoring dimensions page and the composed-runes guide document `marquee` and the widened register

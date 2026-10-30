@@ -556,7 +556,7 @@ Lumina styles the **`elevation`** depth ladder by attribute — no rune-name lis
 }
 ```
 
-All surfaces consume the `--rune-padding` variable set by the density dimension, so padding automatically scales when density changes. The second surface axis, **`prominence`**, re-points the section-header title size (`quiet|normal|prominent|display`); **`width`** (`compact|narrow|wide|full`) is a *layout* axis — page bleed, not chrome. See [Surfaces](/runes/surfaces) for the author reference and [Surface model](/extend/theme-authoring/surfaces) for the config side.
+All surfaces consume the `--rune-padding` variable set by the density dimension, so padding automatically scales when density changes. The second surface axis, **`prominence`**, re-points the section-header register (`quiet|normal|prominent|display|marquee`). Lumina publishes each step as custom properties a theme can retune: `--rf-prominence-size` (title), `--rf-prominence-blurb-size`, `--rf-prominence-header-scale` (the header's gaps), `--rf-prominence-band-padding` (a flush band's block padding), and `--rf-prominence-title-fill` / `-clip` / `-ink` (the title's paint, Lumina's gradient at `display` and `marquee`). All are cleared at every rune root, so a nested rune keeps its own header; **`width`** (`compact|narrow|wide|full`) is a *layout* axis — page bleed, not chrome. See [Surfaces](/runes/surfaces) for the author reference and [Surface model](/extend/theme-authoring/surfaces) for the config side.
 
 ---
 

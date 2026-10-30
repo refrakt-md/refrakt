@@ -319,6 +319,7 @@ defaults:
 
 - **Universal attributes only.** A rune's own attribute takes its default under `attributes`. A key that is not a universal attribute, or a value its axis does not accept, is rejected when the definition loads (`defaults-invalid`).
 - **A default lands where the author's attribute would.** `width` on the root, `elevation` on the paint carrier, `prominence` on the header's owner. A default that would land nowhere, because no placed rune takes the axis, is rejected too.
+- **A band's loudness is its `prominence`.** The `prominence` step sizes the header's title, blurb and spacing and, on a `flush` band, its padding, so a composition picks a step rather than writing CSS. The composed `hero` defaults to `marquee`, a landing page's opening band, and the composed `cta` to `display`.
 - **`density` is a default only** (`full`, `compact`, `minimal`). Authors cannot write it, so nothing overrides it. It lands on the carrier.
 - **The order is author, then template literal, then default.** A literal the template writes on the rune where the attribute lands, `{% section elevation="sunken" %}`, beats the definition's default. The author's attribute beats both: it replaces the literal at expansion. **A template cannot pin a universal attribute against the author.**
 

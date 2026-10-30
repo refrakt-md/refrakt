@@ -12,7 +12,7 @@ Refrakt's surface system gives every rune up to two decorable surfaces — **sel
 | Vocabulary | Targets | Carries |
 |------------|---------|---------|
 | `elevation` | self | depth ladder: `sunken · flush · flat · raised · floating · overlay` (fill, border, resting `box-shadow`) |
-| `prominence` | self | section-header family: `quiet · normal · prominent · display` (title type size) |
+| `prominence` | self | section-header family: `quiet · normal · prominent · display · marquee` (title and blurb size, header spacing, a flush band's padding) |
 | `frame` | media | aspect · displace · offset · oversize · place · anchor · shadow (`drop-shadow`) |
 | `substrate` / inset / `tint` / `bg` | fill | pattern, colour, image |
 

@@ -13,7 +13,7 @@ attributes:
 defaults:
   width: full
   elevation: flush
-  prominence: display
+  prominence: marquee
 content:
   type: delimited
   delimiter: hr

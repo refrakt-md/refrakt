@@ -83,7 +83,7 @@
  * --rune-padding). Replaces the old inline/banner padding buckets; banner runes
  * that want a more generous band declare their own `padding-block`. */
 	[data-elevation="flush"] {
-		padding-block: var(--rune-padding, var(--rf-spacing-sm));
+		padding-block: var(--rf-prominence-band-padding, var(--rune-padding, var(--rf-spacing-sm)));
 	}
 
 	/* ─── Prominence: page-section-header type register ───────────────────
@@ -115,6 +115,72 @@
 	}
 	[data-prominence="display"] {
 		--rf-prominence-size: calc(var(--rf-title-size, var(--rf-text-2xl)) * 5 / 3);
+	}
+	/* SPEC-183 D1 — a landing page's opening band: 3.25rem from the 1.5rem default. */
+	[data-prominence="marquee"] {
+		--rf-prominence-size: calc(var(--rf-title-size, var(--rf-text-2xl)) * 13 / 6);
+	}
+
+	/* ─── Prominence: the rest of the header, and the band (SPEC-183 D2–D4) ──
+ * A step sizes the whole header, not just its title. Each value is a custom
+ * property, cleared at every rune root in density.css with
+ * --rf-prominence-size, so a card nested in a marquee band keeps its own.
+ * `normal` and `quiet` set nothing: a section at rest looks as it did.
+ *
+ *   --rf-prominence-blurb-size    the description's type size
+ *   --rf-prominence-header-scale  multiplies the header's gaps (title → blurb,
+ *                                 header → what follows)
+ *   --rf-prominence-band-padding  a flush band's block padding (D3)
+ *   --rf-prominence-title-fill    the title's paint (D4); Lumina's display and
+ *   --rf-prominence-title-clip,   marquee are a gradient clipped to the text
+ *   --rf-prominence-title-ink */
+	[data-prominence="prominent"] {
+		--rf-prominence-blurb-size: var(--rf-text-lg);
+		--rf-prominence-header-scale: 1.25;
+	}
+	[data-prominence="display"] {
+		--rf-prominence-blurb-size: var(--rf-text-lg);
+		--rf-prominence-header-scale: 2;
+		--rf-prominence-band-padding: 3.5rem 3rem;
+	}
+	[data-prominence="marquee"] {
+		--rf-prominence-blurb-size: var(--rf-text-xl);
+		--rf-prominence-header-scale: 2;
+		--rf-prominence-band-padding: 7rem 6.5rem;
+	}
+	/* The loud steps' titles are Lumina's gradient, as the plugin hero's and
+ * cta's were. */
+	:is([data-prominence="display"], [data-prominence="marquee"]) {
+		--rf-prominence-title-fill: linear-gradient(
+			135deg,
+			var(--rf-color-text) 0%,
+			var(--rf-color-muted) 100%
+		);
+		--rf-prominence-title-clip: text;
+		--rf-prominence-title-ink: transparent;
+	}
+	@media (max-width: 640px) {
+		[data-prominence="display"] {
+			--rf-prominence-band-padding: 2.5rem 2rem;
+		}
+		[data-prominence="marquee"] {
+			--rf-prominence-band-padding: 3.5rem 3rem;
+		}
+	}
+	/* A cover band keeps its media well flush: the padding moves onto the
+ * overlaid content (D3). */
+	[data-elevation="flush"][data-media-position="cover"]:is(
+		[data-prominence="display"],
+		[data-prominence="marquee"]
+	) {
+		padding-block: 0;
+	}
+	[data-elevation="flush"][data-media-position="cover"]:is(
+			[data-prominence="display"],
+			[data-prominence="marquee"]
+		)
+		> [data-name="content"] {
+		padding-block: var(--rf-prominence-band-padding);
 	}
 
 	/* ─── Media slot shares the surface chrome ───────────────────────────

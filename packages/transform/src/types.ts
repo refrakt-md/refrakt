@@ -1,6 +1,7 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import type { ReadingRegister } from './reading.js';
 import type { LocalizedValue } from './i18n.js';
+import type { ProminenceValue } from './facets/prominence.js';
 
 // ─── SPEC-080: Layout primitive vocabulary ────────────────────────────
 
@@ -394,7 +395,7 @@ export interface RuneConfig {
 	 *  page-section header (the `sections` preamble/title/description cluster).
 	 *  The engine emits `data-prominence`; the skin maps it to a type register.
 	 *  Author `prominence=` overrides. */
-	defaultProminence?: 'quiet' | 'normal' | 'prominent' | 'display';
+	defaultProminence?: ProminenceValue;
 
 	/** Maps structural ref names to standard section roles.
 	 *  The identity transform emits `data-section` on elements whose

@@ -70,16 +70,16 @@ describe('the composed hero definition (WORK-665)', () => {
 		expect(out.attributes['data-media-position']).toBeUndefined();
 	});
 
-	it('defaults to full width, flush and display prominence, and hosts its media as bleed', () => {
+	it('defaults to full width, flush and marquee prominence, and hosts its media as bleed', () => {
 		expect(info.defaults).toMatchObject({
 			width: { value: 'full', placement: 'root' },
 			elevation: { value: 'flush', rune: 'section' },
-			prominence: { value: 'display', rune: 'section' },
+			prominence: { value: 'marquee', rune: 'section' },
 		});
 		const out = mine(withMedia(''));
 		expect(out.attributes['data-width']).toBe('full');
 		expect(sectionOf(out).attributes['data-elevation']).toBe('flush');
-		expect(sectionOf(out).attributes['data-prominence']).toBe('display');
+		expect(sectionOf(out).attributes['data-prominence']).toBe('marquee');
 		expect(byName(out, 'media')[0].attributes['data-guest-fit']).toBe('bleed');
 	});
 
@@ -141,10 +141,11 @@ describe('composed hero against the plugin, for every gallery cell (SPEC-147 D2)
 		expect(b.attributes['data-rune']).toBe('hero');
 		// Width stays on the root; the paint and the header's prominence move to
 		// the section (SPEC-145 D33). The plugin rests at its own title size and
-		// carries no `data-prominence`; the composition states `display`.
+		// carries no `data-prominence`; the composition states `marquee`, the
+		// step that reproduces it (SPEC-183; composed-landing-register.test.ts).
 		expect(b.attributes['data-width']).toBe(a.attributes['data-width']);
 		expect(a.attributes['data-prominence']).toBeUndefined();
-		expect(sectionOf(b).attributes['data-prominence']).toBe('display');
+		expect(sectionOf(b).attributes['data-prominence']).toBe('marquee');
 		// `section` declares no `contentMeasure`, so the content is not anchored
 		// to the text measure at `width="wide"`.
 		expect(a.attributes['data-content-measure']).toBe('anchored');
