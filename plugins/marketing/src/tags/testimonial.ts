@@ -80,6 +80,18 @@ export const testimonial = createContentModelSchema({
 			required: false,
 			description: 'Star rating value (1-5) shown alongside the testimonial',
 		},
+		// SPEC-181 D7 — the composed `testimonial`'s attribution form. Either one
+		// set replaces the `**Name** — Role` paragraph, which is then not read.
+		author: {
+			type: String,
+			required: false,
+			description: 'The person quoted. Replaces the `**Name** — Role` paragraph.',
+		},
+		role: {
+			type: String,
+			required: false,
+			description: 'Their role or organisation, shown beneath the name.',
+		},
 		variant: {
 			type: String,
 			required: false,
@@ -101,12 +113,18 @@ export const testimonial = createContentModelSchema({
 		let authorRoleTag: any;
 		let avatarTag: any;
 
+		const byAttributes = attrs.author !== undefined || attrs.role !== undefined;
+		if (byAttributes) {
+			if (attrs.author) authorNameTag = new Tag('span', {}, [String(attrs.author)]);
+			if (attrs.role) authorRoleTag = new Tag('span', {}, [String(attrs.role)]);
+		}
+
 		for (const node of children.toArray()) {
 			if (!Tag.isTag(node)) continue;
 
 			if (node.name === 'blockquote' && !quoteTag) {
 				quoteTag = node;
-			} else if (node.name === 'p' && !authorNameTag) {
+			} else if (node.name === 'p' && !authorNameTag && !byAttributes) {
 				const attribution = parseAttribution(node);
 				if (attribution) {
 					authorNameTag = new Tag('span', {}, [attribution.name]);

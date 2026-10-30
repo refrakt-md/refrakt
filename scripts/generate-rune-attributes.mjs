@@ -36,10 +36,12 @@ const CLI = join(ROOT, 'packages/cli/dist/bin.js');
 export const ARTIFACT_PATH = join(ROOT, 'site/content/_data/rune-attributes.json');
 export const REGENERATE_COMMAND = 'npm run runes:attributes';
 
-/** Sites to read, from `refrakt.config.json`. */
+/** Sites to read, from `refrakt.config.json`. `staging` is left out: it renders
+ *  `main`'s content with runes under review (SPEC-181), and the reference pages
+ *  document what ships, not what is staged. */
 export function configuredSites(root = ROOT) {
 	const config = JSON.parse(readFileSync(join(root, 'refrakt.config.json'), 'utf8'));
-	return Object.keys(config.sites ?? {});
+	return Object.keys(config.sites ?? {}).filter((site) => site !== 'staging');
 }
 
 /**

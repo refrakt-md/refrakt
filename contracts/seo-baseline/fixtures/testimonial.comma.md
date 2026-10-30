@@ -8,8 +8,6 @@ notes: >
   whatever the comma form actually produces, so the parser's behaviour is pinned
   either way rather than assumed.
 ---
-{% testimonial rating=4 %}
+{% testimonial rating=4 author="Alex Rivera" role=", CTO at Acme" %}
 > The semantic approach just makes sense.
-
-**Alex Rivera**, CTO at Acme
 {% /testimonial %}

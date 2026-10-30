@@ -1,4 +1,4 @@
-{% work id="WORK-680" status="ready" priority="high" complexity="simple" source="SPEC-181" tags="runes, composition, staging, site, config" milestone="v0.44.0" %}
+{% work id="WORK-680" status="in-progress" priority="high" complexity="simple" source="SPEC-181" tags="runes, composition, staging, site, config" milestone="v0.44.0" %}
 
 # A staging site renders the docs with staged runes in place of plugin runes
 

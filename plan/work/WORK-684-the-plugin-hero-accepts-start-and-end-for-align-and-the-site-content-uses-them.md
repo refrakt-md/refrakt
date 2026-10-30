@@ -1,4 +1,4 @@
-{% work id="WORK-684" status="ready" priority="high" complexity="simple" source="SPEC-181" tags="runes, marketing, hero, staging, migration" milestone="v0.44.0" %}
+{% work id="WORK-684" status="in-progress" priority="high" complexity="simple" source="SPEC-181" tags="runes, marketing, hero, staging, migration" milestone="v0.44.0" %}
 
 # The plugin hero accepts start and end for align, and the site content uses them
 

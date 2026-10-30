@@ -225,12 +225,8 @@ Select the plan that best fits your needs.
 			seoType: 'Review',
 			category: 'Section',
 			snippet: [
-				'{% testimonial %}',
+				'{% testimonial author="${2:Author Name}" role="${3:Role or company}" %}',
 				'> ${1:Quote text goes here.}',
-				'',
-				'**${2:Author Name}**',
-				'',
-				'${3:Role or company}',
 				'{% /testimonial %}',
 			],
 			fixture: `{% testimonial %}

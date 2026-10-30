@@ -26,6 +26,9 @@ export const heroSections = {
 } as const;
 export const heroMediaSlots = { media: 'hero' } as const;
 
+/** SPEC-181 D7 — the composed `hero`'s `align` values, as the plugin renders them. */
+const ALIGN_ALIASES: Record<string, string> = { start: 'left', end: 'right' };
+
 export const hero = createContentModelSchema({
 	sections: heroSections,
 	mediaSlots: heroMediaSlots,
@@ -34,8 +37,11 @@ export const hero = createContentModelSchema({
 		align: {
 			type: String,
 			required: false,
-			matches: ['left', 'center', 'right'],
-			description: 'Horizontal alignment of headline and body text',
+			// `start` / `end` are `section`'s vocabulary, which the composed `hero`
+			// takes (SPEC-181 D7); `left` / `right` keep working.
+			matches: ['start', 'center', 'end', 'left', 'right'],
+			description:
+				'Horizontal alignment of headline and body text: start, center (default) or end. `left` and `right` still work.',
 		},
 		// SPEC-101 — cover-mode knobs (`media-position="cover"` overlays the
 		// content on a full-bleed media well). Same grammar as `card` (SPEC-089).
@@ -119,7 +125,10 @@ export const hero = createContentModelSchema({
 		// media — the right reading order for the classic text-over-media hero),
 		// so the truthful default placement is `bottom` (BUG-001). Lumina counters
 		// the media-first stacked rules for hero accordingly.
-		const align = (attrs.align as string) || 'center';
+		// `start` / `end` render exactly as `left` / `right`: the value is mapped
+		// here, before the modifier reads it, so `data-align` and `hero.css` are
+		// unchanged.
+		const align = ALIGN_ALIASES[attrs.align as string] ?? ((attrs.align as string) || 'center');
 		const alignMeta = new Tag('meta', { content: align });
 		const { metas: layoutMetas } = buildLayoutMetas({
 			...attrs,

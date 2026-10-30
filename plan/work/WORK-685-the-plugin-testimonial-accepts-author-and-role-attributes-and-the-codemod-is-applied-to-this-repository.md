@@ -1,4 +1,4 @@
-{% work id="WORK-685" status="ready" priority="high" complexity="simple" source="SPEC-181,SPEC-161" tags="runes, marketing, testimonial, staging, migration, codemod, seo" milestone="v0.44.0" %}
+{% work id="WORK-685" status="in-progress" priority="high" complexity="simple" source="SPEC-181,SPEC-161" tags="runes, marketing, testimonial, staging, migration, codemod, seo" milestone="v0.44.0" %}
 
 # The plugin testimonial accepts author and role attributes, and the codemod is applied to this repository
 

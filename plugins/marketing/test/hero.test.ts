@@ -27,6 +27,18 @@ Description text.
 		expect(fields(tag).align).toBe('left');
 	});
 
+	// SPEC-181 D7 — `section`'s vocabulary, which the composed hero takes.
+	it.each([
+		['start', 'left'],
+		['end', 'right'],
+	])('renders align="%s" exactly as align="%s"', (written, legacy) => {
+		const render = (align: string) =>
+			parse(`{% hero align="${align}" %}\n# Title\n\nDescription text.\n{% /hero %}`);
+		const tag = findTag(render(written) as any, (t) => t.attributes['data-rune'] === 'hero');
+		expect(fields(tag).align).toBe(legacy);
+		expect(JSON.stringify(render(written))).toBe(JSON.stringify(render(legacy)));
+	});
+
 	it('should handle action links as LinkItem components', () => {
 		const result = parse(`{% hero %}
 # Get Started
