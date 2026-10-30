@@ -435,7 +435,11 @@ export {
 	loadProjectRunes,
 	DEFAULT_PROJECT_RUNE_DIR,
 } from './project-runes.js';
-export type { ProjectRuneFinding, ProjectRunesResult } from './project-runes.js';
+export type {
+	ProjectRuneFinding,
+	ProjectRunesResult,
+	ProjectRunesOptions,
+} from './project-runes.js';
 export type { RuneDirReader, RuneDefinitionFile } from './rune-dir.js';
 // SPEC-145 — composed runes: a definition (frontmatter + Markdoc template) as a rune
 export {

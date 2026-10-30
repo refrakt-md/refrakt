@@ -16,7 +16,7 @@ import {
 /**
  * WORK-666 — `cta` as a composition over `section` (SPEC-160 D7), beside the
  * marketing plugin's `cta` and never in place of it (SPEC-147 D1). The
- * definition is `packages/runes/test/fixtures/composed/cta.md`.
+ * definition is `site/staged-runes/cta.md`, staged on the `staging` site (SPEC-181).
  */
 
 const pkg = composedMarketing({ cta: definitionOf('cta') }, ['CallToAction']);

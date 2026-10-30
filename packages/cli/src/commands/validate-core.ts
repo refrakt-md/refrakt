@@ -74,7 +74,9 @@ async function checkProjectRuneDefinitions(
 ): Promise<ContentFindingOut[]> {
 	const { checkProjectRunes } = await import('@refrakt-md/runes');
 	const { fsProjectFiles } = await import('@refrakt-md/types/project-files');
-	const { findings } = checkProjectRunes(fsProjectFiles(configDir), site.runes?.dir);
+	const { findings } = checkProjectRunes(fsProjectFiles(configDir), site.runes?.dir, {
+		schema: site.runes?.schema,
+	});
 	return findings.map((f) => ({
 		file: f.file,
 		url: '',

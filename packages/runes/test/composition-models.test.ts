@@ -33,6 +33,10 @@ type Json = any;
 const fixture = (name: string) =>
 	readFileSync(join(__dirname, 'fixtures', 'composed', `${name}.md`), 'utf-8');
 
+/** A staged composition (SPEC-181): the file the staging site renders. */
+const staged = (name: string) =>
+	readFileSync(join(__dirname, '..', '..', '..', 'site', 'staged-runes', `${name}.md`), 'utf-8');
+
 function definition(front: string, template: string): string {
 	return `---\n${front.trim()}\n---\n\n${template.trim()}\n`;
 }
@@ -208,7 +212,7 @@ describe('a delimited content model with fixed zones (SPEC-169 D1)', () => {
 		// SPEC-169 D1's acceptance fixture: the delimited model addresses the
 		// trailing list inside the content zone, which a single greedy slot could
 		// not.
-		const hero = defineComposedRune('hero', fixture('hero'));
+		const hero = defineComposedRune('hero', staged('hero'));
 		const tree = render(
 			'{% hero %}\n![Harbour](/harbour.jpg)\n\n---\n\nNew in 0.43\n\n# Ship faster\n\nOne file per page.\n\n- [Start](/start)\n- [Docs](/docs)\n{% /hero %}',
 			{ hero },

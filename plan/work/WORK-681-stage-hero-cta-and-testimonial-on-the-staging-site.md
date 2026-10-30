@@ -1,4 +1,4 @@
-{% work id="WORK-681" status="ready" priority="high" complexity="simple" source="SPEC-181" tags="runes, composition, staging, marketing, hero, cta, testimonial" milestone="v0.44.0" %}
+{% work id="WORK-681" status="in-progress" priority="high" complexity="simple" source="SPEC-181" tags="runes, composition, staging, marketing, hero, cta, testimonial" milestone="v0.44.0" %}
 
 # Stage hero, cta and testimonial on the staging site
 

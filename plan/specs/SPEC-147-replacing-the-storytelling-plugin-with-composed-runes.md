@@ -239,6 +239,11 @@ place of `character-section`, `{% card %}` in place of the split). The gate is t
 **every difference is explained**, in the same spirit SPEC-145 sets for its own spike.
 The 5 storytelling fixtures already in `contracts/seo-baseline/` are the reference.
 
+> **Where the comparison is reviewed, and how a rune goes live, are {% ref "SPEC-181" /%}'s.** A
+> composition is staged in `site/staged-runes/` and reviewed on its reference page on the
+> `staging` site (D1, D2); the comparison tests read that file (D4). It goes live in a work item
+> of its own once the rollout's four gates are met (D5). Storytelling goes live as a whole.
+
 ### D3 — `storyboard` leaves storytelling rather than being composed
 
 It is a captioned-media container, not a narrative rune (Finding 3). Relocating it to

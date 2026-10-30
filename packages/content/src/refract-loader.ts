@@ -210,7 +210,7 @@ async function assembleSiteContext(
 		runes: coreRunes,
 	} = await import('@refrakt-md/runes');
 	const projectRunes = opts.projectFiles
-		? loadProjectRunes(opts.projectFiles, projectRuneDir(site))
+		? loadProjectRunes(opts.projectFiles, projectRuneDir(site), { schema: site.runes?.schema })
 		: undefined;
 	const project =
 		projectRunes && Object.keys(projectRunes.runes).length > 0 ? projectRunes : undefined;

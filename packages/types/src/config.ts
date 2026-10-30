@@ -155,6 +155,11 @@ export interface SiteConfig {
 		 *  rune named after the file, read through `ProjectFiles` (D5). Defaults
 		 *  to `runes`; an absent directory defines no runes. */
 		dir?: string;
+		/** Whether a definition in `dir` may declare a `schema` table (SPEC-145
+		 *  D25). `deny` by default: a project's own row publishes with no reviewer.
+		 *  `allow` asserts this project's definitions are reviewed like
+		 *  first-party code (SPEC-181). */
+		schema?: 'deny' | 'allow';
 	};
 }
 
@@ -306,6 +311,7 @@ export interface RefraktConfig {
 		aliases?: Record<string, string>;
 		local?: Record<string, string>;
 		dir?: string;
+		schema?: 'deny' | 'allow';
 	};
 }
 

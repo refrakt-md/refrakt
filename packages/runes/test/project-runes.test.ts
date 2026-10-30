@@ -135,6 +135,41 @@ describe('precedence: core < plugin < project (SPEC-153 D8)', () => {
 	});
 });
 
+describe('a preferred project rune takes the aliases it shares with the plugin rune (SPEC-181)', () => {
+	const withAlias = (rune: string) => definition(rune).replace(/^---\n/, '---\naliases: [tie]\n');
+	const aliasedPlugin = (): LoadedPlugin => {
+		const pkg = {
+			name: 'story',
+			version: '1',
+			runes: { bond: { template: withAlias('bond') } },
+		};
+		return {
+			pkg,
+			npmName: '@x/story',
+			runes: { bond: pluginRune('bond', pkg.runes.bond, pkg) },
+			fixtures: {},
+			fileRoots: {},
+		};
+	};
+
+	it('settles the shared alias with the rune’s own `prefer` entry', () => {
+		const project = loadProjectRunes(files({ 'runes/bond.md': withAlias('bond') }));
+		const merged = mergePlugins([aliasedPlugin()], core, { bond: PROJECT_RUNES }, project);
+		expect(merged.tags.bond).toBe(project.runes.bond.schema);
+		expect(merged.tags.tie).toBe(project.runes.bond.schema);
+	});
+
+	it('still asks for a `prefer` entry when another plugin rune claims the alias', () => {
+		const project = loadProjectRunes(files({ 'runes/bond.md': withAlias('bond') }));
+		const other = aliasedPlugin();
+		other.npmName = '@x/other';
+		other.runes = { knot: other.runes.bond };
+		expect(() => mergePlugins([other], core, { bond: PROJECT_RUNES }, project)).toThrow(
+			/through its alias "tie"/,
+		);
+	});
+});
+
 describe('`schema` follows where a definition is loaded from (SPEC-145 D25)', () => {
 	it('a project definition declaring `schema` is rejected at load, naming the rune and D25', () => {
 		const source = definition('character');
@@ -150,6 +185,33 @@ describe('`schema` follows where a definition is loaded from (SPEC-145 D25)', ()
 		expect(() => loadProjectRunes(files({ 'runes/character.md': source }))).toThrow(
 			/^runes\/character\.md:\d+: Rune "character"/,
 		);
+	});
+
+	it('names `runes.schema: "allow"` as the way a reviewed project says so', () => {
+		const { findings } = checkProjectRunes(
+			files({ 'runes/character.md': definition('character') }),
+		);
+		expect(findings[0].message).toContain('"runes": { "schema": "allow" }');
+	});
+
+	it('is accepted when the site declares `runes.schema: "allow"` (SPEC-181)', () => {
+		const source = definition('character');
+		const { findings, loaded } = checkProjectRunes(
+			files({ 'runes/character.md': source }),
+			'runes',
+			{ schema: 'allow' },
+		);
+		expect(findings).toEqual([]);
+		expect(Object.keys(loaded.runes)).toEqual(['character']);
+		expect(
+			loadProjectRunes(files({ 'runes/character.md': source }), 'runes', { schema: 'allow' }).runes
+				.character,
+		).toBeDefined();
+		// `deny` is the default, and stated explicitly it is the same.
+		expect(
+			checkProjectRunes(files({ 'runes/character.md': source }), 'runes', { schema: 'deny' })
+				.findings,
+		).toHaveLength(1);
 	});
 
 	it('the same definition shipped in a plugin’s runeDir is accepted', async () => {

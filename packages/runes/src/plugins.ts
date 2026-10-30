@@ -321,6 +321,7 @@ export function mergePlugins(
 ): MergedPluginResult {
 	// SPEC-153 D8 — the project layer: core < plugin < project, core names
 	// never shadowable, a plugin's only through `runes.prefer`.
+	if (project) prefer = withInheritedAliases(project, plugins, prefer);
 	if (project) checkProjectPrecedence(project, plugins, coreRuneNames, prefer);
 	const loaded = project ? [...plugins, project] : plugins;
 	const ownership = new Map<string, Array<{ pkg: LoadedPlugin; rune: Rune }>>();
@@ -534,6 +535,35 @@ export function mergePlugins(
 		fileRoots,
 		translations,
 	};
+}
+
+/**
+ * A project rune preferred over a plugin rune takes the aliases they share with
+ * it (SPEC-181): preferring the staged `testimonial` over the plugin's also
+ * settles `review`, which is the same rune under another name. An alias claimed
+ * by any other plugin rune still needs its own `prefer` entry.
+ */
+function withInheritedAliases(
+	project: LoadedPlugin,
+	plugins: LoadedPlugin[],
+	prefer: Record<string, string> | undefined,
+): Record<string, string> | undefined {
+	if (!prefer) return prefer;
+	let out = prefer;
+	for (const [name, rune] of Object.entries(project.runes)) {
+		if (prefer[name] !== PROJECT_RUNES) continue;
+		for (const alias of rune.aliases) {
+			if (out[alias] !== undefined) continue;
+			const claimants = plugins.flatMap((p) =>
+				Object.entries(p.runes).filter(([n, r]) => n === alias || r.aliases.includes(alias)),
+			);
+			if (claimants.length > 0 && claimants.every(([n]) => n === name)) {
+				if (out === prefer) out = { ...prefer };
+				out[alias] = PROJECT_RUNES;
+			}
+		}
+	}
+	return out;
 }
 
 /**

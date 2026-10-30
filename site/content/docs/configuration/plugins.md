@@ -121,9 +121,24 @@ Three rules apply that a plugin's runes do not share:
 
 - **A project rune can never take a core rune's name or alias.** `{% card %}` meaning something local would break every snippet, page and composition that uses the core one, so the build stops and names both.
 - **Taking a plugin rune's name needs a `prefer` entry.** Set `"<name>": "__project__"` to let the project's definition win, or name the plugin to keep its rune.
-- **A project definition may not declare `schema`.** Its schema.org row would publish as structured data with nobody reviewing it, and nothing checks a row against schema.org. A plugin's definitions may, because a published package is reviewed like code. The definition is rejected at load, naming the rune.
+- **A project definition may not declare `schema`,** unless the site says otherwise (below). Its schema.org row would publish as structured data with nobody reviewing it, and nothing checks a row against schema.org. A plugin's definitions may, because a published package is reviewed like code. The definition is rejected at load, naming the rune.
 
 The directory is read through the project's file provider, so it works in a hosted build with no filesystem. In dev, editing a definition reloads every page that uses it. `refrakt validate` reports a definition that does not build as a finding at its file and line.
+
+### `runes.schema`
+
+Whether a definition in `runes.dir` may declare a `schema` table: `deny` (the default) or `allow`.
+
+```json
+{
+  "runes": {
+    "dir": "runes",
+    "schema": "allow"
+  }
+}
+```
+
+`allow` is not a convenience switch. It is this project stating that every definition in its rune directory is reviewed like first-party code, in pull requests, as a plugin's are, so the reason for the ban does not apply. refrakt's own repository sets it on its `staging` site, whose definitions are on their way into a plugin. Leave it unset for definitions nobody reviews: a wrong row renders identically and publishes a false claim as JSON-LD.
 
 ### `runes.local`
 

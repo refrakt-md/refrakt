@@ -16,7 +16,7 @@ import {
 /**
  * WORK-665 — `hero` as a composition over `section` (SPEC-160 D7), beside the
  * marketing plugin's `hero` and never in place of it (SPEC-147 D1). The
- * definition is `packages/runes/test/fixtures/composed/hero.md`.
+ * definition is `site/staged-runes/hero.md`, staged on the `staging` site (SPEC-181).
  *
  * SPEC-147 D2's gate: every difference from the plugin is explained. Each is
  * asserted below, and the visual ones (light and dark, through Lumina) are

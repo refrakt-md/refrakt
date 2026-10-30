@@ -126,7 +126,9 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 						const loaded = await Promise.all(
 							(activeSite.plugins ?? []).map((name: string) => loadPlugin(name)),
 						);
-						const project = hasProject ? loadProjectRunes(projectFiles, runeDir) : undefined;
+						const project = hasProject
+							? loadProjectRunes(projectFiles, runeDir, { schema: activeSite.runes?.schema })
+							: undefined;
 						merged = mergePlugins(loaded, coreRuneNames, activeSite.runes?.prefer, project);
 						mergedRunes = { ...coreRunes, ...merged.runes };
 						mergedTags = merged.tags;

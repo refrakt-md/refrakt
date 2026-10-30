@@ -70,7 +70,9 @@ async function build() {
 	let finalConfig = themeConfig;
 
 	// The project's own composed runes: every `<rune>.md` in `runes.dir`.
-	const projectRunes = loadProjectRunes(fsProjectFiles(configDir), site.runes?.dir);
+	const projectRunes = loadProjectRunes(fsProjectFiles(configDir), site.runes?.dir, {
+		schema: site.runes?.schema,
+	});
 	const project = Object.keys(projectRunes.runes).length > 0 ? projectRunes : undefined;
 
 	if (pluginNames.length > 0 || project) {

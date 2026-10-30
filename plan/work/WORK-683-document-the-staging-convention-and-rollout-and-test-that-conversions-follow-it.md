@@ -1,4 +1,4 @@
-{% work id="WORK-683" status="ready" priority="medium" complexity="simple" source="SPEC-181" tags="runes, composition, staging, rollout, docs, tests" milestone="v0.44.0" %}
+{% work id="WORK-683" status="in-progress" priority="medium" complexity="simple" source="SPEC-181" tags="runes, composition, staging, rollout, docs, tests" milestone="v0.44.0" %}
 
 # Document the staging convention and rollout, and test that conversions follow it
 

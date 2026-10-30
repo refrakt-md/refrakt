@@ -200,6 +200,37 @@ differs from the plugin rune's, the plugin rune gains the new form additively, a
 repository's content is migrated on `main` before the rune is staged. The staging site's
 validation (`refrakt validate --site staging`) reports nothing that `main`'s does not.
 
+### D8 — a site may declare its rune directory reviewed, so a staged definition keeps its `schema`
+
+*Decided 2026-10-30, while staging `testimonial` ({% ref "WORK-681" /%}).* A staged definition
+is a project rune, and SPEC-145 D25 rejects `schema` in a project definition: its row would
+publish as JSON-LD that nobody reviews. The composed `testimonial` declares its `Review` row, as
+the storytelling compositions declare theirs, so D1 could not stage them as written.
+
+D25's reason is the reviewer, not where the file sits. A staged definition in this repository
+is first-party code on its way into a plugin, reviewed in a pull request like the plugin itself.
+So a site may say so: `runes.schema: "allow"` admits `schema` in its `runes.dir`, and only the
+`staging` site sets it here.
+
+- **The default stays `deny`.** A user's project keeps D25's protection unless it opts in.
+- **It is an assertion, not a convenience switch.** The config reference and the authoring
+  guide describe it as "every definition in this directory is reviewed like first-party code",
+  and D25's rejection names it, so a user who reaches for it sees what it claims.
+- **It amends SPEC-145 D25 item 2**, which a mechanical check would still lift for everyone.
+
+```json
+"staging": {
+  "runes": {
+    "dir": "site/staged-runes",
+    "schema": "allow",
+    "prefer": { "hero": "__project__", "cta": "__project__", "testimonial": "__project__" }
+  }
+}
+```
+
+A preferred staged rune also takes the aliases it shares with the plugin rune it shadows
+(`review` with `testimonial`). An alias another plugin rune claims still needs its own entry.
+
 ## Not in scope
 
 - Staging a replacement for a core rune. Core names are not shadowable (SPEC-153 D8).
