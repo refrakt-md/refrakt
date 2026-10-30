@@ -1,0 +1,71 @@
+name: Staging
+
+# The staging site (SPEC-181) at staging.refrakt.md: the docs content rendered
+# with the staged compositions in place of their plugin runes. It follows `main`
+# on every push, unlike production, which deploys only on a release
+# (`release.yml`): staging exists to review a composition before it goes live,
+# so it has to show what is merged, not what shipped.
+#
+# It is a Direct Upload Pages project of its own (`refrakt-staging`), not a
+# branch of the Git-connected `refrakt` project, so nothing here can reach
+# production. The first run creates the project; the custom domain is attached
+# in the dashboard.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Only the newest commit is worth deploying.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  PROJECT: refrakt-staging
+
+jobs:
+  deploy:
+    name: Deploy staging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - run: npm run build:staging
+
+      # Cloudflare marks `*.pages.dev` noindex, but not a custom domain. The
+      # pages keep their canonical URLs on refrakt.md (the staging site's
+      # `baseUrl`), and staging asks not to be indexed at all.
+      - name: Keep staging out of search engines
+        run: |
+          printf 'User-agent: *\nDisallow: /\n' > site/build-staging/robots.txt
+          printf '/*\n  X-Robots-Tag: noindex, nofollow\n' >> site/build-staging/_headers
+
+      - name: Create the Pages project if it does not exist
+        run: |
+          if npx wrangler@latest pages project list | grep -qw "$PROJECT"; then
+            echo "$PROJECT exists"
+          else
+            npx wrangler@latest pages project create "$PROJECT" --production-branch=main
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy to Cloudflare Pages
+        run: |
+          npx wrangler@latest pages deploy site/build-staging \
+            --project-name="$PROJECT" \
+            --branch=main \
+            --commit-hash="$GITHUB_SHA"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
