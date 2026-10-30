@@ -42,6 +42,14 @@ export interface ProjectRuneFinding {
 	message: string;
 }
 
+/** How a project's rune directory is read — the site's `runes` options. */
+export interface ProjectRunesOptions {
+	/** SPEC-145 D25 — whether a definition may declare `schema`. `deny` unless
+	 *  the project asserts its definitions are reviewed like first-party code
+	 *  (`runes.schema: "allow"`, SPEC-181). */
+	schema?: 'deny' | 'allow';
+}
+
 /** What reading a project's rune directory produced: the runes that built,
  *  and a finding for each definition that did not. */
 export interface ProjectRunesResult {
@@ -60,7 +68,7 @@ function schemaBanned(name: string, source: string): CompositionError | undefine
 	if (definition.schema === undefined) return undefined;
 	const err = new CompositionError(
 		'project-schema',
-		`Rune "${name}": a project's own definition may not declare \`schema\` (SPEC-145 D25). Its schema.org row would publish as structured data with no reviewer, and nothing checks a row against schema.org. Remove the \`schema\` block; a plugin's rune directory may declare one, because a published package is reviewed like code.`,
+		`Rune "${name}": a project's own definition may not declare \`schema\` (SPEC-145 D25). Its schema.org row would publish as structured data with no reviewer, and nothing checks a row against schema.org. Remove the \`schema\` block; a plugin's rune directory may declare one, because a published package is reviewed like code. If every definition in this directory is reviewed like that, the site can say so with \`"runes": { "schema": "allow" }\`.`,
 	);
 	const index = frontmatterKeyLine(definition.frontmatter, ['schema']);
 	err.line = index === undefined ? 1 : index + 2;
@@ -76,6 +84,7 @@ function schemaBanned(name: string, source: string): CompositionError | undefine
 export function checkProjectRunes(
 	files: Pick<ProjectFiles, 'list' | 'read'>,
 	dir: string = DEFAULT_PROJECT_RUNE_DIR,
+	options: ProjectRunesOptions = {},
 ): ProjectRunesResult {
 	const findings: ProjectRuneFinding[] = [];
 	const where = `runes.dir "${dir}"`;
@@ -95,7 +104,7 @@ export function checkProjectRunes(
 				where,
 			);
 			name = definition.name;
-			const banned = schemaBanned(name, definition.source);
+			const banned = options.schema === 'allow' ? undefined : schemaBanned(name, definition.source);
 			if (banned) throw banned;
 			const entry = runeEntriesOf([definition])[name];
 			runes[name] = pluginRune(name, entry, { name: PROJECT_RUNES });
@@ -132,8 +141,9 @@ export function checkProjectRunes(
 export function loadProjectRunes(
 	files: Pick<ProjectFiles, 'list' | 'read'>,
 	dir: string = DEFAULT_PROJECT_RUNE_DIR,
+	options: ProjectRunesOptions = {},
 ): LoadedPlugin {
-	const { loaded, findings } = checkProjectRunes(files, dir);
+	const { loaded, findings } = checkProjectRunes(files, dir, options);
 	if (findings.length > 0) {
 		const [first] = findings;
 		const more = findings.length > 1 ? ` (and ${findings.length - 1} more)` : '';

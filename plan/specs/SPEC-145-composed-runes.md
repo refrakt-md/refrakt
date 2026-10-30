@@ -2478,7 +2478,8 @@ whose errors are invisible on the page.
    a package (core or a plugin), reviewed like any other code, so D5's trade holds.
    This lets composition replace schema-emitting runes: SPEC-147's `character` keeps
    its `Person` row.
-2. **A user definition may not, for now.** A definition loaded from a project's own
+2. **A user definition may not, for now.** *(Amended by {% ref "SPEC-181" /%} D8: a site whose
+   rune directory is reviewed like first-party code may declare `runes.schema: "allow"`.)* A definition loaded from a project's own
    rune directory ({% ref "SPEC-153" /%}) that declares `schema` is rejected at load,
    with a message naming the rune and this decision. The ban is enforced by that
    loader, so it is a requirement on SPEC-153; no user delivery path exists before it.

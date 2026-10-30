@@ -25,7 +25,7 @@ import {
  * WORK-668 — `testimonial` as a composition over `section` (SPEC-161 D1),
  * beside the marketing plugin's `testimonial` and never in place of it
  * (SPEC-147 D1). The definition is
- * `packages/runes/test/fixtures/composed/testimonial.md`; its author moves from
+ * `site/staged-runes/testimonial.md`, staged on the `staging` site (SPEC-181); its author moves from
  * a `**Name** — Role` paragraph to attributes, and the marketing plugin's
  * `migrate-testimonial` codemod rewrites one into the other.
  */

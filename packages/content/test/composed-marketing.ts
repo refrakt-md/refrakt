@@ -19,15 +19,15 @@ import { assembleMarkdocSchemas } from '../src/site.js';
 
 /**
  * Shared machinery for the composed marketing runes (SPEC-160 D7): the
- * definitions in `packages/runes/test/fixtures/composed/`, exercised through a
+ * definitions staged in `site/staged-runes/` (SPEC-181 D4), exercised through a
  * fixture copy of the marketing plugin beside the shipping one (SPEC-147 D1),
  * and compared with it rune for rune (D2).
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
-const composedDir = join(here, '..', '..', 'runes', 'test', 'fixtures', 'composed');
+const composedDir = join(here, '..', '..', '..', 'site', 'staged-runes');
 
-/** A composed rune's definition, as stored. */
+/** A staged composition's definition — the file the staging site renders. */
 export const definitionOf = (rune: string) =>
 	readFileSync(join(composedDir, `${rune}.md`), 'utf-8');
 

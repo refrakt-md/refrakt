@@ -448,6 +448,11 @@
           "description": "The project's directory of composed rune definitions, relative to the project root. Every `<rune>.md` in it is a composed rune named after the file. Defaults to `runes`; an absent directory defines no runes.",
           "type": "string",
           "default": "runes"
+        },
+        "schema": {
+          "description": "Whether a definition in `runes.dir` may declare a `schema` table. Defaults to `deny`: a project's own schema.org row publishes as structured data that nothing checks against schema.org, so a definition declaring one is rejected (SPEC-145 D25). `allow` is this project asserting that its definitions are reviewed like first-party code, as a plugin's are. It is not a convenience switch; leave it unset unless every definition in the directory goes through code review.",
+          "enum": ["deny", "allow"],
+          "default": "deny"
         }
       },
       "additionalProperties": false

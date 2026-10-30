@@ -418,9 +418,28 @@ A plugin **declares** its directory and a project's is a convention with a defau
 
 Nothing checks a schema.org row against schema.org. A row's correctness rests on a reviewer reading it — in `refrakt inspect`, `refrakt contracts` and the structured-data baseline — and a wrong row is invisible on the page by construction: it renders identically and publishes a false claim as JSON-LD.
 
-That holds for a definition shipped in a package, which is reviewed like the package's code. It does not hold for a project's own definition, whose row would publish with nobody reading it. So a plugin's definition may declare `schema` and a project's may not: the project loader rejects it, naming the rune. A mechanical check was measured as the thing that could lift the ban; it catches a misspelt type or property, and not the wrong type, the empty type or the wrong value that make up most real mistakes — so the ban stays until something does.
+That holds for a definition shipped in a package, which is reviewed like the package's code. It does not hold for a project's own definition, whose row would publish with nobody reading it. So a plugin's definition may declare `schema` and a project's may not: the project loader rejects it, naming the rune. A project whose definitions are reviewed like first-party code can say so with [`runes.schema: "allow"`](/docs/configuration/plugins#runesschema), and its definitions may then declare `schema` too. A mechanical check was measured as the thing that could lift the ban; it catches a misspelt type or property, and not the wrong type, the empty type or the wrong value that make up most real mistakes — so the ban stays until something does.
 
 A project rune without `schema` still publishes what the runes it places emit, and may wrap a typed rune as above.
+
+## Converting a plugin rune: staging, then going live
+
+A composition that replaces a plugin rune is reviewed on the site before it replaces anything. refrakt's own conversions work this way (SPEC-181), and a plugin of your own can follow the same steps.
+
+**Stage it.** The definition goes in `site/staged-runes/<rune>.md`, under the plugin rune's own name. The repository's `staging` site renders the same content as `main`, with that directory as its `runes.dir` and a `"<rune>": "__project__"` entry in `runes.prefer`, so the composition stands in for the plugin rune on every page. Preferring the rune also settles the aliases it shares with the plugin rune (`review` with `testimonial`). The comparison tests read the staged file, and no copy goes in a test fixture directory: a test fails on one.
+
+**Make the content valid on both sites.** Both sites render one content directory. Where the composition is written differently from the plugin rune, the plugin rune first learns the new form as well as its own, and the content moves to it, with a codemod where there is one. `hero` learned `align="start | end"`, and `testimonial` learned `author` and `role`.
+
+**Review it.** `npm run dev:staging` serves the staging site on its own port, and `npm run build:staging` builds it into `site/build-staging`. Paths are the same on both sites, so a comparison is two tabs. The review covers the rune's reference page and every other page that uses it, light and dark.
+
+**Go live, one rune at a time, in a work item of its own.** A rune goes live when:
+
+1. its staged version has been reviewed on its reference page and every page that uses it;
+2. every difference its conversion item lists is accepted or fixed;
+3. any authored content whose meaning changes has a codemod, run over the repository, and the plugin rune has accepted the new form for at least one release;
+4. it depends on no primitive whose spec is still `draft`.
+
+Going live moves the file into the plugin (`git mv site/staged-runes/<rune>.md plugins/<plugin>/runes/<rune>.md`, with `runeDir` declared). It removes the rune's `transform`, theme entry, CSS and `prefer` entry, and regenerates both contract copies and the structured-data baseline, explaining every diff. The changeset carries a migration note, and a codemod where authored content changes meaning.
 
 ## Worked examples
 
@@ -518,7 +537,7 @@ Each error has a code. The fix column assumes the cause in the meaning column.
 | `rune-dir-empty` | A plugin's declared rune directory holds no definitions. | Publish the definitions (`files`), or remove `runeDir`. |
 | `package-unresolvable` | A plugin's `<pkg>/package.json` does not resolve, so its directory cannot be found. | Add `"./package.json": "./package.json"` to `exports`. |
 | `rune-defined-twice` | A plugin defines a rune in its `runeDir` and in `Plugin.runes` (or as an alias there). | Keep one definition. |
-| `project-schema` | A project definition declares `schema`. | Remove it — [why](#why-schema-is-allowed-in-a-plugin-and-not-in-a-project). |
+| `project-schema` | A project definition declares `schema`. | Remove it — [why](#why-schema-is-allowed-in-a-plugin-and-not-in-a-project) — or, if every definition in the directory is reviewed like first-party code, set `runes.schema: "allow"`. |
 | `project-core-name` | A project rune's name or alias is a core rune's name or alias. | Rename the definition; core names cannot be shadowed. |
 | `project-plugin-name` | A project rune takes a plugin rune's name with no `runes.prefer` entry. | Add `"<name>": "__project__"` (or the plugin's name) under `runes.prefer`, or rename. |
 | `local-definition` | `runes.local` is given a definition, or a module exporting a `template`. | Move the file to `runes.dir`. |

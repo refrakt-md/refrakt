@@ -239,6 +239,16 @@ Comprehensive rune authoring documentation lives at `site/content/extend/rune-au
 
 New runes almost always belong in a plugin under `plugins/`, not in `packages/runes/src/tags/`. Plugin authoring docs: `site/content/extend/plugin-authoring/authoring.md`.
 
+### Converting a plugin rune to a composition (staging)
+
+A composition that replaces a plugin rune is **staged** until it goes live (SPEC-181). Never write it as a test fixture: a test fails on a composed definition in a fixture directory that has a shipping plugin rune's name.
+
+1. **Stage it** in `site/staged-runes/<rune>.md`, under the plugin rune's own name, and add `"<rune>": "__project__"` to `runes.prefer` on the `staging` site in `refrakt.config.json`. `staging` must otherwise stay identical to `main`, and a test holds it there. Its `runes.schema: "allow"` lets a staged definition keep its `schema` row; the directory is reviewed like first-party code.
+2. **Make the content valid on both sites.** Where the composition is written differently, the plugin rune first accepts the new form additively, and `site/content` moves to it (with a codemod where there is one).
+3. **Test against the staged file.** The comparison tests (SPEC-147 D2) read `site/staged-runes/<rune>.md`, and every difference from the plugin rune is asserted and explained.
+4. **Review it** with `npm run dev:staging` (port 5174) beside `npm run dev`, or `npm run build:staging`. `refrakt validate --site staging` must report nothing that `--site main` does not.
+5. **Go live in a separate work item**, one rune at a time, once the four rollout gates in SPEC-181 are met: reviewed on its pages, every difference accepted or fixed, a codemod run and the new form accepted by the plugin for a release, and no dependency on a `draft` primitive spec. Going live moves the file into the plugin's `runeDir` and removes the rune's transform, theme entry, CSS and `prefer` entry.
+
 ### Engine Config Pattern
 
 Non-interactive runes are configured declaratively in `packages/runes/src/config.ts`:

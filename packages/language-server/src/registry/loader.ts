@@ -232,7 +232,9 @@ export async function initializeRegistry(workspaceRoot?: string): Promise<void> 
 		const pluginNames: string[] = site.plugins ?? [];
 		// SPEC-153 D4 — the project's own composed runes. A definition that does
 		// not build is left out here; `refrakt validate` reports it.
-		const projectRunes = checkProjectRunes(fsProjectFiles(configDir), site.runes?.dir).loaded;
+		const projectRunes = checkProjectRunes(fsProjectFiles(configDir), site.runes?.dir, {
+			schema: site.runes?.schema,
+		}).loaded;
 		const project = Object.keys(projectRunes.runes).length > 0 ? projectRunes : undefined;
 		if (pluginNames.length === 0 && !project) return;
 

@@ -272,13 +272,14 @@ async function runPlugin(namespace: string, pluginArgs: string[]): Promise<void>
 async function loadProjectLayer(
 	runesModule: typeof import('@refrakt-md/runes'),
 	configPath: string,
-	runesConfig: { dir?: string } | undefined,
+	runesConfig: { dir?: string; schema?: 'deny' | 'allow' } | undefined,
 ): Promise<import('@refrakt-md/runes').LoadedPlugin | undefined> {
 	const { dirname } = await import('node:path');
 	const { fsProjectFiles } = await import('@refrakt-md/types/project-files');
 	const loaded = runesModule.loadProjectRunes(
 		fsProjectFiles(dirname(configPath)),
 		runesConfig?.dir,
+		{ schema: runesConfig?.schema },
 	);
 	return Object.keys(loaded.runes).length > 0 ? loaded : undefined;
 }
