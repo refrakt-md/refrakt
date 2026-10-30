@@ -462,7 +462,7 @@ A composition that replaces a plugin rune is reviewed on the site before it repl
 
 **Make the content valid on both sites.** Both sites render one content directory. Where the composition is written differently from the plugin rune, the plugin rune first learns the new form as well as its own, and the content moves to it, with a codemod where there is one. `hero` learned `align="start | end"`, and `testimonial` learned `author` and `role`.
 
-**Review it.** `npm run dev:staging` serves the staging site on its own port, and `npm run build:staging` builds it into `site/build-staging`. Paths are the same on both sites, so a comparison is two tabs. The review covers the rune's reference page and every other page that uses it, light and dark.
+**Review it.** `npm run dev:staging` serves the staging site on its own port, and `npm run build:staging` builds it into `site/build-staging`. Every push to `main` deploys it to [staging.refrakt.md](https://staging.refrakt.md), so a merged composition can be reviewed there without a local build. Paths are the same on both sites, so a comparison is two tabs: refrakt.md and staging.refrakt.md. The review covers the rune's reference page and every other page that uses it, light and dark.
 
 **Go live, one rune at a time, in a work item of its own.** A rune goes live when:
 
