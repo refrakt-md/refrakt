@@ -1,5 +1,30 @@
 # @refrakt-md/marketing
 
+## 0.44.0
+
+### Minor Changes
+
+- 2a3bb70: `testimonial` can be built as a composition over `section` (SPEC-161 D1). The plugin rune is unchanged; replacing it is a later step.
+
+  - **A beside split whose media zone is a portrait** takes the portrait's width rather than half the row, unless `media-ratio` is set.
+  - **The lead value of a `lead` block** is emphasised by weight only, upright even when it is a `<cite>`.
+
+- 989c350: `hero` accepts `align="start"` and `align="end"`, rendering them exactly as `left` and `right`. These are `section`'s values, which the composed `hero` takes (SPEC-181 D7). `left` and `right` keep working.
+- 989c350: `testimonial` accepts `author` and `role` attributes for its byline, as an alternative to the `**Name** — Role` paragraph. When either is set, the paragraph is not read. When neither is set, the paragraph is parsed as before. The rendered byline and the `Review` / `Person` JSON-LD are the same either way. The paragraph stays the documented form (SPEC-182).
+
+### Patch Changes
+
+- Updated dependencies [0db1275]
+- Updated dependencies [f3b9ca3]
+- Updated dependencies [a9f0507]
+- Updated dependencies [f3b9ca3]
+- Updated dependencies [7370042]
+- Updated dependencies [69c462c]
+- Updated dependencies [f3b9ca3]
+  - @refrakt-md/runes@0.44.0
+  - @refrakt-md/transform@0.44.0
+  - @refrakt-md/types@0.44.0
+
 ## 0.43.0
 
 ### Minor Changes

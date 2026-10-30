@@ -1,5 +1,49 @@
 # @refrakt-md/lumina
 
+## 0.44.0
+
+### Minor Changes
+
+- 0db1275: `hero` and `cta` can be built as compositions over `section` and `actions` (SPEC-160 D7). The plugin runes are unchanged, and replacing them is a later step. The vocabulary those compositions need moves into shared CSS:
+
+  - **Button size follows `prominence`.** In `actions.css`, an `actions` whose nearest enclosing rune is `prominence="display"` or `"prominent"` gets the large hero-size buttons. Anything else gets the default cta size. Each other rune root clears the size, so a card inside a display section keeps default buttons.
+  - **A `section`'s `align` positions its own actions row**, alongside its header.
+  - **A cover-mode `section` is a band.** Its height comes from its content and `height` / `aspect`, not from the cover layer's portrait default. With no `content-place`, the content sits mid-band over an evenly darkened scrim. A flush cover section's media has no radius.
+  - **Fix:** a centred or end-aligned `section` header is aligned again. Lumina's `margin: 0` had cancelled the skeleton's auto margins.
+  - **Fix:** `media-position="end"` keeps a media-first rune's content beside its media, on the first row (`grid-auto-flow: dense`). Before, `section` and `card` put the content on a second row.
+  - **A composed rune no longer turns an enum attribute it only forwards into a `data-*` modifier on its root.** For example, `realm`'s `media-position` reaches its `section` but no longer appears on the wrapper. There it had laid the wrapper out as a split, or as a cover well. The value stays in the field bag.
+
+  When `cta` is composed, two leading headings are read as a headline and body, no longer as an eyebrow and a headline (ADR-046).
+
+- 2a3bb70: `testimonial` can be built as a composition over `section` (SPEC-161 D1). The plugin rune is unchanged; replacing it is a later step.
+
+  - **A beside split whose media zone is a portrait** takes the portrait's width rather than half the row, unless `media-ratio` is set.
+  - **The lead value of a `lead` block** is emphasised by weight only, upright even when it is a `<cite>`.
+
+- f3b9ca3: A theme override aimed at a composed rune is reported and dropped (ADR-042).
+
+  - **A composed rune's config is its definition's.** `composedRuneConfig` now marks what it generates with `composed: true`. `mergeThemeConfig` reports a theme's `runes:` entry keyed to such a rune, naming the theme, the rune and the path, through the same sink and once-per-path rule as identity violations, and drops the entry whole.
+  - **A composed declaration replaces what stood under its key.** A theme entry merged before a plugin's composed rune no longer leaks into the generated config field by field.
+  - **Native runes are unaffected.** Their identity fields stay guarded and everything else stays overridable.
+  - `mergeThemeConfig` takes an optional `{ themeName }` and `assembleThemeConfig` a `themeName`, used to name the theme in the report.
+
+- f3b9ca3: New block layout `lead`, beside `bar` and `definition-list` (SPEC-161 D6). It draws a byline: the fields in a column as `data-zone-layout="lead"`, the first marked `data-lead`. The skeleton lays it out and Lumina emphasises the lead and sets the rest smaller and muted. Nothing ranks the values, so a compact container hides none of them.
+
+### Patch Changes
+
+- Updated dependencies [0db1275]
+- Updated dependencies [2a3bb70]
+- Updated dependencies [f3b9ca3]
+- Updated dependencies [a9f0507]
+- Updated dependencies [f3b9ca3]
+- Updated dependencies [7370042]
+- Updated dependencies [69c462c]
+- Updated dependencies [f3b9ca3]
+  - @refrakt-md/runes@0.44.0
+  - @refrakt-md/skeleton@0.44.0
+  - @refrakt-md/transform@0.44.0
+  - @refrakt-md/types@0.44.0
+
 ## 0.43.0
 
 ### Minor Changes
