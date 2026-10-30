@@ -1,8 +1,9 @@
 import type { Facet } from './types.js';
 import type { UniversalAxisFacet } from './describe.js';
 
-/** SPEC-107 — the header-emphasis vocabulary, ordered quiet to loud. */
-export const PROMINENCE_VALUES = ['quiet', 'normal', 'prominent', 'display'] as const;
+/** SPEC-107 — the header-emphasis vocabulary, ordered quiet to loud. `marquee`
+ *  (SPEC-183 D1) is a landing page's opening band. */
+export const PROMINENCE_VALUES = ['quiet', 'normal', 'prominent', 'display', 'marquee'] as const;
 
 export type ProminenceValue = (typeof PROMINENCE_VALUES)[number];
 

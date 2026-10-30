@@ -6,6 +6,7 @@
  * builder.
  */
 import type { SchemaAttribute } from '@markdoc/markdoc';
+import { PROMINENCE_VALUES } from '@refrakt-md/transform';
 
 export const universalAttributes: Record<string, SchemaAttribute> = {
 	tint: { type: String, required: false, description: 'Color tint preset applied to this block' },
@@ -60,7 +61,7 @@ export const universalAttributes: Record<string, SchemaAttribute> = {
 	prominence: {
 		type: String,
 		required: false,
-		matches: ['quiet', 'normal', 'prominent', 'display'],
+		matches: [...PROMINENCE_VALUES],
 		description: 'Section-header emphasis (only on page-section-header family runes)',
 	},
 	// SPEC-105 — scroll-reveal motion. `reveal` is a closed entrance vocabulary

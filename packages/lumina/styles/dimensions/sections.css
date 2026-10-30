@@ -65,11 +65,23 @@
 		line-height: var(--rf-leading-tight);
 		color: var(--rf-color-text);
 		margin: 0;
+		/* SPEC-183 D4 — the step's paint, if it sets one (Lumina's marquee
+	 * gradient). Unset, the title is drawn in its colour as before. */
+		background-image: var(--rf-prominence-title-fill, none);
+		-webkit-background-clip: var(--rf-prominence-title-clip, border-box);
+		background-clip: var(--rf-prominence-title-clip, border-box);
+		-webkit-text-fill-color: var(--rf-prominence-title-ink, currentColor);
+	}
+	@media (forced-colors: active) {
+		[data-section="title"] {
+			background-image: none;
+			-webkit-text-fill-color: currentColor;
+		}
 	}
 
 	/* ─── Description: secondary text ─────────────────────────────────── */
 	[data-section="description"] {
-		font-size: var(--rf-text);
+		font-size: var(--rf-prominence-blurb-size, var(--rf-text));
 		line-height: var(--rf-leading-normal);
 		color: var(--rf-color-muted);
 		margin: var(--rf-spacing-xs) 0 var(--rf-spacing-md);

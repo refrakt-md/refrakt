@@ -10,7 +10,7 @@ Every block rune exposes one or two decorable **surfaces**, and a small, univers
 | Attribute | Surface | What it does |
 |-----------|---------|--------------|
 | `elevation` | self | the depth of the box — recessed, flat, or lifted on a shadow |
-| `prominence` | self | the weight of a section header — quiet up to display size |
+| `prominence` | self | the weight of a section header — quiet up to a marquee band |
 | `width` | layout | how wide the rune sits in the page — contained to full-bleed |
 | `spacing` | layout | vertical rhythm *around* the rune (see [below](#spacing-and-inset)) |
 | `inset` | layout | padding *within* the rune (see [below](#spacing-and-inset)) |
@@ -75,7 +75,9 @@ Each rune ships a sensible default — a `card` is `flat`, a `hint` is `flush`, 
 
 ### `prominence` — the section-header family
 
-`prominence` scales the weight of a rune's **section header** — its title type size — without touching the rest of the surface. It applies only to runes that carry a page-section header (a title/preamble), running `quiet → normal → prominent → display`. `normal` is the rune's **resting** title size, and the steps ramp *relative to it* rather than to fixed sizes — so `display` is always larger than the rune's default and `quiet` always smaller, whether the rune rests at the density default (a `section`), above it (a `hero`) or below it (a `bento-cell`):
+`prominence` scales the weight of a rune's **section header** without touching the rest of the surface. It applies only to runes that carry a page-section header (a title/preamble), running `quiet → normal → prominent → display → marquee`. `normal` is the rune's **resting** title size, and the steps ramp *relative to it* rather than to fixed sizes — so `display` is always larger than the rune's default and `quiet` always smaller, whether the rune rests at the density default (a `section`), above it (a `hero`) or below it (a `bento-cell`).
+
+A step sizes the whole header, not just its title. From `prominent` up, the blurb grows (to `text-lg`, then `text-xl` at `marquee`) and the gaps between title, blurb and what follows widen. On a `flush` band, `display` and `marquee` also set the band's vertical padding: `display` a call-to-action band's, `marquee` a landing page's opening band. Lumina draws a `display` or `marquee` title as a gradient. `marquee` is meant for one band per page; `display` for a loud section anywhere.
 
 {% preview source=true %}
 
@@ -86,7 +88,12 @@ Each rune ships a sensible default — a `card` is `flat`, a `hint` is `flush`, 
 
 	{% section prominence="display" %}
 	## Display
-	A hero-scale title.
+	A call-to-action-scale title.
+	{% /section %}
+
+	{% section prominence="marquee" %}
+	## Marquee
+	A landing page's opening band.
 	{% /section %}
 
 {% /preview %}

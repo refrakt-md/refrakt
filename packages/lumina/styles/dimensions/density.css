@@ -45,6 +45,12 @@
  * `data-density` and `data-prominence` still keeps its own. */
 	[data-density] {
 		--rf-prominence-size: initial;
+		--rf-prominence-blurb-size: initial;
+		--rf-prominence-header-scale: initial;
+		--rf-prominence-band-padding: initial;
+		--rf-prominence-title-fill: initial;
+		--rf-prominence-title-clip: initial;
+		--rf-prominence-title-ink: initial;
 	}
 
 	[data-density="minimal"] [data-section="description"] {

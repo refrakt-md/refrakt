@@ -2,13 +2,14 @@
 	/* Section — a generic page section: an eyebrow/headline/blurb header above
    arbitrary body content. Header styling mirrors the shared page-section look
    (reveal/feature); the body is content-agnostic and full width. */
+	/* The header-to-body rhythm widens with the prominence step (SPEC-183 D2). */
 	.rf-section {
-		gap: 1.5rem;
+		gap: calc(1.5rem * var(--rf-prominence-header-scale, 1));
 	}
 
 	/* With a split, the content column keeps the header-to-body rhythm. */
 	.rf-section__content {
-		gap: 1.5rem;
+		gap: calc(1.5rem * var(--rf-prominence-header-scale, 1));
 	}
 	.rf-section__footer {
 		padding-top: var(--rf-spacing-sm);
@@ -27,7 +28,7 @@
 	/* Block margins only: the skeleton's inline auto-margins centre or end-align
 	 * the header, and a `margin: 0` here would cancel them. */
 	.rf-section__preamble {
-		gap: 0.5rem;
+		gap: calc(0.5rem * var(--rf-prominence-header-scale, 1));
 		max-width: var(--rf-measure, 65ch);
 		margin-block: 0;
 	}

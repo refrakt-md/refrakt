@@ -1,4 +1,4 @@
-{% work id="WORK-689" status="ready" priority="medium" complexity="simple" source="SPEC-183" tags="runes, composition, marketing, hero, cta, staging" milestone="v0.45.0" %}
+{% work id="WORK-689" status="in-progress" priority="medium" complexity="simple" source="SPEC-183" tags="runes, composition, marketing, hero, cta, staging" milestone="v0.45.0" %}
 
 # The composed hero and cta adopt marquee and display, and are compared against the plugins
 
@@ -11,7 +11,7 @@ requires.
 - [ ] `site/staged-runes/hero.md` defaults to `prominence: marquee`, and `site/staged-runes/cta.md` declares `prominence: display`
 - [ ] The comparison tests assert the title size, blurb size, band padding, gradient and button size of each against the plugin rune, through the register's custom properties
 - [ ] The blurb's measure, and any inline-padding difference, are recorded as explained differences, unless the staging review finds them wrong (D6)
-- [ ] The composed-runes guide's hero/cta examples and the hero and cta reference pages mention `marquee`
+- [ ] The composed-runes guide says the composed hero and cta take their header and band from `marquee` and `display`; the plugin reference pages are unchanged until the runes go live
 - [ ] `refrakt validate --site staging` reports nothing beyond main's, and staging.refrakt.md is reviewed against refrakt.md on the hero and cta pages
 
 ## Blocked by

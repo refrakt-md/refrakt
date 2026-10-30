@@ -6,6 +6,7 @@ attributes:
 defaults:
   width: full
   elevation: flush
+  prominence: display
 content:
   type: sequence
   fields:

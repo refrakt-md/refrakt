@@ -46,12 +46,13 @@ describe('the composed cta definition (WORK-666)', () => {
 		expect(byName(actions, 'list')[0].attributes['data-slot']).toBe('actions');
 	});
 
-	it('defaults to full width and flush, the native cta’s defaults', () => {
+	it('defaults to full width, flush and display prominence (SPEC-183 D1)', () => {
 		const info = compositionFor(merge(pkg).tags.cta)!;
-		expect(Object.keys(info.defaults ?? {}).sort()).toEqual(['elevation', 'width']);
+		expect(Object.keys(info.defaults ?? {}).sort()).toEqual(['elevation', 'prominence', 'width']);
 		const out = mine(FIXTURE);
 		expect(out.attributes['data-width']).toBe('full');
 		expect(sectionOf(out).attributes['data-elevation']).toBe('flush');
+		expect(sectionOf(out).attributes['data-prominence']).toBe('display');
 	});
 
 	it('reads two leading headings as a headline and body, no longer an eyebrow and a headline (ADR-046)', () => {
@@ -96,8 +97,11 @@ describe('composed cta against the plugin, for every gallery cell (SPEC-147 D2)'
 		expect(b.attributes['data-width']).toBe(a.attributes['data-width']);
 		// The header is centred by `section`'s `align`, which the plugin did in CSS.
 		expect(sectionOf(b).attributes['data-align']).toBe('center');
-		// No prominence: buttons take the default size, today's cta size.
-		expect(sectionOf(b).attributes['data-prominence']).toBeUndefined();
+		// `display`, the step that reproduces the plugin's header and band
+		// (SPEC-183; composed-landing-register.test.ts). Its buttons keep the
+		// default size, today's cta size: only `marquee` enlarges them.
+		expect(a.attributes['data-prominence']).toBeUndefined();
+		expect(sectionOf(b).attributes['data-prominence']).toBe('display');
 		// Not anchored to the measure at `width="wide"`: section declares no
 		// `contentMeasure`.
 		expect(a.attributes['data-content-measure']).toBe('anchored');
