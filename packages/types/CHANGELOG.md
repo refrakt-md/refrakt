@@ -1,5 +1,15 @@
 # @refrakt-md/types
 
+## 0.44.0
+
+### Minor Changes
+
+- 7370042: A composed rune can read a paragraph into its own values (SPEC-182). A sequence field matching `paragraph` takes an `itemModel`, in the vocabulary list items already use, and matches only a paragraph whose required item fields match. `fills: { author: $name }` names the rune's declared attributes those values supply: they land in the field bag, so meta blocks, `$attrs`, the schema row and registration read them as they read the attribute. The author's attribute always wins; writing both warns `fill-overridden`. A filling field counts as placed, and placing it with a slot as well is rejected (`fill-placed`); a malformed `fills` is `fills-invalid`.
+- 69c462c: New site option `runes.schema: "deny" | "allow"` (default `deny`), SPEC-181 D8.
+
+  - **It lets a project definition declare `schema`.** With `allow`, a definition in `runes.dir` may declare a `schema` table, which SPEC-145 D25 otherwise rejects. Use it only when every definition in the directory is reviewed like first-party code. A wrong row renders identically and publishes a false claim as JSON-LD. The D25 rejection now names the option.
+  - **A preferred project rune also takes the aliases it shares with the plugin rune it shadows.** For example, `"testimonial": "__project__"` settles `review` as well. An alias another plugin rune claims still needs its own `prefer` entry.
+
 ## 0.43.0
 
 ## 0.42.0

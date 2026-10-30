@@ -6,7 +6,16 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.43.0 · Section is the composition base
+## v0.44.0 · Hero, cta and testimonial compose
+
+The first marketing runes become compositions over `section`, beside the plugin runes they will
+replace. Before they can, a composed rune has to put its universal attributes somewhere other
+than its empty root, and state its chrome defaults (SPEC-145 D31–D34,
+SPEC-160 D7, SPEC-161 D1).
+
+[All 11 changes in v0.44.0 →](/releases/v0.44.0)
+
+## v0.43.0 · Section is the composition base - October 26, 2026
 
 A composition that wants a titled region with media places `{% section %}`, not
 `{% card %}`. `section` gains a body role, a header grammar that no longer reads prose as a
