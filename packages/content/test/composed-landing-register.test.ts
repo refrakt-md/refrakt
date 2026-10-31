@@ -89,8 +89,10 @@ describe.each(CASES)('$rune at $prominence, against the plugin stylesheet (SPEC-
 	it('has the plugin’s headline gradient', () => {
 		const gradient = /background:\s*(linear-gradient\([^;]+\));/.exec(own)?.[1];
 		expect(gradient).toBeDefined();
-		expect(prop(loud, '--rf-prominence-title-fill')).toBe(gradient);
-		expect(prop(loud, '--rf-prominence-title-ink')).toBe('transparent');
+		// Switched on by the step, and built on the title from the same stops.
+		expect(loud).toMatch(/--rf-prominence-title-gradient:\s*;/);
+		const title = blocks(css('styles', 'dimensions', 'sections.css'), '[data-section="title"]');
+		expect(prop(title, 'background-image')).toBe(`var(--rf-prominence-title-gradient) ${gradient}`);
 	});
 
 	it('has the plugin’s button size', () => {

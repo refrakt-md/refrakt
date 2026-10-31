@@ -29,7 +29,9 @@
 	 * the header, and a `margin: 0` here would cancel them. */
 	.rf-section__preamble {
 		gap: calc(0.5rem * var(--rf-prominence-header-scale, 1));
-		max-width: var(--rf-measure, 65ch);
+		/* Never wider than the column: a word longer than the line then overflows
+		 * evenly around a centred header rather than pushing it off the end. */
+		max-width: min(var(--rf-prominence-header-measure, var(--rf-measure, 65ch)), 100%);
 		margin-block: 0;
 	}
 	.rf-section__eyebrow {

@@ -1127,8 +1127,8 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 
 			// Inject tint / bg metas
 			const tintBgCtx: TintBgContext = {
-				tintNode,
-				bgNode,
+				tintNode: composition?.placesDirective('tint') ? undefined : tintNode,
+				bgNode: composition?.placesDirective('bg') ? undefined : bgNode,
 				tint: own.tint,
 				'tint-mode': own['tint-mode'],
 				bg: own.bg,

@@ -180,6 +180,13 @@
 		grid-column: auto;
 		grid-row: auto;
 	}
+	:is(
+			[data-media-position="end"][data-collapse="sm"],
+			[data-media-position="end"]:not([data-collapse])
+		)
+		> :is([data-section="media"], [data-name="media"]) {
+		order: 1;
+	}
 }
 @container (max-width: 768px) {
 	:is([data-media-position="start"], [data-media-position="end"])[data-collapse="md"] {
@@ -189,6 +196,10 @@
 		grid-column: auto;
 		grid-row: auto;
 	}
+	[data-media-position="end"][data-collapse="md"]
+		> :is([data-section="media"], [data-name="media"]) {
+		order: 1;
+	}
 }
 @container (max-width: 1024px) {
 	:is([data-media-position="start"], [data-media-position="end"])[data-collapse="lg"] {
@@ -197,5 +208,9 @@
 	:is([data-media-position="start"], [data-media-position="end"])[data-collapse="lg"] > * {
 		grid-column: auto;
 		grid-row: auto;
+	}
+	[data-media-position="end"][data-collapse="lg"]
+		> :is([data-section="media"], [data-name="media"]) {
+		order: 1;
 	}
 }

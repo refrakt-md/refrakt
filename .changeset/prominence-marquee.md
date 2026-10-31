@@ -11,3 +11,4 @@
 - **A flush band at `display` or `marquee` takes a band's padding**: 3.5rem / 3rem and 7rem / 6.5rem, less on narrow screens. A cover band moves it onto the overlaid content.
 - **Lumina draws `display` and `marquee` titles as a gradient.** It is dropped under forced colours and never reaches a nested rune's title.
 - **Large buttons now come with `marquee` only.** A `display` or `prominent` section's actions take the default size.
+- **A loud header is set wide, and its blurb carries the measure**: at `display` and `marquee` the header takes the column's width and the blurb stops at 40rem. A flush band at those steps is padded 2rem inline.

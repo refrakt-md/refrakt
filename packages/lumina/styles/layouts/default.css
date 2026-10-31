@@ -64,6 +64,19 @@
 			calc((100% - var(--rf-content-max, 80rem)) / 2)
 		);
 	}
+	/* A composed rune's root is an empty, block-less wrapper (no class, SPEC-145
+ * D2) around the runes it places; its paint carrier is the band a reader sees,
+ * whose background, cover well and surface fill the bleed. So the gutter moves
+ * inside it. */
+	.rf-page-content > article > [data-width="full"][data-rune]:not([class]) {
+		padding-inline: 0;
+	}
+	.rf-page-content > article > [data-width="full"][data-rune]:not([class]) > [data-rune] {
+		padding-inline: max(
+			var(--rf-content-gutter, 1.5rem),
+			calc((100% - var(--rf-content-max, 80rem)) / 2)
+		);
+	}
 	/* Page sections (data-content-measure="anchored") keep their content at the
  * text measure when bled to the wide track — only the surface/background
  * widens, matching how `full` reads as a band. The absolutely-positioned bg
