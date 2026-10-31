@@ -45,3 +45,12 @@
 		width: 100%;
 	}
 }
+/* plain — the quote is the content of what holds it, so it never floats beside
+ * running text, whatever its alignment. */
+.rf-pullquote.rf-pullquote--plain {
+	float: none;
+	width: auto;
+}
+.rf-pullquote--plain::before {
+	display: none;
+}

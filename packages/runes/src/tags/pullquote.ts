@@ -9,7 +9,7 @@ import {
 } from '../lib/index.js';
 
 const alignValues = ['left', 'center', 'right'] as const;
-const variantValues = ['default', 'accent', 'editorial'] as const;
+const variantValues = ['default', 'accent', 'editorial', 'plain'] as const;
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine

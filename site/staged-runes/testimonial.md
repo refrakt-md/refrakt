@@ -37,7 +37,6 @@ schema:
     rating: { type: Rating, property: reviewRating, properties: { rating: ratingValue } }
 defaults:
   elevation: flat
-  density: compact
 ---
 
 {% section media-position="start" media="portrait" %}
@@ -47,6 +46,8 @@ defaults:
 	---
 
 	{% metablock name="rating" /%}
-	{% slot name="quote" /%}
+	{% pullquote variant="plain" align="left" %}
+		{% slot name="quote" /%}
+	{% /pullquote %}
 	{% metablock name="byline" /%}
 {% /section %}

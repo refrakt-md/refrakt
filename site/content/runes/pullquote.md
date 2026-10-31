@@ -55,6 +55,16 @@ The `variant` attribute controls the visual treatment.
 
 {% /preview %}
 
+`variant="plain"` sets the quote as the content of what holds it rather than as a feature: italic at the surrounding size, with no glyph, rule or indent. A testimonial's card is the case it is for.
+
+{% preview source=true %}
+
+	{% pullquote variant="plain" align="left" %}
+	> Simplicity is the ultimate sophistication.
+	{% /pullquote %}
+
+{% /preview %}
+
 ### Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:pullquote"} /%}
