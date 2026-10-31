@@ -1,6 +1,12 @@
 /* bg — structure. The background/overlay/scrim layer placement (absolute fill +
  * z-index + clip), the content-above-bg stacking, and the video fill. The images,
  * gradients, blur/opacity, overlay tints, and scrim paint are skin. */
+/* The host is the layer's containing block, or the layer would size against
+ * the nearest positioned ancestor (often the page). Zero specificity: a rune's
+ * own `position` (sticky, absolute) still wins. */
+:where([data-bg]) {
+	position: relative;
+}
 [data-name="bg"] {
 	position: absolute;
 	inset: 0;

@@ -546,12 +546,15 @@ export interface CompiledComposition {
 	 * before it is transformed. Validation reads it to see which slot each
 	 * placed node came from (ADR-046 decision 3).
 	 */
-	place: (resolved: ResolvedContent, attrs: Record<string, any>) => Node[];
+	place: (resolved: ResolvedContent, attrs: Record<string, any>, authored?: Node[]) => Node[];
 	/** Where the universal attributes land (D14, D31, D33). */
 	placements: CompositionPlacements;
 	/** One instance's attributes less the universal ones that moved off the root
 	 *  (or were dropped for want of a carrier). What the root keeps. */
 	rootAttributes: (attrs: Record<string, any>) => Record<string, any>;
+	/** Whether the author's `{% bg %}` / `{% tint %}` directive moves to a placed
+	 *  rune, as its attributes do, rather than staying on the root. */
+	placesDirective: (tag: string) => boolean;
 	/** The parsed template, as construction checked it. */
 	templateNodes: readonly Node[];
 	/** SPEC-182 D4 — the filled attributes the author also wrote, for the
@@ -962,9 +965,29 @@ export function compileComposition(
 	};
 
 	const attributeNames = [...declared];
-	const place = (resolved: ResolvedContent, attrs: Record<string, any>): Node[] => {
+	// The `{% bg %}` and `{% tint %}` directives are the block form of the `bg`
+	// and `tint` attributes, so they land where those do (D33): on the paint
+	// carrier, as its own children, where the placed rune reads them. Left on the
+	// root, a backdrop would be positioned against the page rather than the band.
+	const directiveTarget = (tag: string): Node | undefined => {
+		const target = plan.axes[tag];
+		return target && 'node' in target ? target.node : undefined;
+	};
+	const placesDirective = (tag: string) =>
+		(tag === 'bg' || tag === 'tint') && directiveTarget(tag) !== undefined;
+	const place = (
+		resolved: ResolvedContent,
+		attrs: Record<string, any>,
+		authored: Node[] = [],
+	): Node[] => {
 		const bound: Record<string, unknown> = {};
 		for (const name of attributeNames) bound[name] = attrs[name];
+		const directives = new Map<Node, Node[]>();
+		for (const child of authored) {
+			if (child.type !== 'tag' || !child.tag || !placesDirective(child.tag)) continue;
+			const target = directiveTarget(child.tag)!;
+			directives.set(target, [...(directives.get(target) ?? []), child]);
+		}
 		const ctx: ExpandContext = {
 			rune,
 			resolved: slotValues(structural, resolved),
@@ -972,6 +995,7 @@ export function compileComposition(
 			fields,
 			moves: moveAttributes(plan, attrs).moves,
 			defaults: defaultsByNode,
+			directives,
 		};
 
 		const placed = expand(ast.children, ctx);
@@ -992,7 +1016,7 @@ export function compileComposition(
 		// anything reads them. `attrs` is the caller's object, filled in place, so
 		// the schema table applied after this transform reads them too.
 		Object.assign(attrs, filledAttributes(resolved, node?.attributes ?? {}));
-		const placed = place(resolved, attrs);
+		const placed = place(resolved, attrs, node?.children);
 
 		const children = Markdoc.transform(placed, templateConfig(config)) as RenderableTreeNode[];
 
@@ -1068,6 +1092,7 @@ export function compileComposition(
 		place,
 		placements: plan,
 		rootAttributes,
+		placesDirective,
 		overriddenFills,
 		templateNodes: ast.children,
 	};
@@ -1090,6 +1115,8 @@ interface ExpandContext {
 	/** D34 — the definition's defaults, by the template node they land on. They
 	 *  fill only what neither the author nor a template literal set. */
 	defaults?: Map<Node, Record<string, unknown>>;
+	/** The author's `{% bg %}` / `{% tint %}`, by the template node they land on. */
+	directives?: Map<Node, Node[]>;
 }
 
 function asNodes(value: unknown): Node[] {
@@ -1167,7 +1194,8 @@ function substituteNode(node: Node, ctx: ExpandContext): Node {
 		const moved = ctx.moves?.get(node);
 		if (moved) Object.assign(attributes, moved);
 	}
-	return cloneNode(node, attributes, expand(node.children, ctx));
+	const directives = node.type === 'tag' ? (ctx.directives?.get(node) ?? []) : [];
+	return cloneNode(node, attributes, [...directives, ...expand(node.children, ctx)]);
 }
 
 /** The items a list field resolved to, each with its `$each` binding and content. */

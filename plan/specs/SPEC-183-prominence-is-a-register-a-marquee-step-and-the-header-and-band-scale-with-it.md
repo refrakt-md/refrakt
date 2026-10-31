@@ -91,12 +91,17 @@ A prominence step publishes the header's values, not just the title's:
 
 On `elevation="flush"`, `display` and `marquee` set the band's block padding:
 
-| step | block padding | under 640px |
-|---|---|---|
-| `display` | 3.5rem / 3rem | 2.5rem / 2rem |
-| `marquee` | 7rem / 6.5rem | 3.5rem / 3rem |
+| step | block padding | inline | a cover band's content under 640px |
+|---|---|---|---|
+| `display` | 3.5rem / 3rem | 2rem | 2.5rem / 2rem, 1.25rem inline |
+| `marquee` | 7rem / 6.5rem | 2rem | 3.5rem / 3rem, 1.25rem inline |
 
 These are the plugin `cta`'s and `hero`'s own values, and the plugin `hero`'s mobile cover values.
+A page that bleeds the band full width replaces the inline padding with its gutter.
+
+*(Amended 2026-10-31, after the staging review: the band keeps its block padding on a phone, as the
+plugin `hero` does, and only a cover band's overlay tightens it. The 2rem inline padding was
+missing; without it a band's content ran to its edges.)*
 
 - **Only flush.** `raised`, `flat` and the card surfaces take their padding from `elevation`'s chrome
   bundle and density, as now. Padding a raised card by its header's emphasis would change every
@@ -152,10 +157,11 @@ where SPEC-160 D7 already put it. The plugin stylesheets are deleted when each r
 (SPEC-181), not before. Until then the plugin runes keep their own CSS and are unaffected: they rest
 at `--rf-title-size: 3.25rem` and `4xl`, and an author writes no `marquee` on them.
 
-**The blurb's measure is left to the review.** The plugin `hero` caps the blurb at 40rem, or 560px
-when centred; `section` caps its preamble at `--rf-measure` (65ch). The difference is small at
-desktop widths. It is recorded as an explained difference in the comparison test unless the review
-on staging finds it wrong.
+**The measure moves from the header to the blurb.** The review on staging showed `section`'s
+65ch header measure wrapping a marquee title the plugin set on one line. At `display` and `marquee`
+the header takes the column's width (`--rf-prominence-header-measure: 100%`) and the blurb the
+plugins' 40rem (`--rf-prominence-blurb-measure`). The header is never wider than its column, so a
+word too long for a phone overflows evenly around a centred title, as the plugin's does.
 
 ## Not in scope
 

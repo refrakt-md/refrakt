@@ -90,6 +90,21 @@ describe('the composed hero definition (WORK-665)', () => {
 		expect(sectionOf(out).attributes['data-prominence']).toBe('prominent');
 	});
 
+	it('puts a `{% bg %}` and a `{% tint %}` on the section, where the `bg` and `tint` attributes land', () => {
+		// Left on the empty root, the backdrop was positioned against the page
+		// and filled the viewport's height rather than the band (found on
+		// staging.refrakt.md).
+		const out = mine(
+			'{% hero %}\n{% bg gradient="to-br" from="transparent" to="muted/0.2" /%}\n{% tint mode="dark" /%}\n# Ship faster\n{% /hero %}',
+		);
+		expect(out.attributes['data-bg']).toBeUndefined();
+		expect(byName(out, 'bg')).toHaveLength(1);
+		expect(sectionOf(out).attributes['data-bg']).toBe('');
+		expect(byName(sectionOf(out), 'bg')).toHaveLength(1);
+		expect(sectionOf(out).attributes['data-color-scheme']).toBe('dark');
+		expect(out.attributes['data-color-scheme']).toBeUndefined();
+	});
+
 	it('reads no heading as an eyebrow (ADR-046)', () => {
 		const out = mine('{% hero %}\n## What is new\n\n# Ship faster\n{% /hero %}');
 		expect(byName(out, 'eyebrow')).toHaveLength(0);

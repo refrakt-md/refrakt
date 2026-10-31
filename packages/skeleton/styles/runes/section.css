@@ -33,6 +33,8 @@
 .rf-section__preamble {
 	display: flex;
 	flex-direction: column;
+	/* Start-aligned by default, so a pill eyebrow keeps its own width. */
+	align-items: flex-start;
 }
 .rf-section__image {
 	max-width: 100%;

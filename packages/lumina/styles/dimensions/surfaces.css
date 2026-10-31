@@ -131,9 +131,10 @@
  *   --rf-prominence-header-scale  multiplies the header's gaps (title → blurb,
  *                                 header → what follows)
  *   --rf-prominence-band-padding  a flush band's block padding (D3)
- *   --rf-prominence-title-fill    the title's paint (D4); Lumina's display and
- *   --rf-prominence-title-clip,   marquee are a gradient clipped to the text
- *   --rf-prominence-title-ink */
+ *   --rf-prominence-header-measure,  the header's and the blurb's max-width
+ *   --rf-prominence-blurb-measure
+ *   --rf-prominence-title-gradient  a switch (empty when on, unset when off):
+ *                                   the title draws Lumina's gradient (D4) */
 	[data-prominence="prominent"] {
 		--rf-prominence-blurb-size: var(--rf-text-lg);
 		--rf-prominence-header-scale: 1.25;
@@ -148,24 +149,25 @@
 		--rf-prominence-header-scale: 2;
 		--rf-prominence-band-padding: 7rem 6.5rem;
 	}
-	/* The loud steps' titles are Lumina's gradient, as the plugin hero's and
- * cta's were. */
+	/* A loud title is set wider than the reading measure (it would wrap at 65ch
+ * of body type), and its blurb carries the measure instead: the plugin hero's
+ * and cta's 40rem. */
 	:is([data-prominence="display"], [data-prominence="marquee"]) {
-		--rf-prominence-title-fill: linear-gradient(
-			135deg,
-			var(--rf-color-text) 0%,
-			var(--rf-color-muted) 100%
-		);
-		--rf-prominence-title-clip: text;
-		--rf-prominence-title-ink: transparent;
+		--rf-prominence-header-measure: 100%;
+		--rf-prominence-blurb-measure: 40rem;
 	}
-	@media (max-width: 640px) {
-		[data-prominence="display"] {
-			--rf-prominence-band-padding: 2.5rem 2rem;
-		}
-		[data-prominence="marquee"] {
-			--rf-prominence-band-padding: 3.5rem 3rem;
-		}
+	/* The loud steps' titles are Lumina's gradient, as the plugin hero's and
+ * cta's were. A switch, not the gradient itself: a custom property's var()s
+ * resolve where it is declared, so a gradient built here would keep this
+ * band's colours on a title whose own differ (a cover band's light-on-dark
+ * content). The title builds it from its own colours. */
+	:is([data-prominence="display"], [data-prominence="marquee"]) {
+		--rf-prominence-title-gradient: ;
+	}
+	/* The band's inline padding, the plugin hero's and cta's 2rem. A page that
+ * bleeds the band full width replaces it with its gutter (layouts/default.css). */
+	[data-elevation="flush"]:is([data-prominence="display"], [data-prominence="marquee"]) {
+		padding-inline: 2rem;
 	}
 	/* A cover band keeps its media well flush: the padding moves onto the
  * overlaid content (D3). */
@@ -173,7 +175,7 @@
 		[data-prominence="display"],
 		[data-prominence="marquee"]
 	) {
-		padding-block: 0;
+		padding: 0;
 	}
 	[data-elevation="flush"][data-media-position="cover"]:is(
 			[data-prominence="display"],
@@ -181,6 +183,21 @@
 		)
 		> [data-name="content"] {
 		padding-block: var(--rf-prominence-band-padding);
+		padding-inline: 2rem;
+	}
+	/* On a phone the overlay's band padding would eat most of the well, so a cover
+ * band tightens it, as the plugin hero's did. An uncovered band keeps it. */
+	@media (max-width: 640px) {
+		[data-elevation="flush"][data-media-position="cover"][data-prominence="display"]
+			> [data-name="content"] {
+			padding-block: 2.5rem 2rem;
+			padding-inline: 1.25rem;
+		}
+		[data-elevation="flush"][data-media-position="cover"][data-prominence="marquee"]
+			> [data-name="content"] {
+			padding-block: 3.5rem 3rem;
+			padding-inline: 1.25rem;
+		}
 	}
 
 	/* ─── Media slot shares the surface chrome ───────────────────────────
