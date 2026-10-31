@@ -5,6 +5,12 @@
 		--rf-title-size: var(--rf-text-4xl);
 		padding: 3.5rem 2rem 3rem;
 	}
+	/* On a phone the headline steps down, as a composed cta's display does. */
+	@container (max-width: 640px) {
+		.rf-cta {
+			--rf-title-size: 2rem;
+		}
+	}
 	.rf-cta .rf-cta__preamble,
 	.rf-cta > h1,
 	.rf-cta > h2,

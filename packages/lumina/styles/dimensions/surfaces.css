@@ -120,6 +120,16 @@
 	[data-prominence="marquee"] {
 		--rf-prominence-size: calc(var(--rf-title-size, var(--rf-text-2xl)) * 13 / 6);
 	}
+	/* On a phone the loud steps ramp smaller, so a long word fits the line:
+ * marquee 2.5rem, display 2rem from the default (WORK-690). */
+	@container (max-width: 640px) {
+		[data-prominence="display"] {
+			--rf-prominence-size: calc(var(--rf-title-size, var(--rf-text-2xl)) * 4 / 3);
+		}
+		[data-prominence="marquee"] {
+			--rf-prominence-size: calc(var(--rf-title-size, var(--rf-text-2xl)) * 5 / 3);
+		}
+	}
 
 	/* ─── Prominence: the rest of the header, and the band (SPEC-183 D2–D4) ──
  * A step sizes the whole header, not just its title. Each value is a custom
