@@ -72,6 +72,20 @@ describe.each(CASES)('$rune at $prominence, against the plugin stylesheet (SPEC-
 		expect(rem('var(--rf-text-2xl)') * ramp(c.prominence)).toBeCloseTo(resting, 5);
 	});
 
+	it('has the plugin’s title size on a phone (WORK-690)', () => {
+		const phone = (source: string) =>
+			/@container \(max-width: 640px\)\s*\{([\s\S]*?)\n\t\}/.exec(source)?.[1] ?? '';
+		const plugin = rem(prop(blocks(phone(own), c.root), '--rf-title-size'));
+		const [, n, d] =
+			/\* (\d+) \/ (\d+)/.exec(
+				prop(
+					blocks(phone(surfaces), `[data-prominence="${c.prominence}"]`),
+					'--rf-prominence-size',
+				) ?? '',
+			) ?? [];
+		expect(rem('var(--rf-text-2xl)') * (Number(n) / Number(d))).toBeCloseTo(plugin, 5);
+	});
+
 	it('has the plugin’s blurb size', () => {
 		const pluginBlurb = prop(
 			blocks(own, `${c.root} p:not([data-section="eyebrow"]),\n\t${c.blurb}`) ||

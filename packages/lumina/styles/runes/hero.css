@@ -15,6 +15,12 @@
 		background-size: cover;
 		background-position: center;
 	}
+	/* On a phone the headline steps down, as a composed hero's marquee does. */
+	@container (max-width: 640px) {
+		.rf-hero {
+			--rf-title-size: 2.5rem;
+		}
+	}
 	.rf-hero__preamble {
 		gap: 0.25rem;
 		margin-bottom: 2rem;

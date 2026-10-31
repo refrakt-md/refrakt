@@ -62,6 +62,10 @@ landing page's opening band, one per page in practice.
   The universal attribute definition, `RuneConfig.defaultProminence`, the docs and the editor read it,
   or are made to.
 - `display` is unchanged, so no `prominence="display"` written today moves.
+- **On a phone the two loud steps ramp smaller** (amended 2026-10-31, WORK-690): below 640px of
+  container width, `marquee` at 5/3 (2.5rem) and `display` at 4/3 (2rem), so a long word fits the
+  line. At 3.25rem, "Documentation" overflowed a 390px screen. The plugin `hero` and `cta` take the
+  same sizes, so the two stay identical until they go live.
 - **The composed `hero` defaults to `marquee`**, and the composed `cta` declares `prominence: display`
   (it declares no prominence today, resting at `normal`).
 
