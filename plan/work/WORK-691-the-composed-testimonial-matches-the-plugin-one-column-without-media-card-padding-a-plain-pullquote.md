@@ -1,4 +1,4 @@
-{% work id="WORK-691" status="in-progress" priority="medium" complexity="simple" source="SPEC-161,SPEC-181" tags="runes, composition, testimonial, pullquote, split, staging" milestone="v0.45.0" %}
+{% work id="WORK-691" status="in-progress" priority="medium" complexity="simple" source="SPEC-161,SPEC-181" tags="runes, composition, testimonial, pullquote, split, staging" milestone="v0.45.0" pr="refrakt-md/refrakt#746" %}
 
 # The composed testimonial matches the plugin: one column without media, card padding, a plain pullquote
 
