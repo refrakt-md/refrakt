@@ -261,9 +261,9 @@ first field present carries `data-lead`.
 </div>
 ```
 
-- The skeleton lays the fields out in a column; Lumina emphasises
-  `[data-lead]` and sets the rest, by `:not([data-lead])`, smaller and
-  muted.
+- The skeleton lays the fields out in a column. Lumina sets the whole
+  block small (`--rf-text-sm`), as fine print, emphasises `[data-lead]` by
+  weight and mutes the rest, by `:not([data-lead])`.
 - Nothing ranks the values (`data-meta-rank`), so a compact container
   hides none of them.
 

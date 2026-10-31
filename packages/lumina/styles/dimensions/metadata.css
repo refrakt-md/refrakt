@@ -90,8 +90,11 @@
 	/* ─── Layout: lead — emphasis ──────────────────────────────────────── */
 	/* The column is structure (skeleton); the lead's weight and the secondary
 	 * values' size and colour are skin. */
+	/* A byline is fine print: the whole block is set small, the lead
+	 * distinguished by weight and colour, as a testimonial's always was. */
 	[data-zone-layout="lead"] {
 		gap: 0.125rem;
+		font-size: var(--rf-text-sm);
 	}
 
 	/* Emphasised by weight alone: a lead is often a `<cite>`, whose italic would
@@ -103,7 +106,6 @@
 	}
 
 	[data-zone-layout="lead"] > :not([data-lead]) {
-		font-size: var(--rf-text-sm);
 		color: var(--rf-color-muted);
 	}
 
