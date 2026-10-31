@@ -1,5 +1,36 @@
 # @refrakt-md/runes
 
+## 0.45.0
+
+### Minor Changes
+
+- ac66e7c: `prominence` gains a fifth step, `marquee`, above `display`: a landing page's opening band (SPEC-183). Each step now sizes the whole header, not just its title, and Lumina publishes the values as custom properties a theme can retune.
+
+  - **`marquee`** ramps the title to 13/6 of the resting size (3.25rem from the default).
+  - **The blurb grows** from `prominent` up: `text-lg` at `prominent` and `display`, `text-xl` at `marquee`. The header's gaps widen with it.
+  - **A flush band at `display` or `marquee` takes a band's padding**: 3.5rem / 3rem and 7rem / 6.5rem, less on narrow screens. A cover band moves it onto the overlaid content.
+  - **Lumina draws `display` and `marquee` titles as a gradient.** It is dropped under forced colours and never reaches a nested rune's title.
+  - **Large buttons now come with `marquee` only.** A `display` or `prominent` section's actions take the default size.
+  - **A loud header is set wide, and its blurb carries the measure**: at `display` and `marquee` the header takes the column's width and the blurb stops at 40rem. A flush band at those steps is padded 2rem inline.
+
+- 98af015: - **`pullquote` gains `variant="plain"`**: the quote set as the content of what holds it rather than as a feature. Italic at the surrounding size, with no glyph, rule or indent, and never floated, whatever its `align`. A testimonial's card is the case it is for.
+  - **A `start` or `end` split with no media zone lays out as one column.** A rune with `media-position` and nothing in its media zone used to leave its content in half the row.
+
+### Patch Changes
+
+- ab22f98: Fixes found reviewing the composed `hero` on staging.refrakt.md:
+
+  - **A `{% bg %}` or `{% tint %}` in a composed rune lands on its paint carrier**, as the `bg` and `tint` attributes already did, rather than on the empty root. A backdrop was positioned against the page and filled the viewport's height rather than the band.
+  - **A rune carrying a background is its layer's containing block** (`position: relative`, at zero specificity). A plain `section` with a `{% bg %}` had the same bug.
+  - **A full-width composed rune pads its carrier**, not its empty root, so the carrier's background, cover well and surface fill the bleed.
+  - **A stacked `end` split puts its media after the content**, whatever the source order. Every split rune: `section`, `card` and the rest.
+  - **A section header is start-aligned by default and never wider than its column**, so a pill eyebrow keeps its width and a long word overflows a centred header evenly.
+  - **A `display` or `marquee` title builds its gradient from its own colours**, so a cover band's light-on-dark title stays light.
+
+- Updated dependencies [ac66e7c]
+  - @refrakt-md/transform@0.45.0
+  - @refrakt-md/types@0.45.0
+
 ## 0.44.0
 
 ### Minor Changes

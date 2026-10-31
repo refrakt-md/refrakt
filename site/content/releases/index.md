@@ -6,7 +6,15 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.44.0 · Hero, cta and testimonial compose
+## v0.45.0 · Steps and the ladder
+
+A composition can number its items. Composition templates gain one tag, `{% group %}`, that
+arranges what it holds as a row or a ladder, and `steps` becomes the first composition built on a
+numbered ladder (SPEC-156, SPEC-161 D5).
+
+[All 5 changes in v0.45.0 →](/releases/v0.45.0)
+
+## v0.44.0 · Hero, cta and testimonial compose - October 30, 2026
 
 The first marketing runes become compositions over `section`, beside the plugin runes they will
 replace. Before they can, a composed rune has to put its universal attributes somewhere other
