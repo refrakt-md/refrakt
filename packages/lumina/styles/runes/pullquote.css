@@ -73,6 +73,24 @@
 		letter-spacing: var(--rf-tracking-normal);
 	}
 
+	/* Style: plain — the quote is the content of what holds it (a testimonial's
+ * card), not a feature set in running prose: italic at the surrounding size,
+ * with no glyph, rule, indent or inline margin, whatever the alignment. */
+	.rf-pullquote.rf-pullquote--plain {
+		/* The rhythm of the card it sits in: a little after what precedes it,
+		 * a little more before what follows. */
+		margin: 0.75rem 0 1rem;
+		padding: 0;
+		border: none;
+		max-width: none;
+		font-size: inherit;
+		font-weight: inherit;
+		line-height: var(--rf-leading-relaxed);
+	}
+	.rf-pullquote--plain::before {
+		display: none;
+	}
+
 	/* Reset inner blockquote — global blockquote styles shouldn't apply here */
 	.rf-pullquote blockquote {
 		border: none;

@@ -72,14 +72,14 @@ describe('the composed testimonial definition (WORK-668)', () => {
 	});
 
 	it.each(VARIANTS)(
-		'variant %s: a flat, compact surface and the round avatar, `variant` on the root',
+		'variant %s: a flat surface at the default density and the round avatar, `variant` on the root',
 		(variant) => {
 			const out = mine(
 				FIXTURE.replace('{% testimonial %}', `{% testimonial variant="${variant}" %}`),
 			);
 			expect(out.attributes['data-variant']).toBe(variant);
 			expect(sectionOf(out).attributes['data-elevation']).toBe('flat');
-			expect(sectionOf(out).attributes['data-density']).toBe('compact');
+			expect(sectionOf(out).attributes['data-density']).toBe('full');
 			expect(byName(out, 'media')[0].attributes['data-media']).toBe('portrait');
 		},
 	);
@@ -201,9 +201,10 @@ describe('composed testimonial against the plugin, for every gallery cell (SPEC-
 	it.each(CASES)('%s: the same quote, author, role, rating and avatar', (_case, src) => {
 		const a = theirs(src);
 		const b = mine(src);
-		expect(html(all(b, (n) => n.name === 'blockquote')[0].children)).toBe(
-			html(all(a, (n) => n.name === 'blockquote')[0].children),
-		);
+		// The quote is the authored blockquote, inside a plain pullquote.
+		const quote = all(b, (n) => n.attributes?.['data-slot'] === 'quote')[0];
+		expect(quote.name).toBe('blockquote');
+		expect(html(quote.children)).toBe(html(all(a, (n) => n.name === 'blockquote')[0].children));
 		const [name, role] = byName(b, 'byline')[0].children.filter(
 			(c: Json) => c && typeof c === 'object',
 		);
@@ -220,12 +221,20 @@ describe('composed testimonial against the plugin, for every gallery cell (SPEC-
 		const b = mine(src);
 		// Block-less root around a section: no `rf-testimonial*` class.
 		expect(html(b)).not.toMatch(/rf-testimonial/);
-		// The plugin's surface and compact density are on its root; the
-		// composition's land on the section it places (SPEC-145 D33, D34).
+		// The plugin's surface is on its root; the composition's lands on the
+		// section it places (SPEC-145 D33, D34). The plugin's compact density
+		// is not carried: it set its own padding, and compact would pad the
+		// card at 0.5rem (WORK-691).
 		expect(a.attributes['data-elevation']).toBe('flat');
 		expect(sectionOf(b).attributes['data-elevation']).toBe('flat');
 		expect(a.attributes['data-density']).toBe('compact');
-		expect(sectionOf(b).attributes['data-density']).toBe('compact');
+		expect(sectionOf(b).attributes['data-density']).toBe('full');
+		// The quote is set by a plain pullquote rather than by testimonial CSS:
+		// italic at the card's size, no glyph or rule (WORK-691). It wraps the
+		// authored blockquote, as `{% pullquote %}` written directly does.
+		const [pull] = byRune(b, 'pull-quote');
+		expect(pull.attributes['data-variant']).toBe('plain');
+		expect(pull.name).toBe('blockquote');
 		// The avatar is a media zone beside the content rather than the last
 		// child: a `div[data-section="media"]` holding the image.
 		expect(byName(b, 'media')[0].name).toBe('div');

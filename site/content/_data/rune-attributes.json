@@ -3705,7 +3705,7 @@
 			"plugin": "core",
 			"scope": "own",
 			"name": "variant",
-			"type": "\"default\" | \"accent\" | \"editorial\"",
+			"type": "\"default\" | \"accent\" | \"editorial\" | \"plain\"",
 			"required": false,
 			"description": "Visual style of the quote block",
 			"page": "pullquote"

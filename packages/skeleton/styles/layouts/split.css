@@ -30,6 +30,20 @@
 	grid-column: 1;
 }
 
+/* A split with nothing in its media zone (a testimonial with no avatar) emits no
+ * zone at all, and lays out as the content alone rather than in half a row. */
+:is([data-media-position="start"], [data-media-position="end"]):not(
+	:has(> [data-section="media"], > [data-name="media"])
+) {
+	grid-template-columns: minmax(0, 1fr);
+}
+:is([data-media-position="start"], [data-media-position="end"]):not(
+		:has(> [data-section="media"], > [data-name="media"])
+	)
+	> * {
+	grid-column: 1;
+}
+
 /* A portrait media zone (a round avatar) takes its portrait's width rather than
  * a share of the row, unless a `media-ratio` asks for one. */
 [data-media-position="start"]:not([data-media-ratio]):has(> [data-media="portrait"]) {
