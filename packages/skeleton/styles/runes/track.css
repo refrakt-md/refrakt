@@ -1,16 +1,11 @@
-/* track — structure. The row flex + counter, the number box, the cell flex sizing
+/* track — structure. The row flex, the cell flex sizing
  * + ellipsis overflow + duration auto-push, the description/cue full-row + wrap,
  * the chapter row flex + time auto-push, and the narrow-screen hides. The
- * number/separator glyphs, type, borders, and spacing stay skin. */
+ * separator glyphs, type and spacing stay skin. The track number, its box and the
+ * rule between tracks are the sequence dimension's (dimensions/sequence.css, BUG-024). */
 .rf-track {
 	display: flex;
 	align-items: center;
-	counter-increment: track;
-}
-.rf-track::before {
-	content: counter(track);
-	min-width: 1.5rem;
-	flex-shrink: 0;
 }
 .rf-track__track-name {
 	flex: 1;

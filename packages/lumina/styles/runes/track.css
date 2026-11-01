@@ -5,16 +5,8 @@
 		padding: 0.75rem 1.25rem;
 		transition: background 0.15s ease;
 	}
-	.rf-track + .rf-track {
-		border-top: 1px solid var(--rf-color-border);
-	}
 	.rf-track:hover {
 		background: color-mix(in srgb, var(--rf-color-border) 15%, transparent);
-	}
-	.rf-track::before {
-		font-size: var(--rf-text-xs);
-		color: var(--rf-color-primary);
-		text-align: right;
 	}
 
 	/* Track name — primary text, takes remaining space */

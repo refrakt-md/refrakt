@@ -1,39 +1,19 @@
-/* steps — structure. The step counter mechanism, the step item positioning, the
- * counter-badge box placement, the preamble layout, list resets, and the media-position flip. All spacing, type, surface, and the badge
+/* steps — structure. The preamble layout and the media-position flip. The step
+ * numbers, their box and the list reset are the sequence dimension's
+ * (dimensions/sequence.css, BUG-024). All spacing, type, surface, and the badge
  * chrome stay skin (Lumina's styles/runes/steps.css). */
-
-.rf-steps {
-	counter-reset: step;
-}
 
 .rf-steps__preamble {
 	flex-direction: column;
 	align-items: flex-start;
 }
 
-.rf-steps ol {
+.rf-steps__steps {
 	list-style: none;
 }
 
 .rf-step__content {
 	display: contents;
-}
-
-.rf-step {
-	counter-increment: step;
-	position: relative;
-}
-
-.rf-step::before {
-	content: counter(step);
-	position: absolute;
-	left: 0;
-	top: 0.625rem;
-	width: 1.5rem;
-	height: 1.5rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
 }
 
 .rf-step h1,

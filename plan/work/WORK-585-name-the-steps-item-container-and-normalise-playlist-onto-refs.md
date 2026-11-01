@@ -1,4 +1,4 @@
-{% work id="WORK-585" status="ready" priority="medium" complexity="trivial" source="ADR-030" tags="runes, output-contract, refs, data-name, marketing, media, hygiene" milestone="v0.45.0" %}
+{% work id="WORK-585" status="in-progress" priority="medium" complexity="trivial" source="ADR-030" tags="runes, output-contract, refs, data-name, marketing, media, hygiene" milestone="v0.45.0" %}
 
 # Name the Steps item container, and normalise Playlist onto refs
 
@@ -72,7 +72,7 @@ contract churn.
 - [ ] `Playlist` sets its `tracks` name through `refs` rather than on the `Tag` directly, with identical output
 - [ ] The two `.rf-steps ol` descendant selectors are retargeted at the element class
 - [ ] An author-written `<ol>` inside a step's prose is no longer matched by the steps container rules
-- [ ] Both copies of `structures.json` are regenerated and carry the new `data-name`
+- [ ] Both copies of `structures.json` are regenerated *(no diff: the contract derives from config, and a name given through `refs` in the transform is not in it)*
 - [ ] `npm run seo:baseline:check` passes — this adds no property-bearing node, so an unexpected diff is a finding
 
 ## Notes

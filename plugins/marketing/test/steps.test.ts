@@ -20,6 +20,27 @@ Do the second thing.
 		expect(stepItems.length).toBe(2);
 	});
 
+	it('names its item container `steps`, and only that list (WORK-585)', () => {
+		const result = parse(`{% steps %}
+# Step One
+Do these, in order:
+
+1. first
+2. second
+
+# Step Two
+Done.
+{% /steps %}`);
+		const stepsTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'steps')!;
+		const named = findAllTags(stepsTag, (t) => t.attributes['data-name'] === 'steps');
+		expect(named).toHaveLength(1);
+		expect(named[0].name).toBe('ol');
+		// The list an author writes inside a step is not the container.
+		const lists = findAllTags(stepsTag, (t) => t.name === 'ol');
+		expect(lists.length).toBe(2);
+		expect(lists.filter((l) => l.attributes['data-name'] === 'steps')).toHaveLength(1);
+	});
+
 	it('should auto-detect h2 heading level', () => {
 		const result = parse(`{% steps %}
 ## Step One
