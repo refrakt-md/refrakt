@@ -1,4 +1,4 @@
-{% work id="WORK-585" status="in-progress" priority="medium" complexity="trivial" source="ADR-030" tags="runes, output-contract, refs, data-name, marketing, media, hygiene" milestone="v0.45.0" %}
+{% work id="WORK-585" status="done" priority="medium" complexity="trivial" source="ADR-030" tags="runes, output-contract, refs, data-name, marketing, media, hygiene" milestone="v0.45.0" pr="refrakt-md/refrakt#748" %}
 
 # Name the Steps item container, and normalise Playlist onto refs
 
@@ -68,12 +68,12 @@ contract churn.
 
 ## Acceptance Criteria
 
-- [ ] `Steps` passes its item container through `refs`, so the engine emits `data-name` and the BEM element class
-- [ ] `Playlist` sets its `tracks` name through `refs` rather than on the `Tag` directly, with identical output
-- [ ] The two `.rf-steps ol` descendant selectors are retargeted at the element class
-- [ ] An author-written `<ol>` inside a step's prose is no longer matched by the steps container rules
+- [x] `Steps` passes its item container through `refs`, so the engine emits `data-name` and the BEM element class
+- [x] `Playlist` sets its `tracks` name through `refs` rather than on the `Tag` directly, with identical output
+- [x] The two `.rf-steps ol` descendant selectors are retargeted at the element class
+- [x] An author-written `<ol>` inside a step's prose is no longer matched by the steps container rules
 - [ ] Both copies of `structures.json` are regenerated *(no diff: the contract derives from config, and a name given through `refs` in the transform is not in it)*
-- [ ] `npm run seo:baseline:check` passes — this adds no property-bearing node, so an unexpected diff is a finding
+- [x] `npm run seo:baseline:check` passes — this adds no property-bearing node, so an unexpected diff is a finding
 
 ## Notes
 
@@ -81,5 +81,20 @@ Trivial in isolation, and worth doing on its own rather than inside the rename
 spec: it is correct regardless of whether {% ref "ADR-030" /%} is ever
 implemented, and it keeps a contract regeneration out of a change that will
 already have plenty.
+
+## Resolution
+
+Completed: 2026-11-01
+
+Branch: `claude/milestone-v0-44-0-ism7ni`
+
+### What was done
+- `plugins/marketing/src/tags/steps.ts`: the item `<ol>` goes through `refs` as `steps`, so it gets `data-name="steps"` and `.rf-steps__steps`.
+- `plugins/media/src/tags/playlist.ts`: `tracks` is named through `refs` rather than on the Tag. Output is identical.
+- Skeleton and Lumina `steps.css` target `.rf-steps__steps` instead of `.rf-steps ol`. A new test in `plugins/marketing/test/steps.test.ts` checks that an `<ol>` an author writes inside a step is not the container.
+
+### Notes
+- The name is `steps`, accepting the stutter (`.rf-steps__steps`) as the item recommended.
+- The contracts were regenerated with no diff: they derive from config, and a `refs` name isn't in them. The criterion is amended rather than checked.
 
 {% /work %}
