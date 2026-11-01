@@ -201,7 +201,7 @@ describe('composed testimonial against the plugin, for every gallery cell (SPEC-
 	it.each(CASES)('%s: the same quote, author, role, rating and avatar', (_case, src) => {
 		const a = theirs(src);
 		const b = mine(src);
-		// The quote is the authored blockquote, inside a plain pullquote.
+		// The quote is the authored blockquote, placed as written.
 		const quote = all(b, (n) => n.attributes?.['data-slot'] === 'quote')[0];
 		expect(quote.name).toBe('blockquote');
 		expect(html(quote.children)).toBe(html(all(a, (n) => n.name === 'blockquote')[0].children));
@@ -229,12 +229,14 @@ describe('composed testimonial against the plugin, for every gallery cell (SPEC-
 		expect(sectionOf(b).attributes['data-elevation']).toBe('flat');
 		expect(a.attributes['data-density']).toBe('compact');
 		expect(sectionOf(b).attributes['data-density']).toBe('full');
-		// The quote is set by a plain pullquote rather than by testimonial CSS:
-		// italic at the card's size, no glyph or rule (WORK-691). It wraps the
-		// authored blockquote, as `{% pullquote %}` written directly does.
-		const [pull] = byRune(b, 'pull-quote');
-		expect(pull.attributes['data-variant']).toBe('plain');
-		expect(pull.name).toBe('blockquote');
+		// The quote is the authored blockquote, carrying its slot marker and
+		// its schema property. How it looks in a card is SPEC-185's (a featured
+		// quotation, styled by role); `pullquote variant="plain"` stood in for
+		// it and was withdrawn before release (SPEC-185 D2).
+		const [quote] = all(b, (n) => n.attributes?.['data-slot'] === 'quote');
+		expect(quote.name).toBe('blockquote');
+		expect(quote.attributes.property).toBe('reviewBody');
+		expect(byRune(b, 'pull-quote')).toHaveLength(0);
 		// The avatar is a media zone beside the content rather than the last
 		// child: a `div[data-section="media"]` holding the image.
 		expect(byName(b, 'media')[0].name).toBe('div');

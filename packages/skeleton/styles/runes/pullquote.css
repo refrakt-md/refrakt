@@ -1,7 +1,7 @@
 /* pullquote — structure. The relative root (glyph anchor), the decorative-glyph
  * positioning + the per-variant glyph hides + centred glyph re-centre, the
  * centre/right auto-margins, and the float modes (+ responsive). The quote glyph,
- * type, borders, backgrounds, and the inner-blockquote reset are skin. */
+ * type, borders and backgrounds are skin. */
 .rf-pullquote {
 	position: relative;
 }
@@ -44,13 +44,4 @@
 		float: none;
 		width: 100%;
 	}
-}
-/* plain — the quote is the content of what holds it, so it never floats beside
- * running text, whatever its alignment. */
-.rf-pullquote.rf-pullquote--plain {
-	float: none;
-	width: auto;
-}
-.rf-pullquote--plain::before {
-	display: none;
 }

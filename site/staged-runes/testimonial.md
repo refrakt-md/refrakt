@@ -46,8 +46,6 @@ defaults:
 	---
 
 	{% metablock name="rating" /%}
-	{% pullquote variant="plain" align="left" %}
-		{% slot name="quote" /%}
-	{% /pullquote %}
+	{% slot name="quote" /%}
 	{% metablock name="byline" /%}
 {% /section %}
