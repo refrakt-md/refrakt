@@ -42,7 +42,7 @@ export const pullquote = createContentModelSchema({
 		// unwrapped: the pull quote is itself the `<blockquote>`, so keeping the
 		// authored one inside would nest a quotation in a quotation. Its
 		// attributes come with its content, so a composition's slot marker and a
-		// schema `property` (a testimonial's `reviewBody`) land on the one element.
+		// schema `property` land on the one element.
 		const [blockquote] = children.tag('blockquote').limit(1).toArray() as Tag[];
 		const quoteChildren = blockquote ? blockquote.children : children.tag('p').toArray();
 

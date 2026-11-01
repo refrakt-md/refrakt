@@ -73,8 +73,8 @@
 		letter-spacing: var(--rf-tracking-normal);
 	}
 
-	/* Style: plain — the quote is the content of what holds it (a testimonial's
- * card), not a feature set in running prose: italic at the surrounding size,
+	/* Style: plain — the quote is the content of what holds it (a card, a
+ * section), not a feature set in running prose: italic at the surrounding size,
  * with no glyph, rule, indent or inline margin, whatever the alignment. */
 	.rf-pullquote.rf-pullquote--plain {
 		/* The rhythm of the card it sits in: a little after what precedes it,
