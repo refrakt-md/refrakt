@@ -54,7 +54,7 @@ The roles are the author's choice. What each looks like is the theme's.
   accepted with a deprecation warning for a release, then removed.
   - `editorial` maps to nothing: on an editorial theme a featured quotation looks editorial already.
   - `accent`'s tinted background is the universal `tint`, which every rune already takes; its extra
-    size is loudness (open question 1).
+    size is loudness, which is `prominence` (D9).
 - **`plain` is withdrawn before it is released.** It was added in v0.45.0 and is unpublished, so this
   is a changeset edit (as {% ref "SPEC-182" /%} D7 withdrew the testimonial codemod).
 - **`align` stays.** It is placement, not decoration.
@@ -69,16 +69,24 @@ The roles are the author's choice. What each looks like is the theme's.
    has no rune to mark it, so the node emits `data-quote="quotation"`.
 3. **A rune that reinterprets `>` produces its own elements and never carries the marker**: tips,
    callouts and dialogue are not quotations, and no longer need to undo a quotation's style.
-4. **Lumina's global `blockquote` rule becomes its `[data-quote="quotation"]` rule.** A blockquote with
+4. **A composition does not style what it reinterprets; it places the rune that is that thing.** A
+   composed `recipe`'s tips are notes, so its template places them in a `hint` (`type="note"`, or a
+   `tip` type if recipe's conversion shows one is needed), and the theme's hint treatment applies, as
+   for any hint. The same holds for `comparison`'s callouts. Neither keeps tip or callout CSS of its
+   own once it is composed: that is the rule every composition already follows (SPEC-145 D2), stated
+   here because `>` is where the temptation lies.
+5. **Lumina's global `blockquote` rule becomes its `[data-quote="quotation"]` rule.** A blockquote with
    no marker (third-party content transformed outside refrakt's nodes) gets a minimal, unopinionated
    fallback at zero specificity, so it is never unstyled to the point of illegibility.
-5. **The reading register is context a theme may use.** A quotation in `prose` and one in `ui` (a
+6. **The reading register is context a theme may use.** A quotation in `prose` and one in `ui` (a
    card body) may be styled differently: Lumina keeps its rule and glyph in prose and sets a quotation
    quieter in `ui`. The role is the same; the context differs (SPEC-108).
 
 ### D4 — `pullquote` is the featured quotation; the excerpt is an option of it
 
-One rune, because the two cases look the same and differ in how they are read:
+One rune, because the two cases look the same and differ in how they are read. It keeps its name and
+gains **`quote` as an alias**, the name for its default case; renaming is not decided (open question
+2).
 
 - **By default it is a featured quotation**, read by assistive technology, as every current use of it
   (this site's examples quote other people) already is.
@@ -119,14 +127,41 @@ quote is a featured quotation, and its look in a card comes from the theme and t
 from the composition. The testimonial keeps what is its own meaning: the rating, and the `Review` /
 `Person` / `Rating` schema.
 
-How the attribution is shared between pullquote's `<figcaption>` (D4) and the testimonial's
-`author`/`role` values (which the schema and its byline read, SPEC-182) is open question 4.
+**The pullquote owns the attribution.** It reads the `**Name** — Role` paragraph (D6) and renders
+the `<figcaption>`, so the testimonial no longer has a byline of its own:
+
+- The testimonial's `attribution` field and its `fills` ({% ref "SPEC-182" /%} D6) go: the paragraph
+  is the pullquote's content now, placed with the quote.
+- Its `byline` meta block goes with them. The `<figcaption>` is the byline.
+- **Its schema reads the attribution from the pullquote**: `author` and `role` resolve to the
+  `<figcaption>`'s name and role nodes, as `reviewBody` already resolves to the pullquote's quote
+  across the placed rune. The `Review` / `Person` graph is unchanged, which the SEO baseline checks.
+- `author` and `role` stay declared on the testimonial for the attribute form (SPEC-182 D4), and fill
+  the pullquote's attribution when written, so both forms render one `<figcaption>`.
+
+This amends SPEC-182 D6: the paragraph reading it introduced is kept, and moves from the testimonial
+to the pullquote, where every role reads attribution the same way.
 
 ### D8 — what happens to the interim fixes
 
 - **`plain`** (#746, unreleased) is withdrawn under D2.
 - **The unwrap in #747** (no blockquote nested in a blockquote) is right and is folded into D4, where
   the root becomes `<figure>`, so pullquote's markup changes once rather than twice.
+
+### D9 — a featured quotation's loudness is its `prominence`
+
+`prominence` scales a page-section header, and {% ref "SPEC-183" /%} made it a register for the whole
+header. A featured quotation is the centrepiece of its block in the same way, so it takes the same
+axis rather than a new one:
+
+- **The gate widens.** The prominence facet applies to a rune with a header role, *or* one marked as
+  a featured quotation or an excerpt (D3). On a plain quotation (role 1) it stays unavailable.
+- **The steps keep their meaning.** `quiet` and `normal` are a quotation's own size, `prominent` and
+  `display` a set-apart one, `marquee` a page's centrepiece. The theme maps each step to the quote's
+  type size, as it maps them to a header's; Lumina ramps from the quote's resting size, as it ramps a
+  title (WORK-538).
+- **`accent`'s extra size** (D2) is `prominence="prominent"`.
+- A testimonial's quote is `normal` in a card; a quote set as its own band is `display` or `marquee`.
 
 ## Not in scope
 
@@ -137,16 +172,12 @@ How the attribution is shared between pullquote's `<figcaption>` (D4) and the te
 
 ## Open questions
 
-1. **Loudness.** Featured quotations and pull quotes need a size scale, from a quiet quote in a card
-   to a centred band. Widen `prominence` beyond page-section headers ({% ref "SPEC-183" /%} already
-   made it a whole-header register) or give quotations their own scale?
-2. **Naming.** "Pull quote" names the excerpt case, which D4 makes the option. Keep `pullquote`, add
-   `quote` as an alias, or rename with a deprecation?
+1. *(Settled 2026-11-01: `prominence`, D9.)*
+2. **Renaming.** D4 adds `quote` as an alias. Whether `quote` later becomes the name and `pullquote`
+   the alias is left until the alias has been in use.
 3. **Epigraph scope.** The page title and a `section`'s headline (D5). Any other header owner, such
    as a `card`?
-4. **Testimonial attribution.** Does pullquote own the attribution and render the `<figcaption>`,
-   with the testimonial reading the values back for its schema, or does the testimonial keep reading
-   them (SPEC-182) and hand pullquote nothing to caption?
+4. *(Settled 2026-11-01: the pullquote owns it, D7.)*
 5. **The marker's name and values.** `data-quote` with `quotation | featured | excerpt | epigraph`,
    or a `data-section`-style role?
 
@@ -159,14 +190,17 @@ How the attribution is shared between pullquote's `<figcaption>` (D4) and the te
 - [ ] An attribution paragraph is read the same way for every role and rendered as `<figcaption>` with `<cite>`
 - [ ] A blockquote after a page or section title with an attribution is an epigraph, `data-quote="epigraph"`; without an attribution it stays a quotation
 - [ ] `pullquote`'s `variant` warns as deprecated, and `plain` is withdrawn before release
-- [ ] The staged testimonial places `{% pullquote %}` with no variant and still publishes its `Review` graph
+- [ ] `pullquote` accepts the `quote` alias, and takes `prominence` (D9), which ramps the quote's size
+- [ ] The staged testimonial places `{% pullquote %}` with no variant, the pullquote renders its attribution, and the testimonial's `Review` / `Person` graph is unchanged, read from the pullquote
+- [ ] A composed rune that reinterprets `>` places the rune that is that thing (a `hint` for tips) and ships no style for it
 - [ ] The theme-authoring docs list the four roles as part of the theme contract, and the pullquote and blockquote docs describe roles, not looks
 
 ## References
 
 - {% ref "SPEC-159" /%}: intent, not look; "retune, don't redefine"; composite intents.
 - {% ref "SPEC-108" /%}: reading registers, the context D3.5 uses.
-- {% ref "SPEC-182" /%}: paragraph reading (D4, D6) and match-only-when-present (D5).
+- {% ref "SPEC-182" /%}: paragraph reading (D4, D6) and match-only-when-present (D5); D6 amended by D7.
+- {% ref "SPEC-145" /%}: D2, a composition has no style of its own (D3.4).
 - {% ref "SPEC-183" /%}: `prominence` as a register (open question 1).
 - {% ref "ADR-046" /%}: header grammar by position (D5).
 - {% ref "ADR-030" /%}: variants are modifiers; semantics are rune-locked.
