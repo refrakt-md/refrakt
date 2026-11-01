@@ -1,5 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
+type Tag = InstanceType<typeof Markdoc.Tag>;
 import {
 	createContentModelSchema,
 	bodyOnly,
@@ -37,12 +38,15 @@ export const pullquote = createContentModelSchema({
 	transform(resolved, attrs, config) {
 		const children = renderNodes(resolved.body, config);
 
-		// Extract blockquote or use all children as the quote text
-		const blockquote = children.tag('blockquote');
-		const quoteChildren =
-			blockquote.count() > 0 ? blockquote.limit(1).toArray() : children.tag('p').toArray();
+		// The quote is an authored blockquote, or the paragraphs. A blockquote is
+		// unwrapped: the pull quote is itself the `<blockquote>`, so keeping the
+		// authored one inside would nest a quotation in a quotation. Its
+		// attributes come with its content, so a composition's slot marker and a
+		// schema `property` (a testimonial's `reviewBody`) land on the one element.
+		const [blockquote] = children.tag('blockquote').limit(1).toArray() as Tag[];
+		const quoteChildren = blockquote ? blockquote.children : children.tag('p').toArray();
 
-		return createComponentRenderable({
+		const root = createComponentRenderable({
 			rune: 'pull-quote',
 			tag: 'blockquote',
 			properties: fieldMetas(attrs, config, {
@@ -51,5 +55,11 @@ export const pullquote = createContentModelSchema({
 			}),
 			children: quoteChildren,
 		});
+		if (blockquote) {
+			for (const [name, value] of Object.entries(blockquote.attributes)) {
+				if (root.attributes[name] === undefined) root.attributes[name] = value;
+			}
+		}
+		return root;
 	},
 });

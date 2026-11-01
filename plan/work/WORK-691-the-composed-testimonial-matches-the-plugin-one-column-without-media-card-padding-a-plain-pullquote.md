@@ -20,6 +20,7 @@ plugin:
 - [x] The staged testimonial places its quote in `{% pullquote variant="plain" %}`, and still publishes `reviewBody`
 - [x] The pullquote reference page shows the plain variant, and the generated attributes and contracts are regenerated
 - [x] A `lead` block is set small throughout, so the byline's name is the plugin's 14px
+- [x] `pullquote` unwraps an authored blockquote rather than nesting it, carrying its attributes, so the testimonial's quote is one `<blockquote>` with `reviewBody` on it
 - [ ] The testimonial comparison tests assert the new structure, and staging.refrakt.md is reviewed against refrakt.md
 
 ## References

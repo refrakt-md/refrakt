@@ -91,19 +91,6 @@
 		display: none;
 	}
 
-	/* Reset inner blockquote — global blockquote styles shouldn't apply here */
-	.rf-pullquote blockquote {
-		border: none;
-		background: none;
-		padding: 0;
-		margin: 0;
-		border-radius: 0;
-		color: inherit;
-	}
-	.rf-pullquote blockquote::before {
-		display: none;
-	}
-
 	/* Responsive — floated quotes become full-width on mobile */
 	@media (max-width: 768px) {
 		.rf-pullquote[data-align="left"],

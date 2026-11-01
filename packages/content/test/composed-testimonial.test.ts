@@ -230,11 +230,15 @@ describe('composed testimonial against the plugin, for every gallery cell (SPEC-
 		expect(a.attributes['data-density']).toBe('compact');
 		expect(sectionOf(b).attributes['data-density']).toBe('full');
 		// The quote is set by a plain pullquote rather than by testimonial CSS:
-		// italic at the card's size, no glyph or rule (WORK-691). It wraps the
-		// authored blockquote, as `{% pullquote %}` written directly does.
+		// italic at the card's size, no glyph or rule (WORK-691). The pullquote
+		// is the one `<blockquote>`: it unwraps the authored one and takes its
+		// slot marker and its schema property, so nothing nests.
 		const [pull] = byRune(b, 'pull-quote');
 		expect(pull.attributes['data-variant']).toBe('plain');
 		expect(pull.name).toBe('blockquote');
+		expect(pull.attributes['data-slot']).toBe('quote');
+		expect(pull.attributes.property).toBe('reviewBody');
+		expect(all(pull, (n) => n.name === 'blockquote')).toHaveLength(1);
 		// The avatar is a media zone beside the content rather than the last
 		// child: a `div[data-section="media"]` holding the image.
 		expect(byName(b, 'media')[0].name).toBe('div');
