@@ -1,4 +1,4 @@
-{% spec id="SPEC-186" status="draft" tags="runes, content-model, composition, resolver, section, reinterpretation" %}
+{% spec id="SPEC-186" status="accepted" tags="runes, content-model, composition, resolver, section, reinterpretation" %}
 
 # A content model reads groups, nested blocks and trailing parts, and reports what is missing
 
@@ -85,10 +85,11 @@ quote:
   model:
     type: sequence
     fields:
-      body:        { match: paragraph, greedy: true, yields: true }
+      body:        { match: paragraph, greedy: true }
       attribution:
         match: paragraph
         optional: true
+        position: last
         itemModel:
           fields:
             - { name: dash, match: text, pattern: '^\s*[—–-]\s*$' }
@@ -98,23 +99,32 @@ quote:
 
 1. **The field still matches the whole node**, as today. The nested model reads its children into
    members named `quote.body` and `quote.attribution`: dotted, because a nested model is the
-   node's own, and its members may repeat names used elsewhere (`body`).
+   node's own, and its members may repeat names used elsewhere (`body`). Nested models may nest
+   again, to any depth (`a.b.c`).
 2. **A composition places a member by its dotted name** (`{% slot name="quote.attribution" /%}`) or the
    whole node by the field's name, not both (SPEC-145 D11's placed-once rule extends to members).
 3. **The nested model is any content model**, so a group (D1) or a condition can sit inside it.
 4. **An unmatched child inside the node is reported** as `content-unmatched`, naming the field.
 
-### D3 — a greedy field can yield its trailing nodes to the field after it
+### D3 — a field can claim the container's last node
 
-`yields: true` on a greedy field: after it collects its run, it gives back the trailing nodes the
-**next** field (or group) would take, when that field would otherwise match nothing.
+`position: last` on a field: before the sequence is walked, the **last** node of the container being
+read is set aside for that field if the field matches it. Every field before it, greedy or not, then
+reads the nodes before it; the anchored field takes the node it reserved.
 
-- `body` (greedy paragraphs, `yields`) followed by `attribution` (a paragraph with a `strong`): the body
-  takes every paragraph but a final attribution, which the next field claims. With no attribution
-  paragraph, the body keeps everything.
-- **One field of lookahead.** The yield asks only the next field. It does not search the model.
-- **Only what that field matches.** A yielding field never gives back a node the next field would
-  reject, so an ordinary last paragraph stays in the body.
+- `body` (greedy paragraphs) and `attribution` (`position: last`, a paragraph with a dash and a
+  `strong`): the body takes every paragraph but a final attribution. With no attribution line, the
+  last node is not reserved and the body keeps everything.
+- **"Last" is the last node of the container being read**: the blockquote's children for a nested
+  model (D2), the zone or the rune's children otherwise. A node after the attribution line (an image
+  inside the quote) means it is not last, and it is not read as one, which is the authored convention.
+- **One node.** A trailing *run* is not anchored; no case needs it, and a mechanism for it can be
+  added when one does (ADR-030 rule 6: vocabulary is cheap, mechanism expensive).
+- **At most one anchored field per container**, and it must be the last field of its model. A model
+  with two, or with fields after it, is rejected at load.
+- **Stated on the field that takes**, which is the field the rule is about: an attribution *is* the last
+  line. *(Decided 2026-11-01 over `yields: true` on the greedy field that gives, which needed a field
+  of lookahead and an "otherwise matches nothing" clause.)*
 
 ### D4 — a required field that matched nothing is reported
 
@@ -161,9 +171,9 @@ fields:
 
 ### D6 — compositions declare the same constructs
 
-A composition definition's `content` accepts `group`, `model` and `yields` in the same YAML, with the
+A composition definition's `content` accepts `group`, `model` and `position: last` in the same YAML, with the
 same load-time checks: unknown keys, a group with no required member, duplicate member names, a nested
-model on a non-block field, `yields` on a field that is not greedy or has no field after it. Each is
+model on a non-block field, `position: last` on more than one field of a model or on a field that is not its last. Each is
 reported at definition load, naming it, and the composed-runes guide's Errors table gains an entry for
 each new code.
 
@@ -177,22 +187,20 @@ each new code.
 
 ## Open questions
 
-- **Dotted names (D2).** Members of a nested model are `quote.body`; members of a group are flat
-  (D1.4). The asymmetry is deliberate (a nested model is a node's own namespace; a group is a
-  grouping of the model's own fields), but it is worth confirming once compositions use both.
-- **`yields` or an anchor.** An attribution field could instead say `position: last`. `yields` is
-  stated on the field that gives, which keeps the body's behaviour visible where it is declared; an
-  anchor is stated on the field that takes. One should be chosen, not both.
+- *(Settled 2026-11-01: dotted names for a nested model's members, flat names for a group's, D1.4
+  and D2.1. A dot means "inside that node"; no dot means "one of this rune's own parts". Nesting may
+  go to any depth, `a.b.c`.)*
+- *(Settled 2026-11-01: `position: last` on the field that takes, D3.)*
 
 ## Acceptance Criteria
 
 - [ ] A content model accepts an optional or required group that matches all of its required members in order, or takes nothing and leaves its nodes for the next field
 - [ ] A block field accepts a nested `model` over its node's children, resolved to dotted member names, with unmatched children reported
-- [ ] A greedy field with `yields` gives its trailing nodes to the next field when that field would otherwise match nothing, and keeps them otherwise
+- [ ] A field with `position: last` reserves the container's last node when it matches it, the fields before it reading the rest, and reserves nothing otherwise
 - [ ] A required field, group or member that took no node is reported `content-missing`, as a warning for one release, and a child it skips is no longer dropped
 - [ ] The sweep of `site/content` and the fixtures is done, and each `content-missing` it found is fixed or its field made optional
 - [ ] `section`'s header is read from its declared model, and `sectionHeaderParts` and its header-role reader are removed, with every section, hero, cta and testimonial test passing unchanged
-- [ ] Composition definitions accept `group`, `model` and `yields`, with load-time errors for each misuse documented in the composed-runes guide
+- [ ] Composition definitions accept `group`, `model` and `position: last`, with load-time errors for each misuse documented in the composed-runes guide
 
 ## References
 

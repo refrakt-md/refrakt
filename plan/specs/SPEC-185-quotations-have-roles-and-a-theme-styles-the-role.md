@@ -1,4 +1,4 @@
-{% spec id="SPEC-185" status="draft" tags="runes, pullquote, blockquote, theme, intent, accessibility, testimonial, composition" %}
+{% spec id="SPEC-185" status="accepted" tags="runes, pullquote, blockquote, theme, intent, accessibility, testimonial, composition" %}
 
 # Quotations have roles, and a theme styles the role
 
@@ -235,7 +235,7 @@ axis rather than a new one:
 - {% ref "SPEC-182" /%}: paragraph reading (D4, D6) and match-only-when-present (D5); D6 amended by D7.
 - {% ref "SPEC-145" /%}: D2, a composition has no style of its own (D3.4).
 - {% ref "SPEC-183" /%}: `prominence` as a register (D9).
-- {% ref "SPEC-186" /%}: the content-model constructs D5 and D6 are declared with: groups, nested models, `yields`.
+- {% ref "SPEC-186" /%}: the content-model constructs D5 and D6 are declared with: groups, nested models, `position: last`.
 - {% ref "ADR-046" /%}: header grammar by position (D5).
 - {% ref "ADR-030" /%}: variants are modifiers; semantics are rune-locked.
 
