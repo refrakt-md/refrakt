@@ -31,7 +31,7 @@ a recipe tip, and each of those runes undoes it.
 **The variety an editorial theme wants comes from elsewhere.** A theme wanting different quotations
 in different parts of a page is a real need, and every case of it has a home that is not an author's
 look-name: *where* the quote sits (the region, the container, the reading register, which the theme
-already sees), *what* it is (a role, below), and *how loud* it is (a scale, open question 1). A
+already sees), *what* it is (a role, below), and *how loud* it is (a scale, `prominence`, D9). A
 remaining wish for pure variety is a composite intent (SPEC-159 Part 3), named for what the quote is
 to the reader and defined by a theme or a pack.
 
@@ -102,20 +102,43 @@ gains **`quote` as an alias**, the name for its default case; renaming is not de
 
 A blockquote is an epigraph when **both** hold:
 
-1. It stands directly after the page title, or after a `section`'s headline, before any body text.
-   It is the same place an eyebrow is read from ({% ref "ADR-046" /%}), on the other side.
-2. It carries an attribution (D6).
+1. It stands in the epigraph position: after a `section`'s headline (and its blurb, when there is
+   one) and before the body; or at the very start of a page's content, or directly after its `#`
+   title (many layouts take the title from frontmatter, so the content may have none).
+2. It carries an attribution (D6), in either position.
 
 Without an attribution it stays a quotation. That keeps the ordinary opening quotation from being
 misread: epigraphs almost always name their source, and requiring one is SPEC-182 D3's rule ("match
 only when the required parts are there") applied to position. No new rune.
 
+- **It is part of `section`'s header grammar** ({% ref "ADR-046" /%}), as one more optional group
+  after the blurb ({% ref "SPEC-186" /%} D1, D5). `section` reads its header from the content a
+  composition places in it, so **every rune composed over `section` reads epigraphs the same way**:
+  `hero`, `cta`, `testimonial`, and `card` once it is composed. That is the intended reach:
+  reinterpretation means the same Markdown means the same thing in every rune. A card's epigraph need
+  not look like an essay's; the theme styles the role by context (D3.6).
+- **The quote and its attribution are read as one unit**, optional together and required within:
+  a lone attribution after a headline is not an epigraph, and stays the blurb it is today.
+- **A heading inside a body does not open an epigraph.** It is the extension most likely to misread
+  ordinary content (a source quoted under a docs heading), and the cheapest to add later.
+- A composition that never wants one sets the placed `section`'s `header="headline"`.
+
 ### D6 — attribution is one shared part
 
 Every role that carries a source reads it the same way and renders it the same way:
 
-- **Read** from a paragraph directly after the quotation, `**Name** — Source` (comma, en and em dash
-  accepted as separators, as SPEC-182 D6 fixed for testimonials).
+- **Read** from either of two positions, with one item model (`**Name**` required, then the source
+  after a dash or comma, as SPEC-182 D6 fixed for testimonials):
+  - **after** the quotation, a `**Name** — Source` paragraph directly following it. Read wherever a
+    rune owns the sequence: `pullquote`, a composition's model, `section`'s epigraph position. The
+    quote and the attribution are one group ({% ref "SPEC-186" /%} D1), so an attribution is never
+    read without a quote.
+  - **inside** it, as the blockquote's last paragraph, `— **Name**, Source`: the leading dash marks it,
+    so a quote ending in bold text is not misread. Read by a nested model on the `blockquote` field
+    (SPEC-186 D2, D3), so it works in a composition as it does in a native rune, and by the core
+    `blockquote` node, which gives a plain quotation an attribution with no rune.
+  - **The after form can ship first.** It needs only SPEC-182's paragraph model and SPEC-186 D1; the
+    inside form waits for SPEC-186 D2–D3.
 - **Rendered** as `<figcaption>`, the name in `<cite>`.
 - A quotation (role 1) with an attribution becomes a `<figure>`; without one it stays a bare
   `<blockquote>`.
@@ -175,8 +198,8 @@ axis rather than a new one:
 1. *(Settled 2026-11-01: `prominence`, D9.)*
 2. **Renaming.** D4 adds `quote` as an alias. Whether `quote` later becomes the name and `pullquote`
    the alias is left until the alias has been in use.
-3. **Epigraph scope.** The page title and a `section`'s headline (D5). Any other header owner, such
-   as a `card`?
+3. *(Settled 2026-11-01: `section`'s header grammar, so every rune composed over it, and the page
+   start; not headings inside a body. D5.)*
 4. *(Settled 2026-11-01: the pullquote owns it, D7.)*
 5. **The marker's name and values.** `data-quote` with `quotation | featured | excerpt | epigraph`,
    or a `data-section`-style role?
@@ -201,7 +224,8 @@ axis rather than a new one:
 - {% ref "SPEC-108" /%}: reading registers, the context D3.5 uses.
 - {% ref "SPEC-182" /%}: paragraph reading (D4, D6) and match-only-when-present (D5); D6 amended by D7.
 - {% ref "SPEC-145" /%}: D2, a composition has no style of its own (D3.4).
-- {% ref "SPEC-183" /%}: `prominence` as a register (open question 1).
+- {% ref "SPEC-183" /%}: `prominence` as a register (D9).
+- {% ref "SPEC-186" /%}: the content-model constructs D5 and D6 are declared with: groups, nested models, `yields`.
 - {% ref "ADR-046" /%}: header grammar by position (D5).
 - {% ref "ADR-030" /%}: variants are modifiers; semantics are rune-locked.
 
