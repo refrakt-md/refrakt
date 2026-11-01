@@ -64,7 +64,17 @@ The roles are the author's choice. What each looks like is the theme's.
 ### D3 — a theme styles roles, not the `blockquote` element
 
 1. **Each role carries a marker**, `data-quote="quotation" | "featured" | "excerpt" | "epigraph"`, on
-   the element that holds it. A theme selects on the marker.
+   the quotation's **outermost element**: the `<figure>` when it is attributed, the bare
+   `<blockquote>` when it is not, the `<aside>` for an excerpt. A theme styles the role through it,
+   with its `blockquote` and `figcaption` as descendants, and never guesses which wrapper holds it.
+   - **Its own attribute**, one per vocabulary as `data-reading`, `data-media` and `data-meta-type`
+     are. Not `data-section`, which names a part of a rune's own structure: a `>` in running text is
+     part of none. Not a general content-role attribute: how text *speaks* (dialogue, lyrics, a
+     caption; SPEC-159's voice role) is a different question from what kind of quotation it is, and
+     keeping them apart lets one element carry both.
+   - **Independent of rune names.** An epigraph comes from `section`'s header grammar or the page
+     start, a quotation from the core node, and a later composition may make a featured quotation
+     without `pullquote`, so the theme contract names roles, not runes.
 2. **The quotation role comes from the core `blockquote` node.** A plain `>` that no rune consumes
    has no rune to mark it, so the node emits `data-quote="quotation"`.
 3. **A rune that reinterprets `>` produces its own elements and never carries the marker**: tips,
@@ -201,8 +211,8 @@ axis rather than a new one:
 3. *(Settled 2026-11-01: `section`'s header grammar, so every rune composed over it, and the page
    start; not headings inside a body. D5.)*
 4. *(Settled 2026-11-01: the pullquote owns it, D7.)*
-5. **The marker's name and values.** `data-quote` with `quotation | featured | excerpt | epigraph`,
-   or a `data-section`-style role?
+5. *(Settled 2026-11-01: `data-quote` with `quotation | featured | excerpt | epigraph`, on the
+   outermost element, D3.1.)*
 
 ## Acceptance Criteria
 
