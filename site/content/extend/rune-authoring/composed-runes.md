@@ -261,6 +261,40 @@ A group arranges what the template places inside it, without placing a rune to d
 
 **Group with a group, not a placed rune, where the rune publishes schema.** A group renders `data-name` and no `data-rune`. A placed `{% bar %}` renders `data-rune="bar"`, which is a boundary for the schema row: a rune the template places inside it (a `{% figure %}` a `children` row maps, say) is the bar's, not this rune's, and its property is dropped without a diagnostic. Slots are not affected, since a placed slot carries its owner across any boundary. With no schema row, either is safe.
 
+### A narrative field
+
+A rune may take a story between its parts: a food blog's recipe, with the name and times first, then the story, then the ingredients and method. The definition declares the field with a match that names only the editorial runes, and the template places it like any other slot:
+
+```markdoc
+---
+tag: article
+content:
+  type: sequence
+  fields:
+    headline:    { match: heading }
+    blurb:       { match: paragraph, optional: true }
+    story:       { match: "tag:textblock|tag:mediatext", optional: true, greedy: true }
+    ingredients: { match: "list:unordered", optional: true }
+    method:      { match: "list:ordered", optional: true }
+---
+
+{% section chrome %}
+	{% slot name="headline" /%}
+
+	{% slot name="blurb" /%}
+{% /section %}
+
+{% slot name="story" /%}
+
+{% card %}
+	{% slot name="ingredients" /%}
+
+	{% slot name="method" /%}
+{% /card %}
+```
+
+A field whose match names only `tag:textblock` and `tag:mediatext` is the rune's narrative field (ADR-047). It is inferred, so there is nothing to declare. A rune has at most one, and its schema row never maps it: the story around a rune is not the rune. `refrakt inspect` and `refrakt reference` name it. See [the narrative field](/extend/rune-authoring/patterns#the-narrative-field) for when to use one.
+
 ### `{% if %}`, and what it hides
 
 Markdoc's conditional works — `bond` uses it for its arrow. Its limit: content models match the AST **before** it is transformed, and an `{% if %}` is still an unresolved tag then. So anything a template wraps in a conditional is invisible to the structural matching of the rune it sits inside.
@@ -585,6 +619,8 @@ Each error has a code. The fix column assumes the cause in the meaning column.
 | `fill-placed` | A field with `fills` is also placed by a slot, so its content would render as well as fill the rune's values. | Remove the slot; the filled values are placed through `{% metablock %}` or `$attrs`. |
 | `group-invalid` | A `{% group %}` has no `name`, a `layout` other than `bar` or `ladder`, an `align` other than `start` or `end` or outside a bar, another attribute, no layout, or no content, or sits inside a line of text. | `{% group name="x" layout="bar" %}…{% /group %}` on its own lines. |
 | `sequence-without-ladder` | The frontmatter declares `sequence`, and the template places no `{% group layout="ladder" %}`. | Place the ladder around the items, or remove `sequence`. |
+| `narrative-field-twice` | Two fields' matches name only editorial runes (`tag:textblock`, `tag:mediatext`), so the rune has two narrative fields. | Keep one; give the other a match that also takes something else, or remove it. |
+| `narrative-field-mapped` | The `schema` table maps the narrative field to a property. | Remove the mapping: the story around a rune is never its structured data. |
 | `metablock-invalid` | A `{% metablock %}` has no `name`, has content, has another attribute, or sits inside a line of text. | `{% metablock name="x" /%}` on its own line. |
 | `metablock-inside-each` | A `{% metablock %}` is inside an `each` slot. | Move it outside. |
 | `metablock-undeclared` | It names no block declared under `blocks`. | Declare the block, or fix the name. |

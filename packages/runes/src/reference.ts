@@ -320,6 +320,12 @@ export function describeRune(rune: RuneInfo): string {
 	// model, the union of its zones' fields).
 	const composition = compositionFor(rune.schema);
 	if (composition) lines.push(`Template slots: ${composition.slots.join(', ')}`);
+	// ADR-047 — the editorial around the rune, never structured data.
+	if (composition?.narrativeField) {
+		lines.push(
+			`Narrative field: ${composition.narrativeField} (takes \`{% textblock %}\` and \`{% mediatext %}\`; never structured data)`,
+		);
+	}
 	// SPEC-145 D34 — what the definition sets unless the author does.
 	if (composition?.defaults) {
 		lines.push('Defaults (the author’s attribute overrides each):');
