@@ -1,4 +1,4 @@
-{% spec id="SPEC-156" status="accepted" tags="runes, theme, layout, arrangements, composition, vocabulary, sequence" %}
+{% spec id="SPEC-156" status="shipped" tags="runes, theme, layout, arrangements, composition, vocabulary, sequence" released-in="v0.45.0" %}
 
 # The ladder and row arrangement primitives
 

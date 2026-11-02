@@ -1,4 +1,4 @@
-{% spec id="SPEC-183" status="implemented" tags="runes, composition, section, prominence, surfaces, lumina, hero, cta" %}
+{% spec id="SPEC-183" status="shipped" tags="runes, composition, section, prominence, surfaces, lumina, hero, cta" released-in="v0.45.0" %}
 
 # Prominence is a register: a marquee step, and the header and band scale with it
 
