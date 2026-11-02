@@ -1,25 +1,23 @@
-/* sequence — structure. The counter mechanism + list resets, item gutters, the
- * numbered counter-circle box placement, and the connected-timeline geometry
+/* sequence — structure. The list resets, item gutters, the numbered marker box
+ * placement (the ordinal is a node, WORK-583), and the connected-timeline geometry
  * (item position/gutter, marker box). The connector *lines* are borders (skin),
  * as are the marker fill / radius / shadow / colour / type — those live in
  * Lumina's dimensions/sequence.css. [data-sequence] is uncontested by layouts and
  * sections, so the split is behavior-preserving. */
 
-/* Numbered — counter circle to the left of each item */
+/* Numbered — the item's ordinal (a `[data-name="ordinal"]` node the engine
+ * emits, WORK-583) in a circle to the left of each item */
 [data-sequence="numbered"] {
-	counter-reset: sequence;
 	list-style: none;
 	padding-left: 0;
 }
 
 [data-sequence="numbered"] > li {
-	counter-increment: sequence;
 	position: relative;
 	padding-left: 2.25rem;
 }
 
-[data-sequence="numbered"] > li::before {
-	content: counter(sequence);
+[data-sequence="numbered"] > li > [data-name="ordinal"] {
 	position: absolute;
 	left: 0;
 	top: 0.625rem;
@@ -89,7 +87,7 @@
 	padding-left: 1.75rem;
 }
 
-[data-density="compact"] [data-sequence="numbered"] > li::before {
+[data-density="compact"] [data-sequence="numbered"] > li > [data-name="ordinal"] {
 	width: 1.25rem;
 	height: 1.25rem;
 }

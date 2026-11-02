@@ -487,9 +487,11 @@ HowTo: { block: 'howto', sequence: 'numbered' }
 
 | Value | Visual treatment |
 |-------|-----------------|
-| `numbered` | Counter circles to the left of each item |
+| `numbered` | An ordinal in a circle to the left of each item |
 | `connected` | Vertical line with dots (or horizontal with `data-sequence-direction="horizontal"`) |
 | `plain` | No visual indicators |
+
+In a `numbered` sequence the engine puts each item's number in the document, as the item's first child: `<span data-name="ordinal" data-meta-type="quantity">3</span>`, with the rune's element class (`rf-steps__ordinal`). It is real text, so it can be selected and copied, and a screen reader reads it in order. Style it with `[data-sequence="numbered"] > li > [data-name="ordinal"]`, not a `::before` counter. An item's own position wins (a track's `number=`), the rest count on from it, and an `<ol start>` sets the first. `connected` and `plain` sequences have no ordinal: their markers are ornament, and stay in CSS.
 
 Optional direction control:
 
