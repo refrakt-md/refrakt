@@ -1,4 +1,4 @@
-{% work id="WORK-583" status="ready" priority="medium" complexity="moderate" source="ADR-029" tags="runes, sequence, dom, a11y, theme, layout" milestone="v0.45.0" %}
+{% work id="WORK-583" status="in-progress" priority="medium" complexity="moderate" source="ADR-029" tags="runes, sequence, dom, a11y, theme, layout" milestone="v0.45.0" %}
 
 # Emit sequence ordinals as nodes, not CSS counters
 
@@ -78,14 +78,14 @@ other order means editing five counter implementations instead of one.
 
 ## Acceptance Criteria
 
-- [ ] A numbered sequence emits its ordinal as a text node, not as generated content
-- [ ] The ordinal is selectable and copyable, and announced in document order
-- [ ] `connected` and `plain` sequences emit no ordinal node
-- [ ] An explicit `number=` on an item wins over the assigned ordinal
-- [ ] `playlist` assigns ordinals to tracks that carry none
-- [ ] The ordinal is addressable from a `layout` tree by name
-- [ ] Both copies of `structures.json` are regenerated together and the new node appears in each
-- [ ] `npm run seo:baseline:check` passes, or the baseline is regenerated and the diff reviewed — no schema change is expected, so an unexpected diff is a finding
+- [x] A numbered sequence emits its ordinal as a text node, not as generated content
+- [x] The ordinal is selectable and copyable, and announced in document order
+- [x] `connected` and `plain` sequences emit no ordinal node
+- [x] An explicit `number=` on an item wins over the assigned ordinal
+- [x] `playlist` assigns ordinals to tracks that carry none
+- [x] The ordinal is addressable from a `layout` tree by name
+- [ ] Both copies of `structures.json` are regenerated together *(no diff: the structure contract does not describe the sequence dimension at all, for any rune; describing it is its own change)*
+- [x] `npm run seo:baseline:check` passes, or the baseline is regenerated and the diff reviewed — no schema change is expected, so an unexpected diff is a finding
 
 ## Risks
 

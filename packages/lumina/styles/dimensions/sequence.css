@@ -1,12 +1,12 @@
 @layer skin {
 	/* === Sequential Items — skin ===
  * The connector lines (borders), the marker chrome (fill, radius, shadow), the
- * counter type, and the layout gaps. The counter mechanism, list resets, item
+ * ordinal's type, and the layout gaps. The list resets, item
  * geometry, and marker box placement live in @refrakt-md/skeleton
  * (dimensions/sequence.css). */
 
-	/* Numbered — counter circle chrome + type. */
-	[data-sequence="numbered"] > li::before {
+	/* Numbered — the ordinal's circle chrome + type (WORK-583). */
+	[data-sequence="numbered"] > li > [data-name="ordinal"] {
 		font-size: var(--rf-text-xs);
 		font-weight: var(--rf-weight-bold);
 		font-variant-numeric: tabular-nums;
@@ -52,7 +52,7 @@
 	/* === Density interaction === */
 
 	/* Compact: smaller circle keeps the same type scale. */
-	[data-density="compact"] [data-sequence="numbered"] > li::before {
+	[data-density="compact"] [data-sequence="numbered"] > li > [data-name="ordinal"] {
 		font-size: var(--rf-text-xs);
 	}
 

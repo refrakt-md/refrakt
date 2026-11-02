@@ -501,6 +501,20 @@ function transformRune(
 		children = [...beforeContent, ...children];
 	}
 
+	// 5c. Annotate <ol> elements with data-sequence when config declares a
+	// sequence style, and number a numbered one's items (WORK-583). Before the
+	// children are transformed, so an item rune (a `track`, a `step`) receives
+	// its ordinal as one of its own named parts: its BEM class and its layout
+	// tree see it like any other.
+	const sequence = resolveSequenceStyle(config.sequence, modifierValues);
+	if (sequence) {
+		const seqDirection = config.sequenceDirection
+			? (modifierValues[config.sequenceDirection.fromModifier] ?? config.sequenceDirection.default)
+			: undefined;
+		children = [...children]; // annotated in place; never the input tree's own array
+		annotateSequence(children, sequence, seqDirection, block);
+	}
+
 	// 6. Apply BEM element classes, section anatomy, and media slots to data-name children, then recurse once
 	let enhancedChildren = children.map((child) => {
 		if (!isTag(child)) return recurse(child, dataRune);
@@ -586,15 +600,6 @@ function transformRune(
 		if (facetConsumed.has(prop)) return false;
 		return true;
 	});
-
-	// 7b. Annotate <ol> elements with data-sequence when config declares sequence style
-	const sequence = resolveSequenceStyle(config.sequence, modifierValues);
-	if (sequence) {
-		const seqDirection = config.sequenceDirection
-			? (modifierValues[config.sequenceDirection.fromModifier] ?? config.sequenceDirection.default)
-			: undefined;
-		annotateSequence(filteredChildren, sequence, seqDirection);
-	}
 
 	// 8. Build inline styles from styles config + tint tokens
 	let inlineStyle = tag.attributes.style || '';
@@ -704,7 +709,11 @@ function applyBemClasses(
 		// anatomy and media slots below still apply.
 		const elementClass = block ? `${block}__${dataName}` : '';
 		const childExistingClass = child.attributes.class || '';
-		const childClass = [elementClass, childExistingClass].filter(Boolean).join(' ');
+		// An element that already carries its class (an ordinal the sequence
+		// pass classed) is not given it twice.
+		const childClass = childExistingClass.split(/\s+/).includes(elementClass)
+			? childExistingClass
+			: [elementClass, childExistingClass].filter(Boolean).join(' ');
 		// Recursively apply BEM to nested data-name children (e.g., icon/title inside header)
 		const nestedChildren = child.children.map((c) => {
 			if (!isTag(c)) return c;
@@ -816,7 +825,12 @@ export function resolveSequenceStyle(
  * `data-sequence` and optionally `data-sequence-direction`.
  * Mutates the array in-place for efficiency (replaces matching elements).
  */
-function annotateSequence(children: RendererNode[], sequence: string, direction?: string): void {
+function annotateSequence(
+	children: RendererNode[],
+	sequence: string,
+	direction: string | undefined,
+	block: string,
+): void {
 	for (let i = 0; i < children.length; i++) {
 		const child = children[i];
 		if (!isTag(child)) continue;
@@ -829,12 +843,51 @@ function annotateSequence(children: RendererNode[], sequence: string, direction?
 			if (direction) {
 				attrs['data-sequence-direction'] = direction;
 			}
-			children[i] = { ...child, attributes: attrs };
+			const items = sequence === 'numbered' ? numberItems(child, block) : child.children;
+			children[i] = { ...child, attributes: attrs, children: items };
 		} else if (child.children.length > 0) {
 			// Recurse into wrappers (contentWrapper, structural elements)
-			annotateSequence(child.children, sequence, direction);
+			annotateSequence(child.children, sequence, direction, block);
 		}
 	}
+}
+
+/**
+ * WORK-583 (ADR-030 rule 3) — a numbered sequence's ordinal is information,
+ * so it is a node, not a CSS counter: a `<span data-name="ordinal">` first in
+ * each item, which a layout can place, a reader can copy, and assistive
+ * technology reads in order. An item's own `position` (a track's `number=`)
+ * wins; the rest count on from the item before, starting at the list's
+ * `start`. `connected` and `plain` sequences carry no ordinal.
+ */
+function numberItems(ol: SerializedTag, block: string): RendererNode[] {
+	const start = Number.parseInt(String(ol.attributes?.start ?? ''), 10);
+	let next = Number.isFinite(start) ? start : 1;
+	return ol.children.map((item) => {
+		if (!isTag(item) || item.name !== 'li') return item;
+		if (item.children.some((c) => isTag(c) && c.attributes?.['data-name'] === 'ordinal'))
+			return item;
+		const own = Number.parseInt(
+			String(parseFields(item.attributes?.['data-rune-fields']).position ?? ''),
+			10,
+		);
+		const n = Number.isFinite(own) ? own : next;
+		next = n + 1;
+		// An item rune names the ordinal as its own part when it is transformed
+		// (`rf-track__ordinal`); a plain item has no block, so it carries the
+		// sequence rune's (`rf-howto__ordinal`).
+		const classed = item.attributes?.['data-rune'] === undefined && block;
+		const ordinal = makeTag(
+			'span',
+			{
+				'data-name': 'ordinal',
+				'data-meta-type': 'quantity',
+				...(classed ? { class: `${block}__ordinal` } : {}),
+			},
+			[String(n)],
+		);
+		return { ...item, children: [ordinal, ...item.children] };
+	});
 }
 
 /** Find and remove a child by data-name from a flat children array.

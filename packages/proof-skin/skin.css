@@ -199,7 +199,7 @@
 	[data-checked="checked"] {
 		color: var(--rf-color-muted);
 	}
-	[data-sequence="numbered"] > li::before {
+	[data-sequence="numbered"] > li > [data-name="ordinal"] {
 		font-family: var(--rf-font-display);
 		font-weight: var(--rf-weight-bold);
 		color: var(--rf-color-primary);

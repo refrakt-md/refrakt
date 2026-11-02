@@ -69,7 +69,7 @@
 	.rf-playlist__tracks > li:hover {
 		background: color-mix(in srgb, var(--rf-color-border) 15%, transparent);
 	}
-	.rf-playlist__tracks > li::before {
+	.rf-playlist__tracks > li > [data-name="ordinal"] {
 		font-size: var(--rf-text-xs);
 		font-variant-numeric: tabular-nums;
 		color: var(--rf-color-muted);
