@@ -46,7 +46,7 @@ const { Tag } = Markdoc;
 export type SlotKind = 'value' | 'region';
 
 /** The closed vocabulary of section roles — mirrors `SectionRole`. */
-const SECTION_ROLES = [
+export const SECTION_ROLES = [
 	'header',
 	'preamble',
 	'eyebrow',

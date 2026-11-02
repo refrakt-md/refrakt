@@ -79,6 +79,7 @@ import { defineRune, runeTagMap } from './rune.js';
 
 export * from './interfaces.js';
 export { Rune, defineRune, runeTagMap } from './rune.js';
+export { themeVocabulary, themeVocabularyDimensions } from './vocabulary.js';
 /** Custom Markdoc attribute types. Exported since SPEC-132, which is the first
  *  release in which their `validate()` runs in a build at all — `transform()`
  *  never invoked it, only `Markdoc.validate()` does. `plugins/media` carries its

@@ -1,4 +1,4 @@
-{% work id="WORK-672" status="ready" priority="medium" complexity="moderate" source="ADR-043" tags="theme, vocabulary, css, coverage, tooling, lumina" milestone="v0.46.0" %}
+{% work id="WORK-672" status="in-progress" priority="medium" complexity="moderate" source="ADR-043" tags="theme, vocabulary, css, coverage, tooling, lumina" milestone="v0.46.0" %}
 
 # A theme vocabulary coverage check
 
@@ -9,11 +9,11 @@ does not check vocabulary values.
 
 ## Acceptance Criteria
 
-- [ ] A check reports, for every vocabulary value, whether a theme styles it or leaves it to the base stylesheet: each `metaType`, sentiment, zone layout (`bar`, `definition-list`, `lead`, `ladder` as they land), section role, media kind and universal-axis value
-- [ ] The vocabulary list is derived from the registries that define it, not restated, so a new value appears in the report without editing the check
-- [ ] It runs for Lumina in the test suite, and its gaps are recorded as known sets that may only shrink, as the selector coverage test does
-- [ ] It is available to third-party themes, through `refrakt` tooling, as part of a theme's definition of done beside `refrakt contracts --check`
-- [ ] The theme-authoring docs describe it
+- [x] A check reports, for every vocabulary value, whether a theme styles it or leaves it to the base stylesheet: each `metaType`, sentiment, zone layout (`bar`, `definition-list`, `lead`, `ladder` as they land), section role, media kind and universal-axis value
+- [x] The vocabulary list is derived from the registries that define it, not restated, so a new value appears in the report without editing the check
+- [x] It runs for Lumina in the test suite, and its gaps are recorded as known sets that may only shrink, as the selector coverage test does
+- [x] It is available to third-party themes, through `refrakt` tooling, as part of a theme's definition of done beside `refrakt contracts --check`
+- [x] The theme-authoring docs describe it
 
 ## References
 

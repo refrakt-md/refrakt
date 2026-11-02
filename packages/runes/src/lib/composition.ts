@@ -276,7 +276,8 @@ const metablockMarkerSchema: Schema = {
  * property placed inside it still resolves (D9).
  */
 const GROUP_TAG = 'group';
-const GROUP_LAYOUTS = new Set(['bar', 'ladder']);
+export const GROUP_LAYOUTS_LIST = ['bar', 'ladder'] as const;
+const GROUP_LAYOUTS = new Set<string>(GROUP_LAYOUTS_LIST);
 const GROUP_ALIGNS = new Set(['start', 'end']);
 /** The expanded group and a ladder's item: unreachable from authored tags (`:`). */
 const GROUP_MARKER = 'refrakt:group';
@@ -1620,7 +1621,7 @@ const DEFINITION_KEYS = new Set([
 ]);
 
 /** SPEC-156 D12 — the sequence styles a definition may declare. */
-const SEQUENCE_VALUES = ['numbered', 'connected', 'plain'];
+export const SEQUENCE_VALUES = ['numbered', 'connected', 'plain'] as const;
 
 /** Keys that would give a composed rune styles of its own (D2). */
 const STYLE_KEYS = new Set(['css', 'style', 'styles', 'stylesheet', 'block', 'class']);
@@ -1782,7 +1783,10 @@ export function parseCompositionDefinition(rune: string, source: string): Compos
 	const defaults = parseDefaults(fm.defaults, (code, msg, at) =>
 		fail(code, msg, ['defaults', ...(at ?? [])]),
 	);
-	if (fm.sequence !== undefined && !SEQUENCE_VALUES.includes(fm.sequence as string)) {
+	if (
+		fm.sequence !== undefined &&
+		!(SEQUENCE_VALUES as readonly string[]).includes(fm.sequence as string)
+	) {
 		fail(
 			'invalid-value',
 			`\`sequence: ${String(fm.sequence)}\` is not a sequence style. Use ${SEQUENCE_VALUES.map((v) => `\`${v}\``).join(', ')}.`,

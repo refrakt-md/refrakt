@@ -2,12 +2,17 @@ import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
 import { resolve, join, relative, dirname, isAbsolute, sep } from 'path';
 import type { CliPlugin, Plugin, PluginRune } from '@refrakt-md/types';
 import {
+	assembleThemeConfig,
+	generateStructureContract,
+	lintTokenOnly,
+	novelElements,
 	validateThemeConfig,
 	type ValidationResult,
 	type ValidationError,
 	type ValidationWarning,
 } from '@refrakt-md/transform';
 import {
+	baseConfig,
 	composedPluginRune,
 	parseFixture,
 	readRuneDefinitions,
@@ -28,6 +33,17 @@ interface PluginValidationResult {
 	pluginName: string;
 	errors: ValidationError[];
 	warnings: ValidationWarning[];
+	/** ADR-044 (WORK-673) — a report, never an error. */
+	vocabulary?: VocabularyReport;
+}
+
+interface VocabularyReport {
+	/** Per themed rune, the elements with no vocabulary role (tier 3). */
+	novel: Record<string, string[]>;
+	/** Per stylesheet under `styles/`, its literal colours, sizes and fonts. */
+	literals: Record<string, { colour: number; size: number; font: number }>;
+	/** No stylesheet has a literal: the plugin's CSS follows any theme. */
+	themePortable: boolean;
 }
 
 /**
@@ -261,7 +277,84 @@ async function validatePlugin(pluginDir: string): Promise<PluginValidationResult
 	errors.push(...cliPluginResult.errors);
 	warnings.push(...cliPluginResult.warnings);
 
-	return { valid: errors.length === 0, pluginName: npmName, errors, warnings };
+	const vocabulary = vocabularyReport(pluginDir, pkg);
+	return { valid: errors.length === 0, pluginName: npmName, errors, warnings, vocabulary };
+}
+
+/**
+ * ADR-044 (WORK-673) — the plugin's own structure, reported: which elements of
+ * its themed runes carry no vocabulary role, so no theme styles them unless it
+ * targets the rune; and whether its stylesheets are written only in theme
+ * tokens. Neither is an error: a novel part is legitimate (tier 3).
+ */
+function vocabularyReport(pluginDir: string, pkg: Plugin): VocabularyReport {
+	const novel: Record<string, string[]> = {};
+	const runes = pkg.theme?.runes ?? {};
+	if (Object.keys(runes).length > 0) {
+		try {
+			const { config } = assembleThemeConfig({
+				coreConfig: baseConfig,
+				pluginRunes: runes,
+				pluginIcons: {},
+				pluginBackgrounds: {},
+				extensions: {},
+				provenance: {},
+				presetMap: {},
+			} as never);
+			const contract = generateStructureContract(config);
+			for (const name of Object.keys(runes)) {
+				const c = contract.runes[name];
+				const r = config.runes[name];
+				if (!c || !r) continue;
+				const elements = novelElements(c, r);
+				if (elements.length > 0) novel[name] = elements;
+			}
+		} catch {
+			// The theme config is validated above; a report never adds an error.
+		}
+	}
+	const literals: VocabularyReport['literals'] = {};
+	for (const file of cssFiles(join(pluginDir, 'styles'))) {
+		const counts = { colour: 0, size: 0, font: 0 };
+		for (const f of lintTokenOnly(readFileSync(file, 'utf-8'))) counts[f.kind]++;
+		literals[relative(pluginDir, file)] = counts;
+	}
+	const themePortable = Object.values(literals).every((c) => c.colour + c.size + c.font === 0);
+	return { novel, literals, themePortable };
+}
+
+function cssFiles(dir: string): string[] {
+	if (!existsSync(dir)) return [];
+	const out: string[] = [];
+	for (const entry of readdirSync(dir)) {
+		const path = join(dir, entry);
+		if (statSync(path).isDirectory()) out.push(...cssFiles(path));
+		else if (entry.endsWith('.css')) out.push(path);
+	}
+	return out;
+}
+
+function printVocabularyReport(report: VocabularyReport): void {
+	console.log('\n  Vocabulary (ADR-044) — a report, not a check:');
+	const novel = Object.entries(report.novel);
+	if (novel.length === 0) {
+		console.log('    Every themed element carries a vocabulary role.');
+	} else {
+		console.log('    Elements with no vocabulary role (tier 3, styled only by your CSS):');
+		for (const [rune, elements] of novel) console.log(`      ${rune}: ${elements.join(', ')}`);
+	}
+	const sheets = Object.entries(report.literals);
+	if (sheets.length === 0) {
+		console.log('    No stylesheets under styles/.');
+	} else if (report.themePortable) {
+		console.log('    Stylesheets use theme tokens only: theme-portable.');
+	} else {
+		console.log('    Literals in stylesheets (use theme tokens to follow any theme):');
+		for (const [file, c] of sheets) {
+			if (c.colour + c.size + c.font === 0) continue;
+			console.log(`      ${file}: ${c.colour} colour, ${c.size} size, ${c.font} font`);
+		}
+	}
 }
 
 /**
@@ -742,6 +835,7 @@ function printValidationResult(result: PluginValidationResult): void {
 
 	if (result.valid && result.warnings.length === 0) {
 		console.log('  Package: OK');
+		if (result.vocabulary) printVocabularyReport(result.vocabulary);
 		console.log('\nAll checks passed.');
 		return;
 	}
@@ -761,6 +855,8 @@ function printValidationResult(result: PluginValidationResult): void {
 			console.log(`    WARN ${warn.path}: ${warn.message}`);
 		}
 	}
+
+	if (result.vocabulary) printVocabularyReport(result.vocabulary);
 
 	if (result.valid) {
 		console.log('\nPackage is valid (with warnings).');

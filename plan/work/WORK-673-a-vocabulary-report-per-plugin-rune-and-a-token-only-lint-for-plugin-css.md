@@ -1,4 +1,4 @@
-{% work id="WORK-673" status="ready" priority="low" complexity="moderate" source="ADR-044" tags="plugins, vocabulary, css, tokens, lint, tooling, docs" milestone="v0.46.0" %}
+{% work id="WORK-673" status="in-progress" priority="low" complexity="moderate" source="ADR-044" tags="plugins, vocabulary, css, tokens, lint, tooling, docs" milestone="v0.46.0" %}
 
 # A vocabulary report per plugin rune and a token-only lint for plugin CSS
 
@@ -8,11 +8,11 @@ exists.
 
 ## Acceptance Criteria
 
-- [ ] A report built from `refrakt contracts` lists, per plugin rune, the elements in its output that carry no vocabulary; it is a report, not an error, because tier 3 is legitimate
-- [ ] A lint flags literal colours, sizes and font stacks in a plugin's stylesheets; it starts as a report, and a plugin that passes can say it is theme-portable
-- [ ] Both run over the nine first-party plugins, and the results are recorded as the baseline Lumina's per-rune CSS drains from
-- [ ] The plugin-authoring guide (`site/content/extend/plugin-authoring/authoring.md`) is rewritten around ADR-044's three tiers, with its `styles/` example as a tier-3 example
-- [ ] The token set is documented as a public contract for plugins as well as themes
+- [x] A report built from `refrakt contracts` lists, per plugin rune, the elements in its output that carry no vocabulary; it is a report, not an error, because tier 3 is legitimate
+- [x] A lint flags literal colours, sizes and font stacks in a plugin's stylesheets; it starts as a report, and a plugin that passes can say it is theme-portable
+- [x] Both run over the nine first-party plugins, and the results are recorded as the baseline Lumina's per-rune CSS drains from
+- [x] The plugin-authoring guide (`site/content/extend/plugin-authoring/authoring.md`) is rewritten around ADR-044's three tiers, with its `styles/` example as a tier-3 example
+- [x] The token set is documented as a public contract for plugins as well as themes
 
 ## References
 

@@ -7,6 +7,24 @@ description: How to author a Plugin with custom rune schemas, theme config, and 
 
 A refrakt.md plugin is an npm package that exports a `Plugin` object. It can define new runes, extend existing core runes with additional attributes, contribute theme config for the identity transform, and optionally participate in the cross-page pipeline.
 
+## How a plugin rune looks right in any theme
+
+A theme renders two interfaces: the **vocabulary** (meta types, sentiments, zone layouts, section roles, media kinds, the universal axes) and the **token set** (`--rf-color-*`, `--rf-spacing-*`, `--rf-radius-*`, the type scale). It configures no rune ([ADR-043](/extend/theme-authoring/overview#covering-the-vocabulary)). So a plugin rune looks right in a theme its author never saw only if it is built from those two interfaces. Take the first of these tiers that fits (ADR-044):
+
+1. **A composition, whenever possible.** A rune written as a [composed rune](/extend/rune-authoring/composed-runes) emits only core runes and vocabulary, so every theme already covers it. Entities, cards, metadata lists and labelled values are compositions.
+2. **A native rune that emits the vocabulary**, when it needs code: parsing, arithmetic, fetching.
+   - **Preferred:** put the code in a generic primitive and write the domain runes as compositions over it.
+   - **Otherwise:** have the rune place core runes in its output. `cast` builds `cast-member` tags and lets them transform normally. Placed runes follow vocabulary changes for free.
+   - **Allowed, but discouraged:** stamping vocabulary attributes (`data-meta-type`, `data-zone-layout`, `data-section`) on your own elements. You then track the vocabulary by hand.
+   - **Structured data:** declare it with `metaFields`, so the values live in the field bag. Don't read it back from the tree.
+3. **Genuinely novel visuals bring their own structure CSS, written only in theme tokens.** A map, a chart, a waveform or a diagram has parts no vocabulary describes, and should not be forced into one. For those parts the plugin ships a stylesheet, the `styles/` directory below. It uses theme tokens for every colour, size, radius and font, so it follows whatever theme the site uses. A theme may add its own skin through `[data-rune="…"]`, but does not have to.
+
+The token set is a public contract for plugins as well as themes: the tokens a theme defines are the ones your stylesheet may use. They are listed in [Design tokens](/extend/theme-authoring/css#design-tokens).
+
+`refrakt plugins validate` reports both tiers' findings. Neither is an error, since a novel part is legitimate:
+- which elements of your themed runes carry no vocabulary role (tier 3);
+- whether your stylesheets are written only in tokens. A plugin that passes can call itself theme-portable.
+
 ## Package Structure
 
 ```
@@ -16,10 +34,27 @@ my-rune-package/
 │   ├── index.ts        ← exports the Plugin object
 │   ├── game-item.ts    ← rune schema (one file per rune)
 │   └── game-spell.ts
-└── styles/
-    ├── game-item.css
+└── styles/             ← tier 3 only: structure for parts no vocabulary covers
     └── game-spell.css
 ```
+
+`game-item` (a card with a rarity) is a tier-1 or tier-2 rune: the vocabulary covers it and it needs no stylesheet. `game-spell` draws an area-of-effect diagram, which is tier 3:
+
+```css
+/* styles/game-spell.css — structure for the diagram, in theme tokens only */
+.rf-game-spell__area {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border: 1px dashed var(--rf-color-border);
+  border-radius: var(--rf-radius-md);
+  padding: var(--rf-spacing-sm);
+  color: var(--rf-color-muted);
+  font-size: var(--rf-text-sm);
+}
+```
+
+`1px` is the only literal here, a hairline, and the token-only report counts it. A plugin that wants to be fully portable takes its border width from a token too.
 
 ## The Plugin Interface
 

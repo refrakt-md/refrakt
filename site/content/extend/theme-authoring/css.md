@@ -204,6 +204,8 @@ Common context modifier patterns in the base config:
 
 All visual values reference CSS custom properties (design tokens) rather than hard-coded values. This makes themes customizable and ensures dark mode works correctly.
 
+**The token set is a public contract, for plugins as well as themes (ADR-044).** A theme defines these tokens; a plugin whose rune has parts no vocabulary covers styles them with these tokens and nothing else, so the plugin follows any theme. Renaming or removing a token is a breaking change for both. `refrakt plugins validate` reports a plugin stylesheet's literal colours, sizes and font stacks. See [Building a Custom Plugin](/extend/plugin-authoring/authoring#how-a-plugin-rune-looks-right-in-any-theme).
+
 ### Token categories
 
 Tokens are defined in a CSS file (e.g., `tokens/base.css`) on the `:root` selector:
