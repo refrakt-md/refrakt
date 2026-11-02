@@ -6,7 +6,16 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.45.0 · Steps and the ladder
+## v0.46.0 · The theme contract
+
+A theme renders a vocabulary and configures no rune (ADR-043); a plugin rune speaks
+the same vocabulary, and only its novel parts bring their own structure, in tokens
+(ADR-044). Both decisions were accepted on 2026-10-28. This milestone builds what
+makes them checkable.
+
+[All 7 changes in v0.46.0 →](/releases/v0.46.0)
+
+## v0.45.0 · Steps and the ladder - November 2, 2026
 
 A composition can number its items. Composition templates gain one tag, `{% group %}`, that
 arranges what it holds as a row or a ladder, and `steps` becomes the first composition built on a

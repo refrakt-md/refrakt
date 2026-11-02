@@ -1,5 +1,35 @@
 # @refrakt-md/cli
 
+## 0.46.0
+
+### Minor Changes
+
+- dcdef7b: A composition's narrative field is checked when its definition loads (ADR-047). A content-model field whose `match` names only the editorial runes (`tag:textblock`, `tag:mediatext`) is the rune's narrative field: the story a template can place between the rune's own parts. Two rules are now enforced:
+
+  - **One per rune.** A definition with two narrative fields is rejected (`narrative-field-twice`).
+  - **Never structured data.** A schema table that maps the narrative field is rejected (`narrative-field-mapped`).
+
+  A field that mixes editorial runes with other matches is not a narrative field. `refrakt inspect` and `refrakt reference` name the narrative field. The rune-authoring patterns guide and the composed-runes guide document it.
+
+- ff8b000: Two checks make ADR-043's and ADR-044's contracts checkable. Both are reports, not gates.
+
+  - **`refrakt theme coverage`** reports, for every value of the theme vocabulary, whether a theme's CSS styles it, leaves it to the base stylesheet (`@refrakt-md/skeleton`), or nothing does. The vocabulary is each meta type, sentiment, zone layout, sequence, section role, media kind and universal-axis value. It is read from the registries that define it (`themeVocabulary()` in `@refrakt-md/runes`; `META_TYPES`, `SENTIMENTS`, `LAYOUT_PRIMITIVES` and `vocabularyCoverage()` in `@refrakt-md/transform`), so a new value appears without updating anything. Lumina runs it as a test, with its unstyled values recorded as a set that may only shrink.
+  - **`refrakt plugins validate`** now reports, for a plugin's themed runes, the elements that carry no vocabulary role (ADR-044's tier 3), and the literal colours, sizes and font stacks in its `styles/` stylesheets (`novelElements()`, `lintTokenOnly()`). A plugin whose stylesheets have none is theme-portable.
+  - **Baseline:** `npm run plugins:vocabulary` records both for the nine first-party plugins in `contracts/plugin-vocabulary.json`. This is the baseline Lumina's per-rune CSS drains from.
+
+### Patch Changes
+
+- Updated dependencies [d2b8962]
+- Updated dependencies [d2b8962]
+- Updated dependencies [dcdef7b]
+- Updated dependencies [ff8b000]
+  - @refrakt-md/transform@0.46.0
+  - @refrakt-md/runes@0.46.0
+  - @refrakt-md/content@0.46.0
+  - @refrakt-md/editor@0.46.0
+  - @refrakt-md/html@0.46.0
+  - @refrakt-md/ai@0.46.0
+
 ## 0.45.0
 
 ### Patch Changes
