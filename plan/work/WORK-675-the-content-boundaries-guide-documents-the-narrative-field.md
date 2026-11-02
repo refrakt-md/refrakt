@@ -1,4 +1,4 @@
-{% work id="WORK-675" status="in-progress" priority="low" complexity="simple" source="ADR-047" tags="docs, runes, composition, content-model, authoring" milestone="v0.46.0" %}
+{% work id="WORK-675" status="done" priority="low" complexity="simple" source="ADR-047" tags="docs, runes, composition, content-model, authoring" milestone="v0.46.0" pr="refrakt-md/refrakt#755" %}
 
 # The content-boundaries guide documents the narrative field
 
@@ -19,5 +19,20 @@ place the story between the rune's parts. A site's own composed rune can declare
 
 - {% ref "ADR-047" /%}.
 - {% ref "WORK-674" /%}: the checks the guide describes.
+
+## Resolution
+
+Completed: 2026-11-02
+
+Branch: `claude/milestone-v0-44-0-ism7ni`
+
+### What was done
+- `site/content/extend/rune-authoring/patterns.md`:
+  - the "What goes where" Recipe row notes the narrative field;
+  - a new "The narrative field" subsection with the food-blog example, the two rules (one per rune, never structured data) and the loose-prose boundary.
+- `site/content/extend/rune-authoring/composed-runes.md`:
+  - "A narrative field" shows a definition with a `story` field and its template (a `section chrome`, the story, a `card`);
+  - the Errors table gains `narrative-field-twice` and `narrative-field-mapped`.
+- `npm run format:md:check` passes.
 
 {% /work %}

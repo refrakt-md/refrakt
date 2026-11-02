@@ -1,4 +1,4 @@
-{% work id="WORK-674" status="in-progress" priority="low" complexity="simple" source="ADR-047" tags="runes, composition, content-model, schema, validation" milestone="v0.46.0" %}
+{% work id="WORK-674" status="done" priority="low" complexity="simple" source="ADR-047" tags="runes, composition, content-model, schema, validation" milestone="v0.46.0" pr="refrakt-md/refrakt#755" %}
 
 # A composition's narrative field is checked at definition load
 
@@ -18,5 +18,23 @@ amended, the field is inferred from its match, and both rules are checked.
 ## References
 
 - {% ref "ADR-047" /%}: decisions 1 and 2, as amended.
+
+## Resolution
+
+Completed: 2026-11-02
+
+Branch: `claude/milestone-v0-44-0-ism7ni`
+
+### What was done
+- `packages/runes/src/lib/composition.ts`:
+  - `isNarrativeMatch` (exported) and `modelFieldDefinitions`;
+  - `schemaSourceNames` walks properties and text in rows, fallback, entities and children;
+  - `compileComposition` rejects a second narrative field (`narrative-field-twice`) and a mapped one (`narrative-field-mapped`), and records `CompositionInfo.narrativeField`.
+- `composition-errors.ts`: the two codes.
+- `packages/runes/src/reference.ts` and `packages/cli/src/commands/inspect.ts` print the narrative field; inspect's JSON carries it.
+- `packages/runes/test/composition-narrative.test.ts`: inference, the `dish` fixture (story between section and card; no property in the story; no slot-header-role finding), both rejections, the mixed-match case, and reference.
+
+### Notes
+- Only the content model's top-level fields are considered (the slots a template places); a section model's per-section fields are not.
 
 {% /work %}
