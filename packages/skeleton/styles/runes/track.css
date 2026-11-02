@@ -1,5 +1,7 @@
-/* track — structure. The row flex, the cell flex sizing
- * + ellipsis overflow + duration auto-push, the description/cue full-row + wrap,
+/* track — structure. The row flex, the cell flex sizing + ellipsis overflow,
+ * the details block (WORK-679: in the row its values are cells of the row, and
+ * the duration's push to the end is the bar's own `[data-align="end"]`; as a
+ * byline it is a row beneath the name), the description/cue full-row + wrap,
  * the chapter row flex + time auto-push, and the narrow-screen hides. The
  * separator glyphs, type and spacing stay skin. The track number, its box and the
  * rule between tracks are the sequence dimension's (dimensions/sequence.css, BUG-024). */
@@ -12,21 +14,27 @@
 	min-width: 0;
 	overflow: hidden;
 }
-.rf-track__track-artist {
+.rf-track[data-meta="row"] > .rf-track__details {
+	display: contents;
+}
+.rf-track__details > [data-field] {
 	flex-shrink: 0;
 }
-.rf-track__track-duration {
-	flex-shrink: 0;
-	margin-left: auto;
+.rf-track[data-meta="row"] > .rf-track__details > [data-field="duration"] {
 	min-width: 3rem;
 }
-.rf-track__track-meta {
-	flex-shrink: 0;
+.rf-track__heading {
+	flex: 1;
+	min-width: 0;
+}
+.rf-track__heading > .rf-track__track-name {
+	display: block;
 }
 .rf-track__track-description {
 	flex-basis: 100%;
 }
-.rf-track:has(.rf-track__track-description) {
+/* A full-row part (a description, chapters, lyrics) starts a line of its own. */
+.rf-track:has(> .rf-track__track-description, > [data-name="lyrics"], > [data-name="chapters"]) {
 	flex-wrap: wrap;
 }
 .rf-track [data-name="lyrics"],
@@ -41,10 +49,8 @@
 	margin-left: auto;
 }
 @media (max-width: 480px) {
-	.rf-track__track-artist {
-		display: none;
-	}
-	.rf-track__track-meta {
+	.rf-track[data-meta="row"] [data-field="artist"],
+	.rf-track[data-meta="row"] [data-field="date"] {
 		display: none;
 	}
 }

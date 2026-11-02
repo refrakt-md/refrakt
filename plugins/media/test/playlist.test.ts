@@ -59,9 +59,9 @@ describe('playlist rune', () => {
 {% /playlist %}`);
 
 		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'playlist');
-		const duration = findTag(tag!, (t) => t.attributes['data-name'] === 'track-duration');
-		expect(duration).toBeDefined();
-		expect(duration!.children).toContain('3:42');
+		// WORK-679 — the value rides the track's field bag; the engine renders it.
+		const track = findTag(tag!, (t) => t.attributes['data-rune'] === 'track');
+		expect(JSON.parse(String(track!.attributes['data-rune-fields'])).duration).toBe('PT222S');
 	});
 
 	it('should extract artist from italic text', () => {
@@ -72,9 +72,8 @@ describe('playlist rune', () => {
 {% /playlist %}`);
 
 		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'playlist');
-		const artist = findTag(tag!, (t) => t.attributes['data-name'] === 'track-artist');
-		expect(artist).toBeDefined();
-		expect(artist!.children).toContain('Queen');
+		const track = findTag(tag!, (t) => t.attributes['data-rune'] === 'track');
+		expect(JSON.parse(String(track!.attributes['data-rune-fields'])).artist).toBe('Queen');
 	});
 
 	it('should inherit artist from playlist attribute', () => {
@@ -85,9 +84,8 @@ describe('playlist rune', () => {
 {% /playlist %}`);
 
 		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'playlist');
-		const artist = findTag(tag!, (t) => t.attributes['data-name'] === 'track-artist');
-		expect(artist).toBeDefined();
-		expect(artist!.children).toContain('Pink Floyd');
+		const track = findTag(tag!, (t) => t.attributes['data-rune'] === 'track');
+		expect(JSON.parse(String(track!.attributes['data-rune-fields'])).artist).toBe('Pink Floyd');
 	});
 
 	it('should support cover image in media zone (media-first source)', () => {

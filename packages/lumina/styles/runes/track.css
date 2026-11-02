@@ -18,34 +18,43 @@
 		white-space: nowrap;
 	}
 
-	/* Artist — secondary text with dot separator */
-	.rf-track__track-artist {
+	/* Details (WORK-679) — the artist, running time and date. */
+	.rf-track__details > [data-field] {
 		font-size: var(--rf-text-sm);
 		color: var(--rf-color-muted);
 	}
-	.rf-track__track-artist::before {
-		content: "\00b7";
-		margin-right: 0.5rem;
-		opacity: 0.5;
-	}
-
-	/* Duration — pushed right, tabular nums */
-	.rf-track__track-duration {
-		font-size: var(--rf-text-sm);
-		color: var(--rf-color-muted);
+	.rf-track__details > [data-field="duration"] {
 		font-variant-numeric: tabular-nums;
+	}
+	.rf-track[data-meta="row"] > .rf-track__details > [data-field="duration"] {
 		text-align: right;
 	}
-
-	/* Meta (date etc.) — dot separator */
-	.rf-track__track-meta {
+	/* In the row the artist and date open with a dot; the duration, pushed to
+	 * the end, needs none. */
+	.rf-track[data-meta="row"] > .rf-track__details > [data-field="date"] {
 		font-size: var(--rf-text-xs);
-		color: var(--rf-color-muted);
 	}
-	.rf-track__track-meta::before {
+	.rf-track[data-meta="row"]
+		> .rf-track__details
+		> :is([data-field="artist"], [data-field="date"])::before,
+	/* As a byline, a dot between each value and the one before it. */
+		.rf-track[data-meta="byline"]
+		.rf-track__details
+		> [data-field]
+		+ [data-field]::before {
 		content: "\00b7";
 		margin-right: 0.5rem;
 		opacity: 0.5;
+	}
+
+	/* Byline — the details sit beneath the name, which has the line to itself
+	 * and so may wrap rather than be cut short. */
+	.rf-track[data-meta="byline"] .rf-track__heading > .rf-track__track-name {
+		white-space: normal;
+	}
+	.rf-track__heading > .rf-track__details {
+		gap: 0 0.5rem;
+		margin-top: 0.125rem;
 	}
 
 	/* Description — full width below the row */

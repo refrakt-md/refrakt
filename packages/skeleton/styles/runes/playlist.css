@@ -1,7 +1,7 @@
 /* playlist — structure. The inner-header flex, the tracks list reset + clip, the
  * track-row flex (overriding the sequence dimension's absolute marker, so the
  * ordinal sits in the row, WORK-583), the
- * track-cell flex sizing + ellipsis overflow + duration auto-push, the meta hide,
+ * track-cell flex sizing + ellipsis overflow, the meta hide,
  * the cover aspect, and the narrow-screen column hides. The inset padding + split
  * gaps + chrome + the track-number glyph stay skin. */
 .rf-playlist__content > .rf-playlist__header {
@@ -32,17 +32,6 @@
 	min-width: 0;
 	overflow: hidden;
 }
-.rf-playlist__tracks [data-name="track-artist"] {
-	flex-shrink: 0;
-}
-.rf-playlist__tracks [data-name="track-duration"] {
-	flex-shrink: 0;
-	margin-left: auto;
-	min-width: 3rem;
-}
-.rf-playlist__tracks [data-name="track-meta"] {
-	flex-shrink: 0;
-}
 /* Cover aspect — defaults to square (album convention). Authors override via
  * `frame-aspect="..."`; the engine lands `--frame-aspect` on the media zone
  * (frameTarget defaults to 'media' since playlist has a media section), and
@@ -54,8 +43,8 @@
 	aspect-ratio: var(--frame-aspect, 1);
 }
 @media (max-width: 480px) {
-	.rf-playlist__tracks [data-name="track-artist"],
-	.rf-playlist__tracks [data-name="track-meta"] {
+	.rf-playlist__tracks [data-meta="row"] [data-field="artist"],
+	.rf-playlist__tracks [data-meta="row"] [data-field="date"] {
 		display: none;
 	}
 }

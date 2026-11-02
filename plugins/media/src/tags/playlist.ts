@@ -61,9 +61,9 @@ const contentType = ['auto', 'lyrics', 'chapters'] as const;
  */
 const MUSIC_ITEM = {
 	'track-name': 'name',
-	'track-artist': 'byArtist',
+	artist: 'byArtist',
 	duration: 'duration',
-	'track-meta': 'datePublished',
+	date: 'datePublished',
 	url: 'url',
 	position: 'position',
 } as const;
@@ -73,7 +73,7 @@ const MUSIC_ITEM = {
 const SPOKEN_ITEM = {
 	'track-name': 'name',
 	duration: 'duration',
-	'track-meta': 'datePublished',
+	date: 'datePublished',
 	url: 'url',
 	position: 'position',
 } as const;
@@ -158,6 +158,13 @@ export const playlist = createContentModelSchema({
 			type: String,
 			required: false,
 			description: 'Unique identifier used to link an audio rune to this playlist.',
+		},
+		meta: {
+			type: String,
+			required: false,
+			matches: ['row', 'byline'],
+			description:
+				"Where each track's artist, date and running time sit: in its row (`row`) or beneath its name (`byline`). A track's own `meta` wins.",
 		},
 	},
 	contentModel: {
@@ -250,6 +257,7 @@ export const playlist = createContentModelSchema({
 		const hasPlayer = (attrs.player as boolean) ?? false;
 		const contentMode = (attrs.content as string) ?? 'auto';
 		const idValue = (attrs.id as string) ?? '';
+		const metaValue = attrs.meta as string | undefined;
 
 		// Collect header AST nodes (title, description) and transform together
 		const headerAstNodes = [contentZone.headline, contentZone.blurb].filter(Boolean) as Node[];
@@ -281,23 +289,25 @@ export const playlist = createContentModelSchema({
 			const trackNameTag = new Tag('span', { 'data-name': 'track-name' }, [name]);
 			const trackChildrenArr: any[] = [trackNameTag];
 
+			// WORK-679 — a list item is rendered through `Track`'s config, as a
+			// `{% track %}` is: the same field bag, so the engine draws the same
+			// details block. The values the schema row reads ride hidden metas, named
+			// as the child row names them; the visible ones are the engine's.
+			const bag: Record<string, string> = {};
 			if (artist) {
-				trackChildrenArr.push(new Tag('span', { 'data-name': 'track-artist' }, [artist]));
+				bag.artist = artist;
+				trackChildrenArr.push(new Tag('meta', { 'data-name': 'artist', content: artist }));
 			}
 			if (duration) {
-				trackChildrenArr.push(new Tag('span', { 'data-name': 'track-duration' }, [duration]));
-				const durationSeconds = parseDuration(duration);
-				// Named `duration`, matching what `{% track %}` calls its ISO carrier,
-				// so one source reaches both forms. `track-duration` beside it is the
-				// *rendered* value ("3:45") and stays unmapped — publishing that as a
-				// schema.org duration is what naming them apart prevents.
-				trackChildrenArr.push(
-					new Tag('meta', { 'data-name': 'duration', content: `PT${durationSeconds}S` }),
-				);
+				const iso = `PT${parseDuration(duration)}S`;
+				bag.duration = iso;
+				trackChildrenArr.push(new Tag('meta', { 'data-name': 'duration', content: iso }));
 			}
 			if (date) {
-				trackChildrenArr.push(new Tag('span', { 'data-name': 'track-meta' }, [date]));
+				bag.date = date;
+				trackChildrenArr.push(new Tag('meta', { 'data-name': 'date', content: date }));
 			}
+			if (metaValue) bag.meta = metaValue;
 
 			// Build cue point elements
 			if (cuePoints.length > 0) {
@@ -307,7 +317,12 @@ export const playlist = createContentModelSchema({
 
 			// No `typeof` either — the child row types these. A list item states no
 			// kind of its own, so the parent is the only authority on what it is.
-			const trackAttrs: Record<string, any> = {};
+			const trackAttrs: Record<string, any> = {
+				'data-rune': 'track',
+				'data-rune-fields': JSON.stringify(bag),
+				// A row of the listing, not a card: see `adoptNestedTrack`.
+				elevation: 'flush',
+			};
 			if (src) trackAttrs['data-src'] = src;
 
 			return new Tag('li', trackAttrs, trackChildrenArr);
@@ -344,7 +359,7 @@ export const playlist = createContentModelSchema({
 				.tag('li')
 				.toArray();
 			for (const li of transformed) {
-				orderedTracks.push(adoptNestedTrack(li as any, childKind, artistValue));
+				orderedTracks.push(adoptNestedTrack(li as any, childKind, artistValue, metaValue));
 			}
 		}
 		// Any list items a node walk missed (defensive: a shape the resolver
@@ -475,7 +490,12 @@ export const playlist = createContentModelSchema({
  * form does `track.artist ?? playlistArtist`, so without it the two forms would
  * disagree on `byArtist` and the equivalence would be false.
  */
-function adoptNestedTrack(li: any, childKind: string, playlistArtist: string): any {
+function adoptNestedTrack(
+	li: any,
+	childKind: string,
+	playlistArtist: string,
+	playlistMeta?: string,
+): any {
 	if (!li || typeof li !== 'object') return li;
 
 	if (!li[TYPE_IMPLICIT]) {
@@ -507,9 +527,33 @@ function adoptNestedTrack(li: any, childKind: string, playlistArtist: string): a
 		// not, because the series carries its publisher.
 		const artistMeta = new Markdoc.Tag('meta', {
 			content: playlistArtist,
-			'data-name': 'track-artist',
+			'data-name': 'artist',
 		});
 		li.children = [...(li.children ?? []), artistMeta];
+	}
+
+	// WORK-679 — a track in a playlist is a row of its listing, so it takes no
+	// surface of its own: `Track`'s `flat` default is for a track standing
+	// alone. Before, a nested track drew a card among the list form's rows.
+	// An elevation the author wrote on the track stands.
+	if (li.attributes.elevation === undefined) li.attributes.elevation = 'flush';
+
+	// WORK-679 — the playlist's `meta` and default artist reach a track that
+	// states neither, in its field bag, so its details show what a list item's
+	// do. (Before, a list item showed the playlist's artist and a nested track
+	// only carried it as a hidden meta.)
+	const inherited: Record<string, string> = {};
+	if (playlistMeta) inherited.meta = playlistMeta;
+	if (playlistArtist) inherited.artist = playlistArtist;
+	if (Object.keys(inherited).length > 0) {
+		const raw = li.attributes['data-rune-fields'];
+		try {
+			const bag = typeof raw === 'string' ? JSON.parse(raw) : {};
+			for (const [k, v] of Object.entries(inherited)) if (!bag[k]) bag[k] = v;
+			li.attributes['data-rune-fields'] = JSON.stringify(bag);
+		} catch {
+			// A malformed bag is not this function's to repair.
+		}
 	}
 
 	return li;
@@ -526,8 +570,7 @@ function hasArtist(li: any): boolean {
 		}
 	}
 	return (li.children ?? []).some(
-		(c: any) =>
-			c?.attributes?.property === 'byArtist' || c?.attributes?.['data-name'] === 'track-artist',
+		(c: any) => c?.attributes?.property === 'byArtist' || c?.attributes?.['data-name'] === 'artist',
 	);
 }
 

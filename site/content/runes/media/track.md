@@ -27,6 +27,18 @@ A single track with artist and duration.
 
 {% /preview %}
 
+## Byline
+
+The artist, date and running time sit along the track's row by default. `meta="byline"` sets them beneath the name instead.
+
+{% preview source=true %}
+
+	{% track artist="Radiohead" duration="4:01" date="2000" meta="byline" %}
+	# Everything in Its Right Place
+	{% /track %}
+
+{% /preview %}
+
 ## Podcast episode
 
 Use `type="episode"` for podcast episodes with a date.

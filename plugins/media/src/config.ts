@@ -63,12 +63,45 @@ export const config: Record<string, RuneConfig> = {
 		block: 'track',
 		parent: 'Playlist',
 		defaultElevation: 'flat',
+		modifiers: {
+			// WORK-679 — how the track's details sit: in its row, or beneath its
+			// name. Presentation, so a variant and not identity (SPEC-091).
+			meta: { source: 'meta', default: 'row', noBemClass: true },
+			// The values the details block renders (a meta field reads a modifier).
+			artist: { source: 'meta', noBemClass: true },
+			duration: { source: 'meta', noBemClass: true },
+			date: { source: 'meta', noBemClass: true },
+		},
+		// WORK-679 / SPEC-156 D7 — the artist, running time and date are declared
+		// values the engine renders, not spans the transform builds. A playlist's
+		// list-form items carry the same field bag, so both forms render this.
+		metaFields: {
+			artist: { condition: 'artist' },
+			duration: { metaType: 'quantity', transform: 'clock', condition: 'duration' },
+			date: { metaType: 'temporal', condition: 'date' },
+		},
+		blocks: {
+			details: {
+				fields: ['artist', { field: 'duration', align: 'end' }, 'date'],
+				layout: 'bar',
+			},
+		},
+		layout: { root: ['ordinal', 'track-name', 'details'] },
+		variants: {
+			meta: {
+				// The name above, the artist, date and running time beneath it.
+				byline: {
+					blocks: { details: { fields: ['artist', 'date', 'duration'], layout: 'bar' } },
+					layout: {
+						root: ['ordinal', 'heading'],
+						heading: { tag: 'div', children: ['track-name', 'details'] },
+					},
+				},
+			},
+		},
 		editHints: {
 			'track-name': 'inline',
-			'track-artist': 'inline',
 			'track-description': 'inline',
-			'track-duration': 'none',
-			'track-meta': 'none',
 		},
 	},
 	Audio: {

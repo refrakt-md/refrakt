@@ -57,6 +57,21 @@ Use `type="podcast"` for episodic content with dates.
 
 {% /preview %}
 
+## Byline
+
+`meta="byline"` sets each track's artist, date and running time beneath its name rather than along its row. It suits long titles, and narrow columns, where the row form hides the artist and date. A track's own `meta` wins over the playlist's.
+
+{% preview source=true %}
+
+	{% playlist type="podcast" artist="Tech Weekly" meta="byline" %}
+	# Design Systems Weekly
+
+	- **Component Libraries at Scale** (45:30) — March 2025
+	- **Token Architecture** (38:15) — February 2025
+	{% /playlist %}
+
+{% /preview %}
+
 ## Per-track artists
 
 When tracks have different artists, use italic text for per-track attribution. Omit the `artist` attribute to avoid a default.

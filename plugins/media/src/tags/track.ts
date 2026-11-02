@@ -8,7 +8,7 @@ import {
 	SCHEMA_TYPE_EXPLICIT,
 	textContent,
 } from '@refrakt-md/runes';
-import { parseDuration, formatDuration } from '../duration.js';
+import { parseDuration } from '../duration.js';
 
 const trackType = ['song', 'episode', 'chapter', 'talk', 'video'] as const;
 
@@ -52,7 +52,7 @@ const trackCommon = {
 	duration: 'duration',
 	url: 'url',
 	position: 'position',
-	datePublished: 'datePublished',
+	date: 'datePublished',
 } as const;
 
 export const trackSchema = {
@@ -109,6 +109,13 @@ export const track = createContentModelSchema({
 			matches: trackType.slice(),
 			description: 'Media category: song, episode, chapter, talk, or video.',
 		},
+		meta: {
+			type: String,
+			required: false,
+			matches: ['row', 'byline'],
+			description:
+				'Where the artist, date and running time sit: in the row beside the name (`row`), or beneath it (`byline`). A playlist passes its own to its tracks.',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
@@ -156,18 +163,8 @@ export const track = createContentModelSchema({
 		// Meta tags for identity transform
 		const typeMeta = new Tag('meta', { content: typeValue });
 
-		if (artist) {
-			children.push(new Tag('span', { 'data-name': 'track-artist' }, [artist]));
-		}
-		if (duration) {
-			const formatted = duration.startsWith('PT')
-				? formatDuration(parseDuration(duration))
-				: duration;
-			children.push(new Tag('span', { 'data-name': 'track-duration' }, [formatted]));
-		}
-		if (date) {
-			children.push(new Tag('span', { 'data-name': 'track-meta' }, [date]));
-		}
+		// WORK-679 — the artist, running time and date are the config's
+		// `metaFields`, rendered by the engine from the field bag below.
 
 		// Add body content
 		if (bodyNodes.count() > 0) {
@@ -187,6 +184,7 @@ export const track = createContentModelSchema({
 		const numberMeta =
 			number !== undefined ? new Tag('meta', { content: String(number) }) : undefined;
 		const dateMeta = date ? new Tag('meta', { content: date }) : undefined;
+		const metaMeta = attrs.meta ? new Tag('meta', { content: attrs.meta as string }) : undefined;
 
 		const renderable = createComponentRenderable({
 			rune: 'track',
@@ -197,8 +195,9 @@ export const track = createContentModelSchema({
 				duration: durationMeta,
 				url: urlMeta,
 				position: numberMeta,
-				datePublished: dateMeta,
+				date: dateMeta,
 				type: typeMeta,
+				meta: metaMeta,
 			},
 			children,
 		});

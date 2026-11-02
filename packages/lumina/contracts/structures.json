@@ -7672,7 +7672,7 @@
 						"scope": "child"
 					},
 					{
-						"source": "track-artist",
+						"source": "artist",
 						"property": "byArtist",
 						"kind": "property",
 						"entity": "track",
@@ -7686,7 +7686,7 @@
 						"scope": "child"
 					},
 					{
-						"source": "track-meta",
+						"source": "date",
 						"property": "datePublished",
 						"kind": "property",
 						"entity": "track",
@@ -7726,8 +7726,30 @@
 			"dataRune": "track",
 			"parent": "Playlist",
 			"childOrder": [
+				"ordinal",
+				"track-name",
+				"details",
 				"{content}"
 			],
+			"modifiers": {
+				"meta": {
+					"source": "meta",
+					"default": "row",
+					"dataAttribute": "data-meta"
+				},
+				"artist": {
+					"source": "meta",
+					"dataAttribute": "data-artist"
+				},
+				"duration": {
+					"source": "meta",
+					"dataAttribute": "data-duration"
+				},
+				"date": {
+					"source": "meta",
+					"dataAttribute": "data-date"
+				}
+			},
 			"universalAxes": {
 				"axes": {
 					"tint": {
@@ -7751,6 +7773,100 @@
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
+			"elements": {
+				"details": {
+					"tag": "div",
+					"selector": ".rf-track__details",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"artist",
+						"duration",
+						"date"
+					]
+				}
+			},
+			"variants": {
+				"meta": {
+					"byline": {
+						"block": "track",
+						"root": ".rf-track",
+						"dataRune": "track",
+						"parent": "Playlist",
+						"childOrder": [
+							"ordinal",
+							"heading",
+							"{content}"
+						],
+						"modifiers": {
+							"meta": {
+								"source": "meta",
+								"default": "row",
+								"dataAttribute": "data-meta"
+							},
+							"artist": {
+								"source": "meta",
+								"dataAttribute": "data-artist"
+							},
+							"duration": {
+								"source": "meta",
+								"dataAttribute": "data-duration"
+							},
+							"date": {
+								"source": "meta",
+								"dataAttribute": "data-date"
+							}
+						},
+						"universalAxes": {
+							"axes": {
+								"tint": {
+									"selectors": [
+										".rf-track--tinted"
+									]
+								},
+								"elevation": {
+									"default": "flat"
+								},
+								"bg": {
+									"selectors": [
+										".rf-track--has-bg"
+									]
+								}
+							},
+							"unavailable": {
+								"reading": "this rune declares no prose body",
+								"dropcap": "this rune declares no prose body",
+								"prominence": "this rune has no page-section header",
+								"content-place": "this rune declares no `content-place` modifier",
+								"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+								"frame": "this rune declares neither a `frameTarget` nor a media section"
+							}
+						},
+						"elements": {
+							"details": {
+								"tag": "div",
+								"selector": ".rf-track__details",
+								"source": "block",
+								"layout": "bar",
+								"fields": [
+									"artist",
+									"date",
+									"duration"
+								]
+							},
+							"heading": {
+								"tag": "div",
+								"selector": ".rf-track__heading",
+								"source": "layout",
+								"children": [
+									"track-name",
+									"details"
+								]
+							}
+						}
+					}
 				}
 			},
 			"schemaOrg": {
@@ -7778,7 +7894,7 @@
 						"kind": "property"
 					},
 					{
-						"source": "datePublished",
+						"source": "date",
 						"property": "datePublished",
 						"kind": "property"
 					},

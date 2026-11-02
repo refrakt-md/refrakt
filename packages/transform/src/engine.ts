@@ -61,6 +61,17 @@ const transforms: Record<NamedTransform, (v: string) => string> = {
 		if (m[3]) parts.push(`${m[3]}s`);
 		return parts.join(' ') || iso;
 	},
+	/** WORK-679 — a running time as a clock reads it: `3:36`, `1:02:03`. The
+	 *  ISO duration may carry its whole length in any unit (`PT216S`). */
+	clock(iso: string): string {
+		const p = parseIsoDuration(iso);
+		if (!p) return iso;
+		const total = (p.hours ?? 0) * 3600 + (p.minutes ?? 0) * 60 + (p.seconds ?? 0);
+		const h = Math.floor(total / 3600);
+		const m = Math.floor((total % 3600) / 60);
+		const sec = String(total % 60).padStart(2, '0');
+		return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
+	},
 	uppercase: (s) => s.toUpperCase(),
 	capitalize: (s) => s.charAt(0).toUpperCase() + s.slice(1),
 	align: resolveValign,
@@ -1425,6 +1436,13 @@ function renderBlockValue(
 		: buildPlainValue(f, locale, config);
 }
 
+/** WORK-679 — a row value names its field, as a definition-list row does
+ *  (`data-field`), so a theme can address one value (`[data-field="artist"]`)
+ *  without a class per rune. */
+function withField(el: SerializedTag, name: string): SerializedTag {
+	return { ...el, attributes: { ...el.attributes, 'data-field': name } };
+}
+
 /** `bar` layout — a horizontal flex row of fields, each in its intrinsic
  *  shape. `align: 'end'` tags a field so the shared
  *  `[data-zone-layout="bar"] [data-align="end"] { margin-left: auto }` rule
@@ -1450,7 +1468,7 @@ function renderBarLayout(
 		if (align === 'end' && els.length > 0) {
 			els[0] = { ...els[0], attributes: { ...els[0].attributes, 'data-align': 'end' } };
 		}
-		children.push(...els);
+		children.push(...els.map((el) => withField(el, resolved.name)));
 	}
 
 	const attrs: Record<string, string> = {
@@ -1482,7 +1500,7 @@ function renderLeadLayout(
 						renderBlockValue({ ...resolved, value: part }, false, locale, config),
 					)
 				: [renderBlockValue(resolved, false, locale, config)];
-		children.push(...els);
+		children.push(...els.map((el) => withField(el, resolved.name)));
 	}
 	const first = children[0] as SerializedTag;
 	children[0] = { ...first, attributes: { ...first.attributes, 'data-lead': '' } };
