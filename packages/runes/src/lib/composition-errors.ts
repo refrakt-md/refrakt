@@ -55,6 +55,10 @@ export const COMPOSITION_ERRORS = {
 		'A `{% group %}` is malformed: no name, an unknown layout or align, an align outside a bar, inline, or empty.',
 	'sequence-without-ladder':
 		'The definition declares `sequence`, and the template places no `{% group layout="ladder" %}` for it to number.',
+	'narrative-field-twice':
+		'The content model declares more than one narrative field (a field matching only `tag:textblock` and `tag:mediatext`).',
+	'narrative-field-mapped':
+		'The schema table maps the narrative field, which is never structured data.',
 	'metablock-invalid':
 		'A `{% metablock %}` is malformed: no name, content, an extra attribute, or inline.',
 	'metablock-inside-each': 'A `{% metablock %}` is placed inside an `each` slot.',

@@ -356,6 +356,7 @@ function compositionOf(rune: Rune) {
 		contentModel: raw ? (serializeContentModel(raw) ?? null) : null,
 		axes: info.axes,
 		defaults: info.defaults,
+		...(info.narrativeField ? { narrativeField: info.narrativeField } : {}),
 	};
 }
 
@@ -423,6 +424,12 @@ function outputFormatted(
 			);
 		}
 		console.log(`  Template slots: ${composition.slots.join(', ')}`);
+		// ADR-047 — the editorial around the rune, never structured data.
+		if (composition.narrativeField) {
+			console.log(
+				`  Narrative field: ${composition.narrativeField} (editorial runes only; never structured data)`,
+			);
+		}
 		console.log(heading('Universal attributes (where they land)'));
 		console.log(formatAxisPlacements(composition.axes).join('\n'));
 		// SPEC-145 D34 — each default with its source, and the literal that beats it.

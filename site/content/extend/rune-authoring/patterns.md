@@ -305,7 +305,7 @@ A rune's content model should include exactly what it **reinterprets** — conte
 
 | Rune | Inside (reinterpreted) | Outside (page content) |
 |------|----------------------|----------------------|
-| Recipe | Ingredients, steps, tips, metadata, headline, blurb, media | Story, editorial, famous quotes |
+| Recipe | Ingredients, steps, tips, metadata, headline, blurb, media | Story, editorial, famous quotes. A story may sit inside a rune that declares a narrative field, wrapped in an editorial rune (below) |
 | Playlist | Tracks, cover art, name, description | Album review, discovery story |
 | Character | Stats, abilities, portrait, name | Chapter featuring the character |
 | Event | Date, venue, schedule, location | Blog post about why to attend |
@@ -341,6 +341,43 @@ recipe rune, or any other page content.
 ```
 
 Everything inside the `{% recipe %}` tags is reinterpreted: the heading becomes the recipe name, the list becomes ingredients, the ordered list becomes steps, the blockquote becomes a chef's tip. Everything outside is regular Markdown rendered as-is.
+
+### The narrative field
+
+A food blog lays a recipe out differently. The recipe's name, image and times come first, then the story, then a card with the ingredients and method. The story sits *between* the rune's parts, so it cannot simply go before or after the rune.
+
+A rune may declare **one narrative field** for this (ADR-047). Its `match` names the editorial runes `textblock` and `mediatext`, and nothing else:
+
+```yaml
+story: { match: "tag:textblock|tag:mediatext", optional: true, greedy: true }
+```
+
+The author wraps the story in an editorial rune, in the place the content model reads it, and the template places it between the rune's parts:
+
+```markdoc
+{% dish prepTime="PT15M" %}
+# Classic Pasta Carbonara
+
+A rich and creamy Italian pasta dish.
+
+{% textblock %}
+The summer we spent in Tuscany, grandma made this every Sunday...
+{% /textblock %}
+
+- 400g spaghetti
+- 200g pancetta
+
+1. Cook the pasta
+2. Fry the pancetta
+{% /dish %}
+```
+
+Two rules hold. Both are checked when the definition loads:
+
+- **One narrative field per rune.** A field is the narrative field because its match names only editorial runes, so nothing extra is declared. A definition with two is rejected (`narrative-field-twice`).
+- **It is never structured data.** The rune's schema row describes the rune, not the editorial around it. A schema table that maps the narrative field is rejected (`narrative-field-mapped`).
+
+The three tests above still apply to everything else. **Loose prose inside the rune is still outside its content model:** only a story wrapped in `{% textblock %}` or `{% mediatext %}`, in the narrative field's place, is read. A field that mixes editorial runes with other matches (`tag:textblock|paragraph`) is not a narrative field and is not checked as one. The default stays a semantic island; a narrative field is opt-in per rune, and a site's own [composed rune](/extend/rune-authoring/composed-runes#a-narrative-field) can declare one today.
 
 ---
 

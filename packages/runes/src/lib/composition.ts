@@ -168,6 +168,9 @@ export interface CompositionInfo {
 	/** D34 — the definition's defaults, each with where it lands and any literal
 	 *  the template writes there, which wins over it. */
 	defaults?: Record<string, CompositionDefaultInfo>;
+	/** ADR-047 — the field that takes the editorial runes around the rune's
+	 *  own content, never published as structured data. */
+	narrativeField?: string;
 }
 
 /** One `defaults` entry, as tooling reads it (D34). */
@@ -406,6 +409,47 @@ function checkImplicitSection(m: SectionsModel, fail: ModelFail): void {
 			['implicitSection'],
 		);
 	}
+}
+
+/** ADR-047 — the editorial runes a narrative field takes. */
+const EDITORIAL_RUNES = new Set(['tag:textblock', 'tag:mediatext']);
+
+/** A field is the narrative field when its match names editorial runes and
+ *  nothing else (ADR-047 decision 1, as amended): inferred, not declared. */
+export function isNarrativeMatch(match: string): boolean {
+	const alternatives = match.split('|').map((a) => a.trim());
+	return alternatives.length > 0 && alternatives.every((a) => EDITORIAL_RUNES.has(a));
+}
+
+/** The content model's top-level fields: the ones a template places. */
+function modelFieldDefinitions(model: StructuralContentModel): ContentFieldDefinition[] {
+	if (model.type === 'delimited') return (model.zones ?? []).flatMap((z) => z.fields ?? []);
+	return (model as { fields?: ContentFieldDefinition[] }).fields ?? [];
+}
+
+/** Every source name a schema table maps: the keys of its `properties` and
+ *  `text` maps, in its own row and in every row, entity and child row. */
+function schemaSourceNames(table: SchemaTable): Map<string, string> {
+	const out = new Map<string, string>();
+	const visit = (row: unknown) => {
+		if (!row || typeof row !== 'object') return;
+		const r = row as Record<string, unknown>;
+		for (const key of ['properties', 'text']) {
+			const map = r[key];
+			if (map && typeof map === 'object') {
+				for (const [name, prop] of Object.entries(map)) {
+					if (!out.has(name)) out.set(name, String(prop));
+				}
+			}
+		}
+		for (const key of ['rows', 'entities', 'children']) {
+			const group = r[key];
+			if (group && typeof group === 'object') for (const sub of Object.values(group)) visit(sub);
+		}
+		visit(r.fallback);
+	};
+	visit(table);
+	return out;
 }
 
 /**
@@ -654,6 +698,27 @@ export function compileComposition(
 	) as StructuralContentModel;
 	const declared = new Set(options.attributes);
 	const selfNames = new Set([rune, ...(template.aliases ?? [])]);
+
+	// ADR-047 — one narrative field, never mapped to structured data. A field
+	// that mixes editorial runes with other matches is not one.
+	const narrative = modelFieldDefinitions(structural)
+		.filter((f) => isNarrativeMatch(f.match))
+		.map((f) => f.name);
+	if (narrative.length > 1) {
+		fail(
+			'narrative-field-twice',
+			`the content model declares ${narrative.length} narrative fields (${narrative.map((n) => `\`${n}\``).join(', ')}); a rune has at most one. A narrative field is one whose \`match\` names only \`tag:textblock\` and \`tag:mediatext\` (ADR-047).`,
+		);
+	}
+	if (narrative.length === 1 && options.schema) {
+		const mapped = schemaSourceNames(options.schema).get(narrative[0]);
+		if (mapped !== undefined) {
+			fail(
+				'narrative-field-mapped',
+				`the schema table maps the narrative field \`${narrative[0]}\` to \`${mapped}\`. The story around a rune is not the rune: a narrative field is never published as structured data (ADR-047).`,
+			);
+		}
+	}
 
 	const placedSlots = new Map<string, Node>();
 	const slotOrder: string[] = [];
@@ -1090,6 +1155,7 @@ export function compileComposition(
 		axes,
 		...(Object.keys(defaultInfo).length > 0 ? { defaults: defaultInfo } : {}),
 		...(schemaType ? { schemaType } : {}),
+		...(narrative.length === 1 ? { narrativeField: narrative[0] } : {}),
 	};
 
 	const attributeNames = [...declared];
