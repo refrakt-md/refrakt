@@ -1,4 +1,5 @@
-/* cast — structure. The members list reset, grid/list arrangements, name/role
+/* cast — structure. The members list reset, the grid arrangement (the list
+ * arrangement is the shared unsequenced ladder, dimensions/metadata.css), name/role
  * block display, empty-body hide, the avatar box (size/crop/display), and the list
  * variant flex. Surface chrome, type, radii, and margins are skin. */
 .rf-cast__items {
@@ -7,10 +8,6 @@
 .rf-cast--grid .rf-cast__items {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-}
-.rf-cast--list .rf-cast__items {
-	display: flex;
-	flex-direction: column;
 }
 /* SPEC-100: carousel arrangement reuses the shared track (styles/runes/carousel.css,
  * keyed on [data-layout="carousel"] [data-name="items"]); cast only sets its

@@ -168,7 +168,12 @@
       "runes": {
         "dir": "site/staged-runes",
         "schema": "allow",
-        "prefer": { "hero": "__project__", "cta": "__project__", "testimonial": "__project__" }
+        "prefer": {
+          "hero": "__project__",
+          "cta": "__project__",
+          "testimonial": "__project__",
+          "steps": "__project__"
+        }
       }
     },
     "plan": {

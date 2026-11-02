@@ -512,7 +512,10 @@ function transformRune(
 			? (modifierValues[config.sequenceDirection.fromModifier] ?? config.sequenceDirection.default)
 			: undefined;
 		children = [...children]; // annotated in place; never the input tree's own array
-		annotateSequence(children, sequence, seqDirection, block);
+		// SPEC-156 D14 — a composed rune's ladder group is where its sequence
+		// goes (its definition must place one, D12); an ordered list an author
+		// wrote elsewhere in it is not stamped.
+		annotateSequence(children, sequence, seqDirection, block, config.composed === true);
 	}
 
 	// 6. Apply BEM element classes, section anatomy, and media slots to data-name children, then recurse once
@@ -830,12 +833,16 @@ function annotateSequence(
 	sequence: string,
 	direction: string | undefined,
 	block: string,
+	laddersOnly = false,
 ): void {
 	for (let i = 0; i < children.length; i++) {
 		const child = children[i];
 		if (!isTag(child)) continue;
 
-		if (child.name === 'ol') {
+		if (
+			child.name === 'ol' &&
+			(!laddersOnly || child.attributes?.['data-zone-layout'] === 'ladder')
+		) {
 			const attrs: Record<string, string> = {
 				...child.attributes,
 				'data-sequence': sequence,
@@ -847,7 +854,9 @@ function annotateSequence(
 			children[i] = { ...child, attributes: attrs, children: items };
 		} else if (child.children.length > 0) {
 			// Recurse into wrappers (contentWrapper, structural elements)
-			annotateSequence(child.children, sequence, direction, block);
+			const copy = { ...child, children: [...child.children] };
+			children[i] = copy;
+			annotateSequence(copy.children, sequence, direction, block, laddersOnly);
 		}
 	}
 }
