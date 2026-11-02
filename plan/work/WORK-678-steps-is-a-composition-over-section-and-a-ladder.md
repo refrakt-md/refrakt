@@ -1,4 +1,4 @@
-{% work id="WORK-678" status="ready" priority="medium" complexity="moderate" source="SPEC-161,SPEC-156" tags="runes, composition, marketing, steps, sequence, section" milestone="v0.45.0" %}
+{% work id="WORK-678" status="in-progress" priority="medium" complexity="moderate" source="SPEC-161,SPEC-156" tags="runes, composition, marketing, steps, sequence, section" milestone="v0.45.0" %}
 
 # steps is a composition over section and a ladder
 
@@ -8,11 +8,11 @@
 
 ## Acceptance Criteria
 
-- [ ] A composed `steps` definition declares `sequence: numbered` and `defaults: { elevation: flush }`, and places its steps in a numbered ladder, accepting both an ordered list and step headings (SPEC-169 D4)
-- [ ] Its numbers are DOM nodes ({% ref "WORK-583" /%}), not CSS counters
-- [ ] A step written as a list item with no heading renders as body ({% ref "ADR-046" /%})
-- [ ] Rendered beside the plugin `steps` for every gallery fixture, light and dark; every difference is listed and explained
-- [ ] The plugin `steps` is unchanged; replacing it is a later step
+- [x] A composed `steps` definition declares `sequence: numbered` and `defaults: { elevation: flush }`, and places its steps in a numbered ladder, accepting both an ordered list and step headings (SPEC-169 D4)
+- [x] Its numbers are DOM nodes ({% ref "WORK-583" /%}), not CSS counters
+- [x] A step written as a list item with no heading renders as body ({% ref "ADR-046" /%})
+- [x] Rendered beside the plugin `steps` for every gallery fixture, light and dark; every difference is listed and explained
+- [x] The plugin `steps` is unchanged; replacing it is a later step
 
 ## Blocked by
 

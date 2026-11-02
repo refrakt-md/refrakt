@@ -408,14 +408,20 @@ content:
 // WORK-648 — SPEC-169 D4
 // ---------------------------------------------------------------------------
 
-/** SPEC-169 D4's `steps`, in a plain `grid` until SPEC-156's ladder exists.
+/** SPEC-169 D4's `steps`, as staged for the marketing conversion (WORK-678).
  *  The file is the guide's example. */
-const STEPS = fixture('steps');
+const STEPS = readFileSync(join(__dirname, '../../../site/staged-runes/steps.md'), 'utf-8');
 
 describe('`each` over the items of a list field (SPEC-169 D4)', () => {
 	const steps = defineComposedRune('steps-composed', STEPS);
 	const stepTexts = (tree: Json) =>
-		byRune(tree, 'text-block').map((t: Json) => textOf(t).replace(/\s+/g, ' ').trim());
+		find(tree, (n) => n.attributes?.['data-name'] === 'steps')[0]
+			.children.filter((li: Json) => li?.name === 'li')
+			.map((li: Json) =>
+				textOf(li.children.filter((c: Json) => c?.attributes?.['data-name'] !== 'ordinal'))
+					.replace(/\s+/g, ' ')
+					.trim(),
+			);
 
 	it('renders the same steps from an ordered list and from headings, with one model', () => {
 		const fromList = render(

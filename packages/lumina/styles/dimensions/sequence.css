@@ -19,6 +19,24 @@
 		border-top: 1px solid var(--rf-color-border);
 	}
 
+	/* A numbered ladder's step (SPEC-156 D3): a composition's steps take the
+	 * rhythm the native howto, recipe and steps give theirs — the item padded,
+	 * its title flush with the ordinal, its text set small. */
+	[data-zone-layout="ladder"][data-sequence="numbered"] {
+		margin: 0;
+	}
+	[data-zone-layout="ladder"][data-sequence="numbered"] > li {
+		padding-block: 0.625rem;
+	}
+	[data-zone-layout="ladder"][data-sequence="numbered"] > li > :is(h1, h2, h3, h4, h5, h6) {
+		margin-top: 0;
+		margin-bottom: 0.375rem;
+	}
+	[data-zone-layout="ladder"][data-sequence="numbered"] > li p {
+		font-size: var(--rf-text-sm);
+		line-height: var(--rf-leading-relaxed);
+	}
+
 	/* Connected vertical — the line is a left border; the dot is the marker. */
 	[data-sequence="connected"] > li {
 		border-left: 2px solid var(--rf-color-border);

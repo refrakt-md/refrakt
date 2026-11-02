@@ -51,6 +51,10 @@ export const COMPOSITION_ERRORS = {
 	'each-on-list-ambiguous': '`each` is used on a greedy field that can collect several lists.',
 	'each-item-unplaced': 'An `each` slot never places its item with a bare `{% slot /%}`.',
 	'field-unplaced': 'A content-model field is placed by no slot.',
+	'group-invalid':
+		'A `{% group %}` is malformed: no name, an unknown layout or align, an align outside a bar, inline, or empty.',
+	'sequence-without-ladder':
+		'The definition declares `sequence`, and the template places no `{% group layout="ladder" %}` for it to number.',
 	'metablock-invalid':
 		'A `{% metablock %}` is malformed: no name, content, an extra attribute, or inline.',
 	'metablock-inside-each': 'A `{% metablock %}` is placed inside an `each` slot.',

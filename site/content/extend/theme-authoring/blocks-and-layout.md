@@ -267,6 +267,24 @@ first field present carries `data-lead`.
 - Nothing ranks the values (`data-meta-rank`), so a compact container
   hides none of them.
 
+### `ladder`
+
+A list of peer items, each free to arrange its own inside (SPEC-156 D3).
+It is not a `blocks` layout: a composition's template places it with
+`{% group layout="ladder" %}`, and `cast`'s `list` mode emits it.
+
+```html
+<ol data-name="steps" data-zone-layout="ladder" data-sequence="numbered">
+  <li><span data-name="ordinal" data-meta-type="quantity">1</span>…</li>
+  <li><span data-name="ordinal" data-meta-type="quantity">2</span>…</li>
+</ol>
+```
+
+- An `<ol>` with `data-sequence` when the rune declares a sequence; its
+  markers and gutter are the sequence dimension's.
+- Otherwise a `<ul>`, which the skeleton resets and flows in a column.
+  Spacing between items is the theme's.
+
 ## Composable rune handles
 
 Each layout primitive also ships as a standalone authoring rune so

@@ -32,9 +32,6 @@ const NOT_YET_STAGED: Record<string, string> = {
 	faction: 'WORK-682',
 	lore: 'WORK-682',
 	realm: 'WORK-682',
-	// SPEC-169's content-model fixture, which the conversion rewrites in
-	// `site/staged-runes/` (WORK-678).
-	steps: 'WORK-678',
 };
 
 /** Every rune name a shipping plugin provides, aliases included. */
@@ -94,7 +91,7 @@ describe('the staging convention (SPEC-181 D4, D6)', () => {
 	it('finds the fixture definitions it guards', () => {
 		// So the walk cannot silently match nothing.
 		const found = definitions.map((p) => basename(p, '.md'));
-		expect(found).toEqual(expect.arrayContaining(['teaser', 'steps', 'bond']));
+		expect(found).toEqual(expect.arrayContaining(['teaser', 'bond']));
 	});
 
 	it('no test fixture defines a composition of a shipping plugin rune', () => {

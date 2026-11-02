@@ -118,7 +118,12 @@ export const cast = createContentModelSchema({
 		const layoutMeta = new Tag('meta', { content: attrs.layout ?? 'grid' });
 
 		const members = body.tag('li').typeof('CastMember');
-		const membersList = new Tag('ul', {}, members.toArray());
+		// SPEC-156 D3.4 — the list arrangement is the unsequenced ladder.
+		const membersList = new Tag(
+			'ul',
+			attrs.layout === 'list' ? { 'data-zone-layout': 'ladder' } : {},
+			members.toArray(),
+		);
 
 		const children: any[] = [];
 		if (header.count() > 0) {

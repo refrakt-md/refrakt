@@ -1,4 +1,4 @@
-{% work id="WORK-677" status="ready" priority="high" complexity="moderate" source="SPEC-156" tags="runes, composition, sequence, identity, engine" milestone="v0.45.0" %}
+{% work id="WORK-677" status="in-progress" priority="high" complexity="moderate" source="SPEC-156" tags="runes, composition, sequence, identity, engine" milestone="v0.45.0" %}
 
 # A composition declares sequence in its definition, and a ladder stamps only its own list
 
@@ -10,11 +10,11 @@ ladder's `data-sequence` lands on the ladder only, not on every ordered list ins
 
 ## Acceptance Criteria
 
-- [ ] A composition's frontmatter accepts `sequence` (`numbered | connected | plain`), and the generated config carries it (D12)
-- [ ] A definition that declares `sequence` and places no ladder group is rejected at schema construction, naming the rune (D12)
-- [ ] The definition's sequence is stamped as `data-sequence` on its ladder group only; an ordered list an author writes inside an item is not stamped (D14)
-- [ ] Whether native runes already stamp an author's nested ordered lists, through `annotateSequence` recursing into every descendant, is checked; if they do, a bug is filed with the reproduction
-- [ ] SPEC-177 D5's `template-override-no-ladder` check is recorded as owed to SPEC-177, not built here, since replacement templates do not exist yet
+- [x] A composition's frontmatter accepts `sequence` (`numbered | connected | plain`), and the generated config carries it (D12)
+- [x] A definition that declares `sequence` and places no ladder group is rejected at schema construction, naming the rune (D12)
+- [x] The definition's sequence is stamped as `data-sequence` on its ladder group only; an ordered list an author writes inside an item is not stamped (D14)
+- [x] Whether native runes already stamp an author's nested ordered lists, through `annotateSequence` recursing into every descendant, is checked; if they do, a bug is filed with the reproduction
+- [x] SPEC-177 D5's `template-override-no-ladder` check is recorded as owed to SPEC-177, not built here, since replacement templates do not exist yet
 
 ## Blocked by
 

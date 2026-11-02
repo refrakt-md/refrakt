@@ -66,6 +66,7 @@ A tag holding only prose and inline tags, such as a `{% hint %}` with paragraphs
 | `metaFields`, `blocks` | Metadata about attribute values, and the blocks that group them — placed with `{% metablock %}`. |
 | `registers` | Entities and edges the rune puts in the site registry. See [Declaring Registration](/extend/rune-authoring/registration). |
 | `schema` | The schema.org row for the rune — in a plugin only, see [why](#why-schema-is-allowed-in-a-plugin-and-not-in-a-project). |
+| `sequence` | `numbered`, `connected` or `plain`: whether the items of the template's ladder group are steps. It is stamped on the ladder alone; the definition must place one. See `{% group %}` under the template vocabulary. |
 | `defaults` | Defaults for universal attributes (`width: full`, `elevation: flush`, `density: compact`), each landing where the author's attribute would. See [defaults](#defaults). |
 
 Some keys are refused because they would contradict what a composed rune is: styles (`css`, `style`, `styles`, `stylesheet`, `block`, `class`) — its appearance is the primitives'; a second emit path (`transform`, `emits`, `slots`) — the template is its emit path; and `layout` — a composed rune's containers belong to the runes it places, so the template arranges them.
@@ -113,7 +114,7 @@ The implicit section is an ordinary item of the `sections` slot, and its `attrib
 
 ## The template vocabulary
 
-The body is ordinary Markdoc with **two tags and two bindings** of its own. This is the whole list:
+The body is ordinary Markdoc with **three tags and two bindings** of its own. This is the whole list:
 
 | Form | Means |
 |---|---|
@@ -122,6 +123,7 @@ The body is ordinary Markdoc with **two tags and two bindings** of its own. This
 | `{% slot name="xs" each %}…{% /slot %}` | The engine iterates `xs`; the body describes **one** item, with `$each` bound. |
 | `{% slot /%}` (bare, inside `each`) | This item's content. |
 | `{% metablock name="x" /%}` | Place the rune's declared meta block `x`. |
+| `{% group name="x" layout="bar" %}…{% /group %}` | Arrange what it holds as a row (`bar`) or a list of peer items (`ladder`). |
 | `{% if %}` / `{% else /%}` | Markdoc's own conditional — with the limit below. |
 | `$attrs.name` | A resolved attribute, in content or in an attribute position. |
 | `$each.name` | Inside an `each` slot: one field of the current item — exactly the content model's `emitAttributes`. |
@@ -167,7 +169,7 @@ A list can reach `each` in two ways, depending on whether its items need reading
 
 **Placed as written.** A field that is not `greedy` and matches one list (`list`, `list:ordered` or `list:unordered`) iterates that list's items. Each item's content is the bare `{% slot /%}`, and `$each` binds nothing. This is how one model takes steps written either as headings or as an ordered list:
 
-{% snippet path="packages/runes/test/fixtures/composed/steps.md" /%}
+{% snippet path="site/staged-runes/steps.md" /%}
 
 An author writes headings or a list. The template places both slots, and the one not written is empty and renders nothing. A greedy list field cannot be iterated this way, because it collects several lists and `each` could not say whose items it means. That is an error. So is a field that may match something other than a list.
 
@@ -230,6 +232,34 @@ Use it when the reader sees the values as text: a byline, a credit, a caption li
 A composed rune has no `layout`, so a declared `metaFields` + `blocks` entry is placed by the template: `{% metablock name="metadata" /%}` marks where the block goes, and the engine renders it there from the rune's own values, exactly as `layout` projection would. It takes only `name`, has no content, stands on its own line, names a declared block, and is placed once.
 
 Use it when the value is an **attribute**: `metaFields` gives each field its meaning (`category`, `status`, `temporal`, …), its sentiment and its formatting, and the theme decides the block's shape. Placing a `{% bar %}` or a `{% deflist %}` with badges in it looks nearly the same and loses all of that — the badges are always tags, and the placed rune is a schema boundary. The rule: **is the value in an attribute? Use a metablock. Is it content someone writes? Place the rune.**
+
+### `{% group %}`
+
+A group arranges what the template places inside it, without placing a rune to do it:
+
+```md
+{% group name="byline" layout="bar" %}
+**{% $attrs.author %}**
+
+{% group name="links" align="end" %}
+{% slot name="links" /%}
+{% /group %}
+{% /group %}
+
+{% group name="chapters" layout="ladder" %}
+{% slot name="sections" each %}
+{% slot /%}
+{% /slot %}
+{% /group %}
+```
+
+- **`name`** is required, and names the wrapper for themes (`data-name`). It carries no geometry: a group called `byline` is not a row because of its name.
+- **`layout="bar"`** renders a `<div data-zone-layout="bar">`: the shared row, wrapping by default. A child written as `{% group name="…" align="end" %}` renders `data-align="end"` and pushes itself, and what follows it, to the row's end. `align` (`start` or `end`) is accepted only directly inside a bar.
+- **`layout="ladder"`** renders a `<ul data-zone-layout="ladder">` and wraps each item in an `<li>`: each iteration of an `each` slot placed directly in it, or else each top-level node it holds. An unsequenced ladder is reset and flows its items in a column; `cast`'s `list` mode uses the same rule.
+- **A sequence is the definition's.** When the frontmatter declares `sequence`, the ladder renders an `<ol>` with `data-sequence`, and a `numbered` one gives each item its ordinal (`<span data-name="ordinal">`). It is declared in the frontmatter, not the template, because whether the numbers are information is a fact about the content: a replacement template keeps it. Only the ladder is stamped; an ordered list an author writes inside a step stays the author's. A definition that declares `sequence` and places no ladder is rejected.
+- **It is a template tag only.** On a page, `{% group %}` is an unknown tag; authors write the `bar` rune.
+
+**Group with a group, not a placed rune, where the rune publishes schema.** A group renders `data-name` and no `data-rune`. A placed `{% bar %}` renders `data-rune="bar"`, which is a boundary for the schema row: a rune the template places inside it (a `{% figure %}` a `children` row maps, say) is the bar's, not this rune's, and its property is dropped without a diagnostic. Slots are not affected, since a placed slot carries its owner across any boundary. With no schema row, either is safe.
 
 ### `{% if %}`, and what it hides
 
@@ -553,6 +583,8 @@ Each error has a code. The fix column assumes the cause in the meaning column.
 | `field-unplaced` | A content-model field is placed by no slot, so its content would be dropped. | Place it, or remove the field. |
 | `fills-invalid` | A field's `fills` names an attribute the definition does not declare, references a `$` field its item model does not declare, or sits on a field without an `itemModel`. | Declare the attribute, fix the reference, or give the field an `itemModel`. |
 | `fill-placed` | A field with `fills` is also placed by a slot, so its content would render as well as fill the rune's values. | Remove the slot; the filled values are placed through `{% metablock %}` or `$attrs`. |
+| `group-invalid` | A `{% group %}` has no `name`, a `layout` other than `bar` or `ladder`, an `align` other than `start` or `end` or outside a bar, another attribute, no layout, or no content, or sits inside a line of text. | `{% group name="x" layout="bar" %}…{% /group %}` on its own lines. |
+| `sequence-without-ladder` | The frontmatter declares `sequence`, and the template places no `{% group layout="ladder" %}`. | Place the ladder around the items, or remove `sequence`. |
 | `metablock-invalid` | A `{% metablock %}` has no `name`, has content, has another attribute, or sits inside a line of text. | `{% metablock name="x" /%}` on its own line. |
 | `metablock-inside-each` | A `{% metablock %}` is inside an `each` slot. | Move it outside. |
 | `metablock-undeclared` | It names no block declared under `blocks`. | Declare the block, or fix the name. |

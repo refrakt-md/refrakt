@@ -270,18 +270,21 @@ describe('the worked examples are the tested definitions', () => {
 		expect(included).toContain(`${runesDir}/bond.md`);
 		expect(included).toContain(`${runesDir}/character.md`);
 		// The content-model examples (SPEC-169) are the definitions the runes
-		// package's composition tests build.
+		// package's composition tests build; `steps` is the staged conversion's
+		// (WORK-678).
 		const modelsDir = 'packages/runes/test/fixtures/composed';
+		const stagedSteps = 'site/staged-runes/steps.md';
 		for (const path of included) {
 			expect(existsSync(join(ROOT, path)), path).toBe(true);
 			expect(
-				path.startsWith(relative(ROOT, composedDir)) || path.startsWith(`${modelsDir}/`),
+				path.startsWith(relative(ROOT, composedDir)) ||
+					path.startsWith(`${modelsDir}/`) ||
+					path === stagedSteps,
 				path,
 			).toBe(true);
 		}
-		for (const name of ['teaser', 'steps']) {
-			expect(included).toContain(`${modelsDir}/${name}.md`);
-		}
+		expect(included).toContain(`${modelsDir}/teaser.md`);
+		expect(included).toContain(stagedSteps);
 		// The prose beside them makes claims about them, so they carry review
 		// markers: `refrakt snippet review --check` (a CI gate) fires when a
 		// definition changes under the prose.

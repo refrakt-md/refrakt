@@ -142,9 +142,9 @@ describe('the staged runes, as the staging site loads them (WORK-681)', () => {
 		staged,
 	);
 
-	it('stages hero, cta and testimonial, and prefers each over the plugin', () => {
-		expect(Object.keys(staged.runes).sort()).toEqual(['cta', 'hero', 'testimonial']);
-		for (const rune of ['hero', 'cta', 'testimonial']) {
+	it('stages hero, cta, testimonial and steps, and prefers each over the plugin', () => {
+		expect(Object.keys(staged.runes).sort()).toEqual(['cta', 'hero', 'steps', 'testimonial']);
+		for (const rune of ['hero', 'cta', 'testimonial', 'steps']) {
 			expect(site.runes.prefer[rune], rune).toBe(PROJECT_RUNES);
 			expect(merged.tags[rune], rune).toBe(staged.runes[rune].schema);
 		}

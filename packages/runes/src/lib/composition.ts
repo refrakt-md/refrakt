@@ -121,6 +121,8 @@ export interface CompositionTemplate {
 	blocks?: readonly string[];
 	/** D34 — the definition's defaults for universal axes, by attribute. */
 	defaults?: Readonly<Record<string, string>>;
+	/** SPEC-156 D12 — the definition's sequence, stamped on its ladder group. */
+	sequence?: string;
 }
 
 /** One node of a composition's expansion, as the contract records it (D6). */
@@ -139,6 +141,9 @@ export interface CompositionOutlineNode {
 	conditional?: true;
 	/** A declared meta block placed with `{% metablock %}` (D7). */
 	metablock?: string;
+	/** A `{% group %}`, by name, with its arrangement (SPEC-156 D2). */
+	group?: string;
+	layout?: 'bar' | 'ladder';
 	children?: CompositionOutlineNode[];
 }
 
@@ -260,6 +265,48 @@ const metablockMarkerSchema: Schema = {
 			[METABLOCK_ATTR]: node.attributes.name,
 			[METABLOCK_OWNER_ATTR]: node.attributes.owner,
 		});
+	},
+};
+
+/**
+ * SPEC-156 D2 — the tag a template writes to arrange what it holds as a row
+ * (`bar`) or a list of peer items (`ladder`). Template vocabulary like
+ * `{% metablock %}`: never a page tag, so on a page it is undefined. It
+ * renders an engine wrapper (`data-name`, no `data-rune`), so a schema
+ * property placed inside it still resolves (D9).
+ */
+const GROUP_TAG = 'group';
+const GROUP_LAYOUTS = new Set(['bar', 'ladder']);
+const GROUP_ALIGNS = new Set(['start', 'end']);
+/** The expanded group and a ladder's item: unreachable from authored tags (`:`). */
+const GROUP_MARKER = 'refrakt:group';
+const GROUP_ITEM_MARKER = 'refrakt:group-item';
+
+const groupMarkerSchema: Schema = {
+	attributes: {
+		name: { type: String, required: true },
+		layout: { type: String },
+		align: { type: String },
+		sequence: { type: String },
+	},
+	transform(node, config) {
+		const { name, layout, align, sequence } = node.attributes as Record<string, string | undefined>;
+		const attrs: Record<string, string> = { 'data-name': name as string };
+		if (layout) attrs['data-zone-layout'] = layout;
+		if (align) attrs['data-align'] = align;
+		// SPEC-156 D3.1 — an ordered list when the definition declares a
+		// sequence; the engine stamps `data-sequence` on it (D14).
+		return new MarkdocTag(
+			layout === 'ladder' ? (sequence ? 'ol' : 'ul') : 'div',
+			attrs,
+			node.transformChildren(config) as RenderableTreeNode[],
+		);
+	},
+};
+
+const groupItemMarkerSchema: Schema = {
+	transform(node, config) {
+		return new MarkdocTag('li', {}, node.transformChildren(config) as RenderableTreeNode[]);
 	},
 };
 
@@ -617,6 +664,8 @@ export function compileComposition(
 	interface Scope {
 		each?: { slot: string; fields: string[] };
 		parentRune?: string;
+		/** The arrangement of the `{% group %}` this node sits directly in. */
+		group?: 'bar' | 'ladder';
 	}
 
 	const checkVariables = (n: Node, scope: Scope) => {
@@ -685,6 +734,7 @@ export function compileComposition(
 
 		if (isSlotTag(n)) return [checkSlot(n, scope)];
 		if (n.type === 'tag' && n.tag === METABLOCK_TAG) return [checkMetablock(n, scope)];
+		if (n.type === 'tag' && n.tag === GROUP_TAG) return [checkGroup(n, scope)];
 
 		if (n.type === 'tag' && n.tag) {
 			if (PREPROCESSOR_TAGS.has(n.tag)) {
@@ -713,6 +763,70 @@ export function compileComposition(
 		// Inline structure is the block's own business; the outline names blocks.
 		if (n.inline || n.type === 'inline' || n.type === 'document') return children;
 		return [{ node: n.type, ...(children.length > 0 ? { children } : {}) }];
+	};
+
+	/** SPEC-156 D2 — a `{% group %}`: a name, and a `bar` or `ladder`; or, as a
+	 *  bar's child, `align` instead, to push it to an end. */
+	const checkGroup = (n: Node, scope: Scope): CompositionOutlineNode => {
+		const { name, layout, align } = n.attributes as Record<string, unknown>;
+		for (const key of Object.keys(n.attributes)) {
+			if (!['name', 'layout', 'align'].includes(key)) {
+				fail(
+					'group-invalid',
+					`a \`{% group %}\` takes \`name\`, \`layout\` and \`align\`, not \`${key}\`.`,
+				);
+			}
+		}
+		if (typeof name !== 'string' || name === '') {
+			fail(
+				'group-invalid',
+				'a `{% group %}` needs a `name`: it names the wrapper for themes and layouts.',
+			);
+		}
+		if (n.inline) {
+			fail(
+				'group-invalid',
+				`\`{% group name="${name}" %}\` sits inside a line of text. A group is a block; place it on its own lines.`,
+			);
+		}
+		if (layout !== undefined && !GROUP_LAYOUTS.has(layout as string)) {
+			fail(
+				'group-invalid',
+				`\`{% group name="${name}" %}\` has \`layout="${layout}"\`. A group arranges as \`bar\` or \`ladder\`.`,
+			);
+		}
+		if (align !== undefined) {
+			if (!GROUP_ALIGNS.has(align as string)) {
+				fail(
+					'group-invalid',
+					`\`{% group name="${name}" %}\` has \`align="${align}"\`. It takes \`start\` or \`end\`.`,
+				);
+			}
+			if (scope.group !== 'bar') {
+				fail(
+					'group-invalid',
+					`\`{% group name="${name}" align="${align}" %}\` is not directly inside a \`bar\` group. \`align\` pushes a child along a row.`,
+				);
+			}
+		}
+		if (layout === undefined && align === undefined) {
+			fail(
+				'group-invalid',
+				`\`{% group name="${name}" %}\` has no \`layout\`. Give it \`bar\` or \`ladder\`, or, inside a bar, an \`align\`.`,
+			);
+		}
+		const children = outlineOf(n.children, {
+			...scope,
+			group: layout as 'bar' | 'ladder' | undefined,
+		});
+		if (children.length === 0) {
+			fail('group-invalid', `\`{% group name="${name}" %}\` holds nothing.`);
+		}
+		return {
+			group: name as string,
+			...(layout ? { layout: layout as 'bar' | 'ladder' } : {}),
+			children,
+		};
 	};
 
 	const checkSlot = (n: Node, scope: Scope): CompositionOutlineNode => {
@@ -860,6 +974,19 @@ export function compileComposition(
 
 	const outline = outlineOf(ast.children, {});
 
+	// SPEC-156 D12 — a declared sequence needs a ladder to be stamped on.
+	if (template.sequence) {
+		const ladder = (nodes: CompositionOutlineNode[]): boolean =>
+			nodes.some((n) => n.layout === 'ladder' || ladder(n.children ?? []));
+		if (!ladder(outline)) {
+			current = undefined;
+			fail(
+				'sequence-without-ladder',
+				`the definition declares \`sequence: ${template.sequence}\`, but the template places no \`{% group layout="ladder" %}\` to number. Place one around the items, or remove \`sequence\`.`,
+			);
+		}
+	}
+
 	// D14, D31, D33 — the paint carrier and every axis's target.
 	const plan = resolvePlacements(rune, templateRunes, (code, msg, at) => {
 		current = at ?? current;
@@ -996,6 +1123,7 @@ export function compileComposition(
 			moves: moveAttributes(plan, attrs).moves,
 			defaults: defaultsByNode,
 			directives,
+			...(template.sequence ? { sequence: template.sequence } : {}),
 		};
 
 		const placed = expand(ast.children, ctx);
@@ -1117,6 +1245,8 @@ interface ExpandContext {
 	defaults?: Map<Node, Record<string, unknown>>;
 	/** The author's `{% bg %}` / `{% tint %}`, by the template node they land on. */
 	directives?: Map<Node, Node[]>;
+	/** SPEC-156 D12 — the definition's sequence: a ladder renders `<ol>`. */
+	sequence?: string;
 }
 
 function asNodes(value: unknown): Node[] {
@@ -1256,7 +1386,14 @@ function inlineContent(nodes: Node[]): Node[] {
 	});
 }
 
-function expandSlot(slot: Node, ctx: ExpandContext, inline: boolean, block: boolean): Node[] {
+function expandSlot(
+	slot: Node,
+	ctx: ExpandContext,
+	inline: boolean,
+	block: boolean,
+	/** A ladder's item wrapper: each iteration of an `each` slot becomes one. */
+	wrapItem?: (nodes: Node[]) => Node,
+): Node[] {
 	const name = slot.attributes.name as string | undefined;
 	let placed: Node[];
 
@@ -1267,11 +1404,11 @@ function expandSlot(slot: Node, ctx: ExpandContext, inline: boolean, block: bool
 		const field = ctx.fields.get(name)!;
 		placed = [];
 		for (const item of itemsOf(field, ctx.resolved[name])) {
-			placed.push(
-				...expand(slot.children, { ...ctx, item: { slot: name, ...item } }).filter(
-					(n) => !(n.type === 'text' && String(n.attributes.content ?? '').trim() === ''),
-				),
+			const nodes = expand(slot.children, { ...ctx, item: { slot: name, ...item } }).filter(
+				(n) => !(n.type === 'text' && String(n.attributes.content ?? '').trim() === ''),
 			);
+			if (wrapItem) placed.push(wrapItem(nodes));
+			else placed.push(...nodes);
 		}
 		return placed;
 	} else {
@@ -1290,6 +1427,38 @@ function expandSlot(slot: Node, ctx: ExpandContext, inline: boolean, block: bool
 	return inline ? inlineContent(placed) : placed;
 }
 
+/**
+ * SPEC-156 D2–D3 — a group expands to its marker. A ladder wraps each item in
+ * an `<li>`: each iteration of an `each` slot placed directly in it, else each
+ * top-level node it holds.
+ */
+function expandGroup(group: Node, ctx: ExpandContext): Node {
+	const { name, layout, align } = group.attributes as Record<string, string | undefined>;
+	const attrs = {
+		name,
+		...(layout ? { layout } : {}),
+		...(align ? { align } : {}),
+		...(layout === 'ladder' && ctx.sequence ? { sequence: ctx.sequence } : {}),
+	};
+	if (layout !== 'ladder') {
+		return new Ast.Node('tag', attrs, expand(group.children, ctx), GROUP_MARKER);
+	}
+	const item = (nodes: Node[]) => new Ast.Node('tag', {}, nodes, GROUP_ITEM_MARKER);
+	const items: Node[] = [];
+	for (const child of group.children) {
+		const slot = isSlotTag(child) ? child : soleSlot(child);
+		if (slot && slot.attributes.each === true) {
+			items.push(...expandSlot(slot, ctx, false, true, item));
+			continue;
+		}
+		for (const n of expand([child], ctx)) {
+			if (n.type === 'text' && String(n.attributes.content ?? '').trim() === '') continue;
+			items.push(item([n]));
+		}
+	}
+	return new Ast.Node('tag', attrs, items, GROUP_MARKER);
+}
+
 /** Substitute into a list of template nodes, placing slots where they stand. */
 function expand(nodes: Node[], ctx: ExpandContext): Node[] {
 	const out: Node[] = [];
@@ -1302,6 +1471,10 @@ function expand(nodes: Node[], ctx: ExpandContext): Node[] {
 			out.push(
 				new Ast.Node('tag', { name: n.attributes.name, owner: ctx.rune }, [], METABLOCK_MARKER),
 			);
+			continue;
+		}
+		if (n.type === 'tag' && n.tag === GROUP_TAG) {
+			out.push(expandGroup(n, ctx));
 			continue;
 		}
 		const sole = soleSlot(n);
@@ -1343,7 +1516,15 @@ function markerConfig(config: Config): Config {
  *  only, since nothing authored can name its key. */
 function templateConfig(config: Config): Config {
 	const marked = markerConfig(config);
-	return { ...marked, tags: { ...marked.tags, [METABLOCK_MARKER]: metablockMarkerSchema } };
+	return {
+		...marked,
+		tags: {
+			...marked.tags,
+			[METABLOCK_MARKER]: metablockMarkerSchema,
+			[GROUP_MARKER]: groupMarkerSchema,
+			[GROUP_ITEM_MARKER]: groupItemMarkerSchema,
+		},
+	};
 }
 
 /** The `registers` sources that name a slot rather than an attribute (D10b). */
@@ -1414,6 +1595,8 @@ export interface CompositionDefinition {
 	provides?: string[];
 	/** D34 — defaults for universal axes, by attribute name. */
 	defaults?: Record<string, string>;
+	/** SPEC-156 D12 — whether the ladder's ordinal is information. */
+	sequence?: 'numbered' | 'connected' | 'plain';
 	template: string;
 	/** 1-based line of the source on which the template body starts. */
 	templateLine: number;
@@ -1433,7 +1616,11 @@ const DEFINITION_KEYS = new Set([
 	'blocks',
 	'provides',
 	'defaults',
+	'sequence',
 ]);
+
+/** SPEC-156 D12 — the sequence styles a definition may declare. */
+const SEQUENCE_VALUES = ['numbered', 'connected', 'plain'];
 
 /** Keys that would give a composed rune styles of its own (D2). */
 const STYLE_KEYS = new Set(['css', 'style', 'styles', 'stylesheet', 'block', 'class']);
@@ -1595,6 +1782,13 @@ export function parseCompositionDefinition(rune: string, source: string): Compos
 	const defaults = parseDefaults(fm.defaults, (code, msg, at) =>
 		fail(code, msg, ['defaults', ...(at ?? [])]),
 	);
+	if (fm.sequence !== undefined && !SEQUENCE_VALUES.includes(fm.sequence as string)) {
+		fail(
+			'invalid-value',
+			`\`sequence: ${String(fm.sequence)}\` is not a sequence style. Use ${SEQUENCE_VALUES.map((v) => `\`${v}\``).join(', ')}.`,
+			['sequence'],
+		);
+	}
 
 	return {
 		rune,
@@ -1609,6 +1803,7 @@ export function parseCompositionDefinition(rune: string, source: string): Compos
 		...(fm.blocks ? { blocks: fm.blocks as Record<string, unknown> } : {}),
 		...(fm.provides ? { provides: fm.provides as string[] } : {}),
 		...(defaults ? { defaults } : {}),
+		...(fm.sequence ? { sequence: fm.sequence as CompositionDefinition['sequence'] } : {}),
 		template: match![2],
 		// `---`, the frontmatter's lines, `---`: the body starts on the next.
 		templateLine: frontmatter.split(/\r?\n/).length + 3,
@@ -2090,6 +2285,9 @@ export function composedRuneConfig(def: CompositionDefinition): RuneConfig {
 		...(def.metaFields ? { metaFields: def.metaFields as RuneConfig['metaFields'] } : {}),
 		...(def.blocks ? { blocks: def.blocks as RuneConfig['blocks'] } : {}),
 		...(def.provides ? { provides: def.provides } : {}),
+		// SPEC-156 D12 — identity, carried as a native rune's is; the engine
+		// stamps it on the ladder group alone (D14).
+		...(def.sequence ? { sequence: def.sequence } : {}),
 	} as RuneConfig;
 }
 
