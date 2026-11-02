@@ -470,7 +470,13 @@ function slotFields(
 		);
 	}
 	const s = m as StructuralContentModel;
-	const addField = (f: ContentFieldDefinition) => {
+	const addField = (f: ContentFieldDefinition): void => {
+		// SPEC-186 D1.4 — a group's members are slots under their own names; the
+		// group's name is a condition, not a slot.
+		if (f.group) {
+			for (const member of f.group) addField(member);
+			return;
+		}
 		const emitted = f.emitTag !== undefined && f.itemModel !== undefined;
 		const refs = emitted ? (f.emitAttributes ?? {}) : {};
 		const alternatives = f.match.split('|');
@@ -1983,10 +1989,77 @@ const FIELD_KEYS = new Set([
 	'emitTag',
 	'emitAttributes',
 	'fills',
+	'group',
+	'position',
 ]);
 
+/**
+ * SPEC-186 D6 — a model's field list, checked as a whole once its fields are
+ * parsed: member names unique across the model, groups flattened (D1.4); a
+ * group with at least one required member (D1); `position: last` on at most
+ * one field, and only on the model's last field (D3).
+ */
+function checkModelFields(
+	fields: ContentFieldDefinition[],
+	where: string,
+	fail: SectionFail,
+): void {
+	const section = where.split('.').pop()!;
+	const seen = new Set<string>();
+	const visit = (list: ContentFieldDefinition[], inGroup: string | undefined) => {
+		for (const f of list) {
+			if (seen.has(f.name)) {
+				fail(
+					'content-field-duplicate',
+					`\`${where}\`: the field name \`${f.name}\` is used twice. A group's members resolve to their own names, so every name in a model is unique (SPEC-186 D1).`,
+					[section, f.name],
+				);
+			}
+			seen.add(f.name);
+			if (f.position === 'last' && inGroup) {
+				fail(
+					'content-position-invalid',
+					`\`${where}\`: \`${f.name}\` in group \`${inGroup}\` has \`position: last\`. Only a model's own last field may claim the container's last node (SPEC-186 D3).`,
+					[section, f.name],
+				);
+			}
+			if (f.group) {
+				if (!f.group.some((m) => !m.optional)) {
+					fail(
+						'content-group-invalid',
+						`\`${where}\`: group \`${f.name}\` has no required member, so it would match nothing at all. Make at least one member required (SPEC-186 D1).`,
+						[section, f.name],
+					);
+				}
+				visit(f.group, f.name);
+			}
+		}
+	};
+	visit(fields, undefined);
+	const anchored = fields.filter((f) => f.position === 'last');
+	if (anchored.length > 1) {
+		fail(
+			'content-position-invalid',
+			`\`${where}\`: ${anchored.map((f) => `\`${f.name}\``).join(', ')} all have \`position: last\`. A model has one last node, so at most one field claims it (SPEC-186 D3).`,
+			[section, anchored[1].name],
+		);
+	}
+	if (anchored.length === 1 && fields[fields.length - 1] !== anchored[0]) {
+		fail(
+			'content-position-invalid',
+			`\`${where}\`: \`${anchored[0].name}\` has \`position: last\` but is not the model's last field. Move it last: the fields before it read the nodes before the last one (SPEC-186 D3).`,
+			[section, anchored[0].name],
+		);
+	}
+}
+
 /** A field list as YAML writes it: a mapping keyed by name, or a list with `name`. */
-function parseFields(raw: unknown, where: string, fail: SectionFail): ContentFieldDefinition[] {
+function parseFields(
+	raw: unknown,
+	where: string,
+	fail: SectionFail,
+	nested = false,
+): ContentFieldDefinition[] {
 	const section = where.split('.').pop()!;
 	if (raw === undefined) return [];
 	const entries: Array<[string, unknown]> = Array.isArray(raw)
@@ -1994,7 +2067,7 @@ function parseFields(raw: unknown, where: string, fail: SectionFail): ContentFie
 		: raw && typeof raw === 'object'
 			? Object.entries(raw)
 			: fail('content-model-invalid', `\`${where}\` must be a mapping of fields.`);
-	return entries.map(([name, f]) => {
+	const parsed = entries.map(([name, f]) => {
 		const at = (code: CompositionErrorCode, msg: string) => fail(code, msg, [section, name]);
 		if (!/^[a-z][a-zA-Z0-9]*(-[a-zA-Z0-9]+)*$/.test(name)) {
 			at('content-model-invalid', `\`${where}\`: \`${name}\` is not a valid field name.`);
@@ -2011,7 +2084,27 @@ function parseFields(raw: unknown, where: string, fail: SectionFail): ContentFie
 				);
 			}
 		}
-		if (typeof def.match !== 'string')
+		if (def.position !== undefined && def.position !== 'last') {
+			at(
+				'content-position-invalid',
+				`\`${where}.${name}\`: \`position\` takes only \`last\` (SPEC-186 D3).`,
+			);
+		}
+		if (def.group !== undefined) {
+			// SPEC-186 D1 — a group: its members are fields, and it has no match of
+			// its own.
+			if (def.match !== undefined || def.greedy !== undefined || def.itemModel !== undefined) {
+				at(
+					'content-group-invalid',
+					`\`${where}.${name}\` is a group: its members match, so it takes no \`match\`, \`greedy\` or \`itemModel\` of its own (SPEC-186 D1).`,
+				);
+			}
+			def.group = parseFields(def.group, `${where}.${name}.group`, fail, true);
+			if ((def.group as unknown[]).length === 0) {
+				at('content-group-invalid', `\`${where}.${name}\`: a group needs members.`);
+			}
+			def.match = '';
+		} else if (typeof def.match !== 'string')
 			at('content-model-invalid', `\`${where}.${name}\` needs a \`match\`.`);
 		if (def.itemModel !== undefined) {
 			def.itemModel = parseItemModel(def.itemModel, `${where}.${name}.itemModel`, (code, msg) =>
@@ -2020,6 +2113,8 @@ function parseFields(raw: unknown, where: string, fail: SectionFail): ContentFie
 		}
 		return { name, ...def } as unknown as ContentFieldDefinition;
 	});
+	if (!nested) checkModelFields(parsed, where, fail);
+	return parsed;
 }
 
 const ITEM_FIELD_KEYS = new Set([

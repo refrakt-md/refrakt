@@ -83,6 +83,40 @@ A composition's slots are its content model's fields, so a model is accepted onl
 
 `custom` is rejected, because its code decides what it produces. A conditional (`when`) model is rejected too. Every case it covered has a declarative form: `implicitSection`, `each` over a list field, or a template that places every alternative and lets the empty one render nothing. A content model also never depends on attribute values. A model written as a function of the attributes is read once, with none.
 
+### Groups: parts that only count together
+
+A field may be a **group**: members that match as one, in order. An eyebrow is a paragraph only when a headline follows it, and a group says so:
+
+```yaml
+content:
+  type: sequence
+  fields:
+    header:
+      optional: true
+      group:
+        eyebrow:  { match: paragraph, optional: true }
+        headline: { match: heading }
+        blurb:    { match: paragraph, optional: true }
+    body: { match: any, optional: true, greedy: true }
+```
+
+- **All or nothing.** The group matches when every required member matches, in order, from where it stands. Otherwise it takes nothing, and the nodes it looked at go to the field after it: a paragraph with no heading after it becomes `body`, not an eyebrow.
+- **Members may be optional**, and a group may contain groups. A group needs at least one required member. It has no `match` of its own.
+- **Members are slots under their own names.** The template places `{% slot name="headline" /%}`, not a path. So every name in a model is unique, group members included. The group's own name is not a slot.
+- **No backtracking.** A group tries its members once, where it stands; a failed group never makes an earlier field give anything back.
+
+### `position: last`: the container's last node
+
+`position: last` on a field reserves the container's last node for it, when the field matches that node. Every field before it, greedy or not, then reads the nodes before it:
+
+```yaml
+fields:
+  body:        { match: paragraph, greedy: true }
+  attribution: { match: paragraph, optional: true, position: last, itemModel: { … } }
+```
+
+With an attribution line last, `body` takes every paragraph but that one. With none, nothing is reserved and `body` keeps everything. Only one field per model may claim the last node, it must be the model's last field, and it may not sit inside a group.
+
 ### `delimited`: content split on `---`
 
 A delimited model splits the content at each `---` into zones, and each zone is a sequence of fields:
@@ -621,6 +655,9 @@ Each error has a code. The fix column assumes the cause in the meaning column.
 | `sequence-without-ladder` | The frontmatter declares `sequence`, and the template places no `{% group layout="ladder" %}`. | Place the ladder around the items, or remove `sequence`. |
 | `narrative-field-twice` | Two fields' matches name only editorial runes (`tag:textblock`, `tag:mediatext`), so the rune has two narrative fields. | Keep one; give the other a match that also takes something else, or remove it. |
 | `narrative-field-mapped` | The `schema` table maps the narrative field to a property. | Remove the mapping: the story around a rune is never its structured data. |
+| `content-group-invalid` | A group has no required member, no members, or a `match`, `greedy` or `itemModel` of its own. | Make one member required; a group's members match, the group does not. |
+| `content-field-duplicate` | Two fields share a name, counting group members, which resolve to their own names. | Rename one. |
+| `content-position-invalid` | `position: last` is on more than one field, on a field that is not the model's last, inside a group, or has a value other than `last`. | Keep one, on the model's last field. |
 | `metablock-invalid` | A `{% metablock %}` has no `name`, has content, has another attribute, or sits inside a line of text. | `{% metablock name="x" /%}` on its own line. |
 | `metablock-inside-each` | A `{% metablock %}` is inside an `each` slot. | Move it outside. |
 | `metablock-undeclared` | It names no block declared under `blocks`. | Declare the block, or fix the name. |

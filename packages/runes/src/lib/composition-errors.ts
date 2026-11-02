@@ -59,6 +59,12 @@ export const COMPOSITION_ERRORS = {
 		'The content model declares more than one narrative field (a field matching only `tag:textblock` and `tag:mediatext`).',
 	'narrative-field-mapped':
 		'The schema table maps the narrative field, which is never structured data.',
+	'content-group-invalid':
+		'A content-model group has no required member, no members, or a `match`, `greedy` or `itemModel` of its own.',
+	'content-field-duplicate':
+		'Two fields of a content model share a name, counting group members, which resolve to their own names.',
+	'content-position-invalid':
+		"`position: last` is on more than one field, on a field that is not the model's last, inside a group, or has a value other than `last`.",
 	'metablock-invalid':
 		'A `{% metablock %}` is malformed: no name, content, an extra attribute, or inline.',
 	'metablock-inside-each': 'A `{% metablock %}` is placed inside an `each` slot.',

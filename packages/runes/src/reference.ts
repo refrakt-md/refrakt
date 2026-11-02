@@ -104,6 +104,10 @@ export interface SerializedContentField {
 	emitTag?: string;
 	/** How each item of a matched list is read (BUG-031). */
 	itemModel?: SerializedItemModel;
+	/** SPEC-186 D1 — a group's members, which match all together or not at all. */
+	group?: SerializedContentField[];
+	/** SPEC-186 D3 — the field claims the container's last node. */
+	position?: 'last';
 }
 
 export interface SerializedItemField {
@@ -451,6 +455,8 @@ function stripField(f: ContentFieldDefinition): SerializedContentField {
 		description: f.description,
 		emitTag: f.emitTag,
 		itemModel: f.itemModel ? stripItemModel(f.itemModel) : undefined,
+		...(f.group ? { group: f.group.map(stripField) } : {}),
+		...(f.position ? { position: f.position } : {}),
 	};
 }
 
@@ -567,11 +573,25 @@ function renderDelimitedModel(model: SerializedDelimitedModel): string {
 }
 
 function renderField(field: SerializedContentField): string {
+	// SPEC-186 D1 — a group reads its members together, or none of them.
+	if (field.group) {
+		const required = field.optional ? 'optional' : 'required';
+		const lines = [
+			`\`${field.name}\` (${required} group: its required members in order, or nothing)`,
+		];
+		for (const member of field.group) {
+			for (const [i, line] of renderField(member).split('\n').entries()) {
+				lines.push(`${i === 0 ? '    - ' : '      '}${line}`);
+			}
+		}
+		return lines.join('\n');
+	}
 	const required = field.optional ? 'optional' : 'required';
 	const repeat = field.greedy ? ', repeatable' : '';
 	const match = formatMatch(field.match);
 	const desc = field.description ? ` — ${field.description}` : '';
-	const lines = [`\`${field.name}\` (${required}${repeat} ${match})${desc}`];
+	const last = field.position === 'last' ? ', the last node' : '';
+	const lines = [`\`${field.name}\` (${required}${repeat} ${match}${last})${desc}`];
 
 	// Authoring shape first: what to write, then how it is read, then what it
 	// becomes — the order the sections branch reads in.

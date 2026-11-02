@@ -172,120 +172,188 @@ export function imageInParagraph(node: Node): Node | null {
  * - Optional fields are skipped when the next child doesn't match.
  * - Greedy fields consume all consecutive matching nodes into an array.
  */
+/**
+ * One field against the children from `index`: what it takes, and where the
+ * walk resumes. `null` when it does not match there (SPEC-186: the shared step
+ * of a sequence and a group).
+ */
+function takeField(
+	field: ContentFieldDefinition,
+	children: Node[],
+	index: number,
+): { values: ResolvedContent; next: number } | null {
+	const child = children[index];
+	if (!child) return null;
+	const values: ResolvedContent = {};
+
+	// SPEC-182 D1, D3 — a paragraph field with an item model reads one record
+	// from the paragraph's inline content, and takes the paragraph only when
+	// the record's required fields are there: prose without them is left for
+	// the next field.
+	const paragraphRecord =
+		field.itemModel && !(field as any).emitTag && child.type === 'paragraph'
+			? resolveParagraphItem(child, field.itemModel)
+			: undefined;
+	const recordMissing =
+		paragraphRecord !== undefined && !hasRequiredItemFields(paragraphRecord, field.itemModel!);
+	if (!matchesType(child, field.match) || recordMissing) return null;
+	// A field matching exactly `image` should resolve to the bare image
+	// node, unwrapping the `paragraph > inline > image` Markdown produces.
+	// Scoped to the exact match so `heading|paragraph|image` header fields
+	// keep their paragraphs intact.
+	const unwrapImage =
+		field.match === 'image' ? (n: Node): Node => imageInParagraph(n) ?? n : (n: Node): Node => n;
+	if (field.greedy) {
+		const collected: Node[] = [];
+		while (index < children.length && matchesType(children[index], field.match)) {
+			collected.push(unwrapImage(children[index]));
+			index++;
+		}
+		values[field.name] = collected;
+	} else {
+		values[field.name] = unwrapImage(child);
+		index++;
+	}
+
+	if (paragraphRecord !== undefined && !field.greedy) {
+		values[`${field.name}Data`] = paragraphRecord;
+	} else if (field.itemModel) {
+		// If this list field has an itemModel, extract structured data
+		if ((field as any).emitTag) {
+			// listToTags: convert list items to emitted tag nodes
+			const listNodes = field.greedy
+				? (values[field.name] as Node[])
+				: [values[field.name] as Node];
+			const tagNodes: Node[] = [];
+			for (const listNode of listNodes) {
+				if (!listNode) continue;
+				// BUG-030 — a mixed `list|tag:x` field also collects tags the author
+				// wrote. They are already tags: keep each in its place rather than
+				// dropping it when the field is replaced with the emitted nodes.
+				if ((listNode as any).type !== 'list') {
+					tagNodes.push(listNode as Node);
+					continue;
+				}
+				const items = resolveListItems(listNode, field.itemModel);
+				const listItems = (listNode as Node).children ?? [];
+				for (let i = 0; i < items.length; i++) {
+					const attrs: Record<string, any> = {};
+					const emitAttrs = (field as any).emitAttributes as Record<string, string> | undefined;
+					if (emitAttrs) {
+						for (const [key, ref] of Object.entries(emitAttrs)) {
+							attrs[key] = resolveEmitReference(ref, (name) => items[i][name]);
+						}
+					}
+					// Forward list item children after the first (inline) child as tag body
+					const itemChildren = listItems[i]?.children?.slice(1) ?? [];
+					tagNodes.push(new Ast.Node('tag', attrs, itemChildren, (field as any).emitTag));
+				}
+			}
+			values[field.name] = tagNodes;
+		} else {
+			const node = values[field.name];
+			if (Array.isArray(node)) {
+				// WORK-572 — a greedy field collects an array, which has no `type`,
+				// so the single-node branch below silently produced no `…Data` at
+				// all: making an itemModel field greedy used to disable its own
+				// extraction. Concatenate across the collected lists instead, in
+				// document order, and skip anything that is not a list (a greedy
+				// `list|tag:x` field collects both).
+				const items: Record<string, unknown>[] = [];
+				for (const n of node as Node[]) {
+					if (n && typeof n === 'object' && (n as Node).type === 'list') {
+						items.push(...resolveListItems(n as Node, field.itemModel));
+					}
+				}
+				values[`${field.name}Data`] = items;
+			} else if (node && typeof node === 'object' && 'type' in (node as any)) {
+				values[`${field.name}Data`] = resolveListItems(node as Node, field.itemModel);
+			}
+		}
+	}
+	return { values, next: index };
+}
+
+/**
+ * SPEC-186 D1 — a group's members against the children from `index`, in
+ * order: every required member must match, or the group takes nothing. An
+ * optional member that does not match is skipped inside the group. Members
+ * may be groups. No backtracking: each member is tried once, where it stands.
+ */
+function takeGroup(
+	group: ContentFieldDefinition,
+	children: Node[],
+	index: number,
+): { values: ResolvedContent; next: number } | null {
+	const values: ResolvedContent = {};
+	let at = index;
+	for (const member of group.group ?? []) {
+		const taken = member.group ? takeGroup(member, children, at) : takeField(member, children, at);
+		if (taken) {
+			Object.assign(values, taken.values);
+			if (member.group) values[member.name] = true;
+			at = taken.next;
+		} else if (!member.optional) {
+			return null;
+		}
+	}
+	return { values, next: at };
+}
+
 export function resolveSequence(
 	children: Node[],
 	fields: ContentFieldDefinition[],
 	unmatched?: UnmatchedSink,
 ): ResolvedContent {
 	const result: ResolvedContent = {};
-	let childIndex = 0;
 
-	for (const field of fields) {
-		if (childIndex >= children.length) {
+	// SPEC-186 D3 — a `position: last` field reserves the container's last
+	// node, when it matches it, before the fields before it read the rest.
+	let walk = children;
+	let walkFields = fields;
+	const last = fields[fields.length - 1];
+	if (last?.position === 'last') {
+		walkFields = fields.slice(0, -1);
+		let j = children.length - 1;
+		while (j >= 0 && isInsignificant(children[j])) j--;
+		const reserved = j >= 0 ? takeField(last, children, j) : null;
+		if (reserved) {
+			Object.assign(result, reserved.values);
+			walk = [...children.slice(0, j), ...children.slice(j + 1)];
+		}
+	}
+
+	let childIndex = 0;
+	for (const field of walkFields) {
+		if (childIndex >= walk.length) {
 			continue;
 		}
-
-		const child = children[childIndex];
-
-		// SPEC-182 D1, D3 — a paragraph field with an item model reads one record
-		// from the paragraph's inline content, and takes the paragraph only when
-		// the record's required fields are there: prose without them is left for
-		// the next field.
-		const paragraphRecord =
-			field.itemModel && !(field as any).emitTag && child.type === 'paragraph'
-				? resolveParagraphItem(child, field.itemModel)
-				: undefined;
-		const recordMissing =
-			paragraphRecord !== undefined && !hasRequiredItemFields(paragraphRecord, field.itemModel!);
-
-		if (matchesType(child, field.match) && !recordMissing) {
-			// A field matching exactly `image` should resolve to the bare image
-			// node, unwrapping the `paragraph > inline > image` Markdown produces.
-			// Scoped to the exact match so `heading|paragraph|image` header fields
-			// keep their paragraphs intact.
-			const unwrapImage =
-				field.match === 'image'
-					? (n: Node): Node => imageInParagraph(n) ?? n
-					: (n: Node): Node => n;
-			if (field.greedy) {
-				const collected: Node[] = [];
-				while (childIndex < children.length && matchesType(children[childIndex], field.match)) {
-					collected.push(unwrapImage(children[childIndex]));
-					childIndex++;
-				}
-				result[field.name] = collected;
-			} else {
-				result[field.name] = unwrapImage(child);
-				childIndex++;
+		if (field.group) {
+			const taken = takeGroup(field, walk, childIndex);
+			if (taken) {
+				Object.assign(result, taken.values);
+				result[field.name] = true;
+				childIndex = taken.next;
 			}
-
-			if (paragraphRecord !== undefined && !field.greedy) {
-				result[`${field.name}Data`] = paragraphRecord;
-			} else if (field.itemModel) {
-				// If this list field has an itemModel, extract structured data
-				if ((field as any).emitTag) {
-					// listToTags: convert list items to emitted tag nodes
-					const listNodes = field.greedy
-						? (result[field.name] as Node[])
-						: [result[field.name] as Node];
-					const tagNodes: Node[] = [];
-					for (const listNode of listNodes) {
-						if (!listNode) continue;
-						// BUG-030 — a mixed `list|tag:x` field also collects tags the author
-						// wrote. They are already tags: keep each in its place rather than
-						// dropping it when the field is replaced with the emitted nodes.
-						if ((listNode as any).type !== 'list') {
-							tagNodes.push(listNode as Node);
-							continue;
-						}
-						const items = resolveListItems(listNode, field.itemModel);
-						const listItems = (listNode as Node).children ?? [];
-						for (let i = 0; i < items.length; i++) {
-							const attrs: Record<string, any> = {};
-							const emitAttrs = (field as any).emitAttributes as Record<string, string> | undefined;
-							if (emitAttrs) {
-								for (const [key, ref] of Object.entries(emitAttrs)) {
-									attrs[key] = resolveEmitReference(ref, (name) => items[i][name]);
-								}
-							}
-							// Forward list item children after the first (inline) child as tag body
-							const itemChildren = listItems[i]?.children?.slice(1) ?? [];
-							tagNodes.push(new Ast.Node('tag', attrs, itemChildren, (field as any).emitTag));
-						}
-					}
-					result[field.name] = tagNodes;
-				} else {
-					const node = result[field.name];
-					if (Array.isArray(node)) {
-						// WORK-572 — a greedy field collects an array, which has no `type`,
-						// so the single-node branch below silently produced no `…Data` at
-						// all: making an itemModel field greedy used to disable its own
-						// extraction. Concatenate across the collected lists instead, in
-						// document order, and skip anything that is not a list (a greedy
-						// `list|tag:x` field collects both).
-						const items: Record<string, unknown>[] = [];
-						for (const n of node as Node[]) {
-							if (n && typeof n === 'object' && (n as Node).type === 'list') {
-								items.push(...resolveListItems(n as Node, field.itemModel));
-							}
-						}
-						result[`${field.name}Data`] = items;
-					} else if (node && typeof node === 'object' && 'type' in (node as any)) {
-						result[`${field.name}Data`] = resolveListItems(node as Node, field.itemModel);
-					}
-				}
-			}
+			// A group that does not match takes nothing: the nodes it looked at
+			// are the next field's (D1.1).
+			continue;
+		}
+		const taken = takeField(field, walk, childIndex);
+		if (taken) {
+			Object.assign(result, taken.values);
+			childIndex = taken.next;
 		} else if (!field.optional) {
 			// Required field didn't match — skip the child and move on. The child
 			// is dropped, so it is reported.
-			reportUnmatched([child], unmatched);
+			reportUnmatched([walk[childIndex]], unmatched);
 			childIndex++;
 		}
 		// If optional and doesn't match, just skip the field (don't advance child)
 	}
 
 	// Whatever the fields ran out before reaching is dropped too.
-	reportUnmatched(children.slice(childIndex), unmatched);
+	reportUnmatched(walk.slice(childIndex), unmatched);
 
 	return result;
 }
