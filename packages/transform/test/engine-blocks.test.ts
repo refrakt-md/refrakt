@@ -66,7 +66,7 @@ describe('SPEC-080 block-and-layout assembly', () => {
 	}
 
 	describe('bar layout — intrinsic field shape', () => {
-		it('renders chip vs bare from metaType, not the layout', () => {
+		it('states each value’s kind and adds no class: the pill is the stylesheet’s (WORK-671)', () => {
 			const transform = createTransform(baseConfig({ Api: apiConfig }));
 			const result = asTag(
 				transform(makeApiTag({ method: 'POST', path: '/users/:id', auth: 'Bearer' })),
@@ -77,16 +77,12 @@ describe('SPEC-080 block-and-layout assembly', () => {
 			expect(eyebrow.attributes['data-wrap']).toBe('false');
 
 			const [method, path, auth] = eyebrow.children as SerializedTag[];
-			// category → chip
-			expect(method.attributes.class).toBe('rf-badge');
+			// ADR-043 decision 3 — the engine emits meaning, not shape.
+			for (const value of [method, path, auth]) expect(value.attributes.class).toBeUndefined();
 			expect(method.attributes['data-meta-type']).toBe('category');
 			expect(method.children[0]).toBe('POST');
-			// code → bare inline, no chip
-			expect(path.attributes.class).toBeUndefined();
 			expect(path.attributes['data-meta-type']).toBe('code');
 			expect(path.children[0]).toBe('/users/:id');
-			// status → chip
-			expect(auth.attributes.class).toBe('rf-badge');
 			expect(auth.attributes['data-meta-type']).toBe('status');
 		});
 
@@ -330,7 +326,7 @@ describe('SPEC-080 block-and-layout assembly', () => {
 	});
 
 	describe('definition-list block — intrinsic shape', () => {
-		it('chip in dd for chip-type, bare dd for value-type', () => {
+		it('each dd holds the value element, whatever its kind (WORK-671)', () => {
 			const cfg: RuneConfig = {
 				block: 'card',
 				modifiers: { kind: { source: 'meta' }, since: { source: 'meta' } },
@@ -353,13 +349,11 @@ describe('SPEC-080 block-and-layout assembly', () => {
 			const metadata = findByName(result, 'metadata')!;
 			expect(metadata.name).toBe('dl');
 			const [kindRow, sinceRow] = metadata.children as SerializedTag[];
-			// kind (category) → chip in dd
-			const kindDd = kindRow.children[1] as SerializedTag;
-			expect((kindDd.children[0] as SerializedTag).attributes.class).toBe('rf-badge');
-			// since (temporal) → bare dd carrying data-meta-type
-			const sinceDd = sinceRow.children[1] as SerializedTag;
-			expect(sinceDd.attributes['data-meta-type']).toBe('temporal');
-			expect(sinceDd.children[0]).toBe('v1.2');
+			const kind = (kindRow.children[1] as SerializedTag).children[0] as SerializedTag;
+			expect(kind.attributes).toEqual({ 'data-meta-type': 'category' });
+			const since = (sinceRow.children[1] as SerializedTag).children[0] as SerializedTag;
+			expect(since.attributes).toEqual({ 'data-meta-type': 'temporal' });
+			expect(since.children[0]).toBe('v1.2');
 		});
 	});
 

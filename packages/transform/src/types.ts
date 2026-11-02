@@ -9,10 +9,10 @@ import type { ProminenceValue } from './facets/prominence.js';
  *  with. Each primitive emits a documented DOM shape and styles itself
  *  via `[data-zone-layout="…"]` CSS selectors.
  *
- *  - `bar` — horizontal flex row of fields, each in its intrinsic shape
- *    (chip vs bare from `metaType`); supports `wrap` + per-field `align`.
- *  - `definition-list` — `<dl>` with `<dt>` / `<dd>` per field; the dd
- *    value renders as a chip for chip-type fields, bare otherwise.
+ *  - `bar` — horizontal flex row of fields, each in its intrinsic shape;
+ *    supports `wrap` + per-field `align`.
+ *  - `definition-list` — `<dl>` with `<dt>` / `<dd>` per field, the dd
+ *    holding the field's value element.
  *  - `lead` — a byline: the fields in a column, the first marked `data-lead`
  *    as the emphasised value and the rest beneath it, smaller and muted
  *    (SPEC-161 D6). Unlabelled, like `bar`. */
@@ -41,8 +41,8 @@ export type NamedTransform =
 	| 'gap';
 
 /** SPEC-080 block definition — a named group of meta-fields rendered by a
- *  layout primitive. Field shape (chip vs bare) is intrinsic to each field's
- *  `metaType`; this declares only which fields, their order, the layout, and
+ *  layout primitive. A value's look is the stylesheet's, keyed on its
+ *  `metaType` (ADR-043); this declares only which fields, their order, the layout, and
  *  optional per-field horizontal alignment. */
 export interface BlockDef {
 	/** Field names (from `metaFields`), in order. A field may be given as
@@ -72,14 +72,12 @@ export type LayoutEntry =
  *  primary-color text in an eyebrow's left slot and as a chip in a
  *  def-list's `<dd>` — no per-field config change. */
 export interface MetaField {
-	/** Semantic metadata type — emits `data-meta-type` attribute and, under
-	 *  the SPEC-080 block model, determines render *shape*: chip-rendered
-	 *  (`.rf-badge`) for `status` / `category` / `tag`; bare inline for
-	 *  `id` / `quantity` / `temporal` / `code`. Also drives typography
-	 *  (monospace for `id` / `code`, tabular-nums for `quantity` /
-	 *  `temporal`). `sentimentMap` only adds colour, never shape.
-	 *  (Legacy zones path still derives chip-vs-plain from the layout
-	 *  primitive — see `renderZone`.) */
+	/** Semantic metadata type — emits the `data-meta-type` attribute, which
+	 *  the base stylesheet keys a value's look on (ADR-043 decision 3,
+	 *  WORK-671): a pill for `status` / `category` / `tag`, bare inline for
+	 *  `id` / `quantity` / `temporal` / `code`, with monospace for `id` /
+	 *  `code` and tabular-nums for `quantity` / `temporal`. The engine adds no
+	 *  class. `sentimentMap` only adds colour, never shape. */
 	metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id' | 'code';
 
 	/** Human-readable label emitted as `<span data-meta-label>`. Used

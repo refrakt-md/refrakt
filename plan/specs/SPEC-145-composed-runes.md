@@ -2820,7 +2820,7 @@ contract, and they apply to engine blocks as well as to placed fields:
 |---|---|
 | What kind of value is this? | `data-meta-type` |
 | Is it good or bad? | `data-meta-sentiment` |
-| Is it a chip? | `.rf-badge` |
+| Is it a chip? | `data-meta-type` (`status`, `category`, `tag`); `.rf-badge` before WORK-671 |
 | How is the group arranged? | `data-zone-layout`, `data-meta-label` |
 | Which value is it? | `data-value` |
 | Which field is it? | `data-field` |
@@ -3326,8 +3326,9 @@ Open points:
 - how a first-party definition's schema table may read a `let` value. D25 already keeps
   project definitions from declaring `schema`.
 
-> **Answered by {% ref "ADR-043" /%}** (proposed): the engine stops adding `rf-badge` to field
-> values, and the base stylesheet gives chip geometry by `data-meta-type`.
+> **Answered by {% ref "ADR-043" /%}** decision 3, implemented in WORK-671: the engine stops
+> adding `rf-badge` to field values (`CHIP_METATYPES` is gone), and the base stylesheet gives pill
+> geometry by `data-meta-type`. `{% badge %}` keeps its class, and the pill rule covers it.
 
 **Should the theme, not the engine, decide which values are chips?** `CHIP_METATYPES` in
 `packages/transform/src/engine.ts` fixes that `status`, `category` and `tag` values get

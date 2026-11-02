@@ -22,7 +22,7 @@
 
 	/* Assignee — `@` prefix on the plain-text def-list value. Targets the
  * row by field name so milestone / tags don't get the prefix too. */
-	.rf-work__metadata [data-field="assignee"] dd .rf-badge::before {
+	.rf-work__metadata [data-field="assignee"] dd > [data-meta-type]::before {
 		content: "@";
 	}
 
@@ -75,5 +75,10 @@
 	}
 	[data-complexity="unknown"] .rf-work__metadata [data-field="complexity"] dd::after {
 		content: "  ?";
+	}
+	/* The dots set like the value before them, a quantity (WORK-671 moved the
+	 * value's type from the cell onto the value). */
+	.rf-work__metadata [data-field="complexity"] dd::after {
+		font-variant-numeric: tabular-nums;
 	}
 }

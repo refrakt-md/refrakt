@@ -1288,55 +1288,39 @@ function resolveField(
 	return { name, value, field, href, ratingTotal };
 }
 
-/** Build a chip element — the universal `.rf-badge` primitive emitted by
- *  layout primitives that render values as chips (sentiment-mapped fields
- *  in split / def-list, every field in chip-row). The standalone
- *  `{% badge %}` rune emits the same DOM shape. */
-function buildChip(
+/** Build a field's value element (ADR-043 decision 3, WORK-671). The engine
+ *  states what the value *is* — its `data-meta-type`, and its
+ *  `data-meta-sentiment` when the field maps one — and never how it looks:
+ *  the pill a `status`, `category` or `tag` value wears is the base
+ *  stylesheet's, keyed on `data-meta-type`, and a theme restyles it like any
+ *  other rule. `includeLabel` prefixes the field's label (split layouts). */
+function buildValue(
 	resolved: ResolvedField,
-	options: { includeLabel: boolean } = { includeLabel: true },
-	locale?: LocaleContext,
-	config?: RuneConfig,
-): SerializedTag {
-	const { field, value } = resolved;
-	const attrs: Record<string, string> = { class: 'rf-badge' };
-	if (field.metaType) attrs['data-meta-type'] = field.metaType;
-	if (field.sentimentMap) {
-		const sentiment = field.sentimentMap[value];
-		if (sentiment) attrs['data-meta-sentiment'] = sentiment;
-	}
-	const tag = field.tag ?? 'span';
-	const tagAttrs = { ...attrs };
-	if (tag === 'time' && value) tagAttrs.datetime = value;
-	// `datetime` keeps the raw value; only the *displayed* text is enum-localized.
-	const displayValue = localizedEnumValue(locale, config, value);
-
-	if (options.includeLabel && field.label) {
-		const label =
-			localizedLabel(locale, config, resolved.name, field.label, field.i18nKey) ?? field.label;
-		return makeTag(tag, tagAttrs, [
-			makeTag('span', { 'data-meta-label': '' }, [label]),
-			makeTag('span', { 'data-meta-value': '' }, [displayValue]),
-		]);
-	}
-	return makeTag(tag, tagAttrs, [displayValue]);
-}
-
-/** Build a plain-text value element — typography hints via
- *  `data-meta-type`, NO `.rf-badge` class (so no chip geometry). Used by
- *  the def-list's `<dd>` and split's left slot when the field isn't
- *  sentiment-mapped. */
-function buildPlainValue(
-	resolved: ResolvedField,
+	options: { includeLabel: boolean } = { includeLabel: false },
 	locale?: LocaleContext,
 	config?: RuneConfig,
 ): SerializedTag {
 	const { field, value } = resolved;
 	const attrs: Record<string, string> = {};
 	if (field.metaType) attrs['data-meta-type'] = field.metaType;
+	if (field.sentimentMap) {
+		const sentiment = field.sentimentMap[value];
+		if (sentiment) attrs['data-meta-sentiment'] = sentiment;
+	}
 	const tag = field.tag ?? 'span';
 	if (tag === 'time' && value) attrs.datetime = value;
-	return makeTag(tag, attrs, [localizedEnumValue(locale, config, value)]);
+	// `datetime` keeps the raw value; only the *displayed* text is enum-localized.
+	const displayValue = localizedEnumValue(locale, config, value);
+
+	if (options.includeLabel && field.label) {
+		const label =
+			localizedLabel(locale, config, resolved.name, field.label, field.i18nKey) ?? field.label;
+		return makeTag(tag, attrs, [
+			makeTag('span', { 'data-meta-label': '' }, [label]),
+			makeTag('span', { 'data-meta-value': '' }, [displayValue]),
+		]);
+	}
+	return makeTag(tag, attrs, [displayValue]);
 }
 
 /** Split a field's value into trimmed non-empty parts using
@@ -1352,15 +1336,6 @@ function splitFieldValue(resolved: ResolvedField): string[] {
 }
 
 // ─── SPEC-080: block-and-layout assembly ──────────────────────────────────
-
-/** metaTypes that render as a chip (`.rf-badge`). Everything else — `id`,
- *  `quantity`, `temporal`, `code`, or no metaType — renders as bare inline
- *  text. Shape is intrinsic to the field, not the layout primitive. */
-const CHIP_METATYPES = new Set(['status', 'category', 'tag']);
-
-function fieldRendersAsChip(field: MetaField): boolean {
-	return field.metaType !== undefined && CHIP_METATYPES.has(field.metaType);
-}
 
 /** A resolved field plus its optional `bar` alignment. */
 interface BarItem {
@@ -1421,7 +1396,7 @@ function buildIconValue(
 }
 
 /** Render one resolved field in its intrinsic shape (link > rating > icon >
- *  chip > bare). */
+ *  value). Whether a value looks like a pill is the stylesheet's (WORK-671). */
 function renderBlockValue(
 	f: ResolvedField,
 	includeLabel = false,
@@ -1431,9 +1406,7 @@ function renderBlockValue(
 	if (f.field.href) return buildLinkValue(f, locale, config);
 	if (f.field.rating) return buildRatingValue(f);
 	if (f.field.icon) return buildIconValue(f, locale, config);
-	return fieldRendersAsChip(f.field)
-		? buildChip(f, { includeLabel }, locale, config)
-		: buildPlainValue(f, locale, config);
+	return buildValue(f, { includeLabel }, locale, config);
 }
 
 /** WORK-679 — a row value names its field, as a definition-list row does
@@ -1512,9 +1485,8 @@ function renderLeadLayout(
 	);
 }
 
-/** `definition-list` block — labelled `<dt>`/`<dd>` pairs, with the dd value
- *  in its intrinsic shape. Mirrors the legacy def-list DOM but selects
- *  chip-vs-bare from the field's metaType rather than `sentimentMap`. */
+/** `definition-list` block — labelled `<dt>`/`<dd>` pairs, each `<dd>`
+ *  holding the field's value element (WORK-671). */
 function renderDefListBlock(
 	blockName: string,
 	fields: ResolvedField[],
@@ -1533,16 +1505,10 @@ function renderDefListBlock(
 				renderBlockValue({ ...f, value: part }, false, locale, config),
 			);
 			dd = makeTag('dd', { 'data-multi-value': '' }, items);
-		} else if (fieldRendersAsChip(f.field)) {
-			dd = makeTag('dd', {}, [buildChip(f, { includeLabel: false }, locale, config)]);
 		} else {
-			const ddAttrs: Record<string, string> = {};
-			if (f.field.metaType) ddAttrs['data-meta-type'] = f.field.metaType;
-			const text =
-				f.field.tag === 'time' && f.value
-					? makeTag('time', { datetime: f.value }, [f.value])
-					: f.value;
-			dd = makeTag('dd', ddAttrs, [text]);
+			// One value element for every kind (WORK-671): its shape is the
+			// stylesheet's, keyed on `data-meta-type`.
+			dd = makeTag('dd', {}, [buildValue(f, { includeLabel: false }, locale, config)]);
 		}
 		return makeTag('div', { 'data-name': 'row', 'data-field': f.name }, [dt, dd]);
 	});

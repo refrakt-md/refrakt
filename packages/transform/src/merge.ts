@@ -25,8 +25,7 @@ export interface IdentityViolation {
 	/** The rune's `theme.runes` key, e.g. `Card`. */
 	rune: string;
 	/** The identity field the override carried, as a concrete path —
-	 *  `sections`, or `metaFields.status.metaType` for a guarded sub-field
-	 *  (SPEC-158 D1). For a refused layout attribute, the field that derives it. */
+	 *  `sections`, or `a.status.b` for a guarded dotted path (SPEC-158 D1). For a refused layout attribute, the field that derives it. */
 	field: string;
 	/** Set when a layout `attrs` map wrote an identity-derived attribute
 	 *  (SPEC-158 D4): the attribute that was refused. */
@@ -150,10 +149,9 @@ export function mergeThemeConfig(
  *
  * With `guardIdentity`, the ADR-028 identity paths (`IDENTITY_FIELDS`) are
  * stripped from the override before merging: a theme may not redefine what a
- * rune *is*, only how it looks. A guarded sub-field (`metaFields.*.metaType`)
- * is dropped while the rest of its entry merges, and the base's value at that
- * path is reasserted — `metaFields` merges per entry, so an override entry
- * would otherwise replace the base entry and erase its type by omission.
+ * rune *is*, only how it looks. A dotted path (`a.*.b`) drops only that
+ * sub-field and lets the rest of its entry merge; `metaFields` itself is
+ * guarded whole (ADR-043, WORK-670).
  * Layout `attrs` that write an identity-derived attribute are dropped while the
  * rest of the wrapper stands (SPEC-158 D4/D5). `variants` is deliberately not
  * guarded here — SPEC-091 lets a theme add axes and override value deltas, and
@@ -182,18 +180,10 @@ export function mergeRuneConfig(
 	const merged: RuneConfig = { ...base, ...effectiveOverride };
 
 	if (base.metaFields || effectiveOverride.metaFields) {
+		// Unguarded merges (a plugin assembling its own runes) merge per entry.
+		// A guarded theme override never reaches here with `metaFields`: it is
+		// identity whole (ADR-043, WORK-670).
 		merged.metaFields = { ...base.metaFields, ...effectiveOverride.metaFields };
-		// SPEC-158 D3 — the rune's declared type stands on every entry the
-		// override replaced, whether it restated the type (stripped above) or
-		// left it out.
-		if (options.guardIdentity && effectiveOverride.metaFields && base.metaFields) {
-			for (const name of Object.keys(effectiveOverride.metaFields)) {
-				const declared = base.metaFields[name]?.metaType;
-				if (declared !== undefined && merged.metaFields[name]?.metaType !== declared) {
-					merged.metaFields[name] = { ...merged.metaFields[name], metaType: declared };
-				}
-			}
-		}
 	}
 
 	if (base.blocks || effectiveOverride.blocks) {

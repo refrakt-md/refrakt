@@ -54,10 +54,11 @@ describe('the identity rule is expressed once', () => {
 			'provides',
 			'schema',
 			// v0.40.0 (SPEC-158) — the guard became path-granular. `sequence` is
-			// ADR-030 rule 3's founding example; `metaFields.*.metaType` is the
-			// first sub-field path. The eight keys above are unchanged.
+			// ADR-030 rule 3's founding example. `metaFields` was first guarded by
+			// one sub-field path (`metaFields.*.metaType`); since WORK-670
+			// (ADR-043) it is identity whole. The eight keys above are unchanged.
 			'sequence',
-			'metaFields.*.metaType',
+			'metaFields',
 		]);
 		expect([...VARIANT_DELTA_RESERVED_FIELDS]).toEqual([...IDENTITY_FIELDS, 'variants']);
 	});

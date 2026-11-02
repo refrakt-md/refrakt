@@ -60,10 +60,13 @@ export const IDENTITY_FIELDS = [
 	 *  information is a fact about the content. `sequenceDirection` is the
 	 *  responsive collapse rule 3 hands the theme, and stays overridable. */
 	'sequence',
-	/** SPEC-158 D3 — what *kind* of field a meta field is. `label`,
-	 *  `sentimentMap` and `transform` stay presentational; the same split
-	 *  `sections` / `blocks` draws, one level down. */
-	'metaFields.*.metaType',
+	/** ADR-043 decision 2 (WORK-670) — every part of a meta field is a claim
+	 *  about content: its kind (`metaType`), its copy (`label`), what its values
+	 *  mean (`sentimentMap`) and how it is formatted (`transform`). SPEC-158 D3
+	 *  guarded only `metaType` and left the rest for a theme to change; a theme
+	 *  now styles fields through `[data-field]` and `[data-meta-type]`, and
+	 *  `blocks` (how fields are grouped and arranged) stays the theme's. */
+	'metaFields',
 ] as const;
 
 export type IdentityField = (typeof IDENTITY_FIELDS)[number];
@@ -122,7 +125,7 @@ export const IDENTITY_FIELD_ATTRIBUTES: Readonly<Record<string, readonly string[
 	mediaSlots: ['data-media'],
 	schema: ['typeof', 'property'],
 	sequence: ['data-sequence'],
-	'metaFields.*.metaType': ['data-meta-type'],
+	metaFields: ['data-meta-type'],
 };
 
 /** The identity field that derives `attribute` on a rune declaring
