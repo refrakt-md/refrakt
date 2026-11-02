@@ -172,6 +172,9 @@ export const steps = createContentModelSchema({
 			},
 			refs: {
 				...pageSectionProperties(headerNodes),
+				// WORK-585 — the item container is named like every other sequence
+				// rune's (`tracks`, `entries`, `stops`): plural of what it holds.
+				steps: stepList,
 			},
 			children,
 		});

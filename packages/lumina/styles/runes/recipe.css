@@ -78,25 +78,15 @@
 		color: var(--rf-color-primary);
 	}
 
-	/* Steps — numbered with styled counters */
+	/* Steps — the number, its circle and the rule between steps are the
+	 * sequence dimension's ([data-sequence="numbered"], BUG-024); the rune sets
+	 * only the rows' spacing. */
 	.rf-recipe__content ol {
-		padding-left: 0;
 		margin: 0;
 	}
 	.rf-recipe__content ol > li {
-		padding: 0.625rem 0;
-		padding-left: 2.25rem;
+		padding-block: 0.625rem;
 		line-height: var(--rf-leading-relaxed);
-	}
-	.rf-recipe__content ol > li + li {
-		border-top: 1px solid var(--rf-color-border);
-	}
-	.rf-recipe__content ol > li::before {
-		font-size: var(--rf-text-xs);
-		font-weight: var(--rf-weight-bold);
-		color: var(--rf-color-primary);
-		background: var(--rf-color-surface);
-		border-radius: var(--rf-radius-full);
 	}
 
 	.rf-recipe__content ol > li > p,

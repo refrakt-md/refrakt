@@ -351,7 +351,7 @@ export const playlist = createContentModelSchema({
 		// collected but this loop did not recognise) still belong in the listing.
 		if (listCursor < trackChildren.length) orderedTracks.push(...trackChildren.slice(listCursor));
 
-		const tracksOl = new Tag('ol', { 'data-name': 'tracks' }, orderedTracks);
+		const tracksOl = new Tag('ol', {}, orderedTracks);
 
 		// Build player element (when player attribute is set)
 		let playerEl: any = null;
@@ -444,6 +444,8 @@ export const playlist = createContentModelSchema({
 			refs: {
 				...sectionProps,
 				body: bodyDiv,
+				// WORK-585 — named through the declared channel, not on the Tag.
+				tracks: tracksOl,
 				media: mediaDiv,
 				// WORK-561 — see the note on `recipe`: `image` is taken by
 				// `sectionProps`, so the media slot's image is `mediaImage`.

@@ -1,4 +1,4 @@
-{% bug id="BUG-024" status="confirmed" severity="minor" source="SPEC-137" tags="dimensions, sequence, css, skeleton, lumina, drift" milestone="v0.45.0" %}
+{% bug id="BUG-024" status="fixed" severity="minor" source="SPEC-137" tags="dimensions, sequence, css, skeleton, lumina, drift" milestone="v0.45.0" %}
 
 # Four runes duplicate the sequence dimension, and which rule wins differs per rune
 
@@ -98,5 +98,18 @@ checks the forward direction only — that every generated selector has CSS
 somewhere. The reverse question, *is this per-rune rule shadowing a dimension it
 should defer to*, has no instrument. {% ref "SPEC-137" /%} builds one, and this
 bug is one of its two motivating cases.
+
+## Resolution
+
+Completed: 2026-11-01
+
+Branch: `claude/milestone-v0-44-0-ism7ni` · PR: refrakt-md/refrakt#748
+
+### What was done
+- Deleted the duplicated counter, marker and between-item rule from skeleton and Lumina `howto.css`, `recipe.css`, `steps.css` and `track.css`. Each rune keeps its own row spacing; track keeps its row flex and cells.
+
+### Notes
+- Checked with before and after screenshots. Playlist is pixel-identical. Howto and recipe now show the dimension's filled marker, which was invisible before because it matched the card background. Steps, howto and recipe take the dimension's compact indent (1.75rem), which their own skins had overridden with 2.25rem.
+- The bug's specificity table missed one thing: the skin layer outranks the skeleton layer, so the per-rune skins also decided the indent and the marker colour, not just specificity within skeleton.
 
 {% /bug %}

@@ -1,6 +1,6 @@
 @layer skin {
-	/* Steps — skin. The counter mechanism, step item layout, badge box placement, and
- * media-position flip live in @refrakt-md/skeleton (styles/runes/steps.css). */
+	/* Steps — skin. The step numbers, their circle and the rule between steps are
+ * the sequence dimension's (BUG-024); the media-position flip is skeleton's. */
 	.rf-steps__preamble {
 		gap: 0.25rem;
 		margin-bottom: 1.5rem;
@@ -18,25 +18,14 @@
 	.rf-steps__image {
 		margin-bottom: 1rem;
 	}
-	.rf-steps ol {
+	.rf-steps__steps {
 		padding-left: 0;
 		margin: 0;
 	}
 
 	/* Individual step — borderless, matching recipe */
 	.rf-step {
-		padding: 0.625rem 0 0.625rem 2.25rem;
-	}
-	.rf-step + .rf-step {
-		border-top: 1px solid var(--rf-color-border);
-	}
-	.rf-step::before {
-		background: var(--rf-color-surface);
-		color: var(--rf-color-primary);
-		border-radius: var(--rf-radius-full);
-		font-weight: var(--rf-weight-bold);
-		font-size: var(--rf-text-xs);
-		font-variant-numeric: tabular-nums;
+		padding-block: 0.625rem;
 	}
 	.rf-step h1,
 	.rf-step h2,
