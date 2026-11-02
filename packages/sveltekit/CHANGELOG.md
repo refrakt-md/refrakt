@@ -1,5 +1,12 @@
 # @refrakt-md/sveltekit
 
+## 0.45.0
+
+### Patch Changes
+
+- @refrakt-md/content@0.45.0
+- @refrakt-md/types@0.45.0
+
 ## 0.44.0
 
 ### Minor Changes

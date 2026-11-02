@@ -1,5 +1,23 @@
 # @refrakt-md/business
 
+## 0.45.0
+
+### Patch Changes
+
+- 8a79b29: Composition templates gain `{% group name="…" layout="bar|ladder" %}`, an engine wrapper that arranges what it holds as a row or a list of peer items without placing a rune (SPEC-156 D2, D3). A child of a bar group written with `align="end"` pushes to the row's end. A definition may declare `sequence: numbered | connected | plain` in its frontmatter: its ladder then renders an `<ol>` stamped with `data-sequence`, and numbered items get their ordinal nodes. Only the ladder is stamped, never an ordered list an author writes inside a step (D12, D14). A definition declaring a sequence without a ladder is rejected (`sequence-without-ladder`), as is a malformed group (`group-invalid`).
+
+  Skeleton gains the unsequenced ladder rule (`[data-zone-layout="ladder"]`: list reset, column flow), and `cast`'s `list` mode now uses it instead of a rule of its own. Lumina gives a numbered ladder's items the step rhythm the native `howto`, `recipe` and `steps` use.
+
+- Updated dependencies [ab22f98]
+- Updated dependencies [8a79b29]
+- Updated dependencies [ac66e7c]
+- Updated dependencies [1e0e648]
+- Updated dependencies [2149da8]
+- Updated dependencies [77ff1cb]
+  - @refrakt-md/runes@0.45.0
+  - @refrakt-md/transform@0.45.0
+  - @refrakt-md/types@0.45.0
+
 ## 0.44.0
 
 ### Patch Changes

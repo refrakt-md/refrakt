@@ -1,5 +1,19 @@
 # @refrakt-md/design
 
+## 0.45.0
+
+### Patch Changes
+
+- Updated dependencies [ab22f98]
+- Updated dependencies [8a79b29]
+- Updated dependencies [ac66e7c]
+- Updated dependencies [1e0e648]
+- Updated dependencies [2149da8]
+- Updated dependencies [77ff1cb]
+  - @refrakt-md/runes@0.45.0
+  - @refrakt-md/transform@0.45.0
+  - @refrakt-md/types@0.45.0
+
 ## 0.44.0
 
 ### Patch Changes

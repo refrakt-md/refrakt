@@ -1,5 +1,64 @@
 # @refrakt-md/lumina
 
+## 0.45.0
+
+### Minor Changes
+
+- 8a79b29: Composition templates gain `{% group name="…" layout="bar|ladder" %}`, an engine wrapper that arranges what it holds as a row or a list of peer items without placing a rune (SPEC-156 D2, D3). A child of a bar group written with `align="end"` pushes to the row's end. A definition may declare `sequence: numbered | connected | plain` in its frontmatter: its ladder then renders an `<ol>` stamped with `data-sequence`, and numbered items get their ordinal nodes. Only the ladder is stamped, never an ordered list an author writes inside a step (D12, D14). A definition declaring a sequence without a ladder is rejected (`sequence-without-ladder`), as is a malformed group (`group-invalid`).
+
+  Skeleton gains the unsequenced ladder rule (`[data-zone-layout="ladder"]`: list reset, column flow), and `cast`'s `list` mode now uses it instead of a rule of its own. Lumina gives a numbered ladder's items the step rhythm the native `howto`, `recipe` and `steps` use.
+
+- ac66e7c: `prominence` gains a fifth step, `marquee`, above `display`: a landing page's opening band (SPEC-183). Each step now sizes the whole header, not just its title, and Lumina publishes the values as custom properties a theme can retune.
+
+  - **`marquee`** ramps the title to 13/6 of the resting size (3.25rem from the default).
+  - **The blurb grows** from `prominent` up: `text-lg` at `prominent` and `display`, `text-xl` at `marquee`. The header's gaps widen with it.
+  - **A flush band at `display` or `marquee` takes a band's padding**: 3.5rem / 3rem and 7rem / 6.5rem, less on narrow screens. A cover band moves it onto the overlaid content.
+  - **Lumina draws `display` and `marquee` titles as a gradient.** It is dropped under forced colours and never reaches a nested rune's title.
+  - **Large buttons now come with `marquee` only.** A `display` or `prominent` section's actions take the default size.
+  - **A loud header is set wide, and its blurb carries the measure**: at `display` and `marquee` the header takes the column's width and the blurb stops at 40rem. A flush band at those steps is padded 2rem inline.
+
+- 2149da8: A numbered sequence's ordinal is a node, not a CSS counter (WORK-583). The engine puts each item's number first in the item, `<span data-name="ordinal" data-meta-type="quantity">3</span>` with the rune's element class (`rf-steps__ordinal`), so it can be selected, copied and read in order. An item's own position wins (a track's `number=`), the rest count on from it, and an `<ol start>` sets the first. `connected` and `plain` sequences are unchanged.
+
+  **For theme authors:** style the number with `[data-sequence="numbered"] > li > [data-name="ordinal"]`. A rule on `[data-sequence="numbered"] > li::before` no longer matches anything, and the `sequence` counter is gone. Lumina renders identically.
+
+- 77ff1cb: `track` declares its artist, running time and date as `metaFields` with a `details` block, so the engine renders them instead of the rune building spans (SPEC-156 D7). The row form is unchanged in Lumina, and a new `meta="byline"` sets the details beneath the track's name. It is a `variants` entry, which a theme can restyle. `playlist` takes `meta` too, for every track it lists.
+
+  A playlist's list-form tracks are now `track` items, rendered through the same config as a nested `{% track %}`, so the two forms produce the same markup. A playlist's tracks are rows of its listing, so they are `flush` rather than cards. A nested track also shows the playlist's artist, as a list item always did. Chapters and lyrics in a list-form track now take the track's cue-point styling.
+
+  The engine gains a `clock` meta-field transform (`3:36`, `1:02:03`). `bar` and `lead` block values now carry `data-field`, as definition-list rows do.
+
+  **For theme authors:** `rf-track__track-artist`, `rf-track__track-duration` and `rf-track__track-meta` are gone. Style `.rf-track__details > [data-field="artist" | "duration" | "date"]`, and the byline under `.rf-track[data-meta="byline"]`. Playlist list items now carry `rf-track`. The JSON-LD is unchanged. In the RDFa, a list item's `byArtist` and `datePublished` now ride hidden metas, as a nested track's always did.
+
+### Patch Changes
+
+- ab22f98: Fixes found reviewing the composed `hero` on staging.refrakt.md:
+
+  - **A `{% bg %}` or `{% tint %}` in a composed rune lands on its paint carrier**, as the `bg` and `tint` attributes already did, rather than on the empty root. A backdrop was positioned against the page and filled the viewport's height rather than the band.
+  - **A rune carrying a background is its layer's containing block** (`position: relative`, at zero specificity). A plain `section` with a `{% bg %}` had the same bug.
+  - **A full-width composed rune pads its carrier**, not its empty root, so the carrier's background, cover well and surface fill the bleed.
+  - **A stacked `end` split puts its media after the content**, whatever the source order. Every split rune: `section`, `card` and the rest.
+  - **A section header is start-aligned by default and never wider than its column**, so a pill eyebrow keeps its width and a long word overflows a centred header evenly.
+  - **A `display` or `marquee` title builds its gradient from its own colours**, so a cover band's light-on-dark title stays light.
+
+- 4066143: A `lead` block is set small throughout, the lead value included: a byline is fine print. The lead stays distinguished by weight and colour. It matches the plugin `testimonial`'s byline.
+- 7180562: On a phone (below 640px of container width) the loud headlines step down so a long word fits the line: `prominence="marquee"` titles to 2.5rem and `display` titles to 2rem, and the `hero` and `cta` headlines to the same sizes.
+- 1e0e648: `pullquote` no longer nests a quotation in a quotation. When its content is a blockquote, the pull quote is the one `<blockquote>`: it takes the authored blockquote's paragraphs and its attributes, so a schema `property` placed on it lands on the pull quote. Lumina's reset for the inner blockquote is removed; the pull quote renders the same.
+- 6b90f01: `howto`, `recipe`, `steps` and `track` no longer hand-roll a counter the `sequence` dimension already provides (BUG-024). A theme rule on `[data-sequence="numbered"] > li` now reaches all four; before, it was ignored on `howto` and `recipe`. Visible in Lumina: `howto` and `recipe` step numbers get the dimension's filled circle (as `steps` already had), and the three runes' compact items take the dimension's compact indent.
+- 6b90f01: `steps` names its item container (`data-name="steps"`, `.rf-steps__steps`), so a layout can address it and its styles no longer reach an `<ol>` an author writes inside a step. `playlist` names its `tracks` list through `refs`, with identical output.
+- Updated dependencies [ab22f98]
+- Updated dependencies [8a79b29]
+- Updated dependencies [ac66e7c]
+- Updated dependencies [1e0e648]
+- Updated dependencies [6b90f01]
+- Updated dependencies [2149da8]
+- Updated dependencies [f315698]
+- Updated dependencies [6b90f01]
+- Updated dependencies [77ff1cb]
+  - @refrakt-md/runes@0.45.0
+  - @refrakt-md/skeleton@0.45.0
+  - @refrakt-md/transform@0.45.0
+  - @refrakt-md/types@0.45.0
+
 ## 0.44.0
 
 ### Minor Changes
