@@ -1,5 +1,12 @@
 # @refrakt-md/proof-skin
 
+## 0.46.0
+
+### Patch Changes
+
+- Updated dependencies [d2b8962]
+  - @refrakt-md/skeleton@0.46.0
+
 ## 0.45.0
 
 ### Patch Changes
