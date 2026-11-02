@@ -31,7 +31,14 @@ export type LayoutPrimitive = 'definition-list' | 'bar' | 'lead';
  * Named rather than a function so a `RuneConfig` stays plain data and can
  * cross a JSON boundary (WORK-608).
  */
-export type NamedTransform = 'duration' | 'uppercase' | 'capitalize' | 'align' | 'fr' | 'gap';
+export type NamedTransform =
+	| 'duration'
+	| 'clock'
+	| 'uppercase'
+	| 'capitalize'
+	| 'align'
+	| 'fr'
+	| 'gap';
 
 /** SPEC-080 block definition — a named group of meta-fields rendered by a
  *  layout primitive. Field shape (chip vs bare) is intrinsic to each field's

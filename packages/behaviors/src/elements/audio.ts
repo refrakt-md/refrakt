@@ -167,7 +167,7 @@ export class RfAudio extends SafeHTMLElement {
 
 		for (const item of trackItems) {
 			const name = item.querySelector('[data-name="track-name"]')?.textContent || '';
-			const artist = item.querySelector('[data-name="track-artist"]')?.textContent || '';
+			const artist = item.querySelector('[data-field="artist"]')?.textContent || '';
 			const src = item.dataset.src || '';
 			tracks.push({ src, name, artist });
 		}

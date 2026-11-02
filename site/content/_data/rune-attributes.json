@@ -3571,6 +3571,16 @@
 			"page": "playlist"
 		},
 		{
+			"rune": "playlist",
+			"plugin": "@refrakt-md/media",
+			"scope": "own",
+			"name": "meta",
+			"type": "\"row\" | \"byline\"",
+			"required": false,
+			"description": "Where each track's artist, date and running time sit: in its row (`row`) or beneath its name (`byline`). A track's own `meta` wins.",
+			"page": "playlist"
+		},
+		{
 			"rune": "plot",
 			"plugin": "@refrakt-md/storytelling",
 			"scope": "own",
@@ -4838,6 +4848,16 @@
 			"type": "\"song\" | \"episode\" | \"chapter\" | \"talk\" | \"video\"",
 			"required": false,
 			"description": "Media category: song, episode, chapter, talk, or video.",
+			"page": "track"
+		},
+		{
+			"rune": "track",
+			"plugin": "@refrakt-md/media",
+			"scope": "own",
+			"name": "meta",
+			"type": "\"row\" | \"byline\"",
+			"required": false,
+			"description": "Where the artist, date and running time sit: in the row beside the name (`row`), or beneath it (`byline`). A playlist passes its own to its tracks.",
 			"page": "track"
 		},
 		{

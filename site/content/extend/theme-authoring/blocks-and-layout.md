@@ -208,12 +208,15 @@ fields are **unlabelled** (eyebrow-style).
 ```html
 <div class="rf-work__meta" data-name="meta" data-zone-layout="bar">
   <span class="rf-badge" data-meta-type="status"
-        data-meta-sentiment="positive">done</span>
+        data-meta-sentiment="positive" data-field="status">done</span>
   <span class="rf-badge" data-meta-type="category"
-        data-meta-sentiment="caution" data-align="end">high</span>
+        data-meta-sentiment="caution" data-align="end" data-field="priority">high</span>
 </div>
 ```
 
+- Each value names its field with `data-field`, as a `definition-list`
+  row does, so a theme can address one value (`[data-field="priority"]`)
+  without a class per rune. `lead` values carry it too.
 - A field with `align: 'end'` gets `data-align="end"`. In CSS that field
   takes `margin-left: auto`, pushing it (and everything after it) to the
   right edge.

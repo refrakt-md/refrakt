@@ -87,35 +87,8 @@
 		white-space: nowrap;
 	}
 
-	/* Track artist */
-	.rf-playlist__tracks [data-name="track-artist"] {
-		font-size: var(--rf-text-sm);
-		color: var(--rf-color-muted);
-	}
-	.rf-playlist__tracks [data-name="track-artist"]::before {
-		content: "\00b7";
-		margin-right: 0.5rem;
-		opacity: 0.5;
-	}
-
-	/* Track duration — pushed right */
-	.rf-playlist__tracks [data-name="track-duration"] {
-		font-size: var(--rf-text-sm);
-		color: var(--rf-color-muted);
-		font-variant-numeric: tabular-nums;
-		text-align: right;
-	}
-
-	/* Track meta (date etc.) */
-	.rf-playlist__tracks [data-name="track-meta"] {
-		font-size: var(--rf-text-xs);
-		color: var(--rf-color-muted);
-	}
-	.rf-playlist__tracks [data-name="track-meta"]::before {
-		content: "\00b7";
-		margin-right: 0.5rem;
-		opacity: 0.5;
-	}
+	/* The artist, running time and date are every track's details block
+	 * (WORK-679), styled once in track.css for both track forms. */
 
 	/* Player area */
 	.rf-playlist__player {

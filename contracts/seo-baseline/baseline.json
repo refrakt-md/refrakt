@@ -1616,9 +1616,9 @@
 										"text": "Speak to Me"
 									},
 									{
-										"element": "span",
-										"property": "byArtist",
-										"text": "Pink Floyd"
+										"content": "Pink Floyd",
+										"element": "meta",
+										"property": "byArtist"
 									},
 									{
 										"content": "PT73S",
@@ -1638,9 +1638,9 @@
 										"text": "Breathe"
 									},
 									{
-										"element": "span",
-										"property": "byArtist",
-										"text": "Pink Floyd"
+										"content": "Pink Floyd",
+										"element": "meta",
+										"property": "byArtist"
 									},
 									{
 										"content": "PT163S",
@@ -1660,9 +1660,9 @@
 										"text": "Time"
 									},
 									{
-										"element": "span",
-										"property": "byArtist",
-										"text": "Pink Floyd"
+										"content": "Pink Floyd",
+										"element": "meta",
+										"property": "byArtist"
 									},
 									{
 										"content": "PT425S",
@@ -1857,9 +1857,9 @@
 										"text": "Speak to Me"
 									},
 									{
-										"element": "span",
-										"property": "byArtist",
-										"text": "Pink Floyd"
+										"content": "Pink Floyd",
+										"element": "meta",
+										"property": "byArtist"
 									},
 									{
 										"content": "PT73S",
@@ -1879,9 +1879,9 @@
 										"text": "Breathe"
 									},
 									{
-										"element": "span",
-										"property": "byArtist",
-										"text": "Pink Floyd"
+										"content": "Pink Floyd",
+										"element": "meta",
+										"property": "byArtist"
 									},
 									{
 										"content": "PT163S",
@@ -1987,9 +1987,9 @@
 										"text": "Nightcall"
 									},
 									{
-										"element": "span",
-										"property": "byArtist",
-										"text": "Various"
+										"content": "Various",
+										"element": "meta",
+										"property": "byArtist"
 									},
 									{
 										"content": "PT258S",
@@ -2009,9 +2009,9 @@
 										"text": "Midnight City"
 									},
 									{
-										"element": "span",
-										"property": "byArtist",
-										"text": "Various"
+										"content": "Various",
+										"element": "meta",
+										"property": "byArtist"
 									},
 									{
 										"content": "PT243S",
@@ -2104,9 +2104,9 @@
 										"property": "duration"
 									},
 									{
-										"element": "span",
-										"property": "datePublished",
-										"text": "March 2025"
+										"content": "March 2025",
+										"element": "meta",
+										"property": "datePublished"
 									}
 								],
 								"element": "li",
@@ -2126,9 +2126,9 @@
 										"property": "duration"
 									},
 									{
-										"element": "span",
-										"property": "datePublished",
-										"text": "February 2025"
+										"content": "February 2025",
+										"element": "meta",
+										"property": "datePublished"
 									}
 								],
 								"element": "li",
@@ -2211,9 +2211,9 @@
 										"property": "duration"
 									},
 									{
-										"element": "span",
-										"property": "datePublished",
-										"text": "January 2025"
+										"content": "January 2025",
+										"element": "meta",
+										"property": "datePublished"
 									}
 								],
 								"element": "li",
@@ -2233,9 +2233,9 @@
 										"property": "duration"
 									},
 									{
-										"element": "span",
-										"property": "datePublished",
-										"text": "February 2025"
+										"content": "February 2025",
+										"element": "meta",
+										"property": "datePublished"
 									}
 								],
 								"element": "li",
@@ -2303,9 +2303,9 @@
 										"text": "Speak to Me"
 									},
 									{
-										"element": "span",
-										"property": "byArtist",
-										"text": "Pink Floyd"
+										"content": "Pink Floyd",
+										"element": "meta",
+										"property": "byArtist"
 									},
 									{
 										"content": "PT73S",

@@ -132,7 +132,6 @@ const KNOWN_DUPLICATES: Record<string, string[]> = {
 	'how-to': ['tool', 'step'],
 	mockup: ['traffic-light'],
 	pagination: ['marker', 'label'],
-	playlist: ['track-name', 'track-artist', 'track-duration', 'duration', 'track-meta'],
 	recipe: ['ingredient', 'step'],
 	typography: [
 		'specimen',

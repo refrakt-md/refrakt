@@ -29,21 +29,18 @@ Breathe
 Bohemian Rhapsody
 {% /track %}`);
 
-		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'track');
-		const artist = findTag(tag!, (t) => t.attributes['data-name'] === 'track-artist');
-		expect(artist).toBeDefined();
-		expect(artist!.children).toContain('Queen');
+		// WORK-679 — the value rides the field bag; the engine renders it.
+		const track = findTag(result as any, (t) => t.attributes['data-rune'] === 'track');
+		expect(JSON.parse(String(track!.attributes['data-rune-fields'])).artist).toBe('Queen');
 	});
 
-	it('should format ISO 8601 duration', () => {
+	it('should carry an ISO 8601 duration as written', () => {
 		const result = parse(`{% track duration="PT5M55S" %}
 Track
 {% /track %}`);
 
-		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'track');
-		const duration = findTag(tag!, (t) => t.attributes['data-name'] === 'track-duration');
-		expect(duration).toBeDefined();
-		expect(duration!.children).toContain('5:55');
+		const track = findTag(result as any, (t) => t.attributes['data-rune'] === 'track');
+		expect(JSON.parse(String(track!.attributes['data-rune-fields'])).duration).toBe('PT5M55S');
 	});
 
 	it('should work with music-recording legacy name', () => {
