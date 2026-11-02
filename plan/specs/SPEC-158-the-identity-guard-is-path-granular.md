@@ -123,6 +123,10 @@ collapse, which rule 3 hands the theme in as many words.
 The same split `sections` / `blocks` already draws, one level down. A theme restyles how a
 field is presented and may not restate what kind of field it is.
 
+*(Superseded in part by {% ref "ADR-043" /%} decision 2, implemented in WORK-670: `label`,
+`sentimentMap` and `transform` are claims about content too, so all of `metaFields` is identity. A
+theme keeps `blocks`, and styles fields through `[data-field]` and `[data-meta-type]`.)*
+
 ### D4 — an `attrs` map may not set an attribute that an identity field derives
 
 Stated by inversion rather than as a deny-list, so it cannot drift: each identity field has a

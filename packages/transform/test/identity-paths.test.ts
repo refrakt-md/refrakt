@@ -2,7 +2,8 @@
  * SPEC-158 — the identity guard is path-granular.
  *
  * ADR-028's guard was key-granular, and two of the things that need protecting
- * are not keys: `metaFields.*.metaType` is a sub-field, and a layout `attrs`
+ * are not keys: `metaFields.*.metaType` was a sub-field (all of `metaFields` is
+ * identity since WORK-670), and a layout `attrs`
  * map can write an attribute an identity field derives without touching the
  * field. `sequence` was simply missing. Each case below is dropped and
  * reported, never thrown (D5): the rest of the override still merges.
@@ -28,24 +29,29 @@ function collect(): { violations: IdentityViolation[]; sink: (v: IdentityViolati
 afterEach(() => vi.restoreAllMocks());
 
 describe('findReservedFields resolves paths (D1)', () => {
+	// The wildcard mechanism outlived its first user: `metaFields` is identity
+	// whole since WORK-670. The path is passed explicitly to keep it tested.
+	const WILD = ['metaFields.*.metaType'];
+
 	it('expands a wildcard segment to concrete paths, in key order', () => {
 		expect(
-			findReservedFields({
-				metaFields: { status: { metaType: 'category' }, owner: { label: 'Owner' } },
-			}),
+			findReservedFields(
+				{ metaFields: { status: { metaType: 'category' }, owner: { label: 'Owner' } } },
+				WILD,
+			),
 		).toEqual(['metaFields.status.metaType']);
 	});
 
 	it('keeps presence semantics per segment — an explicit undefined is still a violation', () => {
-		expect(findReservedFields({ metaFields: { status: { metaType: undefined } } })).toEqual([
+		expect(findReservedFields({ metaFields: { status: { metaType: undefined } } }, WILD)).toEqual([
 			'metaFields.status.metaType',
 		]);
 		expect(findReservedFields({ sequence: undefined })).toEqual(['sequence']);
 	});
 
 	it('does not match a wildcard path through a missing or non-object segment', () => {
-		expect(findReservedFields({ metaFields: undefined })).toEqual([]);
-		expect(findReservedFields({ layout: { root: ['metaType'] } })).toEqual([]);
+		expect(findReservedFields({ metaFields: undefined }, WILD)).toEqual([]);
+		expect(findReservedFields({ layout: { root: ['metaType'] } }, WILD)).toEqual([]);
 	});
 });
 
@@ -107,64 +113,61 @@ describe('`sequence` is identity; `sequenceDirection` is not (D2)', () => {
 	});
 });
 
-describe('`metaFields.*.metaType` is identity; label and sentimentMap are not (D3)', () => {
+describe('all of `metaFields` is identity (ADR-043 decision 2, WORK-670)', () => {
 	const work: RuneConfig = {
 		block: 'work',
 		metaFields: {
 			status: { metaType: 'status', label: 'Status', sentimentMap: { done: 'positive' } },
 			priority: { metaType: 'category', label: 'Priority' },
 		},
+		blocks: { meta: { fields: ['status', 'priority'], layout: 'bar' } },
 	};
 
-	it('drops metaType while that entry’s label and sentimentMap merge, on one override', () => {
+	for (const [what, entry] of [
+		['metaType', { metaType: 'category' as const }],
+		['label', { label: 'State' }],
+		['sentimentMap', { sentimentMap: { done: 'neutral' as const } }],
+		['transform', { transform: 'uppercase' as const }],
+	] as const) {
+		it(`drops and reports an override of \`${what}\`; the declaration stands`, () => {
+			const { violations, sink } = collect();
+			const merged = mergeThemeConfig(
+				themeConfig({ Work: work }),
+				{ runes: { Work: { metaFields: { status: entry } } } },
+				undefined,
+				sink,
+			);
+			expect(merged.runes.Work.metaFields).toEqual(work.metaFields);
+			expect(violations).toHaveLength(1);
+			expect(violations[0]).toMatchObject({
+				rune: 'Work',
+				field: 'metaFields',
+				path: 'runes.Work.metaFields',
+			});
+		});
+	}
+
+	it('`blocks` stays the theme’s: how fields are grouped and arranged is presentation', () => {
 		const { violations, sink } = collect();
 		const merged = mergeThemeConfig(
 			themeConfig({ Work: work }),
 			{
 				runes: {
 					Work: {
-						metaFields: {
-							status: {
-								metaType: 'category',
-								label: 'State',
-								sentimentMap: { done: 'neutral', blocked: 'negative' },
-							},
-						},
+						metaFields: { status: { label: 'State' } },
+						blocks: { meta: { fields: ['priority', 'status'], layout: 'definition-list' } },
 					},
 				},
 			},
 			undefined,
 			sink,
 		);
-
-		expect(merged.runes.Work.metaFields?.status).toEqual({
-			metaType: 'status',
-			label: 'State',
-			sentimentMap: { done: 'neutral', blocked: 'negative' },
+		expect(merged.runes.Work.blocks?.meta).toEqual({
+			fields: ['priority', 'status'],
+			layout: 'definition-list',
 		});
-		// The sibling field is untouched.
-		expect(merged.runes.Work.metaFields?.priority).toEqual(work.metaFields?.priority);
-		expect(violations).toHaveLength(1);
-		expect(violations[0]).toMatchObject({
-			rune: 'Work',
-			field: 'metaFields.status.metaType',
-			path: 'runes.Work.metaFields.status.metaType',
-		});
-	});
-
-	it('an entry that omits metaType keeps the declared one — omission cannot erase it', () => {
-		// `metaFields` merges per entry, so an override entry replaces the base
-		// entry. Without reasserting the declared type, leaving it out would
-		// untype the field as surely as restating it.
-		const { violations, sink } = collect();
-		const merged = mergeThemeConfig(
-			themeConfig({ Work: work }),
-			{ runes: { Work: { metaFields: { status: { label: 'State' } } } } },
-			undefined,
-			sink,
-		);
-		expect(merged.runes.Work.metaFields?.status).toEqual({ metaType: 'status', label: 'State' });
-		expect(violations).toEqual([]);
+		expect(merged.runes.Work.metaFields).toEqual(work.metaFields);
+		expect(violations.map((v) => v.field)).toEqual(['metaFields']);
 	});
 
 	it('does not mutate the override it was handed', () => {
@@ -253,7 +256,7 @@ describe('a layout `attrs` map may not set an identity-derived attribute (D4)', 
 	it('derives the refusal from the field, including a declared modifier’s attribute', () => {
 		expect(derivedAttributeOwner('data-section')).toBe('sections');
 		expect(derivedAttributeOwner('data-sequence')).toBe('sequence');
-		expect(derivedAttributeOwner('data-meta-type')).toBe('metaFields.*.metaType');
+		expect(derivedAttributeOwner('data-meta-type')).toBe('metaFields');
 		expect(derivedAttributeOwner('data-prep-time', ['prepTime'])).toBe('modifiers');
 		expect(derivedAttributeOwner('data-prep-time')).toBeUndefined();
 	});

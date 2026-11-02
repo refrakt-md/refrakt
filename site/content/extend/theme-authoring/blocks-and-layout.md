@@ -160,11 +160,15 @@ wrappers exist in the transform output — `layout` builds them all.
 The shape a field value renders as is decided by its `metaType` and any
 decorations, **independently of the block's layout primitive**.
 
-### Chip vs. bare
+### Pill vs. bare
 
-- **Chip** (`.rf-badge`): `metaType` ∈ {`status`, `category`, `tag`}.
-- **Bare inline text**: `metaType` ∈ {`id`, `quantity`, `temporal`,
-  `code`}, or no `metaType`.
+The engine emits one value element for every field, carrying its
+`data-meta-type` (and `data-meta-sentiment` when mapped), and **no class**
+(ADR-043). The base stylesheet decides the look from the type:
+
+- **Pill**: `[data-meta-type]` ∈ {`status`, `category`, `tag`}.
+- **Bare inline text**: `id`, `quantity`, `temporal`, `code`, or no
+  `metaType`.
 
 ### Typography (via `data-meta-type`)
 
@@ -172,8 +176,9 @@ decorations, **independently of the block's layout primitive**.
 - `quantity` / `temporal` → tabular-nums.
 - `id` additionally renders in the primary color (semantic emphasis).
 
-`data-meta-type` is typography only — geometry comes from
-`[data-zone-layout]` and the `.rf-badge` class.
+A theme restyles the pill by those same selectors. Geometry around the
+values comes from `[data-zone-layout]`. Only the `{% badge %}` rune keeps
+the `.rf-badge` class, and the pill rule covers it too.
 
 ### Rich renderings (decorations)
 
@@ -207,9 +212,9 @@ fields are **unlabelled** (eyebrow-style).
 
 ```html
 <div class="rf-work__meta" data-name="meta" data-zone-layout="bar">
-  <span class="rf-badge" data-meta-type="status"
+  <span data-meta-type="status"
         data-meta-sentiment="positive" data-field="status">done</span>
-  <span class="rf-badge" data-meta-type="category"
+  <span data-meta-type="category"
         data-meta-sentiment="caution" data-align="end" data-field="priority">high</span>
 </div>
 ```
@@ -237,8 +242,8 @@ field, each holding a `<dt data-meta-label>` and a `<dd>`.
   <div data-name="row" data-field="tags">
     <dt data-meta-label>Tags</dt>
     <dd data-multi-value>
-      <span class="rf-badge" data-meta-type="tag">api</span>
-      <span class="rf-badge" data-meta-type="tag">docs</span>
+      <span data-meta-type="tag">api</span>
+      <span data-meta-type="tag">docs</span>
     </dd>
   </div>
 </dl>

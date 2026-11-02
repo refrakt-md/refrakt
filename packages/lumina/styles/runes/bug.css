@@ -18,7 +18,7 @@
 		margin-bottom: 1.5rem;
 	}
 
-	.rf-bug__metadata [data-field="assignee"] dd .rf-badge::before {
+	.rf-bug__metadata [data-field="assignee"] dd > [data-meta-type]::before {
 		content: "@";
 	}
 

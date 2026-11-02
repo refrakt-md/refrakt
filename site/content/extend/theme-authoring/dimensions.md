@@ -27,7 +27,7 @@ Universal theming dimensions solve this. A handful of semantic data attributes d
 
 The first three style metadata content. **Meta type** and **sentiment** describe the field itself; **zone layout** describes the geometric shape around groups of fields. The remaining dimensions style the rune's structure, content, and behavior.
 
-> **Type-vs-layout split.** `data-meta-type` is *typography only* — it controls monospace for `id` / `code`, tabular nums for `quantity` / `temporal`, primary color for `id`, and nothing else. The geometric shape (chip pill, plain text, def-list cell) comes from `data-zone-layout` and the universal `.rf-badge` class. The same field renders as a chip in one block and as plain text in another with no per-field config change — the field's `metaType` and decorations decide its intrinsic shape, the block's layout primitive decides the surrounding geometry.
+> **Type-vs-layout split.** `data-meta-type` says what a value *is*, and the stylesheet decides its look from it: a pill for `status` / `category` / `tag`, monospace for `id` / `code`, tabular nums for `quantity` / `temporal`, primary color for `id`. The engine adds no class (ADR-043). The arrangement around the values (bar row, def-list cell) comes from `data-zone-layout`. The same field renders as a chip in one block and as plain text in another with no per-field config change — the field's `metaType` and decorations decide its intrinsic shape, the block's layout primitive decides the surrounding geometry.
 
 ---
 
@@ -87,9 +87,9 @@ Recipe: {
 
 > **Removed in v0.18.0 (WORK-313):** the `slots` array + slot-based assembly,
 > and the automatic universal `.rf-badge` class on meta-typed `StructureEntry`
-> children. A `StructureEntry` that should render as a chip must now set its own
-> `class` via `attrs`. The before/after `structure` assembly itself is
-> unchanged.
+> children. The before/after `structure` assembly itself is unchanged. Since
+> WORK-671 no class is needed at all: a `status`, `category` or `tag` entry is
+> drawn as a pill by the stylesheet, from its `data-meta-type`.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -98,27 +98,22 @@ Recipe: {
 
 ### How the engine emits them
 
-When a field renders as a chip (`metaType` is `status`, `category`, or `tag`), the engine emits `class="rf-badge"` plus the meta attributes:
+Every field value is one element carrying its meta attributes, and no class. The engine states what the value is; whether it looks like a pill is the stylesheet's (ADR-043 decision 3):
 
 ```html
-<!-- A recipe badge for difficulty="easy" -->
-<span class="rf-badge"
-      data-meta-type="category"
+<!-- A recipe's difficulty="easy": a category, so the base stylesheet draws a pill -->
+<span data-meta-type="category"
       data-meta-sentiment="positive">easy</span>
-```
 
-For bare values (`id`, `quantity`, `temporal`, `code`, or no `metaType`), the chip class is omitted and only typography hints carry through:
-
-```html
-<!-- A complexity value in a def-list <dd> -->
-<dd data-meta-type="quantity">moderate</dd>
+<!-- A complexity value in a def-list <dd>: a quantity, so bare text -->
+<dd><span data-meta-type="quantity">moderate</span></dd>
 ```
 
 When no `sentimentMap` is provided, or the current value has no mapping, `data-meta-sentiment` is omitted and the value renders neutrally.
 
 ### Meta type CSS
 
-Each type gets typography only — monospace for `id` / `code`, tabular-nums for `quantity` / `temporal`, primary color for `id`, nothing else for the rest. Geometry (chip pill, definition list grid, bar row) lives on `[data-zone-layout]` selectors.
+Each type gets its look from these selectors — monospace for `id` / `code`, tabular-nums for `quantity` / `temporal`, primary color for `id`, and the pill for `status` / `category` / `tag`. The arrangement (definition list grid, bar row) lives on `[data-zone-layout]` selectors.
 
 ```css
 [data-meta-type="id"],
@@ -136,7 +131,21 @@ Each type gets typography only — monospace for `id` / `code`, tabular-nums for
 }
 ```
 
-The chip primitive (universal `.rf-badge`) supplies the pill shape, sentiment-tinted background, and compact padding. Layout selectors supply the surrounding arrangement (bar row, def-list grid).
+The pill is keyed on the type, and on `{% badge %}`'s own class:
+
+```css
+.rf-badge,
+[data-meta-type="status"],
+[data-meta-type="category"],
+[data-meta-type="tag"] {
+  white-space: nowrap;           /* skeleton */
+  padding: 0.125rem 0.5rem;      /* skin: shape, sentiment-tinted fill */
+  border-radius: var(--rf-radius-sm);
+  background: color-mix(in srgb, var(--meta-color, var(--rf-color-muted)) 10%, transparent);
+}
+```
+
+Layout selectors supply the surrounding arrangement (bar row, def-list grid).
 
 ### Sentiment CSS
 
@@ -648,7 +657,7 @@ WineTasting: {
 Without any theme-specific CSS for this rune:
 - The vintage renders as bare temporal text (tabular nums) in its `<dd>`
 - The rating renders as bare quantity text, tinted by its sentiment color
-- The varietal renders as a tag chip (`.rf-badge`)
+- The varietal renders as a tag pill (`[data-meta-type="tag"]`)
 - Sections get standard layout (header flex-row, title bold, body standard)
 - The label image gets thumbnail treatment
 - In a grid, density drops to compact automatically

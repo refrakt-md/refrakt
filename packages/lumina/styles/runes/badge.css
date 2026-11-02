@@ -1,9 +1,8 @@
 @layer skin {
-	/* Badge rune — standalone inline chip.
- *
- * The universal chip primitive emitted by `{% badge %}` AND by every
- * chip-type field a block renders (`bar` chips, `definition-list` `<dd>`
- * for chip-type fields). Tints come from the
+	/* The pill — `{% badge %}` (its `rf-badge` class) and every `status`,
+ * `category` or `tag` value a block renders, keyed on `data-meta-type`
+ * (ADR-043 decision 3, WORK-671: the engine states what a value is, the
+ * stylesheet how it looks). Tints come from the
  * universal `--meta-color` set by `dimensions/metadata.css`'s
  * sentiment rules (positive / caution / negative / neutral → success
  * / warning / danger / muted). Background is a `color-mix` of that
@@ -11,7 +10,10 @@
  * gives `--meta-color` works without per-status selectors.
  */
 
-	.rf-badge {
+	.rf-badge,
+	[data-meta-type="status"],
+	[data-meta-type="category"],
+	[data-meta-type="tag"] {
 		vertical-align: baseline;
 		border: none;
 		background: color-mix(in srgb, var(--meta-color, var(--rf-color-muted)) 10%, transparent);
@@ -20,6 +22,5 @@
 		font-weight: var(--rf-weight-medium);
 		padding: 0.125rem 0.5rem;
 		border-radius: var(--rf-radius-sm);
-		white-space: nowrap;
 	}
 }

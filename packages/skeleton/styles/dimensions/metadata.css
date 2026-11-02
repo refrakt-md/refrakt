@@ -10,6 +10,16 @@
 	display: inline-flex;
 }
 
+/* The pill (ADR-043 decision 3, WORK-671) — `{% badge %}` and every
+ * `status`, `category` or `tag` value: one unbroken unit. Its fill, colour,
+ * padding and radius are skin. */
+.rf-badge,
+[data-meta-type="status"],
+[data-meta-type="category"],
+[data-meta-type="tag"] {
+	white-space: nowrap;
+}
+
 /* ── Layout: bar (SPEC-080) ──
  * Horizontal flex row of fields; wraps by default (`data-wrap="false"` keeps it
  * on one line); a field tagged `data-align="end"` (and everything after it) is

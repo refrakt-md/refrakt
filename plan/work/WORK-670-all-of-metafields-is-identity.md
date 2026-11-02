@@ -1,4 +1,4 @@
-{% work id="WORK-670" status="ready" priority="medium" complexity="simple" source="ADR-043" tags="theme, identity, metadata, config" milestone="v0.46.0" %}
+{% work id="WORK-670" status="in-progress" priority="medium" complexity="simple" source="ADR-043" tags="theme, identity, metadata, config" milestone="v0.46.0" %}
 
 # All of metaFields is identity
 
@@ -10,10 +10,10 @@ means, and `transform` names a kind of formatting whose style is now `formats`
 
 ## Acceptance Criteria
 
-- [ ] `IDENTITY_FIELDS` names `metaFields` in place of `metaFields.*.metaType`, and a theme override of any part of it is reported and dropped
-- [ ] No first-party theme or preset trips the guard
-- [ ] SPEC-158 D3 carries a note pointing to ADR-043
-- [ ] The changeset names the break for third-party themes that override `label`, `sentimentMap` or `transform`, with the migration: change the definition, or style through `[data-field]` and `[data-value]`
+- [x] `IDENTITY_FIELDS` names `metaFields` in place of `metaFields.*.metaType`, and a theme override of any part of it is reported and dropped
+- [x] No first-party theme or preset trips the guard
+- [x] SPEC-158 D3 carries a note pointing to ADR-043
+- [x] The changeset names the break for third-party themes that override `label`, `sentimentMap` or `transform`, with the migration: change the definition, or style through `[data-field]` and `[data-value]`
 
 ## References
 

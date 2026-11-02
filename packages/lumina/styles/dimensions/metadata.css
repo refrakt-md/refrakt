@@ -133,6 +133,22 @@
 	[data-zone-layout="definition-list"] dd {
 		font-size: var(--rf-text-sm);
 	}
+	/* A value that is not a pill reads at its row's size: the type's own size
+ * is for values standing in a bar (WORK-671 moved the value into a span). */
+	[data-zone-layout="definition-list"]
+		dd
+		> [data-meta-type]:not(
+			[data-meta-type="status"],
+			[data-meta-type="category"],
+			[data-meta-type="tag"]
+		) {
+		font-size: inherit;
+	}
+	/* …and a monospace value sets its row's line in monospace, as when the cell
+ * itself carried the type. */
+	[data-zone-layout="definition-list"] dd:has(> [data-meta-type="id"], > [data-meta-type="code"]) {
+		font-family: var(--rf-font-mono, monospace);
+	}
 
 	[data-zone-layout="definition-list"] dd[data-multi-value] {
 		gap: 0.25rem;
