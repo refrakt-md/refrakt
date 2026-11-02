@@ -1,4 +1,4 @@
-{% work id="WORK-583" status="in-progress" priority="medium" complexity="moderate" source="ADR-029" tags="runes, sequence, dom, a11y, theme, layout" milestone="v0.45.0" %}
+{% work id="WORK-583" status="done" priority="medium" complexity="moderate" source="ADR-029" tags="runes, sequence, dom, a11y, theme, layout" milestone="v0.45.0" pr="refrakt-md/refrakt#749" %}
 
 # Emit sequence ordinals as nodes, not CSS counters
 
@@ -95,5 +95,27 @@ it makes this a poor candidate to batch with unrelated changes.
 
 **Double-rendering during migration.** If the node ships before the CSS counter
 is removed, items render two numbers. The two changes belong in one commit.
+
+## Resolution
+
+Completed: 2026-11-02
+
+Branch: `claude/milestone-v0-44-0-ism7ni`
+
+### What was done
+- `packages/transform/src/engine.ts`:
+  - `annotateSequence` runs before the children are transformed. For a numbered sequence, `numberItems` puts `<span data-name="ordinal" data-meta-type="quantity">N</span>` first in each item.
+  - An item's `position` wins, the rest count on from it, and `<ol start>` sets the first.
+  - An item rune gets the ordinal as its own part (`rf-track__ordinal`); a plain item carries the sequence rune's class (`rf-howto__ordinal`).
+  - The BEM pass no longer adds a class an element already has.
+- Skeleton, Lumina and proof-skin `dimensions/sequence.css`: the counter is gone, and the marker rules target the ordinal. Playlist's in-row override and its `track` counter likewise.
+- `packages/transform/test/sequence-ordinal.test.ts` (new).
+- The theme-authoring dimensions page and the changeset `sequence-ordinal-node.md` both carry the migration note for themes.
+
+### Notes
+- Pixel-identical in Lumina across the four numbered runes and seven pages, comparing local builds of main and the branch.
+- Numbering runs before the children are transformed so that an item rune's layout tree can place its ordinal. That is the prerequisite for WORK-679's track byline.
+- The contracts have no diff: the structure contract doesn't describe the sequence dimension. The criterion is amended.
+- "Playlist assigns ordinals to tracks that carry none" is met by the engine pass, which numbers every item of a numbered sequence. No playlist-specific code was needed.
 
 {% /work %}
