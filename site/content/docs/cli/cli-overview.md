@@ -28,10 +28,10 @@ This makes the `refrakt` command available in your project scripts and via `npx 
 | `stale` | Rank documentation references by commits to the target since the page last changed |
 | `migrate snippets` | Convert `lines=` snippet and file-ref invocations to anchors, verifying byte-identical output |
 | `snippet review` | Stamp and check review markers on embedded source — `--check` has its own exit code |
-| [theme](/docs/cli/theme-tools#refrakt-theme) | Install themes, show theme info, and validate theme config and manifest |
+| [theme](/docs/cli/theme-tools#refrakt-theme) | Install themes, show theme info, validate theme config and manifest, and report vocabulary coverage |
 | edit | Launch the browser-based content editor |
 | plugins list | List installed plugins and their commands |
-| plugins validate | Validate a plugin before publishing |
+| plugins validate | Validate a plugin before publishing, with a report of its novel elements and token-only CSS |
 
 ## Quick examples
 

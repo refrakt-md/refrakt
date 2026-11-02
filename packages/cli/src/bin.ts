@@ -1033,6 +1033,61 @@ For theme-authoring artifacts, use \`refrakt theme validate\`.
 
 /** `refrakt theme validate` — the theme-authoring checks, moved off the bare
  *  `validate` command by WORK-579 (SPEC-135 D12). */
+function runThemeCoverage(tcArgs: string[]): void {
+	const css: string[] = [];
+	let base: string | null | undefined;
+	let json = false;
+	for (let i = 0; i < tcArgs.length; i++) {
+		const arg = tcArgs[i];
+		if (arg === '--base') {
+			base = tcArgs[++i];
+			if (!base) {
+				console.error('Error: --base requires a directory');
+				process.exit(1);
+			}
+		} else if (arg === '--no-base') {
+			base = null;
+		} else if (arg === '--json') {
+			json = true;
+		} else if (arg === '--help' || arg === '-h') {
+			console.log(`
+Usage: refrakt theme coverage [<css path>...] [options]
+
+For every value of the theme vocabulary (each meta type, sentiment, zone layout,
+sequence, section role, media kind and universal-axis value), report whether the
+theme's CSS styles it, leaves it to the base stylesheet, or nothing does
+(ADR-043). A report, not a gate: a value at its default needs no rule.
+
+Arguments:
+  <css path>          The theme's CSS files or directories (default: .)
+
+Options:
+  --base <dir>        The base stylesheet (default: @refrakt-md/skeleton)
+  --no-base           Read no base stylesheet
+  --json              Print one row per value as JSON
+
+Examples:
+  refrakt theme coverage styles
+  refrakt theme coverage packages/my-theme --json
+`);
+			process.exit(0);
+		} else if (arg.startsWith('--')) {
+			console.error(`Error: Unexpected option "${arg}"\n`);
+			process.exit(1);
+		} else {
+			css.push(arg);
+		}
+	}
+	import('./commands/theme-coverage.js')
+		.then(({ themeCoverageCommand }) => {
+			themeCoverageCommand({ css: css.length > 0 ? css : ['.'], base, json });
+		})
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
+}
+
 function runThemeValidate(tvArgs: string[]): void {
 	let configPath: string | undefined;
 	let manifestPath: string | undefined;
@@ -1149,6 +1204,7 @@ Subcommands:
   info                  Show current theme details
   list                  List installed themes and the active one
   validate              Validate a ThemeConfig and/or a theme manifest
+  coverage              Report which theme-vocabulary values a theme's CSS styles
   presets list          List presets from installed packs + the active theme
   presets validate      Validate installed preset-pack manifests
 
@@ -1171,6 +1227,12 @@ Examples:
 	// `theme validate` and `theme presets validate` stay distinct.
 	if (subcommand === 'validate') {
 		runThemeValidate(themeArgs.slice(1));
+		return;
+	}
+
+	// `theme coverage` — ADR-043 decision 5 (WORK-672).
+	if (subcommand === 'coverage') {
+		runThemeCoverage(themeArgs.slice(1));
 		return;
 	}
 

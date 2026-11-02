@@ -28,6 +28,8 @@
     "runes:attributes": "node scripts/generate-rune-attributes.mjs",
     "seo:baseline": "node scripts/generate-seo-baseline.mjs",
     "seo:baseline:check": "node scripts/generate-seo-baseline.mjs --check",
+    "plugins:vocabulary": "node scripts/plugin-vocabulary.mjs",
+    "plugins:vocabulary:check": "node scripts/plugin-vocabulary.mjs --check",
     "content:check-links": "node scripts/check-content-links.mjs",
     "release-notes:draft": "node scripts/draft-release-note.mjs",
     "plugins:pack-check": "node scripts/pack-harness.mjs",

@@ -14,7 +14,7 @@ import {
 const alignType = ['start', 'center', 'end'] as const;
 const headerModes = ['auto', 'headline', 'none'] as const;
 type HeaderMode = (typeof headerModes)[number];
-const mediaKinds = ['portrait', 'cover', 'thumbnail', 'hero', 'icon'] as const;
+export const mediaKinds = ['portrait', 'cover', 'thumbnail', 'hero', 'icon'] as const;
 
 /**
  * A generic page section: the shared section header (eyebrow → headline →

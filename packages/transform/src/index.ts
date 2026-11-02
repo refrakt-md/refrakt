@@ -1,5 +1,24 @@
 // The engine
 export { createTransform, METABLOCK_ATTR, METABLOCK_OWNER_ATTR } from './engine.js';
+export {
+	META_TYPES,
+	RENDERED_META_TYPES,
+	SENTIMENTS,
+	LAYOUT_PRIMITIVES,
+	vocabularyEntries,
+	vocabularyCoverage,
+	cssSelectors,
+} from './vocabulary.js';
+export { novelElements, lintTokenOnly } from './plugin-vocabulary.js';
+export type { TokenFinding, TokenFindingKind } from './plugin-vocabulary.js';
+export type {
+	MetaType,
+	Sentiment,
+	VocabularyDimension,
+	VocabularyEntry,
+	VocabularyCoverageRow,
+	CoverageSource,
+} from './vocabulary.js';
 
 // Layout transform
 export { layoutTransform, LAYOUT_STRINGS } from './layout.js';

@@ -1,0 +1,891 @@
+{
+  "regenerateWith": "node scripts/plugin-vocabulary.mjs",
+  "about": "ADR-044 / WORK-673. Per first-party plugin rune: the elements with no vocabulary role (novel, tier 3), and the literal colours, sizes and font stacks in the skeleton and Lumina stylesheets that style it. Reports, not gates: the baseline Lumina’s per-rune CSS drains from.",
+  "totals": {
+    "runes": 68,
+    "novel": 44,
+    "literals": {
+      "colour": 21,
+      "size": 687,
+      "font": 1
+    }
+  },
+  "plugins": {
+    "@refrakt-md/marketing": {
+      "Bento": {
+        "block": "bento",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 0,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 1,
+            "size": 7,
+            "font": 0
+          }
+        }
+      },
+      "BentoCell": {
+        "block": "bento-cell",
+        "novel": [
+          "content"
+        ],
+        "literals": {}
+      },
+      "CallToAction": {
+        "block": "cta",
+        "novel": [
+          "image"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 0,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 13,
+            "font": 0
+          }
+        }
+      },
+      "Comparison": {
+        "block": "comparison",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 1,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 31,
+            "font": 0
+          }
+        }
+      },
+      "ComparisonColumn": {
+        "block": "comparison-column",
+        "novel": [],
+        "literals": {}
+      },
+      "ComparisonRow": {
+        "block": "comparison-row",
+        "novel": [],
+        "literals": {}
+      },
+      "Definition": {
+        "block": "definition",
+        "novel": [],
+        "literals": {}
+      },
+      "Feature": {
+        "block": "feature",
+        "novel": [
+          "image",
+          "items"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 4,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 14,
+            "font": 0
+          }
+        }
+      },
+      "FeaturedTier": {
+        "block": "tier",
+        "novel": [],
+        "literals": {}
+      },
+      "Hero": {
+        "block": "hero",
+        "novel": [
+          "image"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 7,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 3,
+            "size": 15,
+            "font": 0
+          }
+        }
+      },
+      "Pricing": {
+        "block": "pricing",
+        "novel": [
+          "image"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 1,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 16,
+            "font": 0
+          }
+        }
+      },
+      "Step": {
+        "block": "step",
+        "novel": [],
+        "literals": {}
+      },
+      "Steps": {
+        "block": "steps",
+        "novel": [
+          "image"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 0,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 6,
+            "font": 0
+          }
+        }
+      },
+      "Testimonial": {
+        "block": "testimonial",
+        "novel": [
+          "quote"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 2,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 6,
+            "font": 0
+          }
+        }
+      },
+      "Tier": {
+        "block": "tier",
+        "novel": [],
+        "literals": {}
+      }
+    },
+    "@refrakt-md/docs": {
+      "Api": {
+        "block": "api",
+        "novel": [],
+        "literals": {
+          "lumina": {
+            "colour": 0,
+            "size": 6,
+            "font": 0
+          }
+        }
+      },
+      "Changelog": {
+        "block": "changelog",
+        "novel": [
+          "eyebrow",
+          "blurb",
+          "image"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 0,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 11,
+            "font": 0
+          }
+        }
+      },
+      "ChangelogRelease": {
+        "block": "changelog-release",
+        "novel": [],
+        "literals": {}
+      },
+      "Symbol": {
+        "block": "symbol",
+        "novel": [
+          "eyebrow",
+          "blurb",
+          "image"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 0,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 26,
+            "font": 0
+          }
+        }
+      },
+      "SymbolGroup": {
+        "block": "symbol-group",
+        "novel": [],
+        "literals": {}
+      },
+      "SymbolMember": {
+        "block": "symbol-member",
+        "novel": [],
+        "literals": {}
+      }
+    },
+    "@refrakt-md/storytelling": {
+      "Beat": {
+        "block": "beat",
+        "novel": [],
+        "literals": {}
+      },
+      "Bond": {
+        "block": "bond",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 2,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 8,
+            "font": 0
+          }
+        }
+      },
+      "Character": {
+        "block": "character",
+        "novel": [
+          "content"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 2,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 8,
+            "font": 0
+          }
+        }
+      },
+      "CharacterSection": {
+        "block": "character-section",
+        "novel": [
+          "header"
+        ],
+        "literals": {}
+      },
+      "Faction": {
+        "block": "faction",
+        "novel": [
+          "content"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 0,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 7,
+            "font": 0
+          }
+        }
+      },
+      "FactionSection": {
+        "block": "faction-section",
+        "novel": [
+          "header"
+        ],
+        "literals": {}
+      },
+      "Lore": {
+        "block": "lore",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 0,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 5,
+            "font": 0
+          }
+        }
+      },
+      "Plot": {
+        "block": "plot",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 5,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 19,
+            "font": 0
+          }
+        }
+      },
+      "Realm": {
+        "block": "realm",
+        "novel": [
+          "content"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 0,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 7,
+            "font": 0
+          }
+        }
+      },
+      "RealmSection": {
+        "block": "realm-section",
+        "novel": [
+          "header"
+        ],
+        "literals": {}
+      },
+      "Storyboard": {
+        "block": "storyboard",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 0,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 1,
+            "size": 14,
+            "font": 1
+          }
+        }
+      },
+      "StoryboardPanel": {
+        "block": "storyboard-panel",
+        "novel": [],
+        "literals": {}
+      }
+    },
+    "@refrakt-md/places": {
+      "Event": {
+        "block": "event",
+        "novel": [
+          "preamble",
+          "eyebrow",
+          "image"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 0,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 6,
+            "font": 0
+          }
+        }
+      },
+      "Itinerary": {
+        "block": "itinerary",
+        "novel": [
+          "eyebrow",
+          "image"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 6,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 29,
+            "font": 0
+          }
+        }
+      },
+      "ItineraryDay": {
+        "block": "itinerary-day",
+        "novel": [
+          "header"
+        ],
+        "literals": {}
+      },
+      "ItineraryStop": {
+        "block": "itinerary-stop",
+        "novel": [
+          "time",
+          "location"
+        ],
+        "literals": {}
+      },
+      "Map": {
+        "block": "map",
+        "novel": [
+          "container"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 7,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 15,
+            "font": 0
+          }
+        }
+      },
+      "MapPin": {
+        "block": "map-pin",
+        "novel": [],
+        "literals": {}
+      }
+    },
+    "@refrakt-md/business": {
+      "Cast": {
+        "block": "cast",
+        "novel": [
+          "eyebrow",
+          "image"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 5,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 8,
+            "font": 0
+          }
+        }
+      },
+      "CastMember": {
+        "block": "cast-member",
+        "novel": [],
+        "literals": {}
+      },
+      "Organization": {
+        "block": "organization",
+        "novel": [
+          "eyebrow",
+          "image"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 1,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 3,
+            "font": 0
+          }
+        }
+      },
+      "Timeline": {
+        "block": "timeline",
+        "novel": [
+          "eyebrow",
+          "image"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 7,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 16,
+            "font": 0
+          }
+        }
+      },
+      "TimelineEntry": {
+        "block": "timeline-entry",
+        "novel": [],
+        "literals": {}
+      }
+    },
+    "@refrakt-md/design": {
+      "DesignContext": {
+        "block": "design-context",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 0,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 2,
+            "font": 0
+          }
+        }
+      },
+      "Mockup": {
+        "block": "mockup",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 17,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 12,
+            "size": 70,
+            "font": 0
+          }
+        }
+      },
+      "Palette": {
+        "block": "palette",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 2,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 1,
+            "size": 12,
+            "font": 0
+          }
+        }
+      },
+      "Preview": {
+        "block": "preview",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 5,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 22,
+            "font": 0
+          }
+        }
+      },
+      "Spacing": {
+        "block": "spacing",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 6,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 11,
+            "font": 0
+          }
+        }
+      },
+      "Swatch": {
+        "block": "swatch",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 2,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 2,
+            "size": 10,
+            "font": 0
+          }
+        }
+      },
+      "Typography": {
+        "block": "typography",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 1,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 19,
+            "font": 0
+          }
+        }
+      }
+    },
+    "@refrakt-md/learning": {
+      "HowTo": {
+        "block": "howto",
+        "novel": [
+          "eyebrow",
+          "image",
+          "content"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 2,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 13,
+            "font": 0
+          }
+        }
+      },
+      "Recipe": {
+        "block": "recipe",
+        "novel": [
+          "eyebrow",
+          "image",
+          "content"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 2,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 17,
+            "font": 0
+          }
+        }
+      },
+      "RecipeIngredient": {
+        "block": "recipe-ingredient",
+        "novel": [],
+        "literals": {}
+      }
+    },
+    "@refrakt-md/media": {
+      "Audio": {
+        "block": "audio",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 7,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 1,
+            "size": 17,
+            "font": 0
+          }
+        }
+      },
+      "Playlist": {
+        "block": "playlist",
+        "novel": [
+          "eyebrow",
+          "image",
+          "content"
+        ],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 1,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 11,
+            "font": 0
+          }
+        }
+      },
+      "Track": {
+        "block": "track",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 1,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 11,
+            "font": 0
+          }
+        }
+      }
+    },
+    "@refrakt-md/plan": {
+      "Backlog": {
+        "block": "backlog",
+        "novel": [],
+        "literals": {}
+      },
+      "Bug": {
+        "block": "bug",
+        "novel": [],
+        "literals": {
+          "lumina": {
+            "colour": 0,
+            "size": 10,
+            "font": 0
+          }
+        }
+      },
+      "Decision": {
+        "block": "decision",
+        "novel": [],
+        "literals": {
+          "lumina": {
+            "colour": 0,
+            "size": 10,
+            "font": 0
+          }
+        }
+      },
+      "DecisionLog": {
+        "block": "decision-log",
+        "novel": [],
+        "literals": {}
+      },
+      "Milestone": {
+        "block": "milestone",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 1,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 19,
+            "font": 0
+          }
+        }
+      },
+      "PlanActivity": {
+        "block": "plan-activity",
+        "novel": [],
+        "literals": {}
+      },
+      "PlanEntityTabs": {
+        "block": "plan-entity-tabs",
+        "novel": [],
+        "literals": {}
+      },
+      "PlanHistory": {
+        "block": "plan-history",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 5,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 19,
+            "font": 0
+          }
+        }
+      },
+      "PlanProgress": {
+        "block": "plan-progress",
+        "novel": [],
+        "literals": {
+          "skeleton": {
+            "colour": 0,
+            "size": 0,
+            "font": 0
+          },
+          "lumina": {
+            "colour": 0,
+            "size": 0,
+            "font": 0
+          }
+        }
+      },
+      "Spec": {
+        "block": "spec",
+        "novel": [],
+        "literals": {
+          "lumina": {
+            "colour": 0,
+            "size": 6,
+            "font": 0
+          }
+        }
+      },
+      "Work": {
+        "block": "work",
+        "novel": [],
+        "literals": {
+          "lumina": {
+            "colour": 0,
+            "size": 10,
+            "font": 0
+          }
+        }
+      }
+    }
+  }
+}

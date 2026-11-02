@@ -2,6 +2,7 @@ import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import type { ReadingRegister } from './reading.js';
 import type { LocalizedValue } from './i18n.js';
 import type { ProminenceValue } from './facets/prominence.js';
+import type { LAYOUT_PRIMITIVES, MetaType, Sentiment } from './vocabulary.js';
 
 // ─── SPEC-080: Layout primitive vocabulary ────────────────────────────
 
@@ -16,7 +17,7 @@ import type { ProminenceValue } from './facets/prominence.js';
  *  - `lead` — a byline: the fields in a column, the first marked `data-lead`
  *    as the emphasised value and the rest beneath it, smaller and muted
  *    (SPEC-161 D6). Unlabelled, like `bar`. */
-export type LayoutPrimitive = 'definition-list' | 'bar' | 'lead';
+export type LayoutPrimitive = (typeof LAYOUT_PRIMITIVES)[number];
 
 /**
  * A value transform, by name. The one vocabulary for every place config
@@ -78,7 +79,7 @@ export interface MetaField {
 	 *  `id` / `quantity` / `temporal` / `code`, with monospace for `id` /
 	 *  `code` and tabular-nums for `quantity` / `temporal`. The engine adds no
 	 *  class. `sentimentMap` only adds colour, never shape. */
-	metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id' | 'code';
+	metaType?: MetaType;
 
 	/** Human-readable label emitted as `<span data-meta-label>`. Used
 	 *  by `chip-row` (inside the chip) and `definition-list` (as the
@@ -89,7 +90,7 @@ export interface MetaField {
 	 *  `data-meta-sentiment` when matched. Presence of a `sentimentMap`
 	 *  also triggers chip rendering in layouts that switch on it
 	 *  (`split` right-slot, `definition-list` `<dd>`). */
-	sentimentMap?: Record<string, 'positive' | 'negative' | 'caution' | 'neutral'>;
+	sentimentMap?: Record<string, Sentiment>;
 
 	/** When set, the field only renders if the named modifier has a
 	 *  truthy resolved value. Use for optional fields like
@@ -656,11 +657,11 @@ export interface StructureEntry {
 
 	/** Semantic metadata type — emits `data-meta-type` attribute.
 	 *  Values: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id' */
-	metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';
+	metaType?: Exclude<MetaType, 'code'>;
 	/** Maps modifier values to sentiment — emits `data-meta-sentiment` when the
 	 *  current modifier value (from `metaText`) has a matching entry.
 	 *  E.g., `{ accepted: 'positive', rejected: 'negative' }` */
-	sentimentMap?: Record<string, 'positive' | 'negative' | 'caution' | 'neutral'>;
+	sentimentMap?: Record<string, Sentiment>;
 }
 
 // ─── Tint Types ──────────────────────────────────────────────────────
