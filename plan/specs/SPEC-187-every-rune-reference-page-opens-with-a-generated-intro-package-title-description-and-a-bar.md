@@ -91,6 +91,11 @@ with `media-position` and would need an empty media zone.
 only Source. The right side is never empty, so the bar's height and position do not change from
 page to page.
 
+*Amended in WORK-706:* the actions are text links, `Install` and `Source`, not icons. `ref` and
+`file-ref` are self-closing and take a text `label`, so neither can wrap an icon without changing
+the runes; a text action is also the clearer one to a screen reader. The sketches' `[▣]` and
+`[</>]` stand for these labels.
+
 ### D4 — the source is the file that defines the rune
 
 A composition's source is its `.md` definition: the plugin's `runeDir` file, or a project rune's.
