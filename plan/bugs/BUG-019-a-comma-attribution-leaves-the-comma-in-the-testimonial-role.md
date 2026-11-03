@@ -1,4 +1,4 @@
-{% bug id="BUG-019" status="fixed" severity="minor" source="SPEC-130" tags="runes,marketing,seo" milestone="v0.48.0" %}
+{% bug id="BUG-019" status="fixed" severity="minor" source="SPEC-130" tags="runes,marketing,seo" milestone="v0.48.0" pr="refrakt-md/refrakt#769" %}
 
 # A comma attribution leaves the comma in the testimonial role
 
@@ -75,5 +75,11 @@ losing its leading comma, and nothing else.
 
 - Found against the v0.35.0 line, in `@refrakt-md/marketing`
 - Predates {% ref "SPEC-130" /%}; recorded by {% ref "WORK-562" /%}'s baseline
+
+## Resolution
+
+Completed: 2026-11-03
+
+Fixed by the composed testimonial going live (WORK-704, refrakt-md/refrakt#769). Its attribution pattern (`^\s*[-–—,]\s*(.+)$`, SPEC-182 D6) accepts a comma as the separator, so `**Alex Rivera**, CTO at Acme` publishes `jobTitle: "CTO at Acme"`. The SEO baseline's `testimonial.comma` fixture records the fixed value; `composed-testimonial.test.ts` asserts it.
 
 {% /bug %}
