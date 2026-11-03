@@ -78,6 +78,34 @@ function extractSpecialTags(children: Node[]): {
  */
 export type UnmatchedSink = Node[];
 
+/**
+ * SPEC-186 D2.4 — the field whose nested model a dropped node sat inside, so
+ * the `content-unmatched` finding can name it. Keyed by the node itself.
+ */
+const unmatchedInside = new WeakMap<Node, string>();
+
+/** Per resolution: the nested field each dropped node sat inside. */
+const insideOf = new WeakMap<UnmatchedSink, Map<Node, string>>();
+
+/**
+ * SPEC-186 D4 — the required fields that took no node, by the sink of the
+ * resolution that found them. Kept beside the sink rather than threaded
+ * through every resolver: wherever a sink goes, its missing list goes too.
+ */
+const missingOf = new WeakMap<UnmatchedSink, string[]>();
+
+function noteMissing(sink: UnmatchedSink | undefined, name: string): void {
+	if (!sink) return;
+	const list = missingOf.get(sink) ?? [];
+	list.push(name);
+	missingOf.set(sink, list);
+}
+
+/** The field a dropped node sat inside, when it was inside a nested model. */
+export function unmatchedInsideField(node: Node): string | undefined {
+	return unmatchedInside.get(node);
+}
+
 /** A node that carries no authored content, so dropping it loses nothing —
  *  inter-block whitespace, a soft break, a comment. */
 function isInsignificant(node: Node): boolean {
@@ -181,6 +209,7 @@ function takeField(
 	field: ContentFieldDefinition,
 	children: Node[],
 	index: number,
+	unmatched?: UnmatchedSink,
 ): { values: ResolvedContent; next: number } | null {
 	const child = children[index];
 	if (!child) return null;
@@ -271,6 +300,27 @@ function takeField(
 			}
 		}
 	}
+	// SPEC-186 D2 — a block field with a nested model still takes the whole
+	// node, and reads its children into dotted members.
+	if (field.model && !field.greedy) {
+		const node = values[field.name] as Node;
+		const inner: UnmatchedSink = [];
+		const members = resolveSequence(node.children ?? [], field.model.fields, inner);
+		for (const [name, value] of Object.entries(members)) {
+			values[`${field.name}.${name}`] = value;
+		}
+		// The field each dropped node sat inside, recorded on the sink of this
+		// resolution: a deeper nested model's path is prefixed with this field.
+		const deeper = insideOf.get(inner);
+		const here = unmatched ? (insideOf.get(unmatched) ?? new Map<Node, string>()) : undefined;
+		for (const dropped of inner) {
+			const below = deeper?.get(dropped);
+			here?.set(dropped, below ? `${field.name}.${below}` : field.name);
+			unmatched?.push(dropped);
+		}
+		if (unmatched && here) insideOf.set(unmatched, here);
+		for (const name of missingOf.get(inner) ?? []) noteMissing(unmatched, `${field.name}.${name}`);
+	}
 	return { values, next: index };
 }
 
@@ -284,11 +334,14 @@ function takeGroup(
 	group: ContentFieldDefinition,
 	children: Node[],
 	index: number,
+	unmatched?: UnmatchedSink,
 ): { values: ResolvedContent; next: number } | null {
 	const values: ResolvedContent = {};
 	let at = index;
 	for (const member of group.group ?? []) {
-		const taken = member.group ? takeGroup(member, children, at) : takeField(member, children, at);
+		const taken = member.group
+			? takeGroup(member, children, at, unmatched)
+			: takeField(member, children, at, unmatched);
 		if (taken) {
 			Object.assign(values, taken.values);
 			if (member.group) values[member.name] = true;
@@ -316,40 +369,46 @@ export function resolveSequence(
 		walkFields = fields.slice(0, -1);
 		let j = children.length - 1;
 		while (j >= 0 && isInsignificant(children[j])) j--;
-		const reserved = j >= 0 ? takeField(last, children, j) : null;
+		const reserved = j >= 0 ? takeField(last, children, j, unmatched) : null;
 		if (reserved) {
 			Object.assign(result, reserved.values);
 			walk = [...children.slice(0, j), ...children.slice(j + 1)];
+		} else if (!last.optional) {
+			noteMissing(unmatched, last.name);
 		}
 	}
 
 	let childIndex = 0;
 	for (const field of walkFields) {
 		if (childIndex >= walk.length) {
+			// SPEC-186 D4.1 — a required field reached after the children ran out
+			// took no node: reported, where it used to be skipped silently.
+			if (!field.optional) noteMissing(unmatched, field.name);
 			continue;
 		}
 		if (field.group) {
-			const taken = takeGroup(field, walk, childIndex);
+			const taken = takeGroup(field, walk, childIndex, unmatched);
 			if (taken) {
 				Object.assign(result, taken.values);
 				result[field.name] = true;
 				childIndex = taken.next;
+			} else if (!field.optional) {
+				noteMissing(unmatched, field.name);
 			}
 			// A group that does not match takes nothing: the nodes it looked at
 			// are the next field's (D1.1).
 			continue;
 		}
-		const taken = takeField(field, walk, childIndex);
+		const taken = takeField(field, walk, childIndex, unmatched);
 		if (taken) {
 			Object.assign(result, taken.values);
 			childIndex = taken.next;
 		} else if (!field.optional) {
-			// Required field didn't match — skip the child and move on. The child
-			// is dropped, so it is reported.
-			reportUnmatched([walk[childIndex]], unmatched);
-			childIndex++;
+			// SPEC-186 D4.2 — a required field that does not match is missing. The
+			// child it skipped stays for the next field, as after an optional one,
+			// and is reported unmatched only if nothing takes it.
+			noteMissing(unmatched, field.name);
 		}
-		// If optional and doesn't match, just skip the field (don't advance child)
 	}
 
 	// Whatever the fields ran out before reaching is dropped too.
@@ -1009,5 +1068,23 @@ export function findUnmatchedContent(
 	const { filtered } = extractSpecialTags(children);
 	const unmatched: UnmatchedSink = [];
 	resolve(filtered, model, attributes, locale, unmatched);
+	for (const [node, field] of insideOf.get(unmatched) ?? []) unmatchedInside.set(node, field);
 	return unmatched;
+}
+
+/**
+ * SPEC-186 D4 — the required fields, groups and nested members that took no
+ * node, by name (a nested member dotted). Runs the same resolution as the
+ * transform, so the two cannot disagree.
+ */
+export function findMissingFields(
+	children: Node[],
+	model: ContentModel,
+	attributes?: Record<string, unknown>,
+	locale?: string,
+): string[] {
+	const { filtered } = extractSpecialTags(children);
+	const sink: UnmatchedSink = [];
+	resolve(filtered, model, attributes, locale, sink);
+	return [...new Set(missingOf.get(sink) ?? [])];
 }

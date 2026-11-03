@@ -470,12 +470,17 @@ function slotFields(
 		);
 	}
 	const s = m as StructuralContentModel;
-	const addField = (f: ContentFieldDefinition): void => {
+	const addField = (f: ContentFieldDefinition, prefix = ''): void => {
 		// SPEC-186 D1.4 — a group's members are slots under their own names; the
 		// group's name is a condition, not a slot.
 		if (f.group) {
-			for (const member of f.group) addField(member);
+			for (const member of f.group) addField(member, prefix);
 			return;
+		}
+		// SPEC-186 D2.1 — a nested model's members are slots under dotted names,
+		// beside the field itself, which still places the whole node.
+		if (f.model) {
+			for (const member of f.model.fields) addField(member, `${prefix}${f.name}.`);
 		}
 		const emitted = f.emitTag !== undefined && f.itemModel !== undefined;
 		const refs = emitted ? (f.emitAttributes ?? {}) : {};
@@ -483,7 +488,7 @@ function slotFields(
 		const listOnly = alternatives.every((a) => LIST_MATCHES.has(a));
 		const listItems = !emitted && !f.greedy && listOnly;
 		const ambiguousList = !emitted && !!f.greedy && alternatives.some((a) => LIST_MATCHES.has(a));
-		fields.set(f.name, {
+		fields.set(`${prefix}${f.name}`, {
 			list: !!f.greedy || emitted || listItems,
 			each: Object.keys(refs),
 			refs,
@@ -1129,7 +1134,38 @@ export function compileComposition(
 
 	// D11 — a field no slot places parses and then silently does not render. A
 	// filling field is placed into the rune's values (SPEC-182 D5).
-	const unplaced = [...fields.keys()].filter((f) => !placedSlots.has(f) && !fields.get(f)!.fills);
+	// SPEC-186 D2.2 — a nested field is placed whole or by its members, never
+	// both; placing the whole covers its members, and placing a member means
+	// every member must be placed, or that content is dropped.
+	for (const name of placedSlots.keys()) {
+		const outer = [...placedSlots.keys()].find((o) => name.startsWith(`${o}.`));
+		if (outer) {
+			current = placedSlots.get(name);
+			fail(
+				'nested-placed-twice',
+				`slot \`${name}\` places a member of \`${outer}\`, which the template also places whole. Place the node whole or its members, not both: either would render the member twice (SPEC-186 D2.2).`,
+			);
+		}
+	}
+	const covered = (f: string): boolean => {
+		if (placedSlots.has(f) || fields.get(f)!.fills) return true;
+		const dot = f.lastIndexOf('.');
+		if (dot > 0 && placedSlots.has(f.slice(0, dot))) return true;
+		// A field placed by its members is covered when any member is placed;
+		// the members are then checked one by one.
+		return [...placedSlots.keys()].some((p) => p.startsWith(`${f}.`));
+	};
+	const unplaced = [...fields.keys()].filter((f) => {
+		if (covered(f)) return false;
+		// A member of a nested field none of whose members is placed is covered
+		// by the field being unplaced: report the field once, not each member.
+		const dot = f.lastIndexOf('.');
+		return !(
+			dot > 0 &&
+			!placedSlots.has(f.slice(0, dot)) &&
+			![...placedSlots.keys()].some((p) => p.startsWith(`${f.slice(0, dot)}.`))
+		);
+	});
 	if (unplaced.length > 0) {
 		fail(
 			'field-unplaced',
@@ -1991,7 +2027,14 @@ const FIELD_KEYS = new Set([
 	'fills',
 	'group',
 	'position',
+	'model',
 ]);
+
+/** SPEC-186 D2 — the block matches a nested model may read: a node whose
+ *  children are blocks. */
+function isBlockMatch(match: string): boolean {
+	return match.split('|').every((a) => a.trim() === 'blockquote' || a.trim().startsWith('tag:'));
+}
 
 /**
  * SPEC-186 D6 — a model's field list, checked as a whole once its fields are
@@ -2106,6 +2149,25 @@ function parseFields(
 			def.match = '';
 		} else if (typeof def.match !== 'string')
 			at('content-model-invalid', `\`${where}.${name}\` needs a \`match\`.`);
+		if (def.model !== undefined) {
+			// SPEC-186 D2 — a nested model reads the children of one block node.
+			if (def.group !== undefined || def.greedy || !isBlockMatch(String(def.match ?? ''))) {
+				at(
+					'content-nested-invalid',
+					`\`${where}.${name}\` has a nested \`model\`, but it matches \`${String(def.match ?? '')}\`${def.greedy ? ', greedily' : ''}. A nested model reads the children of one block node: a field matching \`blockquote\` or \`tag:NAME\`, not greedy (SPEC-186 D2).`,
+				);
+			}
+			const nested = parseContentModel(def.model, (code, msg, path) =>
+				fail(code, msg, [section, name, 'model', ...(path ?? [])]),
+			);
+			if ((nested as { type: string }).type !== 'sequence') {
+				at(
+					'content-nested-invalid',
+					`\`${where}.${name}.model\` must be a \`sequence\` model: it reads a node's children in order.`,
+				);
+			}
+			def.model = nested;
+		}
 		if (def.itemModel !== undefined) {
 			def.itemModel = parseItemModel(def.itemModel, `${where}.${name}.itemModel`, (code, msg) =>
 				fail(code, msg, [section, name, 'itemModel']),

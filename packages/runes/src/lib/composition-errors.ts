@@ -65,6 +65,9 @@ export const COMPOSITION_ERRORS = {
 		'Two fields of a content model share a name, counting group members, which resolve to their own names.',
 	'content-position-invalid':
 		"`position: last` is on more than one field, on a field that is not the model's last, inside a group, or has a value other than `last`.",
+	'content-nested-invalid':
+		'A nested `model` is on a field that does not match one block node (`blockquote` or `tag:NAME`, not greedy), or is not a `sequence`.',
+	'nested-placed-twice': 'A nested field is placed whole and by one of its dotted members.',
 	'metablock-invalid':
 		'A `{% metablock %}` is malformed: no name, content, an extra attribute, or inline.',
 	'metablock-inside-each': 'A `{% metablock %}` is placed inside an `each` slot.',
