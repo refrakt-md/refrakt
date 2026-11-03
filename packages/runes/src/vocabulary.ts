@@ -7,6 +7,7 @@
 import {
 	LAYOUT_PRIMITIVES,
 	META_TYPES,
+	QUOTE_ROLES,
 	RENDERED_META_TYPES,
 	SENTIMENTS,
 	UNIVERSAL_AXIS_FACETS,
@@ -52,6 +53,12 @@ export function themeVocabularyDimensions(): VocabularyDimension[] {
 			attribute: 'data-section',
 			values: SECTION_ROLES,
 			source: 'SECTION_ROLES',
+		},
+		{
+			name: 'quote',
+			attribute: 'data-quote',
+			values: QUOTE_ROLES,
+			source: 'QUOTE_ROLES (@refrakt-md/transform)',
 		},
 		{
 			name: 'media-kind',

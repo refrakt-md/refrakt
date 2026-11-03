@@ -5,6 +5,7 @@ export {
 	RENDERED_META_TYPES,
 	SENTIMENTS,
 	LAYOUT_PRIMITIVES,
+	QUOTE_ROLES,
 	vocabularyEntries,
 	vocabularyCoverage,
 	cssSelectors,
@@ -14,6 +15,7 @@ export type { TokenFinding, TokenFindingKind } from './plugin-vocabulary.js';
 export type {
 	MetaType,
 	Sentiment,
+	QuoteRole,
 	VocabularyDimension,
 	VocabularyEntry,
 	VocabularyCoverageRow,

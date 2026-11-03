@@ -23,9 +23,6 @@
 		background: none;
 		border-radius: 0;
 	}
-	.rf-testimonial blockquote::before {
-		display: none;
-	}
 	.rf-testimonial blockquote p {
 		margin: 0;
 	}

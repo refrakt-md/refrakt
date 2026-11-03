@@ -6,6 +6,7 @@ import {
 	createComponentRenderable,
 	renderNodes,
 	isMediaNode,
+	withoutQuoteRole,
 } from '@refrakt-md/runes';
 
 const variantType = ['card', 'inline', 'quote'] as const;
@@ -123,7 +124,9 @@ export const testimonial = createContentModelSchema({
 			if (!Tag.isTag(node)) continue;
 
 			if (node.name === 'blockquote' && !quoteTag) {
-				quoteTag = node;
+				// SPEC-185 — the testimonial's quote is its own (a featured quotation
+				// from WORK-700); not the plain quotation the core node marks.
+				quoteTag = withoutQuoteRole(node);
 			} else if (node.name === 'p' && !authorNameTag && !byAttributes) {
 				const attribution = parseAttribution(node);
 				if (attribution) {
