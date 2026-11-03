@@ -1,4 +1,10 @@
 @layer skin {
+	/* The quotation glyph, one mark for every quotation role: a plain
+	 * quotation carries it small, a featured one at the quote's size. */
+	:root {
+		--rf-glyph-quote: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 8C10 5.79 8.21 4 6 4C3.79 4 2 5.79 2 8C2 10.21 3.79 12 6 12C6.67 12 7.31 11.83 7.88 11.54C7.63 14.08 5.55 16.09 3 16.34V18.36C6.68 18.09 9.64 15.13 9.93 11.45C9.98 10.99 10 10.5 10 10V8ZM22 8C22 5.79 20.21 4 18 4C15.79 4 14 5.79 14 8C14 10.21 15.79 12 18 12C18.67 12 19.31 11.83 19.88 11.54C19.63 14.08 17.55 16.09 15 16.34V18.36C18.68 18.09 21.64 15.13 21.93 11.45C21.98 10.99 22 10.5 22 10V8Z'/%3E%3C/svg%3E");
+	}
+
 	/* Quotation — SPEC-185 D3. Lumina styles the role, not the element: a plain
  * `>` the core node marks `data-quote="quotation"`. A rune that reinterprets
  * `>` (a recipe's tips, a testimonial's quote, a pull quote) takes the
@@ -19,7 +25,7 @@
 		height: 18px;
 		background: var(--rf-color-primary);
 		opacity: 0.4;
-		mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 8C10 5.79 8.21 4 6 4C3.79 4 2 5.79 2 8C2 10.21 3.79 12 6 12C6.67 12 7.31 11.83 7.88 11.54C7.63 14.08 5.55 16.09 3 16.34V18.36C6.68 18.09 9.64 15.13 9.93 11.45C9.98 10.99 10 10.5 10 10V8ZM22 8C22 5.79 20.21 4 18 4C15.79 4 14 5.79 14 8C14 10.21 15.79 12 18 12C18.67 12 19.31 11.83 19.88 11.54C19.63 14.08 17.55 16.09 15 16.34V18.36C18.68 18.09 21.64 15.13 21.93 11.45C21.98 10.99 22 10.5 22 10V8Z'/%3E%3C/svg%3E");
+		mask-image: var(--rf-glyph-quote);
 		mask-size: contain;
 		mask-repeat: no-repeat;
 	}
@@ -35,6 +41,73 @@
 	}
 	[data-reading="ui"] [data-quote="quotation"]::before {
 		content: none;
+	}
+
+	/* The featured quotation and the excerpt (SPEC-185 D4) look the same; they
+	 * differ in how they are read. Styled by role, with the quote and its
+	 * attribution as descendants, so any rune that makes one (a pull quote, a
+	 * composition placing one) is set the same way. The quote is set large,
+	 * with the quotation glyph above it at its size; `prominence` ramps the size
+	 * from the resting `--rf-title-size` (D9). */
+	:is([data-quote="featured"], [data-quote="excerpt"]) {
+		margin-block: 2rem;
+	}
+	/* The resting size, whatever density the rune carries: the density rules
+	 * set --rf-title-size on the same element, so this outranks them. */
+	:is([data-quote="featured"], [data-quote="excerpt"])[data-quote] {
+		--rf-title-size: var(--rf-text-xl);
+	}
+	:is([data-quote="featured"], [data-quote="excerpt"]) figure {
+		margin: 0;
+	}
+	:is([data-quote="featured"], [data-quote="excerpt"]) blockquote {
+		margin: 0;
+		padding: 0;
+		border: none;
+		font-size: var(--rf-prominence-size, var(--rf-title-size));
+		font-style: italic;
+		font-weight: var(--rf-weight-medium);
+		line-height: var(--rf-leading-snug);
+		color: var(--rf-color-text);
+	}
+	:is([data-quote="featured"], [data-quote="excerpt"]) blockquote::before {
+		content: "";
+		display: block;
+		width: 1.75em;
+		height: 1.75em;
+		margin-bottom: 0.5rem;
+		background: var(--rf-color-primary);
+		opacity: 0.4;
+		mask-image: var(--rf-glyph-quote);
+		mask-size: contain;
+		mask-repeat: no-repeat;
+	}
+	:is([data-quote="featured"], [data-quote="excerpt"]) blockquote p {
+		margin: 0;
+	}
+	:is([data-quote="featured"], [data-quote="excerpt"]) blockquote p + p {
+		margin-top: 0.75rem;
+	}
+
+	/* D6 — the attribution: the name in `<cite>`, then its source. */
+	:is([data-quote="featured"], [data-quote="excerpt"]) figcaption {
+		margin-top: 1rem;
+		font-size: var(--rf-text-sm);
+		line-height: var(--rf-leading-normal);
+		color: var(--rf-color-muted);
+	}
+	:is([data-quote="featured"], [data-quote="excerpt"]) figcaption cite {
+		font-style: normal;
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-text);
+	}
+	:is([data-quote="featured"], [data-quote="excerpt"]) figcaption cite::before {
+		content: "— ";
+		font-weight: var(--rf-weight-normal);
+		color: var(--rf-color-muted);
+	}
+	:is([data-quote="featured"], [data-quote="excerpt"]) figcaption cite + span::before {
+		content: ", ";
 	}
 
 	/* D3.5 — a blockquote with no marker (content transformed outside refrakt's

@@ -228,7 +228,7 @@ A quotation is one of four roles, and a theme styles the role, never the bare `b
 |---|---|---|
 | `quotation` | Someone else's words cited in support of the text | `>` in running text |
 | `featured` | A statement presented for its own sake, with who said it | `{% pullquote %}` |
-| `excerpt` | An excerpt of this text, repeated large for a skimming eye | `{% pullquote excerpt %}` |
+| `excerpt` | An excerpt of this text, repeated large for a skimming eye | `{% pullquote excerpt=true %}` |
 | `epigraph` | A short attributed quotation that opens a work or a section | `>` with an attribution, at the start |
 
 Each role carries `data-quote` on the quotation's **outermost element**:
@@ -247,6 +247,7 @@ Style the role through that attribute, with its `blockquote` and `figcaption` as
 - **A plain `>` is a quotation.** The core `blockquote` node marks it, since no rune consumes it.
 - **A rune that reinterprets `>` carries no marker.** A recipe's tips, a comparison's callouts and a conversation's lines are not quotations, so a theme has nothing to undo on them.
 - **A composition places the rune that is what it reinterprets.** A composed recipe's tips are notes, so its template places them in a `{% hint %}`, and the theme's hint treatment applies. A composition does not style `>` itself.
+- **A featured quotation is loud by `prominence`.** `featured` and `excerpt` take the prominence scale a section header takes (SPEC-185 D9). A rune declares the `featured-quotation` capability in `provides` to open it. Ramp the quote's size from its resting size, as Lumina does: it sets `--rf-title-size` on the role and sizes the `blockquote` with `var(--rf-prominence-size, var(--rf-title-size))`.
 - **The reading register is context.** A quotation in `prose` and one in `ui` (a card body) may look different; Lumina sets one quieter in `ui`.
 - **The unmarked fallback.** A blockquote with no marker, from content transformed outside refrakt, deserves a minimal, zero-specificity fallback so it stays legible.
 

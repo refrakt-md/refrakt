@@ -1,38 +1,15 @@
 @layer skin {
-	/* PullQuote */
-	.rf-pullquote {
-		margin: 2rem 0;
-		padding: 1.5rem 2rem;
-		border: none;
-		font-size: var(--rf-text-xl);
-		font-style: italic;
-		font-weight: var(--rf-weight-medium);
-		line-height: var(--rf-leading-normal);
-		color: var(--rf-color-text);
-		background: none;
-		border-radius: 0;
-	}
-	.rf-pullquote::before {
-		content: "\201C";
-		/* Decorative oversized quote glyph — a display one-off above the type scale. */
-		font-size: 4rem;
-		font-style: normal;
-		font-weight: var(--rf-weight-bold);
-		line-height: 1;
-		color: var(--rf-color-primary);
-		opacity: 0.4;
-	}
-	.rf-pullquote p {
-		margin: 0;
-	}
-	.rf-pullquote p + p {
-		margin-top: 0.75rem;
-	}
+	/* PullQuote — placement only. The quote's look is its role's, a featured
+	 * quotation or an excerpt (elements/blockquote.css, SPEC-185 D3): this
+	 * file sets where the quote sits in the text, and the panel a tint makes. */
 
-	/* Alignment — block modes */
+	/* Centred in the measure, or set against a rule at the side. */
 	.rf-pullquote--center {
-		text-align: center;
 		max-width: 80%;
+		text-align: center;
+	}
+	.rf-pullquote--center blockquote::before {
+		margin-inline: auto;
 	}
 	.rf-pullquote--left {
 		text-align: left;
@@ -44,8 +21,10 @@
 		border-right: 2px solid var(--rf-color-primary);
 		padding-right: 1.5rem;
 	}
-
-	/* Float modes — left/right pull quotes can float for text wrapping */
+	/* Beside the text the rule marks the quote; the glyph would crowd it. */
+	:is(.rf-pullquote--left, .rf-pullquote--right) blockquote::before {
+		display: none;
+	}
 	.rf-pullquote[data-align="left"] {
 		margin: 0.5rem 2rem 1rem 0;
 	}
@@ -53,27 +32,12 @@
 		margin: 0.5rem 0 1rem 2rem;
 	}
 
-	/* Style: accent — uses primary color background tint */
-	.rf-pullquote--accent {
-		background: color-mix(in srgb, var(--rf-color-primary) 8%, transparent);
-		border-radius: var(--rf-radius-md);
+	/* A tinted quote is a panel: the tint paints it, the padding sets it off. */
+	.rf-pullquote[data-tint] {
 		padding: 2rem 2.5rem;
-	}
-	.rf-pullquote--accent::before {
-		color: var(--rf-color-primary);
-		opacity: 0.5;
+		border-radius: var(--rf-radius-md);
 	}
 
-	/* Style: editorial — decorative top/bottom rules */
-	.rf-pullquote--editorial {
-		border-top: 2px solid var(--rf-color-border);
-		border-bottom: 2px solid var(--rf-color-border);
-		padding: 1.75rem 0;
-		font-family: Georgia, "Times New Roman", serif;
-		letter-spacing: var(--rf-tracking-normal);
-	}
-
-	/* Responsive — floated quotes become full-width on mobile */
 	@media (max-width: 768px) {
 		.rf-pullquote[data-align="left"],
 		.rf-pullquote[data-align="right"] {

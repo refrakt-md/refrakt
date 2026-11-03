@@ -62,7 +62,7 @@ It is stated once rather than repeated on all 130-odd runes, because an axis is 
         },
         "unavailable": {
           "reading": "this rune declares no body section",
-          "prominence": "this rune has no page-section header"
+          "prominence": "this rune has no page-section header or featured quotation"
         }
       }
     }

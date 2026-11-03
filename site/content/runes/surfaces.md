@@ -22,7 +22,7 @@ Every block rune exposes one or two decorable **surfaces**, and a small, univers
 
 **Universal, but not unconditional.** Some of these axes need something to act on: `prominence` needs a rune with a section header, `reading` and `dropcap` need one whose body holds **prose** (a `datatable`'s main region is a table, so neither applies there), the `frame-*` facets need a media surface. A rune that has none of those never honoured the attribute — `{% grid reading="prose" %}` did nothing at all. Since 0.32.0 the rune's schema says so, so writing one where it cannot apply is a build error (`Invalid attribute: 'reading'`) rather than silence. Nothing about *what renders* changed; only whether you are told.
 
-To see what a given rune accepts, run [`refrakt reference <rune>`](/docs/cli/reference) — it lists that rune's real universal attributes and names the reason for each axis it leaves out (`prominence: this rune has no page-section header`). Editor completion reads the same schema, so typing `{% grid ` offers only what applies.
+To see what a given rune accepts, run [`refrakt reference <rune>`](/docs/cli/reference) — it lists that rune's real universal attributes and names the reason for each axis it leaves out (`prominence: this rune has no page-section header or featured quotation`). Editor completion reads the same schema, so typing `{% grid ` offers only what applies.
 
 The page walks the model along its four editorial axes:
 

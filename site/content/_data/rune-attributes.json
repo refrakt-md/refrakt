@@ -3707,7 +3707,17 @@
 			"name": "align",
 			"type": "\"left\" | \"center\" | \"right\"",
 			"required": false,
-			"description": "Text alignment of the quote",
+			"description": "Placement of the quote in the text: centred, or floated left or right",
+			"page": "pullquote"
+		},
+		{
+			"rune": "pullquote",
+			"plugin": "core",
+			"scope": "own",
+			"name": "excerpt",
+			"type": "boolean",
+			"required": false,
+			"description": "The words already appear in the text: a pull quote, hidden from assistive technology so a screen reader does not read them twice",
 			"page": "pullquote"
 		},
 		{
@@ -3717,7 +3727,7 @@
 			"name": "variant",
 			"type": "\"default\" | \"accent\" | \"editorial\"",
 			"required": false,
-			"description": "Visual style of the quote block",
+			"description": "Deprecated (SPEC-185 D2): a look name. `accent` maps to `tint` and `prominence=\"prominent\"`; the others to nothing",
 			"page": "pullquote"
 		},
 		{
@@ -5539,7 +5549,7 @@
 			"rune": "accordion",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "accordion"
 		},
@@ -5963,7 +5973,7 @@
 			"rune": "audio",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "audio"
 		},
@@ -6307,7 +6317,7 @@
 			"rune": "bento-cell",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "bento"
 		},
@@ -6395,7 +6405,7 @@
 			"rune": "blog",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "blog"
 		},
@@ -6619,7 +6629,7 @@
 			"rune": "budget",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "budget"
 		},
@@ -6827,7 +6837,7 @@
 			"rune": "bug",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "bug"
 		},
@@ -6995,7 +7005,7 @@
 			"rune": "cast",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "cast"
 		},
@@ -7131,7 +7141,7 @@
 			"rune": "changelog",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "changelog"
 		},
@@ -7283,7 +7293,7 @@
 			"rune": "character",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "character"
 		},
@@ -7507,7 +7517,7 @@
 			"rune": "codegroup",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "codegroup"
 		},
@@ -8027,7 +8037,7 @@
 			"rune": "cta",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "cta"
 		},
@@ -8235,7 +8245,7 @@
 			"rune": "decision",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "decision"
 		},
@@ -8507,7 +8517,7 @@
 			"rune": "design-context",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "design-context"
 		},
@@ -8779,7 +8789,7 @@
 			"rune": "drawer",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "drawer"
 		},
@@ -8931,7 +8941,7 @@
 			"rune": "event",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "event"
 		},
@@ -9027,7 +9037,7 @@
 			"rune": "faction",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "faction"
 		},
@@ -9195,7 +9205,7 @@
 			"rune": "feature",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "feature"
 		},
@@ -9275,7 +9285,7 @@
 			"rune": "figure",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "figure"
 		},
@@ -9675,7 +9685,7 @@
 			"rune": "hero",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "hero"
 		},
@@ -9747,7 +9757,7 @@
 			"rune": "hint",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "hint"
 		},
@@ -9819,7 +9829,7 @@
 			"rune": "howto",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "howto"
 		},
@@ -9955,7 +9965,7 @@
 			"rune": "itinerary",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "itinerary"
 		},
@@ -10307,7 +10317,7 @@
 			"rune": "lore",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "lore"
 		},
@@ -10611,7 +10621,7 @@
 			"rune": "milestone",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "milestone"
 		},
@@ -10891,7 +10901,7 @@
 			"rune": "organization",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "organization"
 		},
@@ -11035,7 +11045,7 @@
 			"rune": "palette",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "palette"
 		},
@@ -11315,7 +11325,7 @@
 			"rune": "playlist",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "playlist"
 		},
@@ -11395,7 +11405,7 @@
 			"rune": "plot",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "plot"
 		},
@@ -11531,7 +11541,7 @@
 			"rune": "pricing",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "pricing"
 		},
@@ -11669,6 +11679,14 @@
 			"available": true,
 			"description": "Scroll-reveal entrance (SPEC-105). The author declares the character, the theme owns the choreography, a behaviour owns the timing.",
 			"query": "axis:motion",
+			"page": "pullquote"
+		},
+		{
+			"rune": "pullquote",
+			"axis": "prominence",
+			"available": true,
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
+			"query": "axis:prominence",
 			"page": "pullquote"
 		},
 		{
@@ -11763,7 +11781,7 @@
 			"rune": "realm",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "realm"
 		},
@@ -11931,7 +11949,7 @@
 			"rune": "recipe",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "recipe"
 		},
@@ -12131,7 +12149,7 @@
 			"rune": "reveal",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "reveal"
 		},
@@ -12347,7 +12365,7 @@
 			"rune": "section",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "section"
 		},
@@ -12643,7 +12661,7 @@
 			"rune": "spacing",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "spacing"
 		},
@@ -12723,7 +12741,7 @@
 			"rune": "spec",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "spec"
 		},
@@ -12867,7 +12885,7 @@
 			"rune": "steps",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "steps"
 		},
@@ -13131,7 +13149,7 @@
 			"rune": "symbol",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "symbol"
 		},
@@ -13395,7 +13413,7 @@
 			"rune": "tabs",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "tabs"
 		},
@@ -13683,7 +13701,7 @@
 			"rune": "timeline",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "timeline"
 		},
@@ -13947,7 +13965,7 @@
 			"rune": "typography",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "typography"
 		},
@@ -14027,7 +14045,7 @@
 			"rune": "work",
 			"axis": "prominence",
 			"available": true,
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
 			"page": "work"
 		},
@@ -14098,7 +14116,7 @@
 			"rune": "accordion-item",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "accordion"
 		},
 		{
@@ -14119,7 +14137,7 @@
 			"rune": "actions",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "actions"
 		},
 		{
@@ -14140,7 +14158,7 @@
 			"rune": "aggregate",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "aggregate"
 		},
 		{
@@ -14154,7 +14172,7 @@
 			"rune": "annotate",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "annotate"
 		},
 		{
@@ -14175,7 +14193,7 @@
 			"rune": "api",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "api"
 		},
 		{
@@ -14210,7 +14228,7 @@
 			"rune": "backlog",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "backlog"
 		},
 		{
@@ -14238,7 +14256,7 @@
 			"rune": "bar",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "bar"
 		},
 		{
@@ -14259,7 +14277,7 @@
 			"rune": "beat",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "plot"
 		},
 		{
@@ -14280,7 +14298,7 @@
 			"rune": "bento",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "bento"
 		},
 		{
@@ -14308,7 +14326,7 @@
 			"rune": "bond",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "bond"
 		},
 		{
@@ -14329,7 +14347,7 @@
 			"rune": "breadcrumb",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "breadcrumb"
 		},
 		{
@@ -14364,7 +14382,7 @@
 			"rune": "budget-category",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "budget"
 		},
 		{
@@ -14385,7 +14403,7 @@
 			"rune": "budget-line-item",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "budget"
 		},
 		{
@@ -14399,7 +14417,7 @@
 			"rune": "card",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "card"
 		},
 		{
@@ -14434,7 +14452,7 @@
 			"rune": "cast-member",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "cast"
 		},
 		{
@@ -14469,7 +14487,7 @@
 			"rune": "changelog-release",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "changelog"
 		},
 		{
@@ -14483,7 +14501,7 @@
 			"rune": "character-section",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "character"
 		},
 		{
@@ -14504,7 +14522,7 @@
 			"rune": "chart",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "chart"
 		},
 		{
@@ -14546,7 +14564,7 @@
 			"rune": "collection",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "collection"
 		},
 		{
@@ -14567,7 +14585,7 @@
 			"rune": "compare",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "compare"
 		},
 		{
@@ -14588,7 +14606,7 @@
 			"rune": "comparison",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "comparison"
 		},
 		{
@@ -14609,7 +14627,7 @@
 			"rune": "comparison-column",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "comparison"
 		},
 		{
@@ -14630,7 +14648,7 @@
 			"rune": "comparison-row",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "comparison"
 		},
 		{
@@ -14651,7 +14669,7 @@
 			"rune": "conversation",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "conversation"
 		},
 		{
@@ -14672,7 +14690,7 @@
 			"rune": "conversation-message",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "conversation"
 		},
 		{
@@ -14707,7 +14725,7 @@
 			"rune": "data",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "data"
 		},
 		{
@@ -14728,7 +14746,7 @@
 			"rune": "datatable",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "datatable"
 		},
 		{
@@ -14756,7 +14774,7 @@
 			"rune": "decision-log",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "decision-log"
 		},
 		{
@@ -14777,7 +14795,7 @@
 			"rune": "definition",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "feature"
 		},
 		{
@@ -14798,7 +14816,7 @@
 			"rune": "deflist",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "deflist"
 		},
 		{
@@ -14833,7 +14851,7 @@
 			"rune": "details",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "details"
 		},
 		{
@@ -14854,7 +14872,7 @@
 			"rune": "diagram",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "diagram"
 		},
 		{
@@ -14875,7 +14893,7 @@
 			"rune": "diff",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "diff"
 		},
 		{
@@ -14903,7 +14921,7 @@
 			"rune": "embed",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "embed"
 		},
 		{
@@ -14931,7 +14949,7 @@
 			"rune": "faction-section",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "faction"
 		},
 		{
@@ -14966,7 +14984,7 @@
 			"rune": "file-ref",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "file-ref"
 		},
 		{
@@ -14987,7 +15005,7 @@
 			"rune": "form",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "form"
 		},
 		{
@@ -15008,7 +15026,7 @@
 			"rune": "form-field",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "form"
 		},
 		{
@@ -15029,7 +15047,7 @@
 			"rune": "gallery",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "gallery"
 		},
 		{
@@ -15050,7 +15068,7 @@
 			"rune": "grid",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "grid"
 		},
 		{
@@ -15113,7 +15131,7 @@
 			"rune": "include",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "include"
 		},
 		{
@@ -15148,7 +15166,7 @@
 			"rune": "itinerary-day",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "itinerary"
 		},
 		{
@@ -15162,7 +15180,7 @@
 			"rune": "itinerary-stop",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "itinerary"
 		},
 		{
@@ -15183,7 +15201,7 @@
 			"rune": "juxtapose",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "juxtapose"
 		},
 		{
@@ -15204,7 +15222,7 @@
 			"rune": "layout",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "layout"
 		},
 		{
@@ -15232,7 +15250,7 @@
 			"rune": "map",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "map"
 		},
 		{
@@ -15253,14 +15271,14 @@
 			"rune": "map-pin",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "map"
 		},
 		{
 			"rune": "mediatext",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "mediatext"
 		},
 		{
@@ -15288,7 +15306,7 @@
 			"rune": "mockup",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "mockup"
 		},
 		{
@@ -15309,7 +15327,7 @@
 			"rune": "nav",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "nav"
 		},
 		{
@@ -15330,7 +15348,7 @@
 			"rune": "note",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "annotate"
 		},
 		{
@@ -15358,7 +15376,7 @@
 			"rune": "pagination",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "pagination"
 		},
 		{
@@ -15393,7 +15411,7 @@
 			"rune": "plan-activity",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "plan-activity"
 		},
 		{
@@ -15414,7 +15432,7 @@
 			"rune": "plan-history",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "plan-history"
 		},
 		{
@@ -15435,7 +15453,7 @@
 			"rune": "plan-progress",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "plan-progress"
 		},
 		{
@@ -15470,7 +15488,7 @@
 			"rune": "preview",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "preview"
 		},
 		{
@@ -15505,7 +15523,7 @@
 			"rune": "progress",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "progress"
 		},
 		{
@@ -15513,13 +15531,6 @@
 			"available": false,
 			"axes": "frame",
 			"reason": "this rune declares neither a `frameTarget` nor a media section",
-			"page": "pullquote"
-		},
-		{
-			"rune": "pullquote",
-			"available": false,
-			"axes": "prominence",
-			"reason": "this rune has no page-section header",
 			"page": "pullquote"
 		},
 		{
@@ -15533,7 +15544,7 @@
 			"rune": "realm-section",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "realm"
 		},
 		{
@@ -15561,7 +15572,7 @@
 			"rune": "region",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": null
 		},
 		{
@@ -15582,7 +15593,7 @@
 			"rune": "relationships",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "relationships"
 		},
 		{
@@ -15617,7 +15628,7 @@
 			"rune": "reveal-step",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "reveal"
 		},
 		{
@@ -15638,7 +15649,7 @@
 			"rune": "sandbox",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "sandbox"
 		},
 		{
@@ -15652,7 +15663,7 @@
 			"rune": "showcase",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "showcase"
 		},
 		{
@@ -15666,7 +15677,7 @@
 			"rune": "sidenote",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "sidenote"
 		},
 		{
@@ -15687,7 +15698,7 @@
 			"rune": "snippet",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "snippet"
 		},
 		{
@@ -15729,7 +15740,7 @@
 			"rune": "step",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "steps"
 		},
 		{
@@ -15764,7 +15775,7 @@
 			"rune": "storyboard",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "storyboard"
 		},
 		{
@@ -15785,7 +15796,7 @@
 			"rune": "storyboard-panel",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "storyboard"
 		},
 		{
@@ -15806,7 +15817,7 @@
 			"rune": "swatch",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "swatch"
 		},
 		{
@@ -15841,7 +15852,7 @@
 			"rune": "symbol-group",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "symbol"
 		},
 		{
@@ -15862,7 +15873,7 @@
 			"rune": "symbol-member",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "symbol"
 		},
 		{
@@ -15883,7 +15894,7 @@
 			"rune": "tab",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "tabs"
 		},
 		{
@@ -15911,7 +15922,7 @@
 			"rune": "testimonial",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "testimonial"
 		},
 		{
@@ -15925,7 +15936,7 @@
 			"rune": "textblock",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "textblock"
 		},
 		{
@@ -15946,7 +15957,7 @@
 			"rune": "tier",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "pricing"
 		},
 		{
@@ -15981,7 +15992,7 @@
 			"rune": "timeline-entry",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "timeline"
 		},
 		{
@@ -16009,7 +16020,7 @@
 			"rune": "toc",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "toc"
 		},
 		{
@@ -16030,7 +16041,7 @@
 			"rune": "track",
 			"available": false,
 			"axes": "prominence",
-			"reason": "this rune has no page-section header",
+			"reason": "this rune has no page-section header or featured quotation",
 			"page": "track"
 		},
 		{
@@ -16250,7 +16261,7 @@
 			"name": "prominence",
 			"type": "\"quiet\" | \"normal\" | \"prominent\" | \"display\" | \"marquee\"",
 			"required": false,
-			"description": "Section-header emphasis (only on page-section-header family runes)"
+			"description": "Emphasis of a page-section header or a featured quotation (only on runes that have one)"
 		},
 		{
 			"axis": "reading",

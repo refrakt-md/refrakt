@@ -1,68 +1,159 @@
 import Markdoc from '@markdoc/markdoc';
+import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 type Tag = InstanceType<typeof Markdoc.Tag>;
+import type { ContentModel } from '@refrakt-md/types';
 import {
 	createContentModelSchema,
-	bodyOnly,
 	createComponentRenderable,
 	renderNodes,
 	fieldMetas,
 } from '../lib/index.js';
-import { withoutQuoteRole } from '../nodes.js';
+import { QUOTE_ATTR, withoutQuoteRole } from '../nodes.js';
 
 const alignValues = ['left', 'center', 'right'] as const;
 const variantValues = ['default', 'accent', 'editorial'] as const;
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
-export const pullQuoteSections = { body: 'body' } as const;
+// what a section *is* (ADR-028). The quote is the body the reading register
+// lands on.
+export const pullQuoteSections = { quote: 'body' } as const;
+
+/** SPEC-185 D6 — an attribution paragraph, `**Name** — Source`: the name in
+ *  bold, then an optional source after a dash or a comma (SPEC-182 D6's
+ *  reading). Shared by every role that carries a source. */
+export const attributionItemModel = {
+	fields: [
+		{ name: 'name', match: 'strong' },
+		{ name: 'source', match: 'text', pattern: /^\s*[-–—,]\s*(.+)$/, optional: true },
+	],
+};
+
+/**
+ * The quote is an authored `>`, read with the paragraph after it as its
+ * attribution: one unit, so an attribution is never read without a quote
+ * (SPEC-185 D6). Without a blockquote, the paragraphs are the quote as written.
+ */
+const pullQuoteModel: ContentModel = {
+	when: [
+		{
+			condition: { hasChild: 'blockquote' },
+			model: {
+				type: 'sequence',
+				fields: [
+					{ name: 'quote', match: 'blockquote' },
+					{
+						name: 'attribution',
+						match: 'paragraph',
+						optional: true,
+						itemModel: attributionItemModel,
+					},
+				],
+			},
+		},
+	],
+	default: {
+		type: 'sequence',
+		fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
+	},
+};
+
+/** `<figcaption>` with the name in `<cite>` (SPEC-185 D6). */
+export function renderAttribution(record: { name?: unknown; source?: unknown }): Tag | undefined {
+	const name = typeof record.name === 'string' ? record.name.trim() : '';
+	if (!name) return undefined;
+	const source = typeof record.source === 'string' ? record.source.trim() : '';
+	const children: Tag[] = [new Tag('cite', { 'data-name': 'name' }, [name])];
+	if (source) children.push(new Tag('span', { 'data-name': 'source' }, [source]));
+	return new Tag('figcaption', {}, children);
+}
+
+/**
+ * SPEC-185 D2 — `variant` named a look. `accent`'s tinted background is the
+ * universal `tint` and its extra size is `prominence="prominent"`; `default`
+ * and `editorial` map to nothing (an editorial theme looks editorial already).
+ */
+function mapVariant(value: unknown, attrs: Record<string, unknown>): string | undefined {
+	if (value !== 'accent') return undefined;
+	if (attrs.tint === undefined) attrs.tint = 'subtle';
+	return 'prominent';
+}
 
 export const pullquote = createContentModelSchema({
 	sections: pullQuoteSections,
-	provides: ['prose'],
+	provides: ['prose', 'featured-quotation'],
 	attributes: {
 		align: {
 			type: String,
 			required: false,
 			matches: alignValues.slice(),
-			description: 'Text alignment of the quote',
+			description: 'Placement of the quote in the text: centred, or floated left or right',
+		},
+		excerpt: {
+			type: Boolean,
+			required: false,
+			description:
+				'The words already appear in the text: a pull quote, hidden from assistive technology so a screen reader does not read them twice',
 		},
 		variant: {
 			type: String,
 			required: false,
 			matches: variantValues.slice(),
-			description: 'Visual style of the quote block',
-		},
+			deprecated: true,
+			description:
+				'Deprecated (SPEC-185 D2): a look name. `accent` maps to `tint` and `prominence="prominent"`; the others to nothing',
+		} as any,
 	},
-	contentModel: bodyOnly(),
+	deprecations: {
+		variant: { newName: 'prominence', transform: mapVariant },
+	},
+	contentModel: pullQuoteModel,
 	transform(resolved, attrs, config) {
-		const children = renderNodes(resolved.body, config);
+		// The authored blockquote is the quote, never nested in a second one
+		// (SPEC-185 D4). It keeps its own attributes (a composition's slot
+		// marker, a schema `property`), but not the quotation role: the quote
+		// is the featured quotation's, which the outermost element names.
+		const authored = resolved.quote
+			? (renderNodes(resolved.quote as Node, config).toArray() as Tag[])
+			: [];
+		const quote = authored.length
+			? withoutQuoteRole(authored[0])
+			: new Tag('blockquote', {}, renderNodes(resolved.body as Node[], config).toArray());
 
-		// The quote is an authored blockquote, or the paragraphs. A blockquote is
-		// unwrapped: the pull quote is itself the `<blockquote>`, so keeping the
-		// authored one inside would nest a quotation in a quotation. Its
-		// attributes come with its content, so a composition's slot marker and a
-		// schema `property` land on the one element.
-		const [blockquote] = (children.tag('blockquote').limit(1).toArray() as Tag[]).map(
-			withoutQuoteRole,
+		const attribution = renderAttribution(
+			(resolved.attributionData as Record<string, unknown> | undefined) ?? {},
 		);
-		const quoteChildren = blockquote ? blockquote.children : children.tag('p').toArray();
+		const excerpt = attrs.excerpt === true;
+		const figureChildren = attribution ? [quote, attribution] : [quote];
+		const refs: Record<string, Tag> = { quote };
+		if (attribution) refs.attribution = attribution;
 
+		const properties = fieldMetas(attrs, config, { align: 'center' });
+		if (!excerpt) {
+			const root = createComponentRenderable({
+				rune: 'pull-quote',
+				tag: 'figure',
+				properties,
+				refs,
+				children: figureChildren,
+			});
+			root.attributes[QUOTE_ATTR] = 'featured';
+			return root;
+		}
+
+		// D4 — an excerpt repeats words already in the text, so it is hidden
+		// from assistive technology; it holds the same figure.
+		const figure = new Tag('figure', {}, figureChildren);
 		const root = createComponentRenderable({
 			rune: 'pull-quote',
-			tag: 'blockquote',
-			properties: fieldMetas(attrs, config, {
-				align: 'center',
-				variant: 'default',
-			}),
-			children: quoteChildren,
+			tag: 'aside',
+			properties,
+			refs: { ...refs, figure },
+			children: [figure],
 		});
-		if (blockquote) {
-			for (const [name, value] of Object.entries(blockquote.attributes)) {
-				if (root.attributes[name] === undefined) root.attributes[name] = value;
-			}
-		}
+		root.attributes[QUOTE_ATTR] = 'excerpt';
+		root.attributes['aria-hidden'] = 'true';
 		return root;
 	},
 });
