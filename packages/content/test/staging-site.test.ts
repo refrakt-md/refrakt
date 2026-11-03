@@ -36,10 +36,13 @@ describe('the staging site (SPEC-181 D1, D3)', () => {
 });
 
 describe('a staged rune shadows the plugin rune it replaces (SPEC-181 D1)', () => {
-	const hero = readFileSync(join(ROOT, 'site', 'staged-runes', 'hero.md'), 'utf-8');
+	// `hero` went live (WORK-702); `testimonial` is still staged, under the same
+	// config key as the plugin's.
+	const testimonial = readFileSync(join(ROOT, 'site', 'staged-runes', 'testimonial.md'), 'utf-8');
 	const staged = loadProjectRunes(
-		memoryProjectFiles(new Map([['site/staged-runes/hero.md', hero]])),
+		memoryProjectFiles(new Map([['site/staged-runes/testimonial.md', testimonial]])),
 		'site/staged-runes',
+		{ schema: 'allow' },
 	);
 	const plugin = (): LoadedPlugin => ({
 		pkg: marketing,
@@ -56,13 +59,13 @@ describe('a staged rune shadows the plugin rune it replaces (SPEC-181 D1)', () =
 	const merged = mergePlugins(
 		[plugin()],
 		new Set(Object.keys(coreRunes)),
-		{ hero: PROJECT_RUNES },
+		{ testimonial: PROJECT_RUNES },
 		staged,
 	);
 
 	it('replaces the plugin’s schema, and its aliases with the staged ones', () => {
-		expect(merged.tags.hero).toBe(staged.runes.hero.schema);
-		expect(merged.provenance.hero.source).toBe('project');
+		expect(merged.tags.testimonial).toBe(staged.runes.testimonial.schema);
+		expect(merged.provenance.testimonial.source).toBe('project');
 	});
 
 	it('replaces the plugin’s hand-written config with the generated one', () => {
@@ -71,12 +74,12 @@ describe('a staged rune shadows the plugin rune it replaces (SPEC-181 D1)', () =
 			pluginRunes: merged.themeRunes,
 			provenance: merged.provenance,
 		});
-		const hero = theme.runes.Hero;
-		expect(hero.composed).toBe(true);
-		// Nothing of the plugin's entry survives: no block, no BEM, no guestFit.
-		expect(hero.block).toBeUndefined();
-		expect(hero.guestFit).toBeUndefined();
-		expect(hero.defaultWidth).toBe('full');
+		const testimonial = theme.runes.Testimonial;
+		expect(testimonial.composed).toBe(true);
+		// Nothing of the plugin's entry survives: no block, no BEM, no sections.
+		expect(testimonial.block).toBeUndefined();
+		expect(testimonial.sections).toBeUndefined();
+		expect(marketing.theme?.runes?.Testimonial?.block).toBe('testimonial');
 	});
 
 	it('leaves every other plugin rune as it was', () => {
@@ -142,9 +145,11 @@ describe('the staged runes, as the staging site loads them (WORK-681)', () => {
 		staged,
 	);
 
-	it('stages hero, cta, testimonial and steps, and prefers each over the plugin', () => {
-		expect(Object.keys(staged.runes).sort()).toEqual(['cta', 'hero', 'steps', 'testimonial']);
-		for (const rune of ['hero', 'cta', 'testimonial', 'steps']) {
+	it('stages cta, testimonial and steps, and prefers each over the plugin', () => {
+		// `hero` went live in the marketing plugin (WORK-702).
+		expect(Object.keys(staged.runes).sort()).toEqual(['cta', 'steps', 'testimonial']);
+		expect(site.runes.prefer.hero).toBeUndefined();
+		for (const rune of ['cta', 'testimonial', 'steps']) {
 			expect(site.runes.prefer[rune], rune).toBe(PROJECT_RUNES);
 			expect(merged.tags[rune], rune).toBe(staged.runes[rune].schema);
 		}

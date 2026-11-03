@@ -2,11 +2,11 @@
   "regenerateWith": "node scripts/plugin-vocabulary.mjs",
   "about": "ADR-044 / WORK-673. Per first-party plugin rune: the elements with no vocabulary role (novel, tier 3), and the literal colours, sizes and font stacks in the skeleton and Lumina stylesheets that style it. Reports, not gates: the baseline Lumina’s per-rune CSS drains from.",
   "totals": {
-    "runes": 68,
-    "novel": 44,
+    "runes": 67,
+    "novel": 43,
     "literals": {
-      "colour": 21,
-      "size": 687,
+      "colour": 18,
+      "size": 665,
       "font": 1
     }
   },
@@ -107,24 +107,6 @@
         "block": "tier",
         "novel": [],
         "literals": {}
-      },
-      "Hero": {
-        "block": "hero",
-        "novel": [
-          "image"
-        ],
-        "literals": {
-          "skeleton": {
-            "colour": 0,
-            "size": 7,
-            "font": 0
-          },
-          "lumina": {
-            "colour": 3,
-            "size": 15,
-            "font": 0
-          }
-        }
       },
       "Pricing": {
         "block": "pricing",

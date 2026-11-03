@@ -1,4 +1,4 @@
-{% work id="WORK-702" status="ready" priority="high" complexity="moderate" source="SPEC-181" tags="runes, composition, marketing, hero, go-live" milestone="v0.48.0" %}
+{% work id="WORK-702" status="in-progress" priority="high" complexity="moderate" source="SPEC-181" tags="runes, composition, marketing, hero, go-live" milestone="v0.48.0" %}
 
 # The composed hero goes live in the marketing plugin
 
@@ -17,13 +17,13 @@ baseline diffs a go-live produces.
 4. No dependency on a primitive whose spec is `draft`: confirmed when the item starts.
 
 ## Acceptance Criteria
-- [ ] The marketing plugin declares a `runeDir`, publishes it in `files`, and `refrakt plugin validate` passes
-- [ ] `hero.md` moves from `site/staged-runes/` into that `runeDir` unchanged, and the `staging` site's `runes.prefer` entry for `hero` is removed
-- [ ] The plugin hero's schema, theme config entry and `hero.css` are removed, and the CSS coverage sets are updated
-- [ ] Both copies of `contracts/structures.json` and the SEO baseline are regenerated, and the diff is reviewed in the PR description
-- [ ] WORK-669's theme-override reporting reports any theme override of the removed `Hero` config
-- [ ] The hero reference page and the composed-runes guide describe the rune as a composition; the homepage renders unchanged
-- [ ] A breaking changeset and a migration note list what authors and themes lose (`rf-hero*` classes) and what changed
+- [x] The marketing plugin declares a `runeDir`, publishes it in `files`, and `refrakt plugin validate` passes
+- [x] `hero.md` moves from `site/staged-runes/` into that `runeDir` unchanged, and the `staging` site's `runes.prefer` entry for `hero` is removed
+- [x] The plugin hero's schema, theme config entry and `hero.css` are removed, and the CSS coverage sets are updated
+- [x] Both copies of `contracts/structures.json` and the SEO baseline are regenerated, and the diff is reviewed in the PR description
+- [x] WORK-669's theme-override reporting reports any theme override of the removed `Hero` config
+- [x] The hero reference page and the composed-runes guide describe the rune as a composition; the homepage renders unchanged
+- [x] A breaking changeset and a migration note list what authors and themes lose (`rf-hero*` classes) and what changed
 
 ## Approach
 Move the file first and run the comparison tests against its new location; then delete the native

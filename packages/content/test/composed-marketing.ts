@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Markdoc from '@markdoc/markdoc';
@@ -26,10 +26,15 @@ import { assembleMarkdocSchemas } from '../src/site.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const composedDir = join(here, '..', '..', '..', 'site', 'staged-runes');
+/** Where a staged rune moves once it goes live (SPEC-181 D5): the plugin's `runeDir`. */
+export const liveDir = join(here, '..', '..', '..', 'plugins', 'marketing', 'runes');
 
-/** A staged composition's definition — the file the staging site renders. */
-export const definitionOf = (rune: string) =>
-	readFileSync(join(composedDir, `${rune}.md`), 'utf-8');
+/** A composition's definition — the staged file the staging site renders, or
+ *  the plugin's own once the rune has gone live. */
+export const definitionOf = (rune: string) => {
+	const staged = join(composedDir, `${rune}.md`);
+	return readFileSync(existsSync(staged) ? staged : join(liveDir, `${rune}.md`), 'utf-8');
+};
 
 /** The marketing plugin with the named runes composed — a fixture, never the
  *  shipping plugin. Each composed rune's hand-written theme entry goes with its
@@ -41,7 +46,9 @@ export function composedMarketing(composed: Record<string, string>, drop: string
 	for (const [rune, template] of Object.entries(composed)) {
 		// The composition declares its own aliases, if any (`review`); the
 		// plugin's `call-to-action` belongs to the plugin's own `cta`.
-		const { aliases: _a, transform: _t, ...rest } = runes[rune];
+		// A rune that has gone live has no entry of its own left to replace: the
+		// plugin loads it from its `runeDir` (SPEC-153 D2).
+		const { aliases: _a, transform: _t, ...rest } = runes[rune] ?? {};
 		runes[rune] = { ...rest, template };
 	}
 	return { ...marketing, runes, theme: { ...marketing.theme!, runes: themeRunes } };

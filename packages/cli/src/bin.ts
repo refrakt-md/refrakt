@@ -77,7 +77,7 @@ Commands:
   reference <subcommand>  Emit rune syntax reference for authors and AI agents
   plugins <subcommand> Manage installed plugins (list, validate)
   config <subcommand>  Manage refrakt.config.json (migrate)
-  migrate <codemod>    Run a content codemod (elevation)
+  migrate <codemod>    Run a content codemod (elevation, hero)
 
 Write Options:
   --output, -o <path>      Write output to a single file

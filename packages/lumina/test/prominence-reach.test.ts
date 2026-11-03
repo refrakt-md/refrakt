@@ -103,8 +103,8 @@ describe('prominence reaches every title-role rune', () => {
 		// The ramp computes `calc(var(--rf-title-size) * …)` on the rune root, so a
 		// resting size declared on the title element instead would be invisible to
 		// it — the axis would still be inert, just less obviously.
+		// `hero` is composed (WORK-702): its size is `section`'s, at `marquee`.
 		for (const block of [
-			'hero',
 			'cta',
 			'blog',
 			'bento-cell',

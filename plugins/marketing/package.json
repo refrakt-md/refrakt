@@ -22,7 +22,9 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist"
+    "dist",
+    "runes",
+    "fixtures"
   ],
   "scripts": {
     "build": "tsc"

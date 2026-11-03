@@ -490,7 +490,7 @@ BreadcrumbItem: { block: 'breadcrumb-item', parent: 'Breadcrumb', requiresParent
 Sets the default page grid width for the rune. The engine emits `data-width` on the root element.
 
 ```typescript
-Hero: { block: 'hero', defaultWidth: 'full' }
+Pricing: { block: 'pricing', defaultWidth: 'full' }
 ```
 
 | Value | Behavior |

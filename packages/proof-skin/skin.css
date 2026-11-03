@@ -3,7 +3,7 @@
  * over @layer skeleton purely by layer order (no !important, no specificity wars).
  * Leans on the shared layers — global elements, the elevation surface axis, the
  * section zones, and the metadata chips — so most runes pick up the editorial look
- * without per-rune CSS; card/hint/hero/cta are skinned bespoke (the showcased ones). */
+ * without per-rune CSS; card/hint/cta and the marquee section (the hero) are skinned bespoke (the showcased ones). */
 
 	/* ─── Global elements ─── */
 	html {
@@ -283,12 +283,13 @@
 		--hint-color: var(--rf-color-success);
 	}
 
-	/* ─── hero — serif masthead, no gradient ─── */
-	.rf-hero {
+	/* ─── marquee — serif masthead, no gradient. The composed `hero` is a
+	   `section` at marquee prominence (WORK-702), so the skin styles the
+	   register, not the rune (ADR-043). ─── */
+	.rf-section[data-prominence="marquee"] {
 		padding: 5rem 2rem 4rem;
 	}
-	.rf-hero h1,
-	.rf-hero__headline {
+	.rf-section[data-prominence="marquee"] .rf-section__headline {
 		font-family: var(--rf-font-display);
 		font-size: var(--rf-text-4xl);
 		font-weight: var(--rf-weight-bold);
@@ -296,29 +297,27 @@
 		color: var(--rf-color-text);
 		margin: 0 0 1rem;
 	}
-	.rf-hero p,
-	.rf-hero__blurb {
+	.rf-section[data-prominence="marquee"] .rf-section__blurb {
 		font-size: var(--rf-text-xl);
 		color: var(--rf-color-muted);
 		font-style: italic;
 		max-width: 40rem;
 		margin: 0 0 2rem;
 	}
-	.rf-hero__actions {
+	.rf-section[data-prominence="marquee"] .rf-actions__list {
 		gap: 0.75rem;
 	}
-	.rf-hero li a,
-	.rf-hero nav a {
+	.rf-section[data-prominence="marquee"] .rf-actions__action a {
 		padding: 0.6rem 1.5rem;
 		font-family: var(--rf-font-sans);
 		font-size: var(--rf-text-sm);
 		text-decoration: none;
 	}
-	.rf-hero li:first-child a {
+	.rf-section[data-prominence="marquee"] .rf-actions__action[data-rank="primary"] a {
 		background: var(--rf-color-primary);
 		color: var(--rf-color-on-primary);
 	}
-	.rf-hero li:not(:first-child) a {
+	.rf-section[data-prominence="marquee"] .rf-actions__action:not([data-rank="primary"]) a {
 		border: 1px solid var(--rf-color-border);
 		color: var(--rf-color-text);
 	}

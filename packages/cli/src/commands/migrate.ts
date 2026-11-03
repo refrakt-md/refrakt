@@ -1,11 +1,14 @@
 /**
  * `refrakt migrate <codemod> [paths…]` — content codemods for breaking changes.
  *
- * The first (and currently only) codemod is `elevation`, which rewrites the
- * deprecated SPEC-086 shadow-scale values (`none|sm|md|lg`) on the `elevation`
- * attribute to the SPEC-107 depth-ladder vocabulary. It is deliberately scoped
- * to the `elevation` attribute alone — `frame-shadow` carries the identical
- * `none/sm/md/lg` values and must NOT be touched (SPEC-107 §1).
+ * - `elevation` rewrites the deprecated SPEC-086 shadow-scale values
+ *   (`none|sm|md|lg`) on the `elevation` attribute to the SPEC-107 depth-ladder
+ *   vocabulary. It is deliberately scoped to the `elevation` attribute alone —
+ *   `frame-shadow` carries the identical `none/sm/md/lg` values and must NOT be
+ *   touched (SPEC-107 §1).
+ * - `hero` rewrites what the composed `hero` (SPEC-181, WORK-702) no longer
+ *   accepts on a `{% hero %}` tag: `align="left|right"` becomes
+ *   `align="start|end"`, and the deprecated `justify` becomes `align`.
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
@@ -29,7 +32,65 @@ const MARKDOWN_EXTENSIONS = new Set(['.md', '.markdoc', '.mdoc']);
  */
 const ELEVATION_RE = /\belevation(\s*=\s*)(["'])(none|sm|md|lg)\2/g;
 
-interface ElevationOptions {
+/** WORK-702 — the plugin hero's `left` / `right`, in `section`'s vocabulary. */
+const HERO_ALIGN_MAP: Record<string, string> = { left: 'start', right: 'end' };
+
+/** A `{% hero … %}` opening tag (or self-closing), attributes captured. */
+const HERO_TAG_RE = /\{%-?\s*hero\b([^%]*?)-?%\}/g;
+
+/** `align` or `justify` with any value, inside a hero tag. */
+const HERO_ALIGN_RE = /\b(align|justify)(\s*=\s*)(["'])([^"']*)\3/g;
+
+/** Rewrite one file's hero tags; returns the text and the number of changes. */
+export function migrateHeroSource(source: string): { text: string; count: number } {
+	let count = 0;
+	const text = source.replace(HERO_TAG_RE, (tag: string, attrs: string) => {
+		const next = attrs.replace(
+			HERO_ALIGN_RE,
+			(m: string, name: string, eq: string, quote: string, value: string) => {
+				const mapped = HERO_ALIGN_MAP[value] ?? value;
+				if (name === 'align' && mapped === value) return m;
+				count++;
+				return `align${eq}${quote}${mapped}${quote}`;
+			},
+		);
+		return next === attrs ? tag : tag.replace(attrs, next);
+	});
+	return { text, count };
+}
+
+/** Rewrite one file's deprecated `elevation` values. */
+function migrateElevationSource(source: string): { text: string; count: number } {
+	let count = 0;
+	const text = source.replace(ELEVATION_RE, (_m, eq: string, quote: string, value: string) => {
+		count++;
+		return `elevation${eq}${quote}${ELEVATION_MAP[value]}${quote}`;
+	});
+	return { text, count };
+}
+
+interface Codemod {
+	migrate: (source: string) => { text: string; count: number };
+	/** What one replacement is called in the summary. */
+	unit: string;
+	/** The summary when nothing matched. */
+	nothing: string;
+}
+
+const CODEMODS: Record<string, Codemod> = {
+	elevation: {
+		migrate: migrateElevationSource,
+		unit: 'elevation value',
+		nothing: 'No deprecated `elevation` values found — nothing to migrate.',
+	},
+	hero: {
+		migrate: migrateHeroSource,
+		unit: 'hero attribute',
+		nothing: 'No `hero` `align="left|right"` or `justify` found — nothing to migrate.',
+	},
+};
+
+interface CodemodOptions {
 	paths: string[];
 	apply: boolean;
 }
@@ -41,8 +102,9 @@ export async function runMigrateCommand(args: string[]): Promise<void> {
 		process.exit(sub ? 0 : 1);
 	}
 
-	if (sub === 'elevation') {
-		runElevationCodemod(args.slice(1));
+	const codemod = CODEMODS[sub];
+	if (codemod) {
+		runCodemod(codemod, args.slice(1));
 		return;
 	}
 
@@ -51,8 +113,8 @@ export async function runMigrateCommand(args: string[]): Promise<void> {
 	process.exit(1);
 }
 
-function runElevationCodemod(args: string[]): void {
-	const opts = parseElevationArgs(args);
+function runCodemod(codemod: Codemod, args: string[]): void {
+	const opts = parseCodemodArgs(args);
 	const files = collectMarkdownFiles(opts.paths);
 
 	if (files.length === 0) {
@@ -65,14 +127,7 @@ function runElevationCodemod(args: string[]): void {
 
 	for (const file of files) {
 		const original = readFileSync(file, 'utf-8');
-		let count = 0;
-		const migrated = original.replace(
-			ELEVATION_RE,
-			(_m, eq: string, quote: string, value: string) => {
-				count++;
-				return `elevation${eq}${quote}${ELEVATION_MAP[value]}${quote}`;
-			},
-		);
+		const { text: migrated, count } = codemod.migrate(original);
 		if (count === 0) continue;
 
 		changedFiles++;
@@ -88,14 +143,14 @@ function runElevationCodemod(args: string[]): void {
 	}
 
 	if (changedFiles === 0) {
-		console.log('No deprecated `elevation` values found — nothing to migrate.');
+		console.log(codemod.nothing);
 		return;
 	}
 
 	const verb = opts.apply ? 'Migrated' : 'Would migrate';
 	console.log(
 		`\n${verb} ${totalReplacements} ` +
-			`${plural(totalReplacements, 'elevation value')} across ${changedFiles} ${plural(changedFiles, 'file')}.`,
+			`${plural(totalReplacements, codemod.unit)} across ${changedFiles} ${plural(changedFiles, 'file')}.`,
 	);
 	if (!opts.apply) {
 		console.log('(Dry run — pass --apply to write changes.)');
@@ -129,7 +184,7 @@ function collectMarkdownFiles(paths: string[]): string[] {
 	return out.sort();
 }
 
-function parseElevationArgs(args: string[]): ElevationOptions {
+function parseCodemodArgs(args: string[]): CodemodOptions {
 	const paths: string[] = [];
 	let apply = false;
 
@@ -179,6 +234,9 @@ Codemods:
                        the SPEC-107 ladder (none→flat, sm→raised, md→raised,
                        lg→floating). Scoped to the \`elevation\` attribute only —
                        \`frame-shadow\` is left untouched.
+  hero                 Rewrite what the composed \`hero\` no longer accepts on a
+                       \`{% hero %}\` tag: align="left|right" → align="start|end",
+                       and the deprecated \`justify\` → \`align\`.
 
 Options:
   [paths…]             Files or directories to scan (default: current directory).
@@ -190,5 +248,6 @@ Examples:
   refrakt migrate elevation site/content              # Preview the rewrite
   refrakt migrate elevation site/content --apply      # Write the migration
   refrakt migrate elevation content/runes/card.md --apply
+  refrakt migrate hero site/content --apply
 `);
 }

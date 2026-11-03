@@ -1,5 +1,4 @@
 import type { Plugin } from '@refrakt-md/types';
-import { hero } from './tags/hero.js';
 import { cta } from './tags/cta.js';
 import { bento, bentoCell } from './tags/bento.js';
 import { feature, definition } from './tags/feature.js';
@@ -13,29 +12,10 @@ export const marketing: Plugin = {
 	name: 'marketing',
 	displayName: 'Marketing',
 	version: '0.47.0',
+	// SPEC-153 D2 — composed runes, one `<rune>.md` each. `hero` went live here
+	// from `site/staged-runes/` (SPEC-181 D5, WORK-702).
+	runeDir: 'runes',
 	runes: {
-		hero: {
-			transform: hero,
-			description:
-				'Full-width introductory section for landing pages with title, subtitle, and call-to-action',
-			category: 'Section',
-			snippet: [
-				'{% hero align="${1|center,left,right|}" %}',
-				'# ${2:Headline}',
-				'',
-				'${3:Subtitle or tagline}',
-				'',
-				'- [${4:Get Started}](${5:/docs/getting-started})',
-				'{% /hero %}',
-			],
-			fixture: `{% hero align="center" %}
-# Build Beautiful Documentation
-From Markdown to pixel-perfect pages in minutes.
-
-- [Get Started](/docs)
-- [View on GitHub](https://github.com)
-{% /hero %}`,
-		},
 		cta: {
 			transform: cta,
 			aliases: ['call-to-action'],
