@@ -965,6 +965,20 @@ export function resolveParagraphItem(
 	paragraph: Node,
 	itemModel: ItemModel,
 ): Record<string, unknown> {
+	if (itemModel.prefix) {
+		// SPEC-185 D6 — the record opens after a leading text node the prefix
+		// matches; without one the paragraph is not this record.
+		const inline: Node[] = [];
+		for (const child of paragraph.children ?? []) {
+			if (child.type === 'inline') inline.push(...(child.children ?? []));
+			else inline.push(child);
+		}
+		const first = inline[0];
+		const lead = first?.type === 'text' ? String(first.attributes?.content ?? '') : undefined;
+		if (lead === undefined || !itemModel.prefix.test(lead)) return {};
+		const rest = { children: [{ children: inline.slice(1) }] } as unknown as Node;
+		return resolveListItems(rest, itemModel)[0] ?? {};
+	}
 	return resolveListItems({ children: [paragraph] } as unknown as Node, itemModel)[0] ?? {};
 }
 

@@ -29,6 +29,18 @@ Wrap a blockquote. A paragraph after it, `**Name** — Source`, is its attributi
 
 It renders as a `<figure>` holding the `<blockquote>`, with the attribution as its `<figcaption>` and the name in `<cite>`. The attribution is read only after a quote; the source is optional.
 
+The attribution can also be the quote's own last line, opening with a dash: `— **Name**, Source`. The dash marks it, so a quote that ends in bold text is not read as its source.
+
+{% preview source=true %}
+
+	{% pullquote %}
+	> The best way to predict the future is to invent it.
+	>
+	> — **Alan Kay**, 1971
+	{% /pullquote %}
+
+{% /preview %}
+
 ## A pull quote
 
 When the words already appear in the text, add `excerpt`. The quote renders as an `<aside aria-hidden="true">`, so a screen reader does not read the passage twice. It looks the same as a featured quotation.

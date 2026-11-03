@@ -10,7 +10,13 @@ import {
 	fieldMetas,
 } from '../lib/index.js';
 import { QUOTE_ATTR, withoutQuoteRole } from '../nodes.js';
-import { attributionItemModel, renderAttribution } from '../lib/attribution.js';
+import {
+	attributionFrom,
+	attributionItemModel,
+	insideAttributionItemModel,
+	renderAttribution,
+	splitInsideAttribution,
+} from '../lib/attribution.js';
 
 const alignValues = ['left', 'center', 'right'] as const;
 const variantValues = ['default', 'accent', 'editorial'] as const;
@@ -33,7 +39,25 @@ const pullQuoteModel: ContentModel = {
 			model: {
 				type: 'sequence',
 				fields: [
-					{ name: 'quote', match: 'blockquote' },
+					{
+						name: 'quote',
+						match: 'blockquote',
+						// D6 — the inside form: the quote's own last line,
+						// `— **Name**, Source`.
+						model: {
+							type: 'sequence',
+							fields: [
+								{ name: 'body', match: 'any', greedy: true, optional: true },
+								{
+									name: 'attribution',
+									match: 'paragraph',
+									optional: true,
+									position: 'last',
+									itemModel: insideAttributionItemModel,
+								},
+							],
+						},
+					},
 					{
 						name: 'attribution',
 						match: 'paragraph',
@@ -95,15 +119,18 @@ export const pullquote = createContentModelSchema({
 		// (SPEC-185 D4). It keeps its own attributes (a composition's slot
 		// marker, a schema `property`), but not the quotation role: the quote
 		// is the featured quotation's, which the outermost element names.
+		// D6 — the attribution is the paragraph after the quote, or the quote's
+		// own last line; with both, the paragraph after it is the caption.
+		const inside = splitInsideAttribution(resolved.quote as Node | undefined);
 		const authored = resolved.quote
-			? (renderNodes(resolved.quote as Node, config).toArray() as Tag[])
+			? (renderNodes(inside?.quote ?? (resolved.quote as Node), config).toArray() as Tag[])
 			: [];
 		const quote = authored.length
 			? withoutQuoteRole(authored[0])
 			: new Tag('blockquote', {}, renderNodes(resolved.body as Node[], config).toArray());
 
 		const attribution = renderAttribution(
-			(resolved.attributionData as Record<string, unknown> | undefined) ?? {},
+			attributionFrom(resolved.attributionData) ?? inside?.attribution ?? {},
 		);
 		const excerpt = attrs.excerpt === true;
 		const figureChildren = attribution ? [quote, attribution] : [quote];

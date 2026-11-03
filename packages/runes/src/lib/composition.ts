@@ -2204,7 +2204,31 @@ function parseItemModel(
 	if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !Array.isArray(fields)) {
 		fail('content-model-invalid', `\`${where}\` must be a mapping with a \`fields\` list.`);
 	}
+	const model = raw as Record<string, unknown>;
+	for (const key of Object.keys(model)) {
+		if (key !== 'fields' && key !== 'prefix') {
+			fail(
+				'content-model-invalid',
+				`\`${where}\`: unknown key \`${key}\` (expected fields, prefix).`,
+			);
+		}
+	}
+	let prefix: RegExp | undefined;
+	if (model.prefix !== undefined) {
+		if (typeof model.prefix !== 'string') {
+			fail('content-model-invalid', `\`${where}\`: \`prefix\` must be a string.`);
+		}
+		try {
+			prefix = new RegExp(model.prefix as string);
+		} catch (e) {
+			fail(
+				'content-model-invalid',
+				`\`${where}\`: \`prefix\` is not a regular expression: ${(e as Error).message}`,
+			);
+		}
+	}
 	return {
+		...(prefix ? { prefix } : {}),
 		fields: (fields as unknown[]).map((f) => {
 			const entry = f as Record<string, unknown> | null;
 			if (!entry || typeof entry !== 'object' || typeof entry.name !== 'string') {

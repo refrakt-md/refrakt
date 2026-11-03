@@ -281,6 +281,15 @@ export interface ItemFieldDefinition {
 /** Declares how to extract structured data from each list item's inline children. */
 export interface ItemModel {
 	fields: ItemFieldDefinition[];
+	/**
+	 * SPEC-185 D6 — on a paragraph read as one record, the text the paragraph
+	 * must open with: its first inline node is a text node this matches, and
+	 * the record is read from what follows it. A paragraph that does not open
+	 * so yields no record. The inside attribution, `— **Name**, Source`, is
+	 * marked by its leading dash this way, so a quote ending in bold text is
+	 * not misread. YAML writes it as a string.
+	 */
+	prefix?: RegExp;
 }
 
 // ---------------------------------------------------------------------------

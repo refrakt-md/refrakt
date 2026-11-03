@@ -9,6 +9,7 @@ import {
 	attributionItemModel,
 	readAttribution,
 	renderAttributedQuote,
+	splitInsideAttribution,
 } from '../lib/attribution.js';
 import { buildLayoutMetas, extractMediaImage, splitLayoutAttributes } from './common.js';
 
@@ -189,8 +190,19 @@ export const section = createContentModelSchema({
 		const headline = render(parts.headline);
 		const blurb = render(parts.blurb);
 		// SPEC-185 D5 — the epigraph, a `<figure data-quote="epigraph">`.
-		const epigraphQuote = main['epigraph-quote'] as Node | undefined;
-		const epigraphSource = readAttribution(main['epigraph-attribution'] as Node | undefined);
+		let epigraphQuote = main['epigraph-quote'] as Node | undefined;
+		let epigraphSource = readAttribution(main['epigraph-attribution'] as Node | undefined);
+		// D6 — or a blockquote attributed on its own last line, `— **Name**`,
+		// standing where the epigraph group would: directly after the header.
+		const mode = (attrs.header as HeaderMode) || 'auto';
+		if (!epigraphQuote && mode === 'auto' && parts.headline) {
+			const inside = splitInsideAttribution(parts.body[0]);
+			if (inside) {
+				epigraphQuote = inside.quote;
+				epigraphSource = inside.attribution;
+				parts.body = parts.body.slice(1);
+			}
+		}
 		const epigraph =
 			epigraphQuote && epigraphSource
 				? renderAttributedQuote('epigraph', epigraphQuote, epigraphSource, config)
