@@ -1,5 +1,58 @@
 # @refrakt-md/lumina
 
+## 0.47.0
+
+### Minor Changes
+
+- 9dcf891: An attribution inside a blockquote is read as its last line (SPEC-185 D6).
+
+  - **The inside form.** A blockquote whose last paragraph is `— **Name**, Source` is attributed: the leading dash marks it, so a quote ending in bold text is not misread. A plain quotation so attributed renders as `<figure data-quote="quotation">` with its `<figcaption>`, the name in `<cite>`.
+  - **`pullquote` and the epigraph** accept either form, the paragraph after the quote or its last line, and render one `<figcaption>`. With both, the paragraph after the quote is the caption.
+  - **Item models take `prefix`**: the text a paragraph record must open with. A composition declares the inside form on its `blockquote` field as a nested model's `position: last` paragraph with `prefix: '^\s*[—–]\s*$'`. `insideAttributionItemModel` and `splitInsideAttribution` are exported from the attribution module.
+  - An `itemModel` in a composition now rejects keys other than `fields` and `prefix`.
+
+- 12aa2e6: An attributed blockquote opening a page or a section is an epigraph (SPEC-185 D5).
+
+  - **In a section.** `section`'s header grammar gains an optional epigraph after the blurb: a blockquote with a `**Name** — Source` paragraph after it, read together. Every rune composed over `section` reads it the same way; `header="headline"` reads none.
+  - **At the start of a page.** A blockquote opening a page's content, or directly after its `#` title, with an attribution after it, is the page's epigraph.
+  - **Only with an attribution.** Without one the blockquote stays a quotation, and a lone attribution after a headline stays the blurb. A heading inside a body does not open an epigraph.
+  - An epigraph renders as `<figure data-quote="epigraph">` with the `<figcaption>`, and Lumina styles the role: quieter than the text, set toward the end of the line, centred under a centred header.
+  - The attribution reader is shared by every role (`attributionItemModel`, `readAttribution`, `renderAttribution`, `renderAttributedQuote` in `lib/attribution.ts`).
+
+- 1d996b0: `pullquote` is the featured quotation, with its attribution (SPEC-185 D2, D4, D6, D9).
+
+  - **The markup.** A pull quote renders as `<figure data-quote="featured">` holding the authored `<blockquote>`, never a second one around it. With `excerpt=true` it is a pull quote proper: an `<aside aria-hidden="true" data-quote="excerpt">` holding the same figure, so a screen reader does not read the passage twice.
+  - **The attribution.** A `**Name** — Source` paragraph after the quote is read with it and rendered as a `<figcaption>`, the name in `<cite>`. The source is optional.
+  - **`quote`** is an alias of `pullquote`.
+  - **`prominence`** applies to a featured quotation or an excerpt. A rune opens it by declaring the `featured-quotation` capability in `provides`; Lumina ramps the quote's size from its resting size, as it ramps a header's title.
+  - **`variant` is deprecated**, with a warning: its values named looks. `accent` maps to `tint="subtle"` and `prominence="prominent"`; `default` and `editorial` map to nothing. `align` stays.
+  - **Lumina styles the role**, `[data-quote="featured"]` and `[data-quote="excerpt"]`, with the quotation glyph above the quote at its size: the same glyph a plain quotation carries, now shared as `--rf-glyph-quote`. `pullquote.css` keeps placement only (alignment, floats, a tinted panel).
+
+- 91b462c: A quotation carries its role, and a theme styles the role, not the `blockquote` element (SPEC-185 D3).
+
+  - **The marker.** The core `blockquote` node marks a plain `>` as `data-quote="quotation"`. A rune that reinterprets `>` takes the marker off what it renders (`withoutQuoteRole`): a recipe's tips, a testimonial's quote, a pull quote. `QUOTE_ROLES` (quotation, featured, excerpt, epigraph) joins the theme vocabulary.
+  - **Lumina.** The global `blockquote` rule becomes `[data-quote="quotation"]`. A quotation in the `ui` reading register is set quieter. An unmarked blockquote gets a minimal zero-specificity fallback. The testimonial's glyph reset is gone, with nothing left to undo.
+  - **Visible changes:**
+    - a recipe tip no longer shows the quotation glyph over its text;
+    - a pull quote shows its own large glyph instead of the quotation icon's.
+
+  **For theme authors:** a rule on `blockquote` now reaches tips and pull quotes as well as quotations. Style the role with `[data-quote="quotation"]`.
+
+### Patch Changes
+
+- Updated dependencies [9dcf891]
+- Updated dependencies [6f41760]
+- Updated dependencies [c443273]
+- Updated dependencies [12aa2e6]
+- Updated dependencies [1d996b0]
+- Updated dependencies [91b462c]
+- Updated dependencies [d221760]
+- Updated dependencies [0de700d]
+  - @refrakt-md/types@0.47.0
+  - @refrakt-md/runes@0.47.0
+  - @refrakt-md/transform@0.47.0
+  - @refrakt-md/skeleton@0.47.0
+
 ## 0.46.0
 
 ### Minor Changes

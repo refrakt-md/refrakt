@@ -1,5 +1,76 @@
 # @refrakt-md/runes
 
+## 0.47.0
+
+### Minor Changes
+
+- 9dcf891: An attribution inside a blockquote is read as its last line (SPEC-185 D6).
+
+  - **The inside form.** A blockquote whose last paragraph is `— **Name**, Source` is attributed: the leading dash marks it, so a quote ending in bold text is not misread. A plain quotation so attributed renders as `<figure data-quote="quotation">` with its `<figcaption>`, the name in `<cite>`.
+  - **`pullquote` and the epigraph** accept either form, the paragraph after the quote or its last line, and render one `<figcaption>`. With both, the paragraph after the quote is the caption.
+  - **Item models take `prefix`**: the text a paragraph record must open with. A composition declares the inside form on its `blockquote` field as a nested model's `position: last` paragraph with `prefix: '^\s*[—–]\s*$'`. `insideAttributionItemModel` and `splitInsideAttribution` are exported from the attribution module.
+  - An `itemModel` in a composition now rejects keys other than `fields` and `prefix`.
+
+- 6f41760: A content model can say "these together" and "this one last" (SPEC-186 D1, D3).
+
+  - **Groups.** A field may be a `group` of member fields that match as one: in order, when every required member matches, or not at all, leaving the nodes for the field after it. Members may be optional or groups themselves. Each resolves to its own name, and the group's name resolves to `true` when it matched.
+  - **`position: last`.** A field with `position: last` reserves the container's last node when it matches that node, and the fields before it read the rest. A greedy body therefore no longer swallows a trailing attribution line.
+  - **Load-time checks.** Composition definitions accept both and reject misuse when they load: `content-group-invalid`, `content-field-duplicate` and `content-position-invalid`.
+  - **Reference.** `refrakt reference` and `inspect` show groups and the anchored field.
+
+- c443273: Two more SPEC-186 content-model constructs.
+
+  - **Nested models (D2).** A field that matches one block node (`blockquote`, or a child rune) may declare `model`: a `sequence` read over that node's children.
+    - The field still takes the whole node. Its members resolve under dotted names (`quote.attribution`), to any depth.
+    - A composition places the node whole or its members by dotted name, not both (`nested-placed-twice`). A nested model on any other field is rejected (`content-nested-invalid`).
+    - A child the nested model does not read is reported `content-unmatched`, naming the field.
+  - **`content-missing` (D4).** A required field, group or nested member that took no node is now reported as `content-missing`, naming the field and the rune. This includes a required field reached after the content ran out, which used to pass silently. It is a warning in this release.
+  - **Behaviour change:** a child that a required field skips is no longer dropped. It stays for the next field and is reported `content-unmatched` only if nothing takes it, so a finding names the real problem. A sweep of every site and fixture found no instance.
+
+- 12aa2e6: An attributed blockquote opening a page or a section is an epigraph (SPEC-185 D5).
+
+  - **In a section.** `section`'s header grammar gains an optional epigraph after the blurb: a blockquote with a `**Name** — Source` paragraph after it, read together. Every rune composed over `section` reads it the same way; `header="headline"` reads none.
+  - **At the start of a page.** A blockquote opening a page's content, or directly after its `#` title, with an attribution after it, is the page's epigraph.
+  - **Only with an attribution.** Without one the blockquote stays a quotation, and a lone attribution after a headline stays the blurb. A heading inside a body does not open an epigraph.
+  - An epigraph renders as `<figure data-quote="epigraph">` with the `<figcaption>`, and Lumina styles the role: quieter than the text, set toward the end of the line, centred under a centred header.
+  - The attribution reader is shared by every role (`attributionItemModel`, `readAttribution`, `renderAttribution`, `renderAttributedQuote` in `lib/attribution.ts`).
+
+- 1d996b0: `pullquote` is the featured quotation, with its attribution (SPEC-185 D2, D4, D6, D9).
+
+  - **The markup.** A pull quote renders as `<figure data-quote="featured">` holding the authored `<blockquote>`, never a second one around it. With `excerpt=true` it is a pull quote proper: an `<aside aria-hidden="true" data-quote="excerpt">` holding the same figure, so a screen reader does not read the passage twice.
+  - **The attribution.** A `**Name** — Source` paragraph after the quote is read with it and rendered as a `<figcaption>`, the name in `<cite>`. The source is optional.
+  - **`quote`** is an alias of `pullquote`.
+  - **`prominence`** applies to a featured quotation or an excerpt. A rune opens it by declaring the `featured-quotation` capability in `provides`; Lumina ramps the quote's size from its resting size, as it ramps a header's title.
+  - **`variant` is deprecated**, with a warning: its values named looks. `accent` maps to `tint="subtle"` and `prominence="prominent"`; `default` and `editorial` map to nothing. `align` stays.
+  - **Lumina styles the role**, `[data-quote="featured"]` and `[data-quote="excerpt"]`, with the quotation glyph above the quote at its size: the same glyph a plain quotation carries, now shared as `--rf-glyph-quote`. `pullquote.css` keeps placement only (alignment, floats, a tinted panel).
+
+- 91b462c: A quotation carries its role, and a theme styles the role, not the `blockquote` element (SPEC-185 D3).
+
+  - **The marker.** The core `blockquote` node marks a plain `>` as `data-quote="quotation"`. A rune that reinterprets `>` takes the marker off what it renders (`withoutQuoteRole`): a recipe's tips, a testimonial's quote, a pull quote. `QUOTE_ROLES` (quotation, featured, excerpt, epigraph) joins the theme vocabulary.
+  - **Lumina.** The global `blockquote` rule becomes `[data-quote="quotation"]`. A quotation in the `ui` reading register is set quieter. An unmarked blockquote gets a minimal zero-specificity fallback. The testimonial's glyph reset is gone, with nothing left to undo.
+  - **Visible changes:**
+    - a recipe tip no longer shows the quotation glyph over its text;
+    - a pull quote shows its own large glyph instead of the quotation icon's.
+
+  **For theme authors:** a rule on `blockquote` now reaches tips and pull quotes as well as quotations. Style the role with `[data-quote="quotation"]`.
+
+- d221760: `section`'s header grammar is now its declared content model (SPEC-186 D5). The eyebrow, headline and blurb are an optional group, so a paragraph with no heading after it is body (ADR-046). `header="headline"` and `header="none"` are conditional models, and a split section reads its media, content and footer zones through a delimited model. The hand-written reader (`sectionHeaderParts`) is removed, and the composition audit (`slot-header-role`) reads the same declared model, so rendering, the audit and the editor cannot disagree. Rendering is unchanged.
+- 0de700d: The staged composed `testimonial` places a featured quotation (SPEC-185 D7).
+
+  - **The testimonial places `{% pullquote %}`** for its quote. The pull quote reads the `**Name** — Role` paragraph and renders it as its `<figcaption>`, so the testimonial's `fills` and `byline` meta block go. `author` and `role` stay for the attribute form and are passed to the pull quote.
+  - **`pullquote` takes `author` and `source`**: the attribution written as attributes, which wins over a paragraph. A placed attribution paragraph keeps its slot marker on the `<figcaption>` it becomes.
+  - **A schema source can name a placed part with a dot.** `attribution.name` is the node named `name` inside the node placed for `attribution`. When two sources map to one entity property, the first that resolves is published. The testimonial's `Review` / `Person` / `Rating` graph is unchanged.
+
+### Patch Changes
+
+- Updated dependencies [9dcf891]
+- Updated dependencies [6f41760]
+- Updated dependencies [c443273]
+- Updated dependencies [1d996b0]
+- Updated dependencies [91b462c]
+  - @refrakt-md/types@0.47.0
+  - @refrakt-md/transform@0.47.0
+
 ## 0.46.0
 
 ### Minor Changes

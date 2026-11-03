@@ -6,7 +6,16 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.46.0 · The theme contract
+## v0.47.0 · Quotations and the content model
+
+A content model reads groups, nested blocks and a trailing part, and reports what is missing
+(SPEC-186); `section`'s header grammar is declared with it. On that, quotations get
+roles a theme styles, instead of looks an author names (SPEC-185): a quotation, a
+featured quotation (`pullquote`), an excerpt and an epigraph, each with one shared attribution.
+
+[All 9 changes in v0.47.0 →](/releases/v0.47.0)
+
+## v0.46.0 · The theme contract - November 2, 2026
 
 A theme renders a vocabulary and configures no rune (ADR-043); a plugin rune speaks
 the same vocabulary, and only its novel parts bring their own structure, in tokens

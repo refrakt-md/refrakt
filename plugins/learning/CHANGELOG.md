@@ -1,5 +1,31 @@
 # @refrakt-md/learning
 
+## 0.47.0
+
+### Patch Changes
+
+- 91b462c: A quotation carries its role, and a theme styles the role, not the `blockquote` element (SPEC-185 D3).
+
+  - **The marker.** The core `blockquote` node marks a plain `>` as `data-quote="quotation"`. A rune that reinterprets `>` takes the marker off what it renders (`withoutQuoteRole`): a recipe's tips, a testimonial's quote, a pull quote. `QUOTE_ROLES` (quotation, featured, excerpt, epigraph) joins the theme vocabulary.
+  - **Lumina.** The global `blockquote` rule becomes `[data-quote="quotation"]`. A quotation in the `ui` reading register is set quieter. An unmarked blockquote gets a minimal zero-specificity fallback. The testimonial's glyph reset is gone, with nothing left to undo.
+  - **Visible changes:**
+    - a recipe tip no longer shows the quotation glyph over its text;
+    - a pull quote shows its own large glyph instead of the quotation icon's.
+
+  **For theme authors:** a rule on `blockquote` now reaches tips and pull quotes as well as quotations. Style the role with `[data-quote="quotation"]`.
+
+- Updated dependencies [9dcf891]
+- Updated dependencies [6f41760]
+- Updated dependencies [c443273]
+- Updated dependencies [12aa2e6]
+- Updated dependencies [1d996b0]
+- Updated dependencies [91b462c]
+- Updated dependencies [d221760]
+- Updated dependencies [0de700d]
+  - @refrakt-md/types@0.47.0
+  - @refrakt-md/runes@0.47.0
+  - @refrakt-md/transform@0.47.0
+
 ## 0.46.0
 
 ### Patch Changes
