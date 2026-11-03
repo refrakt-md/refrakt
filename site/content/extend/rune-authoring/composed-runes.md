@@ -193,6 +193,8 @@ A slot names a **field**, and every field and every slot are matched exactly onc
 
 A slot leaves no element of its own. Its content is placed where the tag stands, each node marked with `data-slot` naming the field, so a schema row or a registration can still find it inside the primitive that holds it.
 
+When the placed rune rebuilds a slot's content into parts of its own, a schema source can name a part with a dot: `attribution.name` is the node the placed rune names `name` inside the node placed for `attribution`. The composed `testimonial` reads its `Person` that way from the `{% pullquote %}` it places, whose `<figcaption>` keeps the attribution paragraph's slot marker. Two sources may map to one property as alternatives, an attribute and a placed part: the first that resolves is published.
+
 Fallback content renders only when the field is empty: `{% slot name="description" %}No description yet.{% /slot %}`.
 
 **A placed `section` reads its header by position, slots included.** A paragraph directly before the section's first heading is its eyebrow, and one directly after it is its blurb ([`section`](/runes/section)). A slot placed in either position fills that role, whatever its name. When the slot's name is not the role's, the build reports `slot-header-role`: *"slot `description` of `profile` is read as `section`'s blurb; name the field `blurb`, or set `header="headline"` on the section"*. Either remedy works. Naming the field for the role keeps it in the header, and `header` on the section keeps it out. The warning changes nothing that renders.

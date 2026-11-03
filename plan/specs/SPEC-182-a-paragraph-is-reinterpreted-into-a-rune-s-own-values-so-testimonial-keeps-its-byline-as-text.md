@@ -163,6 +163,15 @@ pattern accepts a comma, so `**Alex Rivera**, CTO at Acme` fills `role: "CTO at 
 plugin's parser keeps `", CTO at Acme"`. That is a difference from the SEO baseline, explained
 by the fix, and recorded when `testimonial` goes live rather than regenerated away.
 
+> **Amended by {% ref "SPEC-185" /%} D7 (WORK-700).** The paragraph reading is kept, and moves
+> from the testimonial to the `{% pullquote %}` it now places: the pull quote reads the
+> `**Name** — Role` paragraph and renders it as its `<figcaption>`. The testimonial's `fills` and
+> its `byline` meta block go; its `attribution` field stays only as the slot that carries the
+> paragraph into the pull quote. `author` and `role` stay declared for the attribute form and are
+> passed on to the pull quote, and the schema reads the `Person` from the figcaption
+> (`attribution.name`, `attribution.source`) or from those attributes. The `Review` / `Person` /
+> `Rating` graph is unchanged, by the SEO baseline comparison.
+
 ### D7 — the WORK-685 content migration is reverted, and the codemod is withdrawn before release
 
 {% ref "WORK-685" /%} rewrote this repository's five testimonials into attributes, and

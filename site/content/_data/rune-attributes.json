@@ -3704,6 +3704,26 @@
 			"rune": "pullquote",
 			"plugin": "core",
 			"scope": "own",
+			"name": "author",
+			"type": "string",
+			"required": false,
+			"description": "Who said it: the attribution, when it is not written as a paragraph",
+			"page": "pullquote"
+		},
+		{
+			"rune": "pullquote",
+			"plugin": "core",
+			"scope": "own",
+			"name": "source",
+			"type": "string",
+			"required": false,
+			"description": "Where it is from: a role, a work or a date, beside `author`",
+			"page": "pullquote"
+		},
+		{
+			"rune": "pullquote",
+			"plugin": "core",
+			"scope": "own",
 			"name": "align",
 			"type": "\"left\" | \"center\" | \"right\"",
 			"required": false,
