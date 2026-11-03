@@ -7,7 +7,7 @@ rune native. On `staging`, a rune `runes.prefer` resolves to `site/staged-runes/
 badge and that file as its source.
 
 ## Acceptance Criteria
-- [ ] On the `staging` site, a staged rune's intro shows a `Staged` badge and its drawer shows `site/staged-runes/<rune>.md`
+- [ ] On the `staging` site, a staged rune's intro shows a `Staged` badge in place of `Composition`, and its Source drawer shows `site/staged-runes/<rune>.md`
 - [ ] On the `main` site, the same page is unchanged
 - [ ] The SPEC-181 D3 test that `staging` matches `main` apart from `runes` still passes
 - [ ] The resolution records whether this is a per-site data file or a value computed at build time, and why
