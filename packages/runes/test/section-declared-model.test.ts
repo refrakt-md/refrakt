@@ -15,7 +15,7 @@ import { parse } from '../src/index.js';
 type Any = any;
 
 describe('section declares its header as a group (D5)', () => {
-	it('auto: an optional group of eyebrow, a required headline and blurb, then body', () => {
+	it('auto: an optional group of eyebrow, a required headline, blurb and epigraph, then body', () => {
 		const m: Any = sectionContentModel({});
 		expect(m.type).toBe('sequence');
 		const [header, body] = m.fields;
@@ -24,6 +24,14 @@ describe('section declares its header as a group (D5)', () => {
 			['eyebrow', true],
 			['headline', false],
 			['blurb', true],
+			['epigraph', true],
+		]);
+		// SPEC-185 D5 — the epigraph is a group within: a quote and its
+		// attribution, both required, so neither is read without the other.
+		const epigraph = header.group[3];
+		expect(epigraph.group.map((f: Any) => [f.name, !!f.optional])).toEqual([
+			['epigraph-quote', false],
+			['epigraph-attribution', false],
 		]);
 		expect(body).toMatchObject({ name: 'body', greedy: true });
 	});

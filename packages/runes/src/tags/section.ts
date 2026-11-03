@@ -5,6 +5,11 @@ import { createComponentRenderable, createContentModelSchema, renderNodes } from
 import type { ContentFieldDefinition, ContentModel, ResolvedContent } from '@refrakt-md/types';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { schemaHeaderRoles } from '../lib/header-roles.js';
+import {
+	attributionItemModel,
+	readAttribution,
+	renderAttributedQuote,
+} from '../lib/attribution.js';
 import { buildLayoutMetas, extractMediaImage, splitLayoutAttributes } from './common.js';
 
 const alignType = ['start', 'center', 'end'] as const;
@@ -42,7 +47,8 @@ export const sectionSections = {
  * - **The header (ADR-046).** An eyebrow and a blurb exist only relative to a
  *   headline: the group matches a paragraph, a heading and a paragraph, the
  *   heading required, or takes nothing, and a paragraph with no heading after
- *   it is body. `header="headline"` reads only a leading heading;
+ *   it is body. After the blurb, an attributed blockquote is the epigraph
+ *   (SPEC-185 D5). `header="headline"` reads only a leading heading;
  *   `header="none"` reads no header at all.
  * - **The zones (SPEC-160 D2).** Opt-in: with no `media-position` every child
  *   is the body zone, so a `---` stays body content. With it, the children
@@ -59,6 +65,22 @@ function headerFields(mode: HeaderMode): ContentFieldDefinition[] {
 					{ name: 'eyebrow', match: 'paragraph', optional: true },
 					{ name: 'headline', match: 'heading' },
 					{ name: 'blurb', match: 'paragraph', optional: true },
+					// SPEC-185 D5 — an epigraph: a quote and its attribution, optional
+					// together and required within, so a quote without one stays body
+					// and a lone attribution stays the blurb it already was.
+					{
+						name: 'epigraph',
+						match: '',
+						optional: true,
+						group: [
+							{ name: 'epigraph-quote', match: 'blockquote' },
+							{
+								name: 'epigraph-attribution',
+								match: 'paragraph',
+								itemModel: attributionItemModel,
+							},
+						],
+					},
 				];
 	return [{ name: 'header', match: '', optional: true, group: members }, body];
 }
@@ -166,7 +188,16 @@ export const section = createContentModelSchema({
 		const eyebrow = render(parts.eyebrow);
 		const headline = render(parts.headline);
 		const blurb = render(parts.blurb);
-		const headerNodes = [eyebrow, headline, blurb].filter(Boolean) as RenderableTreeNode[];
+		// SPEC-185 D5 — the epigraph, a `<figure data-quote="epigraph">`.
+		const epigraphQuote = main['epigraph-quote'] as Node | undefined;
+		const epigraphSource = readAttribution(main['epigraph-attribution'] as Node | undefined);
+		const epigraph =
+			epigraphQuote && epigraphSource
+				? renderAttributedQuote('epigraph', epigraphQuote, epigraphSource, config)
+				: undefined;
+		const headerNodes = [eyebrow, headline, blurb, epigraph].filter(
+			Boolean,
+		) as RenderableTreeNode[];
 		const header = new RenderableNodeCursor(headerNodes);
 		const body = renderNodes(parts.body, config).wrap('div');
 
@@ -187,6 +218,7 @@ export const section = createContentModelSchema({
 					eyebrow,
 					headline,
 					blurb,
+					epigraph,
 					body,
 				},
 				children: [...headerContent, body.next()],
@@ -242,6 +274,7 @@ export const section = createContentModelSchema({
 				eyebrow,
 				headline,
 				blurb,
+				epigraph,
 				body,
 				media,
 				content,
@@ -255,6 +288,6 @@ export const section = createContentModelSchema({
 // ADR-046 decision 3 — the roles a composition placing `section` is audited
 // against, read through the same declared model the transform resolves.
 schemaHeaderRoles.set(section, {
-	roles: ['eyebrow', 'headline', 'blurb'],
+	roles: ['eyebrow', 'headline', 'blurb', 'epigraph-quote', 'epigraph-attribution'],
 	model: sectionContentModel,
 });

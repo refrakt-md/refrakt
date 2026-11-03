@@ -1,10 +1,11 @@
 import pb from 'path-browserify';
 import Markdoc from '@markdoc/markdoc';
-import type { Schema } from '@markdoc/markdoc';
+import type { Node as MarkdocNode, RenderableTreeNode, Schema } from '@markdoc/markdoc';
 import * as xml from 'fast-xml-parser';
 import { unescapeFenceContent } from './fence-escape.js';
 import { resolveImageScheme } from './lib/image-schemes.js';
 import { headingSlug, renderableText } from './util.js';
+import { readAttribution, renderAttributedQuote } from './lib/attribution.js';
 
 const { dirname, join, isAbsolute } = pb;
 const { Tag } = Markdoc;
@@ -287,6 +288,46 @@ export const blockquote: Schema = {
 			{ ...node.transformAttributes(config), [QUOTE_ATTR]: 'quotation' },
 			node.transformChildren(config),
 		);
+	},
+};
+
+/**
+ * SPEC-185 D5 — an epigraph at the start of a page: a blockquote that opens the
+ * page's content, or directly follows its `#` title (a layout may take the
+ * title from frontmatter, so the content may have none), with an attribution
+ * paragraph after it. Without the attribution it stays a quotation: epigraphs
+ * name their source, and requiring one keeps an ordinary opening quote from
+ * being misread. Returns the index of the blockquote, or -1.
+ */
+export function pageEpigraphAt(children: readonly MarkdocNode[]): number {
+	let at = 0;
+	if (children[at]?.type === 'heading' && children[at].attributes?.level === 1) at++;
+	const quote = children[at];
+	if (quote?.type !== 'blockquote') return -1;
+	return readAttribution(children[at + 1]) ? at : -1;
+}
+
+/** The page's `article`, with an opening epigraph recognised (D5). */
+export const document: Schema = {
+	...Markdoc.nodes.document,
+	transform(node, config) {
+		const at = pageEpigraphAt(node.children);
+		if (at === -1) {
+			return new Tag('article', node.transformAttributes(config), node.transformChildren(config));
+		}
+		const attribution = readAttribution(node.children[at + 1])!;
+		const before = node.children.slice(0, at);
+		const after = node.children.slice(at + 2);
+		const render = (nodes: MarkdocNode[]): RenderableTreeNode[] =>
+			nodes.flatMap((n) => {
+				const out = n.transform(config) as RenderableTreeNode | RenderableTreeNode[];
+				return Array.isArray(out) ? out : [out];
+			});
+		return new Tag('article', node.transformAttributes(config), [
+			...render(before),
+			renderAttributedQuote('epigraph', node.children[at], attribution, config),
+			...render(after),
+		]);
 	},
 };
 
