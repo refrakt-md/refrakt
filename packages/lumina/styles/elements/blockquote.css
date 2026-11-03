@@ -33,6 +33,32 @@
 		margin-bottom: 0;
 	}
 
+	/* D6 — an attributed quotation is a <figure>: the role's rule and glyph are
+	 * the figure's, the blockquote inside is plain, and the source follows. */
+	figure[data-quote="quotation"] blockquote {
+		margin: 0;
+		padding: 0;
+		border: none;
+	}
+	[data-quote="quotation"] figcaption {
+		margin-top: 0.5rem;
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+	}
+	[data-quote="quotation"] figcaption cite {
+		font-style: normal;
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-text);
+	}
+	[data-quote="quotation"] figcaption cite::before {
+		content: "— ";
+		font-weight: var(--rf-weight-normal);
+		color: var(--rf-color-muted);
+	}
+	[data-quote="quotation"] figcaption cite + span::before {
+		content: ", ";
+	}
+
 	/* D3.6 — the reading register is context. In `ui` (a card body, a panel) a
 	 * quotation is set quieter: the rule stays, the glyph and its gutter go. */
 	[data-reading="ui"] [data-quote="quotation"] {

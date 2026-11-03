@@ -244,7 +244,7 @@ Style the role through that attribute, with its `blockquote` and `figcaption` as
 [data-quote="quotation"] figcaption { color: var(--rf-color-muted); }
 ```
 
-- **A plain `>` is a quotation.** The core `blockquote` node marks it, since no rune consumes it.
+- **A plain `>` is a quotation.** The core `blockquote` node marks it, since no rune consumes it. When its last line is an attribution, `— **Name**, Source`, it is a `<figure data-quote="quotation">` holding the `<blockquote>` and a `<figcaption>`, the name in `<cite>`; every role renders its attribution so.
 - **A rune that reinterprets `>` carries no marker.** A recipe's tips, a comparison's callouts and a conversation's lines are not quotations, so a theme has nothing to undo on them.
 - **A composition places the rune that is what it reinterprets.** A composed recipe's tips are notes, so its template places them in a `{% hint %}`, and the theme's hint treatment applies. A composition does not style `>` itself.
 - **A featured quotation is loud by `prominence`.** `featured` and `excerpt` take the prominence scale a section header takes (SPEC-185 D9). A rune declares the `featured-quotation` capability in `provides` to open it. Ramp the quote's size from its resting size, as Lumina does: it sets `--rf-title-size` on the role and sizes the `blockquote` with `var(--rf-prominence-size, var(--rf-title-size))`.

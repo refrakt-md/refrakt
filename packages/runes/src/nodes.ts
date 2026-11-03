@@ -5,7 +5,12 @@ import * as xml from 'fast-xml-parser';
 import { unescapeFenceContent } from './fence-escape.js';
 import { resolveImageScheme } from './lib/image-schemes.js';
 import { headingSlug, renderableText } from './util.js';
-import { readAttribution, renderAttributedQuote } from './lib/attribution.js';
+import {
+	readAttribution,
+	renderAttributedQuote,
+	splitInsideAttribution,
+	type Attribution,
+} from './lib/attribution.js';
 
 const { dirname, join, isAbsolute } = pb;
 const { Tag } = Markdoc;
@@ -283,6 +288,10 @@ export const QUOTE_ATTR = 'data-quote';
 export const blockquote: Schema = {
 	...Markdoc.nodes.blockquote,
 	transform(node, config) {
+		// SPEC-185 D6 — an attributed quotation: its last paragraph is
+		// `— **Name**, Source`, so it is a `<figure>` with its `<figcaption>`.
+		const split = splitInsideAttribution(node);
+		if (split) return renderAttributedQuote('quotation', split.quote, split.attribution, config);
 		return new Tag(
 			'blockquote',
 			{ ...node.transformAttributes(config), [QUOTE_ATTR]: 'quotation' },
@@ -302,9 +311,21 @@ export const blockquote: Schema = {
 export function pageEpigraphAt(children: readonly MarkdocNode[]): number {
 	let at = 0;
 	if (children[at]?.type === 'heading' && children[at].attributes?.level === 1) at++;
+	return pageEpigraph(children, at) ? at : -1;
+}
+
+/** The epigraph at `at`, in either attribution form (D6): the paragraph
+ *  after the quote, or the quote's own last line. */
+function pageEpigraph(
+	children: readonly MarkdocNode[],
+	at: number,
+): { quote: MarkdocNode; attribution: Attribution; span: number } | undefined {
 	const quote = children[at];
-	if (quote?.type !== 'blockquote') return -1;
-	return readAttribution(children[at + 1]) ? at : -1;
+	if (quote?.type !== 'blockquote') return undefined;
+	const after = readAttribution(children[at + 1]);
+	if (after) return { quote, attribution: after, span: 2 };
+	const inside = splitInsideAttribution(quote);
+	return inside ? { ...inside, span: 1 } : undefined;
 }
 
 /** The page's `article`, with an opening epigraph recognised (D5). */
@@ -315,9 +336,9 @@ export const document: Schema = {
 		if (at === -1) {
 			return new Tag('article', node.transformAttributes(config), node.transformChildren(config));
 		}
-		const attribution = readAttribution(node.children[at + 1])!;
+		const epigraph = pageEpigraph(node.children, at)!;
 		const before = node.children.slice(0, at);
-		const after = node.children.slice(at + 2);
+		const after = node.children.slice(at + epigraph.span);
 		const render = (nodes: MarkdocNode[]): RenderableTreeNode[] =>
 			nodes.flatMap((n) => {
 				const out = n.transform(config) as RenderableTreeNode | RenderableTreeNode[];
@@ -325,7 +346,7 @@ export const document: Schema = {
 			});
 		return new Tag('article', node.transformAttributes(config), [
 			...render(before),
-			renderAttributedQuote('epigraph', node.children[at], attribution, config),
+			renderAttributedQuote('epigraph', epigraph.quote, epigraph.attribution, config),
 			...render(after),
 		]);
 	},

@@ -260,6 +260,28 @@ Item field options:
 | `greedy` | `boolean` | Consume all matching inline nodes |
 | `itemModel` | `ItemModel` | Nested extraction for sub-lists |
 
+### A record that opens with a marker
+
+An item model read from one paragraph can name the text the paragraph must open with, as `prefix`. The paragraph's first inline node must be a text node the prefix matches; the record is read from what follows it, and a paragraph that does not open so is not this record. The attribution written inside a quote uses it: the leading dash marks `— **Name**, Source`, so a quote that merely ends in bold text is not read as its source.
+
+```typescript
+{
+  name: 'attribution',
+  match: 'paragraph',
+  optional: true,
+  position: 'last',
+  itemModel: {
+    prefix: /^\s*[—–]\s*$/,
+    fields: [
+      { name: 'name', match: 'strong' },
+      { name: 'source', match: 'text', pattern: /^\s*,\s*(.+)$/, optional: true },
+    ],
+  },
+},
+```
+
+A composition writes it as a string, as it writes `pattern`: `prefix: '^\s*[—–]\s*$'`.
+
 ---
 
 ## The transform function

@@ -62,7 +62,7 @@ A blockquote after the headline and blurb, followed by an attribution, `**Name**
 
 {% /preview %}
 
-The quote and the attribution are read together. Without an attribution the blockquote stays an ordinary quotation in the body, and an attribution on its own after the headline stays the blurb. Every rune composed over `section` reads epigraphs the same way; set `header="headline"` to read none.
+The attribution can also be the quote's own last line, `> — **Name**, Source`. The quote and the attribution are read together. Without an attribution the blockquote stays an ordinary quotation in the body, and an attribution on its own after the headline stays the blurb. Every rune composed over `section` reads epigraphs the same way; set `header="headline"` to read none.
 
 The same holds at the start of a page: a blockquote that opens a page's content, or directly follows its `#` title, with an attribution after it, is the page's epigraph.
 
