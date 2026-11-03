@@ -1,66 +1,61 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { generateStructureContract, toKebabCase } from '@refrakt-md/transform';
-import type { RuneConfig, ThemeConfig } from '@refrakt-md/transform';
-import { baseConfig, runes as coreRunes, collectSchemaRows } from '@refrakt-md/runes';
-import marketing from '@refrakt-md/marketing';
-import docs from '@refrakt-md/docs';
-import storytelling from '@refrakt-md/storytelling';
-import places from '@refrakt-md/places';
-import business from '@refrakt-md/business';
-import design from '@refrakt-md/design';
-import learning from '@refrakt-md/learning';
-import media from '@refrakt-md/media';
-import plan from '@refrakt-md/plan';
+import { assembleThemeConfig, generateStructureContract, toKebabCase } from '@refrakt-md/transform';
+import type { ThemeConfig } from '@refrakt-md/transform';
+import {
+	baseConfig,
+	runes as coreRunes,
+	collectCompositions,
+	collectSchemaRows,
+	coreTranslations,
+	loadPlugin,
+	mergePlugins,
+} from '@refrakt-md/runes';
 
-// ─── Assemble full config (core + all 9 official plugins) ───
-// Must mirror the canonical generation (`refrakt contracts --site main`), which
-// assembles every official rune-bearing plugin — including plan. Omitting a
-// plugin here silently drops its runes from the contract guard (it was missing
-// plan, which let the committed file drift).
-
-const fullRunes: Record<string, RuneConfig> = {
-	...baseConfig.runes,
-	...(marketing.theme?.runes as Record<string, RuneConfig>),
-	...(docs.theme?.runes as Record<string, RuneConfig>),
-	...(storytelling.theme?.runes as Record<string, RuneConfig>),
-	...(places.theme?.runes as Record<string, RuneConfig>),
-	...(business.theme?.runes as Record<string, RuneConfig>),
-	...(design.theme?.runes as Record<string, RuneConfig>),
-	...(learning.theme?.runes as Record<string, RuneConfig>),
-	...(media.theme?.runes as Record<string, RuneConfig>),
-	...(plan.theme?.runes as Record<string, RuneConfig>),
-};
-
-const fullConfig: ThemeConfig = { ...baseConfig, runes: fullRunes };
-
-// SPEC-130 / WORK-566 — the contract now carries each rune's resolved
-// schema.org row, and the rows come from the runes rather than from theme
-// config. Assembled here the same way `refrakt contracts` assembles them, and
-// passed through the same `generateStructureContract` call, so the committed
-// artifact and this guard are produced by one implementation with one input.
-const pluginPackages = [
-	marketing,
-	docs,
-	storytelling,
-	places,
-	business,
-	design,
-	learning,
-	media,
-	plan,
+// ─── Assemble the config the way `refrakt contracts --site main` does ───
+// Every official rune-bearing plugin, loaded through `loadPlugin` rather than
+// imported, so a plugin's `runeDir` (SPEC-153 D2) is read too: `hero` lives
+// only there since it went live (WORK-702), and a guard that missed it would
+// let the committed file drift. Omitting a plugin silently drops its runes
+// (this list once missed plan).
+const PLUGINS = [
+	'@refrakt-md/marketing',
+	'@refrakt-md/docs',
+	'@refrakt-md/storytelling',
+	'@refrakt-md/places',
+	'@refrakt-md/business',
+	'@refrakt-md/design',
+	'@refrakt-md/learning',
+	'@refrakt-md/media',
+	'@refrakt-md/plan',
 ];
-const schemaBearing: Record<string, { name: string; schema?: never }> = {};
-for (const [name, rune] of Object.entries(coreRunes)) {
-	schemaBearing[name] = { name: rune.name, schema: rune.schema as never };
-}
-for (const pkg of pluginPackages) {
-	for (const [name, entry] of Object.entries(pkg.runes ?? {})) {
-		schemaBearing[name] = { name, schema: (entry as { transform?: unknown }).transform as never };
-	}
-}
-const schemaRows = collectSchemaRows(schemaBearing as never);
+
+let fullConfig: ThemeConfig;
+let generated: ReturnType<typeof generateStructureContract>;
+
+beforeAll(async () => {
+	const loaded = await Promise.all(PLUGINS.map((name) => loadPlugin(name)));
+	const merged = mergePlugins(loaded, new Set(Object.keys(coreRunes)));
+	fullConfig = assembleThemeConfig({
+		coreConfig: baseConfig,
+		pluginRunes: merged.themeRunes,
+		pluginIcons: merged.themeIcons,
+		pluginBackgrounds: merged.themeBackgrounds,
+		provenance: merged.provenance,
+		pluginTranslations: merged.translations,
+		coreTranslations,
+	}).config;
+	// SPEC-130 / WORK-566 — the schema.org rows, and the compositions, come
+	// from the runes rather than from theme config; passed through the same
+	// `generateStructureContract` call the CLI makes, so the committed artifact
+	// and this guard are produced by one implementation with one input.
+	const runes = { ...coreRunes, ...merged.runes };
+	generated = generateStructureContract(fullConfig, {
+		schemaRows: collectSchemaRows(runes),
+		compositions: collectCompositions(runes),
+	});
+});
 
 // The contract is committed in two places that must stay in lock-step: the
 // repo-level dev copy (CLAUDE.md's `refrakt contracts -o contracts/...`) and the
@@ -70,7 +65,6 @@ const ROOT_CONTRACTS_PATH = join(__dirname, '..', '..', '..', 'contracts', 'stru
 
 describe('Structure contracts', () => {
 	it('committed structures.json matches generated output', () => {
-		const generated = generateStructureContract(fullConfig, { schemaRows });
 		const generatedJson = JSON.stringify(generated, null, '\t') + '\n';
 
 		const committed = readFileSync(CONTRACTS_PATH, 'utf-8');
@@ -79,14 +73,12 @@ describe('Structure contracts', () => {
 	});
 
 	it("the repo-level contracts/structures.json stays in sync with Lumina's copy", () => {
-		const generated = generateStructureContract(fullConfig, { schemaRows });
 		const generatedJson = JSON.stringify(generated, null, '\t') + '\n';
 
 		expect(readFileSync(ROOT_CONTRACTS_PATH, 'utf-8')).toBe(generatedJson);
 	});
 
 	it('generates contracts for all runes in fullConfig', () => {
-		const generated = generateStructureContract(fullConfig, { schemaRows });
 		const configRunes = Object.keys(fullConfig.runes).sort();
 		const contractRunes = Object.keys(generated.runes).sort();
 
@@ -94,9 +86,14 @@ describe('Structure contracts', () => {
 	});
 
 	it('every rune has required fields', () => {
-		const generated = generateStructureContract(fullConfig, { schemaRows });
-
 		for (const [name, contract] of Object.entries(generated.runes)) {
+			// A composed rune is block-less (SPEC-145 D2); its structure is its
+			// `composition` entry.
+			if (fullConfig.runes[name]?.composed) {
+				expect(contract.root, `${name}: missing root`).toBe(`[data-rune="${toKebabCase(name)}"]`);
+				expect(contract.composition, `${name}: missing composition`).toBeDefined();
+				continue;
+			}
 			expect(contract.block, `${name}: missing block`).toBeTruthy();
 			expect(contract.root, `${name}: missing root`).toMatch(/^\.rf-/);
 			expect(contract.dataRune, `${name}: missing dataRune`).toBe(toKebabCase(name));

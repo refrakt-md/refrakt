@@ -510,7 +510,7 @@ Every rune here may be placed by any composition. The set is derived from the ca
 
 ### Placed, but a node kind is rebuilt
 
-These runes are placeable, but each reinterprets one kind of node as its own structure. Slot content of that kind reaches the output rebuilt, without the `data-slot` marker a schema row or a registration would find it by. Put other kinds of content in their slots, or keep such a field out of `schema` and `registers`.
+These runes are placeable, but each reinterprets one kind of node as its own structure. Slot content of that kind reaches the output rebuilt, without the `data-slot` marker a schema row or a registration would find it by. A composed rune placed by another composition does the same for every kind its own content model reads: its template places the node again, and a node carries one owner and one slot. Put other kinds of content in their slots, or keep such a field out of `schema` and `registers`.
 
 | Rune | Node kind | What it does with it |
 |---|---|---|
@@ -529,6 +529,10 @@ These runes are placeable, but each reinterprets one kind of node as its own str
 | `symbol-group` | list | rebuilds each list item as a `symbol-member` rune |
 | `changelog` | heading | rebuilds a heading as a `changelog-release` version |
 | `preview` | fence | rebuilds the fence as its `source` view |
+| `hero` | paragraph | re-places it in a slot of its own composition, whose markers replace the outer ones |
+| `hero` | list | re-places it in a slot of its own composition, whose markers replace the outer ones |
+| `hero` | heading | re-places it in a slot of its own composition, whose markers replace the outer ones |
+| `hero` | fence | re-places it in a slot of its own composition, whose markers replace the outer ones |
 
 ## Where definitions go
 
@@ -580,7 +584,7 @@ A composition that replaces a plugin rune is reviewed on the site before it repl
 
 **Stage it.** The definition goes in `site/staged-runes/<rune>.md`, under the plugin rune's own name. The repository's `staging` site renders the same content as `main`, with that directory as its `runes.dir` and a `"<rune>": "__project__"` entry in `runes.prefer`, so the composition stands in for the plugin rune on every page. Preferring the rune also settles the aliases it shares with the plugin rune (`review` with `testimonial`). The comparison tests read the staged file, and no copy goes in a test fixture directory: a test fails on one.
 
-**Make the content valid on both sites.** Both sites render one content directory. Where the composition is written differently from the plugin rune, the plugin rune first learns the new form as well as its own, and the content moves to it, with a codemod where there is one. `hero` learned `align="start | end"`, and `testimonial` learned `author` and `role`.
+**Make the content valid on both sites.** Both sites render one content directory. Where the composition is written differently from the plugin rune, the plugin rune first learns the new form as well as its own, and the content moves to it, with a codemod where there is one. `hero` learned `align="start | end"`, and `testimonial` learned `author` and `role`. `hero` was the first to go live, and `refrakt migrate hero` rewrites the `left`, `right` and `justify` it no longer accepts.
 
 **Review it.** `npm run dev:staging` serves the staging site on its own port, and `npm run build:staging` builds it into `site/build-staging`. Every push to `main` deploys it to [staging.refrakt.md](https://staging.refrakt.md), so a merged composition can be reviewed there without a local build. Paths are the same on both sites, so a comparison is two tabs: refrakt.md and staging.refrakt.md. The review covers the rune's reference page and every other page that uses it, light and dark.
 

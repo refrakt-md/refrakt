@@ -19,7 +19,9 @@ const css = (...p: string[]) => readFileSync(join(ROOT, 'packages', 'lumina', ..
 const tokens = css('tokens', 'base.css');
 const surfaces = css('styles', 'dimensions', 'surfaces.css');
 const actions = css('styles', 'runes', 'actions.css');
-const plugin = { hero: css('styles', 'runes', 'hero.css'), cta: css('styles', 'runes', 'cta.css') };
+// `hero` went live in WORK-702 and its stylesheet was deleted; the comparison
+// stands for `cta` until it goes live too.
+const plugin = { cta: css('styles', 'runes', 'cta.css') };
 
 /** Every declaration block whose selector is exactly `selector`, joined. */
 function blocks(source: string, selector: string): string {
@@ -50,7 +52,6 @@ const ramp = (name: string) => {
 };
 
 const CASES = [
-	{ rune: 'hero', prominence: 'marquee', root: '.rf-hero', blurb: '.rf-hero .rf-hero__blurb' },
 	{ rune: 'cta', prominence: 'display', root: '.rf-cta', blurb: '.rf-cta .rf-cta__blurb' },
 ] as const;
 
@@ -59,9 +60,7 @@ describe.each(CASES)('$rune at $prominence, against the plugin stylesheet (SPEC-
 	const rootRule = blocks(own, c.root);
 
 	it(`is a section at ${c.prominence}`, () => {
-		const pkg = composedMarketing({ [c.rune]: definitionOf(c.rune) }, [
-			c.rune === 'hero' ? 'Hero' : 'Cta',
-		]);
+		const pkg = composedMarketing({ [c.rune]: definitionOf(c.rune) }, ['Cta']);
 		const src = `{% ${c.rune} %}\n# Headline\n\nBlurb.\n{% /${c.rune} %}`;
 		const [section] = byRune(byRune(renderPage(pkg, src), c.rune)[0], 'section');
 		expect(section.attributes['data-prominence']).toBe(c.prominence);

@@ -80,6 +80,15 @@ export const NOT_YET_PLACEABLE: Record<string, Record<string, string>> = {
 	'symbol-group': { list: 'rebuilds each list item as a `symbol-member` rune' },
 	changelog: { heading: 'rebuilds a heading as a `changelog-release` version' },
 	preview: { fence: 'rebuilds the fence as its `source` view' },
+	// WORK-702 — the first composed rune in the catalog. Its own template places
+	// the node again, and a node carries one owner and one slot.
+	hero: {
+		paragraph:
+			're-places it in a slot of its own composition, whose markers replace the outer ones',
+		list: 're-places it in a slot of its own composition, whose markers replace the outer ones',
+		heading: 're-places it in a slot of its own composition, whose markers replace the outer ones',
+		fence: 're-places it in a slot of its own composition, whose markers replace the outer ones',
+	},
 };
 
 /** Every rune in the catalog, sorted into placeable and excluded-with-reason. */

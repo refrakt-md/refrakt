@@ -7,7 +7,6 @@ import { isTag, makeTag, readMeta } from '@refrakt-md/transform';
 // path is unchanged — it still reads `config.sections` and friends.
 import { bentoCellSections } from './tags/bento.js';
 import { featureMediaSlots, featureSections } from './tags/feature.js';
-import { heroMediaSlots, heroSections } from './tags/hero.js';
 import { stepMediaSlots, stepsSections } from './tags/steps.js';
 import { testimonialMediaSlots, testimonialSections } from './tags/testimonial.js';
 import { ctaSections } from './tags/cta.js';
@@ -24,56 +23,6 @@ const pageSectionAutoLabel = {
 };
 
 export const config: Record<string, RuneConfig> = {
-	Hero: {
-		block: 'hero',
-		defaultDensity: 'full',
-		defaultWidth: 'full',
-		defaultElevation: 'flush',
-		// A hero is a bare section host, not a framed well — a rune guest keeps
-		// its own chrome and may spill instead of being clipped/rounded.
-		guestFit: 'bleed',
-		// Page section: at width="wide" the gradient/media bleeds out but the
-		// headline/content stays at the text measure (as it already does at full).
-		contentMeasure: 'anchored',
-		modifiers: {
-			// BUG-001: content-first DOM, so the truthful stacked default is
-			// `bottom` (media beneath the text); Lumina counters the shared
-			// media-first stacked rules for these runes.
-			'media-position': { source: 'meta', default: 'bottom', noBemClass: true },
-			align: { source: 'meta', default: 'center' },
-			'media-ratio': { source: 'meta', noBemClass: true },
-			valign: { source: 'meta', noBemClass: true },
-			collapse: { source: 'meta', noBemClass: true },
-			// SPEC-101 — cover-mode knobs, same grammar as Card (SPEC-089).
-			'content-place': { source: 'meta', noBemClass: true },
-			height: { source: 'meta', noBemClass: true },
-			aspect: { source: 'meta', noBemClass: true },
-		},
-		// SPEC-101 — `media-position="cover"` reuses the shared full-scope cover
-		// layer (SPEC-089): the media well fills the section interior and the
-		// content overlays it. The variant supplies the scope attribute + a hero
-		// modifier class for the band-specific CSS (padding rerouting, height).
-		variants: {
-			'media-position': {
-				cover: { staticModifiers: ['cover'], rootAttributes: { 'data-cover-scope': 'full' } },
-			},
-		},
-		styles: {
-			valign: { prop: '--split-valign', transform: 'align' },
-			aspect: 'aspect-ratio',
-		},
-		sections: heroSections,
-		mediaSlots: heroMediaSlots,
-		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
-		editHints: {
-			headline: 'inline',
-			eyebrow: 'inline',
-			blurb: 'inline',
-			action: 'link',
-			command: 'code',
-			media: 'image',
-		},
-	},
 	CallToAction: {
 		block: 'cta',
 		defaultDensity: 'full',

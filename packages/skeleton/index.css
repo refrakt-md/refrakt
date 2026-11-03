@@ -61,7 +61,6 @@
 @import "./styles/runes/steps.css" layer(skeleton);
 @import "./styles/runes/pricing.css" layer(skeleton);
 @import "./styles/runes/cta.css" layer(skeleton);
-@import "./styles/runes/hero.css" layer(skeleton);
 @import "./styles/runes/feature.css" layer(skeleton);
 @import "./styles/runes/testimonial.css" layer(skeleton);
 @import "./styles/runes/bento.css" layer(skeleton);

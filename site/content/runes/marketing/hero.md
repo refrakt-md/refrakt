@@ -57,7 +57,7 @@ Code fences inside a hero become copyable command blocks — great for install c
 
 ## Start-aligned
 
-Use `align="start"` for a more editorial feel. `align` takes `start`, `center` (the default) or `end`; the older `left` and `right` still work for now.
+Use `align="start"` for a more editorial feel. `align` takes `start`, `center` (the default) or `end`. The older `left`, `right` and `justify` are no longer accepted; `refrakt migrate hero <paths> --apply` rewrites them.
 
 {% preview source=true %}
 
@@ -189,3 +189,8 @@ The body splits on `---` into **media → content** zones (media-first in source
 | `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
 
+## How it is built
+
+Hero is a [composition](/extend/rune-authoring/composed-runes): a Markdown file that places a [`section`](/runes/section) at `marquee` [prominence](/runes/surfaces) and an [`actions`](/runes/actions) list, rather than a rune with its own transform and stylesheet. It renders no `rf-hero` classes; a theme styles the `section` and `actions` it is made of, and can still reach the hero itself through `[data-rune="hero"]`.
+
+{% snippet path="plugins/marketing/runes/hero.md" /%}

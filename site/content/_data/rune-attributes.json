@@ -2625,9 +2625,49 @@
 			"plugin": "@refrakt-md/marketing",
 			"scope": "own",
 			"name": "align",
-			"type": "\"start\" | \"center\" | \"end\" | \"left\" | \"right\"",
+			"type": "\"start\" | \"center\" | \"end\"",
 			"required": false,
-			"description": "Horizontal alignment of headline and body text: start, center (default) or end. `left` and `right` still work.",
+			"description": "Alignment of the header and the actions",
+			"page": "hero"
+		},
+		{
+			"rune": "hero",
+			"plugin": "@refrakt-md/marketing",
+			"scope": "own",
+			"name": "media-position",
+			"type": "\"top\" | \"bottom\" | \"start\" | \"end\" | \"cover\"",
+			"required": false,
+			"description": "Where the media sits relative to the content",
+			"page": "hero"
+		},
+		{
+			"rune": "hero",
+			"plugin": "@refrakt-md/marketing",
+			"scope": "own",
+			"name": "media-ratio",
+			"type": "string",
+			"required": false,
+			"description": "The media's share of the row, beside the content",
+			"page": "hero"
+		},
+		{
+			"rune": "hero",
+			"plugin": "@refrakt-md/marketing",
+			"scope": "own",
+			"name": "valign",
+			"type": "\"top\" | \"center\" | \"bottom\" | \"stretch\"",
+			"required": false,
+			"description": "Cross-axis alignment, beside the content",
+			"page": "hero"
+		},
+		{
+			"rune": "hero",
+			"plugin": "@refrakt-md/marketing",
+			"scope": "own",
+			"name": "collapse",
+			"type": "\"sm\" | \"md\" | \"lg\" | \"never\"",
+			"required": false,
+			"description": "When a side-by-side split stacks",
 			"page": "hero"
 		},
 		{
@@ -2647,7 +2687,7 @@
 			"name": "height",
 			"type": "\"sm\" | \"md\" | \"lg\" | \"xl\"",
 			"required": false,
-			"description": "Intrinsic hero band height (named scale) for cover mode",
+			"description": "Intrinsic band height (named scale) for cover mode",
 			"page": "hero"
 		},
 		{
@@ -2657,17 +2697,7 @@
 			"name": "aspect",
 			"type": "string",
 			"required": false,
-			"description": "Intrinsic hero aspect ratio (e.g. \"21/9\", \"16/9\") for cover mode",
-			"page": "hero"
-		},
-		{
-			"rune": "hero",
-			"plugin": "@refrakt-md/marketing",
-			"scope": "own",
-			"name": "justify",
-			"type": "string",
-			"required": false,
-			"description": "",
+			"description": "Intrinsic aspect ratio (e.g. \"21/9\") for cover mode",
 			"page": "hero"
 		},
 		{
@@ -5244,50 +5274,6 @@
 			"description": "Breakpoint at which side-by-side layouts collapse to a single stacked column",
 			"preset": "split layout",
 			"page": "feature"
-		},
-		{
-			"rune": "hero",
-			"plugin": "@refrakt-md/marketing",
-			"scope": "base",
-			"name": "media-position",
-			"type": "\"top\" | \"bottom\" | \"start\" | \"end\" | \"cover\"",
-			"required": false,
-			"description": "Where the media zone sits relative to the content: above (top), below (bottom), or beside (start/end)",
-			"preset": "split layout",
-			"page": "hero"
-		},
-		{
-			"rune": "hero",
-			"plugin": "@refrakt-md/marketing",
-			"scope": "base",
-			"name": "media-ratio",
-			"type": "\"1/3\" | \"2/5\" | \"1/2\" | \"3/5\" | \"2/3\"",
-			"required": false,
-			"description": "Media zone’s share of the row width when media is beside content (start/end)",
-			"preset": "split layout",
-			"page": "hero"
-		},
-		{
-			"rune": "hero",
-			"plugin": "@refrakt-md/marketing",
-			"scope": "base",
-			"name": "valign",
-			"type": "\"top\" | \"center\" | \"bottom\" | \"stretch\"",
-			"required": false,
-			"description": "Cross-axis alignment when media is beside content (start/end); applies to the shorter zone",
-			"preset": "split layout",
-			"page": "hero"
-		},
-		{
-			"rune": "hero",
-			"plugin": "@refrakt-md/marketing",
-			"scope": "base",
-			"name": "collapse",
-			"type": "\"sm\" | \"md\" | \"lg\" | \"never\"",
-			"required": false,
-			"description": "Breakpoint at which side-by-side layouts collapse to a single stacked column",
-			"preset": "split layout",
-			"page": "hero"
 		},
 		{
 			"rune": "lore",
@@ -9671,6 +9657,14 @@
 		},
 		{
 			"rune": "hero",
+			"axis": "dropcap",
+			"available": true,
+			"description": "Per-instance drop-cap opt-in (SPEC-108).",
+			"query": "axis:dropcap",
+			"page": "hero"
+		},
+		{
+			"rune": "hero",
 			"axis": "elevation",
 			"available": true,
 			"description": "The chrome/depth ladder (SPEC-107). The skin maps each rung to a chrome bundle by attribute, so there is no BEM class.",
@@ -9707,6 +9701,14 @@
 			"available": true,
 			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
+			"page": "hero"
+		},
+		{
+			"rune": "hero",
+			"axis": "reading",
+			"available": true,
+			"description": "Editorial register for body text (SPEC-108). The author picks the register; the theme owns the magnitude.",
+			"query": "axis:reading",
 			"page": "hero"
 		},
 		{
@@ -15090,13 +15092,6 @@
 			"axes": "prominence",
 			"reason": "this rune has no page-section header or featured quotation",
 			"page": "grid"
-		},
-		{
-			"rune": "hero",
-			"available": false,
-			"axes": "dropcap, reading",
-			"reason": "this rune declares no prose body",
-			"page": "hero"
 		},
 		{
 			"rune": "hint",

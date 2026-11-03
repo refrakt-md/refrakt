@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { compositionFor } from '@refrakt-md/runes';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import Markdoc from '@markdoc/markdoc';
+import { compositionFor, extractSeo, parse } from '@refrakt-md/runes';
 import { marketing } from '../../../plugins/marketing/src/index.js';
 import {
 	byName,
@@ -7,46 +10,46 @@ import {
 	composedMarketing,
 	definitionOf,
 	html,
+	liveDir,
 	merge,
+	pageContext,
 	renderPage,
 	text,
 	type Json,
 } from './composed-marketing.js';
 
 /**
- * WORK-665 — `hero` as a composition over `section` (SPEC-160 D7), beside the
- * marketing plugin's `hero` and never in place of it (SPEC-147 D1). The
- * definition is `site/staged-runes/hero.md`, staged on the `staging` site (SPEC-181).
- *
- * SPEC-147 D2's gate: every difference from the plugin is explained. Each is
- * asserted below, and the visual ones (light and dark, through Lumina) are
- * recorded in WORK-665's resolution.
+ * WORK-665 — `hero` as a composition over `section` (SPEC-160 D7). It was staged
+ * on the `staging` site (SPEC-181) and compared with the plugin's native `hero`
+ * cell by cell (SPEC-147 D2); every difference was explained there and reviewed
+ * on staging.refrakt.md (WORK-689). WORK-702 took it live: the definition is now
+ * `plugins/marketing/runes/hero.md`, and the native rune is gone, so the
+ * comparison has nothing left to compare against. What it established is kept
+ * below as assertions on the composition alone.
  */
 
-const pkg = composedMarketing({ hero: definitionOf('hero') }, ['Hero']);
+const pkg = composedMarketing({ hero: definitionOf('hero') }, []);
 const mine = (src: string) => byRune(renderPage(pkg, src), 'hero')[0];
-const theirs = (src: string) => byRune(renderPage(marketing, src), 'hero')[0];
 const sectionOf = (root: Json) => byRune(root, 'section')[0];
 
 const IMG = '![Harbour](/harbour.jpg)';
-const FIXTURE = marketing.runes.hero.fixture!;
+const FIXTURE = readFileSync(join(liveDir, '..', 'fixtures', 'hero.md'), 'utf-8')
+	.replace(/^---[\s\S]*?---\s*/, '')
+	.trim();
 const withMedia = (attrs: string) =>
 	`{% hero ${attrs} %}\n${IMG}\n\n---\n\nNew in 2.0\n\n# Ship faster\n\nOne file per page.\n\n- [Start](/start)\n- [Docs](/docs)\n{% /hero %}`;
 
-/** The gallery's cells for `hero`: the plugin fixture across its own enum, plus
- *  the split and cover. The plugin's `left` / `right` are `section`'s `start` /
- *  `end`. */
-const CASES: Array<[string, string, string]> = [
-	['default', FIXTURE, FIXTURE],
-	['align left', FIXTURE.replace('"center"', '"left"'), FIXTURE.replace('"center"', '"start"')],
-	['align right', FIXTURE.replace('"center"', '"right"'), FIXTURE.replace('"center"', '"end"')],
-	['media bottom', withMedia(''), withMedia('')],
-	['media top', withMedia('media-position="top"'), withMedia('media-position="top"')],
-	['media end', withMedia('media-position="end"'), withMedia('media-position="end"')],
-	['cover', withMedia('media-position="cover"'), withMedia('media-position="cover"')],
+/** The gallery's cells for `hero`, as the comparison ran them. */
+const CASES: Array<[string, string]> = [
+	['default', FIXTURE],
+	['align start', FIXTURE.replace('"center"', '"start"')],
+	['align end', FIXTURE.replace('"center"', '"end"')],
+	['media bottom', withMedia('')],
+	['media top', withMedia('media-position="top"')],
+	['media end', withMedia('media-position="end"')],
+	['cover', withMedia('media-position="cover"')],
 	[
 		'cover, placed and sized',
-		withMedia('media-position="cover" height="lg" content-place="end start"'),
 		withMedia('media-position="cover" height="lg" content-place="end start"'),
 	],
 ];
@@ -114,7 +117,6 @@ describe('the composed hero definition (WORK-665)', () => {
 
 	it('keeps a second leading heading as body rather than dropping it (BUG-047)', () => {
 		const src = '{% hero %}\n# Ship faster\n\n## For every team\n\nOne file per page.\n{% /hero %}';
-		expect(text(theirs(src))).not.toContain('For every team');
 		const out = mine(src);
 		expect(text(byName(out, 'headline')[0])).toBe('Ship faster');
 		expect(text(byName(out, 'body')[0])).toContain('For every team');
@@ -122,50 +124,43 @@ describe('the composed hero definition (WORK-665)', () => {
 	});
 });
 
-describe('composed hero against the plugin, for every gallery cell (SPEC-147 D2)', () => {
-	it.each(CASES)('%s: the same content, in the same roles', (_case, plugin, composed) => {
-		const a = theirs(plugin);
-		const b = mine(composed);
-		for (const role of ['eyebrow', 'headline', 'blurb']) {
-			expect(byName(b, role).map(text), role).toEqual(byName(a, role).map(text));
-		}
-		expect(byName(b, 'action').map((n: Json) => n.attributes['data-rank'])).toEqual(
-			byName(a, 'action').map((n: Json) => n.attributes['data-rank']),
-		);
-		expect(byName(b, 'media').map((m: Json) => html(m.children))).toEqual(
-			byName(a, 'media').map((m: Json) => html(m.children)),
-		);
-		// The split and cover land on the section, with the plugin's values.
-		for (const attr of ['data-media-position', 'data-content-place', 'data-height']) {
-			expect(sectionOf(b).attributes[attr], attr).toBe(a.attributes[attr]);
-		}
-		expect(sectionOf(b).attributes['data-cover-scope']).toBe(a.attributes['data-cover-scope']);
-		expect(byName(b, 'media')[0]?.attributes['data-media']).toBe(
-			byName(a, 'media')[0]?.attributes['data-media'],
-		);
-	});
-
-	it.each(CASES)('%s: the differences, each explained', (_case, plugin, composed) => {
-		const a = theirs(plugin);
-		const b = mine(composed);
-		// The root is an empty wrapper, block-less: no `rf-hero*` class anywhere
-		// (SPEC-145 D2). The section's BEM classes replace the hero's.
-		expect(a.name).toBe('section');
+describe('the shipping hero, for every gallery cell (WORK-702)', () => {
+	it.each(CASES)('%s: a block-less wrapper around a marquee section', (_case, src) => {
+		const b = mine(src);
+		// No `rf-hero*` class anywhere (SPEC-145 D2): the section's BEM classes
+		// replace the hero's, and `data-rune` stays for themes and context modifiers.
 		expect(b.name).toBe('div');
 		expect(html(b)).not.toMatch(/rf-hero/);
 		expect(b.attributes['data-rune']).toBe('hero');
-		// Width stays on the root; the paint and the header's prominence move to
-		// the section (SPEC-145 D33). The plugin rests at its own title size and
-		// carries no `data-prominence`; the composition states `marquee`, the
-		// step that reproduces it (SPEC-183; composed-landing-register.test.ts).
-		expect(b.attributes['data-width']).toBe(a.attributes['data-width']);
-		expect(a.attributes['data-prominence']).toBeUndefined();
+		// Width stays on the root; the paint and the header's prominence are the
+		// section's (SPEC-145 D33, SPEC-183).
+		expect(b.attributes['data-width']).toBe('full');
 		expect(sectionOf(b).attributes['data-prominence']).toBe('marquee');
-		// `section` declares no `contentMeasure`, so the content is not anchored
-		// to the text measure at `width="wide"`.
-		expect(a.attributes['data-content-measure']).toBe('anchored');
 		expect(html(b)).not.toContain('data-content-measure');
 		// Every slot-placed node carries its slot name (SPEC-145 D10c).
 		expect(byName(b, 'headline')[0].attributes['data-slot']).toBe('headline');
+		expect(text(byName(b, 'headline')[0]).length).toBeGreaterThan(0);
+	});
+
+	it('the marketing plugin no longer ships a native hero', () => {
+		expect(marketing.runes.hero).toBeUndefined();
+		expect(marketing.theme?.runes?.Hero).toBeUndefined();
+		expect(marketing.runeDir).toBe('runes');
+	});
+});
+
+describe('the page metadata a hero supplies (WORK-702)', () => {
+	it('takes the OG title and description from the headline and blurb, not the eyebrow', () => {
+		const { schemas } = pageContext(pkg);
+		const tree = Markdoc.transform(
+			parse('{% hero %}\nNew in 2.0\n\n# Ship faster\n\nOne file per page.\n{% /hero %}'),
+			{
+				...schemas,
+				variables: { generatedIds: new Set<string>(), path: '/p', headings: [] },
+			} as never,
+		);
+		const { og } = extractSeo(tree, {}, '/p');
+		expect(og.title).toBe('Ship faster');
+		expect(og.description).toBe('One file per page.');
 	});
 });

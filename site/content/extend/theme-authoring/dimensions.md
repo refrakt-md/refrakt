@@ -314,13 +314,13 @@ Budget: {
   sections: { header: 'header', title: 'title', footer: 'footer' },
 }
 
-Hero: {
-  block: 'hero',
+Feature: {
+  block: 'feature',
   sections: {
     preamble: 'preamble',
+    eyebrow: 'eyebrow',
     headline: 'title',
     blurb: 'description',
-    content: 'body',
   },
 }
 ```

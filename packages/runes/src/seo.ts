@@ -282,12 +282,17 @@ function extractOgMeta(
 	// Priority 2: Hero rune
 	const hero = findFirst(tree, (tag) => tag.attributes?.['data-rune'] === 'hero');
 	if (hero) {
+		// The composed hero (WORK-702) places its header parts into a `section`,
+		// marked by slot rather than by field, and nested below the root.
+		const part = (name: string) =>
+			findProperty(hero, name) ??
+			findFirst(hero.children as RenderableTreeNodes, (t) => t.attributes?.['data-slot'] === name);
 		if (!og.title) {
-			const headline = findProperty(hero, 'headline');
+			const headline = part('headline');
 			if (headline) og.title = textContent(headline);
 		}
 		if (!og.description) {
-			const blurb = findProperty(hero, 'blurb');
+			const blurb = part('blurb');
 			if (blurb) og.description = textContent(blurb).slice(0, 200);
 		}
 	}
