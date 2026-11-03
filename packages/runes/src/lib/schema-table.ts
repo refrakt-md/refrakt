@@ -364,6 +364,35 @@ export function findByName(
 	return findAllByName(root, name)[0];
 }
 
+/**
+ * A source node, by name — or, for a dotted source `a.b`, the node named `b`
+ * inside the node `a` (SPEC-185 D7). The head resolves as any source does: one
+ * of this rune's own names, or a slot it placed. The rest is the placed rune's
+ * own name for a part of what it rendered from that slot (a pull quote's
+ * `<figcaption>` names its `name` and `source`), read whoever owns it.
+ */
+export function findSourceNode(root: AnyTag, source: string): AnyTag | undefined {
+	const node = findByName(root, source);
+	if (node || !source.includes('.')) return node;
+	const [head, ...rest] = source.split('.');
+	const container = findByName(root, head);
+	if (!container) return undefined;
+	const name = rest.join('.');
+	const visit = (n: unknown): AnyTag | undefined => {
+		if (Array.isArray(n)) {
+			for (const c of n) {
+				const hit = visit(c);
+				if (hit) return hit;
+			}
+			return undefined;
+		}
+		if (!isTag(n)) return undefined;
+		if (n.attributes?.['data-name'] === name) return n;
+		return visit(n.children ?? []);
+	};
+	return visit(container.children ?? []);
+}
+
 /** The rune's field bag, as written by `createComponentRenderable`. */
 function readBag(root: AnyTag): Record<string, unknown> {
 	const raw = root.attributes?.['data-rune-fields'];
@@ -473,19 +502,28 @@ function buildEntity(
 	bag: Record<string, unknown>,
 ): AnyTag | undefined {
 	const carriers: AnyTag[] = [];
+	// A property takes its first source that resolves: two sources mapped to
+	// one property are alternatives (an attribute, else what a placed rune
+	// rendered), never both (SPEC-185 D7).
+	const carried = new Set<string>();
 	for (const [source, property] of Object.entries(entity.properties ?? {})) {
-		const node = findByName(root, source);
+		if (carried.has(property)) continue;
+		const node = findSourceNode(root, source);
 		if (node) {
 			// The source survives in the output, so the entity takes a copy of its
 			// value rather than relocating the node — moving it would change the
 			// rendered HTML, which this mechanism must not do.
 			const text = textOf(node);
-			if (text) carriers.push(new Tag('meta', { property, content: text }));
+			if (text) {
+				carriers.push(new Tag('meta', { property, content: text }));
+				carried.add(property);
+			}
 			continue;
 		}
 		const value = bag[source];
 		if (value !== undefined && value !== '') {
 			carriers.push(new Tag('meta', { property, content: carry(value) }));
+			carried.add(property);
 		}
 	}
 	if (carriers.length === 0) return undefined;

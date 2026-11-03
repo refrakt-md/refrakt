@@ -10,6 +10,7 @@ import {
 	fieldMetas,
 } from '../lib/index.js';
 import { QUOTE_ATTR, withoutQuoteRole } from '../nodes.js';
+import { OWNER_ATTR, SLOT_ATTR } from '../lib/schema-table.js';
 import {
 	attributionFrom,
 	attributionItemModel,
@@ -89,6 +90,19 @@ export const pullquote = createContentModelSchema({
 	sections: pullQuoteSections,
 	provides: ['prose', 'featured-quotation'],
 	attributes: {
+		// SPEC-185 D7 — the attribution written as attributes, which a
+		// composition passes on (`author=$attrs.author`). It wins over a
+		// paragraph, as an author's attribute does (SPEC-182 D2).
+		author: {
+			type: String,
+			required: false,
+			description: 'Who said it: the attribution, when it is not written as a paragraph',
+		},
+		source: {
+			type: String,
+			required: false,
+			description: 'Where it is from: a role, a work or a date, beside `author`',
+		},
 		align: {
 			type: String,
 			required: false,
@@ -129,9 +143,22 @@ export const pullquote = createContentModelSchema({
 			? withoutQuoteRole(authored[0])
 			: new Tag('blockquote', {}, renderNodes(resolved.body as Node[], config).toArray());
 
-		const attribution = renderAttribution(
-			attributionFrom(resolved.attributionData) ?? inside?.attribution ?? {},
-		);
+		// The attribution: the attributes, else the paragraph after the quote,
+		// else the quote's last line. A paragraph a composition placed keeps its
+		// slot markers on the `<figcaption>` it becomes, so the composing rune's
+		// schema reaches the name and source inside it (D7).
+		const fromAttrs =
+			typeof attrs.author === 'string' && attrs.author.trim()
+				? { name: attrs.author, source: attrs.source as string | undefined }
+				: undefined;
+		const after = fromAttrs ? undefined : attributionFrom(resolved.attributionData);
+		const attribution = renderAttribution(fromAttrs ?? after ?? inside?.attribution ?? {});
+		if (attribution && after) {
+			const marks = (resolved.attribution as Node | undefined)?.attributes ?? {};
+			for (const name of [OWNER_ATTR, SLOT_ATTR]) {
+				if (marks[name] !== undefined) attribution.attributes[name] = marks[name];
+			}
+		}
 		const excerpt = attrs.excerpt === true;
 		const figureChildren = attribution ? [quote, attribution] : [quote];
 		const refs: Record<string, Tag> = { quote };

@@ -25,15 +25,20 @@ import {
  * WORK-668 — `testimonial` as a composition over `section` (SPEC-161 D1),
  * beside the marketing plugin's `testimonial` and never in place of it
  * (SPEC-147 D1). The definition is
- * `site/staged-runes/testimonial.md`, staged on the `staging` site (SPEC-181). Its byline is
- * read from the `**Name** — Role` paragraph, as the plugin's is, and the `author` and `role`
- * attributes give the same byline without it (SPEC-182 D6).
+ * `site/staged-runes/testimonial.md`, staged on the `staging` site (SPEC-181). Its quote is
+ * a featured quotation (SPEC-185 D7): it places `{% pullquote %}`, which reads the
+ * `**Name** — Role` paragraph and renders it as the `<figcaption>`; the `author` and `role`
+ * attributes give the same figcaption without it, passed on to the pull quote.
  */
 
 const pkg = composedMarketing({ testimonial: definitionOf('testimonial') }, ['Testimonial']);
 const mine = (src: string) => byRune(renderPage(pkg, src), 'testimonial')[0];
 const theirs = (src: string) => byRune(renderPage(marketing, src), 'testimonial')[0];
 const sectionOf = (root: Json) => byRune(root, 'section')[0];
+const pullquoteOf = (root: Json) => byRune(root, 'pull-quote')[0];
+const captionOf = (root: Json) => all(pullquoteOf(root), (n) => n.name === 'figcaption')[0];
+const nameOf = (root: Json) => byName(captionOf(root), 'name')[0];
+const sourceOf = (root: Json) => byName(captionOf(root), 'source')[0];
 
 /** The same testimonial with its byline written as attributes (SPEC-182 D4). */
 const asAttributes = (src: string) =>
@@ -84,19 +89,19 @@ describe('the composed testimonial definition (WORK-668)', () => {
 		},
 	);
 
-	it('renders the byline in the `lead` layout: the name leads, the role beneath, nothing ranked', () => {
+	it('places a featured quotation, which renders the attribution as its figcaption (SPEC-185 D7)', () => {
 		const out = mine(FIXTURE);
-		const [byline] = byName(out, 'byline');
-		expect(byline.attributes['data-zone-layout']).toBe('lead');
-		const [name, role] = byline.children.filter((c: Json) => c && typeof c === 'object');
-		expect(name.name).toBe('cite');
-		expect('data-lead' in name.attributes).toBe(true);
-		expect(text(name)).toBe('Sarah Chen');
-		expect(text(role)).toBe('Head of Developer Experience at Acme Corp');
-		expect(html(byline)).not.toContain('data-meta-rank');
+		const pq = pullquoteOf(out);
+		expect(pq.name).toBe('figure');
+		expect(pq.attributes['data-quote']).toBe('featured');
+		expect(text(nameOf(out))).toBe('Sarah Chen');
+		expect(nameOf(out).name).toBe('cite');
+		expect(text(sourceOf(out))).toBe('Head of Developer Experience at Acme Corp');
+		// The figcaption is the byline: the testimonial has none of its own.
+		expect(byName(out, 'byline')).toHaveLength(0);
 	});
 
-	it('reads the byline from the paragraph, and reports nothing on either form', () => {
+	it('reads the attribution from the paragraph, and reports nothing on either form', () => {
 		const { schemas } = pageContext(pkg);
 		for (const src of [FIXTURE, asAttributes(FIXTURE)]) {
 			const errors = Markdoc.validate(parse(src), { ...schemas, variables: {} } as never).map(
@@ -105,25 +110,30 @@ describe('the composed testimonial definition (WORK-668)', () => {
 			expect(errors.filter((e) => e.level !== 'info')).toEqual([]);
 		}
 		expect(asAttributes(FIXTURE)).not.toContain('**Sarah Chen**');
-		// The paragraph does not render as prose: it became the byline.
-		expect(text(byName(mine(FIXTURE), 'byline')[0])).toContain('Sarah Chen');
+		// The paragraph does not render as prose: it became the figcaption.
 		expect(html(mine(FIXTURE))).not.toContain('<strong>Sarah Chen</strong>');
 	});
 
-	it('renders both forms identically', () => {
+	it('renders one figcaption from either form, the same apart from the placed slot', () => {
+		// The paragraph form's figcaption is the placed paragraph, so it keeps its
+		// `data-slot`; the attribute form's is the pull quote's own.
+		const unslotted = (root: Json) =>
+			html(pullquoteOf(root)).replace(' data-slot="attribution"', '');
 		for (const [, src] of CASES) {
-			expect(html(mine(asAttributes(src)))).toBe(html(mine(src)));
+			const a = mine(asAttributes(src));
+			const b = mine(src);
+			expect(all(pullquoteOf(a), (n) => n.name === 'figcaption')).toHaveLength(1);
+			expect(unslotted(a)).toBe(unslotted(b));
 		}
 	});
 
-	it('warns `fill-overridden` when both forms are written, and the attribute wins', () => {
+	it('with both forms written, the attribute wins, and the graph names one author', () => {
 		const src = FIXTURE.replace('{% testimonial %}', '{% testimonial author="Grace Hopper" %}');
-		const { schemas } = pageContext(pkg);
-		const warnings = Markdoc.validate(parse(src), { ...schemas, variables: {} } as never)
-			.map((e) => e.error)
-			.filter((e) => e.id === 'fill-overridden');
-		expect(warnings.map((w) => w.level)).toEqual(['warning']);
-		expect(text(byName(mine(src), 'byline')[0])).toContain('Grace Hopper');
+		const out = mine(src);
+		expect(text(nameOf(out))).toBe('Grace Hopper');
+		const [person] = all(out, (n) => n.attributes?.typeof === 'Person');
+		const names = all(person, (n) => n.attributes?.property === 'name');
+		expect(names.map((n: Json) => n.attributes.content)).toEqual(['Grace Hopper']);
 	});
 });
 
@@ -205,11 +215,8 @@ describe('composed testimonial against the plugin, for every gallery cell (SPEC-
 		const quote = all(b, (n) => n.attributes?.['data-slot'] === 'quote')[0];
 		expect(quote.name).toBe('blockquote');
 		expect(html(quote.children)).toBe(html(all(a, (n) => n.name === 'blockquote')[0].children));
-		const [name, role] = byName(b, 'byline')[0].children.filter(
-			(c: Json) => c && typeof c === 'object',
-		);
-		expect(text(name)).toBe(text(byName(a, 'author-name')[0]));
-		expect(text(role)).toBe(text(byName(a, 'author-role')[0]));
+		expect(text(nameOf(b))).toBe(text(byName(a, 'author-name')[0]));
+		expect(text(sourceOf(b))).toBe(text(byName(a, 'author-role')[0]));
 		expect(html(byName(b, 'rating').map((r: Json) => r.children))).toBe(
 			html(byName(a, 'rating').map((r: Json) => r.children)),
 		);
@@ -229,23 +236,23 @@ describe('composed testimonial against the plugin, for every gallery cell (SPEC-
 		expect(sectionOf(b).attributes['data-elevation']).toBe('flat');
 		expect(a.attributes['data-density']).toBe('compact');
 		expect(sectionOf(b).attributes['data-density']).toBe('full');
-		// The quote is the authored blockquote, carrying its slot marker and
-		// its schema property. How it looks in a card is SPEC-185's (a featured
-		// quotation, styled by role); `pullquote variant="plain"` stood in for
-		// it and was withdrawn before release (SPEC-185 D2).
+		// SPEC-185 D7 — the quote is a featured quotation: the authored
+		// blockquote, carrying its slot marker and its schema property, inside
+		// a placed `pullquote`, which renders the attribution as its
+		// figcaption. The plugin's byline (`author-name`, `author-role`) is the
+		// figcaption's `<cite>` and source.
 		const [quote] = all(b, (n) => n.attributes?.['data-slot'] === 'quote');
 		expect(quote.name).toBe('blockquote');
 		expect(quote.attributes.property).toBe('reviewBody');
-		expect(byRune(b, 'pull-quote')).toHaveLength(0);
+		expect(pullquoteOf(b).attributes['data-quote']).toBe('featured');
+		expect(captionOf(b).attributes['data-slot']).toBe('attribution');
 		// The avatar is a media zone beside the content rather than the last
 		// child: a `div[data-section="media"]` holding the image.
 		expect(byName(b, 'media')[0].name).toBe('div');
-		// The author is a `<cite>`, and the author and role are the rune's own
-		// values, filled from the paragraph, so the root carries them as
-		// `data-author` / `data-role`: a meta field resolves against them
-		// (SPEC-145 D7, SPEC-182 D2).
-		expect(byName(b, 'byline')[0].children.find((c: Json) => c?.name === 'cite')).toBeDefined();
-		expect(b.attributes['data-author']).toBe('Sarah Chen');
+		// The paragraph no longer fills the rune's own `author` and `role`: the
+		// pull quote reads it, and the schema reads the name and source from the
+		// figcaption (`attribution.name`), so the root carries no `data-author`.
+		expect(b.attributes['data-author']).toBeUndefined();
 		// `variant` reaches the root as written. The plugin's always reads
 		// `card`: it emits the variant's meta as a child rather than a property,
 		// so the field bag never carries it and the modifier falls to its default.
