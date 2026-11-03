@@ -1,24 +1,56 @@
 import type { Config, Node, ValidationError } from '@markdoc/markdoc';
+import type { ContentModel, ResolvedContent } from '@refrakt-md/types';
 import { SchemaSideTable } from './schema-side-table.js';
 import { OWNER_ATTR, SLOT_ATTR } from './schema-table.js';
+import { resolveContentModel } from './resolver.js';
 
 /**
  * The header roles a host reads from its children — ADR-046 decision 3.
  *
- * A host whose grammar lifts some of its children into header roles (an
- * eyebrow, a headline, a blurb) registers a reader for them. A composition
- * placing that host can then ask, for its own expanded template, which node
- * fills which role, and compare that with the slot each node came from. The
- * reader is the host's own grammar, not a copy of it, so the check and the
- * rendering cannot disagree.
+ * A host whose content model lifts some of its children into header roles (an
+ * eyebrow, a headline, a blurb) registers the roles and that model. A
+ * composition placing the host can then ask, for its own expanded template,
+ * which node fills which role, and compare that with the slot each node came
+ * from. Since SPEC-186 D5 the roles are read from the host's declared content
+ * model, the same one its transform resolves, so the check and the rendering
+ * cannot disagree, and no hand-written reader restates the grammar.
  */
-export type HeaderRoleReader = (
+export interface HeaderRoleHost {
+	/** The field names that are header roles. */
+	roles: readonly string[];
+	/** The host's content model, as its schema declares it. */
+	model: ContentModel | ((attrs: Record<string, any>) => ContentModel);
+}
+
+/** Each host's roles and model, keyed by its schema. */
+export const schemaHeaderRoles = new SchemaSideTable<HeaderRoleHost>();
+
+/** The nodes filling each header role, read through the host's model. A
+ *  delimited model's zones are searched one level down. */
+export function readHeaderRoles(
+	host: HeaderRoleHost,
 	children: readonly Node[],
 	attrs: Record<string, unknown>,
-) => ReadonlyArray<{ role: string; node: Node }>;
-
-/** Each host's reader, keyed by its schema. */
-export const schemaHeaderRoles = new SchemaSideTable<HeaderRoleReader>();
+): Array<{ role: string; node: Node }> {
+	const model = typeof host.model === 'function' ? host.model(attrs) : host.model;
+	const { content } = resolveContentModel([...children], model, attrs);
+	const out: Array<{ role: string; node: Node }> = [];
+	const scan = (values: ResolvedContent) => {
+		for (const role of host.roles) {
+			const node = values[role];
+			if (node && typeof node === 'object' && !Array.isArray(node) && 'type' in node) {
+				out.push({ role, node: node as Node });
+			}
+		}
+	};
+	scan(content);
+	for (const zone of Object.values(content)) {
+		if (zone && typeof zone === 'object' && !Array.isArray(zone) && !('type' in zone)) {
+			scan(zone as ResolvedContent);
+		}
+	}
+	return out;
+}
 
 /** The finding's id, so `validation.disableIds` can turn it off like any other. */
 export const SLOT_HEADER_ROLE_ID = 'slot-header-role';
@@ -50,9 +82,13 @@ export function auditSlotHeaderRoles(
 		for (const node of nodes) {
 			if (node.type === 'tag' && node.tag) {
 				const schema = config.tags?.[node.tag];
-				const reader = schema ? schemaHeaderRoles.get(schema) : undefined;
-				if (reader) {
-					for (const { role, node: filled } of reader(node.children, node.attributes)) {
+				const host = schema ? schemaHeaderRoles.get(schema) : undefined;
+				if (host) {
+					for (const { role, node: filled } of readHeaderRoles(
+						host,
+						node.children,
+						node.attributes,
+					)) {
 						const slot = filled.attributes?.[SLOT_ATTR];
 						if (slot === undefined || filled.attributes?.[OWNER_ATTR] !== rune) continue;
 						if (slot === role) continue;

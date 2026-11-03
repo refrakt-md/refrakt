@@ -2,14 +2,10 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, renderNodes } from '../lib/index.js';
+import type { ContentFieldDefinition, ContentModel, ResolvedContent } from '@refrakt-md/types';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { schemaHeaderRoles } from '../lib/header-roles.js';
-import {
-	buildLayoutMetas,
-	extractMediaImage,
-	splitLayoutAttributes,
-	splitMediaBodyFooter,
-} from './common.js';
+import { buildLayoutMetas, extractMediaImage, splitLayoutAttributes } from './common.js';
 
 const alignType = ['start', 'center', 'end'] as const;
 const headerModes = ['auto', 'headline', 'none'] as const;
@@ -38,61 +34,55 @@ export const sectionSections = {
 	media: 'media',
 } as const;
 
-export interface SectionHeaderParts {
-	eyebrow?: Node;
-	headline?: Node;
-	blurb?: Node;
-	body: Node[];
+/**
+ * `section`'s content model, declared (SPEC-186 D5): the header grammar is a
+ * group, so the transform, the composition audit and the editor read one
+ * declaration rather than a hand-written reader.
+ *
+ * - **The header (ADR-046).** An eyebrow and a blurb exist only relative to a
+ *   headline: the group matches a paragraph, a heading and a paragraph, the
+ *   heading required, or takes nothing, and a paragraph with no heading after
+ *   it is body. `header="headline"` reads only a leading heading;
+ *   `header="none"` reads no header at all.
+ * - **The zones (SPEC-160 D2).** Opt-in: with no `media-position` every child
+ *   is the body zone, so a `---` stays body content. With it, the children
+ *   split on `---` into media, body (the zone a single group lands in) and
+ *   footer, and the header is read from the body zone.
+ */
+function headerFields(mode: HeaderMode): ContentFieldDefinition[] {
+	const body: ContentFieldDefinition = { name: 'body', match: 'any', optional: true, greedy: true };
+	if (mode === 'none') return [body];
+	const members: ContentFieldDefinition[] =
+		mode === 'headline'
+			? [{ name: 'headline', match: 'heading' }]
+			: [
+					{ name: 'eyebrow', match: 'paragraph', optional: true },
+					{ name: 'headline', match: 'heading' },
+					{ name: 'blurb', match: 'paragraph', optional: true },
+				];
+	return [{ name: 'header', match: '', optional: true, group: members }, body];
 }
 
-/**
- * The header grammar, anchored to the headline — ADR-046.
- *
- * Eyebrow and blurb exist only relative to a headline: an eyebrow is a
- * paragraph directly before it, a blurb a paragraph directly after it. With no
- * leading heading there is no header, and all content is body.
- *
- * - `auto` reads all three;
- * - `headline` lifts only a leading heading, so the paragraph after it stays body;
- * - `none` reads no header at all.
- *
- * `nodes` are the section's children in source order. It is also the reader
- * compositions audit their slots against, so the check and the rendering
- * cannot disagree.
- */
-export function sectionHeaderParts(
-	nodes: readonly Node[],
-	mode: HeaderMode = 'auto',
-): SectionHeaderParts {
-	const isH = (n: Node | undefined) => n?.type === 'heading';
-	const isP = (n: Node | undefined) => n?.type === 'paragraph';
-	const all = [...nodes];
-	if (mode === 'none') return { body: all };
-	if (mode === 'headline') {
-		return isH(all[0]) ? { headline: all[0], body: all.slice(1) } : { body: all };
-	}
-	let i = 0;
-	let eyebrow: Node | undefined;
-	if (isP(all[0]) && isH(all[1])) eyebrow = all[i++];
-	if (!isH(all[i])) return { body: all };
-	const headline = all[i++];
-	const blurb = isP(all[i]) ? all[i++] : undefined;
-	return { eyebrow, headline, blurb, body: all.slice(i) };
-}
-
-/**
- * The zones a section reads — SPEC-160 D2. Zoning is opt-in: with no
- * `media-position` every child is the body zone, so a `---` stays body content
- * and every existing section renders as before. With it, the children split on
- * `---` by `card`'s rule (media / body / footer), and the header grammar reads
- * the body zone.
- */
-export function sectionZones(
-	nodes: readonly Node[],
-	attrs: Record<string, unknown>,
-): { media: Node[]; body: Node[]; footer: Node[] } {
-	if (!attrs['media-position']) return { media: [], body: [...nodes], footer: [] };
-	return splitMediaBodyFooter([...nodes]);
+export function sectionContentModel(attrs: Record<string, any>): ContentModel {
+	const fields = headerFields((attrs.header as HeaderMode) || 'auto');
+	if (!attrs['media-position']) return { type: 'sequence', fields };
+	return {
+		type: 'delimited',
+		delimiter: 'hr',
+		zones: [
+			{
+				name: 'media',
+				type: 'sequence',
+				fields: [{ name: 'media', match: 'any', optional: true, greedy: true }],
+			},
+			{ name: 'content', primary: true, type: 'sequence', fields },
+			{
+				name: 'footer',
+				type: 'sequence',
+				fields: [{ name: 'footer', match: 'any', optional: true, greedy: true }],
+			},
+		],
+	};
 }
 
 export const section = createContentModelSchema({
@@ -149,25 +139,23 @@ export const section = createContentModelSchema({
 			description: 'Intrinsic section aspect ratio (e.g. "16/9") for cover sections',
 		},
 	},
-	contentModel: {
-		type: 'sequence',
-		fields: [
-			{ name: 'eyebrow', match: 'paragraph', optional: true },
-			{ name: 'headline', match: 'heading', optional: true },
-			{ name: 'blurb', match: 'paragraph', optional: true },
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
-	},
+	contentModel: sectionContentModel,
 	transform(resolved, attrs, config) {
-		// The sequence matches in source order, so its fields put back together
-		// are the children as written. The grammar is then applied to them, rather
-		// than taken from the sequence, which would read a paragraph with no
-		// heading after it as an eyebrow (ADR-046).
-		const written = [resolved.eyebrow, resolved.headline, resolved.blurb, resolved.body]
-			.flat()
-			.filter(Boolean) as Node[];
-		const zones = sectionZones(written, attrs);
-		const parts = sectionHeaderParts(zones.body, (attrs.header as HeaderMode) || 'auto');
+		// SPEC-186 D5 — the header is read from the declared model. With a split,
+		// the header and body are the content zone's.
+		const split = !!attrs['media-position'];
+		const main = (split ? (resolved.content ?? {}) : resolved) as ResolvedContent;
+		const asList = (v: unknown) => (Array.isArray(v) ? v : v ? [v] : []) as Node[];
+		const parts = {
+			eyebrow: main.eyebrow as Node | undefined,
+			headline: main.headline as Node | undefined,
+			blurb: main.blurb as Node | undefined,
+			body: asList(main.body),
+		};
+		const zones = {
+			media: split ? asList((resolved.media as ResolvedContent | undefined)?.media) : [],
+			footer: split ? asList((resolved.footer as ResolvedContent | undefined)?.footer) : [],
+		};
 
 		const render = (node: Node | undefined) =>
 			node
@@ -264,10 +252,9 @@ export const section = createContentModelSchema({
 	},
 });
 
-schemaHeaderRoles.set(section, (children, attrs) => {
-	const { body } = sectionZones(children, attrs);
-	const parts = sectionHeaderParts(body, (attrs.header as HeaderMode) || 'auto');
-	return (['eyebrow', 'headline', 'blurb'] as const)
-		.filter((role) => parts[role])
-		.map((role) => ({ role, node: parts[role] as Node }));
+// ADR-046 decision 3 — the roles a composition placing `section` is audited
+// against, read through the same declared model the transform resolves.
+schemaHeaderRoles.set(section, {
+	roles: ['eyebrow', 'headline', 'blurb'],
+	model: sectionContentModel,
 });
