@@ -67,6 +67,23 @@ export interface ContentFieldDefinition {
 	 * Other values are literals.
 	 */
 	emitAttributes?: Record<string, string>;
+
+	/**
+	 * SPEC-186 D1 — the field is a group: its members match as one, in order,
+	 * when every required member matches, or the group takes nothing and leaves
+	 * the nodes it looked at for the field after it. Members resolve to their own
+	 * names, as if written at the group's level, and the group's name resolves to
+	 * `true` when it matched. A group field's own `match` is unused.
+	 */
+	group?: ContentFieldDefinition[];
+
+	/**
+	 * SPEC-186 D3 — `last`: before the sequence is walked, the container's last
+	 * node is reserved for this field when the field matches it, and the fields
+	 * before it read the nodes before it. Only the last field of a model may
+	 * carry it.
+	 */
+	position?: 'last';
 }
 
 // ---------------------------------------------------------------------------
