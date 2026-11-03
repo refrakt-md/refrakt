@@ -533,6 +533,10 @@ These runes are placeable, but each reinterprets one kind of node as its own str
 | `hero` | list | re-places it in a slot of its own composition, whose markers replace the outer ones |
 | `hero` | heading | re-places it in a slot of its own composition, whose markers replace the outer ones |
 | `hero` | fence | re-places it in a slot of its own composition, whose markers replace the outer ones |
+| `cta` | paragraph | re-places it in a slot of its own composition, whose markers replace the outer ones |
+| `cta` | list | re-places it in a slot of its own composition, whose markers replace the outer ones |
+| `cta` | heading | re-places it in a slot of its own composition, whose markers replace the outer ones |
+| `cta` | fence | re-places it in a slot of its own composition, whose markers replace the outer ones |
 
 ## Where definitions go
 
@@ -584,7 +588,7 @@ A composition that replaces a plugin rune is reviewed on the site before it repl
 
 **Stage it.** The definition goes in `site/staged-runes/<rune>.md`, under the plugin rune's own name. The repository's `staging` site renders the same content as `main`, with that directory as its `runes.dir` and a `"<rune>": "__project__"` entry in `runes.prefer`, so the composition stands in for the plugin rune on every page. Preferring the rune also settles the aliases it shares with the plugin rune (`review` with `testimonial`). The comparison tests read the staged file, and no copy goes in a test fixture directory: a test fails on one.
 
-**Make the content valid on both sites.** Both sites render one content directory. Where the composition is written differently from the plugin rune, the plugin rune first learns the new form as well as its own, and the content moves to it, with a codemod where there is one. `hero` learned `align="start | end"`, and `testimonial` learned `author` and `role`. `hero` was the first to go live, and `refrakt migrate hero` rewrites the `left`, `right` and `justify` it no longer accepts.
+**Make the content valid on both sites.** Both sites render one content directory. Where the composition is written differently from the plugin rune, the plugin rune first learns the new form as well as its own, and the content moves to it, with a codemod where there is one. `hero` learned `align="start | end"`, and `testimonial` learned `author` and `role`. `hero`, `cta` and `testimonial` have gone live. `refrakt migrate hero` rewrites the `left`, `right` and `justify` hero no longer accepts, and `refrakt migrate cta` renames the `call-to-action` alias the composed `cta` does not declare.
 
 **Review it.** `npm run dev:staging` serves the staging site on its own port, and `npm run build:staging` builds it into `site/build-staging`. Every push to `main` deploys it to [staging.refrakt.md](https://staging.refrakt.md), so a merged composition can be reviewed there without a local build. Paths are the same on both sites, so a comparison is two tabs: refrakt.md and staging.refrakt.md. The review covers the rune's reference page and every other page that uses it, light and dark.
 

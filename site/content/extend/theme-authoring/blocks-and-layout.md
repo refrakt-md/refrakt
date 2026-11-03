@@ -262,7 +262,7 @@ column, each in its intrinsic shape and **unlabelled**, like `bar`. The
 first field present carries `data-lead`.
 
 ```html
-<div class="rf-testimonial__byline" data-name="byline" data-zone-layout="lead">
+<div class="rf-{block}__byline" data-name="byline" data-zone-layout="lead">
   <span data-lead>Ada Lovelace</span>
   <span>CTO</span>
   <span>Analytical Engines</span>

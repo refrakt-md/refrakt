@@ -169,8 +169,6 @@
         "dir": "site/staged-runes",
         "schema": "allow",
         "prefer": {
-          "cta": "__project__",
-          "testimonial": "__project__",
           "steps": "__project__"
         }
       }

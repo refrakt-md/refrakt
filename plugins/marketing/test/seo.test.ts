@@ -104,8 +104,8 @@ Custom terms.
 	});
 });
 
-// SPEC-181 D7 / WORK-685 — the composed testimonial's attribution form, which
-// the plugin accepts so this repository's content can move to it first.
+// SPEC-181 D7 / WORK-685 — the attribution written as attributes. The plugin's
+// native testimonial accepted it first; the composed one (WORK-704) keeps it.
 describe('SEO: testimonial attribution as attributes', () => {
 	const paragraph = `{% testimonial rating=4 %}
 > This product changed our workflow completely.
@@ -129,8 +129,15 @@ describe('SEO: testimonial attribution as attributes', () => {
 		});
 	});
 
-	it('renders the same tree either way', () => {
-		expect(JSON.stringify(parse(attributes))).toBe(JSON.stringify(parse(paragraph)));
+	it('renders the same tree either way, apart from bookkeeping', () => {
+		// The composed testimonial (WORK-704) records the attributes in its field
+		// bag, and the paragraph's figcaption keeps the slot marker it was placed
+		// by. Neither reaches the page as content.
+		const visible = (tree: unknown) =>
+			JSON.stringify(tree, (key, value) =>
+				key === 'data-rune-fields' || key === 'data-slot' ? undefined : value,
+			);
+		expect(visible(parse(attributes))).toBe(visible(parse(paragraph)));
 	});
 
 	it('reads the attributes, not the paragraph, when either is set', () => {

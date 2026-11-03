@@ -3453,84 +3453,6 @@
 				}
 			}
 		},
-		"CallToAction": {
-			"block": "cta",
-			"root": ".rf-cta",
-			"dataRune": "call-to-action",
-			"childOrder": [
-				"{content}"
-			],
-			"contextModifiers": {
-				"hero": {
-					"suffix": "in-hero",
-					"selector": ".rf-cta--in-hero"
-				},
-				"pricing": {
-					"suffix": "in-pricing",
-					"selector": ".rf-cta--in-pricing"
-				}
-			},
-			"universalAxes": {
-				"axes": {
-					"tint": {
-						"selectors": [
-							".rf-cta--tinted"
-						]
-					},
-					"width": {
-						"default": "full"
-					},
-					"content-measure": {
-						"default": "anchored"
-					},
-					"density": {
-						"default": "full"
-					},
-					"elevation": {
-						"default": "flush"
-					},
-					"bg": {
-						"selectors": [
-							".rf-cta--has-bg"
-						]
-					}
-				},
-				"unavailable": {
-					"reading": "this rune declares no prose body",
-					"dropcap": "this rune declares no prose body",
-					"content-place": "this rune declares no `content-place` modifier",
-					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
-					"frame": "this rune declares neither a `frameTarget` nor a media section"
-				}
-			},
-			"elements": {
-				"preamble": {
-					"tag": "header",
-					"selector": ".rf-cta__preamble",
-					"source": "autoLabel"
-				},
-				"eyebrow": {
-					"tag": "eyebrow",
-					"selector": ".rf-cta__eyebrow",
-					"source": "autoLabel"
-				},
-				"headline": {
-					"tag": "headline",
-					"selector": ".rf-cta__headline",
-					"source": "autoLabel"
-				},
-				"blurb": {
-					"tag": "blurb",
-					"selector": ".rf-cta__blurb",
-					"source": "autoLabel"
-				},
-				"image": {
-					"tag": "image",
-					"selector": ".rf-cta__image",
-					"source": "autoLabel"
-				}
-			}
-		},
 		"Bento": {
 			"block": "bento",
 			"root": ".rf-bento",
@@ -4138,124 +4060,6 @@
 				}
 			}
 		},
-		"Testimonial": {
-			"block": "testimonial",
-			"root": ".rf-testimonial",
-			"dataRune": "testimonial",
-			"childOrder": [
-				"rating",
-				"quote",
-				"author-name",
-				"author-role",
-				"avatar",
-				"{content}"
-			],
-			"modifiers": {
-				"variant": {
-					"source": "meta",
-					"default": "card",
-					"classPattern": ".rf-testimonial--{value}",
-					"dataAttribute": "data-variant"
-				},
-				"rating": {
-					"source": "meta",
-					"dataAttribute": "data-rating"
-				},
-				"ratingTotal": {
-					"source": "meta",
-					"default": "5",
-					"dataAttribute": "data-rating-total"
-				}
-			},
-			"universalAxes": {
-				"axes": {
-					"tint": {
-						"selectors": [
-							".rf-testimonial--tinted"
-						]
-					},
-					"density": {
-						"default": "compact"
-					},
-					"elevation": {
-						"default": "flat"
-					},
-					"frame": {
-						"target": "[data-section=\"media\"]"
-					},
-					"bg": {
-						"selectors": [
-							".rf-testimonial--has-bg"
-						]
-					}
-				},
-				"unavailable": {
-					"reading": "this rune declares no prose body",
-					"dropcap": "this rune declares no prose body",
-					"prominence": "this rune has no page-section header or featured quotation",
-					"content-place": "this rune declares no `content-place` modifier",
-					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode"
-				}
-			},
-			"elements": {
-				"rating": {
-					"tag": "div",
-					"selector": ".rf-testimonial__rating",
-					"source": "block",
-					"layout": "bar",
-					"fields": [
-						"rating"
-					]
-				},
-				"quote": {
-					"tag": "blockquote",
-					"selector": ".rf-testimonial__quote",
-					"source": "autoLabel"
-				}
-			},
-			"schemaOrg": {
-				"type": "Review",
-				"properties": [
-					{
-						"source": "quote",
-						"property": "reviewBody",
-						"kind": "property"
-					},
-					{
-						"source": "author-name",
-						"property": "name",
-						"kind": "property",
-						"entity": "author"
-					},
-					{
-						"source": "author-role",
-						"property": "jobTitle",
-						"kind": "property",
-						"entity": "author"
-					},
-					{
-						"source": "rating",
-						"property": "ratingValue",
-						"kind": "property",
-						"entity": "rating"
-					}
-				],
-				"entities": [
-					{
-						"name": "author",
-						"type": "Person",
-						"property": "author"
-					},
-					{
-						"name": "rating",
-						"type": "Rating",
-						"property": "reviewRating"
-					}
-				],
-				"children": [],
-				"lists": []
-			}
-		},
 		"Comparison": {
 			"block": "comparison",
 			"root": ".rf-comparison",
@@ -4372,6 +4176,120 @@
 				}
 			}
 		},
+		"Cta": {
+			"root": "[data-rune=\"cta\"]",
+			"dataRune": "cta",
+			"childOrder": [
+				"{content}"
+			],
+			"universalAxes": {
+				"axes": {
+					"width": {
+						"default": "full"
+					}
+				}
+			},
+			"composition": {
+				"slots": [
+					"eyebrow",
+					"headline",
+					"blurb",
+					"body",
+					"actions"
+				],
+				"expansion": [
+					{
+						"rune": "section",
+						"root": ".rf-section",
+						"children": [
+							{
+								"slot": "eyebrow"
+							},
+							{
+								"slot": "headline"
+							},
+							{
+								"slot": "blurb"
+							},
+							{
+								"slot": "body"
+							},
+							{
+								"rune": "actions",
+								"root": ".rf-actions",
+								"children": [
+									{
+										"slot": "actions"
+									}
+								]
+							}
+						]
+					}
+				],
+				"placements": {
+					"tint": {
+						"placement": "carrier",
+						"rune": "section"
+					},
+					"width": {
+						"placement": "root"
+					},
+					"content-measure": {
+						"placement": "root"
+					},
+					"spacing": {
+						"placement": "root"
+					},
+					"inset": {
+						"placement": "root"
+					},
+					"density": {
+						"placement": "carrier",
+						"rune": "section"
+					},
+					"reading": {
+						"placement": "prose-body",
+						"rune": "section"
+					},
+					"dropcap": {
+						"placement": "prose-body",
+						"rune": "section"
+					},
+					"elevation": {
+						"placement": "carrier",
+						"rune": "section"
+					},
+					"prominence": {
+						"placement": "header",
+						"rune": "section"
+					},
+					"motion": {
+						"placement": "carrier",
+						"rune": "section"
+					},
+					"content-place": {
+						"placement": "carrier",
+						"rune": "section"
+					},
+					"cover": {
+						"placement": "carrier",
+						"rune": "section"
+					},
+					"frame": {
+						"placement": "media",
+						"rune": "section"
+					},
+					"substrate": {
+						"placement": "carrier",
+						"rune": "section"
+					},
+					"bg": {
+						"placement": "carrier",
+						"rune": "section"
+					}
+				}
+			}
+		},
 		"Hero": {
 			"root": "[data-rune=\"hero\"]",
 			"dataRune": "hero",
@@ -4423,6 +4341,185 @@
 								"children": [
 									{
 										"slot": "actions"
+									}
+								]
+							}
+						]
+					}
+				],
+				"placements": {
+					"tint": {
+						"placement": "carrier",
+						"rune": "section"
+					},
+					"width": {
+						"placement": "root"
+					},
+					"content-measure": {
+						"placement": "root"
+					},
+					"spacing": {
+						"placement": "root"
+					},
+					"inset": {
+						"placement": "root"
+					},
+					"density": {
+						"placement": "carrier",
+						"rune": "section"
+					},
+					"reading": {
+						"placement": "prose-body",
+						"rune": "section"
+					},
+					"dropcap": {
+						"placement": "prose-body",
+						"rune": "section"
+					},
+					"elevation": {
+						"placement": "carrier",
+						"rune": "section"
+					},
+					"prominence": {
+						"placement": "header",
+						"rune": "section"
+					},
+					"motion": {
+						"placement": "carrier",
+						"rune": "section"
+					},
+					"content-place": {
+						"placement": "carrier",
+						"rune": "section"
+					},
+					"cover": {
+						"placement": "carrier",
+						"rune": "section"
+					},
+					"frame": {
+						"placement": "media",
+						"rune": "section"
+					},
+					"substrate": {
+						"placement": "carrier",
+						"rune": "section"
+					},
+					"bg": {
+						"placement": "carrier",
+						"rune": "section"
+					}
+				}
+			}
+		},
+		"Testimonial": {
+			"root": "[data-rune=\"testimonial\"]",
+			"dataRune": "testimonial",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"rating": {
+					"source": "meta",
+					"dataAttribute": "data-rating"
+				},
+				"rating-total": {
+					"source": "meta",
+					"default": "5",
+					"dataAttribute": "data-rating-total"
+				},
+				"variant": {
+					"source": "meta",
+					"default": "card",
+					"dataAttribute": "data-variant"
+				}
+			},
+			"schemaOrg": {
+				"type": "Review",
+				"properties": [
+					{
+						"source": "quote",
+						"property": "reviewBody",
+						"kind": "property"
+					},
+					{
+						"source": "author",
+						"property": "name",
+						"kind": "property",
+						"entity": "author"
+					},
+					{
+						"source": "attribution.name",
+						"property": "name",
+						"kind": "property",
+						"entity": "author"
+					},
+					{
+						"source": "role",
+						"property": "jobTitle",
+						"kind": "property",
+						"entity": "author"
+					},
+					{
+						"source": "attribution.source",
+						"property": "jobTitle",
+						"kind": "property",
+						"entity": "author"
+					},
+					{
+						"source": "rating",
+						"property": "ratingValue",
+						"kind": "property",
+						"entity": "rating"
+					}
+				],
+				"entities": [
+					{
+						"name": "author",
+						"type": "Person",
+						"property": "author"
+					},
+					{
+						"name": "rating",
+						"type": "Rating",
+						"property": "reviewRating"
+					}
+				],
+				"children": [],
+				"lists": []
+			},
+			"composition": {
+				"slots": [
+					"avatar",
+					"avatar-after",
+					"quote",
+					"attribution"
+				],
+				"expansion": [
+					{
+						"rune": "section",
+						"root": ".rf-section",
+						"children": [
+							{
+								"slot": "avatar"
+							},
+							{
+								"slot": "avatar-after"
+							},
+							{
+								"node": "hr"
+							},
+							{
+								"metablock": "rating"
+							},
+							{
+								"rune": "pullquote",
+								"root": "[data-rune=\"pullquote\"]",
+								"children": [
+									{
+										"slot": "quote"
+									},
+									{
+										"slot": "attribution"
 									}
 								]
 							}

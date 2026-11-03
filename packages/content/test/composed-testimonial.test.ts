@@ -14,6 +14,7 @@ import {
 	composedMarketing,
 	definitionOf,
 	html,
+	liveDir,
 	merge,
 	pageContext,
 	renderPage,
@@ -22,18 +23,18 @@ import {
 } from './composed-marketing.js';
 
 /**
- * WORK-668 — `testimonial` as a composition over `section` (SPEC-161 D1),
- * beside the marketing plugin's `testimonial` and never in place of it
- * (SPEC-147 D1). The definition is
- * `site/staged-runes/testimonial.md`, staged on the `staging` site (SPEC-181). Its quote is
+ * WORK-668 — `testimonial` as a composition over `section` (SPEC-161 D1). It was
+ * staged on the `staging` site (SPEC-181), compared with the plugin's native
+ * `testimonial` cell by cell (SPEC-147 D2) and reviewed on staging.refrakt.md;
+ * WORK-704 took it live. The definition is `plugins/marketing/runes/testimonial.md`,
+ * and what the comparison established is kept as assertions on the composition. Its quote is
  * a featured quotation (SPEC-185 D7): it places `{% pullquote %}`, which reads the
  * `**Name** — Role` paragraph and renders it as the `<figcaption>`; the `author` and `role`
  * attributes give the same figcaption without it, passed on to the pull quote.
  */
 
-const pkg = composedMarketing({ testimonial: definitionOf('testimonial') }, ['Testimonial']);
+const pkg = composedMarketing({ testimonial: definitionOf('testimonial') }, []);
 const mine = (src: string) => byRune(renderPage(pkg, src), 'testimonial')[0];
-const theirs = (src: string) => byRune(renderPage(marketing, src), 'testimonial')[0];
 const sectionOf = (root: Json) => byRune(root, 'section')[0];
 const pullquoteOf = (root: Json) => byRune(root, 'pull-quote')[0];
 const captionOf = (root: Json) => all(pullquoteOf(root), (n) => n.name === 'figcaption')[0];
@@ -49,7 +50,9 @@ const asAttributes = (src: string) =>
 	);
 
 const ROOT = join(__dirname, '..', '..', '..');
-const FIXTURE = marketing.runes.testimonial.fixture!;
+const FIXTURE = readFileSync(join(liveDir, '..', 'fixtures', 'testimonial.md'), 'utf-8')
+	.replace(/^---[\s\S]*?---\s*/, '')
+	.trim();
 const VARIANTS = ['card', 'inline', 'quote'];
 
 /** The gallery's cells for `testimonial`: its fixture across its own enum, with
@@ -168,19 +171,15 @@ describe('composed testimonial — JSON-LD against the SEO baseline (SPEC-147 D2
 	);
 
 	it.each(forms)(
-		'testimonial.comma, from %s: the recorded graph, but with the comma fixed (BUG-019)',
+		'testimonial.comma, from %s: the recorded graph, with the comma out of the role (BUG-019)',
 		(_f, form) => {
-			// The plugin keeps the separator in the role (`", CTO at Acme"`). The
-			// composition's pattern accepts a comma as a separator, so the role is
-			// filled without it (SPEC-182 D6). The one difference from the baseline.
-			const fixed = (ld: Json) =>
-				JSON.parse(JSON.stringify(ld).replace('", CTO at Acme"', '"CTO at Acme"'));
+			// The native rune kept the separator in the role (`", CTO at Acme"`).
+			// The composition's pattern accepts a comma as a separator (SPEC-182
+			// D6), and going live (WORK-704) put that in the baseline.
 			const composed = graph('testimonial.comma', form);
-			expect(JSON.stringify(recorded('testimonial.comma').jsonLd)).toContain('", CTO at Acme"');
-			expect(composed.jsonLd).toEqual(fixed(recorded('testimonial.comma').jsonLd));
-			expect(composed.rendered.jsonLd).toEqual(
-				fixed(recorded('testimonial.comma').rendered.jsonLd),
-			);
+			expect(JSON.stringify(recorded('testimonial.comma').jsonLd)).not.toContain('", CTO');
+			expect(composed.jsonLd).toEqual(recorded('testimonial.comma').jsonLd);
+			expect(composed.rendered.jsonLd).toEqual(recorded('testimonial.comma').rendered.jsonLd);
 		},
 	);
 });
@@ -207,57 +206,45 @@ describe('this repository’s testimonials (SPEC-182 D7)', () => {
 	});
 });
 
-describe('composed testimonial against the plugin, for every gallery cell (SPEC-147 D2)', () => {
-	it.each(CASES)('%s: the same quote, author, role, rating and avatar', (_case, src) => {
-		const a = theirs(src);
-		const b = mine(src);
-		// The quote is the authored blockquote, placed as written.
-		const quote = all(b, (n) => n.attributes?.['data-slot'] === 'quote')[0];
-		expect(quote.name).toBe('blockquote');
-		expect(html(quote.children)).toBe(html(all(a, (n) => n.name === 'blockquote')[0].children));
-		expect(text(nameOf(b))).toBe(text(byName(a, 'author-name')[0]));
-		expect(text(sourceOf(b))).toBe(text(byName(a, 'author-role')[0]));
-		expect(html(byName(b, 'rating').map((r: Json) => r.children))).toBe(
-			html(byName(a, 'rating').map((r: Json) => r.children)),
-		);
-		expect(b.attributes['data-rating']).toBe(a.attributes['data-rating']);
-	});
+describe('the shipping testimonial, for every gallery cell (WORK-704)', () => {
+	it.each(CASES)(
+		'%s: the quote, author, role, rating and avatar, in their places',
+		(_case, src) => {
+			const b = mine(src);
+			// Block-less root around a section: no `rf-testimonial*` class.
+			expect(html(b)).not.toMatch(/rf-testimonial/);
+			// The surface lands on the section it places (SPEC-145 D33, D34), at full
+			// density: the native rune's compact density would pad the card at 0.5rem
+			// (WORK-691).
+			expect(sectionOf(b).attributes['data-elevation']).toBe('flat');
+			expect(sectionOf(b).attributes['data-density']).toBe('full');
+			// SPEC-185 D7 — the authored blockquote, carrying its slot marker and its
+			// schema property, inside a placed `pullquote`, which renders the
+			// attribution as its figcaption: the native byline's name and role are
+			// the figcaption's `<cite>` and source.
+			const [quote] = all(b, (n) => n.attributes?.['data-slot'] === 'quote');
+			expect(quote.name).toBe('blockquote');
+			expect(quote.attributes.property).toBe('reviewBody');
+			expect(pullquoteOf(b).attributes['data-quote']).toBe('featured');
+			expect(captionOf(b).attributes['data-slot']).toBe('attribution');
+			expect(text(nameOf(b))).toBe('Sarah Chen');
+			expect(text(sourceOf(b))).toBe('Head of Developer Experience at Acme Corp');
+			// The avatar is a media zone beside the content.
+			expect(byName(b, 'media')[0].name).toBe('div');
+			expect(b.attributes['data-author']).toBeUndefined();
+			// `variant` reaches the root as written; the native rune's always read
+			// `card`.
+			const written = /variant="(\w+)"/.exec(src)?.[1] ?? 'card';
+			expect(b.attributes['data-variant']).toBe(written);
+			const rated = /rating=(\d)/.exec(src)?.[1];
+			expect(b.attributes['data-rating']).toBe(rated ? Number(rated) : undefined);
+			expect(byName(b, 'rating')).toHaveLength(rated ? 1 : 0);
+		},
+	);
 
-	it.each(CASES)('%s: the differences, each explained', (_case, src) => {
-		const a = theirs(src);
-		const b = mine(src);
-		// Block-less root around a section: no `rf-testimonial*` class.
-		expect(html(b)).not.toMatch(/rf-testimonial/);
-		// The plugin's surface is on its root; the composition's lands on the
-		// section it places (SPEC-145 D33, D34). The plugin's compact density
-		// is not carried: it set its own padding, and compact would pad the
-		// card at 0.5rem (WORK-691).
-		expect(a.attributes['data-elevation']).toBe('flat');
-		expect(sectionOf(b).attributes['data-elevation']).toBe('flat');
-		expect(a.attributes['data-density']).toBe('compact');
-		expect(sectionOf(b).attributes['data-density']).toBe('full');
-		// SPEC-185 D7 — the quote is a featured quotation: the authored
-		// blockquote, carrying its slot marker and its schema property, inside
-		// a placed `pullquote`, which renders the attribution as its
-		// figcaption. The plugin's byline (`author-name`, `author-role`) is the
-		// figcaption's `<cite>` and source.
-		const [quote] = all(b, (n) => n.attributes?.['data-slot'] === 'quote');
-		expect(quote.name).toBe('blockquote');
-		expect(quote.attributes.property).toBe('reviewBody');
-		expect(pullquoteOf(b).attributes['data-quote']).toBe('featured');
-		expect(captionOf(b).attributes['data-slot']).toBe('attribution');
-		// The avatar is a media zone beside the content rather than the last
-		// child: a `div[data-section="media"]` holding the image.
-		expect(byName(b, 'media')[0].name).toBe('div');
-		// The paragraph no longer fills the rune's own `author` and `role`: the
-		// pull quote reads it, and the schema reads the name and source from the
-		// figcaption (`attribution.name`), so the root carries no `data-author`.
-		expect(b.attributes['data-author']).toBeUndefined();
-		// `variant` reaches the root as written. The plugin's always reads
-		// `card`: it emits the variant's meta as a child rather than a property,
-		// so the field bag never carries it and the modifier falls to its default.
-		const written = /variant="(\w+)"/.exec(src)?.[1] ?? 'card';
-		expect(b.attributes['data-variant']).toBe(written);
-		expect(a.attributes['data-variant']).toBe('card');
+	it('the marketing plugin no longer ships a native testimonial', () => {
+		expect(marketing.runes.testimonial).toBeUndefined();
+		expect(marketing.theme?.runes?.Testimonial).toBeUndefined();
+		expect(merge(pkg).tags.review).toBe(merge(pkg).tags.testimonial);
 	});
 });

@@ -3235,7 +3235,7 @@
 					"@type": "Review",
 					"author": {
 						"@type": "Person",
-						"jobTitle": ", CTO at Acme",
+						"jobTitle": "CTO at Acme",
 						"name": "Alex Rivera"
 					},
 					"reviewBody": "The semantic approach just makes sense.",
@@ -3252,7 +3252,7 @@
 						"@type": "Review",
 						"author": {
 							"@type": "Person",
-							"jobTitle": ", CTO at Acme",
+							"jobTitle": "CTO at Acme",
 							"name": "Alex Rivera"
 						},
 						"reviewBody": "The semantic approach just makes sense.",
@@ -3278,7 +3278,7 @@
 										"property": "name"
 									},
 									{
-										"content": ", CTO at Acme",
+										"content": "CTO at Acme",
 										"element": "meta",
 										"property": "jobTitle"
 									}

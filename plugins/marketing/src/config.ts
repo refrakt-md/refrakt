@@ -8,8 +8,6 @@ import { isTag, makeTag, readMeta } from '@refrakt-md/transform';
 import { bentoCellSections } from './tags/bento.js';
 import { featureMediaSlots, featureSections } from './tags/feature.js';
 import { stepMediaSlots, stepsSections } from './tags/steps.js';
-import { testimonialMediaSlots, testimonialSections } from './tags/testimonial.js';
-import { ctaSections } from './tags/cta.js';
 import { pricingSections } from './tags/pricing.js';
 
 // ─── RuneConfig entries ───
@@ -23,23 +21,6 @@ const pageSectionAutoLabel = {
 };
 
 export const config: Record<string, RuneConfig> = {
-	CallToAction: {
-		block: 'cta',
-		defaultDensity: 'full',
-		defaultWidth: 'full',
-		defaultElevation: 'flush',
-		contentMeasure: 'anchored',
-		sections: ctaSections,
-		contextModifiers: { hero: 'in-hero', pricing: 'in-pricing' },
-		autoLabel: pageSectionAutoLabel,
-		editHints: {
-			headline: 'inline',
-			eyebrow: 'inline',
-			blurb: 'inline',
-			action: 'link',
-			command: 'code',
-		},
-	},
 	Bento: {
 		block: 'bento',
 		defaultDensity: 'full',
@@ -190,34 +171,6 @@ export const config: Record<string, RuneConfig> = {
 		requiresParent: 'Pricing',
 		staticModifiers: ['featured'],
 		editHints: { name: 'inline', price: 'inline' },
-	},
-	Testimonial: {
-		block: 'testimonial',
-		defaultDensity: 'compact',
-		defaultElevation: 'flat',
-		sections: testimonialSections,
-		mediaSlots: testimonialMediaSlots,
-		modifiers: {
-			variant: { source: 'meta', default: 'card' },
-			rating: { source: 'meta', noBemClass: true },
-			ratingTotal: { source: 'meta', noBemClass: true, default: '5' },
-		},
-		autoLabel: { blockquote: 'quote' },
-		// Rating is a single `rating` field — `value` filled marks out of
-		// `total`, rendered by the shared `[data-meta-type=rating]` treatment.
-		metaFields: {
-			rating: { rating: { total: 'ratingTotal' }, condition: 'rating' },
-		},
-		blocks: {
-			rating: { fields: ['rating'], layout: 'bar' },
-		},
-		layout: { root: ['rating', 'quote', 'author-name', 'author-role', 'avatar'] },
-		editHints: {
-			'author-name': 'inline',
-			'author-role': 'inline',
-			avatar: 'image',
-			quote: 'inline',
-		},
 	},
 	Comparison: {
 		block: 'comparison',
