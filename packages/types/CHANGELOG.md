@@ -1,5 +1,32 @@
 # @refrakt-md/types
 
+## 0.47.0
+
+### Minor Changes
+
+- 9dcf891: An attribution inside a blockquote is read as its last line (SPEC-185 D6).
+
+  - **The inside form.** A blockquote whose last paragraph is `— **Name**, Source` is attributed: the leading dash marks it, so a quote ending in bold text is not misread. A plain quotation so attributed renders as `<figure data-quote="quotation">` with its `<figcaption>`, the name in `<cite>`.
+  - **`pullquote` and the epigraph** accept either form, the paragraph after the quote or its last line, and render one `<figcaption>`. With both, the paragraph after the quote is the caption.
+  - **Item models take `prefix`**: the text a paragraph record must open with. A composition declares the inside form on its `blockquote` field as a nested model's `position: last` paragraph with `prefix: '^\s*[—–]\s*$'`. `insideAttributionItemModel` and `splitInsideAttribution` are exported from the attribution module.
+  - An `itemModel` in a composition now rejects keys other than `fields` and `prefix`.
+
+- 6f41760: A content model can say "these together" and "this one last" (SPEC-186 D1, D3).
+
+  - **Groups.** A field may be a `group` of member fields that match as one: in order, when every required member matches, or not at all, leaving the nodes for the field after it. Members may be optional or groups themselves. Each resolves to its own name, and the group's name resolves to `true` when it matched.
+  - **`position: last`.** A field with `position: last` reserves the container's last node when it matches that node, and the fields before it read the rest. A greedy body therefore no longer swallows a trailing attribution line.
+  - **Load-time checks.** Composition definitions accept both and reject misuse when they load: `content-group-invalid`, `content-field-duplicate` and `content-position-invalid`.
+  - **Reference.** `refrakt reference` and `inspect` show groups and the anchored field.
+
+- c443273: Two more SPEC-186 content-model constructs.
+
+  - **Nested models (D2).** A field that matches one block node (`blockquote`, or a child rune) may declare `model`: a `sequence` read over that node's children.
+    - The field still takes the whole node. Its members resolve under dotted names (`quote.attribution`), to any depth.
+    - A composition places the node whole or its members by dotted name, not both (`nested-placed-twice`). A nested model on any other field is rejected (`content-nested-invalid`).
+    - A child the nested model does not read is reported `content-unmatched`, naming the field.
+  - **`content-missing` (D4).** A required field, group or nested member that took no node is now reported as `content-missing`, naming the field and the rune. This includes a required field reached after the content ran out, which used to pass silently. It is a warning in this release.
+  - **Behaviour change:** a child that a required field skips is no longer dropped. It stays for the next field and is reported `content-unmatched` only if nothing takes it, so a finding names the real problem. A sweep of every site and fixture found no instance.
+
 ## 0.46.0
 
 ## 0.45.0

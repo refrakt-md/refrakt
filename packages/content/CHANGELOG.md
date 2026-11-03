@@ -1,5 +1,33 @@
 # @refrakt-md/content
 
+## 0.47.0
+
+### Minor Changes
+
+- c443273: Two more SPEC-186 content-model constructs.
+
+  - **Nested models (D2).** A field that matches one block node (`blockquote`, or a child rune) may declare `model`: a `sequence` read over that node's children.
+    - The field still takes the whole node. Its members resolve under dotted names (`quote.attribution`), to any depth.
+    - A composition places the node whole or its members by dotted name, not both (`nested-placed-twice`). A nested model on any other field is rejected (`content-nested-invalid`).
+    - A child the nested model does not read is reported `content-unmatched`, naming the field.
+  - **`content-missing` (D4).** A required field, group or nested member that took no node is now reported as `content-missing`, naming the field and the rune. This includes a required field reached after the content ran out, which used to pass silently. It is a warning in this release.
+  - **Behaviour change:** a child that a required field skips is no longer dropped. It stays for the next field and is reported `content-unmatched` only if nothing takes it, so a finding names the real problem. A sweep of every site and fixture found no instance.
+
+### Patch Changes
+
+- Updated dependencies [9dcf891]
+- Updated dependencies [6f41760]
+- Updated dependencies [c443273]
+- Updated dependencies [12aa2e6]
+- Updated dependencies [1d996b0]
+- Updated dependencies [91b462c]
+- Updated dependencies [d221760]
+- Updated dependencies [0de700d]
+  - @refrakt-md/types@0.47.0
+  - @refrakt-md/runes@0.47.0
+  - @refrakt-md/transform@0.47.0
+  - @refrakt-md/highlight@0.47.0
+
 ## 0.46.0
 
 ### Patch Changes
