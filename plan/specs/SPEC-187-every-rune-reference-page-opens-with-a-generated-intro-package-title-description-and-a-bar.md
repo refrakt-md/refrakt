@@ -30,7 +30,7 @@ attribute tables: a generated data file, one shared partial, and a guard.
 ## Design
 
 ```markdoc
-{% section %}
+{% section prominence="prominent" %}
 [@refrakt-md/marketing](/runes/marketing)
 
 # Hero
@@ -40,18 +40,25 @@ Full-width intro sections for landing pages with background support and action b
 {% bar %}
 {% badge %}{% icon name="puzzle" /%} Composition{% /badge %}
 ---
-{% ref "install-marketing" %}{% icon name="package" /%}{% /ref %}
-{% file-ref path="plugins/marketing/runes/hero.md" preview="drawer" %}{% icon name="code" /%}{% /file-ref %}
+{% actions %}
+- [{% icon name="package" /%} Install](#rune-install)
+- [{% icon name="code" /%} Source](#rune-source)
+{% /actions %}
 {% /bar %}
 {% /section %}
 
-{% drawer id="install-marketing" title="Install" %}
+{% drawer id="rune-install" title="Install" %}
 …the two steps, built from the package (D8)…
+{% /drawer %}
+
+{% drawer id="rune-source" title="Source" %}
+{% snippet path="plugins/marketing/runes/hero.md" /%}
 {% /drawer %}
 ```
 
-The exact trigger markup for the Install drawer is the partial's to choose; the sketch shows its
-shape, not its syntax.
+The actions are ordinary links to drawers on the page (D10), placed with `actions` and styled by
+it in the bar's context (D11); the Source drawer is declared by the partial (D12). The partial
+fills every value from the record.
 
 A page writes one line where its header was:
 
@@ -91,10 +98,9 @@ with `media-position` and would need an empty media zone.
 only Source. The right side is never empty, so the bar's height and position do not change from
 page to page.
 
-*Amended in WORK-706:* the actions are text links, `Install` and `Source`, not icons. `ref` and
-`file-ref` are self-closing and take a text `label`, so neither can wrap an icon without changing
-the runes; a text action is also the clearer one to a screen reader. The sketches' `[▣]` and
-`[</>]` stand for these labels.
+*Amended:* the actions are `actions` items, each an icon and a short label (D10, D11). An
+earlier note made them text links, because `ref` and `file-ref` take only a text `label`; D10
+removes the need for either rune here.
 
 ### D4 — the source is the file that defines the rune
 
@@ -132,7 +138,7 @@ The install command is neither in the Source drawer (a different reader, a diffe
 only behind the package eyebrow (a link nobody knows to click, where the hint it replaces was
 visible on the page).
 
-- A package icon on the bar's right opens an Install drawer with both steps the hint gives today:
+- An `Install` action on the bar's right opens an Install drawer with both steps the hint gives today:
   `npm install <package>` and the `plugins` entry in `refrakt.config.json`, and a link to the
   plugin's overview page.
 - The drawer's text is built by the partial from the record's `package`, so its wording lives in
@@ -151,6 +157,60 @@ it, so the bar shows it.
   attribute section explains the variants.
 - When an attribute can switch it off (`schema="none"`), the badge still shows the default type.
 - A rune that publishes nothing shows no badge, not a "none" badge.
+
+### D10 — a link to a drawer on the page opens it
+
+Today only `ref` and `file-ref` open a drawer: the drawer behaviour wires `a[data-target-type="drawer"]`,
+and only those two runes set the attribute. A Markdown link to the drawer's anchor scrolls to it
+and does not open it. That ties every drawer trigger to two runes that take only a text label, so a
+trigger cannot carry an icon or be an `actions` button.
+
+**Any link whose target is a drawer on the same page is a trigger.** `[Install](#rune-install)`,
+`{% link href="#rune-install" %}` and an `actions` item all open the drawer `rune-install`.
+
+- **Where:** the build step that already knows the page's drawers rewrites such a link's `href` to
+  the drawer's anchor (`#drawer-<id>`) and sets `data-target-type="drawer"`. The drawer behaviour is
+  unchanged.
+- **Which id:** the link names the drawer's own `id`, as `ref` does. `#drawer-<id>` is accepted too,
+  since it is what a rendered trigger's `href` already is.
+- **A drawer wins.** When a drawer and a heading share an id, the link opens the drawer. When no
+  drawer has the id, the link is left alone: it is an ordinary same-page anchor.
+- **Without JavaScript** the link still reaches the drawer, which renders in flow at its position.
+- **Icons come with it.** Markdown link text takes inline tags, so `[{% icon name="code" /%} Source](#rune-source)`
+  needs no new attribute on any rune.
+
+`ref` and `file-ref` keep working as they do. The `file-ref` monospace treatment of prose labels
+(`label="the latest release notes"`) is a separate defect and not changed here.
+
+### D11 — actions in a bar are a context of `actions`, not a style for links in a bar
+
+The intro's `Install` and `Source` are things a reader does, so they are authored as actions. Their
+look in a bar is the theme's.
+
+- **Not a bar link style.** Most links in bars are values: the plan plugin's bars link an entity's
+  source spec, its milestone, its ID. Restyling every link in a bar as an action would make a value
+  look like a command, across every bar layout. Links that are values keep prose link styling.
+- **A context modifier on `Actions`:** `contextModifiers: { bar: 'in-bar' }`, giving
+  `.rf-actions--in-bar`. It is named in the structure contract and `inspect`, so another theme sees
+  the hook rather than finding a descendant selector.
+- **What it means:** quieter than a button and clearly not prose. Compact (the badges' height, small
+  text, tight padding), tonal rather than filled (text or muted colour, a subtle surface or border
+  that strengthens on hover), an icon before the label. Rank still reaches the markup; Lumina gives
+  a primary action in a bar no fill, so authors need no "no primary" option.
+- **How:** `actions` already takes its size from properties a host sets (`--action-padding`,
+  `--action-font-size`), as `marquee` does. The bar is one more host; the tonal look is Lumina's,
+  and the skeleton keeps the row structural.
+
+### D12 — the Source drawer is declared by the partial
+
+`file-ref preview="drawer"` hoists its drawer under an id derived from the path, which the partial
+cannot build: the preprocess resolver does not concatenate (BUG-010). So the partial declares the
+drawer itself, `{% drawer id="rune-source" title="Source" %}` around `{% snippet path=$row.source /%}`,
+followed by a link to the file on GitHub. The record carries that URL (`sourceUrl`), built by the
+generator from the site's `repoUrl` and `repoBranch`.
+
+If `snippet` cannot take its `path` from `$row` inside `data`, `file-ref` gains an `id` attribute
+for its drawer instead, and the partial keeps it.
 
 ## Sketches
 
@@ -203,7 +263,10 @@ testimonial on staging.refrakt.md, before it goes live (D7)
    phase, before `file-ref` reads the file; a test asserts it.
 3. **The register.** `section`'s default prominence and spacing on a docs page read as a page
    header, not a landing-page band. If not, the partial sets the section's attributes; it does not
-   add CSS for one site.
+   add CSS for one site. *(Confirmed in WORK-706: `prominent` matches a docs page's `<h1>`.)*
+4. **`snippet` takes its `path` from a `$row` value** inside `data` (D12).
+5. **`actions` ranks link items with icons in them.** It finds the first `a`, which a Markdown link
+   already is at transform time; a test asserts it.
 
 ## Not in scope
 
