@@ -123,7 +123,7 @@ describe('content validation reports what the schemas already declared', () => {
 });
 
 describe('the id allow-list is explicit, so enabling an id is deliberate', () => {
-	it('ships the phase 1 and phase 2 ids, the registers source audit, the unmatched-content audit and the slot-role audit', () => {
+	it('ships the phase 1 and phase 2 ids, the registers source audit, the unmatched- and missing-content audits and the slot-role audit', () => {
 		expect([...DEFAULT_VALIDATION_IDS]).toEqual([
 			'tag-undefined',
 			'attribute-undefined',
@@ -134,6 +134,8 @@ describe('the id allow-list is explicit, so enabling an id is deliberate', () =>
 			'registers-source-unresolved',
 			// WORK-631 — an authored node no content-model field matches.
 			'content-unmatched',
+			// SPEC-186 D4 / WORK-694 — a required field that took no node.
+			'content-missing',
 			// WORK-659 — composed slot content read as a header role it is not named for.
 			'slot-header-role',
 		]);

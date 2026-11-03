@@ -11,7 +11,12 @@ import type {
 	ValidationError,
 } from '@markdoc/markdoc';
 
-import { findUnmatchedContent, resolveContentModel } from './resolver.js';
+import {
+	findMissingFields,
+	findUnmatchedContent,
+	resolveContentModel,
+	unmatchedInsideField,
+} from './resolver.js';
 import { makeSlotTransform, slotSections } from './slots.js';
 import type { EmitsDeclaration } from './slots.js';
 import { schemaBasePresets } from '../attribute-presets.js';
@@ -737,6 +742,10 @@ function auditRegistersOnValidate(
  *  measured zero over this repository's `plan/`, and raised it to an error. */
 export const CONTENT_UNMATCHED_LEVEL: 'warning' | 'error' = 'error';
 
+/** Severity of `content-missing` (SPEC-186 D4.3): a warning for one release,
+ *  then an error, once the sweep has run over a release of real content. */
+export const CONTENT_MISSING_LEVEL: 'warning' | 'error' = 'warning';
+
 /** How a dropped node is named in a finding: a rune by its tag, a heading by
  *  its level, anything else by its node type. */
 function describeNode(node: Node): string {
@@ -762,6 +771,7 @@ function auditUnmatchedContent(
 	config: Config,
 ): ValidationError[] {
 	let unmatched: Node[];
+	let missing: string[] = [];
 	try {
 		// The attributes the transform resolves against, deprecated names mapped
 		// the same way — without mutating the node, which the transform still reads.
@@ -778,22 +788,37 @@ function auditUnmatchedContent(
 				? options.contentModel(attrs)
 				: options.contentModel;
 		unmatched = findUnmatchedContent(node.children, model, attrs);
+		missing = findMissingFields(node.children, model, attrs);
 	} catch {
 		// A rune whose attributes cannot resolve here reports that through its own path.
 		return [];
 	}
 
-	return unmatched.map((child) => {
-		const line = child.lines?.[0];
-		const at = typeof line === 'number' ? ` at line ${line + 1}` : '';
-		return {
-			id: 'content-unmatched',
-			level: CONTENT_UNMATCHED_LEVEL,
-			message:
-				`${describeNode(child)}${at} matches no content-model field of {% ${node.tag} %} ` +
-				`and is dropped from the output`,
-		};
-	});
+	// SPEC-186 D4 — a required part the author did not write. The rune renders
+	// without it, which is the problem: nothing on the page says it is absent.
+	const missingFindings: ValidationError[] = missing.map((name) => ({
+		id: 'content-missing',
+		level: CONTENT_MISSING_LEVEL,
+		message: `{% ${node.tag} %} has no \`${name}\`, which its content model requires`,
+	}));
+
+	return [
+		...missingFindings,
+		...unmatched.map((child) => {
+			const line = child.lines?.[0];
+			const at = typeof line === 'number' ? ` at line ${line + 1}` : '';
+			// SPEC-186 D2.4 — a node inside a field's own node names that field.
+			const inside = unmatchedInsideField(child);
+			const where = inside
+				? `field of the nested model of \`${inside}\` in {% ${node.tag} %}`
+				: `content-model field of {% ${node.tag} %}`;
+			return {
+				id: 'content-unmatched',
+				level: CONTENT_UNMATCHED_LEVEL,
+				message: `${describeNode(child)}${at} matches no ${where} and is dropped from the output`,
+			};
+		}),
+	];
 }
 
 /**

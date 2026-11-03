@@ -117,6 +117,25 @@ fields:
 
 With an attribution line last, `body` takes every paragraph but that one. With none, nothing is reserved and `body` keeps everything. Only one field per model may claim the last node, it must be the model's last field, and it may not sit inside a group.
 
+### A nested model: parts inside a block
+
+A field that matches one block node, a `blockquote` or a child rune (`tag:NAME`), may declare `model`: a `sequence` read over that node's children. An attribution written as a quote's last line is inside the node a `blockquote` field matched, and a nested model reads it:
+
+```yaml
+quote:
+  match: blockquote
+  model:
+    type: sequence
+    fields:
+      body:        { match: paragraph, greedy: true }
+      attribution: { match: paragraph, optional: true, position: last }
+```
+
+- **The field still takes the whole node.** Its members resolve under dotted names, `quote.body` and `quote.attribution`, and nested models may nest again (`a.b.c`).
+- **Place the node whole, or its members, not both.** `{% slot name="quote" /%}` renders the blockquote as written. Placing members uses `{% slot name="quote.body" /%}` and `{% slot name="quote.attribution" /%}`, and then every member must be placed, or that content is dropped.
+- **A child the nested model does not read is reported** as `content-unmatched`, naming the field.
+- A nested model is rejected on a field that matches anything but one block node, or greedily.
+
 ### `delimited`: content split on `---`
 
 A delimited model splits the content at each `---` into zones, and each zone is a sequence of fields:
@@ -658,6 +677,8 @@ Each error has a code. The fix column assumes the cause in the meaning column.
 | `content-group-invalid` | A group has no required member, no members, or a `match`, `greedy` or `itemModel` of its own. | Make one member required; a group's members match, the group does not. |
 | `content-field-duplicate` | Two fields share a name, counting group members, which resolve to their own names. | Rename one. |
 | `content-position-invalid` | `position: last` is on more than one field, on a field that is not the model's last, inside a group, or has a value other than `last`. | Keep one, on the model's last field. |
+| `content-nested-invalid` | A nested `model` is on a field that does not match one block node (`blockquote` or `tag:NAME`, not greedy), or is not a `sequence`. | Put the model on the block field, or read inline parts with `itemModel`. |
+| `nested-placed-twice` | The template places a field whole and one of its dotted members. | Place the node whole, or its members. |
 | `metablock-invalid` | A `{% metablock %}` has no `name`, has content, has another attribute, or sits inside a line of text. | `{% metablock name="x" /%}` on its own line. |
 | `metablock-inside-each` | A `{% metablock %}` is inside an `each` slot. | Move it outside. |
 | `metablock-undeclared` | It names no block declared under `blocks`. | Declare the block, or fix the name. |

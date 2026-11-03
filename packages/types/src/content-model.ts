@@ -84,6 +84,14 @@ export interface ContentFieldDefinition {
 	 * carry it.
 	 */
 	position?: 'last';
+
+	/**
+	 * SPEC-186 D2 — on a field matching one block node (a `blockquote`, a
+	 * child rune), a content model applied to that node's children. The field
+	 * still takes the whole node; the nested model's members resolve under
+	 * dotted names (`quote.attribution`), to any depth.
+	 */
+	model?: SequenceModel;
 }
 
 // ---------------------------------------------------------------------------

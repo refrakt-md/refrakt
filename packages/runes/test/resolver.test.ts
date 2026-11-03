@@ -11,6 +11,7 @@ import {
 	resolveListItems,
 	evaluateCondition,
 	findUnmatchedContent,
+	findMissingFields,
 } from '../src/lib/resolver.js';
 import type {
 	ContentFieldDefinition,
@@ -1560,7 +1561,7 @@ describe('findUnmatchedContent', () => {
 		expect(findUnmatchedContent([heading(1), p, l], model)).toEqual([p, l]);
 	});
 
-	it('reports a node a required field skips', () => {
+	it('a required field that does not match keeps the child for the next field (SPEC-186 D4.2)', () => {
 		const model: SequenceModel = {
 			type: 'sequence',
 			fields: [
@@ -1569,7 +1570,24 @@ describe('findUnmatchedContent', () => {
 			],
 		};
 		const f = fence();
-		expect(findUnmatchedContent([f, paragraph()], model)).toEqual([f]);
+		const p = paragraph();
+		// The fence is no longer dropped on the missing title's account: it stays,
+		// nothing takes it, so it and what follows it are reported, and the title
+		// is reported missing, which is the real problem.
+		expect(findUnmatchedContent([f, p], model)).toEqual([f, p]);
+		expect(findMissingFields([f, p], model)).toEqual(['title', 'body']);
+	});
+
+	it('reports a required field reached after the children ran out (SPEC-186 D4.1)', () => {
+		const model: SequenceModel = {
+			type: 'sequence',
+			fields: [
+				{ name: 'title', match: 'heading' },
+				{ name: 'body', match: 'paragraph' },
+			],
+		};
+		expect(findMissingFields([heading(1)], model)).toEqual(['body']);
+		expect(findMissingFields([heading(1), paragraph()], model)).toEqual([]);
 	});
 
 	it('ignores whitespace, soft breaks and comments', () => {
