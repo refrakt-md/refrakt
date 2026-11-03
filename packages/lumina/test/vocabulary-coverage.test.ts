@@ -38,9 +38,6 @@ const KNOWN_UNSTYLED = new Set([
 	// The dark-mode tint marker: read by the tint cascade's custom properties,
 	// not by a selector.
 	'[data-tint-dark]',
-	// SPEC-185 — the epigraph, still to land (WORK-698). It leaves this set
-	// when a rune emits the role and Lumina styles it.
-	'[data-quote="epigraph"]',
 	// Real gaps. The cover axis emits `data-scrim` with a direction and
 	// `data-scrim-type`, while Lumina's scrim rules key on the bg rune's
 	// `data-scrim-dir`, and bg's own `data-scrim` carries a type

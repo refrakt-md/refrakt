@@ -42,13 +42,37 @@ The header is anchored to the headline, written as a heading at the start of the
 
 Every header slot is optional. With no leading heading the section is just a styled wrapper around its body; with only a header it's a standalone intro.
 
+## An epigraph
+
+A blockquote after the headline and blurb, followed by an attribution, `**Name** — Source`, is the section's **epigraph**: a short quotation that opens it. It is part of the header and renders as a `<figure data-quote="epigraph">` with its source as the `<figcaption>`.
+
+{% preview source=true %}
+
+	{% section %}
+	## Wandering
+
+	Notes on the long way round.
+
+	> Not all those who wander are lost.
+
+	**J. R. R. Tolkien** — The Fellowship of the Ring
+
+	The body begins here.
+	{% /section %}
+
+{% /preview %}
+
+The quote and the attribution are read together. Without an attribution the blockquote stays an ordinary quotation in the body, and an attribution on its own after the headline stays the blurb. Every rune composed over `section` reads epigraphs the same way; set `header="headline"` to read none.
+
+The same holds at the start of a page: a blockquote that opens a page's content, or directly follows its `#` title, with an attribution after it, is the page's epigraph.
+
 ## Choose which header roles to read
 
 `header` says how much of the start of the section becomes its header:
 
 | Value | Reads |
 |---|---|
-| `auto` (default) | eyebrow, headline and blurb, around a leading heading |
+| `auto` (default) | eyebrow, headline, blurb and epigraph, around a leading heading |
 | `headline` | only a leading heading; the paragraph after it stays body |
 | `none` | no header; all content is body |
 
@@ -138,6 +162,7 @@ The zones count as `card`'s do: one zone is the content, two are media and conte
 | Eyebrow | a paragraph directly before the headline | `.rf-section__eyebrow` |
 | Headline | a heading at the start, or after the eyebrow | `.rf-section__headline` |
 | Blurb | a paragraph directly after the headline | `.rf-section__blurb` |
+| Epigraph | an attributed blockquote after the headline and blurb | `.rf-section__epigraph` |
 | Body | everything else | `.rf-section__body` |
 | Media | the leading zone, with `media-position` | `.rf-section__media` |
 | Content | the header, body and footer, with `media-position` | `.rf-section__content` |

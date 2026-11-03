@@ -110,6 +110,52 @@
 		content: ", ";
 	}
 
+	/* The epigraph (SPEC-185 D5): a short attributed quotation opening a page or
+	 * a section. Indented and quieter than the text, its source beneath it;
+	 * centred under a centred header. */
+	[data-quote="epigraph"] {
+		max-width: 32rem;
+		margin: 1.25rem 0 1.75rem;
+		padding-inline-start: 2rem;
+	}
+	[data-align="center"] [data-quote="epigraph"] {
+		margin-inline: auto;
+		padding-inline-start: 0;
+		text-align: center;
+	}
+	[data-quote="epigraph"] blockquote {
+		margin: 0;
+		padding: 0;
+		border: none;
+		font-style: italic;
+		line-height: var(--rf-leading-normal);
+		color: var(--rf-color-muted);
+	}
+	[data-quote="epigraph"] blockquote p {
+		margin: 0;
+	}
+	[data-quote="epigraph"] blockquote p + p {
+		margin-top: 0.5rem;
+	}
+	[data-quote="epigraph"] figcaption {
+		margin-top: 0.5rem;
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+	}
+	[data-quote="epigraph"] figcaption cite {
+		font-style: normal;
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-text);
+	}
+	[data-quote="epigraph"] figcaption cite::before {
+		content: "— ";
+		font-weight: var(--rf-weight-normal);
+		color: var(--rf-color-muted);
+	}
+	[data-quote="epigraph"] figcaption cite + span::before {
+		content: ", ";
+	}
+
 	/* D3.5 — a blockquote with no marker (content transformed outside refrakt's
 	 * nodes) is still legible: a minimal fallback, at zero specificity, that any
 	 * rule styling the element replaces. */

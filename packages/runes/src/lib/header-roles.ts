@@ -60,6 +60,8 @@ const REMEDY: Record<string, string> = {
 	eyebrow: 'headline',
 	blurb: 'headline',
 	headline: 'none',
+	'epigraph-quote': 'headline',
+	'epigraph-attribution': 'headline',
 };
 
 /**

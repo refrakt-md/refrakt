@@ -10,6 +10,7 @@ import {
 	fieldMetas,
 } from '../lib/index.js';
 import { QUOTE_ATTR, withoutQuoteRole } from '../nodes.js';
+import { attributionItemModel, renderAttribution } from '../lib/attribution.js';
 
 const alignValues = ['left', 'center', 'right'] as const;
 const variantValues = ['default', 'accent', 'editorial'] as const;
@@ -19,16 +20,6 @@ const variantValues = ['default', 'accent', 'editorial'] as const;
 // what a section *is* (ADR-028). The quote is the body the reading register
 // lands on.
 export const pullQuoteSections = { quote: 'body' } as const;
-
-/** SPEC-185 D6 — an attribution paragraph, `**Name** — Source`: the name in
- *  bold, then an optional source after a dash or a comma (SPEC-182 D6's
- *  reading). Shared by every role that carries a source. */
-export const attributionItemModel = {
-	fields: [
-		{ name: 'name', match: 'strong' },
-		{ name: 'source', match: 'text', pattern: /^\s*[-–—,]\s*(.+)$/, optional: true },
-	],
-};
 
 /**
  * The quote is an authored `>`, read with the paragraph after it as its
@@ -58,16 +49,6 @@ const pullQuoteModel: ContentModel = {
 		fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
 	},
 };
-
-/** `<figcaption>` with the name in `<cite>` (SPEC-185 D6). */
-export function renderAttribution(record: { name?: unknown; source?: unknown }): Tag | undefined {
-	const name = typeof record.name === 'string' ? record.name.trim() : '';
-	if (!name) return undefined;
-	const source = typeof record.source === 'string' ? record.source.trim() : '';
-	const children: Tag[] = [new Tag('cite', { 'data-name': 'name' }, [name])];
-	if (source) children.push(new Tag('span', { 'data-name': 'source' }, [source]));
-	return new Tag('figcaption', {}, children);
-}
 
 /**
  * SPEC-185 D2 — `variant` named a look. `accent`'s tinted background is the

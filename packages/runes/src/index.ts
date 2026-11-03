@@ -14,6 +14,7 @@ import {
 	table,
 	td,
 	blockquote,
+	document,
 	withoutQuoteRole,
 	QUOTE_ATTR,
 } from './nodes.js';
@@ -1288,6 +1289,7 @@ export const tags = {
 };
 
 export const nodes = {
+	document,
 	heading,
 	paragraph,
 	blockquote,
