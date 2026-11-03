@@ -1,31 +1,21 @@
-/* pullquote — structure. The relative root (glyph anchor), the decorative-glyph
- * positioning + the per-variant glyph hides + centred glyph re-centre, the
- * centre/right auto-margins, and the float modes (+ responsive). The quote glyph,
- * type, borders and backgrounds are skin. */
-.rf-pullquote {
-	position: relative;
+/* pullquote — structure. A featured quotation is a `<figure>` (an excerpt an
+ * `<aside>` holding one, SPEC-185 D4): the browser's figure margins are
+ * cleared, the centred quote is centred in the measure, and the left/right
+ * modes float beside the text (+ responsive). The glyph, type, rules and
+ * attribution are skin. */
+.rf-pullquote,
+.rf-pullquote__figure {
+	margin-inline: 0;
 }
-.rf-pullquote::before {
-	position: absolute;
-	top: -0.25rem;
-	left: 0;
+.rf-pullquote__quote {
+	margin: 0;
 }
 .rf-pullquote--center {
 	margin-left: auto;
 	margin-right: auto;
 }
-.rf-pullquote--center::before {
-	left: 50%;
-	transform: translateX(-50%);
-}
-.rf-pullquote--left::before {
-	display: none;
-}
 .rf-pullquote--right {
 	margin-left: auto;
-}
-.rf-pullquote--right::before {
-	display: none;
 }
 .rf-pullquote[data-align="left"] {
 	float: left;
@@ -34,9 +24,6 @@
 .rf-pullquote[data-align="right"] {
 	float: right;
 	width: 40%;
-}
-.rf-pullquote--editorial::before {
-	display: none;
 }
 @media (max-width: 768px) {
 	.rf-pullquote[data-align="left"],

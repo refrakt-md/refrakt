@@ -51,6 +51,8 @@ export {
 	prominenceAxis,
 	PROMINENCE_VALUES,
 	hasPageSectionHeader,
+	takesProminence,
+	FEATURED_QUOTATION_CAPABILITY,
 } from './prominence.js';
 export { contentPlaceFacet, contentPlaceAxis } from './content-place.js';
 export { coverFacet, coverAxis } from './cover.js';

@@ -170,7 +170,7 @@ These three recur across runes and name **different axes** — pick the one that
 
 - **`type`** — a semantic *kind* that carries meaning beyond color: an icon, an implied label, sometimes behavior. Color is a side effect. Examples: `hint type="warning"` (admonition kind), `api method="POST"`, `diff type`.
 - **`sentiment`** — a pure *tone* cue, nothing but a color signal: `positive` / `caution` / `negative` / `neutral`, backed by the shared sentiment tokens (`--rf-color-success` / `-warning` / `-danger` / `-muted`, see `dimensions/metadata.css`). Examples: `badge sentiment`, `progress sentiment`.
-- **`variant`** — an enumerated *visual style* that is **not** about tone: `pullquote variant="editorial"`, `feature variant=…`.
+- **`variant`** — an enumerated *visual style* that is **not** about tone: `feature variant=…`. (A variant naming a *look* belongs to the theme: SPEC-185 withdrew `pullquote variant` for that reason.).
 
 If the values are `positive`/`caution`/`negative`, it's a **`sentiment`**, not a `variant`.
 

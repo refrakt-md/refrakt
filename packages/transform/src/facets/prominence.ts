@@ -1,3 +1,4 @@
+import type { RuneConfig } from '../types.js';
 import type { Facet } from './types.js';
 import type { UniversalAxisFacet } from './describe.js';
 
@@ -15,10 +16,26 @@ export function hasPageSectionHeader(sections: Record<string, string> | undefine
 	return !!sections && Object.values(sections).some((role) => HEADER_SECTION_ROLES.has(role));
 }
 
+/** SPEC-185 D9 — the capability a rune declares (`RuneConfig.provides`) when it
+ *  renders a featured quotation or an excerpt: the quote is the centrepiece of
+ *  its block, as a header is, so it takes the same loudness axis. */
+export const FEATURED_QUOTATION_CAPABILITY = 'featured-quotation';
+
+/** Whether `prominence` has something to scale on this rune: a page-section
+ *  header, or a featured quotation (SPEC-185 D9). */
+export function takesProminence(config: Pick<RuneConfig, 'sections' | 'provides'>): boolean {
+	return (
+		hasPageSectionHeader(config.sections) ||
+		(config.provides?.includes(FEATURED_QUOTATION_CAPABILITY) ?? false)
+	);
+}
+
+const NO_PROMINENCE_REASON = 'this rune has no page-section header or featured quotation';
+
 /** `prominence` — the header-emphasis axis (SPEC-107).
  *
- *  A *family* axis: it scales a rune's page-section header, so it is only
- *  meaningful on runes that have one. On a header-less rune it has nothing to
+ *  A *family* axis: it scales a rune's page-section header, or its featured
+ *  quotation (SPEC-185 D9), so it is only meaningful on runes that have one. On a header-less rune it has nothing to
  *  scale, so it is dropped with a dev warning rather than silently honoured.
  *
  *  Emits `data-prominence` and no BEM class; the skin maps it to a type
@@ -32,12 +49,12 @@ export const prominenceFacet: Facet = {
 	resolve(ctx) {
 		const value = ctx.tag.attributes?.prominence ?? ctx.config.defaultProminence;
 
-		if (!hasPageSectionHeader(ctx.config.sections)) {
+		if (!takesProminence(ctx.config)) {
 			return {
 				warnings: [
 					{
 						code: 'prominence-unsupported',
-						message: `[refrakt] prominence is not supported on "${ctx.rune}" — it applies only to runes with a page-section header. Ignored.`,
+						message: `[refrakt] prominence is not supported on "${ctx.rune}" — it applies only to runes with a page-section header or a featured quotation. Ignored.`,
 					},
 				],
 			};
@@ -57,16 +74,16 @@ export const prominenceAxis: UniversalAxisFacet = {
 	placement: 'header',
 	contract: {
 		description:
-			"Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 		source: 'attribute',
 		inputs: ['prominence'],
 		values: PROMINENCE_VALUES,
 		dataAttributes: ['data-prominence'],
 		condition:
-			'requires a page-section header — a `sections` role of header, preamble, title or description. Dropped with a warning otherwise.',
+			'requires a page-section header — a `sections` role of header, preamble, title or description — or the `featured-quotation` capability (SPEC-185 D9). Dropped with a warning otherwise.',
 	},
 	describeForRune: (config) => {
-		if (!hasPageSectionHeader(config.sections)) return 'this rune has no page-section header';
+		if (!takesProminence(config)) return NO_PROMINENCE_REASON;
 		return config.defaultProminence ? { default: config.defaultProminence } : null;
 	},
 };

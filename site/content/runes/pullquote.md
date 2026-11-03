@@ -1,6 +1,6 @@
 ---
 title: PullQuote
-description: Editorial pull quotes with alignment and style variants
+description: A featured quotation with its attribution, or a pull quote repeating words from the text
 category: Content
 plugin: core
 status: stable
@@ -9,51 +9,69 @@ type: rune
 
 # PullQuote
 
-Editorial pull quotes for magazine-style layouts. Extracts blockquotes or paragraphs and displays them as prominent typographic elements.
+A featured quotation: a statement presented for its own sake, set apart from the text with who said it. With `excerpt`, a pull quote: words from the text around it, repeated large for a skimming eye.
 
-## Basic usage
+You choose what the quote **is**; the theme decides how it looks. `{% quote %}` is the same rune.
 
-Wrap a blockquote or paragraph to turn it into a pull quote.
+## A featured quotation
+
+Wrap a blockquote. A paragraph after it, `**Name** — Source`, is its attribution: the name in bold, then the source after a dash or a comma.
 
 {% preview source=true %}
 
 	{% pullquote %}
 	> Design is not just what it looks like and feels like. Design is how it works.
+
+	**Steve Jobs** — Apple
 	{% /pullquote %}
 
 {% /preview %}
 
-## Alignment
+It renders as a `<figure>` holding the `<blockquote>`, with the attribution as its `<figcaption>` and the name in `<cite>`. The attribution is read only after a quote; the source is optional.
 
-Use the `align` attribute to position the pull quote within the content flow.
+## A pull quote
+
+When the words already appear in the text, add `excerpt`. The quote renders as an `<aside aria-hidden="true">`, so a screen reader does not read the passage twice. It looks the same as a featured quotation.
 
 {% preview source=true %}
 
-	{% pullquote align="right" %}
+	{% pullquote excerpt=true align="right" %}
 	> The best interface is no interface.
 	{% /pullquote %}
 
 {% /preview %}
 
-## Styles
+## How loud it is
 
-The `variant` attribute controls the visual treatment.
-
-{% preview source=true %}
-
-	{% pullquote variant="accent" align="center" %}
-	> Words can be like X-rays if you use them properly — they'll go through anything.
-	{% /pullquote %}
-
-{% /preview %}
+`prominence` sets how loud the quote is, on the same scale that sizes a section's header: `quiet` and `normal` are a quotation's own size, `prominent` and `display` set it apart, and `marquee` makes it a page's centrepiece.
 
 {% preview source=true %}
 
-	{% pullquote variant="editorial" %}
+	{% pullquote prominence="display" %}
 	> Simplicity is the ultimate sophistication.
 	{% /pullquote %}
 
 {% /preview %}
+
+A tinted panel is the universal `tint`:
+
+{% preview source=true %}
+
+	{% pullquote tint="subtle" prominence="prominent" %}
+	> Words can be like X-rays if you use them properly — they'll go through anything.
+
+	**Aldous Huxley**
+	{% /pullquote %}
+
+{% /preview %}
+
+## Placement
+
+`align` places the quote: centred in the measure (the default), or floated `left` or `right` beside the text, set against a rule.
+
+{% hint type="note" %}
+`variant` is deprecated: its values named looks, which belong to the theme. `accent` maps to `tint="subtle"` and `prominence="prominent"`; `default` and `editorial` map to nothing. It is accepted with a warning for this release.
+{% /hint %}
 
 ### Attributes
 

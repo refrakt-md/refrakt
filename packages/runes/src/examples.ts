@@ -34,7 +34,7 @@ export const RUNE_EXAMPLES: Record<string, string> = {
 	"nav": "{% nav %}\n## Getting Started\n- getting-started\n- installation\n\n## Guides\n- theming\n- deployment\n{% /nav %}",
 	"pagination": "{% pagination prev=\"install\" next=\"configuration\" /%}",
 	"progress": "{% progress value=3 max=4 %}Acceptance criteria{% /progress %}",
-	"pullquote": "{% pullquote align=\"center\" variant=\"accent\" %}\n> Design is not just what it looks like and feels like. Design is how it works.\n{% /pullquote %}",
+	"pullquote": "{% pullquote prominence=\"prominent\" %}\n> Design is not just what it looks like and feels like. Design is how it works.\n\n**Steve Jobs** — Apple\n{% /pullquote %}",
 	"region": "{% region name=\"nav\" %}\n{% nav %}\n- page-one\n- page-two\n{% /nav %}\n{% /region %}",
 	"reveal": "{% reveal %}\n### Step 1: Install the package\nRun the install command to add refrakt.md to your project.\n\n### Step 2: Configure your theme\nSet up the lumina theme in your config file.\n\n### Step 3: Write content\nCreate Markdown files with runes and watch them transform.\n{% /reveal %}",
 	"sandbox": "{% sandbox framework=\"tailwind\" %}\n<div class=\"flex items-center gap-4 p-6 bg-white rounded-xl shadow-lg max-w-sm\">\n  <img src=\"https://i.pravatar.cc/80\" alt=\"Avatar\" class=\"w-16 h-16 rounded-full\" />\n  <div>\n    <h3 class=\"text-lg font-semibold text-gray-900\">Jane Doe</h3>\n    <p class=\"text-sm text-gray-500\">Product Designer</p>\n  </div>\n</div>\n{% /sandbox %}",

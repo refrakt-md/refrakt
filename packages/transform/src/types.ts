@@ -428,8 +428,10 @@ export interface RuneConfig {
 	 *  breaks for a real minority — a `datatable`'s body role is on its `<table>`,
 	 *  and a drop cap on a table is nonsense.
 	 *
-	 *  Currently one capability, `'prose'`: this rune's body holds authored prose
-	 *  that an editorial register applies to. A facet declares what it needs via
+	 *  `'prose'`: this rune's body holds authored prose that an editorial
+	 *  register applies to. `'featured-quotation'` (SPEC-185 D9): the rune
+	 *  renders a featured quotation or an excerpt, which `prominence` scales as
+	 *  it scales a header. A facet declares what it needs via
 	 *  `UniversalAxisFacet.requires`, so the next axis needing a capability
 	 *  reuses this rather than inventing another bespoke field.
 	 *

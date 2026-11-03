@@ -62,7 +62,8 @@ export const universalAttributes: Record<string, SchemaAttribute> = {
 		type: String,
 		required: false,
 		matches: [...PROMINENCE_VALUES],
-		description: 'Section-header emphasis (only on page-section-header family runes)',
+		description:
+			'Emphasis of a page-section header or a featured quotation (only on runes that have one)',
 	},
 	// SPEC-105 — scroll-reveal motion. `reveal` is a closed entrance vocabulary
 	// (author declares intent; the theme owns choreography, a behaviour owns

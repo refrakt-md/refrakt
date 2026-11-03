@@ -579,11 +579,11 @@ export const coreConfig: ThemeConfig = {
 			defaultReading: 'prose',
 			modifiers: {
 				align: { source: 'meta', default: 'center' },
-				variant: { source: 'meta', default: 'default' },
 			},
 			sections: pullQuoteSections,
-			provides: ['prose'],
-			editHints: { body: 'inline' },
+			// SPEC-185 D9 — a featured quotation takes `prominence`.
+			provides: ['prose', 'featured-quotation'],
+			editHints: { quote: 'inline' },
 		},
 		TextBlock: {
 			block: 'textblock',

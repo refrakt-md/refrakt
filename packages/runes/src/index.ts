@@ -1037,14 +1037,17 @@ export const runes = {
 	}),
 	pullquote: defineRune({
 		name: 'pullquote',
-		aliases: ['pull-quote'],
+		aliases: ['pull-quote', 'quote'],
 		schema: pullquote,
-		description: 'Decorative pull quote for magazine-style emphasis with float and block modes',
+		description:
+			'A featured quotation with its attribution, or with `excerpt` a pull quote repeating words from the text',
 		typeName: 'PullQuote',
 		category: 'Content',
 		snippet: [
-			'{% pullquote variant="${1|default,accent,editorial|}" %}',
-			'> ${2:Quote text to emphasize.}',
+			'{% pullquote %}',
+			'> ${1:Quote text to feature.}',
+			'',
+			'**${2:Name}** — ${3:Source}',
 			'{% /pullquote %}',
 		],
 	}),

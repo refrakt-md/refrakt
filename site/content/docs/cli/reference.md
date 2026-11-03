@@ -35,7 +35,7 @@ The output lists the [universal attributes](/runes/surfaces) *this* rune carries
 Universal attributes: tint, tint-mode, bg, width, spacing, inset, elevation, reveal, …
 Not applicable to this rune:
   - dropcap, reading: this rune declares no body section
-  - prominence: this rune has no page-section header
+  - prominence: this rune has no page-section header or featured quotation
 ```
 
 Both halves are read from the rune's schema, so they match what Markdoc validation accepts and what editor completion offers. `--format json` carries the same information as `attributes.universal` and `attributes.universalUnavailable`.

@@ -122,6 +122,7 @@ export {
 	DESCRIBABLE_FACETS,
 	UNIVERSAL_POSTURE_REASONS,
 	PROMINENCE_VALUES,
+	FEATURED_QUOTATION_CAPABILITY,
 } from './facets/index.js';
 export type {
 	UniversalAxisFacet,
