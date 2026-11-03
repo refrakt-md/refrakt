@@ -36,13 +36,13 @@ describe('the staging site (SPEC-181 D1, D3)', () => {
 });
 
 describe('a staged rune shadows the plugin rune it replaces (SPEC-181 D1)', () => {
-	// `hero` went live (WORK-702); `testimonial` is still staged, under the same
-	// config key as the plugin's.
-	const testimonial = readFileSync(join(ROOT, 'site', 'staged-runes', 'testimonial.md'), 'utf-8');
+	// `hero`, `cta` and `testimonial` went live (WORK-702 to WORK-704); `steps`
+	// is still staged, under the same config key as the plugin's. The alias rule
+	// a preferred rune follows is `project-runes.test.ts`'s.
+	const steps = readFileSync(join(ROOT, 'site', 'staged-runes', 'steps.md'), 'utf-8');
 	const staged = loadProjectRunes(
-		memoryProjectFiles(new Map([['site/staged-runes/testimonial.md', testimonial]])),
+		memoryProjectFiles(new Map([['site/staged-runes/steps.md', steps]])),
 		'site/staged-runes',
-		{ schema: 'allow' },
 	);
 	const plugin = (): LoadedPlugin => ({
 		pkg: marketing,
@@ -59,13 +59,13 @@ describe('a staged rune shadows the plugin rune it replaces (SPEC-181 D1)', () =
 	const merged = mergePlugins(
 		[plugin()],
 		new Set(Object.keys(coreRunes)),
-		{ testimonial: PROJECT_RUNES },
+		{ steps: PROJECT_RUNES },
 		staged,
 	);
 
-	it('replaces the plugin’s schema, and its aliases with the staged ones', () => {
-		expect(merged.tags.testimonial).toBe(staged.runes.testimonial.schema);
-		expect(merged.provenance.testimonial.source).toBe('project');
+	it('replaces the plugin’s schema', () => {
+		expect(merged.tags.steps).toBe(staged.runes.steps.schema);
+		expect(merged.provenance.steps.source).toBe('project');
 	});
 
 	it('replaces the plugin’s hand-written config with the generated one', () => {
@@ -74,47 +74,16 @@ describe('a staged rune shadows the plugin rune it replaces (SPEC-181 D1)', () =
 			pluginRunes: merged.themeRunes,
 			provenance: merged.provenance,
 		});
-		const testimonial = theme.runes.Testimonial;
-		expect(testimonial.composed).toBe(true);
-		// Nothing of the plugin's entry survives: no block, no BEM, no sections.
-		expect(testimonial.block).toBeUndefined();
-		expect(testimonial.sections).toBeUndefined();
-		expect(marketing.theme?.runes?.Testimonial?.block).toBe('testimonial');
+		const steps = theme.runes.Steps;
+		expect(steps.composed).toBe(true);
+		// Nothing of the plugin's entry survives: no block, no BEM.
+		expect(steps.block).toBeUndefined();
+		expect(marketing.theme?.runes?.Steps?.block).toBe('steps');
 	});
 
 	it('leaves every other plugin rune as it was', () => {
-		expect(merged.provenance.cta.source).toBe('plugin');
-		expect(merged.themeRunes.CallToAction.block).toBe('cta');
-	});
-});
-
-describe('a staged rune’s aliases replace the plugin rune’s', () => {
-	it('drops `call-to-action` when the staged `cta` declares no such alias', () => {
-		const cta = readFileSync(join(ROOT, 'site', 'staged-runes', 'cta.md'), 'utf-8');
-		const staged = loadProjectRunes(
-			memoryProjectFiles(new Map([['site/staged-runes/cta.md', cta]])),
-			'site/staged-runes',
-		);
-		const loaded: LoadedPlugin = {
-			pkg: marketing,
-			npmName: '@refrakt-md/marketing',
-			runes: Object.fromEntries(
-				Object.entries(marketing.runes).map(([name, entry]) => [
-					name,
-					pluginRune(name, entry, marketing),
-				]),
-			),
-			fixtures: {},
-			fileRoots: {},
-		};
-		const merged = mergePlugins(
-			[loaded],
-			new Set(Object.keys(coreRunes)),
-			{ cta: PROJECT_RUNES },
-			staged,
-		);
-		expect(merged.tags.cta).toBe(staged.runes.cta.schema);
-		expect(merged.tags['call-to-action']).toBeUndefined();
+		expect(merged.provenance.feature.source).toBe('plugin');
+		expect(merged.themeRunes.Feature.block).toBe('feature');
 	});
 });
 
@@ -145,22 +114,17 @@ describe('the staged runes, as the staging site loads them (WORK-681)', () => {
 		staged,
 	);
 
-	it('stages cta, testimonial and steps, and prefers each over the plugin', () => {
-		// `hero` went live in the marketing plugin (WORK-702).
-		expect(Object.keys(staged.runes).sort()).toEqual(['cta', 'steps', 'testimonial']);
-		expect(site.runes.prefer.hero).toBeUndefined();
-		for (const rune of ['cta', 'testimonial', 'steps']) {
-			expect(site.runes.prefer[rune], rune).toBe(PROJECT_RUNES);
-			expect(merged.tags[rune], rune).toBe(staged.runes[rune].schema);
-		}
-		// …and so the `review` alias, which the staged testimonial declares.
-		expect(merged.tags.review).toBe(staged.runes.testimonial.schema);
+	it('stages steps, and prefers it over the plugin', () => {
+		// `hero`, `cta` and `testimonial` went live in the marketing plugin
+		// (WORK-702 to WORK-704), and their `prefer` entries went with them.
+		expect(Object.keys(staged.runes).sort()).toEqual(['steps']);
+		expect(site.runes.prefer).toEqual({ steps: PROJECT_RUNES });
+		expect(merged.tags.steps).toBe(staged.runes.steps.schema);
 	});
 
-	it('loads the testimonial’s schema row, which the site allows (SPEC-145 D25)', () => {
+	it('still allows a staged definition its schema row (SPEC-145 D25)', () => {
+		// No staged rune declares one today; a conversion that does (storytelling)
+		// is staged under the same rule the testimonial was.
 		expect(site.runes.schema).toBe('allow');
-		expect(() => loadProjectRunes(fsProjectFiles(ROOT), site.runes.dir)).toThrow(
-			/testimonial[\s\S]*may not declare `schema`/,
-		);
 	});
 });

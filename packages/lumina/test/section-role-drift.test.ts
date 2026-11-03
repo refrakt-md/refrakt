@@ -44,7 +44,11 @@ describe('section-role drift', () => {
 		// aliases of `playlist` / `track` instead of separate registrations, so
 		// their duplicate `MusicPlaylist` / `MusicRecording` config entries went
 		// with them. Two fewer entries, the same runes covered.
-		expect(Object.keys(allRunes).length).toBeGreaterThanOrEqual(130);
+		//
+		// 129: `hero`, `cta` and `testimonial` are composed (WORK-702 to WORK-704).
+		// A composed rune's config is generated from its definition, not written in
+		// `plugin.theme.runes`, and it declares no section roles to drift.
+		expect(Object.keys(allRunes).length).toBeGreaterThanOrEqual(129);
 		for (const [name, plugin] of Object.entries(plugins)) {
 			const runes = Object.keys(plugin.theme?.runes ?? {});
 			expect(runes.length, `${name} contributed no runes`).toBeGreaterThan(0);

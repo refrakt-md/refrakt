@@ -79,7 +79,6 @@
 @import "./styles/runes/compare.css";
 @import "./styles/runes/comparison.css";
 @import "./styles/runes/conversation.css";
-@import "./styles/runes/cta.css";
 @import "./styles/runes/datatable.css";
 @import "./styles/runes/details.css";
 @import "./styles/runes/drawer.css";
@@ -121,7 +120,6 @@
 @import "./styles/runes/storyboard.css";
 @import "./styles/runes/symbol.css";
 @import "./styles/runes/tabs.css";
-@import "./styles/runes/testimonial.css";
 @import "./styles/runes/timeline.css";
 @import "./styles/runes/toc.css";
 @import "./styles/runes/track.css";

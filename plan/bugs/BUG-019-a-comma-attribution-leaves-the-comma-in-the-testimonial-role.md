@@ -1,4 +1,4 @@
-{% bug id="BUG-019" status="confirmed" severity="minor" source="SPEC-130" tags="runes,marketing,seo" %}
+{% bug id="BUG-019" status="fixed" severity="minor" source="SPEC-130" tags="runes,marketing,seo" milestone="v0.48.0" %}
 
 # A comma attribution leaves the comma in the testimonial role
 

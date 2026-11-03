@@ -1,21 +1,42 @@
 import 'reflect-metadata';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import {
 	tags as coreTags,
-	nodes,
+	nodes as coreNodes,
+	composedPluginRune,
+	declareSlotMarkers,
+	declareSlotMarkersOnNodes,
 	extractHeadings,
 	runeTagMap,
 	defineRune,
 } from '@refrakt-md/runes';
 import { marketing } from '../src/index.js';
 
-// Create Rune instances from the package
+// Create Rune instances from the package: its `runes` entries, and the
+// composed runes in its `runeDir` (SPEC-153 D2), as `loadPlugin` reads them.
 const pluginRunes: Record<string, any> = {};
 for (const [name, entry] of Object.entries(marketing.runes)) {
 	pluginRunes[name] = defineRune({ name, schema: entry.transform as any, aliases: entry.aliases });
 }
-const tags = { ...coreTags, ...runeTagMap(pluginRunes), ...Markdoc.tags };
+const runeDir = join(import.meta.dirname, '..', marketing.runeDir!);
+for (const file of readdirSync(runeDir).filter((f) => f.endsWith('.md'))) {
+	const name = file.slice(0, -'.md'.length);
+	const { rune } = composedPluginRune(name, {
+		template: readFileSync(join(runeDir, file), 'utf-8'),
+	});
+	pluginRunes[name] = defineRune({ ...rune, name, schema: rune.schema });
+}
+// The slot markers a composition sets are declared at config assembly
+// (SPEC-145 D10a), so they survive the transform.
+const tags = declareSlotMarkers({
+	...coreTags,
+	...runeTagMap(pluginRunes),
+	...Markdoc.tags,
+} as any);
+const nodes = declareSlotMarkersOnNodes(coreNodes as any);
 
 export function parse(content: string, variables: Record<string, any> = {}) {
 	const ast = Markdoc.parse(content);

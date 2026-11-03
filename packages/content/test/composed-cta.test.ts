@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { compositionFor } from '@refrakt-md/runes';
 import { marketing } from '../../../plugins/marketing/src/index.js';
 import {
@@ -7,6 +9,7 @@ import {
 	composedMarketing,
 	definitionOf,
 	html,
+	liveDir,
 	merge,
 	renderPage,
 	text,
@@ -14,17 +17,21 @@ import {
 } from './composed-marketing.js';
 
 /**
- * WORK-666 — `cta` as a composition over `section` (SPEC-160 D7), beside the
- * marketing plugin's `cta` and never in place of it (SPEC-147 D1). The
- * definition is `site/staged-runes/cta.md`, staged on the `staging` site (SPEC-181).
+ * WORK-666 — `cta` as a composition over `section` (SPEC-160 D7). It was staged
+ * on the `staging` site (SPEC-181) and compared with the plugin's native `cta`
+ * cell by cell (SPEC-147 D2); every difference was explained in WORK-666 and
+ * reviewed on staging.refrakt.md (WORK-689). WORK-703 took it live: the
+ * definition is `plugins/marketing/runes/cta.md`, and the native rune is gone,
+ * so what the comparison established is kept as assertions on the composition.
  */
 
-const pkg = composedMarketing({ cta: definitionOf('cta') }, ['CallToAction']);
+const pkg = composedMarketing({ cta: definitionOf('cta') }, []);
 const mine = (src: string) => byRune(renderPage(pkg, src), 'cta')[0];
-const theirs = (src: string) => byRune(renderPage(marketing, src), 'call-to-action')[0];
 const sectionOf = (root: Json) => byRune(root, 'section')[0];
 
-const FIXTURE = marketing.runes.cta.fixture!;
+const FIXTURE = readFileSync(join(liveDir, '..', 'fixtures', 'cta.md'), 'utf-8')
+	.replace(/^---[\s\S]*?---\s*/, '')
+	.trim();
 const EYEBROW =
 	'{% cta %}\nLimited offer\n\n## Ready to start?\n\nJoin thousands of teams.\n\n- [Sign up](/s)\n{% /cta %}';
 const COMMAND =
@@ -57,9 +64,6 @@ describe('the composed cta definition (WORK-666)', () => {
 
 	it('reads two leading headings as a headline and body, no longer an eyebrow and a headline (ADR-046)', () => {
 		const src = '{% cta %}\n## Limited offer\n\n# Ready to start?\n\n- [Sign up](/s)\n{% /cta %}';
-		const plugin = theirs(src);
-		expect(text(byName(plugin, 'eyebrow')[0])).toBe('Limited offer');
-		expect(text(byName(plugin, 'headline')[0])).toBe('Ready to start?');
 		const out = mine(src);
 		expect(byName(out, 'eyebrow')).toHaveLength(0);
 		expect(text(byName(out, 'headline')[0])).toBe('Limited offer');
@@ -72,39 +76,25 @@ describe('the composed cta definition (WORK-666)', () => {
 	});
 });
 
-describe('composed cta against the plugin, for every gallery cell (SPEC-147 D2)', () => {
-	it.each(CASES)('%s: the same content, in the same roles', (_case, src) => {
-		const a = theirs(src);
+describe('the shipping cta, for every gallery cell (WORK-703)', () => {
+	it.each(CASES)('%s: a block-less wrapper around a display section', (_case, src) => {
 		const b = mine(src);
-		for (const role of ['eyebrow', 'headline', 'blurb']) {
-			expect(byName(b, role).map(text), role).toEqual(byName(a, role).map(text));
-		}
-		expect(byName(b, 'action').map((n: Json) => n.attributes['data-rank'])).toEqual(
-			byName(a, 'action').map((n: Json) => n.attributes['data-rank']),
-		);
-		expect(byName(b, 'command').map(text)).toEqual(byName(a, 'command').map(text));
+		// `cta`, its name: the plugin rendered as `call-to-action`, an alias the
+		// composition does not declare.
+		expect(b.attributes['data-rune']).toBe('cta');
+		expect(html(b)).not.toMatch(/rf-cta/);
+		expect(b.attributes['data-width']).toBe('full');
+		// Centred by `section`'s `align`, at `display` (SPEC-183).
+		expect(sectionOf(b).attributes['data-align']).toBe('center');
+		expect(sectionOf(b).attributes['data-prominence']).toBe('display');
+		expect(html(b)).not.toContain('data-content-measure');
+		expect(byName(b, 'headline').map(text)[0]?.length).toBeGreaterThan(0);
+		expect(byName(b, 'action').length + byName(b, 'command').length).toBeGreaterThan(0);
 	});
 
-	it.each(CASES)('%s: the differences, each explained', (_case, src) => {
-		const a = theirs(src);
-		const b = mine(src);
-		// The plugin renders as `call-to-action`, its alias; the composition as
-		// `cta`, its name.
-		expect(a.attributes['data-rune']).toBe('call-to-action');
-		expect(b.attributes['data-rune']).toBe('cta');
-		// Block-less root around a section: no `rf-cta*` class anywhere.
-		expect(html(b)).not.toMatch(/rf-cta/);
-		expect(b.attributes['data-width']).toBe(a.attributes['data-width']);
-		// The header is centred by `section`'s `align`, which the plugin did in CSS.
-		expect(sectionOf(b).attributes['data-align']).toBe('center');
-		// `display`, the step that reproduces the plugin's header and band
-		// (SPEC-183; composed-landing-register.test.ts). Its buttons keep the
-		// default size, today's cta size: only `marquee` enlarges them.
-		expect(a.attributes['data-prominence']).toBeUndefined();
-		expect(sectionOf(b).attributes['data-prominence']).toBe('display');
-		// Not anchored to the measure at `width="wide"`: section declares no
-		// `contentMeasure`.
-		expect(a.attributes['data-content-measure']).toBe('anchored');
-		expect(html(b)).not.toContain('data-content-measure');
+	it('the marketing plugin no longer ships a native cta, or its alias', () => {
+		expect(marketing.runes.cta).toBeUndefined();
+		expect(marketing.theme?.runes?.CallToAction).toBeUndefined();
+		expect(merge(pkg).tags['call-to-action']).toBeUndefined();
 	});
 });

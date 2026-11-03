@@ -170,22 +170,18 @@ See [Universal Theming Dimensions](/extend/theme-authoring/dimensions) for the f
 Context modifiers enable runes to adapt their appearance when nested inside other runes. The modifier class is added to the root element, so all CSS can be scoped under it:
 
 ```css
-/* CTA standalone — centered with generous padding */
-.rf-cta {
-  text-align: center;
-  padding: 3.5rem 2rem 3rem;
+/* Hint inside a hero — a compact callout */
+.rf-hint--in-hero {
+  margin: var(--rf-spacing-cozy) 0 0;
+  padding: var(--rf-spacing-sm) var(--rf-spacing-cozy);
+  font-size: var(--rf-text-sm);
 }
 
-/* CTA inside a Hero — less top padding */
-.rf-cta--in-hero {
-  padding-top: 2rem;
-  padding-bottom: 0;
-}
-
-/* CTA inside Pricing — left-aligned, compact */
-.rf-cta--in-pricing {
-  text-align: left;
-  padding: 1.5rem 0 0;
+/* Hint inside a feature block — narrower still */
+.rf-hint--in-feature {
+  margin: var(--rf-spacing-snug) 0 0;
+  padding: var(--rf-spacing-sm) var(--rf-spacing-snug);
+  font-size: var(--rf-text-sm);
 }
 ```
 
@@ -195,9 +191,9 @@ Common context modifier patterns in the base config:
 |------|--------|----------|---------|
 | Hint | Hero | `in-hero` | Compact callout |
 | Hint | Feature | `in-feature` | Narrow callout |
-| CTA | Hero | `in-hero` | Reduced padding |
-| CTA | Pricing | `in-pricing` | Left-aligned |
 | Feature | Hero | `in-hero` | Hero-specific layout |
+
+The parent may be a composed rune: the modifier keys on its `data-rune`, which a composition keeps. A composed rune has no BEM block of its own, so it cannot carry a context modifier itself — `cta` inside `pricing` is written `align="start"` instead.
 | Feature | Grid | `in-grid` | Grid-aware sizing |
 
 ## Design tokens

@@ -1,10 +1,8 @@
 import type { Plugin } from '@refrakt-md/types';
-import { cta } from './tags/cta.js';
 import { bento, bentoCell } from './tags/bento.js';
 import { feature, definition } from './tags/feature.js';
 import { steps, step } from './tags/steps.js';
 import { pricing, tier } from './tags/pricing.js';
-import { testimonial } from './tags/testimonial.js';
 import { comparison, comparisonColumn, comparisonRow } from './tags/comparison.js';
 import { config } from './config.js';
 
@@ -12,33 +10,11 @@ export const marketing: Plugin = {
 	name: 'marketing',
 	displayName: 'Marketing',
 	version: '0.47.0',
-	// SPEC-153 D2 — composed runes, one `<rune>.md` each. `hero` went live here
-	// from `site/staged-runes/` (SPEC-181 D5, WORK-702).
+	// SPEC-153 D2 — composed runes, one `<rune>.md` each. `hero`, `cta` and
+	// `testimonial` went live here from `site/staged-runes/` (SPEC-181 D5,
+	// WORK-702 to WORK-704).
 	runeDir: 'runes',
 	runes: {
-		cta: {
-			transform: cta,
-			aliases: ['call-to-action'],
-			description: 'Call-to-action section with headline, actions, and optional showcase',
-			category: 'Section',
-			snippet: [
-				'{% cta %}',
-				'## ${1:Ready to get started?}',
-				'',
-				'${2:Description text}',
-				'',
-				'- [${3:Start Now}](${4:/signup})',
-				'{% /cta %}',
-			],
-			fixture: `{% cta %}
-# Your Headline
-
-A compelling description of what you're offering.
-
-- [Get Started](/docs/getting-started)
-- [Learn More](/about)
-{% /cta %}`,
-		},
 		bento: {
 			transform: bento,
 			description: 'Magazine-style bento grid where heading levels determine cell size',
@@ -197,28 +173,6 @@ Select the plan that best fits your needs.
 			description: 'Individual pricing tier with name, price, and features',
 			seoType: 'Offer',
 		},
-		testimonial: {
-			transform: testimonial,
-			aliases: ['review'],
-			description:
-				'Customer testimonial or review with quote, author attribution, and optional rating',
-			seoType: 'Review',
-			category: 'Section',
-			snippet: [
-				'{% testimonial %}',
-				'> ${1:Quote text goes here.}',
-				'',
-				'**${2:Author Name}** — ${3:Role or company}',
-				'{% /testimonial %}',
-			],
-			fixture: `{% testimonial %}
-> Refrakt transformed how we write documentation. The rune system means our content authors write Markdown while our designers have full control over the output.
-
-**Sarah Chen** — Head of Developer Experience at Acme Corp
-
-![Sarah Chen](placeholder:avatar)
-{% /testimonial %}`,
-		},
 		comparison: {
 			transform: comparison,
 			aliases: ['versus', 'vs'],
@@ -267,7 +221,6 @@ Select the plan that best fits your needs.
 export default marketing;
 
 // SPEC-161 D1 — the attribution codemod, and the parser it shares with the rune.
-export { parseAttribution } from './tags/testimonial.js';
 
 export type {
 	FeatureProps,

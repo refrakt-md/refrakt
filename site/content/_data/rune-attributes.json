@@ -1501,6 +1501,16 @@
 			"page": "conversation"
 		},
 		{
+			"rune": "cta",
+			"plugin": "@refrakt-md/marketing",
+			"scope": "own",
+			"name": "align",
+			"type": "\"start\" | \"center\" | \"end\"",
+			"required": false,
+			"description": "Alignment of the header and the actions",
+			"page": "cta"
+		},
+		{
 			"rune": "data",
 			"plugin": "core",
 			"scope": "own",
@@ -4644,20 +4654,10 @@
 			"rune": "testimonial",
 			"plugin": "@refrakt-md/marketing",
 			"scope": "own",
-			"name": "rating",
-			"type": "number",
-			"required": false,
-			"description": "Star rating value (1-5) shown alongside the testimonial",
-			"page": "testimonial"
-		},
-		{
-			"rune": "testimonial",
-			"plugin": "@refrakt-md/marketing",
-			"scope": "own",
 			"name": "author",
 			"type": "string",
 			"required": false,
-			"description": "The person quoted. Replaces the `**Name** — Role` paragraph.",
+			"description": "The person quoted. Without it, the `**Name** — Role` paragraph after the quote is the attribution.",
 			"page": "testimonial"
 		},
 		{
@@ -4667,7 +4667,27 @@
 			"name": "role",
 			"type": "string",
 			"required": false,
-			"description": "Their role or organisation, shown beneath the name.",
+			"description": "Their role or organisation, beside `author`.",
+			"page": "testimonial"
+		},
+		{
+			"rune": "testimonial",
+			"plugin": "@refrakt-md/marketing",
+			"scope": "own",
+			"name": "rating",
+			"type": "number",
+			"required": false,
+			"description": "Rating out of rating-total.",
+			"page": "testimonial"
+		},
+		{
+			"rune": "testimonial",
+			"plugin": "@refrakt-md/marketing",
+			"scope": "own",
+			"name": "rating-total",
+			"type": "number",
+			"required": false,
+			"description": "The rating's maximum.",
 			"page": "testimonial"
 		},
 		{
@@ -4677,17 +4697,7 @@
 			"name": "variant",
 			"type": "\"card\" | \"inline\" | \"quote\"",
 			"required": false,
-			"description": "Visual style: card with border, inline with text flow, or quote with large quotation marks",
-			"page": "testimonial"
-		},
-		{
-			"rune": "testimonial",
-			"plugin": "@refrakt-md/marketing",
-			"scope": "own",
-			"name": "layout",
-			"type": "string",
-			"required": false,
-			"description": "",
+			"description": "Kept as `data-variant` for themes; no stylesheet branches on it.",
 			"page": "testimonial"
 		},
 		{
@@ -8017,10 +8027,26 @@
 		},
 		{
 			"rune": "cta",
+			"axis": "dropcap",
+			"available": true,
+			"description": "Per-instance drop-cap opt-in (SPEC-108).",
+			"query": "axis:dropcap",
+			"page": "cta"
+		},
+		{
+			"rune": "cta",
 			"axis": "elevation",
 			"available": true,
 			"description": "The chrome/depth ladder (SPEC-107). The skin maps each rung to a chrome bundle by attribute, so there is no BEM class.",
 			"query": "axis:elevation",
+			"page": "cta"
+		},
+		{
+			"rune": "cta",
+			"axis": "frame",
+			"available": true,
+			"description": "Surface chrome (SPEC-086): a named preset from the theme registry with inline `frame-*` overrides layered on top.",
+			"query": "axis:frame",
 			"page": "cta"
 		},
 		{
@@ -8045,6 +8071,14 @@
 			"available": true,
 			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
 			"query": "axis:prominence",
+			"page": "cta"
+		},
+		{
+			"rune": "cta",
+			"axis": "reading",
+			"available": true,
+			"description": "Editorial register for body text (SPEC-108). The author picks the register; the theme owns the magnitude.",
+			"query": "axis:reading",
 			"page": "cta"
 		},
 		{
@@ -13481,6 +13515,14 @@
 		},
 		{
 			"rune": "testimonial",
+			"axis": "dropcap",
+			"available": true,
+			"description": "Per-instance drop-cap opt-in (SPEC-108).",
+			"query": "axis:dropcap",
+			"page": "testimonial"
+		},
+		{
+			"rune": "testimonial",
 			"axis": "elevation",
 			"available": true,
 			"description": "The chrome/depth ladder (SPEC-107). The skin maps each rung to a chrome bundle by attribute, so there is no BEM class.",
@@ -13509,6 +13551,22 @@
 			"available": true,
 			"description": "Scroll-reveal entrance (SPEC-105). The author declares the character, the theme owns the choreography, a behaviour owns the timing.",
 			"query": "axis:motion",
+			"page": "testimonial"
+		},
+		{
+			"rune": "testimonial",
+			"axis": "prominence",
+			"available": true,
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
+			"query": "axis:prominence",
+			"page": "testimonial"
+		},
+		{
+			"rune": "testimonial",
+			"axis": "reading",
+			"available": true,
+			"description": "Editorial register for body text (SPEC-108). The author picks the register; the theme owns the magnitude.",
+			"query": "axis:reading",
 			"page": "testimonial"
 		},
 		{
@@ -14716,20 +14774,6 @@
 			"page": "conversation"
 		},
 		{
-			"rune": "cta",
-			"available": false,
-			"axes": "dropcap, reading",
-			"reason": "this rune declares no prose body",
-			"page": "cta"
-		},
-		{
-			"rune": "cta",
-			"available": false,
-			"axes": "frame",
-			"reason": "this rune declares neither a `frameTarget` nor a media section",
-			"page": "cta"
-		},
-		{
 			"rune": "data",
 			"available": false,
 			"axes": "dropcap, reading",
@@ -15925,20 +15969,6 @@
 			"axes": "frame",
 			"reason": "this rune declares neither a `frameTarget` nor a media section",
 			"page": "tabs"
-		},
-		{
-			"rune": "testimonial",
-			"available": false,
-			"axes": "dropcap, reading",
-			"reason": "this rune declares no prose body",
-			"page": "testimonial"
-		},
-		{
-			"rune": "testimonial",
-			"available": false,
-			"axes": "prominence",
-			"reason": "this rune has no page-section header or featured quotation",
-			"page": "testimonial"
 		},
 		{
 			"rune": "textblock",
