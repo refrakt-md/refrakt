@@ -34,6 +34,12 @@ export const RENDERED_META_TYPES = ['link', 'rating'] as const;
 export const SENTIMENTS = ['positive', 'negative', 'caution', 'neutral'] as const;
 export type Sentiment = (typeof SENTIMENTS)[number];
 
+/** SPEC-185 D1 — the quotation roles, emitted as `data-quote` on a
+ *  quotation's outermost element. A theme styles the role, never the bare
+ *  `blockquote`. */
+export const QUOTE_ROLES = ['quotation', 'featured', 'excerpt', 'epigraph'] as const;
+export type QuoteRole = (typeof QUOTE_ROLES)[number];
+
 /** The layouts a `blocks` entry renders with (`data-zone-layout`). */
 export const LAYOUT_PRIMITIVES = ['bar', 'definition-list', 'lead'] as const;
 

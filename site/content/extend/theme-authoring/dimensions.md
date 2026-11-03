@@ -220,6 +220,38 @@ For legacy `StructureEntry`-only paths, `labelHidden: true` makes the label visu
 
 ---
 
+## Quotation roles
+
+A quotation is one of four roles, and a theme styles the role, never the bare `blockquote` element (SPEC-185). The role is the author's choice; how it looks is the theme's.
+
+| Role | What it is | Authored as |
+|---|---|---|
+| `quotation` | Someone else's words cited in support of the text | `>` in running text |
+| `featured` | A statement presented for its own sake, with who said it | `{% pullquote %}` |
+| `excerpt` | An excerpt of this text, repeated large for a skimming eye | `{% pullquote excerpt %}` |
+| `epigraph` | A short attributed quotation that opens a work or a section | `>` with an attribution, at the start |
+
+Each role carries `data-quote` on the quotation's **outermost element**:
+
+- the `<figure>` when it is attributed;
+- the bare `<blockquote>` when it is not;
+- the `<aside>` for an excerpt.
+
+Style the role through that attribute, with its `blockquote` and `figcaption` as descendants:
+
+```css
+[data-quote="quotation"] { border-left: 3px solid var(--rf-color-primary); }
+[data-quote="quotation"] figcaption { color: var(--rf-color-muted); }
+```
+
+- **A plain `>` is a quotation.** The core `blockquote` node marks it, since no rune consumes it.
+- **A rune that reinterprets `>` carries no marker.** A recipe's tips, a comparison's callouts and a conversation's lines are not quotations, so a theme has nothing to undo on them.
+- **A composition places the rune that is what it reinterprets.** A composed recipe's tips are notes, so its template places them in a `{% hint %}`, and the theme's hint treatment applies. A composition does not style `>` itself.
+- **The reading register is context.** A quotation in `prose` and one in `ui` (a card body) may look different; Lumina sets one quieter in `ui`.
+- **The unmarked fallback.** A blockquote with no marker, from content transformed outside refrakt, deserves a minimal, zero-specificity fallback so it stays legible.
+
+The roles are part of the theme vocabulary: [`refrakt theme coverage`](/docs/cli/theme-tools#refrakt-theme-coverage) reports which of them your CSS styles.
+
 ## Structural dimensions
 
 ### Density

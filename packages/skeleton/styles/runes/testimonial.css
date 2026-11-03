@@ -1,8 +1,7 @@
 /* testimonial — structure. The author name/role block display and the fixed
- * avatar box (size + crop). Surface, type, the quote treatment, the blockquote
- * `::before` reset, and the avatar radius/margin stay skin (Lumina's
- * styles/runes/testimonial.css) — the `blockquote::before { display:none }` reset
- * must stay skin to override elements/blockquote.css by source order. */
+ * avatar box (size + crop). Surface, type, the quote treatment and the avatar
+ * radius/margin stay skin (Lumina's styles/runes/testimonial.css). The quote is
+ * not marked as a quotation (SPEC-185 D3.3), so it has no glyph to reset. */
 
 .rf-testimonial__author-name {
 	display: block;

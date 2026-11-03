@@ -268,6 +268,36 @@ export const linkTag: Schema = {
 
 export const hardbreak = Markdoc.nodes.hardbreak;
 
+/** SPEC-185 D3 — the quotation role's marker. */
+export const QUOTE_ATTR = 'data-quote';
+
+/**
+ * SPEC-185 D3.2 — a plain `>` that no rune consumes is a quotation: someone
+ * else's words cited in support of the text. It has no rune to mark it, so the
+ * node does, and a theme styles the role (`[data-quote="quotation"]`) rather
+ * than the bare element. A rune that reinterprets `>` (tips, callouts,
+ * dialogue) produces its own elements, or removes the marker from a
+ * blockquote it renders: what it makes is not a quotation (D3.3).
+ */
+export const blockquote: Schema = {
+	...Markdoc.nodes.blockquote,
+	transform(node, config) {
+		return new Tag(
+			'blockquote',
+			{ ...node.transformAttributes(config), [QUOTE_ATTR]: 'quotation' },
+			node.transformChildren(config),
+		);
+	},
+};
+
+/** D3.3 — a rune that renders a `>` it reinterprets takes the quotation marker
+ *  off: its tips, quote or callout are not a quotation. */
+export function withoutQuoteRole<T>(tag: T): T {
+	const attrs = (tag as { attributes?: Record<string, unknown> } | null)?.attributes;
+	if (attrs && QUOTE_ATTR in attrs) delete attrs[QUOTE_ATTR];
+	return tag;
+}
+
 export const image: Schema = {
 	render: 'img',
 	attributes: {

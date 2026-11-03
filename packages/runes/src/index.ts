@@ -13,6 +13,9 @@ import {
 	image,
 	table,
 	td,
+	blockquote,
+	withoutQuoteRole,
+	QUOTE_ATTR,
 } from './nodes.js';
 
 import { grid } from './tags/grid.js';
@@ -80,6 +83,7 @@ import { defineRune, runeTagMap } from './rune.js';
 export * from './interfaces.js';
 export { Rune, defineRune, runeTagMap } from './rune.js';
 export { themeVocabulary, themeVocabularyDimensions } from './vocabulary.js';
+export { withoutQuoteRole, QUOTE_ATTR } from './nodes.js';
 /** Custom Markdoc attribute types. Exported since SPEC-132, which is the first
  *  release in which their `validate()` runs in a build at all — `transform()`
  *  never invoked it, only `Markdoc.validate()` does. `plugins/media` carries its
@@ -1283,6 +1287,7 @@ export const tags = {
 export const nodes = {
 	heading,
 	paragraph,
+	blockquote,
 	fence,
 	list,
 	item,

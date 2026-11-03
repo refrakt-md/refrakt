@@ -11,6 +11,7 @@ import {
 	pageSectionProperties,
 	buildLayoutMetas,
 	extractMediaImage,
+	withoutQuoteRole,
 } from '@refrakt-md/runes';
 
 const difficultyType = ['easy', 'medium', 'hard'] as const;
@@ -174,7 +175,11 @@ export const recipe = createContentModelSchema({
 			asNodes(contentZone.tips),
 			config,
 		) as RenderableTreeNode[];
-		const tips = tipsRendered.filter((n: any) => Markdoc.Tag.isTag(n) && n.name === 'blockquote');
+		// SPEC-185 D3.3 — a tip is not a quotation: the marker the core node
+		// gives a `>` comes off.
+		const tips = tipsRendered
+			.filter((n: any) => Markdoc.Tag.isTag(n) && n.name === 'blockquote')
+			.map(withoutQuoteRole);
 
 		// Transform media AST nodes
 		const mediaAstNodes = (Array.isArray(mediaZone.media) ? mediaZone.media : []) as Node[];

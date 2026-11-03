@@ -8,6 +8,7 @@ import {
 	renderNodes,
 	fieldMetas,
 } from '../lib/index.js';
+import { withoutQuoteRole } from '../nodes.js';
 
 const alignValues = ['left', 'center', 'right'] as const;
 const variantValues = ['default', 'accent', 'editorial'] as const;
@@ -43,7 +44,9 @@ export const pullquote = createContentModelSchema({
 		// authored one inside would nest a quotation in a quotation. Its
 		// attributes come with its content, so a composition's slot marker and a
 		// schema `property` land on the one element.
-		const [blockquote] = children.tag('blockquote').limit(1).toArray() as Tag[];
+		const [blockquote] = (children.tag('blockquote').limit(1).toArray() as Tag[]).map(
+			withoutQuoteRole,
+		);
 		const quoteChildren = blockquote ? blockquote.children : children.tag('p').toArray();
 
 		const root = createComponentRenderable({
