@@ -1,6 +1,6 @@
 {% data src="site/content/_data/rune-intro.json" root="runes" where=$r limit=1 %}
 	{% section prominence="prominent" %}
-		{% link href=$row.packageUrl %}{% $row.packageLabel %}{% /link %}
+		{% $row.packageLabel %}
 
 		# {% $row.title %}
 

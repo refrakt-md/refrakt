@@ -71,7 +71,7 @@ describe('the rune intro records (WORK-705)', () => {
 	it('a core rune: Core, its schema module, nothing published', () => {
 		expect(by.hint).toMatchObject({
 			package: 'core',
-			packageLabel: 'Core',
+			packageLabel: 'core',
 			plugin: false,
 			core: true,
 			composed: false,
@@ -85,6 +85,7 @@ describe('the rune intro records (WORK-705)', () => {
 	it('a native plugin rune: its package, its schema module, its default schema.org type', () => {
 		expect(by.howto).toMatchObject({
 			package: '@refrakt-md/learning',
+			packageLabel: 'learning',
 			packageUrl: '/runes/learning',
 			plugin: true,
 			composed: false,
@@ -148,6 +149,7 @@ describe('the committed intro data (live)', () => {
 			'testimonial',
 		]);
 		expect(by.testimonial.schemaType).toBe('Review');
-		expect(by.hint).toMatchObject({ packageLabel: 'Core', composed: false });
+		expect(by.hint).toMatchObject({ packageLabel: 'core', composed: false });
+		expect(by.hero.packageLabel).toBe('marketing');
 	});
 });

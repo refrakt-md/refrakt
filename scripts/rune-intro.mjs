@@ -89,11 +89,13 @@ export function sourceOf(rune, { dirs, runeDirOf, exists = (p) => existsSync(joi
 /** The package as the eyebrow shows it, and the page it links to. */
 export function packageOf(rune, pageRel) {
 	if (rune.plugin === 'core') {
-		return { packageLabel: 'Core', packageUrl: '/runes/rune-catalog', plugin: false, core: true };
+		return { packageLabel: 'core', packageUrl: '/runes/rune-catalog', plugin: false, core: true };
 	}
 	const section = pageRel.split('/')[0];
 	return {
-		packageLabel: rune.plugin,
+		// The eyebrow names the plugin, not its npm scope: `marketing`, not
+		// `@refrakt-md/marketing`. The full name is in the Install drawer.
+		packageLabel: rune.plugin.split('/').pop(),
 		packageUrl: `/runes/${section}`,
 		plugin: true,
 		// The partial branches on both: `$row` does not reach a function's

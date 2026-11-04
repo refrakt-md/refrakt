@@ -21,7 +21,7 @@ const record = (over: Record<string, unknown> = {}) => ({
 	status: 'stable',
 	unstable: false,
 	package: '@acme/widgets',
-	packageLabel: '@acme/widgets',
+	packageLabel: 'widgets',
 	packageUrl: '/runes/widgets',
 	plugin: true,
 	core: false,
@@ -71,7 +71,7 @@ describe('the rune intro partial (WORK-706)', () => {
 						rune: 'gadget',
 						title: 'Gadget',
 						package: 'core',
-						packageLabel: 'Core',
+						packageLabel: 'core',
 						packageUrl: '/runes/rune-catalog',
 						plugin: false,
 						core: true,
@@ -144,6 +144,17 @@ describe('the rune intro partial (WORK-706)', () => {
 		expect(core.map((a) => a.attributes.href)).toEqual(['#drawer-rune-source']);
 	});
 
+	it('names the plugin by its short name, as plain text, in the eyebrow', () => {
+		const text = (n: any): string =>
+			typeof n === 'string' ? n : (n?.children ?? []).map(text).join('');
+		const eyebrow = all(page('/widget').renderable, (n) => n.name === 'p' && text(n) === 'widgets');
+		expect(eyebrow).toHaveLength(1);
+		expect(all(eyebrow[0], (n) => n.name === 'a')).toEqual([]);
+		expect(
+			all(page('/gadget').renderable, (n) => n.name === 'p' && text(n) === 'core'),
+		).toHaveLength(1);
+	});
+
 	it('a composed plugin rune: Composition badge, Install action and drawer, no schema badge', () => {
 		const out = json('/widget');
 		expect(out).toContain('Composition');
@@ -159,6 +170,5 @@ describe('the rune intro partial (WORK-706)', () => {
 		expect(out).not.toContain('rune-install');
 		expect(out).toContain('beta');
 		expect(out).toContain('https://schema.org/HowTo');
-		expect(out).toContain('Core');
 	});
 });

@@ -42,7 +42,7 @@ the page's own `# Title`:
 ```
 
 It is a `section` at `prominent`, which matches a docs page's `<h1>` size: the
-package as eyebrow (linked to the plugin's page, or `Core`), the title as the
+plugin's short name as eyebrow (`marketing`, or `core`; plain text, the plugin page link is in the Install drawer), the title as the
 page's `<h1>`, and the frontmatter `description` as the blurb. Its body is a
 `bar`. The left group holds what the rune is: a `Composition` badge, a status
 badge when the page is not `stable`, and the schema.org type it publishes. The

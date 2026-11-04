@@ -31,7 +31,7 @@ attribute tables: a generated data file, one shared partial, and a guard.
 
 ```markdoc
 {% section prominence="prominent" %}
-[@refrakt-md/marketing](/runes/marketing)
+marketing
 
 # Hero
 
@@ -76,7 +76,8 @@ read and to guard than two.
 
 ### D2 — the intro is a `section`; the bar is its body
 
-- **Eyebrow:** the package, linked to its plugin page, or `Core`.
+- **Eyebrow:** the plugin's short name as plain text (`marketing`, not `@refrakt-md/marketing`), or
+  `core`. *Amended:* not a link; the plugin page is linked from the Install drawer.
 - **Headline:** the page's `# Title`, still an `<h1>`.
 - **Blurb:** the frontmatter `description`.
 - **Body:** the `bar`, directly under the blurb.
@@ -218,7 +219,7 @@ Illustrative, not pixel targets. `[▣]` is Install, `[</>]` is Source.
 
 ```
 hero — a composition in a plugin
-  @REFRAKT-MD/MARKETING
+  MARKETING
   Hero
   Full-width intro sections for landing pages with background support and action buttons
   ┌───────────────────────────────────────────────────────────┐
