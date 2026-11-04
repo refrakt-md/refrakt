@@ -9,4 +9,11 @@
 	.rf-bar {
 		margin: 0.5rem 0;
 	}
+
+	/* A group's paragraph is a line of the row, not prose: without this its
+ * bottom margin makes one group taller than the other, and the row's
+ * centring then sets them at different heights. */
+	.rf-bar > * > p {
+		margin-block: 0;
+	}
 }

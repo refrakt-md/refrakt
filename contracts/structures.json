@@ -2974,6 +2974,12 @@
 			"childOrder": [
 				"{content}"
 			],
+			"contextModifiers": {
+				"bar": {
+					"suffix": "in-bar",
+					"selector": ".rf-actions--in-bar"
+				}
+			},
 			"universalAxes": {
 				"axes": {
 					"tint": {

@@ -89,13 +89,16 @@ export function sourceOf(rune, { dirs, runeDirOf, exists = (p) => existsSync(joi
 /** The package as the eyebrow shows it, and the page it links to. */
 export function packageOf(rune, pageRel) {
 	if (rune.plugin === 'core') {
-		return { packageLabel: 'Core', packageUrl: '/runes/rune-catalog', plugin: false };
+		return { packageLabel: 'Core', packageUrl: '/runes/rune-catalog', plugin: false, core: true };
 	}
 	const section = pageRel.split('/')[0];
 	return {
 		packageLabel: rune.plugin,
 		packageUrl: `/runes/${section}`,
 		plugin: true,
+		// The partial branches on both: `$row` does not reach a function's
+		// arguments, so `not($row.plugin)` cannot stand in for this.
+		core: false,
 	};
 }
 
@@ -103,7 +106,7 @@ export function packageOf(rune, pageRel) {
  * The records, sorted by rune. `pages` is `findDocPages()`; `read` reads a page
  * by its path relative to `site/content/runes/`.
  */
-export function introRecords(runes, { pages, read, dirs, runeDirOf, exists }) {
+export function introRecords(runes, { pages, read, dirs, runeDirOf, exists, repo }) {
 	const records = [];
 	for (const rune of [...runes].sort((a, b) => a.name.localeCompare(b.name))) {
 		if (PAGELESS.has(rune.name)) continue;
@@ -120,7 +123,7 @@ export function introRecords(runes, { pages, read, dirs, runeDirOf, exists }) {
 			unstable: status !== 'stable',
 			package: rune.plugin,
 			...packageOf(rune, page.rel),
-			...sourceOf(rune, { dirs, runeDirOf, exists }),
+			...withSourceUrl(sourceOf(rune, { dirs, runeDirOf, exists }), repo),
 			// Markdoc's `if` treats `""` as true, so the partial tests this.
 			publishes: schemaType !== '',
 			schemaType,
@@ -128,6 +131,20 @@ export function introRecords(runes, { pages, read, dirs, runeDirOf, exists }) {
 		});
 	}
 	return records;
+}
+
+/** The file on GitHub, for the Source drawer's footer link (SPEC-187 D12). */
+export function withSourceUrl(found, repo) {
+	if (!repo?.url) return { ...found, sourceUrl: '' };
+	const base = repo.url.replace(/\/+$/, '');
+	return { ...found, sourceUrl: `${base}/blob/${repo.branch || 'main'}/${found.source}` };
+}
+
+/** The `main` site's repository, from `refrakt.config.json`. */
+export function repoOf(root = ROOT) {
+	const config = JSON.parse(readFileSync(join(root, 'refrakt.config.json'), 'utf8'));
+	const site = config.sites?.main ?? config;
+	return { url: site.repoUrl ?? '', branch: site.repoBranch ?? 'main' };
 }
 
 /** The artifact: one root, so a page selects its record with `root="runes"`. */
@@ -144,5 +161,6 @@ export async function buildIntro(runes) {
 		read: (rel) => readFileSync(join(RUNES_DIR, rel), 'utf8'),
 		dirs,
 		runeDirOf,
+		repo: repoOf(),
 	});
 }

@@ -44,6 +44,7 @@ const ctx = {
 	},
 	runeDirOf: { '@refrakt-md/marketing': 'runes' },
 	exists: (p) => files.has(p),
+	repo: { url: 'https://github.com/acme/site/', branch: 'trunk' },
 };
 const runes = [
 	{ name: 'hero', plugin: '@refrakt-md/marketing' },
@@ -72,6 +73,7 @@ describe('the rune intro records (WORK-705)', () => {
 			package: 'core',
 			packageLabel: 'Core',
 			plugin: false,
+			core: true,
 			composed: false,
 			source: 'packages/runes/src/tags/hint.ts',
 			publishes: false,
@@ -97,6 +99,7 @@ describe('the rune intro records (WORK-705)', () => {
 		expect(by.hero).toMatchObject({
 			composed: true,
 			source: 'plugins/marketing/runes/hero.md',
+			sourceUrl: 'https://github.com/acme/site/blob/trunk/plugins/marketing/runes/hero.md',
 			packageUrl: '/runes/marketing',
 		});
 	});

@@ -46,9 +46,11 @@ package as eyebrow (linked to the plugin's page, or `Core`), the title as the
 page's `<h1>`, and the frontmatter `description` as the blurb. Its body is a
 `bar`. The left group holds what the rune is: a `Composition` badge, a status
 badge when the page is not `stable`, and the schema.org type it publishes. The
-right group holds the actions: `Install`, a drawer with both install steps
-(plugin runes only), and `Source`, a `file-ref` drawer on the file that
-defines the rune.
+right group is an `actions` region, styled by its `in-bar` context: `Install`
+(plugin runes only) and `Source`, each an icon and a label, and each a plain
+link to a drawer the partial declares (`rune-install`, `rune-source`), which the
+build turns into a drawer trigger (SPEC-187 D10). The Source drawer is a
+`snippet` of the defining file and a link to it on GitHub.
 
 The data is `_data/rune-intro.json`, one record per rune page, written by the
 same `npm run runes:attributes`. Nothing in it is hand-written: title,

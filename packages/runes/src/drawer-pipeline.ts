@@ -518,3 +518,76 @@ export function pathToSlug(path: string, lines?: string): string {
 	const end = trimmed.slice(dash + 1).trim();
 	return end ? `${base}-L${start}-L${end}` : `${base}-L${start}`;
 }
+
+/**
+ * SPEC-187 D10 — a link whose target is a drawer on the same page opens it.
+ *
+ * The drawer behaviour wires `a[data-target-type="drawer"]`, which `ref` and
+ * `file-ref` emit. Any other link to a drawer — `[Install](#rune-install)`,
+ * `{% link href="#rune-install" %}`, an `actions` item — gets the same two
+ * things here: the drawer's anchor as its `href`, and the target type. So a
+ * trigger can carry an icon in its text and be placed by any rune that places
+ * links.
+ *
+ * - The fragment may be the drawer's own `id` or its anchor, `drawer-<id>`.
+ * - A drawer wins over a heading with the same id: it is the more specific
+ *   target, and the link would otherwise scroll to a heading the author did
+ *   not mean.
+ * - A fragment no drawer on the page has is left alone: it is an ordinary
+ *   same-page anchor.
+ * - A link that already names a target type is the reference runes' and is
+ *   not touched.
+ *
+ * Runs after the hoist, so a hoisted drawer's id counts, and reads every drawer
+ * on the page, author-declared or hoisted, by its `data-drawer-id`.
+ */
+export function bindDrawerLinks(renderable: unknown): unknown {
+	const ids = collectAuthorDrawerIds(renderable);
+	if (ids.size === 0) return renderable;
+
+	const target = (href: unknown): string | undefined => {
+		if (typeof href !== 'string' || !href.startsWith('#') || href.length < 2) return undefined;
+		const fragment = href.slice(1);
+		if (ids.has(fragment)) return fragment;
+		if (fragment.startsWith('drawer-') && ids.has(fragment.slice('drawer-'.length))) {
+			return fragment.slice('drawer-'.length);
+		}
+		return undefined;
+	};
+
+	let mutated = false;
+	const walk = (node: unknown): unknown => {
+		if (Array.isArray(node)) {
+			let changed = false;
+			const next = node.map((c) => {
+				const out = walk(c);
+				if (out !== c) changed = true;
+				return out;
+			});
+			return changed ? next : node;
+		}
+		if (!Tag.isTag(node as never)) return node;
+		const tag = node as TagNode;
+		const attrs = (tag.attributes ?? {}) as Record<string, unknown>;
+		const children = tag.children ?? [];
+		let nextChildren: unknown[] = children;
+		let childrenChanged = false;
+		if (children.length > 0) {
+			nextChildren = children.map((c) => {
+				const out = walk(c);
+				if (out !== c) childrenChanged = true;
+				return out;
+			});
+		}
+		const id =
+			tag.name === 'a' && attrs['data-target-type'] === undefined ? target(attrs.href) : undefined;
+		if (!id && !childrenChanged) return node;
+		mutated = true;
+		const nextAttrs = id
+			? { ...attrs, href: `#drawer-${id}`, 'data-target-type': 'drawer' }
+			: tag.attributes;
+		return new Tag(tag.name, nextAttrs, (childrenChanged ? nextChildren : children) as never[]);
+	};
+	const out = walk(renderable);
+	return mutated ? out : renderable;
+}

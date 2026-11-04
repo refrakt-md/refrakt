@@ -33,6 +33,7 @@ import {
 	registerDrawers,
 	resolveAutoDrawerTitleLevels,
 	hoistPreviewDrawers,
+	bindDrawerLinks,
 } from './drawer-pipeline.js';
 import { resolveFileRefs } from './file-ref-resolve.js';
 import { resolveXrefPreviews } from './xref-preview-resolve.js';
@@ -710,6 +711,9 @@ export const coreConfig: ThemeConfig = {
 		// themes style it rather than list position.
 		Actions: {
 			block: 'actions',
+			// SPEC-187 D11 — actions in a bar are compact and tonal: quieter than
+			// buttons, clearly not prose. The look is the theme's.
+			contextModifiers: { bar: 'in-bar' },
 			editHints: { action: 'link', command: 'code' },
 		},
 		Section: {
@@ -2797,6 +2801,12 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 				coreData.xrefPatterns ?? [],
 				ctx,
 			);
+
+			// SPEC-187 D10 — a link to a drawer on this page opens it. Last, so
+			// every drawer is present (author-declared, hoisted, or brought in by
+			// expand/collection content) and every reference link already carries
+			// its target type.
+			renderable = bindDrawerLinks(renderable);
 
 			const finalPage = renderable === page.renderable ? page : { ...page, renderable };
 

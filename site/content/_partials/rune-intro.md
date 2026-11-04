@@ -7,11 +7,22 @@
 		{% $row.description %}
 
 		{% bar %}
-		{% if $row.composed %}{% badge %}{% icon name="puzzle" size="1em" /%} Composition{% /badge %}{% /if %} {% if $row.unstable %}{% badge sentiment="caution" %}{% $row.status %}{% /badge %}{% /if %} {% if $row.publishes %}{% link href=$row.schemaUrl %}{% badge %}{% $row.schemaType %}{% /badge %}{% /link %}{% /if %}
+			{% if $row.composed %}{% badge %}{% icon name="puzzle" size="1em" /%} Composition{% /badge %}{% /if %} {% if $row.unstable %}{% badge sentiment="caution" %}{% $row.status %}{% /badge %}{% /if %} {% if $row.publishes %}{% link href=$row.schemaUrl %}{% badge %}{% $row.schemaType %}{% /badge %}{% /link %}{% /if %}
 
-		---
+			---
 
-		{% if $row.plugin %}{% ref "rune-install" label="Install" /%}{% /if %} {% file-ref path=$row.source preview="drawer" label="Source" /%}
+			{% if $row.plugin %}
+				{% actions %}
+				- [{% icon name="package" /%} Install](#rune-install)
+				- [{% icon name="code" /%} Source](#rune-source)
+				{% /actions %}
+			{% /if %}
+
+			{% if $row.core %}
+				{% actions %}
+				- [{% icon name="code" /%} Source](#rune-source)
+				{% /actions %}
+			{% /if %}
 		{% /bar %}
 	{% /section %}
 
@@ -23,4 +34,10 @@
 		{% link href=$row.packageUrl %}About the plugin and its runes{% /link %}
 		{% /drawer %}
 	{% /if %}
+
+	{% drawer id="rune-source" title="Source" %}
+		{% snippet path=$row.source /%}
+
+		{% link href=$row.sourceUrl %}View {% $row.source %} on GitHub{% /link %}
+	{% /drawer %}
 {% /data %}

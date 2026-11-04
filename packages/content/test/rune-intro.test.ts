@@ -24,11 +24,13 @@ const record = (over: Record<string, unknown> = {}) => ({
 	packageLabel: '@acme/widgets',
 	packageUrl: '/runes/widgets',
 	plugin: true,
+	core: false,
 	composed: true,
 	source: 'plugins/widgets/runes/widget.md',
 	publishes: false,
 	schemaType: '',
 	schemaUrl: '',
+	sourceUrl: 'https://github.com/acme/widgets/blob/main/plugins/widgets/runes/widget.md',
 	...over,
 });
 
@@ -37,6 +39,17 @@ describe('the rune intro partial (WORK-706)', () => {
 	let site: Awaited<ReturnType<typeof loadContent>>;
 	const page = (url: string) => site.pages.find((p) => p.route.url === url)!;
 	const json = (url: string) => JSON.stringify(page(url).renderable);
+	// biome-ignore lint/suspicious/noExplicitAny: a rendered tree is untyped JSON
+	const all = (node: any, pred: (n: any) => boolean, out: any[] = []): any[] => {
+		if (Array.isArray(node)) {
+			for (const c of node) all(c, pred, out);
+			return out;
+		}
+		if (!node || typeof node !== 'object') return out;
+		if (pred(node)) out.push(node);
+		all(node.children ?? [], pred, out);
+		return out;
+	};
 
 	beforeAll(async () => {
 		root = mkdtempSync(path.join(tmpdir(), 'refrakt-rune-intro-'));
@@ -61,6 +74,7 @@ describe('the rune intro partial (WORK-706)', () => {
 						packageLabel: 'Core',
 						packageUrl: '/runes/rune-catalog',
 						plugin: false,
+						core: true,
 						composed: false,
 						source: 'plugins/widgets/runes/widget.md',
 						publishes: true,
@@ -101,10 +115,33 @@ describe('the rune intro partial (WORK-706)', () => {
 		expect(json('/widget')).not.toContain('include error');
 	});
 
-	it('reads the file-ref path from $row, and the Source drawer holds the file', () => {
+	it('reads the snippet path from $row, and the Source drawer holds the file (D12)', () => {
 		const out = json('/widget');
 		expect(out).toContain('plugins/widgets/runes/widget.md');
 		expect(out).toContain('WIDGET-DEFINITION-BODY');
+		expect(out).toContain('"data-drawer-id":"rune-source"');
+	});
+
+	it('places Install and Source as actions that open their drawers (D10, D11)', () => {
+		const links = all(
+			page('/widget').renderable,
+			(n) => n.name === 'a' && n.attributes?.['data-target-type'] === 'drawer',
+		);
+		expect(links.map((a) => a.attributes.href)).toEqual([
+			'#drawer-rune-install',
+			'#drawer-rune-source',
+		]);
+		const items = all(
+			page('/widget').renderable,
+			(n) => n.name === 'li' && n.attributes?.['data-rank'] !== undefined,
+		);
+		expect(items.map((li) => li.attributes['data-rank'])).toEqual(['primary', 'secondary']);
+		// A core rune's lone Source action opens its drawer too.
+		const core = all(
+			page('/gadget').renderable,
+			(n) => n.name === 'a' && n.attributes?.['data-target-type'] === 'drawer',
+		);
+		expect(core.map((a) => a.attributes.href)).toEqual(['#drawer-rune-source']);
 	});
 
 	it('a composed plugin rune: Composition badge, Install action and drawer, no schema badge', () => {

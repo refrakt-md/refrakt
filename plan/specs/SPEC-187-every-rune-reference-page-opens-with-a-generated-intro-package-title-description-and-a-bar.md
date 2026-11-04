@@ -264,9 +264,9 @@ testimonial on staging.refrakt.md, before it goes live (D7)
 3. **The register.** `section`'s default prominence and spacing on a docs page read as a page
    header, not a landing-page band. If not, the partial sets the section's attributes; it does not
    add CSS for one site. *(Confirmed in WORK-706: `prominent` matches a docs page's `<h1>`.)*
-4. **`snippet` takes its `path` from a `$row` value** inside `data` (D12).
+4. **`snippet` takes its `path` from a `$row` value** inside `data` (D12). *(Confirmed in WORK-709.)*
 5. **`actions` ranks link items with icons in them.** It finds the first `a`, which a Markdown link
-   already is at transform time; a test asserts it.
+   already is at transform time; a test asserts it. *(Confirmed in WORK-709.)*
 
 ## Not in scope
 

@@ -38,6 +38,20 @@
 	}
 }
 
+/* In a bar (SPEC-187 D11) the actions stay a row on a phone: they are metadata
+ * actions, not a page's call to action, and stacking them full-width would push
+ * the bar's other half off its line. */
+@media (max-width: 640px) {
+	.rf-actions--in-bar,
+	.rf-actions--in-bar .rf-actions__list {
+		flex-direction: row;
+		align-items: center;
+	}
+	.rf-actions--in-bar .rf-actions__action > a {
+		width: auto;
+	}
+}
+
 /* Size follows the nearest enclosing rune's `prominence` (SPEC-160 D7). The skin
  * sets `--action-padding` / `--action-font-size` on a `[data-prominence]` rune;
  * every other rune root clears them, so they reach only an `actions` whose

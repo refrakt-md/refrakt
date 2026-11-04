@@ -55,6 +55,22 @@ The trigger anchor is just an anchor. Without JS, clicking scrolls to the drawer
 
 `data-target-type` is a **neutral convention** — any rune that wants to be "addressable as a trigger" can set `data-target-type="{rune-name}"` on its resolved xrefs. Future popover, modal, sheet runes can adopt the same hook-point without expanding the xref surface.
 
+## Triggering from a link
+
+A link whose target is a drawer on the same page opens it too: a Markdown link, a `{% link %}`, or an item in [`actions`](/runes/actions). The build gives it the same anchor and `data-target-type="drawer"` that `{% ref %}` gets. Because a link's text takes inline tags, a trigger can carry an [icon](/runes/icon), and any rune that places links can place one.
+
+```markdoc
+{% actions %}
+- [{% icon name="package" /%} Install](#install)
+- [{% icon name="code" /%} Source](#source)
+{% /actions %}
+```
+
+- The target is the drawer's `id`, as with `{% ref %}`. Its anchor, `#drawer-{id}`, works as well.
+- When a drawer and a heading share an id, the link opens the drawer.
+- A link to an id no drawer on the page has is left alone: it is an ordinary same-page anchor.
+- Without JS the link scrolls to the drawer at its authored position, as any trigger does.
+
 ## Triggers anywhere, multiple triggers free
 
 Because the drawer is id-addressable, the same drawer can be referenced from N places on the same page without coordination. The body is authored once; refs to it are normal authoring.
