@@ -19,7 +19,6 @@ export const media: Plugin = {
 			aliases: ['music-playlist'],
 			description: 'Playlist with track listing — albums, podcasts, audiobooks, mixes',
 			seoType: 'MusicPlaylist',
-			category: 'Semantic',
 			snippet: [
 				'{% playlist type="${1|album,podcast,audiobook,series,mix|}" artist="${2:Artist}" %}',
 				'# ${3:Playlist Name}',
@@ -53,7 +52,6 @@ export const media: Plugin = {
 			aliases: ['music-recording'],
 			description: 'Individual track with metadata — for use inside playlist or standalone',
 			seoType: 'MusicRecording',
-			category: 'Semantic',
 			snippet: [
 				'{% track src="${1:audio.mp3}" artist="${2:Artist}" duration="${3:3:45}" %}',
 				'# ${4:Track Name}',
@@ -69,7 +67,6 @@ Breathe
 		audio: {
 			transform: audio,
 			description: 'Audio player — standalone or connected to a playlist',
-			category: 'Semantic',
 			snippet: ['{% audio src="${1:audio.mp3}" title="${2:Title}" /%}'],
 			fixture: `{% audio src="/audio/interview.mp3" title="Interview" waveform %}
 Recorded on January 15, 2025.

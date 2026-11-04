@@ -1,7 +1,7 @@
 ---
 title: Code
 description: Inline code span for dynamic content, where backticks cannot reach
-category: "Code & Data"
+category: Text & inline
 plugin: core
 status: stable
 type: rune

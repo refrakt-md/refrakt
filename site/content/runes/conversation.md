@@ -1,7 +1,7 @@
 ---
 title: Conversation
 description: Chat and dialogue display with alternating speaker messages
-category: Content
+category: Sections & blocks
 plugin: core
 status: stable
 type: rune

@@ -17,7 +17,6 @@ export const design: Plugin = {
 		swatch: {
 			transform: swatch,
 			description: 'Inline color chip with colored dot and label for referencing colors in prose',
-			category: 'Design',
 			snippet: ['{% swatch color="${1:#2563EB}" label="${2:Blue}" /%}'],
 			fixture: `{% swatch color="#2563EB" label="Ultramarine" /%}`,
 		},
@@ -25,7 +24,6 @@ export const design: Plugin = {
 			transform: palette,
 			description:
 				'Visual color palette displaying swatches with names, values, and optional WCAG contrast/accessibility info',
-			category: 'Design',
 			snippet: [
 				'{% palette title="${1:Colors}" %}',
 				'- ${2:Blue}: ${3:#2563EB}',
@@ -47,7 +45,6 @@ export const design: Plugin = {
 			transform: typography,
 			description:
 				'Font specimen display showing typefaces at multiple sizes and weights with sample text',
-			category: 'Design',
 			snippet: [
 				'{% typography title="${1:Font System}" %}',
 				'- heading: ${2:Inter} (${3:600, 700})',
@@ -65,7 +62,6 @@ export const design: Plugin = {
 			transform: spacing,
 			description:
 				'Visual display of spacing scale, border radii, and shadow tokens as proportional shapes',
-			category: 'Design',
 			snippet: [
 				'{% spacing title="${1:Design Tokens}" %}',
 				'## Spacing',
@@ -105,7 +101,6 @@ export const design: Plugin = {
 			transform: preview,
 			description:
 				'Component preview with theme toggle and adjustable width for documentation and design systems',
-			category: 'Code & Data',
 			snippet: ['{% preview source=true %}', '$0', '{% /preview %}'],
 			fixture: `{% preview title="Button Variants" theme="auto" responsive="mobile,tablet,desktop" %}
 \`\`\`html
@@ -121,7 +116,6 @@ export const design: Plugin = {
 			transform: mockup,
 			description:
 				'Device frame chrome (phone, tablet, browser, laptop) wrapping content for realistic device context',
-			category: 'Design',
 			snippet: [
 				'{% mockup device="${1|browser,iphone-15,iphone-se,ipad,macbook,phone,tablet|}" %}',
 				'$0',
@@ -137,7 +131,6 @@ A landing page with a hero section and call to action.
 			transform: designContext,
 			description:
 				'Unified design token card composing palette, typography, and spacing runes with automatic sandbox injection',
-			category: 'Design',
 			snippet: [
 				'{% design-context title="${1:Brand Tokens}" %}',
 				'',

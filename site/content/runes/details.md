@@ -1,7 +1,7 @@
 ---
 title: Details
 description: Collapsible disclosure blocks for supplementary content
-category: Layout
+category: Disclosure
 plugin: core
 status: stable
 type: rune

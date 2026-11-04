@@ -1,7 +1,7 @@
 ---
 title: PullQuote
 description: A featured quotation with its attribution, or a pull quote repeating words from the text
-category: Content
+category: Text & inline
 plugin: core
 status: stable
 type: rune

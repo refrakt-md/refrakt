@@ -1,7 +1,7 @@
 ---
 title: Data
 description: Ingest an external tabular file (CSV, TSV, JSON, NDJSON) and render it as a table, chart, or datatable — shaped at build time
-category: "Code & Data"
+category: Data
 plugin: core
 status: stable
 type: rune

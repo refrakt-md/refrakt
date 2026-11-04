@@ -1,7 +1,7 @@
 ---
 title: Sandbox
 description: Isolated HTML/CSS/JS rendering in an iframe with optional framework loading
-category: Layout
+category: Code
 plugin: core
 status: stable
 type: rune

@@ -1,7 +1,7 @@
 ---
 title: Gallery
 description: Multi-image container with grid, carousel, or masonry layout
-category: Layout
+category: Arrangement
 plugin: core
 status: stable
 type: rune

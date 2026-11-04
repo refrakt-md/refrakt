@@ -1,7 +1,7 @@
 ---
 title: Budget
 description: Structured budgets with categories, line items, and totals
-category: "Code & Data"
+category: Data
 plugin: core
 status: stable
 type: rune

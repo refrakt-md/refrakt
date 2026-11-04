@@ -1,7 +1,7 @@
 ---
 title: Badge
 description: Inline pill that flags a piece of content — status, category, recency, tag
-category: Content
+category: Values
 plugin: core
 status: stable
 type: rune

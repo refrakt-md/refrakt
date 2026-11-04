@@ -1,7 +1,7 @@
 ---
 title: Section
 description: A generic page section — an eyebrow, headline, and blurb above any content
-category: Layout
+category: Sections & blocks
 plugin: core
 status: stable
 type: rune

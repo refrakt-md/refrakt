@@ -1,7 +1,7 @@
 ---
 title: Include
 description: Paste a partial's content into the page during the preprocess phase, so data and snippet inside it resolve
-category: "Code & Data"
+category: Reuse & references
 plugin: core
 status: stable
 type: rune

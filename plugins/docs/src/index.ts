@@ -6,7 +6,7 @@ import { config } from './config.js';
 
 export const docs: Plugin = {
 	name: 'docs',
-	displayName: 'Documentation',
+	displayName: 'Docs',
 	version: '0.48.0',
 	runes: {
 		api: {
@@ -14,7 +14,6 @@ export const docs: Plugin = {
 			aliases: ['endpoint'],
 			description:
 				'API endpoint documentation with method, path, parameters, and request/response examples',
-			category: 'Code & Data',
 			snippet: [
 				'{% api method="${1|GET,POST,PUT,DELETE,PATCH|}" path="${2:/api/resource}" %}',
 				'## ${3:Description}',
@@ -51,7 +50,6 @@ Retrieve a single user by their unique identifier.
 			description:
 				'Code construct documentation for functions, classes, interfaces, enums, and type aliases',
 			seoType: 'TechArticle',
-			category: 'Code & Data',
 			snippet: [
 				'{% symbol kind="${1|function,hook,class,interface,enum,type,module,component|}" lang="${2|typescript,javascript,python,rust,go|}" %}',
 				'',
@@ -93,7 +91,6 @@ function createTransform(config: ThemeConfig): (tree: RendererNode) => RendererN
 		changelog: {
 			transform: changelog,
 			description: 'Version history where headings become releases with categorized changes',
-			category: 'Semantic',
 			snippet: [
 				'{% changelog %}',
 				'## ${1:1.0.0} \\u2014 ${2:${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}}',

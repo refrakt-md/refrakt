@@ -14,117 +14,132 @@ tint-lock: false
 		## Essentials
 
 		- rune-catalog
-		- surfaces
-		- motion
-		- media-guests
-
-		## Content
-
-		- link
-		- actions
-		- hint
-		- figure
-		- sidenote
-		- annotate
-		- pullquote
-		- textblock
-		- mediatext
-		- conversation
-		- reveal
-		- embed
-		- card
-		- progress
-		- icon
 		- image-schemes
-		- badge
+		- media-guests
+		- motion
+		- surfaces
+
+		## Sections & blocks
+
+		- actions
 		- bar
+		- card
+		- conversation
 		- deflist
-
-		## Registry
-
-		- xref
-		- expand
-		- file-ref
-		- collection
-		- relationships
-		- aggregate
-
-		## Layout
-
+		- embed
+		- figure
+		- hint
+		- mediatext
 		- section
-		- grid
-		- gallery
-		- tabs
-		- accordion
-		- juxtapose
-		- details
+
+		## Text & inline
+
+		- annotate
+		- code
+		- icon
+		- link
+		- pullquote
+		- sidenote
+		- textblock
+
+		## Values
+
+		- badge
+		- progress
+
+		## Arrangement
+
 		- drawer
-		- sandbox
+		- gallery
+		- grid
+		- juxtapose
 		- showcase
+
+		## Disclosure
+
+		- accordion
+		- details
+		- reveal
+		- tabs
+
+		## Backgrounds & color
+
 		- bg
 		- tint
 
-		## Code & Data
+		## Code
 
 		- codegroup
 		- compare
-		- diff
-		- snippet
-		- data
-		- include
-		- code
-		- datatable
-		- chart
 		- diagram
+		- diff
+		- sandbox
+		- snippet
+
+		## Data
+
 		- budget
+		- chart
+		- data
+		- datatable
 		- form
+
+		## Reuse & references
+
+		- aggregate
+		- collection
+		- expand
+		- file-ref
+		- include
+		- relationships
+		- xref
 
 		## Site
 
+		- blog
+		- breadcrumb
 		- layout
 		- nav
 		- pagination
 		- toc
-		- breadcrumb
-		- blog
 
 		## Marketing
 
 		- marketing
-		- marketing/hero
-		- marketing/cta
 		- marketing/bento
-		- marketing/feature
-		- marketing/steps
-		- marketing/pricing
-		- marketing/testimonial
 		- marketing/comparison
+		- marketing/cta
+		- marketing/feature
+		- marketing/hero
+		- marketing/pricing
+		- marketing/steps
+		- marketing/testimonial
 
 		## Docs
 
 		- docs
-		- docs/cli
 		- docs/api
-		- docs/symbol
 		- docs/changelog
+		- docs/cli
+		- docs/symbol
 
 		## Storytelling
 
 		- storytelling
-		- storytelling/character
-		- storytelling/realm
-		- storytelling/lore
-		- storytelling/faction
-		- storytelling/plot
 		- storytelling/bond
+		- storytelling/character
+		- storytelling/faction
+		- storytelling/lore
+		- storytelling/plot
+		- storytelling/realm
 		- storytelling/storyboard
 
 		## Places
 
 		- places
 		- places/event
-		- places/map
 		- places/itinerary
+		- places/map
 
 		## Business
 
@@ -142,36 +157,36 @@ tint-lock: false
 		## Design
 
 		- design
-		- design/swatch
-		- design/palette
-		- design/typography
-		- design/spacing
-		- design/mockup
-		- design/preview
 		- design/design-context
+		- design/mockup
+		- design/palette
+		- design/preview
+		- design/spacing
+		- design/swatch
+		- design/typography
 
 		## Media
 
 		- media
+		- media/audio
 		- media/playlist
 		- media/track
-		- media/audio
 
 		## Plan
 
 		- plan
+		- plan/backlog
+		- plan/bug
+		- plan/decision
+		- plan/decision-log
+		- plan/milestone
+		- plan/plan-activity
 		- plan/cli
+		- plan/plan-history
+		- plan/plan-progress
 		- plan/workflow
 		- plan/spec
 		- plan/work
-		- plan/bug
-		- plan/decision
-		- plan/milestone
-		- plan/backlog
-		- plan/decision-log
-		- plan/plan-progress
-		- plan/plan-activity
-		- plan/plan-history
 
 		{% /nav %}
 	{% /region %}

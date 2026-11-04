@@ -1,7 +1,7 @@
 ---
 title: Link
 description: A link around any content — a word in a sentence, or a whole block made clickable without nesting links
-category: Content
+category: Text & inline
 plugin: core
 status: stable
 ---

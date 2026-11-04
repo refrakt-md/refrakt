@@ -13,7 +13,6 @@ export const places: Plugin = {
 			transform: event,
 			description: 'Event information with date, location, and agenda',
 			seoType: 'Event',
-			category: 'Semantic',
 			snippet: [
 				'{% event date="${1:${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}}" location="${2:Location}" %}',
 				'# ${3:Event Name}',
@@ -36,7 +35,6 @@ A three-day conference bringing together developers, designers, and product engi
 			description:
 				'Interactive map visualization from Markdown lists of locations with pins, routes, and grouped layers',
 			seoType: 'Place',
-			category: 'Semantic',
 			snippet: [
 				'{% map zoom=${1:13} %}',
 				'## ${2:Landmarks}',
@@ -63,7 +61,6 @@ A three-day conference bringing together developers, designers, and product engi
 			description:
 				'Travel itinerary with day groupings and timed stops. Headings become stops with "time — location" parsing; h2 headings create day groups.',
 			seoType: 'ItemList',
-			category: 'Semantic',
 			snippet: [
 				'{% itinerary %}',
 				'## Day 1 \\u2014 ${1:Arrival}',

@@ -162,18 +162,21 @@ export async function loadPlugin(
 /**
  * The `Rune` one plugin entry defines. A composed entry (SPEC-153 D11) gets its
  * schema and its block-less config from the definition; the entry's own
- * fields, where set, win over the definition's.
+ * fields, where set, win over the definition's. A plugin rune's category is its
+ * plugin's display name, as its reference page's is (SPEC-193 D9).
  */
 export function pluginRune(
 	runeName: string,
 	entry: PluginRune,
 	pkg: Pick<Plugin, 'name' | 'displayName'>,
 ): Rune {
+	const category = entry.category ?? pkg.displayName ?? pkg.name;
 	if (entry.template !== undefined) {
 		const composed = composedPluginRune(runeName, entry);
 		return defineRune({
 			...composed.rune,
 			name: runeName,
+			category,
 			schema: composed.rune.schema,
 			description: entry.description ?? composed.rune.description,
 			aliases: entry.aliases ?? composed.rune.aliases,
@@ -184,6 +187,7 @@ export function pluginRune(
 	return defineRune({
 		name: runeName,
 		schema: entry.transform as Schema,
+		category,
 		description: entry.description ?? `Plugin rune from ${pkg.displayName ?? pkg.name}`,
 		aliases: entry.aliases,
 		seoType: entry.seoType,

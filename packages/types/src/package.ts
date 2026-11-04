@@ -42,7 +42,7 @@ export interface PluginRune {
 	aliases?: string[];
 	/** Schema.org type for SEO extraction (e.g., 'Product', 'Event') */
 	seoType?: string;
-	/** Editor UI category (e.g., 'Content', 'Layout', 'Section') */
+	/** Editor UI category. Defaults to the plugin's `displayName`, which is what its reference pages use. */
 	category?: string;
 	/** VSCode snippet body lines (array of strings with VSCode placeholder syntax).
 	 *  Also used by the block editor for rich rune insertion. */

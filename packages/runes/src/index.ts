@@ -571,7 +571,7 @@ export const runes = {
 		schema: codegroup,
 		description: 'Tabbed code block with language tabs',
 		typeName: 'CodeGroup',
-		category: 'Code & Data',
+		category: 'Code',
 		snippet: [
 			'{% codegroup %}',
 			'```${1:js}',
@@ -590,7 +590,7 @@ export const runes = {
 		schema: grid,
 		description: 'Grid layout container with configurable columns and rows',
 		typeName: 'Grid',
-		category: 'Layout',
+		category: 'Arrangement',
 		snippet: [
 			'{% grid columns=${1:2} %}',
 			'${2:First column content}',
@@ -607,7 +607,7 @@ export const runes = {
 		schema: hint,
 		description: 'Callout/admonition block with type variants (note, warning, caution, check)',
 		typeName: 'Hint',
-		category: 'Content',
+		category: 'Sections & blocks',
 		snippet: ['{% hint type="${1|note,warning,caution,check|}" %}', '$0', '{% /hint %}'],
 	}),
 	tab: defineRune({
@@ -621,7 +621,7 @@ export const runes = {
 		schema: tabs,
 		description: 'Tabbed interface with tab panels',
 		typeName: 'TabGroup',
-		category: 'Layout',
+		category: 'Disclosure',
 		snippet: [
 			'{% tabs %}',
 			'## ${1:Tab One}',
@@ -639,7 +639,7 @@ export const runes = {
 		schema: details,
 		description: 'Collapsible disclosure block for supplementary content',
 		typeName: 'Details',
-		category: 'Content',
+		category: 'Disclosure',
 		snippet: ['{% details summary="${1:Click to expand}" %}', '$0', '{% /details %}'],
 	}),
 	drawer: defineRune({
@@ -648,7 +648,7 @@ export const runes = {
 		description:
 			'Modal side panel addressed by id. Triggered by xrefs anywhere on the page; falls back to in-flow rendering without JS.',
 		typeName: 'Drawer',
-		category: 'Layout',
+		category: 'Arrangement',
 		snippet: [
 			'{% drawer id="${1:auth-explainer}" title="${2:Auth system}" %}',
 			'$0',
@@ -661,7 +661,7 @@ export const runes = {
 		description: 'Captioned container for images, code, tables and diagrams, with sizing',
 		seoType: 'ImageObject',
 		typeName: 'Figure',
-		category: 'Content',
+		category: 'Sections & blocks',
 		snippet: [
 			'{% figure size="${1|medium,small,large,full|}" %}',
 			'![${2:Alt text}](${3:/path/to/image.png})',
@@ -677,7 +677,7 @@ export const runes = {
 			'Multi-image container with grid, carousel, or masonry layout and optional lightbox',
 		seoType: 'ImageGallery',
 		typeName: 'Gallery',
-		category: 'Content',
+		category: 'Arrangement',
 		snippet: [
 			'{% gallery layout="${1|grid,carousel,masonry|}" %}',
 			'![${2:Alt text}](${3:/path/to/image1.png})',
@@ -693,7 +693,7 @@ export const runes = {
 		description: 'Collapsible accordion sections where headings become toggleable headers',
 		seoType: 'FAQPage',
 		typeName: 'Accordion',
-		category: 'Layout',
+		category: 'Disclosure',
 		snippet: [
 			'{% accordion %}',
 			'## ${1:First Question}',
@@ -727,7 +727,7 @@ export const runes = {
 		description: 'Embedded content from external services (YouTube, Twitter, CodePen, Spotify)',
 		seoType: 'VideoObject',
 		typeName: 'Embed',
-		category: 'Content',
+		category: 'Sections & blocks',
 		snippet: ['{% embed url="${1:https://}" /%}'],
 	}),
 	breadcrumb: defineRune({
@@ -754,7 +754,7 @@ export const runes = {
 			'Structured cost breakdown with categories, line items, and auto-calculated totals',
 		seoType: 'ItemList',
 		typeName: 'Budget',
-		category: 'Semantic',
+		category: 'Data',
 		snippet: [
 			'{% budget %}',
 			'## ${1:Category}',
@@ -781,7 +781,7 @@ export const runes = {
 		schema: compare,
 		description: 'Side-by-side code comparison with labeled panels',
 		typeName: 'Compare',
-		category: 'Code & Data',
+		category: 'Code',
 		snippet: [
 			'{% compare %}',
 			'```${1:js}',
@@ -802,7 +802,7 @@ export const runes = {
 			'Interactive data table with sorting, filtering, and pagination from a Markdown table',
 		seoType: 'Dataset',
 		typeName: 'DataTable',
-		category: 'Code & Data',
+		category: 'Data',
 		snippet: [
 			'{% datatable %}',
 			'| ${1:Column A} | ${2:Column B} | ${3:Column C} |',
@@ -816,7 +816,7 @@ export const runes = {
 		schema: diff,
 		description: 'Side-by-side or unified diff view between two code blocks',
 		typeName: 'Diff',
-		category: 'Code & Data',
+		category: 'Code',
 		snippet: [
 			'{% diff %}',
 			'```${1:js}',
@@ -835,7 +835,7 @@ export const runes = {
 		description:
 			'Embed a project file as a syntax-highlighted code block. Composes inside codegroup, diff, and any future fence-consuming rune via pre-resolve (SPEC-062).',
 		typeName: 'Snippet',
-		category: 'Code & Data',
+		category: 'Code',
 		snippet: ['{% snippet path="${1:src/lib/foo.ts}" /%}'],
 	}),
 	data: defineRune({
@@ -844,7 +844,7 @@ export const runes = {
 		description:
 			'Ingest an external tabular source (CSV/TSV/JSON/NDJSON) and emit a Markdown table. Composes inside chart and datatable, and renders standalone, via pre-resolve (SPEC-103).',
 		typeName: 'Data',
-		category: 'Code & Data',
+		category: 'Data',
 		snippet: ['{% data src="${1:data/revenue.csv}" /%}'],
 	}),
 	code: defineRune({
@@ -853,7 +853,7 @@ export const runes = {
 		description:
 			'Inline code span for dynamic content. Backticks are literal by definition, so a variable inside them never resolves; this renders the same `<code>` and does (WORK-551).',
 		typeName: 'Code',
-		category: 'Code & Data',
+		category: 'Text & inline',
 		snippet: ['{% code %}${1:value}{% /code %}'],
 	}),
 	include: defineRune({
@@ -862,7 +862,7 @@ export const runes = {
 		description:
 			"Paste a partial's AST into the page during the preprocess phase, so `data` and `snippet` inside it resolve — the case `{% partial %}` cannot serve. Reads the same `_partials/` and file roots (SPEC-129).",
 		typeName: 'Include',
-		category: 'Code & Data',
+		category: 'Reuse & references',
 		snippet: ['{% include file="${1:shared-block.md}" /%}'],
 	}),
 	chart: defineRune({
@@ -871,7 +871,7 @@ export const runes = {
 		description:
 			'Chart visualization from a Markdown table. First column becomes axis labels, header row becomes series names.',
 		typeName: 'Chart',
-		category: 'Code & Data',
+		category: 'Data',
 		snippet: [
 			'{% chart type="${1|bar,line,pie,area|}" %}',
 			'| ${2:Label} | ${3:Series A} | ${4:Series B} |',
@@ -886,7 +886,7 @@ export const runes = {
 		schema: diagram,
 		description: 'Diagram rendering from Mermaid, PlantUML, or ASCII art code blocks',
 		typeName: 'Diagram',
-		category: 'Code & Data',
+		category: 'Code',
 		snippet: [
 			'{% diagram language="${1|mermaid,plantuml,ascii|}" %}',
 			'```${1:mermaid}',
@@ -901,7 +901,7 @@ export const runes = {
 		schema: sidenote,
 		description: 'Margin note or footnote displayed alongside the main content',
 		typeName: 'Sidenote',
-		category: 'Content',
+		category: 'Text & inline',
 		snippet: ['{% sidenote %}', '$0', '{% /sidenote %}'],
 	}),
 	conversation: defineRune({
@@ -910,7 +910,7 @@ export const runes = {
 		schema: conversation,
 		description: 'Chat/dialogue display where blockquotes become alternating speaker messages',
 		typeName: 'Conversation',
-		category: 'Semantic',
+		category: 'Sections & blocks',
 		snippet: [
 			'{% conversation %}',
 			'> **${1:Alice}**: ${2:Hello!}',
@@ -930,7 +930,7 @@ export const runes = {
 		schema: reveal,
 		description: 'Progressive disclosure where headings become reveal steps shown one at a time',
 		typeName: 'Reveal',
-		category: 'Layout',
+		category: 'Disclosure',
 		snippet: [
 			'{% reveal %}',
 			'## ${1:Step One}',
@@ -955,7 +955,7 @@ export const runes = {
 		description:
 			'A generic page section: an eyebrow/headline/blurb header above arbitrary body content',
 		typeName: 'Section',
-		category: 'Layout',
+		category: 'Sections & blocks',
 		snippet: [
 			'{% section %}',
 			'Eyebrow',
@@ -973,7 +973,7 @@ export const runes = {
 		schema: juxtapose,
 		description: 'Side-by-side comparison with interactive reveal (slider, toggle, fade, or auto)',
 		typeName: 'Juxtapose',
-		category: 'Layout',
+		category: 'Arrangement',
 	}),
 	annotate: defineRune({
 		name: 'annotate',
@@ -981,7 +981,7 @@ export const runes = {
 		description:
 			'Content with margin annotations. Nested note tags appear as margin notes alongside the main text.',
 		typeName: 'Annotate',
-		category: 'Layout',
+		category: 'Text & inline',
 		snippet: [
 			'{% annotate %}',
 			'${1:Main content here.}',
@@ -1007,7 +1007,7 @@ export const runes = {
 		description:
 			'Accessible HTML form from Markdown. Lists become input fields with smart type inference, blockquotes followed by lists become select/radio/checkbox groups.',
 		typeName: 'Form',
-		category: 'Content',
+		category: 'Data',
 		snippet: [
 			'{% form action="${1:/api/contact}" %}',
 			'- Name',
@@ -1029,7 +1029,7 @@ export const runes = {
 		schema: sandbox,
 		description: 'Isolated HTML/CSS/JS rendering in an iframe with optional framework loading',
 		typeName: 'Sandbox',
-		category: 'Code & Data',
+		category: 'Code',
 		snippet: [
 			'{% sandbox framework="${1|,tailwind,bootstrap,bulma,pico|}" %}',
 			'$0',
@@ -1043,7 +1043,7 @@ export const runes = {
 		description:
 			'A featured quotation with its attribution, or with `excerpt` a pull quote repeating words from the text',
 		typeName: 'PullQuote',
-		category: 'Content',
+		category: 'Text & inline',
 		snippet: [
 			'{% pullquote %}',
 			'> ${1:Quote text to feature.}',
@@ -1059,7 +1059,7 @@ export const runes = {
 		description:
 			'Text formatting block with drop caps, multi-column layout, lead paragraphs, and alignment control',
 		typeName: 'TextBlock',
-		category: 'Content',
+		category: 'Text & inline',
 		snippet: [
 			'{% textblock dropcap %}',
 			'${1:Formatted text content with drop cap styling.}',
@@ -1072,7 +1072,7 @@ export const runes = {
 		schema: mediatext,
 		description: 'Image and text side by side with configurable ratio and optional text wrapping',
 		typeName: 'MediaText',
-		category: 'Layout',
+		category: 'Sections & blocks',
 		snippet: [
 			'{% mediatext align="${1|left,right|}" ratio="${2|1:1,1:2,2:1|}" %}',
 			'![${3:Alt text}](${4:/path/to/image.png})',
@@ -1085,12 +1085,13 @@ export const runes = {
 		name: 'icon',
 		schema: icon,
 		description: 'Inline icon resolved by name from the theme icon registry. Self-closing.',
-		category: 'Content',
+		category: 'Text & inline',
 		snippet: ['{% icon name="${1:icon-name}" /%}'],
 	}),
 	tint: defineRune({
 		name: 'tint',
 		schema: tint,
+		category: 'Backgrounds & color',
 		description:
 			'Section-level colour override via CSS custom properties. Declared as first child of a block rune.',
 		typeName: 'Tint',
@@ -1108,12 +1109,13 @@ export const runes = {
 		description:
 			'Media presentation wrapper with shadow, bleed displacement, and aspect ratio enforcement',
 		typeName: 'Showcase',
-		category: 'Layout',
+		category: 'Arrangement',
 		snippet: ['{% showcase shadow="${1|none,soft,hard,elevated|}" %}', '$0', '{% /showcase %}'],
 	}),
 	bg: defineRune({
 		name: 'bg',
 		schema: bg,
+		category: 'Backgrounds & color',
 		description: 'Background image/video directive — modifies parent section backdrop',
 		typeName: 'Bg',
 		snippet: ['{% bg src="${1:/path/to/image.jpg}" overlay="${2:rgba(0,0,0,0.5)}" /%}'],
@@ -1125,12 +1127,13 @@ export const runes = {
 			'Blog post listing with filtering, sorting, and multiple layouts. Displays pages from a content folder as a navigable blog index.',
 		seoType: 'Blog',
 		typeName: 'Blog',
-		category: 'Semantic',
+		category: 'Site',
 	}),
 	xref: defineRune({
 		name: 'xref',
 		aliases: ['ref'],
 		schema: xref,
+		category: 'Reuse & references',
 		description:
 			'Inline cross-reference that resolves an entity by ID or name from the registry. Self-closing.',
 	}),
@@ -1140,7 +1143,7 @@ export const runes = {
 		description:
 			"Substitute a registered entity's source content inline. Reads the entity's sourceFile via the plan plugin (or any plugin that registers extractable entities) and inlines it. Symmetric with `xref`: same lookup chain, different output (content rather than a link).",
 		typeName: 'Expand',
-		category: 'Content',
+		category: 'Reuse & references',
 		snippet: ['{% expand "${1:SPEC-001}" /%}'],
 	}),
 	badge: defineRune({
@@ -1149,7 +1152,7 @@ export const runes = {
 		description:
 			'Inline pill that flags a piece of content (status, category, recency, tag). Visual variant from the universal metadata-system dimensions (sentiment, rank, type).',
 		typeName: 'Badge',
-		category: 'Content',
+		category: 'Values',
 		snippet: [
 			'{% badge sentiment="${1|positive,negative,caution,neutral|}" %}',
 			'${2:Label}',
@@ -1162,7 +1165,7 @@ export const runes = {
 		description:
 			'Block-level wrapper that renders the SPEC-080 `bar` layout primitive (a horizontal flex row) over author-written content. Body splits on a top-level `---` into a left group and a right group; the right group is pushed to the end via `data-align="end"`. Position-agnostic.',
 		typeName: 'Bar',
-		category: 'Content',
+		category: 'Sections & blocks',
 		snippet: ['{% bar %}', '${1:Left side}', '---', '${2:Right side}', '{% /bar %}'],
 	}),
 	deflist: defineRune({
@@ -1172,7 +1175,7 @@ export const runes = {
 		description:
 			'Block-level wrapper that renders the SPEC-079 definition-list layout primitive over a markdown list. Each `- **Term:** value` item becomes a <dt>/<dd> pair. Inline runes compose naturally inside <dd>.',
 		typeName: 'Deflist',
-		category: 'Content',
+		category: 'Sections & blocks',
 		snippet: [
 			'{% deflist %}',
 			'- **${1:Term}:** ${2:Value}',
@@ -1186,7 +1189,7 @@ export const runes = {
 		description:
 			'Render a list, grid, or table of registry entities — the plural counterpart to ref/expand. Queries the registry by type with a field:value filter, sort, group, and limit; projects fields into a built-in layout or a per-item body template ($item bound).',
 		typeName: 'Collection',
-		category: 'Content',
+		category: 'Reuse & references',
 		snippet: ['{% collection type="${1:work}" filter="${2:status:ready}" sort="${3:priority}" /%}'],
 	}),
 	relationships: defineRune({
@@ -1195,7 +1198,7 @@ export const runes = {
 		description:
 			"Render an entity's relationship edges, grouped by kind — the plural-graph counterpart to ref/expand. Reads the registry relationship graph for `of` (an id, e.g. of=$item.id); each item is a related entity with its edge $kind bound. Generic over kind, so it serves any domain (plan, storytelling, …).",
 		typeName: 'Relationships',
-		category: 'Content',
+		category: 'Reuse & references',
 		snippet: ['{% relationships of="${1:WORK-1}" /%}'],
 	}),
 	aggregate: defineRune({
@@ -1204,7 +1207,7 @@ export const runes = {
 		description:
 			'Project numbers — counts (and per-group breakdowns) over the registry — beside collection (items) and relationships (edges). Two modes: a no-body inline integer (`{% aggregate type="work" filter="status:done" /%}`) or a body-zoned form whose preamble / template / fallback zones bind `$item` to a totals / per-group / zeros projection. Use the optional `value` sub-filter (e.g. `value="status:done"`) to drive a progress-bar ratio without a second query.',
 		typeName: 'Aggregate',
-		category: 'Content',
+		category: 'Reuse & references',
 		snippet: ['{% aggregate type="${1:work}" filter="${2:status:done}" /%}'],
 	}),
 	'file-ref': defineRune({
@@ -1213,7 +1216,7 @@ export const runes = {
 		description:
 			'Path-based inline reference to a project file — third member of the Registry family beside `xref` (id → link) and `expand` (id → inlined content). Resolves to a deep-link `<a>` pointing at `{repoUrl}/blob/{repoBranch}/{path}#L{start}-L{end}` on GitHub. With `preview="drawer"`, hoists a drawer containing the file\'s snippet and a "View source on GitHub →" footer link, leaving an inline link at the call site that opens it.',
 		typeName: 'FileRef',
-		category: 'Content',
+		category: 'Reuse & references',
 		snippet: [
 			'{% file-ref path="${1:packages/types/src/token-contract.ts}" lines="${2:42-58}" label="${3:ThemeTokensConfig}" /%}',
 		],
@@ -1224,7 +1227,7 @@ export const runes = {
 		description:
 			'A generic completion bar. Renders a ratio from supplied numbers — value+max (or percent) — with an optional body label; computes nothing itself. Feed it an aggregate (e.g. value=$item.data.progressDone max=$item.data.progressTotal).',
 		typeName: 'Progress',
-		category: 'Content',
+		category: 'Values',
 		snippet: ['{% progress value="${1:3}" max="${2:10}" /%}'],
 	}),
 	card: defineRune({
@@ -1233,7 +1236,7 @@ export const runes = {
 		description:
 			'A generic, self-contained content card. The body splits on `---` into [media] / body / [footer]: the media zone holds any content (image, codegroup, sandbox, …) and lays out beside the body on wide screens / as a full-bleed header on mobile; the footer is a muted meta row. Optional `href` makes the whole card a link. Knows nothing about the registry — usable standalone or inside a collection body template.',
 		typeName: 'Card',
-		category: 'Content',
+		category: 'Sections & blocks',
 		snippet: [
 			'{% card href="${1:/posts/slug/}" %}',
 			'### ${2:Title}',
@@ -1247,7 +1250,7 @@ export const runes = {
 		description:
 			'A row of actions: each link of a list becomes a button, the first link primary and the rest secondary (`data-rank`), and a fence becomes a copyable command line. What `hero` and `cta` render their buttons with.',
 		typeName: 'Actions',
-		category: 'Content',
+		category: 'Sections & blocks',
 		snippet: [
 			'{% actions %}',
 			'- [${1:Get started}](${2:/docs/})',
