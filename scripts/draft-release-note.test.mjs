@@ -78,6 +78,15 @@ describe('draftReleaseNote', () => {
 		expect(note.match(/^TODO:/gm)).toHaveLength(2);
 	});
 
+	it('keeps the Background refs on one line, so none parses as a block tag', () => {
+		plan();
+		const note = draftReleaseNote('1.2.0', join(dir, 'plan'));
+		const background = note.split('\n\n').find((p) => p.startsWith('Background:'));
+		expect(background.trimEnd()).not.toContain('\n');
+		expect(background).toContain('/%} · {% ref "BUG-20" preview="drawer" /%}');
+		expect(note).not.toMatch(/^\{% ref /m);
+	});
+
 	it('drafts a placeholder opening without a milestone', () => {
 		write('plan/work/.keep', '');
 		const note = draftReleaseNote('2.0.0', join(dir, 'plan'));

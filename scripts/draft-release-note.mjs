@@ -78,7 +78,9 @@ export function draftReleaseNote(version, planDir) {
 		'TODO: keep this block only if upgrading needs a change from the reader; otherwise delete it.',
 		'{% hint type="warning" %}\n**Action needed:** what to change, and how.\n{% /hint %}',
 	];
-	if (refs.length) parts.push(`Background: ${refs.join(' ·\n')}`);
+	// One line: a ref alone on a line of its own parses as a block tag, and
+	// `refrakt validate` rejects it (tag-placement-invalid).
+	if (refs.length) parts.push(`Background: ${refs.join(' · ')}`);
 	return `${parts.join('\n\n')}\n`;
 }
 
