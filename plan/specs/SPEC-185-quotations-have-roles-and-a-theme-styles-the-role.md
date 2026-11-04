@@ -1,4 +1,4 @@
-{% spec id="SPEC-185" status="accepted" tags="runes, pullquote, blockquote, theme, intent, accessibility, testimonial, composition" %}
+{% spec id="SPEC-185" status="shipped" tags="runes, pullquote, blockquote, theme, intent, accessibility, testimonial, composition" released-in="v0.47.0" %}
 
 # Quotations have roles, and a theme styles the role
 
