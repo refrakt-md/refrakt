@@ -264,8 +264,15 @@ export function buildPageContentVariables(
 	const filePath = opts.projectRoot
 		? posixRelativeFromRoot(opts.projectRoot, opts.filePath)
 		: pagePath;
+	// SPEC-187 D7 — `$site`, from the site config every adapter already passes.
+	// `name` is the site's key, stamped by `normalizeRefraktConfig`. An object so
+	// other site fields can join it without a breaking change. No site config
+	// (a bare `loadContent` call), no `$site`.
+	const siteName = (opts.siteConfig as { name?: unknown } | undefined)?.name;
+	const site = typeof siteName === 'string' ? { name: siteName } : undefined;
 	return {
 		...opts.variables,
+		...(site ? { site } : {}),
 		frontmatter: opts.frontmatter,
 		page: {
 			url: opts.url,

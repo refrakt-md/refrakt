@@ -46,13 +46,17 @@ plugin's short name as eyebrow (`marketing`, or `core`; plain text, the plugin p
 page's `<h1>`, and the frontmatter `description` as the blurb. Its body is a
 `bar`. The left group holds what the rune is: a `Composition` badge, a status
 badge when the page is not `stable`, and the schema.org type it publishes. The
+On `staging`, a rune resolved from `site/staged-runes/` shows `Staged` in place
+of `Composition`, and its Source drawer shows the staged file. The
 right group is an `actions` region, styled by its `in-bar` context: `Install`
 (plugin runes only) and `Source`, each an icon and a label, and each a plain
 link to a drawer the partial declares (`rune-install`, `rune-source`), which the
 build turns into a drawer trigger (SPEC-187 D10). The Source drawer is a
 `snippet` of the defining file and a link to it on GitHub.
 
-The data is `_data/rune-intro.json`, one record per rune page, written by the
+The data is `_data/rune-intro.json`: one partition per site that renders this
+content (`main`, `staging`), selected with `root=$site.name`, and in each one
+record per rune page, written by the
 same `npm run runes:attributes`. Nothing in it is hand-written: title,
 description and status are the page's frontmatter, `composed` and `source` are
 how the rune resolves, and `schemaType` is its resolved schema.org row. Flags

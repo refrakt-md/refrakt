@@ -23,6 +23,7 @@ describe('normalizeRefraktConfig', () => {
 			};
 			const result = normalizeFlat(raw);
 			expect(result.sites.main).toEqual({
+				name: 'main',
 				contentDir: './content',
 				theme: '@refrakt-md/lumina',
 				target: 'svelte',
@@ -240,7 +241,12 @@ describe('normalizeRefraktConfig', () => {
 			};
 			const result = normalizeRefraktConfig(raw);
 			expect(result.sites).toEqual({
-				main: { contentDir: './content', theme: '@refrakt-md/lumina', target: 'svelte' },
+				main: {
+					name: 'main',
+					contentDir: './content',
+					theme: '@refrakt-md/lumina',
+					target: 'svelte',
+				},
 			});
 		});
 
@@ -504,5 +510,27 @@ describe('resolvePlanConfig', () => {
 	it('respects an explicit plan.dir', () => {
 		const result = resolvePlanConfig(normalizeRefraktConfig({ plan: { dir: 'project/plan' } }));
 		expect(result.dir).toBe('project/plan');
+	});
+});
+
+describe('site names (SPEC-187 D7)', () => {
+	const site = { contentDir: './content', theme: '@refrakt-md/lumina' };
+
+	it('tags each named site with its key, without changing the authored object', () => {
+		const raw = { sites: { main: { ...site }, staging: { ...site } } };
+		const result = normalizeRefraktConfig(raw);
+		expect(result.sites.main.name).toBe('main');
+		expect(result.sites.staging.name).toBe('staging');
+		expect((raw.sites.main as { name?: string }).name).toBeUndefined();
+		expect(resolveSite(result, 'staging').site.name).toBe('staging');
+	});
+
+	it('accepts an authored name equal to the key, and reports one that differs', () => {
+		expect(
+			normalizeRefraktConfig({ sites: { docs: { ...site, name: 'docs' } } }).sites.docs.name,
+		).toBe('docs');
+		expect(() => normalizeRefraktConfig({ sites: { docs: { ...site, name: 'main' } } })).toThrow(
+			/site "docs" declares name "main"/,
+		);
 	});
 });

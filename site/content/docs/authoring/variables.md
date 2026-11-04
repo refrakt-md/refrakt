@@ -62,6 +62,22 @@ Only markdown `heading` nodes count. Headings that runes emit *structurally* (e.
 
 `$file.created` and `$file.modified` can be `undefined` for files that aren't in git and whose filesystem stat is unavailable (rare).
 
+## `$site.*` — the site the page is rendered for
+
+| Key | Type | Meaning |
+|-----|------|---------|
+| `$site.name` | `string` | The site's key in `refrakt.config.json`: `"main"`, `"staging"`. A single-site config's site is `"main"`. |
+
+One content directory can be rendered by several sites — refrakt's own `staging` site renders the same pages as `main`, with staged runes in place of plugin ones. `$site.name` lets a page, or a partial it includes, tell them apart:
+
+```markdoc
+{% data src="site/content/_data/rune-intro.json" root=$site.name where=$r limit=1 %}
+…
+{% /data %}
+```
+
+The name is derived from the config, not written in it: a site that declares a `name` different from its key is reported. A content load with no site config — a test calling `loadContent` directly, say — has no `$site`, and a `data` rune whose `root` reads it says so rather than falling back.
+
 ## Page vs. file — two frames, two consumers
 
 `$page.*` and `$file.*` look similar but answer different questions:

@@ -30,7 +30,14 @@ import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { UNIVERSAL_AXIS_FACETS } from '@refrakt-md/transform';
 import { PAGELESS } from './check-rune-docs.mjs';
-import { INTRO_PATH, buildIntro, renderIntro } from './rune-intro.mjs';
+import {
+	INTRO_PATH,
+	buildIntro,
+	introSites,
+	renderIntro,
+	repoOf,
+	stagedRecords,
+} from './rune-intro.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CLI = join(ROOT, 'packages/cli/dist/bin.js');
@@ -268,6 +275,19 @@ export function readSites(cliPath = CLI) {
 	return configuredSites().map((site) => ({ site, runes: runesForSite(site, cliPath) }));
 }
 
+/** The intro records for every site that renders this content (SPEC-187 D7). */
+export async function buildIntroBySite(sites, cliPath = CLI) {
+	const main = await buildIntro(uniqueRunes(sites));
+	const out = {};
+	for (const { name, runesDir } of introSites()) {
+		out[name] =
+			name === 'main'
+				? main
+				: stagedRecords(main, { runes: runesForSite(name, cliPath), runesDir, repo: repoOf() });
+	}
+	return out;
+}
+
 /** Every rune once, the first site's copy winning, as `build` keeps them. */
 function uniqueRunes(sites) {
 	const byName = new Map();
@@ -279,8 +299,9 @@ function uniqueRunes(sites) {
 async function main(argv) {
 	const sites = readSites();
 	const artifact = build(sites);
-	// SPEC-187 D5 — the rune intro, from the same runes, in its own file.
-	const intro = renderIntro(await buildIntro(uniqueRunes(sites)));
+	// SPEC-187 D5 / D7 — the rune intro, from the same runes, in its own file:
+	// one partition per site that renders this content.
+	const intro = renderIntro(await buildIntroBySite(sites));
 
 	const gaps = coverageGaps(sites, artifact);
 	if (gaps.length > 0) {
