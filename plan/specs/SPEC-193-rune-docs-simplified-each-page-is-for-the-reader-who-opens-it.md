@@ -184,8 +184,10 @@ In this order, each section only when it has something to say:
    table, as comparison has.
 5. **One section per task**, each named for what the reader wants to do ("Add a rating", "Put the
    media beside the text"), each with one preview.
-6. **"Attributes"**, always `##`, always the generated table, always after the tasks. A page with
-   child runes gives each child a `###` under it.
+6. **"Attributes"**, always `##`, always the generated table, always after the tasks. On a page
+   with child runes the one include renders the family: the parent's table, then each child's
+   under its own `###`, from the child→parent mapping the docs checker already keeps
+   (`PAGELESS`). A page cannot forget a child, and every family page has the same shape.
 7. **"See also"**, when there is something to link.
 
 The template is written down in `extend/` (for whoever adds a rune) and checked where it can be:
@@ -222,8 +224,10 @@ A section about an attribute explains the *task* and shows it; the table states 
 - **A guard** extends `rune-source-plan-ids.test.ts` to `site/content/runes/`, `docs/` and
   `themes/`, and to the generated `_data/*.json`. An ID given as sample data in an example is
   allowed.
-- **`extend/` is a judgement call**, not a rule: its readers can open a spec, and a handbook may
-  cite the decision behind a rule. It still drops history narration and IDs that only decorate.
+- **`extend/` may cite, in one place.** Its readers can open a spec, and a handbook may name the
+  decision behind a rule. A page cites plan entities only in a closing `Background:` line of
+  links, as the release notes do (`Background: SPEC-080 · ADR-028`); an ID anywhere else on the
+  page fails the guard. History narration goes, as elsewhere.
 
 ### D5 — examples are live, minimal and real
 
@@ -243,8 +247,10 @@ read" table (D1.4), one row, linking to Page sections.
 
 ### D7 — concept guides and fixtures leave the rune catalogue
 
-`surfaces`, `media-guests`, `image-schemes` and `motion` move to `docs/authoring/` (or a "Concepts"
-group), with redirects. `plan/examples.md` stops being a published page in the section (it can stay
+`surfaces`, `media-guests`, `image-schemes` and `motion` move to a new **Concepts** group in the
+docs nav, with redirects. They are the vocabulary the runes share (`prominence`, `elevation`,
+`media="cover"`), met on rune pages and looked up in one place. `authoring/page-sections` and
+`authoring/tint` join them, which also shortens Authoring. `plan/examples.md` stops being a published page in the section (it can stay
 as data the examples read). `plan/cli.md` moves to `docs/cli/` and gains the missing commands.
 
 ### D8 — the docs are restructured where they repeat
@@ -274,19 +280,22 @@ as data the examples read). `plan/cli.md` moves to `docs/cli/` and gains the mis
 - **A structure drawer** in the rune intro (the generated contract in a drawer, beside Source): a
   possible follow-up once D2 has removed the hand-written dumps.
 
-## Open questions
+## Resolved questions
 
-1. **Where do concept guides go:** `docs/authoring/`, or a new "Concepts" group in the docs nav?
-2. **How strict is D4 in `extend/`:** a guard there too, with an allowlist, or review only?
-3. **Do child runes keep their own `###` attribute sections** (D1.6), or does the generated table
-   learn to render a parent and its children in one go?
+1. **Concept guides go to a new Concepts group** in the docs nav (D7), not into Authoring, which
+   already mixes everyday and advanced topics, and not into the rune catalogue, where they read as
+   runes without a tag.
+2. **`extend/` cites only in a closing `Background:` line** (D4): one click from the reasoning,
+   without IDs through the prose, and with no allowlist to maintain.
+3. **The generated table renders a rune's family** (D1.6): the mapping exists, and the generator
+   already uses it to decide which page a child's rows land on.
 
 ## Proposed work items
 
 Sized to land independently, roughly in this order:
 
-1. **The rune page template** (D1): written down in `extend/`, the attribute heading normalised on
-   every page, and `check-rune-docs` extended.
+1. **The rune page template** (D1): written down in `extend/`; the attribute partial renders a
+   rune's family; one attribute include per page; `check-rune-docs` extended.
 2. **Output and implementation sections** (D2) off the rune pages.
 3. **Hand-written attribute tables** (D3), and the orphaned rows.
 4. **Plan IDs and history** (D4): the facet descriptions in `packages/transform`, the published
