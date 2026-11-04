@@ -290,12 +290,14 @@ editor and tooling). They drift, and the nav is in no order.
 Today's five core categories put card in Content and section in Layout, though card is a section
 with a surface (and is becoming a composition over it); include under Code & Data, though it is
 reuse; sandbox under Layout; bg and tint under Layout, though they set a background and a scheme;
-reveal under Content, beside nothing like it. The core runes regroup into nine:
+reveal under Content, beside nothing like it; badge and progress apart, though both show one
+value. The core runes regroup into ten:
 
 | Category | Runes |
 |---|---|
-| Sections & blocks | section, card, mediatext, figure, hint, conversation, deflist, bar, actions, progress, embed |
-| Text & inline | link, badge, icon, code, annotate, sidenote, pullquote, textblock |
+| Sections & blocks | section, card, mediatext, figure, hint, conversation, deflist, bar, actions, embed |
+| Text & inline | link, icon, code, annotate, sidenote, pullquote, textblock |
+| Values | badge, progress |
 | Arrangement | grid, gallery, juxtapose, showcase, drawer |
 | Disclosure | tabs, accordion, details, reveal |
 | Backgrounds & color | bg, tint |
@@ -304,8 +306,19 @@ reveal under Content, beside nothing like it. The core runes regroup into nine:
 | Reuse & references | include, xref, expand, file-ref, collection, relationships, aggregate |
 | Site | layout, nav, pagination, toc, breadcrumb, blog |
 
-The nav's "Essentials" group keeps only the catalogue once the concept guides move (D7). A rune
-added later takes one of these categories, or the spec that adds it names a new one.
+**Values is for the runes coming.** The specs converting runes to compositions add core
+primitives, and the categories were checked against them so they do not regroup again:
+
+- {% ref "SPEC-166" /%}'s value primitives, which read one value from text and emit one element,
+  join **Values**: `amount` and `tally` ({% ref "SPEC-162" /%}), `date` (SPEC-166 D4), `color` and
+  `font` ({% ref "SPEC-165" /%}). SPEC-166 already counts `badge` and `progress` among its members.
+- `crosstab` ({% ref "SPEC-167" /%}) and the `ledger` composition (SPEC-162 D3) join **Data**,
+  beside `datatable`, `chart` and `budget`.
+- Plugin primitives (`price`, design's `sample`) stay under their plugin.
+
+The nav's "Essentials" group keeps only the catalogue once the concept guides move (D7). **A spec
+that adds a core rune names its category**: one of these, or a new one it argues for. A draft spec
+adding a core rune states it before it is accepted.
 
 ## Not in scope
 
@@ -331,7 +344,7 @@ added later takes one of these categories, or the spec that adds it names a new 
 
 Sized to land independently, roughly in this order:
 
-1. **Categories and nav** (D9, D10): the new categories in page frontmatter and rune
+1. **Categories and nav** (D9, D10): the ten categories in page frontmatter and rune
    definitions, the rune nav regrouped and alphabetical, and the tests that hold both. First,
    because it moves every page in the nav.
 2. **The rune page template** (D1): written down in `extend/`; the attribute partial renders a
