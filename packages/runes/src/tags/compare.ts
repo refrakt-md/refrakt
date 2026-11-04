@@ -38,13 +38,11 @@ export const compare = createContentModelSchema({
 
 		const layoutMeta = new Tag('meta', { content: layout });
 
-		// Collect all <pre> code blocks from children
 		const panels: any[] = [];
 		const customLabels = labels ? labels.split(',').map((l: string) => l.trim()) : [];
 
 		let panelIndex = 0;
 		for (const node of children.toArray()) {
-			// Match <pre> directly or <div class="rf-codeblock"> wrapper around <pre>
 			let preNode: typeof node | undefined;
 			if (Tag.isTag(node) && node.name === 'pre') {
 				preNode = node;
@@ -84,8 +82,6 @@ export const compare = createContentModelSchema({
 			},
 			children: [...header, panelsDiv],
 		});
-		// Opt in to the highlight transform's `theme.code.colorScheme` cascade —
-		// see comment in diff.ts.
 		renderable.attributes['data-code-host'] = true;
 		return renderable;
 	},

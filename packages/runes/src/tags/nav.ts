@@ -5,16 +5,10 @@ import { createContentModelSchema, bodyOnly, asNodes } from '../lib/index.js';
 import { createComponentRenderable } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
-/** Sentinel meta property written by nav auto mode; consumed by corePipelineHooks.postProcess */
 export const NAV_AUTO_SENTINEL = '__nav-auto';
 
-/** Marker attribute placed on each NavGroup of a collapsible nav; resolved during postProcess */
 export const NAV_COLLAPSED_AUTO = 'auto';
 
-/** True for renderable nodes that count as "list" content within a nav group
- *  (lists carry the items themselves). Anything else — paragraph, blockquote,
- *  image, nested rune — is a "content block" eligible for the position-based
- *  intro / footer slot rule in a menubar group. */
 function isListNode(node: RenderableTreeNode): node is Tag {
 	return Markdoc.Tag.isTag(node) && (node.name === 'ul' || node.name === 'ol');
 }
@@ -45,11 +39,6 @@ const navItem = createContentModelSchema({
 				(n) => Markdoc.Tag.isTag(n) && (n as Tag).attributes?.['data-rune'] === 'badge',
 			) as Tag[];
 
-		// SPEC-054 — paragraphs that appear under a list item (CommonMark
-		// indented continuation) become per-item descriptions. In a CommonMark
-		// *loose* list, the link itself is wrapped in a paragraph too, so we
-		// separate link-wrapping paragraphs (extract their <a> child) from
-		// pure-description paragraphs.
 		const paragraphs = children.tag('p').toArray();
 		const linkParagraphs: Tag[] = [];
 		const descriptionParagraphs: Tag[] = [];
@@ -76,10 +65,6 @@ const navItem = createContentModelSchema({
 					)
 				: undefined;
 
-		// Explicit links (e.g., [Label](/path)) pass through — slug resolution
-		// happens at postProcess time (SPEC-055). The per-item description is
-		// appended *inside* the <a> so the whole item is one click target,
-		// matching the shape produced by auto=true frontmatter enrichment.
 		if (allLinks.length > 0) {
 			const enrichedLinks = description
 				? allLinks.map((a) => ({
@@ -132,10 +117,6 @@ interface ColumnBreak {
 }
 type NavSequence = Array<ParsedGroup | ColumnBreak>;
 
-/** Parse the nav's transformed children into top-level items, group sections,
- *  and column-break markers. Preserves all non-list content inside groups so
- *  the menubar slot rule and the columns flow rule can both operate on the
- *  same parse output. */
 function parseNavStructure(allNodes: RenderableTreeNode[]): {
 	topLevel: Tag[];
 	sequence: NavSequence;
@@ -152,15 +133,12 @@ function parseNavStructure(allNodes: RenderableTreeNode[]): {
 	};
 
 	for (const node of allNodes) {
-		// Headings open a new group section.
 		if (Markdoc.Tag.isTag(node) && /^h[1-6]$/.test(node.name)) {
 			flush();
 			currentGroup = { kind: 'group', heading: node, children: [] };
 			continue;
 		}
 
-		// <hr> between groups (at the nav top level) is a column-break marker
-		// for the columns layout. Other layouts ignore it.
 		if (Markdoc.Tag.isTag(node) && node.name === 'hr') {
 			if (currentGroup) {
 				flush();
@@ -169,7 +147,6 @@ function parseNavStructure(allNodes: RenderableTreeNode[]): {
 			continue;
 		}
 
-		// Lists before the first heading become the top-level item row.
 		if (!currentGroup) {
 			if (Markdoc.Tag.isTag(node) && isListNode(node)) {
 				topLevel.push(
@@ -179,7 +156,6 @@ function parseNavStructure(allNodes: RenderableTreeNode[]): {
 			continue;
 		}
 
-		// Inside a group: keep every child in source order (list or otherwise).
 		currentGroup.children.push(node);
 	}
 
@@ -187,17 +163,6 @@ function parseNavStructure(allNodes: RenderableTreeNode[]): {
 	return { topLevel, sequence };
 }
 
-/** Classify a group's children into intro / footer / body slots per SPEC-054.
- *
- *  Body content = lists and nested rune blocks (e.g. a `{% nav layout="columns" %}`
- *  inside the group). They carry their own structure and always render in
- *  the panel body. Slot material = prose (paragraphs, blockquotes, images,
- *  etc.) that wraps the body.
- *
- *  Position rule: a slot candidate that appears before any body block is
- *  intro; one that appears after all body blocks is footer. Middle slot
- *  candidates fall back to body in source order. With no body at all, a
- *  single slot becomes intro; two or more get split into intro+footer. */
 function partitionGroupChildren(children: RenderableTreeNode[]): {
 	intro?: RenderableTreeNode;
 	body: RenderableTreeNode[];
@@ -225,14 +190,12 @@ function partitionGroupChildren(children: RenderableTreeNode[]): {
 	let footerIdx: number | undefined;
 
 	if (firstBodyIdx !== -1) {
-		// Intro: first slot candidate before the first body block.
 		for (let i = 0; i < firstBodyIdx; i++) {
 			if (isSlotCandidate(children[i])) {
 				introIdx = i;
 				break;
 			}
 		}
-		// Footer: last slot candidate after the last body block.
 		for (let i = children.length - 1; i > lastBodyIdx; i--) {
 			if (isSlotCandidate(children[i])) {
 				footerIdx = i;
@@ -240,8 +203,6 @@ function partitionGroupChildren(children: RenderableTreeNode[]): {
 			}
 		}
 	} else {
-		// No body. Preserve the prior simple-group behaviour: a lone slot
-		// becomes intro, two or more split into intro + footer.
 		const slots: number[] = [];
 		children.forEach((c, i) => {
 			if (isSlotCandidate(c)) slots.push(i);
@@ -265,18 +226,9 @@ function partitionGroupChildren(children: RenderableTreeNode[]): {
 	return { intro, body, footer };
 }
 
-/** Build a NavGroup renderable from a parsed group, wrapping the intro and
- *  footer slots in `data-name`-stamped divs so the engine emits
- *  `.rf-nav-group__intro` / `.rf-nav-group__footer` classes. Everything
- *  except the heading is further wrapped in a `<div data-name="panel">`
- *  container so layouts that treat the panel as a single positioned box
- *  (menubar dropdowns, mega panels) can target one selector regardless of
- *  whether the panel contains a flat list, a nested nav, or rich slot
- *  content. */
 function buildGroupTag(group: ParsedGroup): Tag<'section'> {
 	const { intro, body, footer } = partitionGroupChildren(group.children);
 
-	// Collect items property: every <li> across every list child.
 	const items: Tag[] = [];
 	for (const c of body) {
 		if (Markdoc.Tag.isTag(c) && isListNode(c)) {
@@ -311,8 +263,6 @@ function buildGroupTag(group: ParsedGroup): Tag<'section'> {
 	}) as Tag<'section'>;
 }
 
-/** Bucket a NavSequence into columns separated by column-break markers.
- *  Used by the columns layout. Empty leading / trailing buckets are dropped. */
 function bucketColumns(sequence: NavSequence): ParsedGroup[][] {
 	const columns: ParsedGroup[][] = [];
 	let current: ParsedGroup[] = [];
@@ -404,8 +354,6 @@ export const nav = createContentModelSchema({
 		};
 
 		if (attrs.auto) {
-			// Emit a placeholder with an empty nav and a sentinel meta tag.
-			// The core post-process hook will replace this with resolved child page items.
 			const sentinelMeta = new Markdoc.Tag('meta', {
 				'data-field': NAV_AUTO_SENTINEL,
 				content: 'true',
@@ -439,9 +387,6 @@ export const nav = createContentModelSchema({
 			}) as RenderableTreeNode[],
 		);
 
-		// Strip layout — flat list of items, no groups, no top-level container.
-		// Headings are silently rendered as plain children (the warning lives
-		// downstream if needed; the schema doesn't have a ctx hook here).
 		if (attrs.layout === 'strip') {
 			const flatItems = children.flatten().tag('li');
 			return forwardLayout(
@@ -463,13 +408,8 @@ export const nav = createContentModelSchema({
 		const hasGroups = groups.length > 0;
 		const hasColumnBreaks = sequence.some((s) => s.kind === 'column-break');
 
-		// Headingless mode: no `##` sections. If `<hr>`s are present and the
-		// layout is columns, bucket the flat items at the top level into
-		// columns. Otherwise fall through to the existing flat-list path.
 		if (!hasGroups) {
 			if (attrs.layout === 'columns' && hasColumnBreaks) {
-				// Walk the original children, splitting by hr; each segment's
-				// items become a column.
 				const columns: Tag[][] = [];
 				let buf: Tag<'li'>[] = [];
 				const flushColumn = () => {
@@ -511,7 +451,6 @@ export const nav = createContentModelSchema({
 				);
 			}
 
-			// Flat list (no groups, no column breaks).
 			const allItems = children.flatten().tag('li');
 			return forwardLayout(
 				createComponentRenderable({
@@ -527,7 +466,6 @@ export const nav = createContentModelSchema({
 			);
 		}
 
-		// Has groups. Build group tags with intro/footer slot detection.
 		const groupTags = groups.map(buildGroupTag);
 
 		if (collapsible) {
@@ -544,9 +482,6 @@ export const nav = createContentModelSchema({
 				: null;
 
 		const allGroupItems = groupTags.flatMap((g) => {
-			// Lists now live inside the group's `<div data-name="panel">` wrapper
-			// (added by buildGroupTag). Walk the group's descendants once to
-			// collect every <li> regardless of nesting depth.
 			const items: Tag<'li'>[] = [];
 			const walk = (n: RenderableTreeNode): void => {
 				if (!Markdoc.Tag.isTag(n)) return;
@@ -560,7 +495,6 @@ export const nav = createContentModelSchema({
 			return items;
 		});
 
-		// Columns layout with `<hr>`s between sections: bucket groups into columns.
 		if (attrs.layout === 'columns' && hasColumnBreaks) {
 			const columns = bucketColumns(sequence);
 			const groupTagByRef = new Map(groups.map((g, i) => [g, groupTags[i]]));

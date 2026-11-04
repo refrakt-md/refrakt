@@ -1,27 +1,8 @@
-/**
- * Expand rune (SPEC-066, WORK-260).
- *
- * Inline-substitution counterpart to `{% ref %}`: same registry lookup
- * chain, different output mode (inline content instead of an anchor).
- * Schema is self-closing and emits a placeholder; the postProcess hook
- * (`expand-pipeline.ts`) walks for placeholders, resolves the entity
- * from the registry, reads its `sourceFile`, calls the plugin's
- * `extract()` to get the embeddable subtree, processes headings, and
- * substitutes the content inline. The wrapper is a `<section
- * data-rune="expand">` with `data-outline-scope` set so the WORK-259
- * walkers automatically TOC-isolate the embed and namespace its
- * heading IDs.
- */
-
 import Markdoc from '@markdoc/markdoc';
 import type { Config, Node, Schema } from '@markdoc/markdoc';
 import { declareUniversalPosture } from '../lib/index.js';
 const { Tag } = Markdoc;
 
-/** Sentinel attribute value used to identify expand placeholders in the
- *  renderable tree. PostProcess queries for `data-rune="expand-pending"`
- *  to find tags awaiting resolution. After substitution the wrapper
- *  carries `data-rune="expand"`. */
 export const EXPAND_PLACEHOLDER_MARKER = 'expand-pending';
 
 export const expand: Schema = {
@@ -72,13 +53,9 @@ export const expand: Schema = {
 		if (canonical) attrs['data-expand-canonical'] = 'true';
 		if (label) attrs['data-expand-label'] = label;
 
-		// The placeholder is a `<div>` rather than a `<span>` because the
-		// substituted content is block-level (the embedded rune's `<section>`).
-		// A `<span>` parent would produce invalid block-in-inline HTML once
-		// the postProcess substitutes content.
+		// A `div`, not a `span`: the substituted content is block-level.
 		return new Tag('div', attrs, []);
 	},
 };
 
-// SPEC-125 Phase 3 — a legacy gap, not a principle — see the note in `coreConfig.Expand`.
 declareUniversalPosture(expand, 'none');

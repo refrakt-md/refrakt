@@ -2,7 +2,6 @@ import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable } from '../lib/index.js';
 
-/** Sentinel meta property written by pagination auto mode; consumed by corePipelineHooks.postProcess */
 export const PAGINATION_AUTO_SENTINEL = '__pagination-auto';
 
 export const pagination = createContentModelSchema({

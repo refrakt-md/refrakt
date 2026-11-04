@@ -3,7 +3,6 @@ import type { Node, Schema, RenderableTreeNodes } from '@markdoc/markdoc';
 import { declareUniversalPosture, groupByHeading } from '../lib/index.js';
 const { Tag } = Markdoc;
 
-/** The 6 tint token names */
 export const TINT_TOKENS = [
 	'background',
 	'surface',
@@ -16,7 +15,6 @@ export type TintToken = (typeof TINT_TOKENS)[number];
 
 const TOKEN_PATTERN = /^\s*(\w+)\s*:\s*(.+)\s*$/;
 
-/** Extract plain text from an AST node by walking its children */
 function textContent(node: Node): string {
 	const parts: string[] = [];
 	for (const child of node.walk()) {
@@ -27,7 +25,6 @@ function textContent(node: Node): string {
 	return parts.join(' ').trim();
 }
 
-/** Parse the tint rune body into light/dark token sets */
 function parseTintBody(children: Node[]): {
 	light: Record<string, string>;
 	dark: Record<string, string>;
@@ -37,7 +34,6 @@ function parseTintBody(children: Node[]): {
 
 	groupByHeading<'light' | 'dark'>(children, {
 		initial: 'light',
-		// An unrecognised heading keeps the section already in effect.
 		heading(heading, section) {
 			const text = textContent(heading).toLowerCase();
 			return text === 'dark' || text === 'light' ? text : section;
@@ -55,12 +51,6 @@ function parseTintBody(children: Node[]): {
 	return { light, dark };
 }
 
-/**
- * Tint rune schema.
- *
- * The tint rune produces no visible output — it emits meta tags that the
- * parent rune's identity transform reads to apply colour overrides.
- */
 export const tint: Schema = {
 	attributes: {
 		preset: { type: String, required: false, description: 'Named tint preset from the theme' },
@@ -77,8 +67,6 @@ export const tint: Schema = {
 
 		const { light, dark } = parseTintBody(node.children);
 
-		// Emit a container tag with tint data as meta children.
-		// This gets extracted and injected into the parent by createSchema().
 		const metas: RenderableTreeNodes[] = [];
 
 		if (preset) {
@@ -99,10 +87,8 @@ export const tint: Schema = {
 			metas.push(new Tag('meta', { 'data-field': `tint-dark-${token}`, content: value }));
 		}
 
-		// Return a wrapper tag that createSchema() will unwrap
 		return new Tag('div', { 'data-tint-source': true }, metas as any[]);
 	},
 };
 
-// SPEC-125 Phase 3 — supplies a tint to its parent rather than carrying one; `{% tint tint=… %}` is circular.
 declareUniversalPosture(tint, 'configurator');

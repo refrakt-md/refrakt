@@ -3,22 +3,8 @@ import type { Config, Node, Schema } from '@markdoc/markdoc';
 import { declareUniversalPosture } from '../lib/index.js';
 const { Tag } = Markdoc;
 
-/** Sentinel attribute value used to identify xref placeholders in the renderable tree */
 export const XREF_RUNE_MARKER = 'xref';
 
-/**
- * Xref rune — inline self-closing tag that resolves an entity by ID or name
- * from the entity registry and renders a navigable link.
- *
- * At Phase 1 (transform time) the registry isn't populated yet, so the rune
- * emits a placeholder span. Phase 4 (postProcess) resolves the placeholder
- * into a link or an unresolved indicator.
- *
- * Usage:
- *   {% xref "RF-138" /%}
- *   {% xref "Veshra" label="the exile" /%}
- *   {% xref "Sanctuary" type="realm" /%}
- */
 export const xref: Schema = {
 	selfClosing: true,
 	inline: true,
@@ -43,7 +29,7 @@ export const xref: Schema = {
 			required: false,
 			matches: ['drawer'],
 			description:
-				'Preview target. `"drawer"` hoists a drawer containing the entity\'s expanded content + a link to its resolved page URL in the chrome footer, leaving an inline link at the call site that opens it. Absent → today\'s behaviour (just the inline link). SPEC-078.',
+				'Preview target. `"drawer"` hoists a drawer containing the entity\'s expanded content + a link to its resolved page URL in the chrome footer, leaving an inline link at the call site that opens it. Absent → today\'s behaviour (just the inline link).',
 		},
 	},
 	transform(node: Node, config: Config) {
@@ -61,10 +47,8 @@ export const xref: Schema = {
 		if (type) attrs['data-xref-type'] = type;
 		if (preview) attrs['data-xref-preview'] = preview;
 
-		// Placeholder text: custom label or the raw reference string
 		return new Tag('span', attrs, [label || id]);
 	},
 };
 
-// SPEC-125 Phase 3 — an inline link; the block axes have nothing to act on.
 declareUniversalPosture(xref, 'inline');

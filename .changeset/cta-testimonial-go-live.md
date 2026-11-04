@@ -9,7 +9,7 @@
 
 **`cta`**
 - **No `rf-cta*` classes, and `data-rune="cta"`.** The native rune rendered as `data-rune="call-to-action"`. A cta is now `<div data-rune="cta">` around a `.rf-section` at `display` prominence and a `.rf-actions`. Style `[data-prominence="display"]` and the `actions` vocabulary, or reach it through `[data-rune="cta"]`.
-- **The `call-to-action` alias is gone.** `refrakt migrate cta <paths> --apply` renames `{% call-to-action %}` to `{% cta %}`.
+- **The `call-to-action` alias stays**, and resolves to the composition.
 - **`--in-hero` and `--in-pricing` are gone.** A composed rune has no BEM block for a context modifier to extend. A cta inside a pricing table is left-aligned by writing `align="start"`, which the cta now accepts (`start | center | end`).
 - **Two leading headings read as a headline and body** (ADR-046), where the native rune read an eyebrow and a headline. An eyebrow is a short paragraph before the headline.
 

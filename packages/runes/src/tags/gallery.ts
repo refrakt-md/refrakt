@@ -11,7 +11,6 @@ import { LAYOUT, layoutMatches } from '../layout-vocabulary.js';
 
 export const gallery = createContentModelSchema({
 	attributes: {
-		// `grid` + `carousel` from the canonical const (ADR-018); `masonry` stays local.
 		layout: {
 			type: String,
 			required: false,
@@ -39,13 +38,11 @@ export const gallery = createContentModelSchema({
 		const lightbox = attrs.lightbox ?? true;
 		const caption = attrs.caption ?? '';
 
-		// An image is an <img> or a scheme-resolved <svg> (placeholder:/icon:).
 		const images = children
 			.flatten()
 			.toArray()
 			.filter((n) => isMediaNode(n)) as InstanceType<typeof Tag>[];
 		const items = images.map((img) => {
-			// scheme svgs carry the label as aria-label rather than alt.
 			const alt = img.attributes?.alt || img.attributes?.['aria-label'] || '';
 			const itemChildren: any[] = [img];
 			if (alt) {
@@ -67,14 +64,6 @@ export const gallery = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'gallery',
-			// SPEC-130 D4 / WORK-567 — no `ImageGallery`. The only honest mapping
-			// is `image` (or `associatedMedia`) naming each picture, and the
-			// pictures are plain markdown images wrapped as `data-name="item"`
-			// figures: typing each one as an `ImageObject` with a `contentUrl` is
-			// a retype-and-wrap job, not a flat mapping. `caption` would give the
-			// gallery a `name`, but a named collection that lists none of its
-			// contents is the same empty claim with a label on it. The type can
-			// come back when the items can carry it.
 			tag: 'figure',
 			properties: {
 				layout: layoutMeta,

@@ -9,7 +9,6 @@ import {
 	extractText,
 } from '@refrakt-md/runes';
 
-// Parse "role: Family Name (weight1, weight2)" format
 function parseFontEntry(text: string): { role: string; family: string; weights: number[] } | null {
 	const colonIndex = text.indexOf(':');
 	if (colonIndex === -1) return null;
@@ -30,7 +29,6 @@ function parseFontEntry(text: string): { role: string; family: string; weights: 
 	return { role, family: rest, weights: [400] };
 }
 
-// Font rendering constants
 const SIZES = [48, 32, 24, 18, 14];
 const WEIGHT_NAMES: Record<number, string> = {
 	100: 'Thin',
@@ -73,9 +71,6 @@ function buildFontsUrl(specimens: Specimen[]): string {
 	return `https://fonts.googleapis.com/css2?${families.join('&')}&display=swap`;
 }
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const typographySections = { title: 'title' } as const;
 
 export const typography = createContentModelSchema({
@@ -116,7 +111,6 @@ export const typography = createContentModelSchema({
 	transform(resolved, attrs) {
 		const children = asNodes(resolved.body) as Node[];
 
-		// Parse list items directly from the original AST
 		const specimens: Specimen[] = [];
 		for (const child of children) {
 			if (child.type === 'list') {
@@ -134,16 +128,13 @@ export const typography = createContentModelSchema({
 
 		const sample = attrs.sample as string;
 
-		// Meta tags for engine modifier consumption
 		const titleMeta = new Tag('meta', { content: attrs.title });
 		const showSizesMeta = new Tag('meta', { content: String(attrs.showSizes) });
 		const showWeightsMeta = new Tag('meta', { content: String(attrs.showWeights) });
 		const showCharsetMeta = new Tag('meta', { content: String(attrs.showCharset) });
 
-		// Build complete presentational Tag tree
 		const topChildren: (string | InstanceType<typeof Tag>)[] = [];
 
-		// Google Fonts links (rendered in body — browsers handle this fine per HTML5)
 		const fontsUrl = buildFontsUrl(specimens);
 		if (fontsUrl) {
 			topChildren.push(
@@ -163,12 +154,10 @@ export const typography = createContentModelSchema({
 			topChildren.push(new Tag('h3', { 'data-name': 'title' }, [attrs.title as string]));
 		}
 
-		// Specimen cards
 		const specimenTags = specimens.map((specimen) => {
 			const stack = fontStack(specimen);
 			const specimenChildren: (string | InstanceType<typeof Tag>)[] = [];
 
-			// Header
 			specimenChildren.push(
 				new Tag('div', { 'data-name': 'specimen-header' }, [
 					new Tag('span', { 'data-name': 'specimen-role' }, [specimen.role]),
@@ -176,7 +165,6 @@ export const typography = createContentModelSchema({
 				]),
 			);
 
-			// Size samples
 			if (attrs.showSizes) {
 				const sizeSamples = SIZES.map((size) => {
 					const text = size <= 18 ? sample : sample.slice(0, Math.floor(60 / (size / 14)));
@@ -192,7 +180,6 @@ export const typography = createContentModelSchema({
 				specimenChildren.push(new Tag('div', { 'data-name': 'sizes' }, sizeSamples));
 			}
 
-			// Weight samples
 			if (attrs.showWeights && specimen.weights.length > 1) {
 				const weightSamples = specimen.weights.map((weight) => {
 					const label = WEIGHT_NAMES[weight] || String(weight);
@@ -211,7 +198,6 @@ export const typography = createContentModelSchema({
 				specimenChildren.push(new Tag('div', { 'data-name': 'weights' }, weightSamples));
 			}
 
-			// Charset
 			if (attrs.showCharset) {
 				specimenChildren.push(
 					new Tag(
@@ -244,7 +230,6 @@ export const typography = createContentModelSchema({
 	},
 });
 
-/** Extract font tokens from a typography AST node (used by design-context). */
 export function extractTypographyTokens(
 	node: Node,
 ): { role: string; family: string; weights: number[]; category: string }[] {

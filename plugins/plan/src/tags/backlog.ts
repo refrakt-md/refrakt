@@ -7,20 +7,6 @@ import {
 	COLLECTION_SENTINEL,
 } from '@refrakt-md/runes';
 
-/**
- * `backlog` (SPEC-072 / WORK-284) — thin sugar for a `collection` query over
- * plan work + bug items. Lowers to a `collection`-shaped renderable so the
- * shared `resolveCollections` resolver handles selection, sorting, grouping,
- * limit, and per-item rendering. The body is an optional override; absent →
- * a default card template covering id + title + status (the only fields work
- * and bug share — priority lives on work, severity on bug, so the default
- * stays type-agnostic).
- *
- * Legacy attributes preserved verbatim (`show` / `filter` / `sort` / `group`
- * / `limit`) so existing `{% backlog %}` content keeps working. `show=all` is
- * the plan-domain expansion to `work,bug`; the other `show` values pass
- * through as the collection `type`.
- */
 const SHOW_TO_TYPE: Record<string, string> = {
 	all: 'work,bug',
 	work: 'work',
@@ -30,15 +16,8 @@ const SHOW_TO_TYPE: Record<string, string> = {
 	milestone: 'milestone',
 };
 
-// The single type-specific field each homogeneous backlog may surface beyond the
-// universal projection (a mixed set can't show these uniformly). (WORK-342)
 const TYPE_FIELD: Record<string, string> = { work: 'priority', bug: 'severity' };
 
-// Cards/list default body — a `card` whose top strip is a `bar`: identifier on
-// the left (plus a type chip for a mixed set, or — for a single-type backlog —
-// that type's key field), a sentiment-coloured status badge on the right; the
-// body keeps the title. Universal across every plan type by construction
-// (identifier/status/type are the only shared fields). (WORK-342)
 function cardBody(extraField?: string): string {
 	const extra = extraField
 		? ` {% if $item.data.${extraField} %}{% badge %}{% $item.data.${extraField} %}{% /badge %}{% /if %}`
@@ -55,9 +34,6 @@ function cardBody(extraField?: string): string {
 `;
 }
 
-// Table default body — heading-as-columns over the universal projection
-// (Identifier · Type · Status · Title). The Type column is always present in the
-// table detail view (the "only when mixed" rule governs the card type chip).
 const DEFAULT_TABLE_BODY = `# Identifier
 {% link href=$item.url %}{% $item.identifier %}{% /link %}
 # Type
@@ -126,8 +102,6 @@ export const backlog = createContentModelSchema({
 		const showVal = String(attrs.show ?? 'all');
 		const type = SHOW_TO_TYPE[showVal] ?? showVal;
 
-		// A single-type backlog may surface that type's key field (work→priority,
-		// bug→severity); a mixed set stays universal (identifier/status/type).
 		const singleType = type.includes(',') ? '' : type;
 		const bodySource =
 			readDeferredBody(attrs) ??

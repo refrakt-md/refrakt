@@ -9,7 +9,6 @@ import {
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 import { taxonomyAttributes } from './common.js';
 
-// Map marker characters to status strings
 const MARKER_TO_STATUS: Record<string, string> = {
 	x: 'complete',
 	'>': 'active',
@@ -29,14 +28,12 @@ export const beat = createContentModelSchema({
 	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
 		const labelTag = new Tag('span', {}, [attrs.label ?? '']);
-		// Map raw marker char to status string if needed
 		const resolvedStatus = MARKER_TO_STATUS[attrs.status] ?? (attrs.status || 'planned');
 		const statusMeta = new Tag('meta', { content: resolvedStatus });
 		const idMeta = new Tag('meta', { content: attrs.id ?? '' });
 		const trackMeta = new Tag('meta', { content: attrs.track ?? '' });
 		const followsMeta = new Tag('meta', { content: attrs.follows ?? '' });
 
-		// Build body from description attribute + any block-level children
 		const childContent = renderNodes(resolved.body, config);
 		const descText = (attrs.description ?? '').replace(/^[\s—–-]+/, '').trim();
 		const bodyChildren: any[] = [];
@@ -66,21 +63,14 @@ export const beat = createContentModelSchema({
 const plotType = ['arc', 'quest', 'subplot', 'campaign', 'episode', 'act', 'chapter'] as const;
 const structureType = ['linear', 'parallel', 'branching', 'web'] as const;
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const plotSections = { title: 'title' } as const;
 
-// SPEC-130 / WORK-568 — Group B. `plotType → genre` is what shipped and what
-// the baseline records; the beats stay imperative (`beat` is a `properties`
-// cursor the parent nests itself) because retyping children is WORK-570's.
 export const plotSchema = {
 	type: 'CreativeWork',
 	properties: { title: 'name', plotType: 'genre' },
 } as const;
 
 export const plot = createContentModelSchema({
-	// SPEC-144 — what this rune registers (WORK-612).
 	registers: {
 		entity: { idFrom: 'title', data: ['plotType', 'structure', 'tags', { name: 'title' }] },
 	},

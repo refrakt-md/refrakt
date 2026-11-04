@@ -23,9 +23,6 @@ const deviceType = [
 const colorType = ['dark', 'light', 'auto'] as const;
 const fitType = ['auto', 'none'] as const;
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const mockupMediaSlots = { viewport: 'hero' } as const;
 
 export const mockup = createContentModelSchema({
@@ -83,16 +80,10 @@ export const mockup = createContentModelSchema({
 		const scale = attrs.scale ?? 1;
 		const fit = attrs.fit ?? 'auto';
 
-		// device / color / fit ride the bag only (→ the engine's modifiers set the
-		// classes + data-* attrs). No field-metas in the tree.
 		const deviceMeta = new Tag('meta', { content: device });
 		const colorMeta = new Tag('meta', { content: color });
 		const fitMeta = new Tag('meta', { content: fit });
 
-		// SPEC-081: build the device-frame chrome here (deterministic from the
-		// `device` value), not in a postTransform. Element classes come from
-		// `data-name` (engine applies prefix-correct BEM); variants are `data-*`
-		// attributes (`data-notch`, `data-light`) per the repo convention.
 		const viewport = body.wrap('div').next() as InstanceType<typeof Tag>;
 		viewport.attributes['data-name'] = 'viewport';
 
@@ -176,8 +167,6 @@ export const mockup = createContentModelSchema({
 			children,
 		});
 
-		// Scale as a CSS custom property (only when non-default, matching the
-		// previous behaviour exactly).
 		if (scale && scale !== 1) {
 			const existing = node.attributes.style ? `${node.attributes.style}; ` : '';
 			node.attributes.style = `${existing}--mockup-scale: ${scale}`;

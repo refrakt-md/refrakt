@@ -13,14 +13,9 @@ import { extractTypographyTokens } from './typography.js';
 import { extractSpacingTokens } from './spacing.js';
 import type { DesignTokens } from '@refrakt-md/types';
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const designContextSections = { title: 'title' } as const;
 
 export const designContext = createContentModelSchema({
-	// SPEC-144 — registers the token set under its scope; the bag is the tokens
-	// object itself. Replaces the hand-written hooks in `pipeline.ts` (WORK-613).
 	registers: { entity: { idFrom: 'scope', data: { json: 'tokens' } } },
 	sections: designContextSections,
 	attributes: {
@@ -41,7 +36,6 @@ export const designContext = createContentModelSchema({
 	transform(resolved, attrs, config) {
 		const children = asNodes(resolved.body) as Node[];
 
-		// Extract tokens from child AST nodes before transforming
 		const tokens: DesignTokens = {};
 
 		for (const child of children) {
@@ -60,21 +54,17 @@ export const designContext = createContentModelSchema({
 			}
 		}
 
-		// Transform child body (palette/typography/spacing render as identity-layer tags)
-		// Filter to only tag children for the body
 		const tagChildren = children.filter((c) => c.type === 'tag');
 		const body = new RenderableNodeCursor(
 			Markdoc.transform(tagChildren, config) as RenderableTreeNode[],
 		);
 
-		// Meta tags
 		const titleMeta = new Tag('meta', { content: attrs.title });
 		const tokensMeta = new Tag('meta', { content: JSON.stringify(tokens) });
 		const scopeMeta = new Tag('meta', { content: attrs.scope });
 
 		const titleTag = attrs.title ? new Tag('h3', {}, [attrs.title as string]) : undefined;
 
-		// Wrap transformed child runes in a sections container
 		const childTags = body.toArray();
 		const sectionsTag = new Tag('div', {}, childTags);
 

@@ -14,13 +14,10 @@ const variantType = ['street', 'satellite', 'terrain', 'dark', 'minimal'] as con
 const heightType = ['small', 'medium', 'large', 'full'] as const;
 const providerType = ['openstreetmap', 'mapbox'] as const;
 
-// Match coordinate pairs like "48.8566, 2.3522" or "-33.8688, 151.2093"
 const COORD_PATTERN = /(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/;
 
-// Separator between name/description/coordinates: " - ", " — ", " – "
 const SEPARATOR = /\s*[-–—]\s*/;
 
-// Parse a list item node into location properties
 function parseLocationItem(node: Node): {
 	name: string;
 	description: string;
@@ -33,7 +30,6 @@ function parseLocationItem(node: Node): {
 	let description = '';
 	let url = '';
 
-	// Walk the item's direct children (paragraph/inline wrapper)
 	const allNodes = Array.from(node.walk());
 
 	for (const child of allNodes) {
@@ -43,7 +39,6 @@ function parseLocationItem(node: Node): {
 				.map((n) => n.attributes.content)
 				.join('');
 		} else if (child.type === 'em' && child !== node) {
-			// Only pick up em nodes that aren't the root
 			const emText = Array.from(child.walk())
 				.filter((n) => n.type === 'text')
 				.map((n) => n.attributes.content)
@@ -54,13 +49,12 @@ function parseLocationItem(node: Node): {
 		}
 	}
 
-	// Collect all text content and strip out the name/description parts
 	const fullText = extractText(node);
 	let remaining = fullText;
 	if (name) remaining = remaining.replace(name, '');
 	if (description) remaining = remaining.replace(description, '');
 
-	// Extract coordinates BEFORE stripping separators, so negative signs survive
+	// Read the coordinates before stripping separators, so a negative sign survives.
 	let lat = '';
 	let lng = '';
 	const coordMatch = remaining.match(COORD_PATTERN);
@@ -70,13 +64,10 @@ function parseLocationItem(node: Node): {
 		remaining = remaining.replace(COORD_PATTERN, '').trim();
 	}
 
-	// Strip separators
 	remaining = remaining.replace(new RegExp(SEPARATOR.source, 'g'), ' ').trim();
 
-	// Whatever is left is the address
 	const address = remaining.replace(/\s+/g, ' ').trim();
 
-	// If no name was found via bold, use the address or full text
 	if (!name && !lat && !lng) {
 		name = address || fullText.trim();
 	} else if (!name) {
@@ -123,7 +114,6 @@ const mapPin = createContentModelSchema({
 	},
 });
 
-// Parse list items into map-pin tags with heading-based grouping
 function convertMapChildren(nodes: unknown[]): unknown[] {
 	const converted: Node[] = [];
 
@@ -227,13 +217,6 @@ export const map = createContentModelSchema({
 
 		const node = createComponentRenderable({
 			rune: 'map',
-			// SPEC-130 D4 / WORK-567 — no `Place`, and this one is a type error
-			// rather than a thin entity: a map showing three landmarks is not
-			// itself a place. The `name` and `description` in the output belong to
-			// the `map-pin` children, which is where any `Place` data lives; the
-			// root's own properties are all viewport config (zoom, center,
-			// provider). Even fully mapped it would be a collection of places, not
-			// one.
 			tag: 'div',
 			properties: {
 				zoom: zoomMeta,
@@ -249,7 +232,6 @@ export const map = createContentModelSchema({
 			refs: { pins: pinsList },
 			children: [pinsList],
 		});
-		// Emit as the rf-map custom element (the web component upgrades it).
 		node.name = 'rf-map';
 		return node;
 	},

@@ -13,9 +13,6 @@ import { RenderableNodeCursor } from '@refrakt-md/runes';
 
 const variantType = ['comic', 'clean', 'polaroid'] as const;
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const storyboardPanelMediaSlots = { image: 'cover' } as const;
 
 export const storyboardPanel = createContentModelSchema({
@@ -24,7 +21,6 @@ export const storyboardPanel = createContentModelSchema({
 	transform(resolved, attrs, config) {
 		const children = renderNodes(resolved.body, config);
 
-		// The panel image is an <img> or a scheme-resolved <svg> (placeholder:/icon:).
 		const image = (
 			children
 				.flatten()
@@ -47,7 +43,6 @@ export const storyboardPanel = createContentModelSchema({
 	},
 });
 
-// Group nodes into panels: each image starts a new panel
 function convertStoryboardChildren(nodes: unknown[]): unknown[] {
 	const converted: Node[] = [];
 	let currentPanelChildren: Node[] = [];
@@ -64,14 +59,11 @@ function convertStoryboardChildren(nodes: unknown[]): unknown[] {
 			node.type === 'image' ||
 			(node.type === 'paragraph' && Array.from(node.walk()).some((n) => n.type === 'image'))
 		) {
-			// Image starts a new panel
 			flushPanel();
 			currentPanelChildren.push(node);
 		} else if (currentPanelChildren.length > 0) {
-			// Non-image after an image: add to current panel as caption
 			currentPanelChildren.push(node);
 		} else {
-			// Content before first image: start a panel anyway
 			currentPanelChildren.push(node);
 		}
 	}

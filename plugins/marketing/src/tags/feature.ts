@@ -16,7 +16,6 @@ import {
 	layoutMatches,
 } from '@refrakt-md/runes';
 
-/** Check if a paragraph node contains an image, icon tag, or strong element. */
 function isTermParagraph(node: Node): boolean {
 	for (const child of node.walk()) {
 		if (child.type === 'image') return true;
@@ -26,13 +25,7 @@ function isTermParagraph(node: Node): boolean {
 	return false;
 }
 
-/**
- * Split definition children into term (headings + paragraphs with image/icon/strong)
- * and description (remaining paragraphs), matching the original @group behavior.
- */
 function splitDefinitionChildren(nodes: unknown[]): unknown[] {
-	// We don't actually rewrite nodes here — just pass them through.
-	// The term/description split happens in transform based on node type analysis.
 	return nodes as Node[];
 }
 
@@ -49,7 +42,6 @@ export const definition = createContentModelSchema({
 			return node;
 		};
 
-		// Split children into term and description groups (replicating @group behavior)
 		const allChildren = asNodes(resolved.children);
 		const termNodes: Node[] = [];
 		const descNodes: Node[] = [];
@@ -65,7 +57,6 @@ export const definition = createContentModelSchema({
 				inDescription = true;
 				descNodes.push(node);
 			} else if (!inDescription) {
-				// Non-matching node before description starts — skip (matches @group behavior)
 				inDescription = true;
 			}
 		}
@@ -130,9 +121,6 @@ export const definition = createContentModelSchema({
 
 const alignType = ['left', 'center', 'right'] as const;
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const featureSections = {
 	preamble: 'preamble',
 	eyebrow: 'eyebrow',
@@ -171,8 +159,6 @@ export const feature = createContentModelSchema({
 	contentModel: {
 		type: 'delimited',
 		delimiter: 'hr',
-		// Media-first body shape: `media --- content`. `content` is the primary
-		// zone so a feature without an `---` block lands its whole body in content.
 		zones: [
 			{
 				name: 'media',
@@ -209,10 +195,6 @@ export const feature = createContentModelSchema({
 			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
 		);
 
-		// Transform definitions with custom node overrides. The output is flat:
-		// always a `<dl>` carrying the item count. Whether the definitions tile as
-		// a grid or stack in a column is the `layout` axis (SPEC-099), styled via
-		// `[data-layout]` — not branched here and no longer coupled to media.
 		const defConfig = {
 			...config,
 			nodes: {
@@ -238,9 +220,6 @@ export const feature = createContentModelSchema({
 		};
 		const definitions = renderNodes(contentZone.definitions, defConfig);
 
-		// Unwrap Markdoc's `<p>` around inline media (a bare image or a single
-		// block rune) so the media zone holds the element directly — matching
-		// hero / card / bento.
 		const side = new RenderableNodeCursor(
 			unwrapParagraphImages(
 				Markdoc.transform(asNodes(mediaZone.media), config) as RenderableTreeNode[],
@@ -249,8 +228,6 @@ export const feature = createContentModelSchema({
 
 		const align = (attrs.align as string) || 'center';
 		const alignMeta = new Tag('meta', { content: align });
-		// Content-first DOM (header/definitions before media) → the truthful
-		// default placement is `bottom`, mirroring hero (BUG-001).
 		const resolvedMediaPosition = (attrs['media-position'] as string) ?? 'bottom';
 		const { metas: layoutMetas } = buildLayoutMetas({
 			...attrs,
@@ -263,21 +240,10 @@ export const feature = createContentModelSchema({
 			collapse: collapseMeta,
 		} = layoutMetas;
 
-		// SPEC-099 §1/§4: item arrangement is its own `layout` axis (grid|list),
-		// independent of `media-position`. Resolve the effective value in the
-		// transform — author `layout=` wins, else derive from media placement
-		// (stacked media → grid, beside media → list) to preserve prior output.
-		// Emit a single always-present `layout` meta; the engine maps it to
-		// `data-layout`. Author override and the media-derived default never
-		// collide because exactly one value is computed here.
 		const stackedMedia = resolvedMediaPosition === 'top' || resolvedMediaPosition === 'bottom';
 		const effectiveLayout = (attrs.layout as string) ?? (stackedMedia ? LAYOUT.grid : LAYOUT.list);
 		const layoutMeta = new Tag('meta', { content: effectiveLayout });
 
-		// SPEC-100 §collapse-to: the collapsed *form* — `stack` (default) or
-		// `carousel` (a scroll-snap row below the `collapse` breakpoint). Emitted as
-		// `data-collapse-to` only when non-default; orthogonal to the `collapse`
-		// breakpoint. Moot when `layout="carousel"` (already a carousel at all widths).
 		const collapseTo = (attrs['collapse-to'] as string) ?? 'stack';
 		const collapseToMeta =
 			collapseTo !== 'stack' ? new Tag('meta', { content: collapseTo }) : undefined;

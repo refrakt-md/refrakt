@@ -14,9 +14,6 @@ import {
 } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
-// SPEC-130 / WORK-568 — Group B. `portrait` is the source that needed a name:
-// the schema reached the image as an anonymous local variable, so nothing
-// outside this function could see what `image` pointed at.
 export const castMemberSchema = {
 	type: 'Person',
 	properties: { name: 'name', role: 'jobTitle', portrait: 'image' },
@@ -37,9 +34,6 @@ export const castMember = createContentModelSchema({
 
 		const children: any[] = [];
 
-		// Create portrait image from attribute (extracted by item model or set
-		// explicitly). A `placeholder:`/`icon:` scheme src resolves to an inline
-		// <svg>; anything else is a normal <img> (SPEC-106).
 		let portraitTag: Markdoc.Tag | undefined;
 		if (attrs.image) {
 			const resolved = resolveImageScheme(attrs.image as string, { alt: attrs.name ?? '', config });
@@ -63,9 +57,6 @@ export const castMember = createContentModelSchema({
 	},
 });
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const castSections = {
 	preamble: 'preamble',
 	headline: 'title',
@@ -75,7 +66,6 @@ export const castSections = {
 export const cast = createContentModelSchema({
 	sections: castSections,
 	attributes: {
-		// `grid`/`list`/`carousel` from the canonical const (ADR-018 / SPEC-100).
 		layout: {
 			type: String,
 			required: false,
@@ -108,8 +98,6 @@ export const cast = createContentModelSchema({
 	},
 	transform(resolved, attrs, config) {
 		const header = renderNodes(resolved.header, config);
-		// List-shorthand emits cast-member tags via the itemModel; explicit
-		// {% cast-member %} children come through `items`. Both feed the same list.
 		const allMembers = [...asNodes(resolved.members), ...asNodes(resolved.items)];
 		const body = new RenderableNodeCursor(
 			Markdoc.transform(allMembers, config) as RenderableTreeNode[],
@@ -118,7 +106,6 @@ export const cast = createContentModelSchema({
 		const layoutMeta = new Tag('meta', { content: attrs.layout ?? 'grid' });
 
 		const members = body.tag('li').typeof('CastMember');
-		// SPEC-156 D3.4 — the list arrangement is the unsequenced ladder.
 		const membersList = new Tag(
 			'ul',
 			attrs.layout === 'list' ? { 'data-zone-layout': 'ladder' } : {},

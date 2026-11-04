@@ -11,7 +11,6 @@ import {
 const displayValues = ['fraction', 'percent', 'none'] as const;
 const sentimentValues = ['positive', 'caution', 'negative'] as const;
 
-/** Best-effort plain-text of a rendered subtree, for the accessible name. */
 function textContent(node: unknown): string {
 	if (typeof node === 'string') return node;
 	if (Array.isArray(node)) return node.map(textContent).join('');
@@ -20,12 +19,6 @@ function textContent(node: unknown): string {
 	return '';
 }
 
-/**
- * `progress` — a generic, presentational completion bar (SPEC-072 / WORK-285).
- * Renders a ratio from supplied numbers; computes nothing from the registry.
- * `value`+`max` (primary) or `percent` (alternative, when there's no count);
- * an optional body is the label. Identity-transform only, no resolver.
- */
 export const progress = createContentModelSchema({
 	attributes: {
 		value: { type: Number, required: false, description: 'Completed amount (paired with `max`).' },
@@ -75,8 +68,6 @@ export const progress = createContentModelSchema({
 		const labelArr = labelNodes.toArray();
 		const labelText = textContent(labelArr).trim();
 
-		// Optional tone cue — omit the meta entirely when absent so no modifier
-		// class is applied (the bar then uses the neutral primary fill).
 		const sentiment = attrs.sentiment as string | undefined;
 		const sentimentMeta = sentiment ? new Tag('meta', { content: sentiment }) : undefined;
 
@@ -105,7 +96,6 @@ export const progress = createContentModelSchema({
 			children,
 		});
 
-		// Per-instance computed root attributes: accessible progressbar + fill width.
 		out.attributes.role = 'progressbar';
 		out.attributes['aria-valuemin'] = '0';
 		if (hasRatio) {

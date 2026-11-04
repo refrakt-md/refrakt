@@ -7,24 +7,6 @@ import {
 	COLLECTION_SENTINEL,
 } from '@refrakt-md/runes';
 
-/**
- * `decision-log` (SPEC-072 / WORK-284) — thin sugar for a `collection` query
- * over plan decisions, sorted newest-first. Lowers to a `collection`-shaped
- * renderable so the shared `resolveCollections` resolver handles selection,
- * sorting, and per-item rendering. The body is an optional override; absent →
- * a default heading-template table (Decision / Status / Date) — "log" reads
- * as a scannable chronological reference, which fits a table better than the
- * card layout.
- *
- * Legacy attributes preserved (`filter` / `sort`) so existing
- * `{% decision-log %}` content keeps working. The bare `sort="date"` value
- * means "newest first" here; the lowered version maps it to the shared sort
- * grammar's `-date` so the direction matches the rune's documented contract.
- *
- * Decision-log's `<ol>` items container is not preserved (collection uses a
- * `<div>` container) — accepted per ADR-012.
- */
-
 const DEFAULT_DECISION_LOG_BODY = `# Decision
 {% link href=$item.url %}**{% $item.id %}** — {% $item.data.title %}{% /link %}
 # Status
@@ -56,9 +38,6 @@ export const decisionLog = createContentModelSchema({
 			new Tag('meta', { 'data-field': field, content });
 		const bodySource = readDeferredBody(attrs) ?? DEFAULT_DECISION_LOG_BODY;
 
-		// Preserve the rune's "date means reverse-chrono" contract: the bare
-		// `date` token historically meant newest-first. Other sort expressions
-		// (including `+date`) pass through unchanged.
 		const sortRaw = String(attrs.sort ?? 'date');
 		const sort = sortRaw === 'date' ? '-date' : sortRaw;
 

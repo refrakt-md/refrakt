@@ -2,25 +2,8 @@ import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable } from '../lib/index.js';
 
-/** Sentinel `data-field` value the file-ref schema emits. The resolver
- *  (file-ref-resolve.ts) walks the postProcess tree, finds these, and
- *  binds the inline `<a>` to the GitHub URL plus (when `preview="drawer"`
- *  is set) a hoist sentinel for the drawer pipeline to pick up. */
 export const FILE_REF_SENTINEL = '__file-ref-sentinel';
 
-/**
- * `file-ref` rune — path-based inline reference to a project file
- * (SPEC-078). Renders as an inline `<a>` to the file's canonical GitHub
- * URL (built from `SiteConfig.repoUrl` + `repoBranch`), with an optional
- * `preview="drawer"` mode that hoists a drawer containing the file's
- * snippet and a "View source on GitHub →" footer link.
- *
- * The transform emits a sentinel meta + placeholder `<a>`. The actual
- * link href, the drawer body, and the hoist sentinel are all bound in
- * postProcess by `resolveFileRefs` so that the rune doesn't need
- * site-config access at transform time and so the file content is read
- * once (not per page-with-mention).
- */
 export const fileRef = createContentModelSchema({
 	attributes: {
 		path: {
@@ -109,15 +92,9 @@ export const fileRef = createContentModelSchema({
 		const lines = attrs.lines !== undefined ? String(attrs.lines) : '';
 		const label = attrs.label !== undefined ? String(attrs.label) : '';
 		const preview = attrs.preview !== undefined ? String(attrs.preview) : '';
-		// SPEC-131 anchor attributes. Carried as meta through to the drawer
-		// builder, which is the only stage with file access.
 		const str = (name: string) => (attrs[name] !== undefined ? String(attrs[name]) : '');
 		const bool = (name: string) => (attrs[name] === undefined ? '' : String(attrs[name] === true));
 
-		// Default label: the basename of the path. Authors typically want
-		// to refer to a symbol inside the file (e.g. "ThemeTokensConfig")
-		// and pass an explicit label; this default is the conservative
-		// fallback when no label is given.
 		const fallbackLabel = defaultLabel(path);
 
 		const meta = (field: string, content: string) =>
@@ -139,15 +116,10 @@ export const fileRef = createContentModelSchema({
 			meta(FILE_REF_SENTINEL, 'true'),
 		];
 
-		// Placeholder anchor with the fallback label — resolver replaces
-		// the href and (when label is empty) keeps the fallback text.
 		const placeholder = new Tag('a', {}, [label || fallbackLabel]);
 
 		return createComponentRenderable({
 			rune: 'file-ref',
-			// Span keeps the rune inline-safe in prose. The resolver later
-			// replaces the span's children with the bound anchor + (with
-			// preview) a sibling hoist sentinel.
 			tag: 'span',
 			properties: {},
 			refs: { link: placeholder },

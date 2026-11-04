@@ -17,12 +17,6 @@ import { TYPE_IMPLICIT } from './track.js';
 
 const playlistType = ['album', 'podcast', 'audiobook', 'series', 'mix'] as const;
 
-/**
- * The track kind a playlist gives a nested `{% track %}` that states none
- * (WORK-572). The parent retypes its children; a child never declares its
- * context (SPEC-130 D9), and Markdoc's bottom-up transform order means a child
- * could not see its parent even if it wanted to.
- */
 const CHILD_KIND: Record<string, string> = {
 	album: 'song',
 	mix: 'song',
@@ -33,32 +27,6 @@ const CHILD_KIND: Record<string, string> = {
 
 const contentType = ['auto', 'lyrics', 'chapters'] as const;
 
-/**
- * SPEC-130 / WORK-569 — the driving case, and the other half of BUG-013.
- *
- * `playlist` declared five kinds and published `MusicPlaylist` with
- * `MusicRecording` items for every one of them, so `{% playlist type="podcast" %}`
- * announced a podcast as a music playlist whose episodes were music recordings.
- * The rune already knew what its content was and emitted the wrong schema anyway.
- *
- * | `type`      | was                     | is                             |
- * |-------------|-------------------------|--------------------------------|
- * | `album`     | `MusicPlaylist`/`track` | `MusicAlbum`/`track`           |
- * | `mix`       | `MusicPlaylist`/`track` | unchanged                      |
- * | `podcast`   | `MusicPlaylist`/`track` | `PodcastSeries`/`hasPart`      |
- * | `audiobook` | `MusicPlaylist`/`track` | `Audiobook`/`hasPart`          |
- * | `series`    | `MusicPlaylist`/`track` | `CreativeWorkSeries`/`hasPart` |
- *
- * **A child row is a type and a property map, not a type alone.** Retyping the
- * item and leaving its stamps would put `byArtist` on a `PodcastEpisode`, which
- * does not have that property — worse than the `MusicRecording` it replaced,
- * which was at least coherently wrong. So the parent's map is the whole truth
- * for a child it retypes, and the applier clears what it does not name.
- *
- * `Chapter` for an `Audiobook` and `CreativeWork` for a `CreativeWorkSeries` are
- * the rows worth a second opinion. Nothing validates them (D5) — read them in
- * `refrakt inspect playlist --type=all` and disagree there.
- */
 const MUSIC_ITEM = {
 	'track-name': 'name',
 	artist: 'byArtist',
@@ -68,8 +36,6 @@ const MUSIC_ITEM = {
 	position: 'position',
 } as const;
 
-// Everything but the artist: `byArtist` is a `MusicRecording` property, and a
-// series carries its publisher rather than each item doing so.
 const SPOKEN_ITEM = {
 	'track-name': 'name',
 	duration: 'duration',
@@ -87,7 +53,6 @@ const musicRow = (type: string) => ({
 
 const spokenRow = (type: string, itemType: string) => ({
 	type,
-	// No `byArtist` here either, for the same reason it is absent from the item.
 	properties: { headline: 'name', mediaImage: 'image' },
 	lists: ['hasPart'],
 	children: { track: { type: itemType, property: 'hasPart', properties: SPOKEN_ITEM } },
@@ -102,20 +67,9 @@ export const playlistSchema = {
 		audiobook: spokenRow('Audiobook', 'Chapter'),
 		series: spokenRow('CreativeWorkSeries', 'CreativeWork'),
 	},
-	// The attribute defaults to `album` in the transform, so the absent case is
-	// an album — and `MusicAlbum`, a subtype of `MusicPlaylist`, has been
-	// available and unused the whole time.
 	fallback: musicRow('MusicAlbum'),
 };
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
-// SPEC-125 Phase 1 — the `body` slot is the prose an author writes *after* the
-// track list (`layout.content` places `tracks` and `body` separately), so it is
-// both structurally the body and genuinely prose-bearing. The track list stays
-// unroled: it is structured content the rune reinterprets, and mapping it to
-// `body` would invent a `datatable`-shaped overload where none exists.
 export const playlistSections = {
 	preamble: 'preamble',
 	headline: 'title',
@@ -170,8 +124,6 @@ export const playlist = createContentModelSchema({
 	contentModel: {
 		type: 'delimited',
 		delimiter: 'hr',
-		// Media-first body shape: `media --- content`. `content` is the primary
-		// zone so a playlist without an `---` cover lands its whole body in content.
 		zones: [
 			{
 				name: 'media',
@@ -198,11 +150,6 @@ export const playlist = createContentModelSchema({
 						description: 'Playlist description',
 					},
 					{
-						// WORK-572 — `tag:track` alongside `list` so the composition the
-						// docs promise works. Greedy because the two forms may alternate,
-						// and greedy collection is *consecutive*: prose between two tracks
-						// ends the run and pushes the rest to `body`. Documented on the
-						// rune page rather than left for an author to discover.
 						name: 'tracks',
 						match: 'list|tag:track',
 						greedy: true,
@@ -259,19 +206,16 @@ export const playlist = createContentModelSchema({
 		const idValue = (attrs.id as string) ?? '';
 		const metaValue = attrs.meta as string | undefined;
 
-		// Collect header AST nodes (title, description) and transform together
 		const headerAstNodes = [contentZone.headline, contentZone.blurb].filter(Boolean) as Node[];
 		const header = new RenderableNodeCursor(
 			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
 		);
 
-		// Transform media zone
 		const mediaAstNodes = (Array.isArray(mediaZone.media) ? mediaZone.media : []) as Node[];
 		const side = new RenderableNodeCursor(
 			Markdoc.transform(mediaAstNodes, config) as RenderableTreeNode[],
 		);
 
-		// Build track items from itemModel extracted data
 		const tracksData = (contentZone.tracksData as Record<string, unknown>[] | undefined) ?? [];
 
 		const trackChildren = tracksData.map((track, index) => {
@@ -282,17 +226,9 @@ export const playlist = createContentModelSchema({
 			const date = (track.date as string)?.trim() ?? '';
 			const cuePoints = (track.cuePoints as Record<string, unknown>[] | undefined) ?? [];
 
-			// WORK-569 — no `property=` here any more: `playlistSchema`'s child row
-			// stamps both populations, so the list form and a nested `{% track %}`
-			// take the same mapping instead of one being declared and one written
-			// out by hand.
 			const trackNameTag = new Tag('span', { 'data-name': 'track-name' }, [name]);
 			const trackChildrenArr: any[] = [trackNameTag];
 
-			// WORK-679 — a list item is rendered through `Track`'s config, as a
-			// `{% track %}` is: the same field bag, so the engine draws the same
-			// details block. The values the schema row reads ride hidden metas, named
-			// as the child row names them; the visible ones are the engine's.
 			const bag: Record<string, string> = {};
 			if (artist) {
 				bag.artist = artist;
@@ -309,18 +245,14 @@ export const playlist = createContentModelSchema({
 			}
 			if (metaValue) bag.meta = metaValue;
 
-			// Build cue point elements
 			if (cuePoints.length > 0) {
 				const cueListTag = buildCuePoints(cuePoints, contentMode);
 				if (cueListTag) trackChildrenArr.push(cueListTag);
 			}
 
-			// No `typeof` either — the child row types these. A list item states no
-			// kind of its own, so the parent is the only authority on what it is.
 			const trackAttrs: Record<string, any> = {
 				'data-rune': 'track',
 				'data-rune-fields': JSON.stringify(bag),
-				// A row of the listing, not a card: see `adoptNestedTrack`.
 				elevation: 'flush',
 			};
 			if (src) trackAttrs['data-src'] = src;
@@ -328,19 +260,6 @@ export const playlist = createContentModelSchema({
 			return new Tag('li', trackAttrs, trackChildrenArr);
 		});
 
-		// WORK-572 / BUG-016 — merge nested `{% track %}` children with the list
-		// items, in document order.
-		//
-		// `resolved.tracks` holds the matched nodes in source order; `tracksData`
-		// is the flat itemModel extraction across every list among them. Walking
-		// the nodes and consuming `tracksData` by list length is what keeps the two
-		// forms interleaved correctly, rather than appending one block after the
-		// other.
-		//
-		// Before this, a `{% track %}` inside a `{% playlist %}` fell through to the
-		// greedy `body` field: it rendered as an `<li>` outside any list and floated
-		// up as a detached top-level entity, while the docs recommended the
-		// composition.
 		const trackNodes = (contentZone.tracks ?? []) as Node[];
 		const childKind = CHILD_KIND[playlistTypeValue] ?? 'song';
 		const orderedTracks: any[] = [];
@@ -362,13 +281,10 @@ export const playlist = createContentModelSchema({
 				orderedTracks.push(adoptNestedTrack(li as any, childKind, artistValue, metaValue));
 			}
 		}
-		// Any list items a node walk missed (defensive: a shape the resolver
-		// collected but this loop did not recognise) still belong in the listing.
 		if (listCursor < trackChildren.length) orderedTracks.push(...trackChildren.slice(listCursor));
 
 		const tracksOl = new Tag('ol', {}, orderedTracks);
 
-		// Build player element (when player attribute is set)
 		let playerEl: any = null;
 		if (hasPlayer) {
 			const playerData = tracksData.map((track) => {
@@ -390,7 +306,6 @@ export const playlist = createContentModelSchema({
 			]);
 		}
 
-		// Layout meta tags
 		const { metas: layoutMetas } = buildLayoutMetas(attrs);
 		const {
 			mediaPosition: mediaPositionMeta,
@@ -399,18 +314,13 @@ export const playlist = createContentModelSchema({
 			collapse: collapseMeta,
 		} = layoutMetas;
 
-		// Meta tags for identity transform modifiers
 		const typeMeta = new Tag('meta', { content: playlistTypeValue });
 		const hasPlayerMeta = hasPlayer ? new Tag('meta', { content: 'true' }) : null;
 		const artistMeta = artistValue ? new Tag('meta', { content: artistValue }) : null;
 		const idMeta = idValue ? new Tag('meta', { content: idValue }) : null;
 
-		// SPEC-081: emit flat `data-name` slots — the `layout` config builds the
-		// content column (eyebrow block + preamble header + player + tracks +
-		// body) and the split sees only media + content.
 		const sectionProps = pageSectionProperties(header);
 
-		// Transform any remaining body content, wrapped in a body slot.
 		let bodyDiv: RenderableNodeCursor<Markdoc.Tag> | undefined;
 		if (contentZone.body) {
 			const bodyNodes = renderNodes(contentZone.body, config);
@@ -419,28 +329,22 @@ export const playlist = createContentModelSchema({
 			}
 		}
 
-		// Unwrap paragraph-wrapped images in the media zone
 		const mediaImgTag = extractMediaImage(side);
 		const mediaCursor = mediaImgTag ? new RenderableNodeCursor([mediaImgTag]) : side;
 		const mediaDiv = mediaCursor.wrap('div');
 		const hasMedia = mediaCursor.toArray().length > 0;
 
-		// Use the unwrapped image for SEO structured data
 		const seoImage = mediaImgTag;
 
 		const children: any[] = [];
 		if (hasPlayerMeta) children.push(hasPlayerMeta);
 
-		// Media before content so cover image appears at the top in stacked layout
 		if (hasMedia) children.push(mediaDiv.next());
 		children.push(...header.toArray());
 		if (playerEl) children.push(playerEl);
 		children.push(tracksOl);
 		if (bodyDiv) children.push(bodyDiv.next());
 
-		// WORK-572 — the merged, ordered set, not just the list items: this is the
-		// cursor `schema: { track }` stamps `property="track"` onto, and an unstamped
-		// child floats up as a detached top-level entity (BUG-016 symptom 2).
 		const trackItems = new RenderableNodeCursor(orderedTracks);
 
 		return createComponentRenderable({
@@ -459,11 +363,8 @@ export const playlist = createContentModelSchema({
 			refs: {
 				...sectionProps,
 				body: bodyDiv,
-				// WORK-585 — named through the declared channel, not on the Tag.
 				tracks: tracksOl,
 				media: mediaDiv,
-				// WORK-561 — see the note on `recipe`: `image` is taken by
-				// `sectionProps`, so the media slot's image is `mediaImage`.
 				mediaImage: seoImage,
 			},
 			children,
@@ -471,25 +372,6 @@ export const playlist = createContentModelSchema({
 	},
 });
 
-/**
- * Adopt a nested `{% track %}` into its playlist (WORK-572).
- *
- * Two channels, and they behave differently (SPEC-130 D9):
- *
- * - **`typeof` — what the child *is* — is the child's when stated, else the
- *   parent's child-row default.** The `TYPE_IMPLICIT` marker is how the parent
- *   tells those apart; without it an absent `type` and an explicit
- *   `type="song"` are the same value by transform time.
- * - **`property` — which collection it joins — is always the parent's**, and it
- *   is stamped by `createComponentRenderable`'s `schema:` map further down, not
- *   here. `collectJsonLd` nests a typed node only when it carries both `typeof`
- *   and `property`, so a child the parent never stamps floats free whatever type
- *   it has.
- *
- * The artist default rides along for the same reason the type does: the list
- * form does `track.artist ?? playlistArtist`, so without it the two forms would
- * disagree on `byArtist` and the equivalence would be false.
- */
 function adoptNestedTrack(
 	li: any,
 	childKind: string,
@@ -499,11 +381,6 @@ function adoptNestedTrack(
 	if (!li || typeof li !== 'object') return li;
 
 	if (!li[TYPE_IMPLICIT]) {
-		// The marker means "the author stated this type" (WORK-569), so its absence
-		// is what licenses adoption. The schema type is the applier's to set from
-		// `playlistSchema`'s child row, and the marker stays on the node for it to
-		// read; what is left here is the *rendered* modifier, so a podcast's nested
-		// track does not present itself as a song.
 		const raw = li.attributes['data-rune-fields'];
 		if (typeof raw === 'string') {
 			try {
@@ -522,9 +399,6 @@ function adoptNestedTrack(
 	}
 
 	if (playlistArtist && !hasArtist(li)) {
-		// Named rather than stamped, so the child row decides whether a playlist's
-		// artist reaches the item at all — on a podcast or an audiobook it does
-		// not, because the series carries its publisher.
 		const artistMeta = new Markdoc.Tag('meta', {
 			content: playlistArtist,
 			'data-name': 'artist',
@@ -532,16 +406,8 @@ function adoptNestedTrack(
 		li.children = [...(li.children ?? []), artistMeta];
 	}
 
-	// WORK-679 — a track in a playlist is a row of its listing, so it takes no
-	// surface of its own: `Track`'s `flat` default is for a track standing
-	// alone. Before, a nested track drew a card among the list form's rows.
-	// An elevation the author wrote on the track stands.
 	if (li.attributes.elevation === undefined) li.attributes.elevation = 'flush';
 
-	// WORK-679 — the playlist's `meta` and default artist reach a track that
-	// states neither, in its field bag, so its details show what a list item's
-	// do. (Before, a list item showed the playlist's artist and a nested track
-	// only carried it as a hidden meta.)
 	const inherited: Record<string, string> = {};
 	if (playlistMeta) inherited.meta = playlistMeta;
 	if (playlistArtist) inherited.artist = playlistArtist;
@@ -559,7 +425,6 @@ function adoptNestedTrack(
 	return li;
 }
 
-/** Whether a track already carries its own artist. */
 function hasArtist(li: any): boolean {
 	const raw = li.attributes?.['data-rune-fields'];
 	if (typeof raw === 'string') {
@@ -574,13 +439,9 @@ function hasArtist(li: any): boolean {
 	);
 }
 
-/**
- * Build cue point list (chapters or lyrics) from extracted itemModel data.
- */
 function buildCuePoints(cuePoints: Record<string, unknown>[], contentMode: string): any {
 	if (cuePoints.length === 0) return null;
 
-	// Detect content type: lyrics have timestamp at start with short text
 	const isLyrics =
 		contentMode === 'lyrics' ||
 		(contentMode === 'auto' &&
@@ -599,7 +460,6 @@ function buildCuePoints(cuePoints: Record<string, unknown>[], contentMode: strin
 		return new Tag('ol', { 'data-name': 'lyrics' }, lyricItems);
 	}
 
-	// Chapters
 	const chapterItems = cuePoints.map((cp) => {
 		const attrs: Record<string, any> = {};
 		if (cp.time) attrs['data-time'] = String(parseDuration(cp.time as string));

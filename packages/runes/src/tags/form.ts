@@ -12,7 +12,6 @@ import { RenderableNodeCursor } from '../lib/renderable.js';
 const variantType = ['stacked', 'inline', 'compact'] as const;
 const methodType = ['GET', 'POST'] as const;
 
-// Type inference: field name keywords → HTML input type
 const typeInference: [string[], string][] = [
 	[['email', 'e-mail'], 'email'],
 	[['phone', 'telephone', 'mobile', 'cell'], 'tel'],
@@ -34,7 +33,6 @@ function inferFieldType(name: string): string {
 	return 'text';
 }
 
-// Parse modifiers from parenthetical text: "Email (optional, placeholder: 'you@example.com')"
 function parseFieldText(text: string): { name: string; optional: boolean; placeholder: string } {
 	const match = text.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
 	if (!match) {
@@ -51,8 +49,6 @@ function parseFieldText(text: string): { name: string; optional: boolean; placeh
 	return { name, optional, placeholder };
 }
 
-// Check if a paragraph contains only bold text (submit button pattern)
-// Uses walk() to handle any AST nesting (e.g. inline wrapper nodes)
 function isBoldOnlyParagraph(node: Node): boolean {
 	if (node.type !== 'paragraph') return false;
 	const allNodes = Array.from(node.walk());
@@ -70,7 +66,6 @@ function isBoldOnlyParagraph(node: Node): boolean {
 	return textContent.trim() === strongText.trim() && textContent.trim().length > 0;
 }
 
-// Parse blockquote text for selection modifiers
 function parseBlockquoteModifiers(text: string): {
 	label: string;
 	multiple: boolean;
@@ -115,9 +110,6 @@ const formField = createContentModelSchema({
 					.filter(Boolean)
 			: [];
 
-		// --- Special types: return plain tags (no FormField wrapper) ---
-		// These get BEM classes from the parent Form block via data-name.
-
 		if (fieldType === 'submit') {
 			return new Tag('button', { type: 'submit', 'data-name': 'submit' }, [fieldName]);
 		}
@@ -139,8 +131,6 @@ const formField = createContentModelSchema({
 				new Tag('legend', {}, [fieldName]),
 			]);
 		}
-
-		// --- Choice groups (radio/checkbox): fieldset with typeof for engine BEM ---
 
 		if (fieldType === 'radio' || fieldType === 'checkbox') {
 			const labelChildren: any[] = [fieldName];
@@ -178,8 +168,6 @@ const formField = createContentModelSchema({
 				[fieldTypeMeta, new Tag('legend', {}, labelChildren), ...choiceElements],
 			);
 		}
-
-		// --- Standard fields: label + input wrapped in createComponentRenderable ---
 
 		const labelChildren: any[] = [fieldName];
 		if (isRequired) {
@@ -251,7 +239,6 @@ function convertFormChildren(nodes: Node[]): Node[] {
 	const converted: Node[] = [];
 	let pendingBlockquote: Node | null = null;
 
-	// Find the last bold-only paragraph (submit button)
 	let lastBoldParaIndex = -1;
 	for (let i = nodes.length - 1; i >= 0; i--) {
 		if (isBoldOnlyParagraph(nodes[i])) {
@@ -302,7 +289,6 @@ function convertFormChildren(nodes: Node[]): Node[] {
 				),
 			);
 		} else if (node.type === 'list' && pendingBlockquote) {
-			// Blockquote + list = selection field
 			const blockquoteText = extractText(pendingBlockquote);
 			const mods = parseBlockquoteModifiers(blockquoteText);
 
@@ -340,7 +326,6 @@ function convertFormChildren(nodes: Node[]): Node[] {
 			pendingBlockquote = null;
 		} else if (node.type === 'list') {
 			flushBlockquote();
-			// Standalone list = text input fields
 			for (const item of node.children) {
 				if (item.type === 'item') {
 					const itemText = extractText(item);
@@ -428,9 +413,6 @@ function convertFormChildren(nodes: Node[]): Node[] {
 
 export { formField };
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const formSections = { body: 'body' } as const;
 
 export const form = createContentModelSchema({

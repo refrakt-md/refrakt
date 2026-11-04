@@ -11,14 +11,6 @@ import {
 	pageSectionProperties,
 } from '@refrakt-md/runes';
 
-// SPEC-130 / WORK-568 — Group B, the flat half of the pair. The entry declares
-// what it says about itself; `timelineSchema` below declares the property that
-// holds it and the position it sits at, because only the parent knows an index.
-//
-// `description` for the date is what shipped, recorded in the baseline. It is a
-// stretch — `ListItem` has no date property, and `startDate` would need a
-// different `@type` — but reproducing it exactly was that item's job; changing
-// the claim is not.
 export const timelineEntrySchema = {
 	type: 'ListItem',
 	properties: { label: 'name', date: 'description' },
@@ -57,23 +49,12 @@ export const timelineEntry = createContentModelSchema({
 	},
 });
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const timelineSections = {
 	preamble: 'preamble',
 	headline: 'title',
 	blurb: 'description',
 } as const;
 
-// SPEC-130 / WORK-571 — the other half of `position: 'index'`. `timeline` used
-// to walk its entries and push a `<meta property="position">` into each; the
-// index is now declared and the applier generates it, as `String(index + 1)` so
-// the RDFa and the JSON-LD agree.
-//
-// `itemListElement` is a declared list, so a one-entry timeline emits an array
-// like any other (D6). The `ItemList` itself carries no properties of its own —
-// that is what shipped, and the entries keep it from being a bare entity (D4).
 export const timelineSchema = {
 	type: 'ItemList',
 	lists: ['itemListElement'],
@@ -118,7 +99,6 @@ export const timeline = createContentModelSchema({
 	}),
 	transform(resolved, attrs, config) {
 		const headerNodes = renderNodes(resolved.header, config);
-		// Combine explicit child tags (preamble items) with emitted section tags
 		const allItems = [...asNodes(resolved.items), ...asNodes(resolved.sections)];
 		const sectionNodes = new RenderableNodeCursor(
 			Markdoc.transform(allItems, config) as RenderableTreeNode[],

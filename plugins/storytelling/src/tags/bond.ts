@@ -7,14 +7,9 @@ import {
 	renderNodes,
 } from '@refrakt-md/runes';
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const bondSections = { body: 'body' } as const;
 
 export const bond = createContentModelSchema({
-	// SPEC-144 — a bond is an edge between two entities, registered as a `bond`
-	// entry (id `from→to`) and contributed to the relationship graph (WORK-612).
 	registers: {
 		edge: {
 			from: 'from',

@@ -8,19 +8,14 @@ import {
 } from '@refrakt-md/runes';
 import { taxonomyAttributes } from './common.js';
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const loreSections = { title: 'title', body: 'body' } as const;
 
-// SPEC-130 / WORK-568 — Group B.
 export const loreSchema = {
 	type: 'Article',
 	properties: { title: 'headline', category: 'articleSection' },
 } as const;
 
 export const lore = createContentModelSchema({
-	// SPEC-144 — what this rune registers (WORK-612).
 	registers: {
 		entity: { idFrom: 'title', data: ['category', 'spoiler', 'tags', { name: 'title' }] },
 	},

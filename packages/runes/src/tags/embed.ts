@@ -15,7 +15,6 @@ function detectProvider(url: string): ProviderInfo {
 		const parsed = new URL(url);
 		const host = parsed.hostname.replace('www.', '');
 
-		// YouTube
 		if (host === 'youtube.com' || host === 'youtu.be') {
 			let videoId = '';
 			if (host === 'youtu.be') {
@@ -30,7 +29,6 @@ function detectProvider(url: string): ProviderInfo {
 			};
 		}
 
-		// Vimeo
 		if (host === 'vimeo.com') {
 			const videoId = parsed.pathname.slice(1);
 			return {
@@ -40,7 +38,6 @@ function detectProvider(url: string): ProviderInfo {
 			};
 		}
 
-		// Twitter / X
 		if (host === 'twitter.com' || host === 'x.com') {
 			return {
 				provider: 'twitter',
@@ -49,7 +46,6 @@ function detectProvider(url: string): ProviderInfo {
 			};
 		}
 
-		// CodePen
 		if (host === 'codepen.io') {
 			const embedUrl = url.replace('/pen/', '/embed/');
 			return {
@@ -59,7 +55,6 @@ function detectProvider(url: string): ProviderInfo {
 			};
 		}
 
-		// Spotify
 		if (host === 'open.spotify.com') {
 			const embedUrl = url.replace('open.spotify.com/', 'open.spotify.com/embed/');
 			return {
@@ -79,12 +74,6 @@ function detectProvider(url: string): ProviderInfo {
 	};
 }
 
-// SPEC-130 / WORK-568 — Group B, and the case that proves the applier's second
-// resolution path. All three sources are `properties` metas, which exist only to
-// carry a string: once the rune stops declaring `schema:` they lose the
-// `isSeoMeta` protection and are dropped from the children as pure data. The
-// applier rebuilds each as a fresh carrier from the `data-rune-fields` bag,
-// which only works because WORK-561 put them there.
 export const embedSchema = {
 	type: 'VideoObject',
 	properties: { title: 'name', url: 'contentUrl', embedUrl: 'embedUrl' },
@@ -113,18 +102,13 @@ export const embed = createContentModelSchema({
 		const aspect = attrs.aspect ?? '16:9';
 		const iframeTitle = (attrs.title as string) || 'Embedded content';
 
-		// SPEC-081: build the structure here (it is deterministic from authored
-		// data — provider/embed-url are derived above), not in a postTransform.
 		const [w, h] = aspect.split(':').map(Number);
 		const paddingPercent = h && w ? (h / w) * 100 : 56.25;
 
-		// SEO carriers (schema channel — render inline as RDFa, empties dropped).
 		const urlMeta = new Tag('meta', { content: url });
 		const titleMeta = new Tag('meta', { content: attrs.title ?? '' });
 		const embedUrlMeta = new Tag('meta', { content: detected.embedUrl });
 
-		// `provider` rides the bag only (→ `data-provider` via the modifier);
-		// no field-meta is emitted.
 		const providerMeta = new Tag('meta', { content: detected.provider });
 
 		const fallback = renderNodes(resolved.fallback, config).wrap('div');
@@ -156,11 +140,6 @@ export const embed = createContentModelSchema({
 			tag: 'figure',
 			properties: {
 				provider: providerMeta,
-				// WORK-561 — these three exist only to carry a string into the schema
-				// channel, so under WORK-560's rule they are values and belong here.
-				// Their bag entries are what `embedSchema` resolves against now that
-				// the rune no longer declares `schema:` and the metas themselves are
-				// dropped as pure data.
 				title: titleMeta,
 				url: urlMeta,
 				embedUrl: embedUrlMeta,

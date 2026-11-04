@@ -10,10 +10,6 @@ import {
 const shadowValues = ['none', 'soft', 'hard', 'elevated'] as const;
 const bleedValues = ['none', 'top', 'bottom', 'both', 'end', 'bottom-end', 'top-end'] as const;
 
-/** SPEC-086 — showcase collapses into the frame model (`frameTarget: 'self'`).
- *  Its bespoke attributes are deprecated aliases for `frame-*` facets; map them
- *  and warn once, retaining breakout (`bleed` → `frame-displace` on a breakout
- *  host) as showcase's distinct value. */
 const SHADOW_TO_FRAME: Record<string, string> = { soft: 'sm', hard: 'md', elevated: 'lg' };
 const SHOWCASE_DEPRECATED_WARNED = new Set<string>();
 function warnShowcaseDeprecated(attr: string, replacement: string): void {
@@ -21,13 +17,10 @@ function warnShowcaseDeprecated(attr: string, replacement: string): void {
 	SHOWCASE_DEPRECATED_WARNED.add(attr);
 	// eslint-disable-next-line no-console
 	console.warn(
-		`[refrakt] showcase \`${attr}\` is deprecated (SPEC-086) — use \`${replacement}\`. The alias will be removed in a future minor.`,
+		`[refrakt] showcase \`${attr}\` is deprecated — use \`${replacement}\`. The alias will be removed in a future minor.`,
 	);
 }
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const showcaseSections = { viewport: 'body' } as const;
 export const showcaseFrameTarget = 'self' as const;
 
@@ -79,9 +72,6 @@ export const showcase = createContentModelSchema({
 		const place = attrs.place ?? '';
 
 		const properties: Record<string, any> = {};
-		// Emit a frame facet meta the engine routes to the showcase root
-		// (frameTarget: 'self'). Routed through `properties` so it rides both the
-		// SPEC-082 field bag and the meta channel the engine reads.
 		const frameMeta = (field: string, value: string) => {
 			const meta = new Tag('meta', { content: value });
 			properties[field] = meta;

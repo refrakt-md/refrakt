@@ -12,7 +12,6 @@ import {
 	fieldMetas,
 } from '@refrakt-md/runes';
 
-// Extract bold label from a list item (the text inside the first strong node)
 function extractBoldLabel(node: Node): string | null {
 	for (const child of node.walk()) {
 		if (child.type === 'strong') {
@@ -25,14 +24,11 @@ function extractBoldLabel(node: Node): string | null {
 	return null;
 }
 
-// Determine the row type for a list item
 function detectRowType(node: Node): string {
-	// Check for task list checkbox pattern: [x] or [ ] at start of text
 	const text = extractText(node);
 	if (/^\s*\[x\]/i.test(text)) return 'check';
 	if (/^\s*\[\s*\]/.test(text)) return 'cross';
 
-	// Check for strikethrough (s node)
 	for (const child of node.walk()) {
 		if (child.type === 's') return 'negative';
 	}
@@ -40,23 +36,17 @@ function detectRowType(node: Node): string {
 	return 'text';
 }
 
-// Remove the bold label and separator from item children to get just the description.
-// Input:  "**Learning curve** — Low, intuitive syntax"
-// Output: "Low, intuitive syntax" (strong and separator stripped)
 function getDescriptionChildren(node: Node): Node[] {
 	if (!node.children.length) return node.children;
 
 	const firstChild = node.children[0];
 	if (firstChild.type !== 'paragraph' && firstChild.type !== 'inline') return node.children;
 
-	// Find the first strong node in the paragraph
 	const strongIndex = firstChild.children.findIndex((c) => c.type === 'strong');
 	if (strongIndex === -1) return node.children;
 
-	// Get everything after the strong node
 	const afterStrong = firstChild.children.slice(strongIndex + 1);
 
-	// Strip the leading separator (—, –, -, :) from the next text node
 	if (afterStrong.length > 0 && afterStrong[0].type === 'text') {
 		const text = afterStrong[0].attributes.content;
 		const stripped = text.replace(/^\s*[-–—:]\s*/, '');
@@ -67,12 +57,10 @@ function getDescriptionChildren(node: Node): Node[] {
 		}
 	}
 
-	// If nothing remains in the paragraph, return remaining item children
 	if (afterStrong.length === 0) {
 		return node.children.slice(1);
 	}
 
-	// Create new paragraph with the description-only content
 	const newParagraph = new Ast.Node('paragraph', firstChild.attributes, afterStrong);
 	return [newParagraph, ...node.children.slice(1)];
 }
@@ -146,7 +134,6 @@ const comparisonColumn = createContentModelSchema({
 	},
 });
 
-// Multi-pass heading+list parser with cross-column row alignment
 function convertComparisonChildren(
 	nodes: unknown[],
 	attributes: Record<string, unknown>,
@@ -157,7 +144,6 @@ function convertComparisonChildren(
 	const n = converted.length - 1;
 	if (!converted[n] || converted[n].type !== 'list') return nodes;
 
-	// --- First pass: parse all columns ---
 	const parsedColumns: ParsedColumn[] = [];
 
 	for (const item of converted[n].children) {
@@ -204,7 +190,6 @@ function convertComparisonChildren(
 		parsedColumns.push(column);
 	}
 
-	// --- Build master label list (preserving first-seen order) ---
 	const masterLabels: string[] = [];
 	const seenLabels = new Set<string>();
 
@@ -217,10 +202,8 @@ function convertComparisonChildren(
 		}
 	}
 
-	// --- Second pass: create aligned tag nodes ---
 	const result: Node[] = converted.slice(0, n);
 
-	// Embed master labels as a synthetic node so the transform can retrieve them
 	result.push(
 		new Ast.Node(
 			'tag',
@@ -235,7 +218,6 @@ function convertComparisonChildren(
 	for (const col of parsedColumns) {
 		const rowNodes: Node[] = [];
 
-		// Aligned rows (in master label order)
 		for (const label of masterLabels) {
 			const row = col.labeledRows.get(label);
 			if (row) {
@@ -251,7 +233,6 @@ function convertComparisonChildren(
 					),
 				);
 			} else {
-				// Empty placeholder for missing label
 				rowNodes.push(
 					new Ast.Node(
 						'tag',
@@ -266,7 +247,6 @@ function convertComparisonChildren(
 			}
 		}
 
-		// Secondary (unlabeled) rows
 		for (const row of col.secondaryRows) {
 			rowNodes.push(
 				new Ast.Node(
@@ -281,7 +261,6 @@ function convertComparisonChildren(
 			);
 		}
 
-		// Callout rows
 		for (const row of col.callouts) {
 			rowNodes.push(
 				new Ast.Node(
@@ -313,11 +292,6 @@ function convertComparisonChildren(
 }
 
 export { comparisonRow, comparisonColumn };
-
-// ─── Table / cards builders (SPEC-081: structure lives in the transform) ───
-// Classes are hard-coded `rf-comparison*` to preserve the existing output
-// byte-for-byte (comparison was never theme-prefix-aware). Compound element-
-// modifier classes (`__cell--highlighted`, …) are likewise preserved as-is.
 
 interface RowData {
 	label: string;
@@ -531,9 +505,6 @@ export const comparison = createContentModelSchema({
 	transform(resolved, attrs, config) {
 		const allChildren = asNodes(resolved.children);
 
-		// SPEC-081: build the table/cards here from the parsed column/row AST tags
-		// (which already carry name / highlighted / rowType / body) — no
-		// intermediate column renderables, no postTransform.
 		let masterLabels: string[] = [];
 		const columnAst: Node[] = [];
 		for (const child of allChildren) {
@@ -561,7 +532,6 @@ export const comparison = createContentModelSchema({
 				})),
 		}));
 
-		// `layout` rides the bag (→ the `rf-comparison--{layout}` modifier class).
 		const layoutMeta = new Tag('meta', { content: layout });
 
 		const children: RenderableTreeNode[] = [];

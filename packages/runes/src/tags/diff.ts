@@ -7,7 +7,6 @@ const modeType = ['unified', 'split', 'inline'] as const;
 
 type SplitLine = { hunk: DiffHunk; num: number } | null;
 
-/** Align hunks into paired split lines (before/after) with line numbers. */
 function getSplitLines(hunks: DiffHunk[]): { before: SplitLine[]; after: SplitLine[] } {
 	const before: SplitLine[] = [];
 	const after: SplitLine[] = [];
@@ -40,7 +39,6 @@ function getSplitLines(hunks: DiffHunk[]): { before: SplitLine[]; after: SplitLi
 	return { before, after };
 }
 
-/** Compute unified line numbers for each hunk */
 function getUnifiedLines(
 	hunks: DiffHunk[],
 ): { hunk: DiffHunk; beforeNum: number | null; afterNum: number | null }[] {
@@ -63,16 +61,6 @@ function getUnifiedLines(
 	return lines;
 }
 
-/** Build unified diff renderable — pre with line spans + before/after gutters.
- *  The "missing" gutter number on the off-side (after-num for a remove line,
- *  before-num for an add line) takes the place of the old `+`/`-` prefix as
- *  the directional cue: combined with the change-tinted number colour and
- *  the line's left-edge border, the absence/presence pattern says which way
- *  the change goes without a dedicated prefix column.
- *
- *  WORK-304 — line spans carry `data-line-status` (was `data-type`) to
- *  share the row primitive with code-block line highlighting and any
- *  future per-line state. Values: `equal | add | remove`. */
 function buildUnifiedRenderable(
 	hunks: DiffHunk[],
 	lang: string,
@@ -96,26 +84,11 @@ function buildUnifiedRenderable(
 
 	return [
 		new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, [
-			// WORK-304 — inner wrapper hosts the `display: grid; min-width:
-			// max-content` row-width sizing so the row tint (+/-/highlight)
-			// extends across the full horizontal scroll region. Mirrors the
-			// `<pre><code>` pattern the standalone codeblock uses for the
-			// same reason: putting the sizing on the pre itself defeats
-			// `overflow-x: auto`. CSS hook: `.rf-diff__rows`.
 			new Tag('div', { 'data-name': 'rows' }, lineNodes),
 		]),
 	];
 }
 
-/** Build split diff renderable — side-by-side panels with one numbered
- *  gutter per panel. Placeholder rows (where the matching side has the
- *  add/remove) render an empty gutter + empty content; the fixed gutter
- *  width keeps the column rigid so rows align across panels.
- *
- *  WORK-304 — same `data-line-status` rename + per-side offset support
- *  as the unified renderable. `beforeOffset` / `afterOffset` are the
- *  `lines=` start minus one, so a fence with `lines="50-100"` adds 49
- *  to its 1-indexed `num` to produce gutter values starting at 50. */
 function buildSplitRenderable(hunks: DiffHunk[], lang: string, beforeOffset = 0, afterOffset = 0) {
 	const { before, after } = getSplitLines(hunks);
 
@@ -161,10 +134,6 @@ function buildSplitRenderable(hunks: DiffHunk[], lang: string, beforeOffset = 0,
 	];
 }
 
-/** Parse the leading integer of a `lines="N-M"` (or `"N"`) annotation and
- *  return `N - 1` as the gutter offset, or 0 when the annotation is
- *  missing / malformed. Diff uses this per side so each panel's gutter
- *  reflects the file's actual coordinates rather than always starting at 1. */
 function gutterOffsetFromLines(linesAttr: unknown): number {
 	if (typeof linesAttr !== 'string' || linesAttr.length === 0) return 0;
 	const m = /^(\d+)/.exec(linesAttr.trim());
@@ -173,10 +142,6 @@ function gutterOffsetFromLines(linesAttr: unknown): number {
 	return Number.isFinite(n) && n > 0 ? n - 1 : 0;
 }
 
-/** Build the diff header: explicit `title` attribute wins, otherwise the
- *  fence `source` annotations form the header. When both sides share a
- *  source they collapse to a single label; differing sources render as
- *  `before → after`. Falls back to no header when nothing is set. */
 function deriveHeader(
 	title: string,
 	beforeSource: string | undefined,
@@ -225,7 +190,6 @@ export const diff = createContentModelSchema({
 		const modeMeta = new Tag('meta', { content: mode });
 		const languageMeta = new Tag('meta', { content: language });
 
-		// Extract raw source directly from resolved AST nodes
 		const fences = asNodes(resolved.fences);
 		const beforeSource =
 			fences.length > 0 ? (fences[0].attributes.content || '').replace(/\n$/, '') : '';
@@ -233,15 +197,6 @@ export const diff = createContentModelSchema({
 			fences.length > 1 ? (fences[1].attributes.content || '').replace(/\n$/, '') : '';
 		const lang = language || (fences.length > 0 ? fences[0].attributes.language || '' : '');
 
-		// WORK-304 — per-fence annotations:
-		//   - `source` populates the diff header (and collapses to a single
-		//     label when both sides share it; renders `before → after`
-		//     otherwise).
-		//   - `lines` derives per-side gutter offsets so each panel's
-		//     line numbers reflect the file's real coordinates.
-		//   - `highlight` is intentionally ignored — diff's add/remove
-		//     status IS the primary line-level signal, and emphasis on
-		//     top would muddy the +/- channel. Silent no-op; no warning.
 		const beforeFenceSource =
 			fences.length > 0 && typeof fences[0].attributes.source === 'string'
 				? (fences[0].attributes.source as string)
@@ -253,10 +208,8 @@ export const diff = createContentModelSchema({
 		const beforeOffset = fences.length > 0 ? gutterOffsetFromLines(fences[0].attributes.lines) : 0;
 		const afterOffset = fences.length > 1 ? gutterOffsetFromLines(fences[1].attributes.lines) : 0;
 
-		// Compute line-level diff (highlighting deferred to highlight transform)
 		const hunks = computeLineDiff(beforeSource, afterSource);
 
-		// Build expanded renderable AST
 		const expanded =
 			mode === 'split'
 				? buildSplitRenderable(hunks, lang, beforeOffset, afterOffset)
@@ -273,9 +226,6 @@ export const diff = createContentModelSchema({
 			},
 			children: [...header, ...expanded],
 		});
-		// Opt in to the highlight transform's `theme.code.colorScheme` cascade:
-		// the override stamps `data-color-scheme` on `data-code-host` wrappers
-		// so the entire diff (chrome + code) flips together.
 		renderable.attributes['data-code-host'] = true;
 		return renderable;
 	},

@@ -1,7 +1,7 @@
 ---
 tag: article
 aliases: [review]
-description: Customer testimonial or review, composed over `section`, its quote a featured quotation (SPEC-161 D1, SPEC-185 D7)
+description: Customer testimonial or review, composed over `section`, its quote a featured quotation
 attributes:
   author:       { type: string, description: "The person quoted. Without it, the `**Name** — Role` paragraph after the quote is the attribution." }
   role:         { type: string, description: "Their role or organisation, beside `author`." }

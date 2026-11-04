@@ -11,9 +11,6 @@ import {
 } from '@refrakt-md/runes';
 import { taxonomyAttributes, buildStoryContent } from './common.js';
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const characterSectionSections = { body: 'body' } as const;
 
 export const characterSection = createContentModelSchema({
@@ -39,13 +36,6 @@ export const characterSection = createContentModelSchema({
 const roleType = ['protagonist', 'antagonist', 'supporting', 'minor'] as const;
 const statusType = ['alive', 'dead', 'unknown', 'missing'] as const;
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
-// SPEC-125 Phase 1 — the `body` slot carries the character's prose and went
-// unmapped, so `reading` / `dropcap` were silently dropped. The header roles
-// were already right: `name` is the title, inside the `preamble` header, so
-// `prominence` already worked. Realm and Faction share this shape exactly.
 export const characterSections = {
 	preamble: 'preamble',
 	name: 'title',
@@ -54,17 +44,12 @@ export const characterSections = {
 } as const;
 export const characterMediaSlots = { portrait: 'portrait' } as const;
 
-// SPEC-130 / WORK-568 — Group B. `role` is a `properties` meta, so it is
-// dropped as pure data once the rune stops declaring `schema:`; the applier
-// rebuilds it from the field bag.
 export const characterSchema = {
 	type: 'Person',
 	properties: { name: 'name', role: 'jobTitle' },
 } as const;
 
 export const character = createContentModelSchema({
-	// SPEC-144 — what this rune registers. Replaces the hand-written
-	// `register` / `aggregate` hooks in `pipeline.ts` (WORK-612).
 	registers: {
 		entity: {
 			idFrom: 'name',
@@ -108,11 +93,6 @@ export const character = createContentModelSchema({
 		emitAttributes: { name: '$heading' },
 		fields: [
 			{ name: 'portrait', match: 'image', optional: true },
-			// BUG-003 — this was named `header` and matched `heading|paragraph`,
-			// and `transform` never read it, so prose written directly inside
-			// `{% character %}` was resolved and then dropped. `description` is what
-			// Realm and Faction call the same field, and `heading` never matched
-			// here anyway: a heading in the preamble starts a section.
 			{ name: 'description', match: 'paragraph', optional: true, greedy: true },
 			{ name: 'items', match: 'tag', optional: true, greedy: true },
 		],
@@ -122,7 +102,6 @@ export const character = createContentModelSchema({
 		},
 	}),
 	transform(resolved, attrs, config) {
-		// Combine explicit child tags (preamble items) with emitted section tags
 		const allItems = [...asNodes(resolved.items), ...asNodes(resolved.sections)];
 		const sectionNodes = new RenderableNodeCursor(
 			Markdoc.transform(allItems, config) as RenderableTreeNode[],
@@ -134,19 +113,11 @@ export const character = createContentModelSchema({
 		const aliasesMeta = new Tag('meta', { content: attrs.aliases ?? '' });
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 
-		// Extract portrait image from preamble
 		const portraitNodes = renderNodes(resolved.portrait, config);
 		const portrait = portraitNodes.tag('img').limit(1);
 		const hasPortrait = portrait.count() > 0;
 		const portraitDiv = hasPortrait ? portrait.wrap('div') : undefined;
 
-		// BUG-003 — the same helper Realm and Faction use. It builds the body from
-		// the authored prose (plus any leftover nodes when there are no sections),
-		// so lead prose and sections can now coexist; the old bespoke version built
-		// the body from the *items* cursor and only when `hasSections` was false,
-		// which is why prose vanished either way. Character extracts its portrait
-		// from an `image` field directly, so there is no leftover scene text —
-		// hence the empty `extraDescription`.
 		const { bodyDiv, sectionsContainer, sections, hasSections } = buildStoryContent(
 			[],
 			resolved.description,
@@ -155,9 +126,6 @@ export const character = createContentModelSchema({
 			config,
 		);
 
-		// SPEC-081: emit flat `data-name` slots — the `layout` config builds the
-		// content column + preamble header. The portrait stays a floated avatar
-		// sibling (character chrome) placed at the article root.
 		const children: any[] = [];
 		if (portraitDiv) children.push(portraitDiv.next());
 		children.push(nameTag);

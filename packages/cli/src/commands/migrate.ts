@@ -9,8 +9,6 @@
  * - `hero` rewrites what the composed `hero` (SPEC-181, WORK-702) no longer
  *   accepts on a `{% hero %}` tag: `align="left|right"` becomes
  *   `align="start|end"`, and the deprecated `justify` becomes `align`.
- * - `cta` renames the `call-to-action` alias, which the composed `cta`
- *   (WORK-703) does not declare, to `cta`, on opening and closing tags.
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
@@ -61,19 +59,6 @@ export function migrateHeroSource(source: string): { text: string; count: number
 	return { text, count };
 }
 
-/** `{% call-to-action … %}` and `{% /call-to-action %}`, keeping `{%-` trims. */
-const CTA_ALIAS_RE = /(\{%-?\s*\/?)call-to-action\b/g;
-
-/** Rename the `call-to-action` alias to `cta`; returns the text and the count. */
-export function migrateCtaSource(source: string): { text: string; count: number } {
-	let count = 0;
-	const text = source.replace(CTA_ALIAS_RE, (_m: string, open: string) => {
-		count++;
-		return `${open}cta`;
-	});
-	return { text, count };
-}
-
 /** Rewrite one file's deprecated `elevation` values. */
 function migrateElevationSource(source: string): { text: string; count: number } {
 	let count = 0;
@@ -102,11 +87,6 @@ const CODEMODS: Record<string, Codemod> = {
 		migrate: migrateHeroSource,
 		unit: 'hero attribute',
 		nothing: 'No `hero` `align="left|right"` or `justify` found — nothing to migrate.',
-	},
-	cta: {
-		migrate: migrateCtaSource,
-		unit: 'call-to-action tag',
-		nothing: 'No `call-to-action` tags found — nothing to migrate.',
 	},
 };
 
@@ -257,8 +237,6 @@ Codemods:
   hero                 Rewrite what the composed \`hero\` no longer accepts on a
                        \`{% hero %}\` tag: align="left|right" → align="start|end",
                        and the deprecated \`justify\` → \`align\`.
-  cta                  Rename the \`call-to-action\` alias, which the composed
-                       \`cta\` no longer declares, to \`cta\`.
 
 Options:
   [paths…]             Files or directories to scan (default: current directory).
@@ -271,6 +249,5 @@ Examples:
   refrakt migrate elevation site/content --apply      # Write the migration
   refrakt migrate elevation content/runes/card.md --apply
   refrakt migrate hero site/content --apply
-  refrakt migrate cta site/content --apply
 `);
 }

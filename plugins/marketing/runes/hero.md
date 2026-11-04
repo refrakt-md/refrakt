@@ -1,6 +1,6 @@
 ---
 tag: div
-description: Full-width introductory section for landing pages, composed over `section` and `actions` (SPEC-160 D7)
+description: Full-width introductory section for landing pages, composed over `section` and `actions`
 attributes:
   align:          { type: string, matches: [start, center, end], default: center, description: "Alignment of the header and the actions" }
   media-position: { type: string, matches: [top, bottom, start, end, cover], default: bottom, description: "Where the media sits relative to the content" }

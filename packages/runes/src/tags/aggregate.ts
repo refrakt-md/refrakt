@@ -5,21 +5,6 @@ import { readDeferredBody } from '../deferred-body.js';
 
 export const AGGREGATE_SENTINEL = '__aggregate-sentinel';
 
-/**
- * `aggregate` (SPEC-076) — the third post-process-resolved query rune, beside
- * `collection` and `relationships`. Where they project entities and edges, this
- * one projects **numbers** — counts over the same field-match query, optionally
- * broken down by group. Two modes from the same rune:
- *
- *   - **No-body**: emits a single inline integer (the count). Replaces the
- *     standalone `count` rune proposal.
- *   - **Body-zoned**: source splits on top-level `hr` into preamble / template /
- *     fallback. `$item` is bound differently per zone — preamble gets totals,
- *     template gets the per-group projection, fallback gets zeros.
- *
- * The body is captured via `deferBody` and reparsed per group in the resolver
- * (the same path collection's per-item template uses).
- */
 export const aggregate = createContentModelSchema({
 	attributes: {
 		type: {
@@ -32,8 +17,7 @@ export const aggregate = createContentModelSchema({
 			type: String,
 			required: false,
 			default: '',
-			description:
-				'field:value clauses defining the primary set being measured (SPEC-070 grammar).',
+			description: '`field:value` clauses defining the primary set being measured.',
 		},
 		value: {
 			type: String,
@@ -53,13 +37,9 @@ export const aggregate = createContentModelSchema({
 			required: false,
 			default: '',
 			description:
-				'Sort groups by `key`, `count`, `value`, or `percent` (prefix `-` for descending). Honors SPEC-072 domain-aware ordering when the group field has one.',
+				"Sort groups by `key`, `count`, `value`, or `percent` (prefix `-` for descending). Follows the group field's own order when it has one.",
 		},
 		limit: {
-			// Same defect as `collection.limit`, found alongside it. No content
-			// exercises it today, so it produced no finding — fixed anyway,
-			// because leaving one of two identical declarations wrong is how the
-			// next person concludes `String` was deliberate.
 			type: Number,
 			required: false,
 			description: 'Cap the number of groups (after sort).',
@@ -117,8 +97,6 @@ export const aggregate = createContentModelSchema({
 		];
 		if (bodySource) metas.push(meta('aggregate-body', bodySource));
 
-		// Self-closing inline form is a span (no <section> mid-prose); the body and
-		// chart forms are block-level (the resolver swaps chart for an <rf-chart>).
 		return createComponentRenderable({
 			rune: 'aggregate',
 			tag: hasBody || layout === 'chart' ? 'section' : 'span',

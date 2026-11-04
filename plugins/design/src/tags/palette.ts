@@ -10,7 +10,6 @@ import {
 	groupByHeading,
 } from '@refrakt-md/runes';
 
-// Parse a color entry from "name: #value" or "name: #val1, #val2, ..."
 function parseColorEntry(text: string): { name: string; values: string[] } | null {
 	const colonIndex = text.indexOf(':');
 	if (colonIndex === -1) return null;
@@ -25,7 +24,6 @@ function parseColorEntry(text: string): { name: string; values: string[] } | nul
 	return { name, values };
 }
 
-// WCAG contrast helpers
 function hexToRgb(hex: string): [number, number, number] | null {
 	const clean = hex.replace('#', '');
 	if (clean.length !== 6 && clean.length !== 3) return null;
@@ -84,9 +82,6 @@ interface ColorGroup {
 	entries: ColorEntry[];
 }
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const paletteSections = { title: 'title' } as const;
 
 export const palette = createContentModelSchema({
@@ -120,7 +115,6 @@ export const palette = createContentModelSchema({
 	transform(resolved, attrs) {
 		const children = asNodes(resolved.body) as Node[];
 
-		// Parse headings and list items from the original AST
 		const groups: ColorGroup[] = [{ title: '', entries: [] }];
 		groupByHeading(children, {
 			initial: groups[0],
@@ -138,7 +132,6 @@ export const palette = createContentModelSchema({
 
 		const activeGroups = groups.filter((g) => g.entries.length > 0);
 
-		// Build complete presentational Tag tree
 		const titleMeta = new Tag('meta', { content: attrs.title });
 		const showContrastMeta = new Tag('meta', { content: String(attrs.showContrast) });
 		const showA11yMeta = new Tag('meta', { content: String(attrs.showA11y) });
@@ -155,7 +148,6 @@ export const palette = createContentModelSchema({
 				groupChildren.push(new Tag('h4', { 'data-name': 'group-title' }, [group.title]));
 			}
 
-			// Split into singles (1 value) and scales (multiple values)
 			const singles = group.entries.filter((e) => e.values.length <= 1);
 			const scales = group.entries.filter((e) => e.values.length > 1);
 
@@ -232,7 +224,6 @@ export const palette = createContentModelSchema({
 			groupTags.push(new Tag('div', { 'data-name': 'group' }, groupChildren));
 		}
 
-		// Title is rendered as a structural element — include conditionally
 		const topChildren: (string | InstanceType<typeof Tag>)[] = [];
 		if (attrs.title) {
 			topChildren.push(new Tag('h3', { 'data-name': 'title' }, [attrs.title as string]));
@@ -253,7 +244,6 @@ export const palette = createContentModelSchema({
 	},
 });
 
-/** Extract color tokens from a palette AST node (used by design-context). */
 export function extractPaletteTokens(
 	node: Node,
 ): { name: string; value: string; group?: string }[] {
