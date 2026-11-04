@@ -30,6 +30,7 @@ import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { UNIVERSAL_AXIS_FACETS } from '@refrakt-md/transform';
 import { PAGELESS } from './check-rune-docs.mjs';
+import { INTRO_PATH, buildIntro, renderIntro } from './rune-intro.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CLI = join(ROOT, 'packages/cli/dist/bin.js');
@@ -267,9 +268,19 @@ export function readSites(cliPath = CLI) {
 	return configuredSites().map((site) => ({ site, runes: runesForSite(site, cliPath) }));
 }
 
-function main(argv) {
+/** Every rune once, the first site's copy winning, as `build` keeps them. */
+function uniqueRunes(sites) {
+	const byName = new Map();
+	for (const { runes } of sites)
+		for (const rune of runes) if (!byName.has(rune.name)) byName.set(rune.name, rune);
+	return [...byName.values()];
+}
+
+async function main(argv) {
 	const sites = readSites();
 	const artifact = build(sites);
+	// SPEC-187 D5 — the rune intro, from the same runes, in its own file.
+	const intro = renderIntro(await buildIntro(uniqueRunes(sites)));
 
 	const gaps = coverageGaps(sites, artifact);
 	if (gaps.length > 0) {
@@ -286,17 +297,28 @@ function main(argv) {
 		} catch {
 			/* missing counts as stale */
 		}
-		if (current !== rendered) {
-			console.error('site/content/_data/rune-attributes.json is out of date.');
+		let currentIntro = '';
+		try {
+			currentIntro = readFileSync(INTRO_PATH, 'utf8');
+		} catch {
+			/* missing counts as stale */
+		}
+		const stale = [
+			current !== rendered && 'rune-attributes.json',
+			currentIntro !== intro && 'rune-intro.json',
+		].filter(Boolean);
+		if (stale.length > 0) {
+			console.error(`site/content/_data/${stale.join(' and ')} out of date.`);
 			console.error(`Run \`${REGENERATE_COMMAND}\` and commit the result.`);
 			return 1;
 		}
-		console.log('✓ rune-attributes.json is up to date');
+		console.log('✓ rune-attributes.json and rune-intro.json are up to date');
 		return 0;
 	}
 
 	mkdirSync(dirname(ARTIFACT_PATH), { recursive: true });
 	writeFileSync(ARTIFACT_PATH, rendered);
+	writeFileSync(INTRO_PATH, intro);
 	console.log(
 		`Wrote ${allAttributeRows(artifact).length} attribute rows and ${allAxisRows(artifact).length} axis rows ` +
 			`across ${sites.length} site(s) — ` +
@@ -306,5 +328,5 @@ function main(argv) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-	process.exit(main(process.argv.slice(2)));
+	main(process.argv.slice(2)).then((code) => process.exit(code));
 }
