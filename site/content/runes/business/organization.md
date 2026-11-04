@@ -7,13 +7,9 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/business**. Install with `npm install @refrakt-md/business` and add `"@refrakt-md/business"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
+{% include file="rune-intro.md" variables={r: "rune:organization"} /%}
 
-# Organization
-
-Structured business or organization information. Headings become the organization name, images become the logo, and links become website/social profiles.
+Headings become the organization name, images become the logo, and links become website/social profiles.
 
 ## Local business
 

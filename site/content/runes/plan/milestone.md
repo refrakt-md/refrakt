@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/plan**. Install with `npm install @refrakt-md/plan` and add `"@refrakt-md/plan"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Milestone
+{% include file="rune-intro.md" variables={r: "rune:milestone"} /%}
 
 A named release target or goal. Not a sprint — no timebox, no velocity, no ceremonies. A milestone is a coherent set of capabilities that together deliver value. When all work items assigned to it are done, the milestone is complete.
 

@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/storytelling**. Install with `npm install @refrakt-md/storytelling` and add `"@refrakt-md/storytelling"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Plot
+{% include file="rune-intro.md" variables={r: "rune:plot"} /%}
 
 Story arcs, quests, and narrative structures with progress tracking. List items are parsed as beats with status markers — use checkbox syntax to track progress through a storyline.
 

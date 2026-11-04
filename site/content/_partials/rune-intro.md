@@ -1,4 +1,4 @@
-{% data src="site/content/_data/rune-intro.json" root="runes" where=$r limit=1 %}
+{% data src="site/content/_data/rune-intro.json" root=$site.name where=$r limit=1 %}
 	{% section prominence="prominent" %}
 		{% $row.packageLabel %}
 
@@ -7,7 +7,7 @@
 		{% $row.description %}
 
 		{% bar %}
-			{% if $row.composed %}{% badge %}{% icon name="puzzle" size="1em" /%} Composition{% /badge %}{% /if %} {% if $row.unstable %}{% badge sentiment="caution" %}{% $row.status %}{% /badge %}{% /if %} {% if $row.publishes %}{% link href=$row.schemaUrl %}{% badge %}{% $row.schemaType %}{% /badge %}{% /link %}{% /if %}
+			{% if $row.compositionBadge %}{% badge %}{% icon name="puzzle" size="1em" /%} Composition{% /badge %}{% /if %} {% if $row.staged %}{% badge sentiment="caution" %}{% icon name="puzzle" size="1em" /%} Staged{% /badge %}{% /if %} {% if $row.unstable %}{% badge sentiment="caution" %}{% $row.status %}{% /badge %}{% /if %} {% if $row.publishes %}{% link href=$row.schemaUrl %}{% badge %}{% $row.schemaType %}{% /badge %}{% /link %}{% /if %}
 
 			---
 

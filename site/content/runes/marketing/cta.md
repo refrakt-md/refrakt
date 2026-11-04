@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/marketing**. Install with `npm install @refrakt-md/marketing` and add `"@refrakt-md/marketing"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# CTA
+{% include file="rune-intro.md" variables={r: "rune:cta"} /%}
 
 A focused call-to-action block. Headings become the headline, paragraphs become the subtitle, and list items with links become action buttons. Code fences become copyable command blocks. Use CTA for action prompts that can appear anywhere on a page — for full-width intro sections, use [Hero](/runes/marketing/hero) instead.
 

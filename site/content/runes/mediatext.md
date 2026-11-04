@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# MediaText
+{% include file="rune-intro.md" variables={r: "rune:mediatext"} /%}
 
 Side-by-side media and text layouts. Images within the rune are extracted into a media column, and the remaining text forms the body column. Control image placement, size ratio, and text wrapping.
 

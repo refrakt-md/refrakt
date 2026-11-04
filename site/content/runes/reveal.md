@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Reveal
+{% include file="rune-intro.md" variables={r: "rune:reveal"} /%}
 
 Progressive disclosure. Headings become reveal steps, with content shown one step at a time.
 

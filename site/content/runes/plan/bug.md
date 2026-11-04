@@ -7,13 +7,9 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/plan**. Install with `npm install @refrakt-md/plan` and add `"@refrakt-md/plan"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
+{% include file="rune-intro.md" variables={r: "rune:bug"} /%}
 
-# Bug
-
-Bug report with structured reproduction steps. Separate from work items because bugs have different required sections (reproduction steps, expected/actual behaviour) and different status values. H2 headings create named sections. Content before the first H2 that is not a lead paragraph — a code block, a list, a table — renders as an intro above the sections.
+Separate from work items because bugs have different required sections (reproduction steps, expected/actual behaviour) and different status values. H2 headings create named sections. Content before the first H2 that is not a lead paragraph — a code block, a list, a table — renders as an intro above the sections.
 
 ## Confirmed bug
 

@@ -7,13 +7,9 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/marketing**. Install with `npm install @refrakt-md/marketing` and add `"@refrakt-md/marketing"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
+{% include file="rune-intro.md" variables={r: "rune:pricing"} /%}
 
-# Pricing
-
-Pricing tables with tier comparison. Write natural markdown headings with `## Name — Price` to auto-generate tiers, or use explicit `{% tier %}` tags for full control.
+Write natural markdown headings with `## Name — Price` to auto-generate tiers, or use explicit `{% tier %}` tags for full control.
 
 ## Heading-based
 

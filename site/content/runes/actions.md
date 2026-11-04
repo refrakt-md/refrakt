@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Actions
+{% include file="rune-intro.md" variables={r: "rune:actions"} /%}
 
 `{% actions %}` turns a plain list of links into a row of buttons. The first link of the whole row is the **primary** action and the rest are **secondary**, so a theme styles the rank rather than the list position. A fence becomes a copyable command line in the same row.
 

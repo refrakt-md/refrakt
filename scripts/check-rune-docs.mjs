@@ -211,6 +211,53 @@ export function attributeCoverage(artifact, dir = RUNES_DIR) {
 	return missing.sort();
 }
 
+/**
+ * SPEC-187 D6 — every rune page opens with the generated intro, and nothing
+ * hand-written stands in for it. A page's own `# Title` and the old
+ * "This rune is part of …" hint are what the intro replaced; either one back on
+ * a page means the header is hand-written again and will drift.
+ *
+ * Returns one finding per page: the page, what is wrong, and the fix. Code
+ * fences are skipped, so a page documenting a heading in an example is fine.
+ */
+export function introCoverage(dir = RUNES_DIR, pages = findDocPages(dir)) {
+	const findings = [];
+	for (const [name, page] of pages) {
+		if (!page.isRune || PAGELESS.has(name)) continue;
+		const source = readFileSync(join(dir, page.rel), 'utf8');
+		const body = source.replace(/^---\n[\s\S]*?\n---\n/, '');
+		const prose = body.replace(/^(`{3,}|~{3,})[^\n]*\n[\s\S]*?^\1[ \t]*$/gm, '');
+		const include = new RegExp(
+			`\\{%\\s*include\\s+file="rune-intro\\.md"\\s+variables=\\{\\s*r:\\s*"rune:${name}"\\s*\\}\\s*/%\\}`,
+		);
+		const first = body.trimStart().split('\n', 1)[0];
+		if (!include.test(first)) {
+			findings.push({
+				page: page.rel,
+				problem: include.test(body)
+					? 'the intro is not the first thing on the page'
+					: 'no rune intro',
+				fix: `open the page with {% include file="rune-intro.md" variables={r: "rune:${name}"} /%}`,
+			});
+		}
+		if (/This rune is part of/.test(prose)) {
+			findings.push({
+				page: page.rel,
+				problem: 'the install hint',
+				fix: 'delete it; the intro has an Install action',
+			});
+		}
+		if (/^# \S/m.test(prose)) {
+			findings.push({
+				page: page.rel,
+				problem: 'a hand-written # title',
+				fix: 'delete it; the intro writes the <h1>',
+			});
+		}
+	}
+	return findings;
+}
+
 function main() {
 	if (!existsSync(CLI_PATH)) {
 		console.error(`Error: ${relative(ROOT, CLI_PATH)} not found — run \`npm run build\` first.`);
@@ -275,13 +322,19 @@ function main() {
 		}
 	}
 
+	const intro = introCoverage();
+	if (intro.length) {
+		failed = true;
+		console.error(`✗ ${intro.length} rune page header problem(s) (SPEC-187):`);
+		for (const f of intro) console.error(`    ${f.page}: ${f.problem} — ${f.fix}`);
+	}
+
 	if (failed) process.exit(1);
 	console.log(
 		`✓ rune docs in parity — every documentable rune has a page, every type: rune page has a backing rune,`,
 	);
-	console.log(
-		`  and every generated attribute table is rendered from the schema rather than copied`,
-	);
+	console.log(`  every generated attribute table is rendered from the schema rather than copied,`);
+	console.log(`  and every rune page opens with the generated intro`);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) main();

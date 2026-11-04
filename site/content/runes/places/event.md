@@ -7,13 +7,9 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/places**. Install with `npm install @refrakt-md/places` and add `"@refrakt-md/places"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
+{% include file="rune-intro.md" variables={r: "rune:event"} /%}
 
-# Event
-
-Event information with date, location, and agenda. Lists become speaker/agenda items, links become registration URLs.
+Lists become speaker/agenda items, links become registration URLs.
 
 ## Basic usage
 

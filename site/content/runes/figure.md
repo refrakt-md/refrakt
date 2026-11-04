@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Figure
+{% include file="rune-intro.md" variables={r: "rune:figure"} /%}
 
 A captioned container. A figure holds an image most often, but it accepts any block content (a code block, a table, a diagram, another rune) and captions it, with sizing and alignment controls.
 

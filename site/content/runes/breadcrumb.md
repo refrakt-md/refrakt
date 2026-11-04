@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Breadcrumb
+{% include file="rune-intro.md" variables={r: "rune:breadcrumb"} /%}
 
 Navigation breadcrumbs from a list of links. Each linked item is a navigable breadcrumb, and the last item (without a link) represents the current page.
 

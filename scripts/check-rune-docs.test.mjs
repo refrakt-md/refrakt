@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
+	introCoverage,
 	computeDrift,
 	loadPackageRunes,
 	findDocPages,
@@ -111,5 +114,48 @@ describe.skipIf(!existsSync(CLI_PATH))('rune docs are in parity (live)', () => {
 
 	it('the stale-artifact failure names the command to run', () => {
 		expect(REGENERATE_COMMAND).toBe('npm run runes:attributes');
+	});
+});
+
+describe('introCoverage (SPEC-187 D6)', () => {
+	const dir = mkdtempSync(join(tmpdir(), 'rune-intro-guard-'));
+	const pages = new Map();
+	const page = (name, body) => {
+		writeFileSync(join(dir, `${name}.md`), `---\ntitle: ${name}\ntype: rune\n---\n\n${body}`);
+		pages.set(name, { rel: `${name}.md`, isRune: true });
+	};
+	const intro = (name) =>
+		`{% include file="rune-intro.md" variables={r: "rune:${name}"} /%}\n\nText.\n`;
+	page('good', `${intro('good')}\n\`\`\`markdoc\n# A heading in an example\n\`\`\`\n`);
+	page('missing', '# Missing\n\nText.\n');
+	page('wrong', intro('other'));
+	page('late', `Some text.\n\n${intro('late')}`);
+	page(
+		'hinted',
+		`${intro('hinted')}\n{% hint type="note" %}\nThis rune is part of **@x/y**.\n{% /hint %}\n`,
+	);
+	page('titled', `${intro('titled')}\n# Titled\n`);
+	pages.set('tab', { rel: 'tab.md', isRune: true }); // pageless: never read
+	const by = (name) =>
+		introCoverage(dir, pages)
+			.filter((f) => f.page === `${name}.md`)
+			.map((f) => f.problem);
+
+	it('passes a page that opens with its intro, a heading inside a fence included', () => {
+		expect(by('good')).toEqual([]);
+	});
+	it('fails a page with no intro, or with another rune’s', () => {
+		expect(by('missing')).toEqual(['no rune intro', 'a hand-written # title']);
+		expect(by('wrong')).toEqual(['no rune intro']);
+	});
+	it('fails an intro that is not first', () => {
+		expect(by('late')).toEqual(['the intro is not the first thing on the page']);
+	});
+	it('fails the old install hint and a hand-written title', () => {
+		expect(by('hinted')).toEqual(['the install hint']);
+		expect(by('titled')).toEqual(['a hand-written # title']);
+	});
+	it('passes every rune page in this repository', () => {
+		expect(introCoverage()).toEqual([]);
 	});
 });

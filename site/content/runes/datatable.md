@@ -7,9 +7,9 @@ status: stable
 type: rune
 ---
 
-# DataTable
+{% include file="rune-intro.md" variables={r: "rune:datatable"} /%}
 
-Interactive Markdown table with sorting, filtering, and pagination. A standard Markdown table becomes an enhanced data table.
+A standard Markdown table becomes an enhanced data table.
 
 ## Basic usage
 

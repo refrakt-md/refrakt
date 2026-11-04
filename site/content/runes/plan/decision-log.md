@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/plan**. Install with `npm install @refrakt-md/plan` and add `"@refrakt-md/plan"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Decision Log
+{% include file="rune-intro.md" variables={r: "rune:decision-log"} /%}
 
 An aggregation rune that renders a chronological list of architecture decision records from the entity registry. Supports filtering by status and sorting by date or ID. The rune produces a sentinel that the pipeline resolves with real decision data.
 

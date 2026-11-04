@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Progress
+{% include file="rune-intro.md" variables={r: "rune:progress"} /%}
 
 `{% progress %}` is a generic, presentational completion bar. You give it numbers — a `value`/`max` pair or a direct `percent` — and it renders a labelled bar. It computes nothing itself: the data is always supplied, either inline or fed from an aggregate (see [Feeding from data](#feeding-from-data)).
 

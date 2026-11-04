@@ -7,13 +7,9 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/learning**. Install with `npm install @refrakt-md/learning` and add `"@refrakt-md/learning"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
+{% include file="rune-intro.md" variables={r: "rune:howto"} /%}
 
-# HowTo
-
-Step-by-step how-to instructions. Unordered lists become tools/materials needed, ordered lists become steps.
+Unordered lists become tools/materials needed, ordered lists become steps.
 
 ## Basic usage
 

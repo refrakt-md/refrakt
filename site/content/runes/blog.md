@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Blog
+{% include file="rune-intro.md" variables={r: "rune:blog"} /%}
 
 Renders a list of blog posts from a specified content folder. Posts are automatically sorted by date and can be filtered, limited, and displayed in different layouts.
 

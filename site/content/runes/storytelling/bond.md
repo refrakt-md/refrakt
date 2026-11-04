@@ -7,13 +7,9 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/storytelling**. Install with `npm install @refrakt-md/storytelling` and add `"@refrakt-md/storytelling"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
+{% include file="rune-intro.md" variables={r: "rune:bond"} /%}
 
-# Bond
-
-Relationships and connections between characters or entities. Content within the rune describes the nature and history of the relationship.
+Content within the rune describes the nature and history of the relationship.
 
 ## Basic usage
 

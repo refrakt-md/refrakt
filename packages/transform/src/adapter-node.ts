@@ -10,7 +10,11 @@ export {
 	DEFAULT_SITE_NAME,
 	SITE_FIELDS,
 } from './config-normalize.js';
-export type { NormalizedRefraktConfig, NormalizeOptions } from './config-normalize.js';
+export type {
+	NamedSiteConfig,
+	NormalizedRefraktConfig,
+	NormalizeOptions,
+} from './config-normalize.js';
 
 // Token preset loader (SPEC-048) — Node-only because it uses dynamic import
 // and require.resolve to find packaged preset modules.

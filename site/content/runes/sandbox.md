@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Sandbox
+{% include file="rune-intro.md" variables={r: "rune:sandbox"} /%}
 
 Render raw HTML, CSS, and JavaScript in an isolated iframe. The sandbox handles isolation and optional framework loading — useful for live examples, embedded widgets, and framework demos.
 

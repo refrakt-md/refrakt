@@ -133,6 +133,19 @@ always a composition, so one badge says both) and its staged definition as the s
 Whether that is a per-site data file or a value computed at build time is decided in the work
 item, and the D3 test of `staging` against `main` ({% ref "SPEC-181" /%}) must keep passing.
 
+*Amended (WORK-707):* a page could not tell which site it is rendered for. Each adapter selects its
+site with `resolveSite()` and passes only the site's config on, so the name was dropped before the
+page variables were built. So:
+
+- **A `$site` page variable**, `$site.name` the site's key in `refrakt.config.json`. Normalizing the
+  config tags each site with its key, and `buildPageContentVariables()` — the one place every page's
+  variables are built — reads it from the config it already receives. No adapter changes. An object,
+  so other site fields can join it later without a breaking change. `name` is derived: an authored
+  `name` that differs from the key is reported. A load with no site config has no `$site`.
+- **The intro data has one partition per site**, keyed by name, each from that site's resolution. On
+  `staging`, a rune resolved from `site/staged-runes/` is `staged`, its source that file. The partial
+  selects with `root=$site.name`.
+
 ### D8 — install is its own action, a drawer, built from the package
 
 The install command is neither in the Source drawer (a different reader, a different question) nor

@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/design**. Install with `npm install @refrakt-md/design` and add `"@refrakt-md/design"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Swatch
+{% include file="rune-intro.md" variables={r: "rune:swatch"} /%}
 
 An inline color chip for referencing colors within body text. Self-closing — no children needed.
 

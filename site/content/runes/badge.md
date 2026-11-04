@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Badge
+{% include file="rune-intro.md" variables={r: "rune:badge"} /%}
 
 Inline pill for flagging a piece of content. Useful for status indicators ("New", "Beta", "Deprecated"), commerce markers ("Popular", "Sale"), content categorisation ("Featured", "Sponsored"), identity ("Verified", "Staff"), recency ("Updated"), and arbitrary tagging ("Frontend", "Tutorial").
 

@@ -128,6 +128,7 @@ export function introRecords(runes, { pages, read, dirs, runeDirOf, exists, repo
 			...withSourceUrl(sourceOf(rune, { dirs, runeDirOf, exists }), repo),
 			// Markdoc's `if` treats `""` as true, so the partial tests this.
 			publishes: schemaType !== '',
+			staged: false,
 			schemaType,
 			schemaUrl: schemaType ? `https://schema.org/${schemaType}` : '',
 		});
@@ -149,9 +150,50 @@ export function repoOf(root = ROOT) {
 	return { url: site.repoUrl ?? '', branch: site.repoBranch ?? 'main' };
 }
 
-/** The artifact: one root, so a page selects its record with `root="runes"`. */
-export function renderIntro(records) {
-	return JSON.stringify({ runes: records }, null, '\t') + '\n';
+/**
+ * The partial cannot say "composed and not staged" (`$row` does not reach a
+ * function's arguments), so the record carries the badge decision itself.
+ */
+export function withBadges(record) {
+	return { ...record, compositionBadge: record.composed && !record.staged };
+}
+
+/**
+ * A site's records from `main`'s: a rune the site resolves from its project rune
+ * directory (`runes.prefer` → `__project__`, SPEC-181 D1) is staged there, and
+ * its source is the staged definition. Everything else — the package, the
+ * Install drawer, the page — is the rune it stands in for.
+ */
+export function stagedRecords(records, { runes, runesDir, repo }) {
+	const project = new Set(runes.filter((r) => r.plugin === 'project').map((r) => r.name));
+	return records.map((record) => {
+		if (!project.has(record.rune)) return record;
+		const source = `${runesDir}/${record.rune}.md`;
+		return { ...record, composed: true, staged: true, ...withSourceUrl({ source }, repo) };
+	});
+}
+
+/** The artifact: one partition per site, so a page selects its records with
+ *  `root=$site.name` (SPEC-187 D7). */
+export function renderIntro(bySite) {
+	const out = {};
+	for (const [site, records] of Object.entries(bySite)) out[site] = records.map(withBadges);
+	return JSON.stringify(out, null, '\t') + '\n';
+}
+
+/**
+ * Every site that renders this content directory, with its runes and its
+ * project rune directory, from `refrakt.config.json`. The `main` site comes
+ * first: the other sites' records are derived from its.
+ */
+export function introSites(root = ROOT) {
+	const config = JSON.parse(readFileSync(join(root, 'refrakt.config.json'), 'utf8'));
+	const sites = config.sites ?? {};
+	const contentDir = sites.main?.contentDir;
+	return Object.entries(sites)
+		.filter(([, site]) => site.contentDir === contentDir)
+		.sort(([a], [b]) => (a === 'main' ? -1 : b === 'main' ? 1 : a.localeCompare(b)))
+		.map(([name, site]) => ({ name, runesDir: site.runes?.dir?.replace(/^\.\//, '') ?? '' }));
 }
 
 /** Read everything from disk and build the records for these runes. */

@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/plan**. Install with `npm install @refrakt-md/plan` and add `"@refrakt-md/plan"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Plan Activity
+{% include file="rune-intro.md" variables={r: "rune:plan-activity"} /%}
 
 Renders a recent activity feed showing the most recently modified plan entities. Each entry displays the modification date, entity type, ID, status, and title. Status badges are color-coded using the plan status palette.
 

@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/plan**. Install with `npm install @refrakt-md/plan` and add `"@refrakt-md/plan"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Backlog
+{% include file="rune-intro.md" variables={r: "rune:backlog"} /%}
 
 An aggregation rune that renders a live view of plan entities from the entity registry. Supports filtering by any field, sorting, grouping, and capping. Use `show` to select entity types — work items, bugs, specs, decisions, or milestones. The rune produces a sentinel that the pipeline resolves with real entity data — no manual list maintenance required.
 

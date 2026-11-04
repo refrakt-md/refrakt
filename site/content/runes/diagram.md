@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Diagram
+{% include file="rune-intro.md" variables={r: "rune:diagram"} /%}
 
 Renders diagrams from code blocks using Mermaid.js. The code block content is rendered as an SVG diagram in the browser.
 

@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Juxtapose
+{% include file="rune-intro.md" variables={r: "rune:juxtapose"} /%}
 
 Interactive content comparison. A `---` separator splits content into two panels. Four interaction modes let readers compare content with a draggable slider, A/B toggle, crossfade, or scroll-triggered animation. Use the `labels` attribute to add overlay labels to each panel.
 

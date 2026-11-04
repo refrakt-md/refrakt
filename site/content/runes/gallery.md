@@ -7,9 +7,7 @@ status: stable
 type: rune
 ---
 
-# Gallery
-
-Multi-image container with grid, carousel, or masonry layout and optional lightbox overlay.
+{% include file="rune-intro.md" variables={r: "rune:gallery"} /%}
 
 ## Basic grid gallery
 

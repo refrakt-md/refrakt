@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/storytelling**. Install with `npm install @refrakt-md/storytelling` and add `"@refrakt-md/storytelling"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Character
+{% include file="rune-intro.md" variables={r: "rune:character"} /%}
 
 Character profiles for worldbuilding and storytelling. Headings within the rune are automatically converted into named sections, and the first image becomes the character portrait.
 

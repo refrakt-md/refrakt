@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/plan**. Install with `npm install @refrakt-md/plan` and add `"@refrakt-md/plan"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Spec
+{% include file="rune-intro.md" variables={r: "rune:spec"} /%}
 
 Wraps a specification document, giving it status tracking, versioning, and entity registry integration. Specs are the source of truth for what the software should do. The body is intentionally freeform — specs vary widely in shape.
 

@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Background
+{% include file="rune-intro.md" variables={r: "rune:bg"} /%}
 
 A directive rune that produces no visible output. Place `{% bg %}` as the first child of any block rune to add a background layer with images, video, overlays, blur, and positioning controls.
 

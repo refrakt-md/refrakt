@@ -51,9 +51,15 @@ export function __resetFlatShapeWarningForTests(): void {
 export interface NormalizedRefraktConfig extends RefraktConfig {
 	/** Always populated, keyed by site name. Single-site projects (flat or
 	 *  singular shape) use the key `main` (matching scaffolds). Multi-site
-	 *  projects use whatever names appear under `sites`. */
-	sites: Record<string, SiteConfig>;
+	 *  projects use whatever names appear under `sites`. Each site carries its
+	 *  key as `name` (SPEC-187 D7). */
+	sites: Record<string, NamedSiteConfig>;
 }
+
+/** A site's config as normalization returns it: the authored fields, plus the
+ *  site's key as `name`. Derived, never authored, so it is not part of
+ *  `SiteConfig` or the published config schema. */
+export type NamedSiteConfig = SiteConfig & { readonly name: string };
 
 export interface NormalizeOptions {
 	/** Path to the config file's directory. When provided, relative paths in
@@ -154,7 +160,7 @@ export function normalizeRefraktConfig(
 	}
 
 	// Build the sites map.
-	let sites: Record<string, SiteConfig>;
+	let sites: Record<string, NamedSiteConfig>;
 
 	if (hasPlural) {
 		if (typeof input.sites !== 'object' || input.sites === null || Array.isArray(input.sites)) {
@@ -171,15 +177,15 @@ export function normalizeRefraktConfig(
 			// Nested-shape paths are file-relative — absolutize against configDir
 			// when we have one so adapters see absolute paths and don't have to
 			// guess the anchor.
-			sites[name] = configDir
-				? absolutizeSitePaths(site as SiteConfig, configDir)
-				: (site as SiteConfig);
+			sites[name] = (
+				configDir ? absolutizeSitePaths(site as SiteConfig, configDir) : site
+			) as NamedSiteConfig;
 		}
 	} else if (hasSingular) {
 		const site = configDir
 			? absolutizeSitePaths(input.site as SiteConfig, configDir)
 			: (input.site as SiteConfig);
-		sites = { [DEFAULT_SITE_NAME]: site };
+		sites = { [DEFAULT_SITE_NAME]: site as NamedSiteConfig };
 	} else if (hasFlatSiteFields(input)) {
 		// Flat shape — leave paths as-is so legacy cwd-relative resolution
 		// continues to work in adapters. Deprecated in v0.12.0; will be
@@ -194,10 +200,24 @@ export function normalizeRefraktConfig(
 					`Flat shape is deprecated in v0.12 and will be removed in v1.0.`,
 			);
 		}
-		sites = { [DEFAULT_SITE_NAME]: extractFlatSite(input) };
+		sites = { [DEFAULT_SITE_NAME]: extractFlatSite(input) as NamedSiteConfig };
 	} else {
 		// Plan-only or empty config — sites map is empty but still defined.
 		sites = {};
+	}
+
+	// SPEC-187 D7 — each site carries its own key as `name`, so whatever receives a
+	// site's config (and only the config: adapters pass `resolveSite().site` on)
+	// can still say which site it is. `buildPageContentVariables` reads it into
+	// `$site.name`. Derived, never authored: an authored `name` must be the key.
+	for (const [name, site] of Object.entries(sites)) {
+		const authored = (site as { name?: unknown }).name;
+		if (authored !== undefined && authored !== name) {
+			throw new Error(
+				`refrakt.config.json: site "${name}" declares name "${String(authored)}". A site's name is its key in "sites"; remove the field.`,
+			);
+		}
+		sites[name] = { ...site, name };
 	}
 
 	// Build the normalized config. When there is exactly one site, mirror its
@@ -353,7 +373,7 @@ function mirrorSiteToTopLevel(site: SiteConfig, target: NormalizedRefraktConfig)
 export function resolveSite(
 	config: NormalizedRefraktConfig,
 	requested?: string,
-): { name: string; site: SiteConfig } {
+): { name: string; site: NamedSiteConfig } {
 	const entries = Object.entries(config.sites);
 	if (entries.length === 0) {
 		throw new Error(

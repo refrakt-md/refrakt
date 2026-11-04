@@ -7,9 +7,9 @@ status: stable
 type: rune
 ---
 
-# Section
+{% include file="rune-intro.md" variables={r: "rune:section"} /%}
 
-A generic page section: a short **header** — eyebrow, headline, blurb — above an **arbitrary body**. Use it to introduce any content block with a title and intro, especially primitives that have no header of their own like [`bento`](/runes/marketing/bento), a grid of [cards](/runes/card), or a [collection](/runes/collection).
+Use it to introduce any content block with a title and intro, especially primitives that have no header of their own like [`bento`](/runes/marketing/bento), a grid of [cards](/runes/card), or a [collection](/runes/collection).
 
 The header is anchored to the headline, written as a heading at the start of the section. A paragraph directly before it is the eyebrow, and a paragraph directly after it is the blurb. Everything else is the body. A section that does not start with a heading, or with one paragraph and then a heading, has no header: all of its content is body, so prose placed in a section is never re-read as an eyebrow.
 

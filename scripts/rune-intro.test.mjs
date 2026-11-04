@@ -4,13 +4,14 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
 	INTRO_PATH,
-	buildIntro,
 	frontmatterOf,
 	introRecords,
 	renderIntro,
+	stagedRecords,
+	withBadges,
 	sourceOf,
 } from './rune-intro.mjs';
-import { readSites } from './generate-rune-attributes.mjs';
+import { buildIntroBySite, readSites } from './generate-rune-attributes.mjs';
 import { findDocPages } from './check-rune-docs.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -121,8 +122,54 @@ describe('the rune intro records (WORK-705)', () => {
 	});
 });
 
+describe('the staged state (D7)', () => {
+	const main = [
+		{
+			rune: 'steps',
+			composed: false,
+			staged: false,
+			source: 'plugins/m/src/tags/steps.ts',
+			package: '@x/m',
+		},
+		{
+			rune: 'hero',
+			composed: true,
+			staged: false,
+			source: 'plugins/m/runes/hero.md',
+			package: '@x/m',
+		},
+	];
+	const repo = { url: 'https://github.com/acme/site', branch: 'main' };
+
+	it('marks a rune the site resolves from its project rune directory as staged', () => {
+		const out = stagedRecords(main, {
+			runes: [
+				{ name: 'steps', plugin: 'project' },
+				{ name: 'hero', plugin: '@x/m' },
+			],
+			runesDir: 'site/staged-runes',
+			repo,
+		});
+		expect(out[0]).toMatchObject({
+			composed: true,
+			staged: true,
+			package: '@x/m',
+			source: 'site/staged-runes/steps.md',
+			sourceUrl: 'https://github.com/acme/site/blob/main/site/staged-runes/steps.md',
+		});
+		expect(out[1]).toBe(main[1]);
+	});
+
+	it('shows Composition only for a composed rune that is not staged', () => {
+		expect(withBadges({ composed: true, staged: false }).compositionBadge).toBe(true);
+		expect(withBadges({ composed: true, staged: true }).compositionBadge).toBe(false);
+		expect(withBadges({ composed: false, staged: false }).compositionBadge).toBe(false);
+	});
+});
+
 describe('the committed intro data (live)', () => {
-	const { runes: records } = JSON.parse(readFileSync(INTRO_PATH, 'utf8'));
+	const artifact = JSON.parse(readFileSync(INTRO_PATH, 'utf8'));
+	const records = artifact.main;
 	const by = Object.fromEntries(records.map((r) => [r.rune, r]));
 
 	it('covers every rune reference page', () => {
@@ -135,12 +182,21 @@ describe('the committed intro data (live)', () => {
 	});
 
 	it('matches what the runes and pages produce today', async () => {
-		const seen = new Map();
-		for (const { runes } of readSites())
-			for (const r of runes) if (!seen.has(r.name)) seen.set(r.name, r);
-		const fresh = renderIntro(await buildIntro([...seen.values()]));
+		const fresh = renderIntro(await buildIntroBySite(readSites()));
 		expect(readFileSync(INTRO_PATH, 'utf8'), 'run `npm run runes:attributes`').toBe(fresh);
 	}, 60000);
+
+	it('has a partition per site that renders this content, main first (D7)', () => {
+		expect(Object.keys(artifact)).toEqual(['main', 'staging']);
+		expect(artifact.staging.map((r) => r.rune)).toEqual(records.map((r) => r.rune));
+		const staged = artifact.staging.filter((r) => r.staged);
+		expect(staged.map((r) => r.rune)).toEqual(['steps']);
+		expect(staged[0]).toMatchObject({
+			source: 'site/staged-runes/steps.md',
+			compositionBadge: false,
+		});
+		expect(records.some((r) => r.staged)).toBe(false);
+	});
 
 	it('marks the live compositions, and only them', () => {
 		expect(records.filter((r) => r.composed).map((r) => r.rune)).toEqual([

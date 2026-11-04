@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Embed
+{% include file="rune-intro.md" variables={r: "rune:embed"} /%}
 
 Embed external content from popular platforms. URLs are automatically detected and converted to the appropriate embed format. Supports YouTube, Vimeo, Twitter/X, CodePen, and Spotify.
 

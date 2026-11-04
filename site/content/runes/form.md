@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Form
+{% include file="rune-intro.md" variables={r: "rune:form"} /%}
 
 Transform Markdown into fully functional, accessible HTML forms. Lists become input fields with types inferred from their names, blockquotes introduce selection groups, and headings create fieldsets.
 

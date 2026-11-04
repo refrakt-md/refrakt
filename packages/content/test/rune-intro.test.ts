@@ -28,6 +28,8 @@ const record = (over: Record<string, unknown> = {}) => ({
 	composed: true,
 	source: 'plugins/widgets/runes/widget.md',
 	publishes: false,
+	staged: false,
+	compositionBadge: true,
 	schemaType: '',
 	schemaUrl: '',
 	sourceUrl: 'https://github.com/acme/widgets/blob/main/plugins/widgets/runes/widget.md',
@@ -37,6 +39,7 @@ const record = (over: Record<string, unknown> = {}) => ({
 describe('the rune intro partial (WORK-706)', () => {
 	let root: string;
 	let site: Awaited<ReturnType<typeof loadContent>>;
+	let staging: Awaited<ReturnType<typeof loadContent>>;
 	const page = (url: string) => site.pages.find((p) => p.route.url === url)!;
 	const json = (url: string) => JSON.stringify(page(url).renderable);
 	// biome-ignore lint/suspicious/noExplicitAny: a rendered tree is untyped JSON
@@ -65,7 +68,7 @@ describe('the rune intro partial (WORK-706)', () => {
 		writeFileSync(
 			path.join(content, '_data', 'rune-intro.json'),
 			JSON.stringify({
-				runes: [
+				main: [
 					record(),
 					record({
 						rune: 'gadget',
@@ -76,6 +79,7 @@ describe('the rune intro partial (WORK-706)', () => {
 						plugin: false,
 						core: true,
 						composed: false,
+						compositionBadge: false,
 						source: 'plugins/widgets/runes/widget.md',
 						publishes: true,
 						schemaType: 'HowTo',
@@ -84,23 +88,25 @@ describe('the rune intro partial (WORK-706)', () => {
 						unstable: true,
 					}),
 				],
+				staging: [
+					record({
+						staged: true,
+						compositionBadge: false,
+						source: 'site/staged-runes/widget.md',
+					}),
+				],
 			}),
 		);
 		const intro = (r: string) =>
 			`{% include file="rune-intro.md" variables={r: "rune:${r}"} /%}\n\n## Basic usage\n\nText.\n`;
 		writeFileSync(path.join(content, 'widget.md'), `---\ntitle: Widget\n---\n\n${intro('widget')}`);
 		writeFileSync(path.join(content, 'gadget.md'), `---\ntitle: Gadget\n---\n\n${intro('gadget')}`);
-		site = await loadContent(
-			content,
-			'/',
-			undefined,
-			undefined,
-			undefined,
-			undefined,
-			undefined,
-			undefined,
-			/* projectRoot */ root,
-		);
+		mkdirSync(path.join(root, 'site', 'staged-runes'), { recursive: true });
+		writeFileSync(path.join(root, 'site', 'staged-runes', 'widget.md'), 'STAGED-DEFINITION-BODY\n');
+		const load = (name: string) =>
+			loadContent(content, { projectRoot: root, siteConfig: { name } } as never);
+		site = await load('main');
+		staging = await load('staging');
 	});
 
 	afterAll(() => rmSync(root, { recursive: true, force: true }));
@@ -162,6 +168,14 @@ describe('the rune intro partial (WORK-706)', () => {
 		expect(out).toContain('npm install ');
 		expect(out).toContain('@acme/widgets');
 		expect(out).not.toContain('schema.org');
+	});
+
+	it('on staging, a staged rune shows Staged in place of Composition, and its staged source (D7)', () => {
+		const out = JSON.stringify(staging.pages.find((p) => p.route.url === '/widget')!.renderable);
+		expect(out).toContain('Staged');
+		expect(out).not.toContain('Composition');
+		expect(out).toContain('STAGED-DEFINITION-BODY');
+		expect(json('/widget')).not.toContain('Staged');
 	});
 
 	it('a native core rune: no Composition badge, no Install, a status and a schema.org badge', () => {

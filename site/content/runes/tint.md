@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Tint
+{% include file="rune-intro.md" variables={r: "rune:tint"} /%}
 
 Override colour tokens within a single rune's scope. The tint rune produces no visible output — it modifies how the containing section renders by setting `--tint-*` CSS custom properties and `data-tint` attributes.
 

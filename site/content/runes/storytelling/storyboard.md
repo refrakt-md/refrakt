@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/storytelling**. Install with `npm install @refrakt-md/storytelling` and add `"@refrakt-md/storytelling"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Storyboard
+{% include file="rune-intro.md" variables={r: "rune:storyboard"} /%}
 
 Comic/storyboard layout. Images become panels, following paragraphs become captions.
 

@@ -7,13 +7,9 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/marketing**. Install with `npm install @refrakt-md/marketing` and add `"@refrakt-md/marketing"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
+{% include file="rune-intro.md" variables={r: "rune:testimonial"} /%}
 
-# Testimonial
-
-Customer testimonials. A blockquote becomes the testimonial text, and a paragraph with `**Name** — Role, Company` after it becomes the attribution: the name, and the role or organisation beneath it.
+A blockquote becomes the testimonial text, and a paragraph with `**Name** — Role, Company` after it becomes the attribution: the name, and the role or organisation beneath it.
 
 The `author` and `role` attributes give the same attribution without the paragraph, for generated content or a byline you do not want in a plain-Markdown rendering. Use one form or the other: when both are written, the attribute wins.
 

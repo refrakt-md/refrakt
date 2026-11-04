@@ -7,9 +7,9 @@ status: stable
 type: rune
 ---
 
-# Xref
+{% include file="rune-intro.md" variables={r: "rune:xref"} /%}
 
-Inline cross-reference that resolves an entity by ID or name through the entity registry. The author provides an identifier — the system finds the page, constructs the link, and uses the entity's title as link text. Self-closing tag.
+The author provides an identifier — the system finds the page, constructs the link, and uses the entity's title as link text. Self-closing tag.
 
 {% hint type="note" %}
 The `xref` rune requires the cross-page pipeline (Level 2). At Level 1 (static transform), references render as plain text.

@@ -7,9 +7,9 @@ status: stable
 type: rune
 ---
 
-# Details
+{% include file="rune-intro.md" variables={r: "rune:details"} /%}
 
-Collapsible disclosure block for supplementary content. Renders as a native `<details>` element.
+Renders as a native `<details>` element.
 
 ## Basic usage
 

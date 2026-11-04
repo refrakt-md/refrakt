@@ -7,13 +7,9 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/media**. Install with `npm install @refrakt-md/media` and add `"@refrakt-md/media"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
+{% include file="rune-intro.md" variables={r: "rune:playlist"} /%}
 
-# Playlist
-
-Curated track listings for albums, podcasts, audiobooks, and mixes. A heading becomes the playlist title, an image becomes the cover art, a paragraph becomes the description, and a list becomes the track listing. Bold text in each list item is the track name, parenthetical text is the duration, and italic text is the per-track artist.
+A heading becomes the playlist title, an image becomes the cover art, a paragraph becomes the description, and a list becomes the track listing. Bold text in each list item is the track name, parenthetical text is the duration, and italic text is the per-track artist.
 
 ## Basic usage
 

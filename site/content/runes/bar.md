@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Bar
+{% include file="rune-intro.md" variables={r: "rune:bar"} /%}
 
 A bar is a horizontal row that flags context: an identifier on the left, a status badge on the right; a date and a category; a breadcrumb and an action. The `{% bar %}` rune is the user-authoring handle for the SPEC-080 `bar` layout primitive — the same DOM and CSS as a projected metadata block rendered with `layout: 'bar'`.
 

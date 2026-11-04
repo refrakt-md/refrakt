@@ -8,9 +8,9 @@ status: stable
 type: rune
 ---
 
-# Pagination
+{% include file="rune-intro.md" variables={r: "rune:pagination"} /%}
 
-Sequential prev/next links for ordered reading flows — tutorials, ordered docs, recipes. Where `breadcrumb` shows hierarchy and `nav` shows the broader index, `pagination` covers the "next page" affordance for a reader moving through pages in order.
+Where `breadcrumb` shows hierarchy and `nav` shows the broader index, `pagination` covers the "next page" affordance for a reader moving through pages in order.
 
 ## Basic usage
 

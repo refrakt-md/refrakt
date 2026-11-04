@@ -7,13 +7,9 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/docs**. Install with `npm install @refrakt-md/docs` and add `"@refrakt-md/docs"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
+{% include file="rune-intro.md" variables={r: "rune:changelog"} /%}
 
-# Changelog
-
-Version history and release notes. Headings with a `v1.0.0 - date` pattern are automatically converted into release entries.
+Headings with a `v1.0.0 - date` pattern are automatically converted into release entries.
 
 ## Heading-based changelog
 

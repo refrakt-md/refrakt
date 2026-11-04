@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/marketing**. Install with `npm install @refrakt-md/marketing` and add `"@refrakt-md/marketing"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Feature
+{% include file="rune-intro.md" variables={r: "rune:feature"} /%}
 
 Feature showcases. List items become feature definitions — bold text is the feature name, the following paragraph is the description.
 

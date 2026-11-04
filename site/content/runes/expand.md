@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Expand
+{% include file="rune-intro.md" variables={r: "rune:expand"} /%}
 
 `{% expand %}` resolves a registered entity by id and substitutes the entity's source content **inline** at the point of reference. Symmetric with `{% ref %}` — same registry lookup chain, same disambiguation rules — but the output is the entity's actual content, not a link.
 

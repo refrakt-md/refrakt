@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Deflist
+{% include file="rune-intro.md" variables={r: "rune:deflist"} /%}
 
 A definition list rendered via the SPEC-079 `definition-list` layout primitive. Each list item starting with `**Term:**` becomes a `<dt>` / `<dd>` pair; the layout stacks dt above dd by default and flows into multiple columns at wider widths via `grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr))`.
 

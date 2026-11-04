@@ -7,13 +7,9 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/media**. Install with `npm install @refrakt-md/media` and add `"@refrakt-md/media"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
+{% include file="rune-intro.md" variables={r: "rune:track"} /%}
 
-# Track
-
-A standalone track or recording with metadata. A heading becomes the track name. Use attributes for artist, duration, and other metadata. Tracks can be used independently or inside a `playlist` rune.
+A heading becomes the track name. Use attributes for artist, duration, and other metadata. Tracks can be used independently or inside a `playlist` rune.
 
 ## Basic usage
 

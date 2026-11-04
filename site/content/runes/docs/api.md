@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/docs**. Install with `npm install @refrakt-md/docs` and add `"@refrakt-md/docs"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# API
+{% include file="rune-intro.md" variables={r: "rune:api"} /%}
 
 API endpoint documentation. Headings become the endpoint title, tables become parameter lists, code blocks become request/response examples, and blockquotes become notes.
 

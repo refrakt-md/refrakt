@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/places**. Install with `npm install @refrakt-md/places` and add `"@refrakt-md/places"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Map
+{% include file="rune-intro.md" variables={r: "rune:map"} /%}
 
 Transform lists of locations into interactive maps. Supports named pins with coordinates or addresses, route lines, and grouped layers.
 

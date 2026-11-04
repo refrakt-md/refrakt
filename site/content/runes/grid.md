@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Grid
+{% include file="rune-intro.md" variables={r: "rune:grid"} /%}
 
 Flexible grid layout. Children separated by horizontal rules (`---`) become cells arranged in a responsive CSS grid. Supports explicit column spans, auto-fill mode, masonry, aspect ratio enforcement, and responsive collapse.
 

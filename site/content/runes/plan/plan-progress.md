@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/plan**. Install with `npm install @refrakt-md/plan` and add `"@refrakt-md/plan"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Plan Progress
+{% include file="rune-intro.md" variables={r: "rune:plan-progress"} /%}
 
 A completion overview built from the plan registry: **one block per entity type** — a heading, a progress bar showing how far that type has reached its done-state, and a row of per-status badges. It's thin sugar over the generic [`aggregate`](/runes/aggregate) rune, so the counting happens at build time against live registry data — no manual tallies.
 
