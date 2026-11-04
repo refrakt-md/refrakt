@@ -1,4 +1,4 @@
-{% spec id="SPEC-193" status="draft" tags="docs, runes, simplification, examples, themes, adapters" %}
+{% spec id="SPEC-193" status="accepted" tags="docs, runes, simplification, examples, themes, adapters" %}
 
 # Rune docs, simplified: each page is for the reader who opens it
 
@@ -270,6 +270,43 @@ as data the examples read). `plan/cli.md` moves to `docs/cli/` and gains the mis
 - **Terminology:** one scaffold command, one target name, one spelling (`color`,
   `Internationalization`).
 
+### D9 — a rune's category is stated once, and the nav follows it
+
+A rune's category is written in three places today: the rune nav in `site/content/runes/_layout.md`
+(hand-ordered), the page's `category:` frontmatter (which the catalogue groups by), and the rune
+definition's `category:` (`packages/runes/src/index.ts` and each plugin's `index.ts`, read by the
+editor and tooling). They drift, and the nav is in no order.
+
+- **The page frontmatter is the source.** A test fails when a rune definition's `category`
+  differs from its page's.
+- **The rune nav is grouped by that category and alphabetical within each group**, by title. A
+  plugin's runes stay grouped by plugin, its overview page first, then its runes alphabetically.
+- **A test holds the nav to it:** an item in the wrong group, out of order, or a rune page missing
+  from the nav fails. `nav auto` lists a page's children but cannot group by a frontmatter field,
+  so generating the nav is a follow-up (a `nav` that groups by a field), not part of this spec.
+
+### D10 — the core runes are grouped by what the author is doing
+
+Today's five core categories put card in Content and section in Layout, though card is a section
+with a surface (and is becoming a composition over it); include under Code & Data, though it is
+reuse; sandbox under Layout; bg and tint under Layout, though they set a background and a scheme;
+reveal under Content, beside nothing like it. The core runes regroup into nine:
+
+| Category | Runes |
+|---|---|
+| Sections & blocks | section, card, mediatext, figure, hint, conversation, deflist, bar, actions, progress, embed |
+| Text & inline | link, badge, icon, code, annotate, sidenote, pullquote, textblock |
+| Arrangement | grid, gallery, juxtapose, showcase, drawer |
+| Disclosure | tabs, accordion, details, reveal |
+| Backgrounds & color | bg, tint |
+| Code | codegroup, compare, diff, snippet, sandbox, diagram |
+| Data | data, datatable, chart, budget, form |
+| Reuse & references | include, xref, expand, file-ref, collection, relationships, aggregate |
+| Site | layout, nav, pagination, toc, breadcrumb, blog |
+
+The nav's "Essentials" group keeps only the catalogue once the concept guides move (D7). A rune
+added later takes one of these categories, or the spec that adds it names a new one.
+
 ## Not in scope
 
 - **New content.** This spec removes, moves and rewrites; it adds only the "when to use this" lines
@@ -294,20 +331,23 @@ as data the examples read). `plan/cli.md` moves to `docs/cli/` and gains the mis
 
 Sized to land independently, roughly in this order:
 
-1. **The rune page template** (D1): written down in `extend/`; the attribute partial renders a
+1. **Categories and nav** (D9, D10): the new categories in page frontmatter and rune
+   definitions, the rune nav regrouped and alphabetical, and the tests that hold both. First,
+   because it moves every page in the nav.
+2. **The rune page template** (D1): written down in `extend/`; the attribute partial renders a
    rune's family; one attribute include per page; `check-rune-docs` extended.
-2. **Output and implementation sections** (D2) off the rune pages.
-3. **Hand-written attribute tables** (D3), and the orphaned rows.
-4. **Plan IDs and history** (D4): the facet descriptions in `packages/transform`, the published
+3. **Output and implementation sections** (D2) off the rune pages.
+4. **Hand-written attribute tables** (D3), and the orphaned rows.
+5. **Plan IDs and history** (D4): the facet descriptions in `packages/transform`, the published
    pages, the guard.
-5. **"Section header" → "How Markdown is read"** (D6), with a "when to use this" line on each rune
+6. **"Section header" → "How Markdown is read"** (D6), with a "when to use this" line on each rune
    that has a neighbour (D1.2).
-6. **Examples** (D5): fences to previews, variants folded, real content, sandbox and mockup payloads
+7. **Examples** (D5): fences to previews, variants folded, real content, sandbox and mockup payloads
    to `site/examples/`.
-7. **Concept guides and fixtures** out of the catalogue (D7).
-8. **Docs: getting started and adapters** (D8).
-9. **Docs: theme presets, one home per topic, navigation, terminology** (D8).
-10. **Page-by-page simplification** of the longest pages once the above have landed: sandbox,
+8. **Concept guides and fixtures** out of the catalogue (D7).
+9. **Docs: getting started and adapters** (D8).
+10. **Docs: theme presets, one home per topic, navigation, terminology** (D8).
+11. **Page-by-page simplification** of the longest pages once the above have landed: sandbox,
     snippet, data, xref, expand, drawer, tint, card, bg, mockup, bento, hero, feature, plan-history,
     backlog.
 
