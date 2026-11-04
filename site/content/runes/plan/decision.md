@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/plan**. Install with `npm install @refrakt-md/plan` and add `"@refrakt-md/plan"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Decision
+{% include file="rune-intro.md" variables={r: "rune:decision"} /%}
 
 Architecture decision record. Captures the context, options considered, the decision made, the rationale, and the consequences. The most important rune in the package for AI-native workflows — without decision records, every AI session starts from zero context.
 

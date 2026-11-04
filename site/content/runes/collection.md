@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Collection
+{% include file="rune-intro.md" variables={r: "rune:collection"} /%}
 
 `{% collection %}` queries the [entity registry](/docs/authoring/entities) for *many* entities and projects them into a layout. It's the plural counterpart to `{% ref %}` (one entity → a link) and `{% expand %}` (one entity → inlined content): where those consume a single entity, `collection` selects a set — by type, with a `field:value` filter, sorted/grouped/limited — and renders each item.
 

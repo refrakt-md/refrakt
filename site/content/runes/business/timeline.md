@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/business**. Install with `npm install @refrakt-md/business` and add `"@refrakt-md/business"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Timeline
+{% include file="rune-intro.md" variables={r: "rune:timeline"} /%}
 
 Chronological events. Headings with a `date - label` pattern are automatically converted into timeline entries.
 

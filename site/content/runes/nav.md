@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Nav
+{% include file="rune-intro.md" variables={r: "rune:nav"} /%}
 
 `nav` is the single primitive refrakt uses for every kind of structural navigation — sidebars, header menubars, footer link columns, and section landing pages. The content model is identical in every case (grouped or flat lists of links / page slugs); the `layout` attribute selects the presentation.
 

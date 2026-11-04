@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Sidenote
+{% include file="rune-intro.md" variables={r: "rune:sidenote"} /%}
 
 Margin notes, footnotes, or tooltips displayed alongside the main content. Useful for providing additional context without interrupting the reading flow.
 

@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Drawer
+{% include file="rune-intro.md" variables={r: "rune:drawer"} /%}
 
 A body-only rune that declares a richer-than-a-tooltip, lighter-than-a-navigation panel. Trigger it from anywhere on the page via `{% ref "drawer-id" /%}`; without JS the body renders as an in-flow callout at its authored position so readers always have access to the content. With JS, the body is enhanced into a `<dialog>` and the xref click opens it as a modal — esc-to-close, focus trap, and `inert` background come from the platform.
 

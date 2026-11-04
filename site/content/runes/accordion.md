@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Accordion
+{% include file="rune-intro.md" variables={r: "rune:accordion"} /%}
 
 Collapsible accordion sections. Use explicit `{% accordion-item %}` tags, or write headings directly and they will be automatically converted into accordion panels.
 

@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/storytelling**. Install with `npm install @refrakt-md/storytelling` and add `"@refrakt-md/storytelling"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Realm
+{% include file="rune-intro.md" variables={r: "rune:realm"} /%}
 
 Location and place profiles for worldbuilding. Headings within the rune become named sections, and the first image is extracted as a scene illustration.
 

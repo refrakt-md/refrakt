@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/design**. Install with `npm install @refrakt-md/design` and add `"@refrakt-md/design"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Design Context
+{% include file="rune-intro.md" variables={r: "rune:design-context"} /%}
 
 Wraps palette, typography, and spacing runes into a unified token card. Registers design tokens in the build pipeline so they can be injected as CSS custom properties into sandbox runes anywhere on the site.
 

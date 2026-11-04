@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/marketing**. Install with `npm install @refrakt-md/marketing` and add `"@refrakt-md/marketing"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Bento
+{% include file="rune-intro.md" variables={r: "rune:bento"} /%}
 
 A grid of cells. Each cell is a small card living in a grid track. There are two ways to author one — **heading sugar** (each heading becomes a cell, its depth setting the tile size) or **explicit cells** (`{% bento-cell %}` for precise per-tile control). Bento is a grid primitive, not a page-section: it has no eyebrow/title/blurb header. To title a grid, wrap it in a `feature` or section.
 

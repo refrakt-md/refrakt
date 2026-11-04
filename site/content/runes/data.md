@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Data
+{% include file="rune-intro.md" variables={r: "rune:data"} /%}
 
 Feed charts and sortable tables from real data files instead of hand-typed Markdown tables. The `data` rune reads an external tabular source at build time, shapes it (filter, sort, select, type), and emits a plain `<table>` — which `{% chart %}` and `{% datatable %}` consume with no extra work, and which stands on its own as the no-JS fallback.
 

@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Include
+{% include file="rune-intro.md" variables={r: "rune:include"} /%}
 
 `{% include %}` pastes a shared file's content into the page, like `{% partial %}` — but early enough that `{% data %}` and `{% snippet %}` inside that file resolve.
 

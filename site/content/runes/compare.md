@@ -7,9 +7,9 @@ status: stable
 type: rune
 ---
 
-# Compare
+{% include file="rune-intro.md" variables={r: "rune:compare"} /%}
 
-Side-by-side code comparison. Each fenced code block becomes a labeled panel. Labels default to the code block's language.
+Each fenced code block becomes a labeled panel. Labels default to the code block's language.
 
 ## Basic usage
 

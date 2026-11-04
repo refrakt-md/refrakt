@@ -7,9 +7,9 @@ status: stable
 type: rune
 ---
 
-# Codegroup
+{% include file="rune-intro.md" variables={r: "rune:codegroup"} /%}
 
-Display code blocks with terminal-style chrome. Multiple fences become a tabbed view with language-based tab names. A single fence without labels renders as a clean code block with just the chrome — no tabs.
+Multiple fences become a tabbed view with language-based tab names. A single fence without labels renders as a clean code block with just the chrome — no tabs.
 
 ## Basic usage
 

@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# TextBlock
+{% include file="rune-intro.md" variables={r: "rune:textblock"} /%}
 
 Typography-focused text wrapper for magazine-style layouts. Adds drop caps, multi-column text, lead paragraph styling, and text alignment without any custom markup inside the content.
 

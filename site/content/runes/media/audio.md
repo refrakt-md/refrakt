@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/media**. Install with `npm install @refrakt-md/media` and add `"@refrakt-md/media"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Audio
+{% include file="rune-intro.md" variables={r: "rune:audio"} /%}
 
 An audio player element. Supports waveform visualisation, inline chapter markers, and connection to a named `playlist` rune. A paragraph becomes the description, and a list becomes inline chapter markers with timestamps.
 

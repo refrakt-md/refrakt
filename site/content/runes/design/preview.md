@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/design**. Install with `npm install @refrakt-md/design` and add `"@refrakt-md/design"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Preview
+{% include file="rune-intro.md" variables={r: "rune:preview"} /%}
 
 A component showcase wrapper that renders content in a framed environment with a theme toggle toolbar and responsive viewport simulation. Useful for documentation sites, design systems, and theme demonstrations.
 

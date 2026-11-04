@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Snippet
+{% include file="rune-intro.md" variables={r: "rune:snippet"} /%}
 
 Embed the contents of a file as a syntax-highlighted code block. The file lives anywhere in your project tree (relative to the project root); refrakt reads it at build time, slices it by line range if you ask, and renders it like any other fenced code block. When the source file changes, the embedded version updates automatically on the next build — no copy-paste drift.
 

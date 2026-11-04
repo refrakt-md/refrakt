@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Layout & Region
+{% include file="rune-intro.md" variables={r: "rune:layout"} /%}
 
 Structural runes that define page layout. `{% layout %}` wraps the entire layout file. `{% region %}` defines named content areas (header, nav, sidebar, footer) that render in specific positions within the theme's layout component.
 

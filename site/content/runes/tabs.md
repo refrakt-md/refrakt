@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Tabs
+{% include file="rune-intro.md" variables={r: "rune:tabs"} /%}
 
 Tabbed content panels. Headings become tab labels, the content below each heading becomes the tab panel.
 

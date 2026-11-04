@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Relationships
+{% include file="rune-intro.md" variables={r: "rune:relationships"} /%}
 
 `{% relationships %}` renders the **relationship edges** of one entity — what it implements, what blocks it, who it allies with — grouped by kind. It's the graph counterpart to [`collection`](/runes/collection): where `collection` selects a *set* of entities by a `field:value` query, `relationships` projects the *edges* touching a single entity, read from the registry's [relationship graph](/docs/authoring/entities#relationships).
 

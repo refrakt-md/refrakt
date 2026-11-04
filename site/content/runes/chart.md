@@ -7,9 +7,9 @@ status: stable
 type: rune
 ---
 
-# Chart
+{% include file="rune-intro.md" variables={r: "rune:chart"} /%}
 
-Turns a Markdown table into a chart. The first column becomes axis labels, the header row becomes series names, and data cells become values.
+The first column becomes axis labels, the header row becomes series names, and data cells become values.
 
 ## Bar chart
 

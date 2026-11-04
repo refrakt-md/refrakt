@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# PullQuote
+{% include file="rune-intro.md" variables={r: "rune:pullquote"} /%}
 
 A featured quotation: a statement presented for its own sake, set apart from the text with who said it. With `excerpt`, a pull quote: words from the text around it, repeated large for a skimming eye.
 

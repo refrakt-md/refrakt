@@ -7,11 +7,7 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/learning**. Install with `npm install @refrakt-md/learning` and add `"@refrakt-md/learning"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
-
-# Recipe
+{% include file="rune-intro.md" variables={r: "rune:recipe"} /%}
 
 Structured recipe content. Unordered lists become ingredients, ordered lists become steps, and blockquotes become chef's tips.
 

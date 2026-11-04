@@ -7,9 +7,9 @@ status: stable
 type: rune
 ---
 
-# Icon
+{% include file="rune-intro.md" variables={r: "rune:icon"} /%}
 
-Inline SVG icons resolved by name from the theme's icon registry. Self-closing tag that produces an inline `<svg>` element inheriting `currentColor` for theme-adaptive coloring.
+Self-closing tag that produces an inline `<svg>` element inheriting `currentColor` for theme-adaptive coloring.
 
 ## Basic usage
 

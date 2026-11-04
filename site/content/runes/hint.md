@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Hint
+{% include file="rune-intro.md" variables={r: "rune:hint"} /%}
 
 Callouts and admonitions. Supports four types: `note`, `warning`, `caution`, and `check`.
 

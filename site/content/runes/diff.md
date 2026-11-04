@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Diff
+{% include file="rune-intro.md" variables={r: "rune:diff"} /%}
 
 Renders the difference between two code blocks. The first code block is the "before" state, the second is the "after" state.
 

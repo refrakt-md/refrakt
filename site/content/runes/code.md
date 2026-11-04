@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Code
+{% include file="rune-intro.md" variables={r: "rune:code"} /%}
 
 An inline code span you can put a **variable** inside.
 

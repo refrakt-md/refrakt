@@ -7,9 +7,7 @@ status: stable
 type: rune
 ---
 
-# Table of Contents
-
-Auto-generated table of contents from the headings on the current page.
+{% include file="rune-intro.md" variables={r: "rune:toc"} /%}
 
 ## Basic usage
 

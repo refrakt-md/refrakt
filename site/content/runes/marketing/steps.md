@@ -7,13 +7,9 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/marketing**. Install with `npm install @refrakt-md/marketing` and add `"@refrakt-md/marketing"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
+{% include file="rune-intro.md" variables={r: "rune:steps"} /%}
 
-# Steps
-
-Step-by-step instructions with numbered indicators. Ordered list items become individual steps.
+Ordered list items become individual steps.
 
 ## Basic usage
 

@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Conversation
+{% include file="rune-intro.md" variables={r: "rune:conversation"} /%}
 
 Chat-style dialogue display. Blockquotes become alternating speaker messages with a chat bubble UI.
 

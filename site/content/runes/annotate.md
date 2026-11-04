@@ -7,9 +7,9 @@ status: stable
 type: rune
 ---
 
-# Annotate
+{% include file="rune-intro.md" variables={r: "rune:annotate"} /%}
 
-Annotated content with margin notes. Regular content flows normally while nested note tags appear as annotations alongside the text.
+Regular content flows normally while nested note tags appear as annotations alongside the text.
 
 ## Margin notes
 

@@ -7,13 +7,9 @@ status: stable
 type: rune
 ---
 
-{% hint type="note" %}
-This rune is part of **@refrakt-md/plan**. Install with `npm install @refrakt-md/plan` and add `"@refrakt-md/plan"` to the `plugins` array in your `refrakt.config.json`.
-{% /hint %}
+{% include file="rune-intro.md" variables={r: "rune:plan-history"} /%}
 
-# Plan History
-
-Renders a timeline of lifecycle events for plan entities, derived directly from git history. Every status transition, priority change, criteria check-off, and resolution is extracted from consecutive commits — no separate activity log or event database required.
+Every status transition, priority change, criteria check-off, and resolution is extracted from consecutive commits — no separate activity log or event database required.
 
 This is a self-closing aggregation rune. The pipeline's aggregate hook extracts history from git during the build, and the postProcess hook resolves the sentinel into a styled vertical timeline.
 

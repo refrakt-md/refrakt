@@ -7,9 +7,9 @@ status: stable
 type: rune
 ---
 
-# Budget
+{% include file="rune-intro.md" variables={r: "rune:budget"} /%}
 
-Structured budgets with categories and line items. Headings become budget categories, and list items with a "Description: $amount" pattern are parsed into line items with automatic subtotals.
+Headings become budget categories, and list items with a "Description: $amount" pattern are parsed into line items with automatic subtotals.
 
 ## Basic usage
 

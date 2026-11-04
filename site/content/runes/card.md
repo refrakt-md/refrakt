@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Card
+{% include file="rune-intro.md" variables={r: "rune:card"} /%}
 
 `{% card %}` is a generic content card: a bordered surface with an optional media zone, a body, and an optional footer. It carries no knowledge of the registry or `$item` — it's a plain presentational component you can drop into prose, or feed from a [`collection`](/runes/collection) body template.
 

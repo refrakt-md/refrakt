@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Mockup
+{% include file="rune-intro.md" variables={r: "rune:mockup"} /%}
 
 Wrap any content in a realistic device frame. Choose from phones, tablets, browsers, and laptops to show how content looks in context.
 

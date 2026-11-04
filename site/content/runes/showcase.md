@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Showcase
+{% include file="rune-intro.md" variables={r: "rune:showcase"} /%}
 
 Present visual content in a constrained viewport with optional decorative chrome. The showcase rune wraps images, videos, or embedded content — useful for screenshots, product shots, or component previews.
 

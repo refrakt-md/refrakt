@@ -7,7 +7,7 @@ status: stable
 type: rune
 ---
 
-# Aggregate
+{% include file="rune-intro.md" variables={r: "rune:aggregate"} /%}
 
 `{% aggregate %}` queries the [entity registry](/docs/authoring/entities) and projects **numbers** — counts (and, in time, sums / averages) over the same `field:value` grammar [`collection`](/runes/collection) and [`relationships`](/runes/relationships) use. It's the third sibling in that family:
 
