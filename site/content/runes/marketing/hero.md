@@ -184,9 +184,3 @@ The body splits on `---` into **media → content** zones (media-first in source
 | `media-ratio` | `string` | — | Media's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
 | `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
-
-## How it is built
-
-Hero is a [composition](/extend/rune-authoring/composed-runes): a Markdown file that places a [`section`](/runes/section) at `marquee` [prominence](/runes/surfaces) and an [`actions`](/runes/actions) list, rather than a rune with its own transform and stylesheet. It renders no `rf-hero` classes; a theme styles the `section` and `actions` it is made of, and can still reach the hero itself through `[data-rune="hero"]`.
-
-{% snippet path="plugins/marketing/runes/hero.md" /%}

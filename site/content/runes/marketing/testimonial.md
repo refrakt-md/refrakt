@@ -44,9 +44,3 @@ Omit the rating for a pure testimonial quote.
 ### Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:testimonial"} /%}
-
-## How it is built
-
-Testimonial is a [composition](/extend/rune-authoring/composed-runes): a Markdown file that places a [`section`](/runes/section) with the avatar as its media and a [`pullquote`](/runes/pullquote) as its featured quotation, which renders the attribution as its caption. It renders no `rf-testimonial` classes. Its `Review` structured data is declared in the definition's `schema` block.
-
-{% snippet path="plugins/marketing/runes/testimonial.md" /%}
