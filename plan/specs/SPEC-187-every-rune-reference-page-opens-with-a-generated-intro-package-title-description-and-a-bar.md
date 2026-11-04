@@ -1,4 +1,4 @@
-{% spec id="SPEC-187" status="accepted" tags="docs, runes, reference, composition, site, data, include" %}
+{% spec id="SPEC-187" status="implemented" tags="docs, runes, reference, composition, site, data, include" %}
 
 # Every rune reference page opens with a generated intro: package, title, description and a bar
 
