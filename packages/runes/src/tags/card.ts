@@ -16,40 +16,6 @@ import {
 	stretchedLink,
 } from './common.js';
 
-/**
- * `card` (SPEC-070) — a generic, self-contained content card.
- *
- * The body is divided by `---` (hr) into up to three zones:
- *
- *   [media] --- body [--- footer]
- *
- * - **media** (optional leading zone): any content — an image, a `{% codegroup %}`,
- *   a `{% sandbox %}`, etc. Reuses the shared split layout (`SplitLayoutModel`):
- *   side-by-side with the body on wide screens, a full-bleed header on mobile
- *   (`data-media-position="top"`).
- * - **body**: the main content.
- * - **footer** (optional trailing zone): a muted meta row (date · tags · …).
- *
- * Zone roles are positional by count: 1 → body; 2 → media + body; 3 → media +
- * body + footer. A leading empty zone (`--- body --- footer`) means "no media".
- *
- * `href` makes the whole card a link (a stretched link overlay, so real links
- * inside body/footer stay clickable). The overlay is a focusable, labelled link
- * (WORK-655), rendered by `stretchedLink`, the same anchor `{% link %}` uses. The card carries no `$item`/registry
- * knowledge — it's plain and composable, standalone or fed by a collection
- * body template.
- */
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
-// SPEC-125 Phase 1 — the `body` slot carries the card's main content ("body
-// (optional, repeatable any block)" is the content model), so it is the `body`
-// role. It went undeclared, which is why `reading` and `dropcap` were silently
-// dropped on every card. `title` is deliberately not mapped: the leading
-// heading lives *inside* the body slot, so a `title` role would nest one
-// section inside another and resize every card heading via `--rf-title-size`.
-// `eyebrow` is the shared role (WORK-656), so the sections dimension styles it,
-// the linked pill included, rather than `card.css`.
 export const cardSections = { media: 'media', eyebrow: 'eyebrow', body: 'body' } as const;
 
 export const card = createContentModelSchema({
@@ -63,10 +29,6 @@ export const card = createContentModelSchema({
 			default: '',
 			description: 'Optional link target; makes the whole card clickable.',
 		},
-		// SPEC-089 — cover mode (`media-position="cover"`, from splitLayoutAttributes)
-		// overlays content on a media well. `content-place` anchors the overlaid box
-		// ("block inline", e.g. "end start", or "auto" to adapt on orientation);
-		// `height` / `aspect` give a cover/bg-only card its intrinsic shape.
 		'content-place': {
 			type: String,
 			required: false,
@@ -86,9 +48,6 @@ export const card = createContentModelSchema({
 	},
 	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
-		// Split the body on `---` into media / body / footer zones. The shared
-		// helper enforces the canonical media-first body shape (1 group = body,
-		// 2 = media + body, 3+ = media + body + footer).
 		const {
 			media: mediaNodes,
 			body: bodyNodes,
@@ -97,10 +56,6 @@ export const card = createContentModelSchema({
 
 		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
 
-		// SPEC-089 cover knobs — emit as meta tags only when set; the engine reads
-		// them as fields (content-place → overlay anchor vars; height/aspect →
-		// intrinsic shape). They are mapped via `properties` below, which carries
-		// their values in the field bag.
 		const contentPlace = attrs['content-place'] as string | undefined;
 		const height = attrs.height as string | undefined;
 		const aspect = attrs.aspect as string | undefined;
@@ -108,13 +63,10 @@ export const card = createContentModelSchema({
 		const heightMeta = height ? new Tag('meta', { content: height }) : undefined;
 		const aspectMeta = aspect ? new Tag('meta', { content: aspect }) : undefined;
 
-		// `media-position` is property-mapped below, so it lives in the field bag.
-		// The other layout metas are not mapped by card and still render.
 		const children: RenderableTreeNode[] = layoutChildren.filter(
 			(c) => c !== layoutMetas.mediaPosition,
 		);
 
-		// Media zone — unwrap a bare image; otherwise render arbitrary content.
 		if (mediaNodes.length > 0) {
 			const mediaCursor = new RenderableNodeCursor(
 				Markdoc.transform(mediaNodes, config) as RenderableTreeNode[],
@@ -130,8 +82,6 @@ export const card = createContentModelSchema({
 			);
 		}
 
-		// Eyebrow: a leading paragraph immediately followed by a heading becomes a
-		// kicker (the page-section / recipe pattern). The rest stays freeform body.
 		let eyebrowNode: Node | undefined;
 		let mainBodyNodes = bodyNodes;
 		if (
@@ -143,11 +93,6 @@ export const card = createContentModelSchema({
 			mainBodyNodes = bodyNodes.slice(1);
 		}
 
-		// SPEC-081/091 flat-slot model: the transform emits flat `data-name` slots
-		// (media · eyebrow · body · footer · link); the engine's `layout` config
-		// groups eyebrow/body/footer into the `content` wrapper and places it
-		// beside media. This is what lets cover ({% ref "SPEC-089" /%}) be a
-		// `media-position` variant on card.
 		let eyebrowTag: InstanceType<typeof Tag> | undefined;
 		if (eyebrowNode) {
 			const eyebrowCursor = new RenderableNodeCursor(
@@ -162,11 +107,6 @@ export const card = createContentModelSchema({
 			Markdoc.transform(mainBodyNodes, config) as RenderableTreeNode[],
 		);
 		const bodyRendered = bodyCursor.toArray() as RenderableTreeNode[];
-		// The body's leading heading is the card title — give it a hook so it can
-		// sit tight under an eyebrow (or a leading `bar` strip) instead of carrying
-		// default prose top margin. Find the first heading rather than only
-		// position 0, so a composed header (e.g. a `{% bar %}` before the title)
-		// doesn't leave the title with a prose-sized gap.
 		const titleTag = bodyRendered.find(
 			(n): n is InstanceType<typeof Tag> => Markdoc.Tag.isTag(n) && /^h[1-6]$/.test(n.name),
 		);
@@ -184,14 +124,10 @@ export const card = createContentModelSchema({
 			);
 		}
 
-		// Flat slots, in order. The engine's layout assembly wraps
-		// eyebrow/body/footer into `content`.
 		if (eyebrowTag) children.push(eyebrowTag);
 		children.push(bodyDiv);
 		if (footerTag) children.push(footerTag);
 
-		// Whole-card link as a stretched overlay (keeps nested links valid).
-		// Unlisted in `layout`, so it stays a direct child of the card root.
 		let linkTag: InstanceType<typeof Tag> | undefined;
 		const href = String(attrs.href ?? '');
 		if (href) {

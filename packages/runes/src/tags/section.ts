@@ -18,19 +18,6 @@ const headerModes = ['auto', 'headline', 'none'] as const;
 type HeaderMode = (typeof headerModes)[number];
 export const mediaKinds = ['portrait', 'cover', 'thumbnail', 'hero', 'icon'] as const;
 
-/**
- * A generic page section: the shared section header (eyebrow → headline →
- * blurb) followed by an arbitrary body. Unlike `feature`/`reveal`/`tabs`, the
- * body is content-agnostic — anything (a `bento`, a grid of cards, prose) — so a
- * preamble-less grid primitive can be introduced with a title and intro.
- */
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
-// `body` is the region after the header (SPEC-160 D1, WORK-651). It went
-// undeclared, so `reading` and `dropcap` did nothing on a section, silently.
-// `media` is the split's media zone (SPEC-160 D2, WORK-652), present only when
-// `media-position` is given.
 export const sectionSections = {
 	preamble: 'preamble',
 	eyebrow: 'eyebrow',
@@ -40,22 +27,6 @@ export const sectionSections = {
 	media: 'media',
 } as const;
 
-/**
- * `section`'s content model, declared (SPEC-186 D5): the header grammar is a
- * group, so the transform, the composition audit and the editor read one
- * declaration rather than a hand-written reader.
- *
- * - **The header (ADR-046).** An eyebrow and a blurb exist only relative to a
- *   headline: the group matches a paragraph, a heading and a paragraph, the
- *   heading required, or takes nothing, and a paragraph with no heading after
- *   it is body. After the blurb, an attributed blockquote is the epigraph
- *   (SPEC-185 D5). `header="headline"` reads only a leading heading;
- *   `header="none"` reads no header at all.
- * - **The zones (SPEC-160 D2).** Opt-in: with no `media-position` every child
- *   is the body zone, so a `---` stays body content. With it, the children
- *   split on `---` into media, body (the zone a single group lands in) and
- *   footer, and the header is read from the body zone.
- */
 function headerFields(mode: HeaderMode): ContentFieldDefinition[] {
 	const body: ContentFieldDefinition = { name: 'body', match: 'any', optional: true, greedy: true };
 	if (mode === 'none') return [body];
@@ -66,9 +37,6 @@ function headerFields(mode: HeaderMode): ContentFieldDefinition[] {
 					{ name: 'eyebrow', match: 'paragraph', optional: true },
 					{ name: 'headline', match: 'heading' },
 					{ name: 'blurb', match: 'paragraph', optional: true },
-					// SPEC-185 D5 — an epigraph: a quote and its attribution, optional
-					// together and required within, so a quote without one stays body
-					// and a lone attribution stays the blurb it already was.
 					{
 						name: 'epigraph',
 						match: '',
@@ -133,9 +101,6 @@ export const section = createContentModelSchema({
 			description:
 				'What the media zone holds, stamped as `data-media` so the media dimension styles it (portrait is cropped round)',
 		},
-		// SPEC-160 D7 — whether a media guest bleeds past its zone. A config
-		// field on the native runes; an attribute here, since compositions placing
-		// the same `section` need different fits.
 		'guest-fit': {
 			type: String,
 			required: false,
@@ -143,8 +108,6 @@ export const section = createContentModelSchema({
 			description:
 				'How the media zone holds its guest: clip (default) crops it to the zone, bleed lets it spill past',
 		},
-		// SPEC-089 cover knobs, as on `card`: `media-position="cover"` overlays the
-		// content on the media well.
 		'content-place': {
 			type: String,
 			required: false,
@@ -164,8 +127,6 @@ export const section = createContentModelSchema({
 	},
 	contentModel: sectionContentModel,
 	transform(resolved, attrs, config) {
-		// SPEC-186 D5 — the header is read from the declared model. With a split,
-		// the header and body are the content zone's.
 		const split = !!attrs['media-position'];
 		const main = (split ? (resolved.content ?? {}) : resolved) as ResolvedContent;
 		const asList = (v: unknown) => (Array.isArray(v) ? v : v ? [v] : []) as Node[];
@@ -189,11 +150,8 @@ export const section = createContentModelSchema({
 		const eyebrow = render(parts.eyebrow);
 		const headline = render(parts.headline);
 		const blurb = render(parts.blurb);
-		// SPEC-185 D5 — the epigraph, a `<figure data-quote="epigraph">`.
 		let epigraphQuote = main['epigraph-quote'] as Node | undefined;
 		let epigraphSource = readAttribution(main['epigraph-attribution'] as Node | undefined);
-		// D6 — or a blockquote attributed on its own last line, `— **Name**`,
-		// standing where the epigraph group would: directly after the header.
 		const mode = (attrs.header as HeaderMode) || 'auto';
 		if (!epigraphQuote && mode === 'auto' && parts.headline) {
 			const inside = splitInsideAttribution(parts.body[0]);
@@ -218,7 +176,6 @@ export const section = createContentModelSchema({
 
 		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
 
-		// No split: exactly the section it always was.
 		if (!attrs['media-position']) {
 			return createComponentRenderable({
 				rune: 'section',
@@ -237,15 +194,10 @@ export const section = createContentModelSchema({
 			});
 		}
 
-		// The split (SPEC-160 D2): media beside or above a `content` column that
-		// holds the header, the body and the footer, keyed by the shared split
-		// layout and cover dimension rather than by rune name.
 		const { metas } = buildLayoutMetas(attrs);
 		const meta = (name: string) =>
 			attrs[name] ? new Tag('meta', { content: attrs[name] as string }) : undefined;
 
-		// An empty leading zone means no media: the element is omitted, so a
-		// template can emit the delimiter unconditionally (SPEC-145 D17).
 		let media: InstanceType<typeof Tag> | undefined;
 		if (zones.media.length > 0) {
 			const cursor = new RenderableNodeCursor(
@@ -297,8 +249,6 @@ export const section = createContentModelSchema({
 	},
 });
 
-// ADR-046 decision 3 — the roles a composition placing `section` is audited
-// against, read through the same declared model the transform resolves.
 schemaHeaderRoles.set(section, {
 	roles: ['eyebrow', 'headline', 'blurb', 'epigraph-quote', 'epigraph-attribution'],
 	model: sectionContentModel,

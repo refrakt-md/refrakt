@@ -7,16 +7,6 @@ import { registerAttributePreset } from '../attribute-presets.js';
 /** @deprecated Split layout attributes are now provided by splitLayoutAttributes */
 export const SplitablePageSectionModel = undefined;
 
-/** Shared layout attributes for media+content runes — same vocabulary as
- * `bento-cell`, so every media-bearing surface (card, recipe, hero, feature,
- * step, realm, faction, playlist) speaks one language. `media-position` covers
- * all four placements (the old `layout`'s `stacked`/`split`/`split-reverse` are
- * the `top`/`start`/`end` subset, with `bottom` as a new mode). `media-ratio`
- * uses the same preset percentages as `bento-cell` instead of the open-ended
- * `ratio="2 1"` string. `valign` is the orientation-agnostic cross-axis dial
- * (kept as a rare escape hatch for runes where content can be much shorter than
- * media). The old `gap` attribute was dropped — each rune curates its own
- * inter-zone spacing via theme tokens. */
 export const splitLayoutAttributes: Record<string, SchemaAttribute> = {
 	'media-position': {
 		type: String,
@@ -65,7 +55,6 @@ export const linkItem = createContentModelSchema({
 			? ((Array.isArray(resolved.body) ? resolved.body : [resolved.body]) as Node[])
 			: [];
 
-		// Transform children with text → span override
 		const output = new RenderableNodeCursor(
 			Markdoc.transform(bodyNodes, {
 				...config,
@@ -84,14 +73,6 @@ export const linkItem = createContentModelSchema({
 	},
 });
 
-/**
- * The stretched whole-region link `card` and `bento-cell` render for `href`
- * (SPEC-160 D8, WORK-655) — the same anchor `{% link %}` gives interactive
- * content. It is a real, focusable link: the identity transform labels it from
- * the host's title (`aria-labelledby`), and the shared link CSS stretches it
- * over the host. The shorthand always stretches, so the host stays the grid
- * item and its `>` child selectors keep matching.
- */
 export function stretchedLink(href: string): Tag {
 	return new Markdoc.Tag('a', { 'data-name': 'link', href, 'data-link': 'stretch' }, []);
 }
@@ -111,17 +92,6 @@ export interface LayoutMetas {
 	collapse: Tag | undefined;
 }
 
-/**
- * Build the layout meta tags shared by all media+content runes. Accepts the
- * attrs object from a `splitLayoutAttributes`-based schema and returns the
- * meta Tag instances plus a convenience array of the non-undefined tags
- * suitable for spreading into a children array.
- *
- * `media-position` is always emitted (default: `top`) — the rune always has a
- * placement, even if the author didn't pick one. `media-ratio` and `valign` are
- * only emitted when the layout is side-by-side (`start` / `end`) — they have no
- * effect on stacked layouts. `collapse` is only emitted when the author sets it.
- */
 export function buildLayoutMetas(attrs: Record<string, any>): {
 	metas: LayoutMetas;
 	children: Tag[];
@@ -155,17 +125,6 @@ export function buildLayoutMetas(attrs: Record<string, any>): {
 	};
 }
 
-/**
- * Split a node list on top-level `hr` (`---`) into media / body / footer zones,
- * by group count (matching the card / bento-cell pattern):
- *
- *   1 group  → body only
- *   2 groups → media + body
- *   3+ groups → media + body... + footer  (middle groups merged into body)
- *
- * This is the canonical "media-first body shape" for media+content runes.
- * Authoring is consistent across every rune that uses it.
- */
 export function splitMediaBodyFooter(nodes: Node[]): {
 	media: Node[];
 	body: Node[];
@@ -181,21 +140,6 @@ export function splitMediaBodyFooter(nodes: Node[]): {
 	return { media: zones[0], body: zones.slice(1, -1).flat(), footer: zones[zones.length - 1] };
 }
 
-/**
- * Extract a bare `<img>` tag from rendered media nodes.
- *
- * Markdoc wraps inline images in `<p><img .../></p>`. This utility walks
- * the top-level nodes looking for either a bare `<img>` or an `<img>` nested
- * inside a `<p>`, and returns the unwrapped tag.
- *
- * @returns The first `<img>` Tag found, or `undefined` if none exists.
- */
-/**
- * A scheme-resolved media node — the inline `<svg>` produced by the
- * `placeholder:` / `icon:` image-src schemes (SPEC-106), identified by its
- * `rf-placeholder` / `rf-icon` class. These replace the `<img>` element, so
- * media-consuming runes must recognise them alongside real images.
- */
 export function isSchemeMediaNode(node: RenderableTreeNode): boolean {
 	return (
 		Markdoc.Tag.isTag(node) &&
@@ -204,8 +148,6 @@ export function isSchemeMediaNode(node: RenderableTreeNode): boolean {
 	);
 }
 
-/** Any media leaf a rune treats as its image slot: `<img>`, `<video>`, or a
- *  scheme-resolved media `<svg>`. */
 export function isMediaNode(node: RenderableTreeNode): boolean {
 	return (
 		Markdoc.Tag.isTag(node) &&
@@ -226,14 +168,6 @@ export function extractMediaImage(cursor: RenderableNodeCursor): Tag | undefined
 	return undefined;
 }
 
-/**
- * Unwrap paragraph-wrapped images in-place.
- *
- * Walks the node list and replaces any `<p>` containing only an `<img>`
- * with the bare `<img>`. All other nodes pass through unchanged.
- * Unlike `extractMediaImage()` which extracts a single image,
- * this preserves the full node list for mixed-content zones.
- */
 export function unwrapParagraphImages(nodes: RenderableTreeNode[]): RenderableTreeNode[] {
 	return nodes.map((node) => {
 		if (
@@ -258,7 +192,6 @@ export function pageSectionProperties(cursor: RenderableNodeCursor) {
 
 	const firstH = nodes.findIndex(isH);
 
-	// No headline — first paragraph is blurb
 	if (firstH === -1) {
 		return {
 			eyebrow: undefined as Tag | undefined,
@@ -268,7 +201,6 @@ export function pageSectionProperties(cursor: RenderableNodeCursor) {
 		};
 	}
 
-	// Paragraph before first heading → paragraph eyebrow
 	const paraBeforeH = nodes.slice(0, firstH).findIndex(isP);
 
 	let eyebrow: Tag | undefined;
@@ -278,7 +210,6 @@ export function pageSectionProperties(cursor: RenderableNodeCursor) {
 		eyebrow = nodes[paraBeforeH] as Tag;
 		headlineIdx = firstH;
 	} else {
-		// Two headings → first heading eyebrow (original behaviour)
 		const secondH = nodes.findIndex((n, i) => i > firstH && isH(n));
 		if (secondH !== -1) {
 			eyebrow = nodes[firstH] as Tag;
@@ -289,7 +220,6 @@ export function pageSectionProperties(cursor: RenderableNodeCursor) {
 		}
 	}
 
-	// First paragraph after headline → blurb
 	const blurbIdx = nodes.findIndex((n, i) => i > headlineIdx && isP(n));
 
 	return {

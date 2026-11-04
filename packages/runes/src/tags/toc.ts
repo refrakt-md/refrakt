@@ -25,7 +25,6 @@ export const toc = createContentModelSchema({
 	transform(_resolved, attrs, config) {
 		const headings: HeadingInfo[] = config.variables?.headings || [];
 
-		// Filter to h2..h{depth+1}
 		const maxLevel = (attrs.depth as number) + 1;
 		const filtered = headings.filter((h) => h.level >= 2 && h.level <= maxLevel);
 

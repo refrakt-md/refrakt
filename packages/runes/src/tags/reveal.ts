@@ -36,9 +36,6 @@ export const revealStep = createContentModelSchema({
 	},
 });
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const revealSections = {
 	preamble: 'preamble',
 	eyebrow: 'eyebrow',
@@ -72,7 +69,6 @@ export const reveal = createContentModelSchema({
 	}),
 	transform(resolved, attrs, config) {
 		const headerNodes = renderNodes(resolved.header, config);
-		// Combine explicit child tags (preamble items) with emitted section tags
 		const allItems = [...asNodes(resolved.items), ...asNodes(resolved.sections)];
 		const sectionNodes = new RenderableNodeCursor(
 			Markdoc.transform(allItems, config) as RenderableTreeNode[],

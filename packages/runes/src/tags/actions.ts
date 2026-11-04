@@ -7,22 +7,7 @@ import { linkItem } from './common.js';
 
 type AnyTag = InstanceType<typeof Tag>;
 
-/**
- * `actions` (SPEC-160 D6) — a row of actions: buttons from a list of links,
- * and copyable command lines from fences.
- *
- * Each list item becomes `<li data-name="action">` with its rank as a data
- * attribute: `data-rank="primary"` on the first link of the whole region and
- * `secondary` on the rest, so a theme styles the rank and not the list
- * position. A fence becomes a `command` block, unranked.
- *
- * `hero` and `cta` build their actions region with {@link buildActions}, so the
- * nested rune is the same one a composition gets from `{% actions %}`.
- */
 export function buildActions(nodes: readonly Node[], config: Config): AnyTag {
-	// Use the original config inside the fence handler to avoid recursion
-	// (same pattern as NodeStream.useNode — the inner transform uses the base
-	// config, not the config with custom overrides).
 	const baseConfig = config;
 	const actionConfig = {
 		...config,
@@ -46,8 +31,6 @@ export function buildActions(nodes: readonly Node[], config: Config): AnyTag {
 	const items = rendered.flatten().tags('li').toArray() as AnyTag[];
 	const hasLink = (n: RenderableTreeNode): boolean =>
 		Markdoc.Tag.isTag(n) && (n.name === 'a' || n.children.some(hasLink));
-	// Positional over the whole region, not per list: a region written as list,
-	// fence, list has one primary action (WORK-654).
 	const primary = items.find(hasLink);
 	for (const item of items) {
 		item.attributes['data-rank'] = item === primary ? 'primary' : 'secondary';
@@ -57,11 +40,8 @@ export function buildActions(nodes: readonly Node[], config: Config): AnyTag {
 		rune: 'actions',
 		tag: 'div',
 		refs: {
-			// Naming the list is what lets the engine's BEM pass reach the items
-			// inside it (`rf-actions__list`, `rf-actions__action`).
 			list: rendered.tags('ul', 'ol').toArray() as AnyTag[],
 			action: items,
-			// The wrapper each fence gets above, not the code block inside it.
 			command: rendered.tags('div').toArray() as AnyTag[],
 		},
 		children: rendered.toArray(),

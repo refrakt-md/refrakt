@@ -1,6 +1,7 @@
 ---
 tag: div
-description: Call-to-action section with a headline and actions, composed over `section` and `actions` (SPEC-160 D7)
+aliases: [call-to-action]
+description: Call-to-action section with a headline and actions, composed over `section` and `actions`
 attributes:
   align: { type: string, matches: [start, center, end], default: center, description: "Alignment of the header and the actions" }
 defaults:

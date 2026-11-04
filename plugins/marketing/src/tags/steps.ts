@@ -15,9 +15,6 @@ import {
 } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const stepMediaSlots = { media: 'cover' } as const;
 
 export const step = createContentModelSchema({
@@ -26,8 +23,6 @@ export const step = createContentModelSchema({
 	contentModel: {
 		type: 'delimited',
 		delimiter: 'hr',
-		// Media-first body shape: `media --- content`. `content` is the primary
-		// zone so a step without an `---` block lands its whole body in content.
 		zones: [
 			{
 				name: 'media',
@@ -47,8 +42,6 @@ export const step = createContentModelSchema({
 		const mediaZone = (resolved.media ?? {}) as ResolvedContent;
 
 		const main = renderNodes(contentZone.content, config);
-		// Unwrap Markdoc's `<p>` around inline media (a bare image or a single
-		// block rune) so the media zone holds the element directly — matching hero.
 		const side = new RenderableNodeCursor(
 			unwrapParagraphImages(
 				Markdoc.transform(asNodes(mediaZone.content), config) as RenderableTreeNode[],
@@ -58,7 +51,6 @@ export const step = createContentModelSchema({
 		const mainContent = main.wrap('div');
 		const sideContent = side.wrap('div');
 
-		// Content-first DOM → the truthful stacked default is `bottom` (BUG-001).
 		const { metas: layoutMetas } = buildLayoutMetas({
 			...attrs,
 			'media-position': attrs['media-position'] ?? 'bottom',
@@ -94,9 +86,6 @@ export const step = createContentModelSchema({
 	},
 });
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const stepsSections = {
 	preamble: 'preamble',
 	eyebrow: 'eyebrow',
@@ -136,7 +125,6 @@ export const steps = createContentModelSchema({
 		let stepItems: RenderableNodeCursor<any>;
 
 		if (resolved.sections) {
-			// Heading-based steps: build step tags from resolved sections
 			const sections = resolved.sections as Array<{
 				$headingNode: Node;
 				body: unknown;
@@ -150,7 +138,6 @@ export const steps = createContentModelSchema({
 			);
 			stepItems = stepStream.tag('li').typeof('Step');
 		} else {
-			// List-based steps: convert ordered list items to step tags
 			const listNode = asNodes(resolved.list)[0] as Node | undefined;
 			const itemNodes = listNode?.children ?? [];
 			const stepTagNodes = itemNodes.map((item) => new Ast.Node('tag', {}, item.children, 'step'));
@@ -172,8 +159,6 @@ export const steps = createContentModelSchema({
 			},
 			refs: {
 				...pageSectionProperties(headerNodes),
-				// WORK-585 — the item container is named like every other sequence
-				// rune's (`tracks`, `entries`, `stops`): plural of what it holds.
 				steps: stepList,
 			},
 			children,

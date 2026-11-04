@@ -7,22 +7,6 @@ import {
 	COLLECTION_SENTINEL,
 } from '@refrakt-md/runes';
 
-/**
- * `plan-activity` (SPEC-072 / WORK-284) — thin sugar for a `collection` query
- * over all plan entity types, sorted by recent modification. Lowers to a
- * `collection`-shaped renderable so the shared `resolveCollections` resolver
- * handles selection, sorting, limit, and per-item rendering. The body is an
- * optional override; absent → a default heading-template table (Item / Type /
- * Status / Modified) — an "activity" feed reads as a scannable chronological
- * list of changes, and the per-row Type column keeps mixed-entity rows
- * self-explanatory.
- *
- * Legacy attribute preserved (`limit`, default 10) so existing
- * `{% plan-activity %}` content keeps working. Entities without a `modified`
- * date sort last under the shared sort (instead of being dropped entirely as
- * the previous bespoke resolver did) — accepted per ADR-012.
- */
-
 const DEFAULT_PLAN_ACTIVITY_BODY = `# Item
 {% link href=$item.url %}**{% $item.id %}** — {% $item.data.title %}{% /link %}
 # Type

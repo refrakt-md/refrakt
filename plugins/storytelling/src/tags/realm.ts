@@ -13,9 +13,6 @@ import {
 } from '@refrakt-md/runes';
 import { extractScene, buildStoryContent } from './common.js';
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const realmSectionSections = { body: 'body' } as const;
 
 export const realmSection = createContentModelSchema({
@@ -38,10 +35,6 @@ export const realmSection = createContentModelSchema({
 	},
 });
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
-// SPEC-125 Phase 1 — see `characterSections`; same shape, same correction.
 export const realmSections = {
 	preamble: 'preamble',
 	name: 'title',
@@ -50,16 +43,12 @@ export const realmSections = {
 } as const;
 export const realmMediaSlots = { scene: 'cover' } as const;
 
-// SPEC-130 / WORK-568 — Group B. `sceneImage` is the name WORK-561 gave the
-// scene image, so `image` resolves to a node rather than to a position in the
-// children array.
 export const realmSchema = {
 	type: 'Place',
 	properties: { name: 'name', realmType: 'additionalType', sceneImage: 'image' },
 } as const;
 
 export const realm = createContentModelSchema({
-	// SPEC-144 — what this rune registers (WORK-612).
 	registers: {
 		entity: { idFrom: 'name', data: ['realmType', 'scale', 'tags', 'parent', 'name'] },
 	},
@@ -107,20 +96,17 @@ export const realm = createContentModelSchema({
 		},
 	}),
 	transform(resolved, attrs, config) {
-		// Combine explicit child tags (preamble items) with emitted section tags
 		const allItems = [...asNodes(resolved.items), ...asNodes(resolved.sections)];
 		const sectionNodes = new RenderableNodeCursor(
 			Markdoc.transform(allItems, config) as RenderableTreeNode[],
 		);
 
-		// Domain meta tags
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
 		const realmTypeMeta = new Tag('meta', { content: attrs.type ?? 'place' });
 		const scaleMeta = new Tag('meta', { content: attrs.scale ?? '' });
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 		const parentMeta = new Tag('meta', { content: attrs.parent ?? '' });
 
-		// Layout meta tags
 		const { metas: layoutMetas } = buildLayoutMetas(attrs);
 		const {
 			mediaPosition: mediaPositionMeta,
@@ -129,12 +115,8 @@ export const realm = createContentModelSchema({
 			collapse: collapseMeta,
 		} = layoutMetas;
 
-		// Extract scene image (shared helper)
 		const { sceneDiv, sceneImgTag, extraDescription } = extractScene(resolved.scene, config);
 
-		// SPEC-081: emit flat `data-name` slots — the `layout` config builds the
-		// content column (preamble header + metadata + body + sections) and the
-		// split sees only scene (media) + content.
 		const { bodyDiv, sectionsContainer, sections, hasSections } = buildStoryContent(
 			extraDescription,
 			resolved.description,
@@ -143,8 +125,6 @@ export const realm = createContentModelSchema({
 			config,
 		);
 
-		// Build children array. Scene first so it sits on top in stacked /
-		// media-position="top".
 		const children: any[] = [];
 		if (sceneDiv) children.push(sceneDiv.next());
 		children.push(nameTag);
@@ -168,9 +148,6 @@ export const realm = createContentModelSchema({
 			refs: {
 				name: nameTag,
 				scene: sceneDiv,
-				// WORK-561 — the scene image survives and is rendered, so it is a ref.
-				// Named `sceneImage` after its `scene` wrapper, so the wrapper and the
-				// image inside it are separately addressable.
 				sceneImage: sceneImgTag,
 				body: bodyDiv,
 				sections: sectionsContainer,

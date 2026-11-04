@@ -7,28 +7,6 @@ import {
 	AGGREGATE_SENTINEL,
 } from '@refrakt-md/runes';
 
-/**
- * `plan-progress` (SPEC-076 / WORK-296) — thin sugar that composes one
- * `aggregate` per entity type, so each type gets its OWN progress bar + status
- * badges (mixing types under a single ratio is misleading — work `done` and bug
- * `fixed` measure different things). The counting still lives entirely in
- * `aggregate`; plan-progress only supplies the per-type defaults and the
- * heading/layout chrome.
- *
- * Per type it emits a heading ("Work", "Specs", …) above an `aggregate` block:
- *   - `group="status"` → one `type="status"` badge per status (count + label).
- *   - `value="status:<achieved>"` → the progress bar measures that type's
- *     terminal-positive status (work→done, bug→fixed, spec/decision→accepted,
- *     milestone→complete); the bar's label is just that word ("Done"), since the
- *     progress rune already renders the count/percent on the right.
- *
- * Type set defaults to `work,bug` (widen via `type=` or the legacy `show=`;
- * `show="all"` is the full plan set). `milestone=` lowers to `filter="milestone:…"`.
- * Badges colour by `sentiment=$item.sentiment` — `aggregate` projects each
- * status's sentiment from the plan config's `metaFields.status.sentimentMap`
- * (WORK-357), so `done`/`fixed`/`accepted` read positive, `blocked` negative.
- */
-
 interface TypeProgress {
 	label: string;
 	achieved: string;
@@ -42,8 +20,6 @@ const TYPE_PROGRESS: Record<string, TypeProgress> = {
 	milestone: { label: 'Milestones', achieved: 'complete', achievedLabel: 'Complete' },
 };
 
-/** Per-type aggregate body: a progress bar labelled with the achieved status
- *  (numbers shown by the progress rune itself) + one badge per status. */
 const bodyFor = (achievedLabel: string) =>
 	`{% progress value=$item.value max=$item.count %}${achievedLabel}{% /progress %}
 ---
@@ -76,7 +52,7 @@ export const planProgress = createContentModelSchema({
 			type: String,
 			required: false,
 			default: '',
-			description: 'Raw field:value filter clauses (SPEC-070 grammar); overrides `milestone`.',
+			description: 'Raw `field:value` filter clauses; overrides `milestone`.',
 		},
 		value: {
 			type: String,

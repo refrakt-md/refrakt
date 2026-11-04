@@ -9,9 +9,6 @@ const { Tag } = Markdoc;
 const sortOptions = ['date-desc', 'date-asc', 'title-asc', 'title-desc'] as const;
 const layoutOptions = ['list', 'grid', 'compact'] as const;
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const blogSections = {
 	preamble: 'preamble',
 	headline: 'title',
@@ -64,14 +61,12 @@ export const blog = createContentModelSchema({
 			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
 		);
 
-		// Meta tags for attributes consumed by the identity transform
 		const folderMeta = new Tag('meta', { content: attrs.folder });
 		const sortMeta = new Tag('meta', { content: attrs.sort || 'date-desc' });
 		const filterMeta = new Tag('meta', { content: attrs.filter || '' });
 		const limitMeta = new Tag('meta', { content: attrs.limit != null ? String(attrs.limit) : '' });
 		const layoutMeta = new Tag('meta', { content: attrs.layout || 'list' });
 
-		// Placeholder for post list — pipeline postProcess will inject actual posts
 		const postList = new Tag('div', {}, []);
 
 		const sectionProps = pageSectionProperties(header);
@@ -81,15 +76,6 @@ export const blog = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'blog',
-			// SPEC-130 D4 / WORK-567 — no `Blog`, and the reason is the one the
-			// work item asked to check for: this belongs to the page, not the
-			// rune. A `Blog` is identified by `name`, `url` and `blogPost`; the
-			// rune's own properties are query config (`folder`, `sort`, `filter`,
-			// `limit`, `layout`), and its `posts` container is empty at transform
-			// time because the cross-page pipeline fills it later. Page- and
-			// site-level schema is built in `seoToHtml`, which SPEC-130 puts
-			// explicitly out of scope — so the type is dropped here rather than
-			// kept alive by a rune-level mapping invented to justify it.
 			tag: 'section',
 			properties: {
 				folder: folderMeta,

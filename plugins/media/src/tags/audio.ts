@@ -7,9 +7,6 @@ import {
 } from '@refrakt-md/runes';
 import { parseDuration } from '../duration.js';
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const audioSections = { description: 'description' } as const;
 
 export const audio = createContentModelSchema({
@@ -69,14 +66,12 @@ export const audio = createContentModelSchema({
 		const waveform = (attrs.waveform as boolean) ?? false;
 		const chaptersUrl = (attrs.chapters as string) ?? '';
 
-		// Build player data
 		const playerData: Record<string, any> = {};
 		if (src) playerData.src = src;
 		if (title) playerData.name = title;
 		if (artist) playerData.artist = artist;
 		if (playlistId) playerData.playlist = playlistId;
 
-		// Process inline chapters
 		const chapterData = (resolved.chapterListData as Record<string, unknown>[] | undefined) ?? [];
 		if (chapterData.length > 0) {
 			playerData.chapters = chapterData.map((ch) => ({
@@ -85,15 +80,12 @@ export const audio = createContentModelSchema({
 			}));
 		}
 
-		// Transform description
 		const descNodes = renderNodes(resolved.description, config);
 
-		// Meta tags for identity transform
 		const waveformMeta = waveform ? new Tag('meta', { content: 'true' }) : null;
 
 		const children: any[] = [];
 
-		// Player element with JSON data
 		const audioEl = new Tag(
 			'rf-audio',
 			{
@@ -106,7 +98,6 @@ export const audio = createContentModelSchema({
 
 		children.push(audioEl);
 
-		// Add description
 		if (descNodes.count() > 0) {
 			children.push(descNodes.wrap('div', { 'data-name': 'description' }).next());
 		}

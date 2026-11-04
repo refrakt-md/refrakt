@@ -22,17 +22,8 @@ import {
 const alignValues = ['left', 'center', 'right'] as const;
 const variantValues = ['default', 'accent', 'editorial'] as const;
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028). The quote is the body the reading register
-// lands on.
 export const pullQuoteSections = { quote: 'body' } as const;
 
-/**
- * The quote is an authored `>`, read with the paragraph after it as its
- * attribution: one unit, so an attribution is never read without a quote
- * (SPEC-185 D6). Without a blockquote, the paragraphs are the quote as written.
- */
 const pullQuoteModel: ContentModel = {
 	when: [
 		{
@@ -43,8 +34,6 @@ const pullQuoteModel: ContentModel = {
 					{
 						name: 'quote',
 						match: 'blockquote',
-						// D6 — the inside form: the quote's own last line,
-						// `— **Name**, Source`.
 						model: {
 							type: 'sequence',
 							fields: [
@@ -75,11 +64,6 @@ const pullQuoteModel: ContentModel = {
 	},
 };
 
-/**
- * SPEC-185 D2 — `variant` named a look. `accent`'s tinted background is the
- * universal `tint` and its extra size is `prominence="prominent"`; `default`
- * and `editorial` map to nothing (an editorial theme looks editorial already).
- */
 function mapVariant(value: unknown, attrs: Record<string, unknown>): string | undefined {
 	if (value !== 'accent') return undefined;
 	if (attrs.tint === undefined) attrs.tint = 'subtle';
@@ -90,9 +74,6 @@ export const pullquote = createContentModelSchema({
 	sections: pullQuoteSections,
 	provides: ['prose', 'featured-quotation'],
 	attributes: {
-		// SPEC-185 D7 — the attribution written as attributes, which a
-		// composition passes on (`author=$attrs.author`). It wins over a
-		// paragraph, as an author's attribute does (SPEC-182 D2).
 		author: {
 			type: String,
 			required: false,
@@ -121,7 +102,7 @@ export const pullquote = createContentModelSchema({
 			matches: variantValues.slice(),
 			deprecated: true,
 			description:
-				'Deprecated (SPEC-185 D2): a look name. `accent` maps to `tint` and `prominence="prominent"`; the others to nothing',
+				'Deprecated: a look name. `accent` maps to `tint` and `prominence="prominent"`; the others to nothing',
 		} as any,
 	},
 	deprecations: {
@@ -129,12 +110,6 @@ export const pullquote = createContentModelSchema({
 	},
 	contentModel: pullQuoteModel,
 	transform(resolved, attrs, config) {
-		// The authored blockquote is the quote, never nested in a second one
-		// (SPEC-185 D4). It keeps its own attributes (a composition's slot
-		// marker, a schema `property`), but not the quotation role: the quote
-		// is the featured quotation's, which the outermost element names.
-		// D6 — the attribution is the paragraph after the quote, or the quote's
-		// own last line; with both, the paragraph after it is the caption.
 		const inside = splitInsideAttribution(resolved.quote as Node | undefined);
 		const authored = resolved.quote
 			? (renderNodes(inside?.quote ?? (resolved.quote as Node), config).toArray() as Tag[])
@@ -143,10 +118,6 @@ export const pullquote = createContentModelSchema({
 			? withoutQuoteRole(authored[0])
 			: new Tag('blockquote', {}, renderNodes(resolved.body as Node[], config).toArray());
 
-		// The attribution: the attributes, else the paragraph after the quote,
-		// else the quote's last line. A paragraph a composition placed keeps its
-		// slot markers on the `<figcaption>` it becomes, so the composing rune's
-		// schema reaches the name and source inside it (D7).
 		const fromAttrs =
 			typeof attrs.author === 'string' && attrs.author.trim()
 				? { name: attrs.author, source: attrs.source as string | undefined }
@@ -177,8 +148,6 @@ export const pullquote = createContentModelSchema({
 			return root;
 		}
 
-		// D4 — an excerpt repeats words already in the text, so it is hidden
-		// from assistive technology; it holds the same figure.
 		const figure = new Tag('figure', {}, figureChildren);
 		const root = createComponentRenderable({
 			rune: 'pull-quote',

@@ -14,10 +14,7 @@ import {
 	unwrapParagraphImages,
 } from '@refrakt-md/runes';
 
-// Kinds that use group/member heading structure
 const GROUP_KINDS = ['class', 'interface', 'module'];
-
-// ─── SymbolMember ────────────────────────────────────────────────
 
 export const symbolMember = createContentModelSchema({
 	attributes: {},
@@ -40,8 +37,6 @@ export const symbolMember = createContentModelSchema({
 		});
 	},
 });
-
-// ─── SymbolGroup ─────────────────────────────────────────────────
 
 export const symbolGroup = createContentModelSchema({
 	attributes: {},
@@ -84,8 +79,6 @@ export const symbolGroup = createContentModelSchema({
 	},
 });
 
-// ─── Symbol (main) ───────────────────────────────────────────────
-
 const headerBodyFields = [
 	{ name: 'header', match: 'heading|paragraph|image' as const, greedy: true, optional: true },
 	{
@@ -96,19 +89,8 @@ const headerBodyFields = [
 	},
 ];
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const symbolSections = { preamble: 'preamble', headline: 'title', body: 'body' } as const;
 
-// SPEC-130 D4 / WORK-567 — the one Group A rune that keeps its type, because it
-// is the one with something to say. `headline` is the symbol's own name
-// (`createTransform`), which is exactly what a reader searches for; `blurb` is
-// the one-line summary above the signature. Deliberately *not* mapped: `body`,
-// which would push a whole code fence, a parameter list and a blockquote into a
-// single `description` string, and `lang`/`since`, whose schema.org homes
-// (`programmingLanguage`, `softwareVersion`) belong to `SoftwareSourceCode`
-// rather than an article about it.
 export const symbolSchema = {
 	type: 'TechArticle',
 	properties: { headline: 'name', blurb: 'description' },
@@ -167,7 +149,6 @@ export const symbol = createContentModelSchema({
 
 					converted.splice(n, 1, ...tags);
 
-					// Resolve the header/body split from the converted children
 					return converted;
 				},
 			};
@@ -178,7 +159,6 @@ export const symbol = createContentModelSchema({
 		};
 	},
 	transform(resolved, attrs, config) {
-		// When using custom model, resolved.children has the converted nodes — split manually
 		let headerAstNodes: Node[];
 		let bodyAstNodes: Node[];
 
@@ -191,8 +171,6 @@ export const symbol = createContentModelSchema({
 			bodyAstNodes = asNodes(resolved.body);
 		}
 
-		// Unwrap Markdoc's `<p>` around a leading image so it sits bare in the
-		// header (and so `pageSectionProperties`' top-level `img` lookup finds it).
 		const header = new RenderableNodeCursor(
 			unwrapParagraphImages(Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[]),
 		);
@@ -208,9 +186,6 @@ export const symbol = createContentModelSchema({
 
 		const bodyDiv = bodyStream.wrap('div');
 
-		// SPEC-081: emit flat `data-name` header slots — `layout` wraps
-		// eyebrow/headline/blurb in the preamble <header>, so each is
-		// individually addressable (fixes the buried-preamble bug).
 		const children: any[] = [...header.toArray()];
 		children.push(bodyDiv.next());
 

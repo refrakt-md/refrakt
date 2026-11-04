@@ -6,22 +6,6 @@ const { Tag } = Markdoc;
 const sentimentValues = ['positive', 'negative', 'caution', 'neutral'] as const;
 const typeValues = ['status', 'category', 'quantity', 'temporal', 'tag', 'id'] as const;
 
-/**
- * Badge rune — inline pill that visually flags a piece of content.
- *
- * The label is children content (free-form text or inline runes). Visual
- * variant comes from the universal metadata-system dimensions
- * (`data-meta-sentiment`, `data-meta-type`), so themes that ship
- * metadata-system CSS style every sentiment / type combination
- * automatically — the badge rune emits the base `.rf-badge` pill shape
- * and lets the universal rules do the rest.
- *
- * Usage:
- *   {% badge %}Frontend{% /badge %}
- *   {% badge sentiment="positive" %}New{% /badge %}
- *   {% badge sentiment="caution" %}Beta{% /badge %}
- *   {% badge type="status" sentiment="positive" %}Active{% /badge %}
- */
 export const badge: Schema = {
 	inline: true,
 	attributes: {
@@ -55,5 +39,4 @@ export const badge: Schema = {
 	},
 };
 
-// SPEC-125 Phase 3 — an inline `<span class="rf-badge">`; the block axes have nothing to act on.
 declareUniversalPosture(badge, 'inline');

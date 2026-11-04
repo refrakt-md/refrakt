@@ -4,7 +4,6 @@ const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
-/** Strip common leading whitespace from all lines. */
 function dedent(text: string): string {
 	const lines = text.split('\n');
 	const indents = lines
@@ -39,7 +38,6 @@ function escapeHtml(s: string): string {
 		.replace(/"/g, '&quot;');
 }
 
-/** Render Markdoc Tag tree to pretty-printed HTML, preserving structural attributes. */
 function renderRuneHtml(nodes: Markdoc.RenderableTreeNode[], depth = 0): string {
 	const indent = '  ';
 	const lines: string[] = [];
@@ -63,7 +61,6 @@ function renderRuneHtml(nodes: Markdoc.RenderableTreeNode[], depth = 0): string 
 			continue;
 		}
 
-		// Build attributes, skipping $$mdtype
 		const attrParts: string[] = [];
 		for (const [k, v] of Object.entries(attributes ?? {})) {
 			if (k === '$$mdtype') continue;
@@ -82,7 +79,6 @@ function renderRuneHtml(nodes: Markdoc.RenderableTreeNode[], depth = 0): string 
 			continue;
 		}
 
-		// Inline text-only children on the same line
 		const allText = children.every(
 			(c: Markdoc.RenderableTreeNode) => typeof c === 'string' || typeof c === 'number',
 		);
@@ -105,7 +101,6 @@ function renderRuneHtml(nodes: Markdoc.RenderableTreeNode[], depth = 0): string 
 	return lines.join('\n');
 }
 
-/** Extract fence node from children, returning it separately. */
 function extractFence(children: unknown[]): { fence: Node | undefined; rest: unknown[] } {
 	const nodes = children as Node[];
 	const fenceIdx = nodes.findIndex((c) => c.type === 'fence');
@@ -143,9 +138,7 @@ export const preview = createContentModelSchema({
 	contentModel: {
 		type: 'custom',
 		processChildren: (nodes, attributes) => {
-			// Extract fence before normal content model processing
 			const { fence, rest } = extractFence(nodes);
-			// Pass fence through as a special marker node at the end
 			if (fence) return [...rest, fence];
 			return rest;
 		},
@@ -160,7 +153,6 @@ export const preview = createContentModelSchema({
 
 		const allChildren = asNodes(resolved.children);
 
-		// 1. Extract fence child for source display
 		let sourcePre: Markdoc.Tag<'pre'> | undefined;
 		const fenceIdx = allChildren.findIndex((c) => c.type === 'fence');
 		let contentChildren: Node[];
@@ -175,16 +167,12 @@ export const preview = createContentModelSchema({
 			contentChildren = allChildren;
 		}
 
-		// 2. Auto-infer source from raw content (fallback when no fence)
 		if (!sourcePre && showSource) {
 			const raw = config.variables?.__source;
 			if (typeof raw === 'string' && node.lines?.length >= 2) {
 				const allLines = raw.split('\n');
 				const start = node.lines[0] + 1;
 				const end = node.lines[node.lines.length - 1] - 1;
-				// Drop the blank lines around the content, but not the first line's
-				// indentation: `dedent` needs it to find the common indent of
-				// content indented inside the preview (SPEC-170).
 				const childSource = dedent(
 					allLines
 						.slice(start, end)
@@ -204,7 +192,6 @@ export const preview = createContentModelSchema({
 			Markdoc.transform(contentChildren, config) as RenderableTreeNode[],
 		);
 
-		// 3. Generate rune output HTML when source is present
 		let htmlSourcePre: Markdoc.Tag<'pre'> | undefined;
 		if (sourcePre) {
 			const htmlString = renderRuneHtml(children.toArray());

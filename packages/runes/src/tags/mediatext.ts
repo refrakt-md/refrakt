@@ -10,9 +10,6 @@ import {
 const alignValues = ['left', 'right'] as const;
 const ratioValues = ['1:2', '1:1', '2:1'] as const;
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const mediaTextSections = { body: 'body', media: 'media' } as const;
 export const mediaTextMediaSlots = { media: 'cover' } as const;
 
@@ -47,9 +44,6 @@ export const mediatext = createContentModelSchema({
 		const ratioMeta = new Tag('meta', { content: ratio });
 		const wrapMeta = wrap ? new Tag('meta', { content: 'true' }) : undefined;
 
-		// Separate image paragraphs from body content.
-		// Markdown wraps ![img](url) in <p> tags, so we check for paragraphs
-		// containing only an image and extract the <img> from them.
 		const mediaChildren: any[] = [];
 		const bodyChildren: any[] = [];
 

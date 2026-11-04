@@ -47,7 +47,7 @@
 			"name": "filter",
 			"type": "string",
 			"required": false,
-			"description": "field:value clauses defining the primary set being measured (SPEC-070 grammar).",
+			"description": "`field:value` clauses defining the primary set being measured.",
 			"page": "aggregate"
 		},
 		{
@@ -77,7 +77,7 @@
 			"name": "sort",
 			"type": "string",
 			"required": false,
-			"description": "Sort groups by `key`, `count`, `value`, or `percent` (prefix `-` for descending). Honors SPEC-072 domain-aware ordering when the group field has one.",
+			"description": "Sort groups by `key`, `count`, `value`, or `percent` (prefix `-` for descending). Follows the group field's own order when it has one.",
 			"page": "aggregate"
 		},
 		{
@@ -1257,7 +1257,7 @@
 			"name": "filter",
 			"type": "string",
 			"required": false,
-			"description": "field:value clauses (SPEC-070 grammar).",
+			"description": "`field:value` clauses.",
 			"page": "collection"
 		},
 		{
@@ -1597,7 +1597,7 @@
 			"name": "where",
 			"type": "string",
 			"required": false,
-			"description": "Filter rows with the field:value grammar (SPEC-070).",
+			"description": "Filter rows with `field:value` clauses.",
 			"page": "data"
 		},
 		{
@@ -3527,7 +3527,7 @@
 			"name": "filter",
 			"type": "string",
 			"required": false,
-			"description": "Raw field:value filter clauses (SPEC-070 grammar); overrides `milestone`.",
+			"description": "Raw `field:value` filter clauses; overrides `milestone`.",
 			"page": "plan-progress"
 		},
 		{
@@ -3787,7 +3787,7 @@
 			"name": "variant",
 			"type": "\"default\" | \"accent\" | \"editorial\"",
 			"required": false,
-			"description": "Deprecated (SPEC-185 D2): a look name. `accent` maps to `tint` and `prominence=\"prominent\"`; the others to nothing",
+			"description": "Deprecated: a look name. `accent` maps to `tint` and `prominence=\"prominent\"`; the others to nothing",
 			"page": "pullquote"
 		},
 		{
@@ -4127,7 +4127,7 @@
 			"name": "data",
 			"type": "string",
 			"required": false,
-			"description": "Registry query (SPEC-070 field-match, e.g. \"type:page\") bound into the iframe as window.RF_DATA",
+			"description": "Registry query (`field:value` clauses, e.g. \"type:page\") bound into the iframe as window.RF_DATA",
 			"page": "sandbox"
 		},
 		{
@@ -4147,7 +4147,7 @@
 			"name": "data-shape",
 			"type": "string",
 			"required": false,
-			"description": "Payload shape: flat (default) | tree (nest by parentUrl) | graph (nodes + SPEC-072 edges)",
+			"description": "Payload shape: flat (default) | tree (nest by parentUrl) | graph (nodes + relationship edges)",
 			"page": "sandbox"
 		},
 		{
@@ -4427,7 +4427,7 @@
 			"name": "linenumbers",
 			"type": "boolean",
 			"required": false,
-			"description": "Show line numbers in the gutter. Starting number derives from the `lines` range start (e.g. lines=\"74-125\" → first line is 74), so numbers reflect the file's real offsets. WORK-304.",
+			"description": "Show line numbers in the gutter. Starting number derives from the `lines` range start (e.g. lines=\"74-125\" → first line is 74), so numbers reflect the file's real offsets.",
 			"page": "snippet"
 		},
 		{
@@ -4437,7 +4437,7 @@
 			"name": "highlight",
 			"type": "string",
 			"required": false,
-			"description": "Range(s) to emphasize without cropping — Shiki-style format: \"74-78\", \"74-78,82,90-92\". Indices are file coordinates (same frame as `lines=`), and stay so under an anchor. Note that a *numeric* highlight under `symbol`/`match` carries the same coordinate exposure anchoring otherwise removes — the resolver chose the region, so the author is guessing at its line numbers. Use `highlight-match` there. WORK-304.",
+			"description": "Range(s) to emphasize without cropping — Shiki-style format: \"74-78\", \"74-78,82,90-92\". Indices are file coordinates (same frame as `lines=`), and stay so under an anchor. Note that a *numeric* highlight under `symbol`/`match` carries the same coordinate exposure anchoring otherwise removes — the resolver chose the region, so the author is guessing at its line numbers. Use `highlight-match` there.",
 			"page": "snippet"
 		},
 		{
@@ -5137,7 +5137,7 @@
 			"name": "preview",
 			"type": "\"drawer\"",
 			"required": false,
-			"description": "Preview target. `\"drawer\"` hoists a drawer containing the entity's expanded content + a link to its resolved page URL in the chrome footer, leaving an inline link at the call site that opens it. Absent → today's behaviour (just the inline link). SPEC-078.",
+			"description": "Preview target. `\"drawer\"` hoists a drawer containing the entity's expanded content + a link to its resolved page URL in the chrome footer, leaving an inline link at the call site that opens it. Absent → today's behaviour (just the inline link).",
 			"page": "xref"
 		}
 	],

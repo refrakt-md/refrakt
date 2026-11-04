@@ -35,7 +35,6 @@ function inferCurrency(priceText: string): string {
 }
 
 function convertHeadings(nodes: Node[]): Node[] {
-	// Auto-detect heading level from the first heading that matches "Name — Price"
 	const level = nodes.find((n) => {
 		if (n.type !== 'heading') return false;
 		const text = Array.from(n.walk())
@@ -50,7 +49,6 @@ function convertHeadings(nodes: Node[]): Node[] {
 	const n = converted.length - 1;
 	if (!converted[n] || converted[n].type !== 'list') return nodes;
 
-	// Only convert items whose heading matches "Name — Price"; keep others as-is
 	const result: Node[] = converted.slice(0, n);
 	for (const item of converted[n].children) {
 		const heading = item.children[0];
@@ -70,16 +68,12 @@ function convertHeadings(nodes: Node[]): Node[] {
 				),
 			);
 		} else {
-			// Non-matching heading: keep as original heading + body nodes
 			result.push(heading, ...item.children.slice(1));
 		}
 	}
 	return result;
 }
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const pricingSections = {
 	preamble: 'preamble',
 	eyebrow: 'eyebrow',
@@ -87,15 +81,6 @@ export const pricingSections = {
 	blurb: 'description',
 } as const;
 
-// SPEC-130 / WORK-568 — Group B, and where D6 shows. `offers` is declared a
-// list, so a one-tier pricing block serialises `"offers": [{…}]` instead of the
-// bare object it used to emit — the shape no longer varies with how much content
-// an author wrote.
-//
-// The tiers are retyped from here rather than from `tier` itself (D9): the
-// property that holds a child and the child's type are one declaration, and only
-// the parent can supply the property. `featured-tier` is the same rune under a
-// different name, so both keys are listed.
 export const pricingSchema = {
 	type: 'Product',
 	properties: { headline: 'name', blurb: 'description' },
@@ -121,7 +106,6 @@ export const pricing = createContentModelSchema({
 			Markdoc.transform(processed, config) as RenderableTreeNode[],
 		);
 
-		// Separate header (headings, paragraphs) from tiers (li items)
 		const header = allNodes.tags('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p');
 		const tiers = allNodes.tag('li');
 
@@ -146,16 +130,6 @@ export const pricing = createContentModelSchema({
 	},
 });
 
-// SPEC-130 / WORK-568 — Group B, and the pair's careful half. `parsedPrice` and
-// `resolvedCurrency` survived only *because* the rune declared them in `schema:`
-// — that is the `isSeoMeta` check in `createComponentRenderable`. With the
-// declaration gone they are dropped as pure data, and the applier rebuilds them
-// from the field bag, which works only because WORK-561 put them there. Had this
-// landed first, the price would have vanished from the structured data while the
-// HTML looked identical.
-//
-// `pricing` restates this type in its `children` row: a standalone `{% tier %}`
-// is still an `Offer`, and inside a `{% pricing %}` the parent is what nests it.
 export const tierSchema = {
 	type: 'Offer',
 	properties: { name: 'name', parsedPrice: 'price', resolvedCurrency: 'priceCurrency' },
@@ -182,7 +156,6 @@ export const tier = createContentModelSchema({
 
 		const currencyMeta = attrs.currency ? new Tag('meta', { content: attrs.currency }) : undefined;
 
-		// Schema.org price parsing: extract numeric value and infer currency
 		const numericMatch = priceValue.match(/[\d.]+/);
 		const parsedPriceMeta = new Tag('meta', {
 			content: numericMatch ? numericMatch[0] : priceValue,
@@ -198,15 +171,7 @@ export const tier = createContentModelSchema({
 				description: description(children),
 				currency: currencyMeta,
 				url: children.flatten().tag('a'),
-				// WORK-561 — value-only SEO carriers, addressable by name for
-				// WORK-565's applier. Both stay in `schema:`, so they keep their
-				// `property=` and are not dropped; the bag entry is additional.
-				//
-				// Deliberately *not* named `price`/`currency`: `price` is already the
-				// `<p>` ref (the rendered price, "$19") and `currency` is already the
-				// author's raw attribute. These two are the parsed numeric value and
-				// the resolved-or-inferred code — different nodes with different
-				// values, so they get their own names rather than shadowing.
+				// Not `price` / `currency`: those are the rendered price and the authored attribute.
 				parsedPrice: parsedPriceMeta,
 				resolvedCurrency: resolvedCurrencyMeta,
 			},

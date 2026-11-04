@@ -5,12 +5,6 @@ import { readDeferredBody } from '../deferred-body.js';
 
 export const COLLECTION_SENTINEL = '__collection-sentinel';
 
-/**
- * `collection` (SPEC-070) — queries the entity registry for many entities and
- * projects them into a layout. Emits a sentinel that the postProcess resolver
- * (`resolveCollections`) fills with real entity data. The body, when present,
- * is a per-entity template captured via the deferBody mechanism (WORK-262).
- */
 export const collection = createContentModelSchema({
 	attributes: {
 		type: {
@@ -23,7 +17,7 @@ export const collection = createContentModelSchema({
 			type: String,
 			required: false,
 			default: '',
-			description: 'field:value clauses (SPEC-070 grammar).',
+			description: '`field:value` clauses.',
 		},
 		sort: {
 			type: String,
@@ -32,11 +26,6 @@ export const collection = createContentModelSchema({
 			description: 'Sort field (prefix - for descending).',
 		},
 		group: { type: String, required: false, default: '', description: 'Group-by field.' },
-		// A count, consumed as `Number(limitRaw)` in `collection-resolve.ts`, and
-		// written unquoted everywhere it is documented (`limit=5`, `limit=20`).
-		// It was declared `String`, so SPEC-132's validation reported the rune's
-		// own doc page against its own schema. The plan plugin's `backlog` and
-		// `plan-activity` already declare `Number`; this aligns core with them.
 		limit: { type: Number, required: false, description: 'Max items.' },
 		show: {
 			type: String,

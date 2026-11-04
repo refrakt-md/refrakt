@@ -79,7 +79,6 @@ export const juxtapose = createContentModelSchema({
 		const panels = new RenderableNodeCursor(panelNodes).tag('div').typeof('JuxtaposePanel');
 		const panelsContainer = panels.wrap('div');
 
-		// Meta tags for variant configuration
 		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'slider' });
 		const orientationMeta = new Tag('meta', { content: attrs.orientation ?? 'vertical' });
 		const positionMeta = new Tag('meta', { content: String(attrs.position ?? 50) });

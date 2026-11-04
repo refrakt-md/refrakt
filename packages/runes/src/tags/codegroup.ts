@@ -33,8 +33,6 @@ function prettifyLanguage(lang: string): string {
 	return languageNames[lang] || lang.charAt(0).toUpperCase() + lang.slice(1);
 }
 
-/** Extract the trailing filename from a project-root-relative path.
- *  Falls back to the trimmed input when no separator is present. */
 function basename(path: string): string {
 	if (!path) return '';
 	const trimmed = path.endsWith('/') ? path.slice(0, -1) : path;
@@ -42,10 +40,6 @@ function basename(path: string): string {
 	return slash >= 0 ? trimmed.slice(slash + 1) : trimmed;
 }
 
-/** Derive a tab label from a fence's `source` (+ optional `lines`) annotation:
- *  `theme.ts` standalone, or `theme.ts:74-125` when a range is specified.
- *  Returns empty string when no `source` is set so callers can fall through
- *  to the next step in the label-resolution chain. */
 function labelFromSource(source: string | undefined, lines: string | undefined): string {
 	if (!source) return '';
 	const name = basename(source);
@@ -55,9 +49,6 @@ function labelFromSource(source: string | undefined, lines: string | undefined):
 
 const overflowValues = ['scroll', 'wrap', 'hide'] as const;
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const codeGroupSections = { topbar: 'header' } as const;
 
 export const codegroup = createContentModelSchema({
@@ -83,9 +74,6 @@ export const codegroup = createContentModelSchema({
 		const properties: Record<string, any> = {};
 		const children: any[] = [];
 
-		// Emit the title meta whenever the attribute is *present* — even an
-		// empty string. `title=""` opts into the window chrome (stoplights)
-		// without a filename; an absent `title` renders no topbar at all.
 		if (attrs.title !== undefined) {
 			const titleMeta = new Tag('meta', { content: attrs.title });
 			properties.title = titleMeta;
@@ -118,14 +106,6 @@ export const codegroup = createContentModelSchema({
 
 		for (const child of panels) {
 			const lang = child.attributes.language || 'shell';
-			// Label precedence (WORK-304):
-			//   1. Group-level `labels=` positional override
-			//   2. Per-fence `label` annotation (` ```ts {% label="X" %} `)
-			//   3. Derived from fence `source` annotation (basename, with
-			//      `:lines` suffix when set) — populated automatically when
-			//      the panel is `{% snippet %}`-derived, and authorable on
-			//      hand-written fences for the same effect
-			//   4. Prettified language name (today's default)
 			const fenceLabelAttr =
 				typeof child.attributes.label === 'string' ? (child.attributes.label as string) : '';
 			const sourceLabel = labelFromSource(

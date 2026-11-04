@@ -7,9 +7,6 @@ import {
 	renderNodes,
 } from '../lib/index.js';
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const dataTableSections = { table: 'body' } as const;
 
 export const datatable = createContentModelSchema({
@@ -41,13 +38,11 @@ export const datatable = createContentModelSchema({
 		const pageSizeMeta = new Tag('meta', { content: String(attrs.pageSize ?? 0) });
 		const defaultSortMeta = new Tag('meta', { content: attrs.defaultSort ?? '' });
 
-		// Find the table element from children (may be wrapped in div.rf-table-wrapper)
 		let tableTag: InstanceType<typeof Tag>;
 		const directTable = children.tag('table');
 		if (directTable.count() > 0) {
 			tableTag = directTable.next();
 		} else {
-			// Unwrap from rf-table-wrapper div
 			const wrapper = children
 				.toArray()
 				.find((n) => Tag.isTag(n) && n.name === 'div' && n.attributes.class === 'rf-table-wrapper');
@@ -60,19 +55,10 @@ export const datatable = createContentModelSchema({
 			>;
 		}
 
-		// Wrap the table in a scroll container so wide tables overflow-x scroll
-		// on narrow screens. The behavior places the toolbar/pagination as
-		// siblings of this wrapper, keeping them outside the horizontal scroll.
 		const scrollDiv = new Tag('div', {}, [tableTag]);
 
 		return createComponentRenderable({
 			rune: 'data-table',
-			// SPEC-130 D4 / WORK-567 — no `Dataset`. A `Dataset` is identified by
-			// `name` and made useful by `distribution`, and this rune has neither
-			// to give: it has no headline slot at all, and its five properties
-			// (`sortable`, `searchable`, `pageSize`, `defaultSort`) are all
-			// interaction config, describing how the table behaves rather than
-			// what it contains.
 			tag: 'div',
 			properties: {
 				sortable: sortableMeta,

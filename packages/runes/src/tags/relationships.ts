@@ -5,14 +5,6 @@ import { readDeferredBody } from '../deferred-body.js';
 
 export const RELATIONSHIPS_SENTINEL = '__relationships-sentinel';
 
-/**
- * `relationships` (SPEC-072) — render an entity's relationship edges, grouped
- * by kind. The plural-graph counterpart to `collection`: its source set is
- * `registry.getRelated(of)` rather than a type-query. Emits a sentinel filled
- * by the postProcess resolver (`resolveRelationships`). A body, when present,
- * is the per-edge template (deferBody) with `$item` (the related entity) and
- * `$kind` (the edge kind) bound.
- */
 export const relationships = createContentModelSchema({
 	attributes: {
 		of: {
@@ -82,7 +74,6 @@ export const relationships = createContentModelSchema({
 			new Tag('meta', { 'data-field': field, content });
 		const bodySource = readDeferredBody(attrs) ?? '';
 
-		// `of` accepts an id string or a bound entity object ({ id, … }).
 		const ofRaw = attrs.of as unknown;
 		const of =
 			ofRaw && typeof ofRaw === 'object'

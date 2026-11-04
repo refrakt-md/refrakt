@@ -11,12 +11,8 @@ import {
 	unwrapParagraphImages,
 } from '@refrakt-md/runes';
 
-/** Uniform outline level for every cell title — cells are siblings in the grid,
- *  so their titles share one heading level (and one visual size), regardless of
- *  the input heading level (which only drives tile size). */
 const CELL_TITLE_LEVEL = 3;
 
-/** Split a node list on top-level `hr` (`---`) into zones. */
 function splitZones(nodes: Node[]): Node[][] {
 	const zones: Node[][] = [[]];
 	for (const n of nodes) {
@@ -26,23 +22,12 @@ function splitZones(nodes: Node[]): Node[][] {
 	return zones;
 }
 
-/** Map hr-delimited zones to media / body / footer by count, mirroring `card`:
- *  1 → body; 2 → media + body; 3+ → media + body… + footer. */
 function zoneRoles(zones: Node[][]): { media: Node[]; body: Node[]; footer: Node[] } {
 	if (zones.length === 1) return { media: [], body: zones[0], footer: [] };
 	if (zones.length === 2) return { media: zones[0], body: zones[1], footer: [] };
 	return { media: zones[0], footer: zones[zones.length - 1], body: zones.slice(1, -1).flat() };
 }
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
-// SPEC-125 Phase 1 — a cell has both. `body` is its main content region
-// (undeclared, so `reading` / `dropcap` were silently dropped), and `title` is
-// a sibling heading slot, unambiguously the cell's title. Lumina pins
-// `.rf-bento-cell__title`'s font size, so `prominence` is declarable here but
-// has no visible effect under that skin — a skin gap, not a reason to withhold
-// the structural role (ADR-028: emission is theme-agnostic, styling is not).
 export const bentoCellSections = { media: 'media', title: 'title', body: 'body' } as const;
 
 export const bentoCell = createContentModelSchema({
@@ -77,8 +62,6 @@ export const bentoCell = createContentModelSchema({
 	transform(resolved, attrs, config) {
 		const all = asNodes(resolved.body);
 
-		// The leading heading (the cell's generating heading, or an author-written
-		// one) is the title — rendered at a uniform level, not the input level.
 		let titleNode: Node | undefined;
 		let rest = all;
 		if (all[0]?.type === 'heading') {
@@ -87,16 +70,12 @@ export const bentoCell = createContentModelSchema({
 			rest = all.slice(1);
 		}
 
-		// The remainder splits on `---` into media / body / footer, like card.
 		const { media, body, footer } = zoneRoles(splitZones(rest));
 
 		const children: RenderableTreeNode[] = [];
 		const refs: Record<string, any> = {};
 		const properties: Record<string, any> = {};
 
-		// size (preset name → data-size) + the resolved grid spans. Explicit
-		// `cols`/`rows` (e.g. from an author or a non-default grid) override the
-		// preset; otherwise fall back to the medium preset spans.
 		const size = attrs.size ?? 'medium';
 		const sizeMeta = new Tag('meta', { content: size });
 		properties.size = sizeMeta;
@@ -109,9 +88,6 @@ export const bentoCell = createContentModelSchema({
 		properties.cols = colsMeta;
 		properties.rows = rowsMeta;
 
-		// Per-cell overrides of the grid's content-height / media-ratio defaults.
-		// Empty when unset → the cell inherits the grid-level var (or the theme
-		// fallback). content-height applies to column cells, media-ratio to beside.
 		const contentHeightMeta = new Tag('meta', {
 			content: (attrs['content-height'] as string) ?? '',
 		});
@@ -119,8 +95,6 @@ export const bentoCell = createContentModelSchema({
 		properties['content-height'] = contentHeightMeta;
 		properties['media-ratio'] = mediaRatioMeta;
 
-		// Media zone — clipped/sized by the shared media-zone selector (WORK-339);
-		// no bento-specific per-guest CSS.
 		if (media.length > 0) {
 			const mediaInner = unwrapParagraphImages(
 				new RenderableNodeCursor(
@@ -136,11 +110,6 @@ export const bentoCell = createContentModelSchema({
 			children.push(mediaDiv);
 		}
 
-		// SPEC-081/091 flat-slot model: emit flat `data-name` slots (media · title ·
-		// body · footer · link); the engine's `layout` config groups title/body/
-		// footer into the `content` wrapper and places it beside / above media
-		// (WORK-348). A base `layout` is the prerequisite for the cover variant
-		// ({% ref "SPEC-089" /%}).
 		let titleTag: InstanceType<typeof Tag> | undefined;
 		if (titleNode) {
 			const t = new RenderableNodeCursor(
@@ -165,8 +134,6 @@ export const bentoCell = createContentModelSchema({
 			footerTag = new Tag('footer', { 'data-name': 'footer' }, footerInner);
 		}
 
-		// Flat slots, in order. The engine's layout assembly wraps title/body/
-		// footer into `content`.
 		if (titleTag) {
 			refs.title = titleTag;
 			children.push(titleTag);
@@ -178,7 +145,6 @@ export const bentoCell = createContentModelSchema({
 			children.push(footerTag);
 		}
 
-		// Whole-cell link (stretched overlay; nested links stay clickable).
 		const href = String(attrs.href ?? '');
 		let linkTag: InstanceType<typeof Tag> | undefined;
 		if (href) {
@@ -194,8 +160,6 @@ export const bentoCell = createContentModelSchema({
 			refs,
 			children,
 		});
-		// Author-controlled media placement, with a size-derived default: large/
-		// full cells place media beside the body; smaller cells stack it on top.
 		const defaultPosition = size === 'large' || size === 'full' ? 'start' : 'top';
 		(node as any).attributes = {
 			...(node as any).attributes,
@@ -205,11 +169,6 @@ export const bentoCell = createContentModelSchema({
 	},
 });
 
-/** Heading level → size preset. Absolute (no auto-detected base): every input
- *  level maps to the same tile size everywhere, so `### Coral` is always a
- *  medium 3 × 1 tile regardless of what else is in the grid. h1 is a full-width
- *  banner; h5+ clamps to small. (Input level is purely a sizing dial — every
- *  cell title still renders at CELL_TITLE_LEVEL in the DOM.) */
 function tieredSize(level: number): string {
 	if (level === 1) return 'full';
 	if (level === 2) return 'large';
@@ -217,9 +176,6 @@ function tieredSize(level: number): string {
 	return 'small';
 }
 
-/** Resolve a size preset to (cols, rows) spans, **proportional to the column
- *  count** so a preset holds its ratio at any `columns` (small ⅓, medium ½,
- *  large ⅔ × 2 rows, full = all → 2/3/4/6 @ 6 cols). */
 function presetSpans(size: string, columns: number): { cols: number; rows: number } {
 	const clamp = (n: number) => Math.max(1, Math.min(columns, Math.round(n)));
 	switch (size) {
@@ -235,10 +191,6 @@ function presetSpans(size: string, columns: number): { cols: number; rows: numbe
 	}
 }
 
-/** Parse a `levels` ladder ("6,5,4,3,2,1" or "4x2,3x1,2x1") into per-depth
- *  footprints: a bare `W` → W cols × 1 row; `WxH` → W cols × H rows. Malformed
- *  rungs are dropped with a warning; an all-malformed spec yields an empty ladder
- *  (the caller then falls back to tiered sizing). */
 function parseLevels(spec: string): { cols: number; rows: number }[] {
 	const rungs: { cols: number; rows: number }[] = [];
 	for (const raw of spec.split(',')) {
@@ -256,13 +208,6 @@ function parseLevels(spec: string): { cols: number; rows: number }[] {
 	return rungs;
 }
 
-/** Convert headings into bento-cell tags. The heading *level* sets the tile
- *  footprint via an **absolute** mapping — h1 = full, h2 = large, h3 = medium,
- *  h4+ = small — so `### Coral` always means medium regardless of context. With
- *  a `levels` ladder, level - 1 is the rung index (rung 0 = h1, rung 1 = h2, …),
- *  clamped to the last rung. The heading itself becomes the cell title; content
- *  before the first heading is returned as-is (bento is a grid primitive, not a
- *  page-section — no preamble semantics). */
 function convertHeadings(
 	nodes: Node[],
 	columns: number,
@@ -283,11 +228,6 @@ function convertHeadings(
 		const cellChildren = [currentHeading, ...currentChildren];
 		const posAttr = { ...(gridPos ? { 'media-position': gridPos } : {}), ...(gridFrame ?? {}) };
 		if (ladder && ladder.length > 0) {
-			// Explicit ladder footprint, indexed by absolute heading level
-			// (rung 0 = h1; clamped to the last rung). No tiered preset → neutral
-			// `size` (empty), so the cell keeps its author-defined width: the
-			// size-based responsive collapse rules don't target it, while the span
-			// auto-cap still applies.
 			const rungIndex = Math.max(0, level - 1);
 			const { cols, rows } = ladder[Math.min(rungIndex, ladder.length - 1)];
 			cells.push(
@@ -376,16 +316,7 @@ export const bento = createContentModelSchema({
 		type: 'custom' as const,
 		processChildren: (nodes: unknown[]) => {
 			const ns = nodes as Node[];
-			// Grid-level media-position is the default for cells that don't set
-			// their own (generated or explicit); a cell's own value still wins, and
-			// without a grid default each cell keeps its size-derived default.
 			const gridPos = attrs['media-position'] as string | undefined;
-			// SPEC-086/087 — grid-level surface chrome (`frame` preset + facets,
-			// and `elevation`) is the default for cells that don't set their own,
-			// since heading-sugar cells have no per-cell attribute surface. Mirrors
-			// the media-position cascade. The grid itself never claims this chrome
-			// (cells are the visual cards), so the attrs are consumed here and
-			// stripped from the grid. A cell's own value still wins.
 			const GRID_CASCADE = [
 				'frame',
 				'frame-aspect',
@@ -405,9 +336,6 @@ export const bento = createContentModelSchema({
 			const stripGridFrame = () => {
 				for (const k of GRID_CASCADE) delete (attrs as Record<string, unknown>)[k];
 			};
-			// Two front doors (no mixing): if the grid contains explicit
-			// `{% bento-cell %}` tags, use them directly and short-circuit heading
-			// conversion (headings/loose content are ignored — explicit wins).
 			const hasExplicit = ns.some((n) => n.type === 'tag' && (n as any).tag === 'bento-cell');
 			if (hasExplicit) {
 				const cells = ns.filter((n) => n.type === 'tag' && (n as any).tag === 'bento-cell');
@@ -434,7 +362,6 @@ export const bento = createContentModelSchema({
 	transform(resolved, attrs, config) {
 		const allChildren = asNodes(resolved.children);
 
-		// Cells (bento-cell tags) vs any stray pre-grid content.
 		const leadAst: Node[] = [];
 		const cellAst: Node[] = [];
 		for (const child of allChildren) {

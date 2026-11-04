@@ -6,8 +6,6 @@ import { createComponentRenderable, createContentModelSchema, asNodes } from '..
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
 
-// ─── Amount parsing ───
-
 const DESCRIPTION_AMOUNT_PATTERN = /^(.+)\s*:\s*([€$£¥]?\s*[\d].*)$/;
 
 function parseAmount(str: string): number {
@@ -17,12 +15,6 @@ function parseAmount(str: string): number {
 	const num = parseFloat(cleaned);
 	return isNaN(num) ? 0 : num;
 }
-
-// ─── Total derivation + currency formatting ───
-// SPEC-081 computation boundary: budget totals are a theme-invariant fact
-// about the content, so they are derived here (the rune transform), not in a
-// presentation postTransform. Currency formatting is deterministic from the
-// authored amounts, so it rides along.
 
 const BUDGET_CURRENCY_SYMBOLS: Record<string, string> = {
 	USD: '$',
@@ -43,12 +35,6 @@ const BUDGET_CURRENCY_SYMBOLS: Record<string, string> = {
 	ZAR: 'R',
 };
 
-/**
- * Format a budget amount. Zero-config / English keeps the deterministic
- * `symbol + grouped amount` form so output is byte-identical. When a non-English
- * `locale` is configured (SPEC-035), `Intl.NumberFormat` with `style: 'currency'`
- * produces locale-appropriate separators and currency placement.
- */
 function formatBudgetAmount(
 	amount: number,
 	symbol: string,
@@ -85,10 +71,6 @@ function parseBudgetDays(duration: string): number {
 	return days;
 }
 
-/** Read a budget-category's field value from its `data-rune-fields` bag.
- *  `createComponentRenderable` moves pure-data metas (label, subtotal) into the
- *  JSON field bag and drops them from the children, so the parent reads the bag
- *  rather than scanning for child metas (which no longer exist). */
 function readCategoryField(cat: Markdoc.Tag, field: string): string {
 	try {
 		const bag = JSON.parse(String(cat.attributes['data-rune-fields'] ?? '{}'));
@@ -98,8 +80,6 @@ function readCategoryField(cat: Markdoc.Tag, field: string): string {
 	}
 	return '';
 }
-
-// ─── Heading estimate parsing ───
 
 const ESTIMATE_SUFFIX_PATTERN = /^(.+?)\s*\((?:estimate|est\.?)\)\s*$/i;
 const TILDE_PATTERN = /^~(.+?)~$/;
@@ -119,27 +99,22 @@ function parseEstimate(heading: Node): { label: string; estimate: boolean } {
 
 	const text = textParts.join(' ').trim();
 
-	// ## Label (estimate) or ## Label (est.)
 	const estMatch = text.match(ESTIMATE_SUFFIX_PATTERN);
 	if (estMatch) {
 		return { label: estMatch[1].trim(), estimate: true };
 	}
 
-	// ## ~Label~ (single tildes as literal text)
 	const tildeMatch = text.match(TILDE_PATTERN);
 	if (tildeMatch) {
 		return { label: tildeMatch[1].trim(), estimate: true };
 	}
 
-	// ## ~~Label~~ (strikethrough node)
 	if (hasStrikethrough) {
 		return { label: text, estimate: true };
 	}
 
 	return { label: text, estimate: false };
 }
-
-// ─── BudgetLineItem ───
 
 export const budgetLineItem = createContentModelSchema({
 	attributes: {
@@ -166,9 +141,6 @@ export const budgetLineItem = createContentModelSchema({
 	},
 });
 
-// ─── BudgetCategory ───
-
-// Convert list items into budget-line-item tags and compute subtotal
 function convertCategoryChildren(nodes: unknown[]): unknown[] {
 	const converted: Node[] = [];
 
@@ -218,7 +190,6 @@ function convertCategoryChildren(nodes: unknown[]): unknown[] {
 	return converted;
 }
 
-/** Compute subtotal from budget-line-item tag nodes. */
 function computeSubtotal(nodes: Node[]): number {
 	let subtotal = 0;
 	for (const node of nodes) {
@@ -241,7 +212,6 @@ export const budgetCategory = createContentModelSchema({
 			'Converts list items into budget-line-item tags with "Description: $Amount" pattern.',
 	},
 	transform(resolved, attrs, config) {
-		// Compute subtotal from the raw children before transforming
 		const allChildren = asNodes(resolved.children);
 		const subtotal = computeSubtotal(allChildren);
 
@@ -272,22 +242,16 @@ export const budgetCategory = createContentModelSchema({
 	},
 });
 
-// ─── Budget (parent) ───
-
 const variantType = ['detailed', 'summary'] as const;
 
-// Convert headings into budget-category tags, preserving leading preamble content
 function convertBudgetChildren(nodes: unknown[]): unknown[] {
 	const typed = nodes as Node[];
 
-	// Find the first two headings to detect a preamble title
 	const headings = typed.reduce<{ idx: number; level: number }[]>((acc, n, i) => {
 		if (n.type === 'heading') acc.push({ idx: i, level: n.attributes.level });
 		return acc;
 	}, []);
 
-	// If the first heading has a lower level than the second (e.g. H1 vs H2),
-	// everything before the second heading is preamble content (title, blurb, etc.)
 	let preamble: Node[] = [];
 	let categoryNodes: Node[] = typed;
 	if (headings.length >= 2 && headings[0].level < headings[1].level) {
@@ -310,9 +274,6 @@ function convertBudgetChildren(nodes: unknown[]): unknown[] {
 	return [...preamble, ...converted];
 }
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const budgetSections = {
 	preamble: 'preamble',
 	headline: 'title',
@@ -350,7 +311,6 @@ export const budget = createContentModelSchema({
 	transform(resolved, attrs, config) {
 		const allChildren = asNodes(resolved.children);
 
-		// Separate preamble content (headings + paragraphs) from tag nodes (categories)
 		const headerAst: Node[] = [];
 		const bodyAst: Node[] = [];
 		for (const child of allChildren) {
@@ -375,8 +335,6 @@ export const budget = createContentModelSchema({
 		const showPerDay = (attrs.showPerDay as boolean) ?? true;
 		const variant = (attrs.variant as string) ?? 'detailed';
 		const symbol = BUDGET_CURRENCY_SYMBOLS[currency.toUpperCase()] || currency + ' ';
-		// SPEC-035 — the active locale, if the content pipeline exposes it as a
-		// Markdoc variable. Absent → English (deterministic) formatting.
 		const locale = (config?.variables?.locale as string | undefined) ?? undefined;
 		const fmt = (amount: number) => formatBudgetAmount(amount, symbol, currency, locale);
 
@@ -385,9 +343,6 @@ export const budget = createContentModelSchema({
 		const showPerDayMeta = new Tag('meta', { content: String(showPerDay) });
 		const variantMeta = new Tag('meta', { content: variant });
 
-		// Derive totals in the transform (SPEC-081 computation boundary) and
-		// inject each category's header (label + formatted subtotal). Subtotals
-		// were already computed per-category; the grand total sums them.
 		const categories = body.tag('div').typeof('BudgetCategory');
 		const catNodes = categories.toArray();
 		let grandTotal = 0;
@@ -405,18 +360,12 @@ export const budget = createContentModelSchema({
 		}
 		const categoriesDiv = new Tag('div', {}, catNodes);
 
-		// Per-day breakdown.
 		const days = duration ? parseBudgetDays(duration) : 0;
 		const hasPerDay = !!duration && showPerDay && days > 0;
 		const perDay = hasPerDay ? grandTotal / days : 0;
 
-		// Footer — transform-built so it reproduces the previous postTransform
-		// output exactly (carries its own class, no data-name; appends last).
 		const footerChildren: any[] = [
 			new Tag('div', { class: 'rf-budget__total' }, [
-				// SPEC-035 Zone 2 — `data-i18n` marks the programmatic label for
-				// locale resolution in the engine (the schema transform has no
-				// locale access); the literal is the English fallback.
 				new Tag('span', { class: 'rf-budget__total-label', 'data-i18n': 'core.budget.total' }, [
 					'Total',
 				]),
@@ -437,25 +386,13 @@ export const budget = createContentModelSchema({
 		}
 		const footerDiv = new Tag('div', { class: 'rf-budget__footer' }, footerChildren);
 
-		// Derived totals → the `fields` bag (semantic data the cross-page
-		// pipeline can read). Bag-only: referenced as properties but kept out of
-		// `children`, so they never render as stray metas.
 		const totalMeta = new Tag('meta', { content: String(grandTotal) });
 		const perDayMeta = new Tag('meta', { content: String(perDay) });
 
-		// SPEC-081: emit flat header slots — `layout` builds the preamble
-		// <header>; the categories and footer append after it.
 		const children: any[] = [...header.toArray(), categoriesDiv, footerDiv];
 
 		return createComponentRenderable({
 			rune: 'budget',
-			// SPEC-130 D4 / WORK-567 — no `ItemList`. The rune does carry real
-			// data (`budget-category` has a label and a subtotal, each line item a
-			// description and an amount), but `itemListElement` needs those
-			// children typed, and a cost breakdown is not a ranked list in the
-			// first place — the shapes that fit are `MonetaryAmount`-flavoured.
-			// Mapping only `name` from the headline would leave an `ItemList` that
-			// still claims "list" and lists nothing.
 			tag: 'section',
 			properties: {
 				currency: currencyMeta,

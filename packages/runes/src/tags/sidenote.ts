@@ -10,9 +10,6 @@ import {
 
 const variantType = ['sidenote', 'footnote', 'tooltip'] as const;
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const sidenoteSections = { body: 'body' } as const;
 
 export const sidenote = createContentModelSchema({

@@ -9,9 +9,6 @@ import {
 import { VALID_STATUS } from '../commands/enums.js';
 import { stripHorizontalRules } from '../util.js';
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const milestoneSections = { title: 'title', blurb: 'description', body: 'body' } as const;
 
 export const milestone = createContentModelSchema({
@@ -46,8 +43,6 @@ export const milestone = createContentModelSchema({
 		fields: [
 			{ name: 'title', match: 'heading', optional: true },
 			{ name: 'description', match: 'paragraph', optional: true, greedy: true },
-			// Everything after the lead paragraphs — the goals list, notes, and
-			// every `##` section — is the body, in authored order (WORK-638).
 			{ name: 'body', match: 'any', optional: true, greedy: true },
 		],
 	},

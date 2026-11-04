@@ -2,22 +2,8 @@ import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, renderNodes } from '../lib/index.js';
 
-/** Sentinel meta property written by breadcrumb auto mode; consumed by corePipelineHooks.postProcess */
 export const BREADCRUMB_AUTO_SENTINEL = '__breadcrumb-auto';
 
-/**
- * SPEC-130 / WORK-571 — `breadcrumb` and `breadcrumb-item` as one declaration.
- *
- * The pair could not migrate separately: a position exists nowhere in the
- * content, so it has to be generated, and only the parent knows a child's index.
- * `generated: { position: 'index' }` is the whole vocabulary — `index` is the
- * only generator in the codebase, used by exactly two runes.
- *
- * The generator emits `String(index + 1)`, so the RDFa attribute and the JSON-LD
- * now agree on `position`. Before this the meta carried a *number*, which
- * `collectJsonLd` passed through verbatim while the rendered markup stringified
- * it — a drift the two-point invariant would otherwise have to tolerate (D8).
- */
 export const breadcrumbSchema = {
 	type: 'BreadcrumbList',
 	lists: ['itemListElement'],
@@ -60,8 +46,6 @@ export const breadcrumb = createContentModelSchema({
 		const separatorMeta = new Tag('meta', { content: attrs.separator });
 
 		if (attrs.auto) {
-			// Emit a placeholder with an empty items list and a sentinel meta tag.
-			// The core post-process hook will replace the empty ol with resolved items.
 			const sentinelMeta = new Tag('meta', {
 				'data-field': BREADCRUMB_AUTO_SENTINEL,
 				content: 'true',
@@ -83,13 +67,11 @@ export const breadcrumb = createContentModelSchema({
 
 		const children = renderNodes(resolved.list, config);
 
-		// Extract list items from children — each <li> with an <a> becomes a breadcrumb item
 		const listItems: any[] = [];
 		for (const node of children.toArray()) {
 			if (Tag.isTag(node) && (node.name === 'ul' || node.name === 'ol')) {
 				for (const li of (node as any).children) {
 					if (Tag.isTag(li) && li.name === 'li') {
-						// Find the link inside the list item
 						const link = (li as any).children.find((c: any) => Tag.isTag(c) && c.name === 'a');
 
 						if (link) {
@@ -108,7 +90,6 @@ export const breadcrumb = createContentModelSchema({
 								}) as any,
 							);
 						} else {
-							// Last item (no link) — current page
 							const text = li.children
 								.filter((c: any) => typeof c === 'string')
 								.join('')

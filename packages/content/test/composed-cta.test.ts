@@ -79,8 +79,7 @@ describe('the composed cta definition (WORK-666)', () => {
 describe('the shipping cta, for every gallery cell (WORK-703)', () => {
 	it.each(CASES)('%s: a block-less wrapper around a display section', (_case, src) => {
 		const b = mine(src);
-		// `cta`, its name: the plugin rendered as `call-to-action`, an alias the
-		// composition does not declare.
+		// `cta`, its name; the native rune rendered as its alias, `call-to-action`.
 		expect(b.attributes['data-rune']).toBe('cta');
 		expect(html(b)).not.toMatch(/rf-cta/);
 		expect(b.attributes['data-width']).toBe('full');
@@ -92,9 +91,9 @@ describe('the shipping cta, for every gallery cell (WORK-703)', () => {
 		expect(byName(b, 'action').length + byName(b, 'command').length).toBeGreaterThan(0);
 	});
 
-	it('the marketing plugin no longer ships a native cta, or its alias', () => {
+	it('the marketing plugin no longer ships a native cta, and the alias resolves to the composition', () => {
 		expect(marketing.runes.cta).toBeUndefined();
 		expect(marketing.theme?.runes?.CallToAction).toBeUndefined();
-		expect(merge(pkg).tags['call-to-action']).toBeUndefined();
+		expect(merge(pkg).tags['call-to-action']).toBe(merge(pkg).tags.cta);
 	});
 });

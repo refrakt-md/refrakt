@@ -11,28 +11,12 @@ import {
 	pageSectionProperties,
 } from '@refrakt-md/runes';
 
-/**
- * Split a release heading into version, optional title and optional date:
- *
- *   "v2.1.0 - 2024-01-15"                      → 2.1.0, —, 2024-01-15
- *   "0.1.0 — January 2024"                     → 0.1.0, —, January 2024
- *   "v0.41.0 · Composed runes - Oct 9, 2026"   → 0.41.0, Composed runes, Oct 9, 2026
- *   "v0.41.1"                                  → 0.41.1, —, —
- *
- * The title follows a middle dot; the date follows a dash (hyphen, en or em).
- * After a title the dash needs spaces around it, so a title may contain a bare
- * hyphen ("render-stack") but not " - ". A leading `v` is dropped, as it always
- * was for a dated heading and now is for an undated one too. A heading that is
- * not a version is the version as is.
- */
 export function parseReleaseHeading(text: string): {
 	version: string;
 	title: string;
 	date: string;
 } {
 	const version = String.raw`v?(\d[\w.]*(?:-[\w.]+)?)`;
-	// With a title, the date needs spaces around its dash, so a hyphenated title
-	// is not split. Without one, the original lenient form ("0.1.0—Jan") stands.
 	const titled = text.match(new RegExp(`^${version}\\s+·\\s+(.+?)(?:\\s+[-–—]\\s+(.+))?$`));
 	if (titled)
 		return { version: titled[1], title: titled[2].trim(), date: (titled[3] ?? '').trim() };
@@ -51,9 +35,6 @@ export const changelogRelease = createContentModelSchema({
 	},
 	contentModel: bodyOnly(),
 	transform(resolved, attrs, config) {
-		// The title rides inside the version heading, so the release reads as one
-		// line: "v0.41.0 · Composed runes you can ship". The separator is the
-		// theme's (Lumina draws it with ::before), not text in the heading.
 		const titleTag = attrs.title ? new Tag('span', {}, [attrs.title]) : undefined;
 		const versionTag = new Tag('h3', {}, [
 			attrs.version ?? '',
@@ -78,9 +59,6 @@ export const changelogRelease = createContentModelSchema({
 	},
 });
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const changelogSections = { preamble: 'preamble', headline: 'title' } as const;
 
 export const changelog = createContentModelSchema({
@@ -108,7 +86,6 @@ export const changelog = createContentModelSchema({
 		const headerNodes = renderNodes(resolved.header, config);
 		const projectMeta = new Tag('meta', { content: attrs.project ?? '' });
 
-		// Convert resolved sections to changelog-release tag nodes
 		const sections = resolved.sections as any[];
 		const releaseTagNodes = sections.map((section: any) => {
 			const { version, title, date } = parseReleaseHeading(section.$heading as string);
@@ -116,7 +93,6 @@ export const changelog = createContentModelSchema({
 			return new Ast.Node('tag', attributes, asNodes(section.body), 'changelog-release');
 		});
 
-		// Combine explicit child tags (preamble items) with heading-derived releases
 		const allReleases = [...asNodes(resolved.items), ...releaseTagNodes];
 		const sectionNodes = new RenderableNodeCursor(
 			Markdoc.transform(allReleases, config) as RenderableTreeNode[],

@@ -9,9 +9,6 @@ import {
 
 const alignValues = ['left', 'center', 'right', 'justify'] as const;
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const textBlockSections = { body: 'body' } as const;
 
 export const textblock = createContentModelSchema({
@@ -31,9 +28,6 @@ export const textblock = createContentModelSchema({
 	transform(resolved, attrs, config) {
 		const children = renderNodes(resolved.body, config);
 
-		// `dropcap` is now the universal SPEC-108 opt-in (gated on the prose register
-		// by the engine); textblock no longer declares it. `columns`/`lead`/`align`
-		// stay textblock-specific.
 		const columns = attrs.columns ?? 1;
 		const lead = attrs.lead ?? false;
 		const align = attrs.align ?? 'left';

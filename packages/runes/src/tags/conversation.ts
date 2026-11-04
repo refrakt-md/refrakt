@@ -51,16 +51,11 @@ function convertConversationChildren(nodes: Node[], attrs: Record<string, unknow
 			let speaker = '';
 			const children = [...node.children];
 
-			// Markdoc wraps a paragraph's inline content in an `inline` node, so
-			// the first paragraph's *content* is `firstPara.children[0].children`
-			// (when an inline wrapper is present) rather than `firstPara.children`
-			// directly. Both forms are handled.
 			const firstPara =
 				children.length > 0 && children[0].type === 'paragraph' ? children[0] : null;
 			const inlineHost =
 				firstPara && firstPara.children[0]?.type === 'inline' ? firstPara.children[0] : firstPara;
 
-			// Try to extract speaker from first paragraph's bold text: **Name:** ...
 			if (inlineHost) {
 				const firstInline = inlineHost.children[0];
 				if (firstInline && firstInline.type === 'strong') {
@@ -73,11 +68,6 @@ function convertConversationChildren(nodes: Node[], attrs: Record<string, unknow
 				}
 			}
 
-			// Fall back to alternating from speakers list. Inject a bold
-			// `**Name:**` prefix at the start of the first paragraph so the
-			// rendering matches the explicit `> **Name**:` form — name reads as
-			// bold-inline inside the bubble rather than as a separate label
-			// above it.
 			if (!speaker && speakerList.length > 0) {
 				speaker = speakerList[messageIndex % speakerList.length];
 

@@ -8,11 +8,6 @@ import {
 	pageSectionProperties,
 } from '@refrakt-md/runes';
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
-// SPEC-125 Phase 1 — each stop's note is authored prose and its only content
-// region, so it is the `body` role.
 export const itineraryStopSections = { body: 'body' } as const;
 
 export const itineraryStop = createContentModelSchema({
@@ -145,9 +140,6 @@ export const itineraryDay = createContentModelSchema({
 	},
 });
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const itinerarySections = {
 	preamble: 'preamble',
 	headline: 'title',
@@ -217,12 +209,6 @@ export const itinerary = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'itinerary',
-			// SPEC-130 D4 / WORK-567 — no `ItemList`. The days and stops carry
-			// the data that would make one worth publishing (`label`, `time`,
-			// `location`), but they reach it only once each day is a `ListItem`
-			// and each stop something like a `TouristAttraction` — per-child
-			// typing, not a flat mapping. Without `itemListElement` the type is
-			// the definitional gap rather than a thin entry.
 			tag: 'section',
 			properties: {
 				variant: variantMeta,

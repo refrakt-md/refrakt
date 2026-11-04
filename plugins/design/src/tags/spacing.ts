@@ -10,7 +10,6 @@ import {
 	groupByHeading,
 } from '@refrakt-md/runes';
 
-// Parse "name: value" format
 function parseNameValue(text: string): { name: string; value: string } | null {
 	const colonIndex = text.indexOf(':');
 	if (colonIndex === -1) return null;
@@ -20,7 +19,6 @@ function parseNameValue(text: string): { name: string; value: string } | null {
 	};
 }
 
-// Numeric helpers
 function numericPx(val: string): number {
 	return parseFloat(val) || 0;
 }
@@ -39,7 +37,6 @@ function maxScale(values: string[]): number {
 
 type SectionType = 'spacing' | 'radius' | 'shadows';
 
-/** Which section a heading opens; an unrecognised heading closes the current one. */
 function sectionOf(heading: Node): SectionType | '' {
 	const text = extractText(heading).toLowerCase();
 	if (text.includes('spacing')) return 'spacing';
@@ -62,9 +59,6 @@ interface ParsedSections {
 	shadows: SpacingItem[];
 }
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const spacingSections = { title: 'title' } as const;
 
 export const spacing = createContentModelSchema({
@@ -81,7 +75,6 @@ export const spacing = createContentModelSchema({
 	transform(resolved, attrs) {
 		const children = asNodes(resolved.body) as Node[];
 
-		// Parse headings and list items from the original AST into structured data
 		const result: ParsedSections = { spacing: null, radii: [], shadows: [] };
 		let unit = '';
 		let scaleValues: string[] = [];
@@ -107,7 +100,6 @@ export const spacing = createContentModelSchema({
 			result.spacing = { unit, values: scaleValues };
 		}
 
-		// Build complete presentational Tag tree
 		const titleMeta = new Tag('meta', { content: attrs.title });
 		const topChildren: (string | InstanceType<typeof Tag>)[] = [titleMeta];
 
@@ -115,7 +107,6 @@ export const spacing = createContentModelSchema({
 			topChildren.push(new Tag('h3', { 'data-name': 'title' }, [attrs.title as string]));
 		}
 
-		// Spacing scale section
 		if (result.spacing) {
 			const max = maxScale(result.spacing.values);
 			const scaleItems = result.spacing.values.map((val) => {
@@ -145,7 +136,6 @@ export const spacing = createContentModelSchema({
 			);
 		}
 
-		// Radii section
 		if (result.radii.length > 0) {
 			const radiusItems = result.radii.map(
 				(item) =>
@@ -168,7 +158,6 @@ export const spacing = createContentModelSchema({
 			);
 		}
 
-		// Shadows section
 		if (result.shadows.length > 0) {
 			const shadowItems = result.shadows.map(
 				(item) =>
@@ -201,7 +190,6 @@ export const spacing = createContentModelSchema({
 	},
 });
 
-/** Extract spacing tokens from a spacing AST node (used by design-context). */
 export function extractSpacingTokens(node: Node): {
 	spacing?: { unit?: string; scale?: string[] };
 	radii?: { name: string; value: string }[];

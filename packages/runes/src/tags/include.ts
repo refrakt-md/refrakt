@@ -1,37 +1,3 @@
-/**
- * Include's preprocess hook (SPEC-129).
- *
- * Replaces an `{% include %}` tag with the referenced partial's AST, cloned and
- * with the tag's `variables` substituted. The preprocess walk then descends
- * into the pasted nodes (SPEC-141), so a `data` or `snippet` inside the file is
- * resolved exactly as if it had been typed there — the case `{% partial %}`
- * cannot serve, because Markdoc expands partials during the transform.
- *
- * Three properties are load-bearing:
- *
- * - **Splice, never wrap.** One include produces N nodes and they land as
- *   direct siblings. A container to keep the replacement 1:1 breaks
- *   composition invisibly: measured in SPEC-127, `{% section %}` and
- *   `{% grid %}` consume their children, so wrapped content vanishes with no
- *   error. Same constraint, same reason, as the `data` per-row body.
- *
- * - **Always clone.** The partial ASTs are parsed once per build and shared by
- *   every page that references them. The other preprocessors mutate the tree in
- *   place, so pasting the shared nodes would let one page's `data` resolution
- *   leak into the next page's copy.
- *
- * - **Substitute, don't scope.** `partial` binds variables into a
- *   transform-time scope, which is precisely what a preprocessor attribute
- *   cannot read. `include` rewrites `Variable` nodes in the cloned AST at paste
- *   time — the same thing `bindRow` does for `$row` — so a binding reaches
- *   `{% data where=$q %}`. Variables the include does not bind are left alone
- *   and resolve at transform against the page's own variables.
- *
- * Failures render a visible error callout and record a build error rather than
- * throwing, matching `data`: one bad include does not take out the build, and
- * the failure is on the page where the author will see it.
- */
-
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 import type { PreprocessContext, PreprocessPage } from '@refrakt-md/types';
@@ -40,34 +6,14 @@ import { emitErrorNode } from '../data-emit.js';
 
 const { Ast } = Markdoc;
 
-/**
- * How deep includes may nest.
- *
- * A cycle is caught by name before this ever fires — the stack check below is
- * the real guard. This bounds the other shape: a chain of distinct files deep
- * enough that it is a mistake rather than a structure anyone meant to author.
- */
 export const MAX_INCLUDE_DEPTH = 16;
 
-/**
- * Preprocess: splice the `{% include %}` tag away. No-op when no partials are
- * available (a tree-mode build with none wired), matching how snippet and data
- * no-op without a sandbox — the tag then falls through to its schema transform,
- * which names the wiring.
- */
 function preprocessInclude(tag: Node, page: PreprocessPage, ctx: PreprocessContext): Node[] | void {
 	const partials = (ctx as { partials?: Record<string, unknown> }).partials;
 	if (!partials) return;
 	return resolveInclude(tag, page, ctx, partials, []);
 }
 
-/**
- * Include's own nested expansion (SPEC-141 D3). The preprocess walk descends
- * into every replacement, but the cycle stack is per-chain state it should not
- * carry, so the includes inside a pasted file are expanded here, under a stack
- * that names the chain. `resolveInclude` therefore leaves no `include` tag
- * behind, and the walk's descent finds none to expand a second time.
- */
 function walkAndReplaceIncludes(
 	node: Node,
 	page: PreprocessPage,
@@ -81,10 +27,6 @@ function walkAndReplaceIncludes(
 		if (child.type === 'tag' && child.tag === 'include') {
 			const replacement = resolveInclude(child, page, ctx, partials, stack);
 			node.children.splice(i, 1, ...replacement);
-			// Skip the pasted nodes: nested includes inside them were already
-			// expanded by `resolveInclude`, under the cycle stack that names the
-			// chain. Re-walking here would expand them a second time with an empty
-			// stack, which is exactly how a cycle becomes an infinite paste.
 			i += replacement.length - 1;
 			continue;
 		}
@@ -142,8 +84,6 @@ function resolveInclude(
 	const pasted = (source as Node).children ?? [];
 	const children = pasted.map((child) => cloneWithBindings(child, bindings));
 
-	// Expand nested includes inside what was just pasted, under a stack carrying
-	// this file — so a cycle is reported by name instead of overflowing.
 	if (children.length > 0) {
 		const container = new Ast.Node('document', {}, children);
 		walkAndReplaceIncludes(container, page, ctx, partials, [...stack, file]);
@@ -152,13 +92,6 @@ function resolveInclude(
 	return children;
 }
 
-/**
- * Clone a node, substituting bound variables.
- *
- * `$q` reaches the AST as a `Variable` in a node's *attributes* — on a tag
- * (`where=$q`) and equally on a `text` node, where `{% $q %}` becomes
- * `content: Variable(['q'])`. One rule covers both, exactly as `bindRow` does.
- */
 function cloneWithBindings(node: Node, bindings: Record<string, unknown>): Node {
 	const attributes: Record<string, unknown> = {};
 	for (const [key, value] of Object.entries(node.attributes ?? {})) {
@@ -166,10 +99,6 @@ function cloneWithBindings(node: Node, bindings: Record<string, unknown>): Node 
 	}
 	const children = (node.children ?? []).map((child) => cloneWithBindings(child, bindings));
 	const copy = new Ast.Node(node.type, attributes, children, node.tag);
-	// The constructor takes four fields; everything else Markdoc's parser sets
-	// has to be carried across by hand. `inline` decides whether a node renders
-	// inline, and `annotations` carries `{% .class #id %}` shorthand — dropping
-	// either changes the output silently.
 	if (node.lines) copy.lines = node.lines;
 	if (node.location) copy.location = node.location;
 	copy.inline = node.inline;
@@ -182,14 +111,6 @@ function cloneWithBindings(node: Node, bindings: Record<string, unknown>): Node 
 	return copy;
 }
 
-/**
- * Replace a `Variable` node whose root segment the include binds.
- *
- * Unbound variables pass through untouched rather than resolving to empty: the
- * pasted AST is page content now, so `$page.slug` and friends still resolve at
- * transform against the page's own variables. That is a capability `partial`
- * does not have — its scope *replaces* the variable surface.
- */
 function substitute(value: unknown, bindings: Record<string, unknown>): unknown {
 	if (!value || typeof value !== 'object') return value;
 	const node = value as { $$mdtype?: string; path?: unknown };
@@ -206,8 +127,6 @@ function substitute(value: unknown, bindings: Record<string, unknown>): unknown 
 	return value;
 }
 
-/** The include's own `variables={...}`, with any page-variable references in
- *  its values resolved before they are substituted into the pasted AST. */
 function resolveVariables(
 	raw: unknown,
 	pageVariables: Record<string, unknown> | undefined,
@@ -220,10 +139,6 @@ function resolveVariables(
 	return out;
 }
 
-/** Resolve an attribute value against the page's variables — literals pass
- *  through, `Variable` nodes are looked up. Mirrors snippet's and data's
- *  resolvers; anything else (a `Function` node) resolves to empty — the same
- *  silent-empty behaviour BUG-010 tracks for `data`'s `where`. */
 function resolveValue(value: unknown, variables: Record<string, unknown> | undefined): unknown {
 	if (value === undefined || value === null) return '';
 	if (typeof value !== 'object') return value;
@@ -240,30 +155,6 @@ function resolveValue(value: unknown, variables: Record<string, unknown> | undef
 	return '';
 }
 
-/**
- * The `include` rune — paste a file's AST into the page during **preprocess**
- * (SPEC-129).
- *
- * `{% partial %}` is Markdoc's, and Markdoc expands it during
- * `Markdoc.transform`. refrakt's preprocessors — `data` (SPEC-103) and
- * `snippet` (SPEC-062) — resolve the *page's* AST before that, so a
- * preprocessor rune inside a partial is never in the tree when they run and
- * survives to its own throwing transform. `include` closes that gap: it splices
- * the file's parsed AST into the page during preprocess, and the walk descends
- * into it, so the pasted content is preprocessed exactly as if it had been
- * typed there.
- *
- * Both runes read the same `_partials/` directory and the same `namespace:file`
- * roots — a file's *location* should not depend on its *contents*, so only the
- * call site differs. `partial` stays the documented default; reach for
- * `include` when the file contains `data` or `snippet`.
- *
- * Like `snippet` and `data`, this is an **AST preprocessor** — its `preprocess`
- * hook is the code above — so the schema's
- * `transform` is unreachable in normal operation. It exists for tooling
- * (`refrakt inspect include`, contracts, attribute validation, the rune
- * catalog) and throws a message pointing at the wiring if it ever runs.
- */
 export const include = createContentModelSchema({
 	attributes: {
 		file: {
@@ -282,12 +173,10 @@ export const include = createContentModelSchema({
 	contentModel: { type: 'sequence', fields: [] },
 	preprocess: preprocessInclude,
 	transform(_resolved, _attrs) {
-		// Unreachable in normal operation — the `preprocess` hook above splices
-		// `include` tags away before the transform runs.
 		throw new Error(
 			'{% include %} reached the transform phase unresolved — its preprocess hook was not ' +
 				'wired through. Ensure the content pipeline runs registered `preprocess` hooks before ' +
-				"`Markdoc.transform` (include pastes its file's AST; see SPEC-129).",
+				"`Markdoc.transform` (include pastes its file's AST).",
 		);
 	},
 });

@@ -13,9 +13,6 @@ import {
 } from '@refrakt-md/runes';
 import { extractScene, buildStoryContent } from './common.js';
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
 export const factionSectionSections = { body: 'body' } as const;
 
 export const factionSection = createContentModelSchema({
@@ -38,10 +35,6 @@ export const factionSection = createContentModelSchema({
 	},
 });
 
-// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
-// from the theme config rather than owned by it: a theme may not redefine
-// what a section *is* (ADR-028).
-// SPEC-125 Phase 1 — see `characterSections`; same shape, same correction.
 export const factionSections = {
 	preamble: 'preamble',
 	name: 'title',
@@ -50,15 +43,12 @@ export const factionSections = {
 } as const;
 export const factionMediaSlots = { scene: 'cover' } as const;
 
-// SPEC-130 / WORK-568 — Group B. As with `realm`, `sceneImage` is WORK-561's
-// name for the image the schema used to reach positionally.
 export const factionSchema = {
 	type: 'Organization',
 	properties: { name: 'name', sceneImage: 'image' },
 } as const;
 
 export const faction = createContentModelSchema({
-	// SPEC-144 — what this rune registers (WORK-612).
 	registers: {
 		entity: { idFrom: 'name', data: ['factionType', 'alignment', 'size', 'tags', 'name'] },
 	},
@@ -110,20 +100,17 @@ export const faction = createContentModelSchema({
 		},
 	}),
 	transform(resolved, attrs, config) {
-		// Combine explicit child tags (preamble items) with emitted section tags
 		const allItems = [...asNodes(resolved.items), ...asNodes(resolved.sections)];
 		const sectionNodes = new RenderableNodeCursor(
 			Markdoc.transform(allItems, config) as RenderableTreeNode[],
 		);
 
-		// Domain meta tags
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
 		const factionTypeMeta = new Tag('meta', { content: attrs.type ?? '' });
 		const alignmentMeta = new Tag('meta', { content: attrs.alignment ?? '' });
 		const sizeMeta = new Tag('meta', { content: attrs.size ?? '' });
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 
-		// Layout meta tags
 		const { metas: layoutMetas } = buildLayoutMetas(attrs);
 		const {
 			mediaPosition: mediaPositionMeta,
@@ -132,12 +119,8 @@ export const faction = createContentModelSchema({
 			collapse: collapseMeta,
 		} = layoutMetas;
 
-		// Extract scene image (shared helper)
 		const { sceneDiv, sceneImgTag, extraDescription } = extractScene(resolved.scene, config);
 
-		// SPEC-081: emit flat `data-name` slots — the `layout` config builds the
-		// content column (preamble header + metadata + body + sections) and the
-		// split sees only scene (media) + content.
 		const { bodyDiv, sectionsContainer, sections, hasSections } = buildStoryContent(
 			extraDescription,
 			resolved.description,
@@ -146,8 +129,6 @@ export const faction = createContentModelSchema({
 			config,
 		);
 
-		// Build children array. Scene first so it sits on top in stacked /
-		// media-position="top".
 		const children: any[] = [];
 		if (sceneDiv) children.push(sceneDiv.next());
 		children.push(nameTag);
@@ -171,9 +152,6 @@ export const faction = createContentModelSchema({
 			refs: {
 				name: nameTag,
 				scene: sceneDiv,
-				// WORK-561 — the scene image survives and is rendered, so it is a ref.
-				// Named `sceneImage` after its `scene` wrapper, so the wrapper and the
-				// image inside it are separately addressable.
 				sceneImage: sceneImgTag,
 				body: bodyDiv,
 				sections: sectionsContainer,

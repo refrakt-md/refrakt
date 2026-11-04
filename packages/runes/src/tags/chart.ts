@@ -10,7 +10,6 @@ import {
 
 const chartType = ['bar', 'line', 'pie', 'area'] as const;
 
-/** Find the rendered data `<table>` (possibly inside a table wrapper). */
 function findTable(nodes: RenderableTreeNode[]): InstanceType<typeof Tag> | undefined {
 	for (const n of nodes) {
 		if (!Markdoc.Tag.isTag(n)) continue;
@@ -65,8 +64,6 @@ export const chart = createContentModelSchema({
 		const tickStep = attrs['tick-step'];
 		const labelAngle = attrs['label-angle'];
 
-		// SPEC-083: the authored `<table>` is the single source of truth — the no-JS
-		// fallback AND the data the rf-chart web component parses. No JSON-in-meta.
 		const table = findTable(children);
 		const emitted: RenderableTreeNode[] = table ? [table] : children;
 		if (table) {
@@ -74,9 +71,6 @@ export const chart = createContentModelSchema({
 			if (title) table.children = [new Tag('caption', {}, [title]), ...table.children];
 		}
 
-		// type / stacked / tick-count / tick-step / label-angle ride the bag
-		// (→ data-type / data-stacked / data-tick-count / data-tick-step /
-		// data-label-angle) for the client; title lives in the table's <caption>.
 		const typeMeta = new Tag('meta', { content: type });
 		const stackedMeta = new Tag('meta', { content: String(stacked) });
 		const tickCountMeta =
@@ -100,7 +94,6 @@ export const chart = createContentModelSchema({
 			},
 			children: emitted,
 		});
-		// Emit as the rf-chart custom element; the web component enhances the table.
 		node.name = 'rf-chart';
 		return node;
 	},
