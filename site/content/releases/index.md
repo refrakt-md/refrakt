@@ -6,7 +6,21 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.47.0 · Quotations and the content model
+## v0.48.0 · Compositions go live
+
+`hero`, `cta` and `testimonial` are now compositions: short Markdown definitions that place `section` and `actions` (and, for testimonial, `pullquote`), shipped in the marketing plugin in place of their own transforms and stylesheets. Every rune reference page opens with a generated header that names the rune's plugin, marks a composition, and shows the rune's source in a drawer. Any link to a drawer on the page now opens it, and pages can read `$site.name`.
+
+{% hint type="warning" %}
+**Action needed:**
+
+- **Themes:** `hero`, `cta` and `testimonial` no longer render `rf-hero*`, `rf-cta*` or `rf-testimonial*` classes, and `cta`'s `data-rune` is now `cta`. Style the `section` (`[data-prominence="marquee"]` for hero, `"display"` for cta) and `actions` they are made of, or reach a rune through `[data-rune="hero"]`.
+- **Content:** `hero` takes `align="start | center | end"`. Run `refrakt migrate hero <paths> --apply` to rewrite `left`, `right` and the deprecated `justify`.
+- **Content:** a `cta` inside a pricing table is no longer left-aligned for you; write `align="start"`.
+{% /hint %}
+
+[All 8 changes in v0.48.0 →](/releases/v0.48.0)
+
+## v0.47.0 · Quotations and the content model - November 3, 2026
 
 A content model reads groups, nested blocks and a trailing part, and reports what is missing
 (SPEC-186); `section`'s header grammar is declared with it. On that, quotations get

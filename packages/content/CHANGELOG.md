@@ -1,5 +1,21 @@
 # @refrakt-md/content
 
+## 0.48.0
+
+### Minor Changes
+
+- edaecba: **`$site` page variable** (SPEC-187 D7). Pages can tell which site they are rendered for: `$site.name` is the site's key in `refrakt.config.json` (`"main"` for a single-site config). `normalizeRefraktConfig` tags each site with its key as `name` (a derived field; an authored `name` that differs from the key is reported), and `buildPageContentVariables` reads it from the site config every adapter already passes, so every adapter's pages get it with no adapter change. A content load with no site config has no `$site`. The new `NamedSiteConfig` type is exported from `@refrakt-md/transform/node`.
+
+### Patch Changes
+
+- Updated dependencies [c8914f4]
+- Updated dependencies [4fe9c3f]
+- Updated dependencies [edaecba]
+  - @refrakt-md/runes@0.48.0
+  - @refrakt-md/transform@0.48.0
+  - @refrakt-md/highlight@0.48.0
+  - @refrakt-md/types@0.48.0
+
 ## 0.47.0
 
 ### Minor Changes

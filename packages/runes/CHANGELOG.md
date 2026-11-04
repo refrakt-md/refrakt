@@ -1,5 +1,29 @@
 # @refrakt-md/runes
 
+## 0.48.0
+
+### Minor Changes
+
+- c8914f4: **A link to a drawer opens it** (SPEC-187 D10). Any link whose target is a drawer on the same page — `[Install](#install)`, `{% link href="#install" %}`, an `actions` item — becomes a drawer trigger, as `{% ref %}` already was. The target may be the drawer's `id` or its `#drawer-<id>` anchor; a drawer wins over a heading with the same id; a link to an id no drawer has is unchanged. A trigger's text can now carry an `{% icon %}`.
+
+  **Actions in a bar** (SPEC-187 D11). `actions` inside a `bar` gets the `rf-actions--in-bar` context modifier. Lumina renders it compact, at a badge's height, and tonal rather than filled, a primary included; the skeleton keeps it a row on a phone.
+
+  **A bar's paragraphs take no block margin** in Lumina, so a group written as a paragraph lines up with the group beside it.
+
+- 4fe9c3f: **Breaking:** `hero` is now a composition (SPEC-181, WORK-702). The marketing plugin ships it as `runes/hero.md`, a `section` at `marquee` prominence with an `actions` list, and the native rune, its theme config and its stylesheets are removed. It is the first rune to go live from the staging site.
+
+  - **No `rf-hero*` classes.** A hero renders as `<div data-rune="hero">` around a `.rf-section` and a `.rf-actions`. Theme CSS written against `.rf-hero`, `.rf-hero__headline`, `.rf-hero__blurb`, `.rf-hero__actions` or `.rf-hero--cover` no longer matches: style the `section` (`[data-prominence="marquee"]`) and `actions` vocabulary instead, or reach the hero through `[data-rune="hero"]`. `packages/lumina/styles/runes/hero.css` and the skeleton's `hero.css` are deleted. Context modifiers keyed on `hero` (`--in-hero`) still apply.
+  - **`align` takes `start | center | end`.** `left`, `right` and the deprecated `justify` are no longer accepted. `refrakt migrate hero <paths> --apply` rewrites them on `{% hero %}` tags: `left` → `start`, `right` → `end`, `justify` → `align`.
+  - **What it reads is unchanged otherwise.** Media and content split on `---`; `media-position`, `media-ratio`, `valign`, `collapse`, `content-place`, `height` and `aspect` behave as before. A second leading heading is now kept as body instead of being dropped (BUG-047).
+  - **The marketing plugin declares `runeDir: 'runes'`** and publishes `runes/` and `fixtures/`. `hero`'s gallery fixture moved to `fixtures/hero.md`; its editor snippet is gone with its plugin entry.
+  - **Page metadata still comes from the hero.** `extractSeo` reads the composed hero's `headline` and `blurb` slots for the OG title and description, as it read the native hero's fields; without it a hero's eyebrow became the page description.
+
+### Patch Changes
+
+- Updated dependencies [edaecba]
+  - @refrakt-md/transform@0.48.0
+  - @refrakt-md/types@0.48.0
+
 ## 0.47.0
 
 ### Minor Changes
