@@ -34,7 +34,7 @@ export const REGENERATE_COMMAND = 'npm run runes:attributes';
 
 /**
  * Runes with no doc page of their own, mapped to the page their content belongs
- * on — a child rune to its parent, an internal rune to `null`.
+ * on: a child rune to its parent.
  *
  * A Map rather than a Set because the parent has to be *data*: the coverage
  * check only needs to know a rune is pageless, but the attribute generator needs
@@ -77,11 +77,7 @@ export const PAGELESS = new Map([
 	['itinerary-stop', 'itinerary'],
 	['cast-member', 'cast'],
 	['timeline-entry', 'timeline'],
-
-	// Internal — not authored directly, so their content belongs on no page at
-	// all. `null` is a different answer from "documented on the parent's page",
-	// and the generator must not confuse the two.
-	['region', null], // layout — documented in layout.md
+	['region', 'layout'],
 ]);
 
 /** The active package set's runes + aliases, from the built CLI. */
@@ -152,34 +148,30 @@ export function computeDrift({ names, aliases }, docPages, pageless = PAGELESS) 
 }
 
 /**
- * Pages that still hand-write a table for a rune the artifact generates rows for
- * (WORK-548).
- *
- * The coverage checks above answer "do the pages and the runes agree?" for one
- * meaning of agree — every rune has a page. This answers the second: the page's
- * *content* comes from the schema rather than from a copy of it. A hand-written
- * table beside a generated one is the drift this whole item exists to remove,
- * and it re-appears the moment someone adds a row "just for now".
- *
- * Deliberately narrow. It only looks inside the `## Attributes` section, and
- * only flags a table there when the page also carries a generated include — a
- * page with no include at all is the *missing*-table case, which
- * `attributeCoverage` below reports separately with a different remedy.
+ * Rune pages that hand-write an attribute table. The generated table under
+ * `## Attributes` states every attribute; a copy beside it drifts the moment
+ * the schema changes. Flags any table in the `## Attributes` section, and any
+ * table elsewhere on the page whose first column is headed "Attribute". Tables
+ * inside a fence or an indented example are content, not documentation.
  */
-export function handWrittenTables(artifact, dir = RUNES_DIR) {
-	const generated = new Set([...artifact.own, ...artifact.base].map((r) => r.page).filter(Boolean));
+export function handWrittenTables(_artifact, dir = RUNES_DIR, pages = findDocPages(dir)) {
 	const offenders = [];
-	for (const [page, { rel }] of findDocPages(dir)) {
-		if (!generated.has(page)) continue;
-		const text = readFileSync(join(RUNES_DIR, rel), 'utf8');
+	for (const [page, { rel, isRune }] of pages) {
+		if (!isRune) continue;
+		const text = readFileSync(join(dir, rel), 'utf8').replace(
+			/^(`{3,}|~{3,})[^\n]*\n[\s\S]*?^\1[ \t]*$/gm,
+			'',
+		);
 		const m = /^(#{2,3}) Attributes\s*$/m.exec(text);
-		if (!m) continue;
-		const start = m.index + m[0].length;
-		const rest = text.slice(start);
-		const nxt = new RegExp(`^#{1,${m[1].length}} \\S`, 'm').exec(rest);
-		const section = rest.slice(0, nxt ? nxt.index : undefined);
-		if (!section.includes('rune-attributes.md')) continue;
-		if (/^\|\s*-{2,}/m.test(section)) offenders.push(page);
+		let section = '';
+		if (m) {
+			const rest = text.slice(m.index + m[0].length);
+			const nxt = new RegExp(`^#{1,${m[1].length}} \\S`, 'm').exec(rest);
+			section = rest.slice(0, nxt ? nxt.index : undefined);
+		}
+		if (/^\|\s*:?-{2,}/m.test(section) || /^\|\s*`?Attribute`?\s*\|/im.test(text)) {
+			offenders.push(page);
+		}
 	}
 	return offenders;
 }
@@ -360,11 +352,11 @@ function main() {
 		const handWritten = handWrittenTables(artifact);
 		if (handWritten.length) {
 			failed = true;
-			console.error(
-				`✗ ${handWritten.length} page(s) hand-write an attribute table beside the generated one:`,
-			);
+			console.error(`✗ ${handWritten.length} rune page(s) hand-write an attribute table:`);
 			for (const n of handWritten)
-				console.error(`    ${n}  — delete the table; the include renders it from the schema`);
+				console.error(
+					`    ${n}  — delete the table; the generated one under ## Attributes states it`,
+				);
 		}
 	}
 

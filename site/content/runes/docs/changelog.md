@@ -72,14 +72,6 @@ Use `{% changelog-release %}` tags for more control over version and date values
 
 {% /preview %}
 
-### Release attributes
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `version` | `string` | — | Version number |
-| `title` | `string` | — | Release title, shown after the version |
-| `date` | `string` | — | Release date |
-
 ## Section header
 
 Changelog supports an optional eyebrow, headline, and blurb above the section above entries. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.

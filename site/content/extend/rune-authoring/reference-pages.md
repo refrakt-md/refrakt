@@ -39,4 +39,4 @@ Every page follows the same order. A section appears only when it has something 
 - Plan IDs and decision numbers. A reader cannot open them.
 - Release history: what changed, what was renamed, how to migrate. That is the release note's job.
 
-`npm run runes:check-docs` checks the parts it can: that the intro opens the page, that there is one attribute include under `## Attributes` with only "See also" after it, and that no install hint or hand-written title is left.
+`npm run runes:check-docs` checks the parts it can: that the intro opens the page, that there is one attribute include under `## Attributes` with only "See also" after it, that no attribute table is written by hand, and that no install hint or hand-written title is left.

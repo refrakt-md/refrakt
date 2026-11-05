@@ -117,15 +117,7 @@ The sandbox becomes a backdrop: it takes no clicks or focus, and fills the band 
 - **Respect reduced motion.** Show a still frame when the reader asks for less motion, as the waves scene does.
 - **Keep it light.** It loads with the page. Cap the pixel ratio, pause when the tab is hidden, and show a still fallback where WebGL is missing; the [three.js scene in Media guests](/runes/media-guests#live-program) does all three.
 
-### Cover attributes
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `content-place` | `string` | `auto` | Overlay anchor: `"<block> <inline>"` (e.g. `"end start"`), or `auto` — a centred band |
-| `height` | `string` | — | Band height (named scale): `sm`, `md`, `lg`, `xl` |
-| `aspect` | `string` | — | Band aspect ratio (e.g. `"21/9"`); without `height`/`aspect`, a wide default with a viewport floor applies |
-| `scrim` | `string` | on | Scrim edge (`top`, `bottom`, `left`, `right`) or `none` to opt out |
-| `scrim-type` | `string` | `gradient` | Scrim treatment: `gradient` or `frost` (with `scrim-blur`: `none`, `sm`, `md`, `lg`) |
+`scrim` picks the edge the scrim darkens from, or `none` for no scrim, and `scrim-type="frost"` blurs the media instead (`scrim-blur` sets how much).
 
 ### Backdrop *and* a subject — a live `bg` behind positioned media
 
@@ -167,16 +159,9 @@ The backdrop sandbox is forced to `height="fill"` and the **backdrop posture** �
 
 Hero supports an optional eyebrow, headline, and blurb above the headline and description. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
-### Layout attributes
+## Place the media
 
-The body splits on `---` into **media → content** zones (media-first in source). `media-position` controls visual placement independently of source order — a landing-page hero typically uses `media-position="end"` to put the screenshot on the right.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `media-position` | `string` | `bottom` | Where the media sits: `top`, `bottom` (the default — media beneath the text, the classic hero), `start` (left), `end` (right), or `cover` (full-bleed backdrop — see [Cover](#cover--content-over-a-full-bleed-backdrop)) |
-| `media-ratio` | `string` | — | Media's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
-| `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
-| `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
+The body splits on `---` into **media → content** zones (media-first in source). `media-position` controls visual placement independently of source order — a landing-page hero typically uses `media-position="end"` to put the screenshot on the right. `media-ratio`, `valign` and `collapse` tune a side-by-side split, as on [card](/runes/card#place-the-media).
 
 ## Attributes
 

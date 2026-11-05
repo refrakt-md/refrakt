@@ -113,6 +113,23 @@ describe.skipIf(!existsSync(CLI_PATH))('rune docs are in parity (live)', () => {
 		expect(handWrittenTables(artifact)).toEqual([]);
 	});
 
+	it('flags an attribute table anywhere on a rune page, but not one in an example', () => {
+		const dir = mkdtempSync(join(tmpdir(), 'rune-table-guard-'));
+		const pages = new Map();
+		const page = (name, body, isRune = true) => {
+			writeFileSync(join(dir, `${name}.md`), `---\ntitle: ${name}\n---\n\n${body}`);
+			pages.set(name, { rel: `${name}.md`, isRune });
+		};
+		const table = '| Attribute | Type |\n|---|---|\n| `x` | `string` |\n';
+		page('task', `## Place the media\n\n${table}`);
+		page('section', '## Attributes\n\n| Name | Type |\n|---|---|\n| `x` | `y` |\n');
+		page('example', `{% preview %}\n\t${table.replaceAll('\n', '\n\t')}\n{% /preview %}\n`);
+		page('fenced', `\`\`\`markdown\n${table}\`\`\`\n`);
+		page('other', '| Field | Values |\n|---|---|\n| `a` | `b` |\n');
+		page('concept', `## Attributes\n\n${table}`, false);
+		expect(handWrittenTables(null, dir, pages).sort()).toEqual(['section', 'task']);
+	});
+
 	it('the stale-artifact failure names the command to run', () => {
 		expect(REGENERATE_COMMAND).toBe('npm run runes:attributes');
 	});

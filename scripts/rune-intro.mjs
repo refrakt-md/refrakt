@@ -67,8 +67,14 @@ export async function runeDirs(packages) {
 	return out;
 }
 
+/** Core runes whose schema lives outside `src/tags/`. */
+const CORE_SOURCES = { link: 'packages/runes/src/nodes.ts' };
+
 /** Where a rune is defined, and whether that is a composition. */
 export function sourceOf(rune, { dirs, runeDirOf, exists = (p) => existsSync(join(ROOT, p)) }) {
+	if (rune.plugin === 'core' && CORE_SOURCES[rune.name]) {
+		return { composed: false, source: CORE_SOURCES[rune.name] };
+	}
 	const dir = dirs[rune.plugin];
 	if (!dir)
 		throw new Error(

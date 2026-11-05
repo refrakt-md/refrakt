@@ -247,20 +247,9 @@ Collapse is **binary**. Above the chosen breakpoint, the grid renders exactly as
 
 Choose `collapse` to match the narrowest width your authored grid can comfortably hold. A 6-column grid with wide cells probably wants `md` or `lg`; a small grid of `small` cells can stay at `sm`. There is no intermediate column reduction by default — if the grid genuinely needs to fit a range of container widths, pick `columns` for the lowest acceptable width and let the wider container render the cells with extra breathing room.
 
-## Common attributes
+## Tint a cell
 
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |
-
-Cells are tint-deferrable: apply `tint` / `tint-mode` to an individual `{% bento-cell %}` for a multi-coloured grid.
+A `tint` or `tint-mode` on a single `{% bento-cell %}` colours that cell alone, for a grid of many colours.
 
 ## Attributes
 

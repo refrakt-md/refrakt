@@ -55,16 +55,11 @@ Headings are automatically converted into steps instead of list items.
 
 {% /preview %}
 
-### Step layout attributes
+## Place a step's media
 
 Individual steps (heading-delimited blocks) accept the shared media+content layout vocabulary — the body splits on `---` into **media → content** zones (media-first in source); `media-position` controls visual placement.
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `media-position` | `string` | `bottom` | Where the media sits: `top`, `bottom` (the default — media beneath the text), `start` (left), `end` (right) |
-| `media-ratio` | `string` | — | Media's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
-| `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
-| `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
+`media-ratio`, `valign` and `collapse` tune a side-by-side split, as on [card](/runes/card#place-the-media).
 
 ## Section header
 
