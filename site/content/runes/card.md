@@ -108,20 +108,11 @@ the media is always an inert backdrop, linked or not. See the [interaction-postu
 contract](/extend/rune-authoring/composability#media-guest-interaction-posture)
 for the full model.
 
-## Layout attributes
+## Place the media
 
 `card` shares the media+content layout vocabulary with `bento-cell` and every other media-bearing rune. The body splits on `---` into **media → body → footer** (media-first, in source order); `media-position` decides where the media sits visually, independently of source order.
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `media-position` | `string` | `top` | Where the media sits: `top`, `bottom`, `start` (left), `end` (right), or `cover` (media fills the card, content overlays — see below) |
-| `media-ratio` | `string` | — | Media zone's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
-| `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
-| `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
-| `content-place` | `string` | `auto` | **Cover only.** Where the overlaid content anchors: `<block> <inline>` (each `start`/`center`/`end`), or `auto` to adapt to orientation |
-| `height` | `string` | — | Intrinsic card height (named scale `sm`/`md`/`lg`/`xl`) — gives a cover or `bg`-only card a poster shape |
-| `aspect` | `string` | — | Intrinsic card aspect ratio (e.g. `16/9`, `3/4`) — the proportional alternative to `height` |
-| `href` | `string` | — | Optional whole-card link target |
+`media-ratio` sets the media's share of the row beside the content, `valign` aligns the two, and `collapse` picks the width at which they stack. `height` or `aspect` give the card a fixed shape, and `href` links the whole card.
 
 ## Elevation & frame
 
@@ -138,7 +129,7 @@ A card exposes two decorable surfaces ([surface model](/runes/surfaces)): the **
 
 {% /preview %}
 
-`elevation` floats the card box (`none`/`sm`/`md`/`lg`); `frame` (or a named preset from theme/project config) decorates the media zone. Because the media zone is a clipping host, a displaced or `oversize`d guest is cropped into a peek — `frame-anchor` picks the focal point. See [surfaces](/runes/surfaces) for the full facet list.
+`elevation` lifts the card off the page; `frame` (or a named preset from theme/project config) decorates the media zone. Because the media zone is a clipping host, a displaced or `oversize`d guest is cropped into a peek — `frame-anchor` picks the focal point. See [surfaces](/runes/surfaces) for the full facet list.
 
 ## Cover mode
 

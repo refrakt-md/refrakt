@@ -152,10 +152,8 @@ describe('pageForRune', () => {
 		expect(pageForRune('accordion-item')).toBe('accordion');
 	});
 
-	it('sends an internal rune nowhere — not to some arbitrary page', () => {
-		// `null` and "documented on the parent's page" are different answers, and
-		// collapsing them would put `region`'s attributes somewhere at random.
-		expect(pageForRune('region')).toBeNull();
+	it("sends layout's region to the layout page", () => {
+		expect(pageForRune('region')).toBe('layout');
 	});
 });
 

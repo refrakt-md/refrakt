@@ -42,17 +42,11 @@ A complete recipe with ingredients, instructions, and a tip.
 
 Recipe supports an optional eyebrow, headline, and blurb above the section above ingredients and method. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
-### Layout attributes
+## Place the media
 
 The body splits on `---` into **media → content → footer** zones (media-first in source). `media-position` controls visual placement independently of source order.
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `media-position` | `string` | `top` | Where the media sits: `top`, `bottom`, `start` (left), `end` (right), or `cover` (poster header — see below) |
-| `media-ratio` | `string` | — | Media's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
-| `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
-| `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
-| `content-place` | `string` | `auto` | **Cover only.** Where the overlaid header anchors: `<block> <inline>` (each `start`/`center`/`end`), or `auto` |
+`media-ratio`, `valign` and `collapse` tune a side-by-side split, as on [card](/runes/card#place-the-media).
 
 ## Cover mode
 

@@ -32,18 +32,9 @@ A `_layout.md` file uses regions to place content into theme slots.
 
 Layouts are inherited from parent directories. A `_layout.md` in a subdirectory can override or extend regions from the parent layout using the `mode` attribute.
 
-### Region attributes
+### Extending a parent layout
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `name` | `string` | **required** | Region identifier (e.g., `header`, `nav`, `sidebar`, `footer`) |
-| `mode` | `string` | `"replace"` | Merge mode: `replace`, `prepend`, or `append` |
-
-### Layout attributes
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `extends` | `string` | `"parent"` | Which layout to extend |
+A `{% region %}` names the region it fills (`header`, `nav`, `sidebar`, `footer`). By default it replaces the parent layout's region of that name; `mode="prepend"` or `mode="append"` adds to it instead. `extends` on the `{% layout %}` names the layout to build on, the parent directory's by default.
 
 ## Attributes
 

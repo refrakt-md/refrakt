@@ -63,13 +63,6 @@ Use `{% cast-member %}` tags for more control, including bios.
 
 {% /preview %}
 
-### Member attributes
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `name` | `string` | — | Person's name |
-| `role` | `string` | — | Person's role or title |
-
 ## Section header
 
 Cast supports an optional eyebrow, headline, and blurb above the section above cast members. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.

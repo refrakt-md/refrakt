@@ -197,12 +197,7 @@ Under `prefers-reduced-motion`, a non-eager sandbox does **not** auto-activate e
 
 A sandbox can be **fed data from your registry**. Set a `data` query — the same field-match grammar [`collection`](/runes/collection) uses — and the build resolves it, serializes the result, and exposes it to the iframe as a frozen `window.RF_DATA`. Your code renders *anything* from your own content: the registry's third render target, after `collection` (HTML) and `aggregate` (SVG) — bring your own renderer.
 
-| Attribute | Effect |
-|-----------|--------|
-| `data` | A registry query, e.g. `type:page` or `type:work status:done` |
-| `data-shape` | `flat` (default — a record array), `tree` (nested by `parentUrl`), or `graph` (nodes + SPEC-072 relationship edges) |
-| `data-fields` | Comma-separated data fields to project (keeps the payload lean) |
-| `data-limit` | Max records (default 500; over → truncated with a build warning) |
+`data-shape` decides the form it arrives in: `flat`, a list of records (the default); `tree`, nested by URL; or `graph`, entities and the relationships between them. `data-fields` keeps only the fields you name, and `data-limit` caps the number of records (500 by default; the build warns when it cuts).
 
 Here a `data-shape="tree"` binding feeds this site's own rune-section page tree to a three.js scene — a live, navigable **3D star-map**: each section is a star and its pages orbit it as a little planetary system, nested by URL depth (drag to rotate, click a node to open it). It's a heavy WebGL scene, so it's set `activation="visible"` — the scene (and three.js) only loads once you scroll it into view:
 

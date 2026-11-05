@@ -64,8 +64,6 @@ Not every work item ships. Rather than deleting the file (which loses the reason
 - **`superseded`** — the work is replaced by a different item. Pair it with `supersedes="WORK-xxx"` pointing at the replacement.
 
 Both statuses end the item's lifecycle without counting as completion — they are excluded from `plan next`, from milestone progress, and from `plan-progress` achieved counts. A `## Resolution` explaining the retirement is allowed on either.
-| `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
-| `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |
 
 ## Attributes
 

@@ -71,8 +71,6 @@ A spec that has been replaced by a newer version.
 
 - **`implemented`** — every work item that `source`s this spec is `done` and the code is in `main`. `refrakt plan status` suggests this flip once all linked work is done.
 - **`shipped`** — released to users in an npm version. Pair it with `released-in="vX.Y.Z"`; `plan validate` errors on a shipped spec that lacks it.
-| `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
-| `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |
 
 ## Attributes
 
