@@ -89,9 +89,8 @@ Facets compose freely.
 
 {% /preview %}
 
-### Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:showcase"} /%}
-
 **Deprecated aliases** (emit a build warning): `shadow` → `frame-shadow` (`soft`/`hard`/`elevated` → `sm`/`md`/`lg`), `bleed` → `frame-displace`, `offset` → `frame-offset` (named scale; raw lengths warn), `aspect` → `frame-aspect`, `place` → `frame-place`.
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:showcase"} /%}

@@ -145,10 +145,6 @@ Tokens are namespaced as `--tint-*` rather than directly overriding theme tokens
 }
 ```
 
-## Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:tint"} /%}
-
 ## The tint axis on other runes
 
 Every rune that carries the tint axis accepts these directly — no `{% tint %}` child needed.
@@ -219,3 +215,7 @@ tints: {
 ```
 
 A theme without tint bridge CSS simply ignores tint tokens — the section renders with page defaults.
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:tint"} /%}

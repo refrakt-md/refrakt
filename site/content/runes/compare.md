@@ -51,7 +51,6 @@ Use the `labels` attribute to override the default language-based labels.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:compare"} /%}
-

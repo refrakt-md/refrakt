@@ -50,7 +50,6 @@ A typography rune can show a single font for focused documentation.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:typography"} /%}
-

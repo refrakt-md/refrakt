@@ -76,7 +76,6 @@ Document visual tokens without a spacing scale.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:spacing"} /%}
-

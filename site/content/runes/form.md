@@ -91,16 +91,6 @@ Use the `variant` attribute to change the layout.
 
 {% /preview %}
 
-### Attributes
-
-#### `form`
-
-{% include file="rune-attributes.md" variables={r: "rune:form"} /%}
-
-#### `form-field`
-
-{% include file="rune-attributes.md" variables={r: "rune:form-field"} /%}
-
 ### Smart type inference
 
 Field types are automatically inferred from the list item text:
@@ -125,3 +115,7 @@ Add parenthetical modifiers to list items:
 - `(placeholder: "hint text")` — adds placeholder text
 
 Example: `- Phone (optional, placeholder: "+1 555-0100")`
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:form"} /%}

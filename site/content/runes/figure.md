@@ -75,7 +75,6 @@ A figure *is* a frame around its image, so it sets `frameTarget: "self"` ([surfa
 	{% /figure %}
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:figure"} /%}
-

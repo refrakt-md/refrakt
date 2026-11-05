@@ -41,6 +41,6 @@ Omit the rating for a pure testimonial quote.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:testimonial"} /%}

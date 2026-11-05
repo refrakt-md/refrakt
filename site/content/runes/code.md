@@ -76,9 +76,9 @@ The element is the point: Lumina styles `code` with an element rule, so a paragr
 
 ## Attributes
 
-None.
+{% include file="rune-attributes.md" variables={r: "rune:code"} /%}
 
-## Related
+## See also
 
 - [data](/runes/data) — the per-row body this was built for
 - [include](/runes/include) — the other place a variable reaches content

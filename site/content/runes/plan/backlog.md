@@ -101,10 +101,6 @@ Filters combine with AND logic. Multiple values for the same field combine with 
 
 {% /preview %}
 
-### Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:backlog"} /%}
-
 ### Output structure
 
 Backlog is thin sugar over [`collection`](/runes/collection): each entity renders through a **universal projection** that works for every plan type by construction.
@@ -113,3 +109,7 @@ Backlog is thin sugar over [`collection`](/runes/collection): each entity render
 - **Table** — *Identifier · Type · Status · Title* columns.
 
 When scoped to a single type, a card also surfaces that type's key field — `work` shows **priority**, `bug` shows **severity** — since the set is homogeneous. A mixed set stays universal (no ragged per-row columns); for richer per-type detail, author your own `collection` body. When `group` is set, items are wrapped in groups headed by the group value.
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:backlog"} /%}

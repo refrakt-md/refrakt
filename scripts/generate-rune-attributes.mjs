@@ -176,6 +176,7 @@ export function build(sites) {
 		axesAvailable: [],
 		axesUnavailable: [],
 		axisAttributes: [],
+		children: [],
 	};
 
 	// One row per (axis, attribute) — keyed by **axis alone**, not (rune, axis).
@@ -208,6 +209,15 @@ export function build(sites) {
 		(a, b) => a.axis.localeCompare(b.axis) || a.name.localeCompare(b.name),
 	);
 
+	// SPEC-193 D1.6 — a parent's include renders its children's tables too. One
+	// row per child that has a table, keyed by the *parent's* name under `rune`, so
+	// the partial's one binding (`where=$r`, `"rune:accordion"`) finds them; the
+	// child's own rows are then a nested query on `query`. Declaration order.
+	for (const [child, parent] of PAGELESS) {
+		if (!parent || !byName.has(child)) continue;
+		artifact.children.push({ rune: parent, child, query: `rune:${child}` });
+	}
+
 	for (const name of names) {
 		const { rune } = byName.get(name);
 		const page = pageForRune(name);
@@ -232,7 +242,14 @@ export function build(sites) {
  * (BUG-010). Partitioned, every query is `root="<partition>" where=$r` with
  * `$r` = `"rune:card"` — which is what SPEC-128 D1 wanted from the call site.
  */
-export const PARTITIONS = ['own', 'base', 'axesAvailable', 'axesUnavailable', 'axisAttributes'];
+export const PARTITIONS = [
+	'own',
+	'base',
+	'axesAvailable',
+	'axesUnavailable',
+	'axisAttributes',
+	'children',
+];
 
 /** Every attribute row across the partitions that carry them. */
 export function allAttributeRows(artifact) {

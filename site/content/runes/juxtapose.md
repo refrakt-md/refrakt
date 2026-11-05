@@ -126,7 +126,6 @@ Use `orientation="horizontal"` to stack panels vertically with a horizontal divi
 | `---` | Panel separator |
 | Content between separators | Panel body |
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:juxtapose"} /%}
-

@@ -31,10 +31,6 @@ Show fewer or more recent items.
 
 {% /preview %}
 
-### Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:plan-activity"} /%}
-
 ### Output structure
 
 The rune resolves to an ordered list of entries, each containing:
@@ -46,3 +42,7 @@ The rune resolves to an ordered list of entries, each containing:
 - Entity title
 
 Items are sorted by file modification time, most recent first. Only entities with available modification data are included. Modification dates are sourced from the shared content pipeline's `$file.modified` variable, which uses git commit timestamps with a filesystem stat fallback.
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:plan-activity"} /%}

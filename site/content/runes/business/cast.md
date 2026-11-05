@@ -63,16 +63,6 @@ Use `{% cast-member %}` tags for more control, including bios.
 
 {% /preview %}
 
-### Attributes
-
-#### `cast`
-
-{% include file="rune-attributes.md" variables={r: "rune:cast"} /%}
-
-#### `cast-member`
-
-{% include file="rune-attributes.md" variables={r: "rune:cast-member"} /%}
-
 ### Member attributes
 
 | Attribute | Type | Default | Description |
@@ -84,3 +74,6 @@ Use `{% cast-member %}` tags for more control, including bios.
 
 Cast supports an optional eyebrow, headline, and blurb above the section above cast members. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:cast"} /%}

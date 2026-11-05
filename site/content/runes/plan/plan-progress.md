@@ -47,10 +47,10 @@ Scope to a single type with `type=` — its done-state drives the bar:
 {% plan-progress type="spec" /%}
 ```
 
-### Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:plan-progress"} /%}
-
 ### How it composes
 
 `plan-progress` emits one `{% aggregate %}` per type (`group="status"`, `value="status:<that type's done-state>"`) and lets `aggregate` resolve the counts. The bar is the [`progress`](/runes/progress) rune, labelled with the achieved status — **Done** (work), **Fixed** (bug), **Accepted** (spec / decision), **Complete** (milestone) — with the count shown alongside. The breakdown is one [`badge`](/runes/badge) per status. (Per-status badge colour is on the roadmap — it needs per-group sentiment projection in `aggregate`.)
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:plan-progress"} /%}

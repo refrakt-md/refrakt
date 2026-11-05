@@ -81,7 +81,6 @@ White-framed panels with drop shadows, like pinned photos.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:storyboard"} /%}
-

@@ -106,10 +106,6 @@ The pasted content lands as **siblings** at the call site, not wrapped in a cont
 
 The accordion sees the included headings as its own children and builds one item per heading. Had the content been wrapped, `{% section %}` and `{% grid %}` would consume it and the items would vanish with no error — so it is not.
 
-## Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:include"} /%}
-
 ## Errors
 
 Failures render on the page as a caution callout and record a build error; one bad include does not take down the build.
@@ -121,7 +117,11 @@ Failures render on the page as a caution callout and record a build error; one b
 | `cycle — a.md → b.md → a.md` | A file includes itself, directly or through a chain. |
 | `nested more than 16 deep` | A chain of distinct files past the depth bound. |
 
-## Related
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:include"} /%}
+
+## See also
 
 - [Partials](/docs/authoring/partials) — the shared `_partials/` directory, file roots, and the choice between the two runes
 - [data](/runes/data) — the rune that most often forces this choice

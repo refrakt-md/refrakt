@@ -85,7 +85,6 @@ A tinted panel is the universal `tint`:
 `variant` is deprecated: its values named looks, which belong to the theme. `accent` maps to `tint="subtle"` and `prominence="prominent"`; `default` and `editorial` map to nothing. It is accepted with a warning for this release.
 {% /hint %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:pullquote"} /%}
-

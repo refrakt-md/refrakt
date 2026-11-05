@@ -47,7 +47,6 @@ Use `variant="tooltip"` for a subtle inline callout.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:sidenote"} /%}
-

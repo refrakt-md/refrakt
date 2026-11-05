@@ -170,7 +170,6 @@ Set the `deprecated` attribute to mark a construct as deprecated. Add a `source`
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:symbol"} /%}
-

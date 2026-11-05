@@ -87,6 +87,4 @@ Pricing supports an optional eyebrow, headline, and blurb above the section abov
 
 ## Attributes
 
-### `tier`
-
-{% include file="rune-attributes.md" variables={r: "rune:tier"} /%}
+{% include file="rune-attributes.md" variables={r: "rune:pricing"} /%}

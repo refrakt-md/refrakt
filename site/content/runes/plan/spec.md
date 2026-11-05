@@ -65,10 +65,6 @@ A spec that has been replaced by a newer version.
 
 {% /preview %}
 
-### Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:spec"} /%}
-
 ### Lifecycle: accepted → implemented → shipped
 
 `accepted` means the team agreed to build the spec. Two further states close the loop between agreement and availability:
@@ -78,3 +74,6 @@ A spec that has been replaced by a newer version.
 | `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
 | `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:spec"} /%}

@@ -133,10 +133,6 @@ Dark overlay, heavy blur, top-aligned, and slightly transparent.
 {% /hero %}
 ```
 
-### Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:bg"} /%}
-
 ## Named presets & the escape hatch
 
 A theme or project registers named `bg` presets (applied with `bg="name"`). A preset's gradient is **structured** and token-driven:
@@ -157,3 +153,7 @@ For the genuine long tail (animations, exotic effects) a preset may carry a raw-
 ```
 
 Backgrounds are valid in **theme** config and **project** config (`refrakt.config.json`); project `backgrounds` merge over theme `backgrounds` by name. A build-time soft warning flags a raw gradient in `style` that the structured `gradient` field now covers.
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:bg"} /%}

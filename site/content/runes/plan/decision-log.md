@@ -35,10 +35,6 @@ An aggregation rune that renders a chronological list of architecture decision r
 
 {% /preview %}
 
-### Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:decision-log"} /%}
-
 ### Output structure
 
 Renders as an ordered list (`ol.rf-decision-log__list`) where each entry (`li.rf-decision-log__entry`) contains:
@@ -47,3 +43,7 @@ Renders as an ordered list (`ol.rf-decision-log__list`) where each entry (`li.rf
 - Status badge (color-coded via `[data-status]`)
 - Decision ID
 - Title
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:decision-log"} /%}

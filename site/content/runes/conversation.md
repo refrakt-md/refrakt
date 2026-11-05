@@ -47,13 +47,6 @@ Use the `speakers` attribute to automatically alternate between named speakers w
 
 {% /preview %}
 
-### Attributes
-
-#### `conversation`
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:conversation"} /%}
-
-#### `conversation-message`
-
-{% include file="rune-attributes.md" variables={r: "rune:conversation-message"} /%}
-

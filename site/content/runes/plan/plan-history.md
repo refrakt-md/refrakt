@@ -52,10 +52,6 @@ In global mode, events from the same commit are grouped together, showing the co
 
 Content-only events (body edits with no attribute/criteria/resolution change) are omitted from the global feed to reduce noise.
 
-## Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:plan-history"} /%}
-
 ## Event types
 
 The history extractor classifies each commit into one of five event kinds:
@@ -119,3 +115,7 @@ The global feed adds the `rf-plan-history--global` modifier and uses `__commit-m
 ## CLI companion
 
 The [`refrakt plan history`](/runes/plan/cli#refrakt-plan-history) command provides the same history data in the terminal, with additional filtering options (`--author`, `--status`).
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:plan-history"} /%}

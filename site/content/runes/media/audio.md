@@ -69,6 +69,6 @@ Use the `playlist` attribute to connect the player to a named playlist rune via 
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:audio"} /%}

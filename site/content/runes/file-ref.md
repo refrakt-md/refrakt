@@ -91,10 +91,6 @@ The filename default (e.g. `theme.ts`) is conservative — when the file-ref ref
 {% file-ref path="packages/types/src/config.ts" symbol="SiteConfig" label="SiteConfig" /%}
 ```
 
-## Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:file-ref"} /%}
-
 ## Site configuration
 
 The GitHub URL is built from `SiteConfig.repoUrl` + `SiteConfig.repoBranch`. Both live in `refrakt.config.json`:
@@ -145,6 +141,10 @@ With `preview="drawer"`:
   </footer>
 </section>
 ```
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:file-ref"} /%}
 
 ## See also
 

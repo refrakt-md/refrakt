@@ -56,10 +56,6 @@ A work item blocked by a dependency.
 
 {% /preview %}
 
-### Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:work"} /%}
-
 ### Retiring a work item
 
 Not every work item ships. Rather than deleting the file (which loses the reasoning trail) or marking it `done` (which lies to progress rollups), use one of the two terminal-but-non-achieving states:
@@ -71,3 +67,6 @@ Both statuses end the item's lifecycle without counting as completion — they a
 | `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
 | `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:work"} /%}

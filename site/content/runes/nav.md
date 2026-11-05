@@ -190,7 +190,6 @@ Lumina handles responsive behaviour without any author work:
 - `cards` shifts to a single column below ~500px.
 - `vertical collapsible` works the same on every viewport — the collapse / expand model is viewport-agnostic.
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:nav"} /%}
-

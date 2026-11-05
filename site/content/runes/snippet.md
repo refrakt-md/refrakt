@@ -290,10 +290,6 @@ This repository marks exactly one. Almost every `snippet` on these pages demonst
 
 If `--check` is noisy after a marking pass, the remedy is **unmarking pages**, not loosening the comparison. A marker that fires on a page whose prose did not depend on the slice is a selection error.
 
-## Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:snippet"} /%}
-
 No `title` attribute. Snippet's output is a fence; to label it, wrap it in `{% figure caption="..." %}` (a caption below) or `{% codegroup title="..." %}` (a title bar above).
 
 ## Output
@@ -319,6 +315,10 @@ Snippet's killer trick: feed it `$file.path` from the page-variable surface ({% 
 Renders as the snippet block below — at build time it reads the page you're looking at right now and inlines its content. The reader sees the markdown that generates the page they're reading. The "see it in action" pitch in one rune.
 
 {% snippet path=$file.path lang="markdoc" /%}
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:snippet"} /%}
 
 ## See also
 

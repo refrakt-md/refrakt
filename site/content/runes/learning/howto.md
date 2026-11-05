@@ -34,11 +34,10 @@ A how-to guide with required tools and numbered steps.
 
 {% /preview %}
 
-### Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:howto"} /%}
-
 ## Section header
 
 How-to supports an optional eyebrow, headline, and blurb above the section above the steps. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:howto"} /%}

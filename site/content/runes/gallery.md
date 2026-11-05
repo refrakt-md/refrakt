@@ -84,7 +84,6 @@ Choose how many columns the grid uses — that's the one knob authors control fo
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:gallery"} /%}
-

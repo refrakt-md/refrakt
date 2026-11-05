@@ -136,7 +136,6 @@ Both gutter columns start at 44 (matching the file's real coordinates), the head
 `highlight=` on a fence inside `{% diff %}` is **silently ignored**. Diff's add/remove channel is the primary line-level signal; a separate highlight layer on top would muddy the +/- semantics. Use a standalone `{% snippet highlight="..." /%}` instead when you want emphasis.
 {% /hint %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:diff"} /%}
-

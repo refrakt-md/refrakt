@@ -60,7 +60,6 @@ There's no wrap-around. The first page in a sequence has no `prev` link; the las
 
 When the current page is a section index (it has child pages), `auto` mode renders nothing — child cards or a sidebar do that job better than prev/next at the section root.
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:pagination"} /%}
-

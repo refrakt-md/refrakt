@@ -167,10 +167,6 @@ When the primary set is empty:
 
 Precedence matches [`collection`](/runes/collection#body-zones-preamble-template-fallback): the body fallback zone wins when both are present.
 
-## Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:aggregate"} /%}
-
 ## Output contract
 
 The body form:
@@ -192,6 +188,10 @@ The single-number form:
 ```
 
 When the query is empty, `__items` is replaced by `<div class="rf-aggregate__empty" data-name="empty">…</div>` (rendered from the fallback zone or the `empty` attribute).
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:aggregate"} /%}
 
 ## See also
 

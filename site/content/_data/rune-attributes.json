@@ -16378,5 +16378,142 @@
 			"required": false,
 			"description": "Maximum width constraint for this block"
 		}
+	],
+	"children": [
+		{
+			"rune": "accordion",
+			"child": "accordion-item",
+			"query": "rune:accordion-item"
+		},
+		{
+			"rune": "tabs",
+			"child": "tab",
+			"query": "rune:tab"
+		},
+		{
+			"rune": "conversation",
+			"child": "conversation-message",
+			"query": "rune:conversation-message"
+		},
+		{
+			"rune": "annotate",
+			"child": "note",
+			"query": "rune:note"
+		},
+		{
+			"rune": "reveal",
+			"child": "reveal-step",
+			"query": "rune:reveal-step"
+		},
+		{
+			"rune": "budget",
+			"child": "budget-category",
+			"query": "rune:budget-category"
+		},
+		{
+			"rune": "budget",
+			"child": "budget-line-item",
+			"query": "rune:budget-line-item"
+		},
+		{
+			"rune": "form",
+			"child": "form-field",
+			"query": "rune:form-field"
+		},
+		{
+			"rune": "bento",
+			"child": "bento-cell",
+			"query": "rune:bento-cell"
+		},
+		{
+			"rune": "feature",
+			"child": "definition",
+			"query": "rune:definition"
+		},
+		{
+			"rune": "steps",
+			"child": "step",
+			"query": "rune:step"
+		},
+		{
+			"rune": "pricing",
+			"child": "tier",
+			"query": "rune:tier"
+		},
+		{
+			"rune": "comparison",
+			"child": "comparison-column",
+			"query": "rune:comparison-column"
+		},
+		{
+			"rune": "comparison",
+			"child": "comparison-row",
+			"query": "rune:comparison-row"
+		},
+		{
+			"rune": "symbol",
+			"child": "symbol-group",
+			"query": "rune:symbol-group"
+		},
+		{
+			"rune": "symbol",
+			"child": "symbol-member",
+			"query": "rune:symbol-member"
+		},
+		{
+			"rune": "changelog",
+			"child": "changelog-release",
+			"query": "rune:changelog-release"
+		},
+		{
+			"rune": "character",
+			"child": "character-section",
+			"query": "rune:character-section"
+		},
+		{
+			"rune": "realm",
+			"child": "realm-section",
+			"query": "rune:realm-section"
+		},
+		{
+			"rune": "faction",
+			"child": "faction-section",
+			"query": "rune:faction-section"
+		},
+		{
+			"rune": "plot",
+			"child": "beat",
+			"query": "rune:beat"
+		},
+		{
+			"rune": "storyboard",
+			"child": "storyboard-panel",
+			"query": "rune:storyboard-panel"
+		},
+		{
+			"rune": "map",
+			"child": "map-pin",
+			"query": "rune:map-pin"
+		},
+		{
+			"rune": "itinerary",
+			"child": "itinerary-day",
+			"query": "rune:itinerary-day"
+		},
+		{
+			"rune": "itinerary",
+			"child": "itinerary-stop",
+			"query": "rune:itinerary-stop"
+		},
+		{
+			"rune": "cast",
+			"child": "cast-member",
+			"query": "rune:cast-member"
+		},
+		{
+			"rune": "timeline",
+			"child": "timeline-entry",
+			"query": "rune:timeline-entry"
+		}
 	]
 }

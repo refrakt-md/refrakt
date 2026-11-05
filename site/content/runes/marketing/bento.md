@@ -249,16 +249,6 @@ Collapse is **binary**. Above the chosen breakpoint, the grid renders exactly as
 
 Choose `collapse` to match the narrowest width your authored grid can comfortably hold. A 6-column grid with wide cells probably wants `md` or `lg`; a small grid of `small` cells can stay at `sm`. There is no intermediate column reduction by default — if the grid genuinely needs to fit a range of container widths, pick `columns` for the lowest acceptable width and let the wider container render the cells with extra breathing room.
 
-## Attributes
-
-### `bento`
-
-{% include file="rune-attributes.md" variables={r: "rune:bento"} /%}
-
-### `bento-cell`
-
-{% include file="rune-attributes.md" variables={r: "rune:bento-cell"} /%}
-
 ## Common attributes
 
 All block runes share these attributes for layout and theming.
@@ -273,3 +263,7 @@ All block runes share these attributes for layout and theming.
 | `bg` | `string` | — | Named background preset from theme configuration |
 
 Cells are tint-deferrable: apply `tint` / `tint-mode` to an individual `{% bento-cell %}` for a multi-coloured grid.
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:bento"} /%}

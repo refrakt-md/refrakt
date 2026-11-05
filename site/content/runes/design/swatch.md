@@ -31,7 +31,6 @@ Use {% swatch color="#10B981" label="Success" showValue=true /%} for confirmatio
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:swatch"} /%}
-

@@ -47,7 +47,6 @@ Use different types to convey different levels of importance.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:hint"} /%}
-

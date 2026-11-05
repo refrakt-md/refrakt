@@ -103,10 +103,6 @@ Tracks can include nested lists for chapter markers or lyrics. Use `content="cha
 
 {% /preview %}
 
-### Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:playlist"} /%}
-
 ## Section header
 
 Playlist supports an optional eyebrow, headline, and blurb above the playlist content. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
@@ -122,3 +118,6 @@ The body splits on `---` into **media (cover art) → content (tracks)** zones (
 | `valign` | `string` | — | Cross-axis alignment when cover is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:playlist"} /%}

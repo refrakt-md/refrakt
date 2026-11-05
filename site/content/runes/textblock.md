@@ -49,7 +49,6 @@ The `lead` attribute styles the text as a larger introductory paragraph.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:textblock"} /%}
-

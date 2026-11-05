@@ -40,7 +40,6 @@ Use the `separator` attribute to change the divider between items.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:breadcrumb"} /%}
-

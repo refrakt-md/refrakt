@@ -72,16 +72,6 @@ Control the map height with the `height` attribute.
 {% /map %}
 ```
 
-## Attributes
-
-### `map`
-
-{% include file="rune-attributes.md" variables={r: "rune:map"} /%}
-
-### `map-pin`
-
-{% include file="rune-attributes.md" variables={r: "rune:map-pin"} /%}
-
 ## Markdown reinterpretation
 
 | Markdown | Interpretation |
@@ -94,3 +84,6 @@ Control the map height with the `height` attribute.
 | Coordinates in text | Direct lat/lng position |
 | Address text | Geocoded via Nominatim at runtime |
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:map"} /%}

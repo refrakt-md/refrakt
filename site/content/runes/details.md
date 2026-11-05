@@ -35,7 +35,6 @@ Use `open=true` to have the block expanded when the page loads.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:details"} /%}
-

@@ -62,7 +62,6 @@ A critical severity bug requiring immediate attention.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:bug"} /%}
-

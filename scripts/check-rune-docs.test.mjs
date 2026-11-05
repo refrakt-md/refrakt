@@ -3,6 +3,7 @@ import { existsSync, readFileSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
+	attributeSections,
 	introCoverage,
 	computeDrift,
 	loadPackageRunes,
@@ -157,5 +158,44 @@ describe('introCoverage (SPEC-187 D6)', () => {
 	});
 	it('passes every rune page in this repository', () => {
 		expect(introCoverage()).toEqual([]);
+	});
+});
+
+describe('attributeSections (SPEC-193 D1)', () => {
+	const dir = mkdtempSync(join(tmpdir(), 'rune-attr-guard-'));
+	const pages = new Map();
+	const page = (name, body) => {
+		writeFileSync(join(dir, `${name}.md`), `---\ntitle: ${name}\ntype: rune\n---\n\n${body}`);
+		pages.set(name, { rel: `${name}.md`, isRune: true });
+	};
+	const inc = (r) => `{% include file="rune-attributes.md" variables={r: "rune:${r}"} /%}`;
+	page(
+		'good',
+		`## Basic usage\n\nText.\n\n## Attributes\n\n${inc('good')}\n\n## See also\n\n- x\n`,
+	);
+	page('none', '## Basic usage\n\nText.\n');
+	page('two', `## Attributes\n\n${inc('two')}\n\n${inc('two-item')}\n`);
+	page('other', `## Attributes\n\n${inc('someone')}\n`);
+	page('nested', `## Usage\n\n### Attributes\n\n${inc('nested')}\n`);
+	page('early', `## Attributes\n\n${inc('early')}\n\n## More usage\n\nText.\n`);
+	const by = (name) =>
+		attributeSections(dir, pages)
+			.filter((f) => f.page === `${name}.md`)
+			.map((f) => f.problem);
+
+	it('passes one include of the page’s own rune, under ## Attributes, before See also', () => {
+		expect(by('good')).toEqual([]);
+	});
+	it('fails a missing include, or more than one', () => {
+		expect(by('none')).toEqual(['no attribute table']);
+		expect(by('two')).toEqual(['2 attribute includes']);
+	});
+	it('fails an include of another rune, one not under ## Attributes, and a section after it', () => {
+		expect(by('other')).toEqual(['the attribute include names `someone`']);
+		expect(by('nested')).toEqual(['the attribute include is not under `## Attributes`']);
+		expect(by('early')).toEqual(['`## More usage` follows the attribute table']);
+	});
+	it('passes every rune page in this repository', () => {
+		expect(attributeSections()).toEqual([]);
 	});
 });

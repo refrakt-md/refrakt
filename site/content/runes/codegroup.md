@@ -132,7 +132,6 @@ Use the `overflow` attribute to control how long lines are handled. The default 
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:codegroup"} /%}
-

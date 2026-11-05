@@ -63,6 +63,4 @@ Tabs supports an optional eyebrow, headline, and blurb above the tab bar. Place 
 
 ## Attributes
 
-### `tab`
-
-{% include file="rune-attributes.md" variables={r: "rune:tab"} /%}
+{% include file="rune-attributes.md" variables={r: "rune:tabs"} /%}
