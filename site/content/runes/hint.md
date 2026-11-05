@@ -1,7 +1,7 @@
 ---
 title: Hint
 description: Callouts and admonitions for supplementary information
-category: Content
+category: Sections & blocks
 plugin: core
 status: stable
 type: rune

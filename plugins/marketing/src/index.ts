@@ -18,7 +18,6 @@ export const marketing: Plugin = {
 		bento: {
 			transform: bento,
 			description: 'Magazine-style bento grid where heading levels determine cell size',
-			category: 'Layout',
 			snippet: [
 				'{% bento columns=${1:3} %}',
 				'# ${2:Large Cell}',
@@ -69,7 +68,6 @@ A medium tile that fills the lower-right.
 		feature: {
 			transform: feature,
 			description: 'Feature showcase with definition list of items',
-			category: 'Section',
 			snippet: [
 				'{% feature %}',
 				'## ${1:Features}',
@@ -98,7 +96,6 @@ Runes reinterpret standard Markdown — same syntax, richer meaning.
 		steps: {
 			transform: steps,
 			description: 'Sequential step-by-step instructions',
-			category: 'Content',
 			snippet: [
 				'{% steps %}',
 				'## ${1:First Step}',
@@ -129,7 +126,6 @@ Run \`npm run dev\` to start the development server and see your content rendere
 			transform: pricing,
 			description: 'Pricing table with tier comparison',
 			seoType: 'Product',
-			category: 'Section',
 			snippet: [
 				'{% pricing %}',
 				'## ${1:Free} \\u2014 \\$${2:0}',
@@ -178,7 +174,6 @@ Select the plan that best fits your needs.
 			aliases: ['versus', 'vs'],
 			description:
 				'Product/feature comparison matrix where headings become columns and bold labels align rows across columns',
-			category: 'Section',
 			snippet: [
 				'{% comparison layout="${1:table}" %}',
 				'## ${2:Option A}',

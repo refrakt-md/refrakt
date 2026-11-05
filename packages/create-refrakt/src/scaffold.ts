@@ -1826,7 +1826,6 @@ export const ${ident}: Plugin = {
 \t\tcallout: {
 \t\t\ttransform: callout,
 \t\t\tdescription: 'A titled callout/aside with a tone modifier.',
-\t\t\tcategory: 'Semantic',
 \t\t\tsnippet: ['{% callout title="\${1:Heads up}" tone="\${2|note,tip,warning|}" %}', '\${3:Body text}', '{% /callout %}'],
 \t\t\tfixture: '{% callout title="Heads up" tone="tip" %}\\nThis is an example callout rune.\\n{% /callout %}',
 \t\t},

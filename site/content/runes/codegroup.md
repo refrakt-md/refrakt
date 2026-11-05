@@ -1,7 +1,7 @@
 ---
 title: Codegroup
 description: Tabbed code blocks and styled code chrome
-category: "Code & Data"
+category: Code
 plugin: core
 status: stable
 type: rune

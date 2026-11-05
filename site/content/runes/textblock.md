@@ -1,7 +1,7 @@
 ---
 title: TextBlock
 description: Styled text blocks with drop caps, columns, and lead paragraphs
-category: Content
+category: Text & inline
 plugin: core
 status: stable
 type: rune

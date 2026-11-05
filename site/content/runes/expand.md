@@ -1,7 +1,7 @@
 ---
 title: Expand
 description: Substitute a registered entity's source content inline — symmetric with xref but inlines the content instead of linking to it
-category: Registry
+category: Reuse & references
 plugin: core
 status: stable
 type: rune

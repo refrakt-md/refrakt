@@ -15,7 +15,6 @@ export const business: Plugin = {
 			description:
 				'People directory for team pages, cast lists, or speaker lineups. List items with "Name - Role" pattern become entries.',
 			seoType: 'Person',
-			category: 'Semantic',
 			snippet: ['{% cast %}', '- ${1:Name} - ${2:Role}', '- ${3:Name} - ${4:Role}', '{% /cast %}'],
 			fixture: `{% cast %}
 - ![Alice Chen](placeholder:avatar) **Alice Chen** — Lead Engineer
@@ -33,7 +32,6 @@ export const business: Plugin = {
 			description:
 				'Structured business/organization information with contact details, hours, and location',
 			seoType: 'Organization',
-			category: 'Semantic',
 			snippet: [
 				'{% organization %}',
 				'# ${1:Organization Name}',
@@ -57,7 +55,6 @@ Your neighborhood coffee shop since 2015.
 			transform: timeline,
 			description: 'Chronological event display where headings become dated milestones',
 			seoType: 'ItemList',
-			category: 'Semantic',
 			snippet: [
 				'{% timeline %}',
 				'## ${1:2024} \\u2014 ${2:Milestone One}',

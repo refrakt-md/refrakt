@@ -20,7 +20,6 @@ export const storytelling: Plugin = {
 			description:
 				'Character profile with portrait, role, status, and sectioned details. Headings become sections.',
 			seoType: 'Person',
-			category: 'Semantic',
 			snippet: [
 				'{% character name="${1:Name}" role="${2|protagonist,antagonist,supporting,minor|}" status="${3|alive,dead,unknown,missing|}" %}',
 				'## Backstory',
@@ -54,7 +53,6 @@ Raised in the shadow of the Ashen Spire, Veshra discovered her gift for necroman
 			description:
 				'Location or realm description with scene image, scale, and sectioned details. Headings become sections.',
 			seoType: 'Place',
-			category: 'Semantic',
 			snippet: [
 				'{% realm name="${1:Name}" type="${2:sanctuary}" %}',
 				'${3:Description of the location.}',
@@ -86,7 +84,6 @@ A hidden valley in the foothills of the Misty Mountains.
 			description:
 				'Faction or organization within a story world with alignment, size, and sectioned details.',
 			seoType: 'Organization',
-			category: 'Semantic',
 			snippet: [
 				'{% faction name="${1:Name}" type="${2:guild}" %}',
 				'${3:Faction description.}',
@@ -117,7 +114,6 @@ Their fortress overlooks the capital city from the northern cliffs.
 			description:
 				'Lore entry for world-building details, legends, or historical records. Supports spoiler mode.',
 			seoType: 'Article',
-			category: 'Semantic',
 			snippet: [
 				'{% lore title="${1:Title}" category="${2:history}" %}',
 				'${3:Lore content.}',
@@ -138,7 +134,6 @@ The prophecy has been interpreted differently by various factions throughout his
 			description:
 				'Plot arc with sequential beats. Lists with [x]/[>]/[ ]/[-] markers become beat checkpoints.',
 			seoType: 'CreativeWork',
-			category: 'Semantic',
 			snippet: [
 				'{% plot title="${1:Arc Title}" %}',
 				'${2:Plot summary.}',
@@ -166,7 +161,6 @@ The heroes must recover the lost crown before the solstice.
 			aliases: ['relationship'],
 			description:
 				'Relationship between two named entities with type, status, and directional indicator.',
-			category: 'Semantic',
 			snippet: [
 				'{% bond from="${1:Entity A}" to="${2:Entity B}" type="${3:alliance}" %}',
 				'${4:Relationship description.}',
@@ -183,7 +177,6 @@ a deep mutual respect.
 			aliases: ['comic'],
 			description:
 				'Comic/storyboard layout where images become panels and paragraphs become captions',
-			category: 'Semantic',
 			snippet: [
 				'{% storyboard %}',
 				'![${1:Panel 1}](${2:/path/to/image1.png})',

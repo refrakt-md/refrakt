@@ -1,7 +1,7 @@
 ---
 title: Figure
 description: A captioned container for images, code, tables and diagrams, with sizing and alignment
-category: Content
+category: Sections & blocks
 plugin: core
 status: stable
 type: rune

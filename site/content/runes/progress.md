@@ -1,7 +1,7 @@
 ---
 title: Progress
 description: A generic completion bar — render a ratio from supplied numbers, with an optional label and sentiment variant
-category: Content
+category: Values
 plugin: core
 status: stable
 type: rune

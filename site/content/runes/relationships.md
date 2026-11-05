@@ -1,7 +1,7 @@
 ---
 title: Relationships
 description: Render an entity's relationship edges, grouped by kind — the plural-graph counterpart to ref and expand, generic over any domain's relationship vocabulary
-category: Registry
+category: Reuse & references
 plugin: core
 status: stable
 type: rune

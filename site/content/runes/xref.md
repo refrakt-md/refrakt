@@ -1,7 +1,7 @@
 ---
 title: Xref
 description: Inline cross-references that resolve entities by ID or name from the entity registry
-category: Registry
+category: Reuse & references
 plugin: core
 status: stable
 type: rune

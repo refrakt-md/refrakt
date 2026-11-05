@@ -1,7 +1,7 @@
 ---
 title: Reveal
 description: Progressive disclosure where content appears step by step
-category: Content
+category: Disclosure
 plugin: core
 status: stable
 type: rune

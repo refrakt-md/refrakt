@@ -28,7 +28,7 @@ export interface RuneDescriptor {
 	 */
 	authoringHints?: string;
 
-	/** Editor UI category (e.g., 'Content', 'Layout', 'Section') */
+	/** Editor UI category: one of the core categories, or a plugin rune's plugin display name. */
 	category?: string;
 
 	/** VSCode snippet body lines (array of strings with VSCode placeholder syntax).

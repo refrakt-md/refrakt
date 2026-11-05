@@ -1,7 +1,7 @@
 ---
 title: Grid
 description: Flexible grid layout with columns, auto-fill, masonry, and responsive collapse
-category: Layout
+category: Arrangement
 plugin: core
 status: stable
 type: rune

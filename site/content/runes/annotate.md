@@ -1,7 +1,7 @@
 ---
 title: Annotate
 description: Content with margin annotations and notes
-category: Content
+category: Text & inline
 plugin: core
 status: stable
 type: rune

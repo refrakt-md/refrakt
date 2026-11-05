@@ -4,7 +4,6 @@ import {
 	tags,
 	nodes,
 	mergePlugins,
-	defineRune,
 	runeTagMap,
 	pluginRune,
 	checkProjectRunes,
@@ -31,7 +30,7 @@ export interface RuneInfo {
 	seoType: string | undefined;
 	/** Attribute definitions from the schema */
 	attributes: Record<string, SchemaAttribute>;
-	/** Editor UI category (e.g., 'Content', 'Layout') */
+	/** Editor UI category. */
 	category: string | undefined;
 }
 
@@ -157,7 +156,7 @@ function loadPackageFromWorkspace(req: NodeRequire, npmName: string): LoadedPlug
 		// The same Rune `loadPlugin` builds, so a composed entry's description
 		// and aliases come from its definition.
 		const rune = pluginRune(runeName, entry as never, pkgExport);
-		runeInstances[runeName] = defineRune({ ...rune, category: entry.category });
+		runeInstances[runeName] = rune;
 		if (entry.fixture) {
 			fixtures[runeName] = entry.fixture;
 		}

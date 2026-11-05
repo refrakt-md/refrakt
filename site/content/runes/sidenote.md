@@ -1,7 +1,7 @@
 ---
 title: Sidenote
 description: Margin notes and footnotes alongside main content
-category: Content
+category: Text & inline
 plugin: core
 status: stable
 type: rune

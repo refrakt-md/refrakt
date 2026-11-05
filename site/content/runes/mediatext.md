@@ -1,7 +1,7 @@
 ---
 title: MediaText
 description: Side-by-side image and text layouts with configurable ratios
-category: Content
+category: Sections & blocks
 plugin: core
 status: stable
 type: rune

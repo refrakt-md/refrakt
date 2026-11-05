@@ -1,7 +1,7 @@
 ---
 title: Bar
 description: Block-level wrapper that renders a horizontal row of content — the bar layout primitive, composable in prose
-category: Content
+category: Sections & blocks
 plugin: core
 status: stable
 type: rune

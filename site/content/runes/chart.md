@@ -1,7 +1,7 @@
 ---
 title: Chart
 description: Chart visualization from a Markdown table
-category: "Code & Data"
+category: Data
 plugin: core
 status: stable
 type: rune

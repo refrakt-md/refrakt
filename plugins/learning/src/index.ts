@@ -14,7 +14,6 @@ export const learning: Plugin = {
 			aliases: ['how-to'],
 			description: 'Step-by-step how-to guide with tools/materials list and instructions',
 			seoType: 'HowTo',
-			category: 'Semantic',
 			snippet: [
 				'{% howto difficulty="${1|easy,medium,hard|}" %}',
 				'# ${2:How to Do Something}',
@@ -44,7 +43,6 @@ export const learning: Plugin = {
 			description:
 				'Recipe with ingredients, steps, and chef tips. Supports media-first layouts via media-position. Lists become ingredients, ordered lists become steps, blockquotes become tips.',
 			seoType: 'Recipe',
-			category: 'Semantic',
 			snippet: [
 				'{% recipe prepTime="${1:15m}" cookTime="${2:30m}" servings=${3:4} difficulty="${4|easy,medium,hard|}" %}',
 				'# ${5:Recipe Name}',

@@ -1,7 +1,7 @@
 ---
 title: DataTable
 description: Interactive data table with sorting, filtering, and pagination
-category: "Code & Data"
+category: Data
 plugin: core
 status: stable
 type: rune

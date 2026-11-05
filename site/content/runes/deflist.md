@@ -1,7 +1,7 @@
 ---
 title: Deflist
 description: Block-level definition list — stacked dt/dd pairs that flow into multiple columns on wider screens
-category: Content
+category: Sections & blocks
 plugin: core
 status: stable
 type: rune

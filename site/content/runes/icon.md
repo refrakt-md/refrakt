@@ -1,7 +1,7 @@
 ---
 title: Icon
 description: Inline icons from the theme's icon registry
-category: Content
+category: Text & inline
 plugin: core
 status: stable
 type: rune

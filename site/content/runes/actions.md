@@ -1,7 +1,7 @@
 ---
 title: Actions
 description: A row of actions — each link of a list becomes a button, ranked primary and secondary, and a fence becomes a copyable command line
-category: Content
+category: Sections & blocks
 plugin: core
 status: stable
 type: rune

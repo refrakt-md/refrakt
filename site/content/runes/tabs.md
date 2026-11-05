@@ -1,7 +1,7 @@
 ---
 title: Tabs
 description: Tabbed content panels with heading-based tab labels
-category: Layout
+category: Disclosure
 plugin: core
 status: stable
 type: rune
