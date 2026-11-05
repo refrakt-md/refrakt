@@ -64,16 +64,6 @@ The case it was built for — a generated reference table whose first column is 
 
 See [`data`](/runes/data#a-table-with-formatted-cells) for the `headers` attribute.
 
-## Output
-
-The same element a backtick span produces, plus the usual rune markers:
-
-```html
-<code class="rf-code" data-rune="code">href</code>
-```
-
-The element is the point: Lumina styles `code` with an element rule, so a paragraph mixing a backtick span and this rune looks uniform without either needing to know about the other. `.rf-code` is there for a theme that *wants* to tell them apart — it is not required for the default styling.
-
 ## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:code"} /%}

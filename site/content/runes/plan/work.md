@@ -26,13 +26,13 @@ A work item ready for implementation with acceptance criteria and approach.
 
 	## Acceptance Criteria
 	- [ ] Tint rune accepts light and dark content sections
-	- [ ] Identity transform emits data-tint-dark when dark values present
+	- [ ] Dark values apply when the reader's system is in dark mode
 	- [ ] Theme CSS swaps tokens in prefers-color-scheme: dark
 	- [ ] Inline tints without dark values fall back to page tokens
 	- [ ] Inspector audits contrast ratios for both variants
 
 	## Approach
-	The identity transform parses light/dark headings within the tint child rune body. Dark values are emitted as `--tint-dark-*` CSS custom properties alongside the light values.
+	Authors write the light and dark values under their own headings in the tint body. Each set applies in its colour scheme, and a tint with only light values keeps the page's dark colours.
 	{% /work %}
 
 {% /preview %}

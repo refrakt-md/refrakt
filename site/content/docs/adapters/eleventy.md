@@ -363,15 +363,3 @@ The Eleventy adapter sits between the HTML adapter and the SvelteKit adapter in 
 | `@refrakt-md/behaviors` | Yes | Client-side progressive enhancement + `hasInteractiveRunes` detection |
 | `@refrakt-md/types` | Yes | Shared TypeScript interfaces |
 | `@11ty/eleventy` | Peer | Eleventy v3 (ESM) |
-
-## Theme Integration
-
-Lumina provides a dedicated Eleventy adapter export:
-
-```javascript
-import manifest from '@refrakt-md/lumina/manifest';
-import { layouts } from '@refrakt-md/lumina/layouts';
-const theme = { manifest, layouts };
-```
-
-This export bundles the theme manifest and layout configurations (default, docs, blog-article) so you can pass it directly to `createDataFile`. Custom themes can implement the `EleventyTheme` interface by providing a manifest and layout map.

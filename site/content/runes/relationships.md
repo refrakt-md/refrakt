@@ -71,24 +71,6 @@ Like [`collection`](/runes/collection), `relationships` supports an empty state 
 
 With a body, split on a top-level `---` into **preamble** (rendered above the edges only when there are any), **template** (the per-edge template), and **fallback** (shown when there are none) — so a "Relationships" heading can live inside the rune and disappear when the entity has no edges. The preamble and fallback can read `$count` (edges matched, pre-limit) and `$shown` (edges rendered, post-limit), just as in [`collection`](/runes/collection#count-variables-count-and-shown).
 
-## Output contract
-
-```html
-<section class="rf-relationships" data-rune="relationships" data-of="WORK-1" data-layout="list">
-  <div class="rf-relationships__items">
-    <div class="rf-relationships__group" data-group="implements">
-      <h3 class="rf-relationships__group-title">Implements</h3>
-      <div class="rf-relationships__item" data-entity-id="SPEC-1" data-kind="implements">
-        <a class="rf-relationships__title" href="/specs/SPEC-1/">Auth system</a>
-      </div>
-    </div>
-    <!-- …or, with a body template, each item is the template's own output -->
-  </div>
-</section>
-```
-
-In `layout="grid"` the no-body built-in is an `article.rf-relationships__card` (instead of the inline `__item` row), and each group is itself the grid so its cards flow into columns under a full-width group title.
-
 ## Where edges come from
 
 `relationships` only *renders* the graph — it doesn't build it. Plugins contribute edges during the registry's aggregate phase, so the kinds you see depend on which plugins are installed. See [plugin authoring → pipeline](/extend/plugin-authoring/pipeline) for the `relate()` / `getRelated()` contract.

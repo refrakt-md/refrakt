@@ -10,9 +10,6 @@ type: rune
 {% include file="rune-intro.md" variables={r: "rune:plan-history"} /%}
 
 Every status transition, priority change, criteria check-off, and resolution is extracted from consecutive commits — no separate activity log or event database required.
-
-This is a self-closing aggregation rune. The pipeline's aggregate hook extracts history from git during the build, and the postProcess hook resolves the sentinel into a styled vertical timeline.
-
 ## Per-entity timeline
 
 Show the full history for a single entity by passing its ID.
@@ -33,9 +30,8 @@ Events are displayed newest-first. When more than 3 criteria change in a single 
 
 ### Visual language
 
-- Filled circle markers (●) for events with structured changes
-- Open circle markers (○) for creation events
-- Attribute values use `data-type="add|remove"` with diff-style background tints — green for new values, red (with strikethrough) for old values
+- A filled circle (●) marks an event with changes; an open circle (○) marks the entity's creation.
+- A changed value shows the old value struck through and the new one beside it.
 
 ## Global activity feed
 
@@ -64,53 +60,9 @@ The history extractor classifies each commit into one of five event kinds:
 | `resolution` | A `## Resolution` section was added or modified |
 | `content` | File changed but no attribute/criteria/resolution diff detected |
 
-## How it works
+## Where the history comes from
 
-History is derived from git commits, not a separate event store:
-
-1. One `git log` over the plan directory lists every commit that touched each entity file, following renames
-2. One `git cat-file --batch` reads the file's contents at each of those commits
-3. The opening Markdoc tag (line 1) is parsed for attribute changes
-4. Checkbox lines (`- [ ]` / `- [x]`) are diffed for criteria changes
-5. The `## Resolution` section is checked for appearance or modification
-6. Consecutive versions are compared to emit typed events
-
-That is two git processes per build, however long the history is. Results are cached in `.plan-history-cache.json`, keyed by each file's latest commit hash. Subsequent builds skip files whose history hasn't changed.
-
-### Shallow clones
-
-In shallow clones (common in CI), only available commits are processed. The timeline may be incomplete — earlier events are simply absent rather than fabricated.
-
-### Rename tracking
-
-Rename detection carries a file's history over to its new path, so entity history is preserved even when files are reorganised, as long as both paths are inside the plan directory. The rename itself is not surfaced as an event.
-
-## Output structure
-
-### Per-entity HTML
-
-```html
-<section class="rf-plan-history" data-rune="plan-history">
-  <ol class="rf-plan-history__events">
-    <li class="rf-plan-history__event" data-kind="attributes">
-      <time class="rf-plan-history__date">Apr 12</time>
-      <code class="rf-plan-history__hash">a295513</code>
-      <div class="rf-plan-history__changes">
-        <span class="rf-plan-history__change">
-          <span class="rf-plan-history__field">status</span>
-          <span class="rf-plan-history__value" data-type="remove">ready</span>
-          <span class="rf-plan-history__arrow">→</span>
-          <span class="rf-plan-history__value" data-type="add">done</span>
-        </span>
-      </div>
-    </li>
-  </ol>
-</section>
-```
-
-### Global feed HTML
-
-The global feed adds the `rf-plan-history--global` modifier and uses `__commit-message` and `__entity-summary` elements for the commit-grouped layout.
+The timeline is read from git: every commit that changed an entity's file, compared with the one before. Nothing else needs to be kept. A file's history follows it when it is renamed within the plan directory. In a shallow clone, which CI often uses, the timeline starts at the oldest commit available. Results are cached in `.plan-history-cache.json`, which you can add to `.gitignore`.
 
 ## CLI companion
 

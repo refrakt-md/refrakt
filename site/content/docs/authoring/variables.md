@@ -5,9 +5,7 @@ description: The author-facing Markdoc variables — frontmatter, page metadata,
 
 # Content variables
 
-Every page transform runs with a set of variables that authored content can reach via Markdoc's `{% $name %}` interpolation. The public surface is organized into three namespaces — `$frontmatter`, `$page`, and `$file` — each describing a different facet of the document being rendered.
-
-This page documents the **public** surface. Pipeline internals also live in the variable bag (prefixed with `__`); they are deliberately not documented for authors and may change without notice.
+Every page transform runs with a set of variables that authored content can reach via Markdoc's `{% $name %}` interpolation. The public surface is organized into four namespaces — `$frontmatter`, `$page`, `$file` and `$site` — each describing a different facet of the document being rendered.
 
 ## `$frontmatter.*`
 
@@ -119,12 +117,6 @@ Posted: {% $file.created %}
 ## Scoping inside partials and layouts
 
 Partials and layout files rendered as part of a host page see the **host page's** `$page.*` and `$file.*` — not their own file's. This means a `_partials/footer.md` partial that interpolates `{% $page.url %}` shows the URL of the page that included it, not the partial file's own path.
-
-## The `__` prefix convention
-
-Variables that start with a double underscore (`__source`, `__sandboxReadFile`, etc.) are **pipeline internals**. Authored content should treat anything in the `__`-prefix namespace as off-limits: those entries may be removed, renamed, or restructured without breakage notice. The public namespaces are `$frontmatter.*`, `$page.*`, and `$file.*` — and those alone.
-
-If you find yourself reaching for a `__`-prefixed variable, that's a signal the use case probably belongs in a rune or in core, not in authored content.
 
 ## Custom variables in `refrakt.config.json`
 

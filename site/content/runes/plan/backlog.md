@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:backlog"} /%}
 
-An aggregation rune that renders a live view of plan entities from the entity registry. Supports filtering by any field, sorting, grouping, and capping. Use `show` to select entity types — work items, bugs, specs, decisions, or milestones. The rune produces a sentinel that the pipeline resolves with real entity data — no manual list maintenance required.
+An aggregation rune that renders a live view of plan entities from the entity registry. Supports filtering by any field, sorting, grouping, and capping. Use `show` to select entity types — work items, bugs, specs, decisions, or milestones. The list is built from your plan files at build time, so there is nothing to maintain by hand.
 
 The examples below pass `limit=5` so they stay scannable; in real dashboards omit the attribute (or set it higher) to render the full set.
 
@@ -101,14 +101,14 @@ Filters combine with AND logic. Multiple values for the same field combine with 
 
 {% /preview %}
 
-### Output structure
+### What it shows
 
-Backlog is thin sugar over [`collection`](/runes/collection): each entity renders through a **universal projection** that works for every plan type by construction.
+Each entity is shown the same way, whatever its type:
 
-- **Cards / list** (default) — each item is a [`card`](/runes/card) whose top strip is a [`bar`](/runes/bar): the **identifier** (`id`, or `name` for milestones) on the left, a sentiment-coloured **status** [`badge`](/runes/badge) on the right, the title below. When the set spans more than one type (and isn't grouped by type), a small **type chip** appears beside the identifier — omitted for a single-type backlog, so there's no noise.
-- **Table** — *Identifier · Type · Status · Title* columns.
+- **Cards** (the default): the identifier on the left of the top line, a coloured status badge on the right, and the title below. When the backlog mixes types and isn't grouped by type, a small type label sits beside the identifier.
+- **Table**: Identifier, Type, Status and Title columns.
 
-When scoped to a single type, a card also surfaces that type's key field — `work` shows **priority**, `bug` shows **severity** — since the set is homogeneous. A mixed set stays universal (no ragged per-row columns); for richer per-type detail, author your own `collection` body. When `group` is set, items are wrapped in groups headed by the group value.
+A backlog of one type also shows that type's key field: priority for work items, severity for bugs. For anything richer, write your own [`collection`](/runes/collection) body. With `group`, items are gathered under a heading per group value.
 
 ## Attributes
 

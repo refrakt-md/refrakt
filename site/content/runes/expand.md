@@ -21,7 +21,7 @@ The minimum case — a single ID:
 {% expand "SPEC-066" /%}
 ```
 
-Renders the entity's source content (its top-level `{% spec %}` rune) wrapped in `<section class="rf-expand">`. The wrapper carries `data-outline-scope="SPEC-066"` so the embed's headings stay out of the host page's TOC and their IDs get prefixed with `SPEC-066--` automatically.
+This renders the spec in place. Its headings stay out of the page's table of contents, and their anchors are prefixed with the entity's ID so they never clash with the page's own.
 
 The block is live below — wrapped in a `{% drawer %}` so the spec doesn't dominate the docs page. Click {% ref "spec-066-preview" label="view SPEC-066 inline" /%} (or press `s`) to open it.
 
@@ -44,36 +44,26 @@ embedded in the {% ref "auth-spec-drawer" label="auth spec drawer" /%}.
 
 The `canonical=true` attribute appends a "view canonical" link to the embedded content — useful when the embed is a peek and the canonical lives elsewhere.
 
-## Resolution model
+## What can be embedded
 
-For each `{% expand %}` placeholder the resolver:
-
-1. Looks the entity up in the registry by `(type?, id)`. Name-match fallback applies the same way `{% ref %}` does.
-2. Checks the entity is [embeddable](/docs/authoring/entities#embeddable-entities). Entities registered without content to hand back (pages, headings) can't be embedded — the build surfaces a clear error.
-3. Reads the source file through the snippet sandbox (project-root-relative, no traversal escape).
-4. Calls the plugin's `extract()` to grab the embeddable subtree from the parsed AST.
-5. Optionally shifts heading levels (when `level=` is set).
-6. Transforms the subtree using the same tags+nodes config the host page used — embedded plan runes execute normally.
-7. Substitutes the result into the host page, wrapped in `<section class="rf-expand">`.
-
-The substituted content is then re-walked by the rest of the postProcess pipeline, so refs inside the embed resolve through the host page's xref pass, the outline-scope walkers prefix the embed's heading IDs, and so on. One pass, consistent surface.
+Any entity whose source the build can read back: a spec, a work item, a decision, a character. Pages and headings cannot be embedded; the build reports an error naming the entity. Runes inside the embedded content render as they would on their own page, and references inside it resolve as they do on the host page.
 
 ## Heading handling
 
 Embedded entities are **quoted documents**, not subsections of the host. By default:
 
 - Heading levels are preserved — a spec's H1 stays H1, its H2 stays H2.
-- The wrapper carries `data-outline-scope="{entityId}"` so the [`data-outline-scope`](/extend/rune-authoring/patterns) walkers TOC-isolate the embed and namespace its heading IDs (`SPEC-066--acceptance-criteria` instead of `acceptance-criteria`).
+- Heading anchors are prefixed with the entity's ID (`SPEC-066--acceptance-criteria` instead of `acceptance-criteria`).
 - The host's TOC reflects host-only structure; embedded headings don't appear.
 
 When the embed is genuinely meant to act as a sub-section of the host — rare — set `level=N` to demote headings and merge the embed into the host outline:
 
-| `level=` | data-outline-scope | TOC includes? | H1 → | H2 → |
+| `level=` | Anchors prefixed? | TOC includes? | H1 → | H2 → |
 |----------|-------------------|---------------|------|------|
-| unset (default) | set to entity id | no (isolated) | H1 | H2 |
-| `1` | not emitted | yes (sub-section) | H1 | H2 |
-| `2` | not emitted | yes (sub-section) | H2 | H3 |
-| `3` | not emitted | yes (sub-section) | H3 | H4 |
+| unset (default) | yes | no (isolated) | H1 | H2 |
+| `1` | no | yes (sub-section) | H1 | H2 |
+| `2` | no | yes (sub-section) | H2 | H3 |
+| `3` | no | yes (sub-section) | H3 | H4 |
 
 Demotion clamps at H6 with a build warning. Demotion still applies only to `heading` nodes in the Markdoc tree, not to rune-emitted custom elements styled as headings.
 
@@ -89,26 +79,6 @@ When `canonical=true`, expand renders a `<a class="rf-expand__canonical-link">` 
 
 ```markdoc
 {% expand "SPEC-066" canonical=true label="Read the full spec on trace" /%}
-```
-
-## Output contract
-
-```html
-<section class="rf-expand"
-         data-rune="expand"
-         data-entity-id="SPEC-066"
-         data-entity-type="spec"
-         data-outline-scope="SPEC-066"
-         data-canonical-href="/plan/specs/SPEC-066-expand-rune/"
-         data-source="registry">
-  <!-- The full rendered output of the embedded plan rune -->
-  <section class="rf-spec" data-status="draft">…</section>
-
-  <!-- Only rendered when canonical=true -->
-  <a class="rf-expand__canonical-link" href="/plan/specs/SPEC-066-expand-rune/">
-    View canonical
-  </a>
-</section>
 ```
 
 ## Attributes

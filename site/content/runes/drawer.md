@@ -117,15 +117,13 @@ Two drawers on the same page declaring the same shortcut emit a dev-mode warning
 
 Two pages can each declare `id="auth"` without colliding in the registry — drawer ids are scoped to the page they're declared on. Same-page xrefs find their page-local drawer. Cross-page xref-to-drawer is mechanically supported (the registry has a cross-page fallback so the lookup succeeds, and the resulting href is the destination page plus the fragment) but the end-to-end UX is deferred to a future spec.
 
-## Title-level auto-detection
+## Title heading level
 
-`{% drawer id="x" title="T" %}` (no explicit `headingLevel`) emits an `h3` placeholder marked with `data-drawer-title-auto`. The pipeline's postProcess pass walks the page renderable, tracks the most recent heading level, and rewrites the placeholder to `h{n+1}` (clamped to h1-h6). Default behaviour when no preceding heading exists: the title becomes `h2` (one deeper than the page-title `h1` that lives in layout).
-
-Explicit `headingLevel=` always wins.
+The title's heading sits one level below the heading before the drawer, so it fits the page outline. Set `headingLevel` to choose it yourself.
 
 ## Body and footer zones
 
-The drawer body splits on a top-level `---` into two zones — **body** and **footer** — same shape `{% card %}` uses (SPEC-078). 1 zone → all body (today's behaviour, unchanged); 2 zones → body + footer. The footer renders below the body with a top divider and slightly muted text:
+The drawer body splits on a top-level `---` into two zones — **body** and **footer** — the same split `{% card %}` uses. Without a `---`, everything is body. The footer renders below the body with a top divider and slightly muted text:
 
 ```markdoc
 {% drawer id="auth" title="Auth system" %}
@@ -157,7 +155,7 @@ The xref resolves the URL from the registry, so the link stays correct as the en
 
 ### Always-visible footer
 
-In dialog mode, the drawer becomes a **flex column** — header (when present) and footer (when present) pin via `flex: 0 0 auto`; body scrolls via `flex: 1 1 auto; overflow-y: auto`. The drawer's `max-height` cap provides the scroll context. So a long entity body or long file snippet scrolls inside the drawer with the footer staying one tap away regardless of scroll depth.
+The header and footer stay in place while the body scrolls, so a long entity or file scrolls inside the drawer with the footer always one tap away.
 
 ## Hoisted drawers (`preview="drawer"`)
 

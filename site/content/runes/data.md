@@ -11,9 +11,7 @@ type: rune
 
 Feed charts and sortable tables from real data files instead of hand-typed Markdown tables. The `data` rune reads an external tabular source at build time, shapes it (filter, sort, select, type), and emits a plain `<table>` — which `{% chart %}` and `{% datatable %}` consume with no extra work, and which stands on its own as the no-JS fallback.
 
-{% hint type="note" %}
-`data` is an AST preprocessor, like `{% snippet %}`: by the time the transform phase runs, every `{% data %}` tag has been replaced with a Markdoc `table` node. That is why it composes transparently inside `{% chart %}` and `{% datatable %}` — they see an ordinary table, exactly as if you had typed one. The read goes through the same sandbox as snippet (project-root bounded, via the SPEC-113 `ProjectFiles` seam), so `data` is safe on sites that accept untrusted author content and works in fully in-memory/hosted builds.
-{% /hint %}
+The result is read as an ordinary table, so it works anywhere a table you typed would: inside `{% chart %}` or `{% datatable %}`. Files are read from within the project only.
 
 ## Ingest a file
 

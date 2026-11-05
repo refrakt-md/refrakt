@@ -73,19 +73,6 @@ Common usage patterns. Authors pick the sentiment that matches intent — the la
 
 Both attribute value sets match the universal metadata-system dimensions exactly — no new enums are introduced.
 
-## Output
-
-The identity transform emits a single `<span>` with the resolved data attributes:
-
-```html
-<span class="rf-badge"
-      data-rune="badge"
-      data-meta-sentiment="positive"
-      data-meta-type="tag">Popular</span>
-```
-
-All colour / weight / emphasis comes from the universal metadata CSS rules — no per-variant BEM modifiers (`.rf-badge--positive` etc.) are emitted. Themes can target `.rf-badge` directly for badge-specific overrides, or compose with `[data-meta-*]` attribute selectors for variant-aware tweaks.
-
 ## Accessibility
 
 The badge label is a real text node — accessible to screen readers and copy-paste. Do not put visual-only labels in CSS `::before` content; the universal metadata rules use `::before` for the sentiment colour dot (decorative, with no text content) and rely on the children text for meaning.

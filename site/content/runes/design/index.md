@@ -32,10 +32,6 @@ npm install @refrakt-md/design
 | [mockup](/runes/design/mockup) | Device frame mockups for screenshots |
 | [design-context](/runes/design/design-context) | Unified design token card composing palette, typography, and spacing runes |
 
-## Cross-page pipeline
-
-This package includes a cross-page pipeline that aggregates design tokens across your site. When you use `{% design-context %}` runes on different pages, the pipeline indexes all tokens into a site-wide registry. This enables cross-referencing and consistent token documentation across your design system.
-
 ## When to use
 
 Use this package for design system documentation, style guides, brand guidelines, or any project that needs to document visual design decisions. The `design-context` rune ties everything together — define your tokens once and reference them consistently across pages.

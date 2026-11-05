@@ -110,15 +110,12 @@ The media zone holds *any* [media guest](/runes/media-guests) — including a ru
 
 {% /preview %}
 
-**The mechanism:** the cover layout stacks the content over the media well; the [interaction-posture contract](/extend/rune-authoring/composability#media-guest-interaction-posture) demotes any cover guest to `presentational`; and the sandbox automatically switches to `height="fill"` so the iframe fills the band. No sandbox-side configuration is needed.
+The sandbox becomes a backdrop: it takes no clicks or focus, and fills the band without any setting of its own. A few things keep it working well:
 
-**The authoring contract for an animated backdrop:**
-
-- **Eager only.** `activation="visible"` or `"click"` contradicts an inert backdrop — the Run control would be unreachable — and produces a build warning. The cost lands on first paint, so keep the scene lean.
-- **Design dim.** The scene sits *under* the scrim; darker than feels right in isolation is right.
-- **Respect motion.** Render a single static frame under `prefers-reduced-motion` (the waves scene does).
-- **Cap the budget.** Pin the dependency version, cap `devicePixelRatio`, pause the animation loop when the tab is hidden, and put a CSS gradient behind the canvas so the boot frame looks designed. Ship a static fallback for no-WebGL / blocked-CDN visitors.
-- **Pin the canvas to the viewport.** Size it with `position: fixed; inset: 0` rather than a `height: 100%` chain — sandbox content renders inside a plain wrapper element with auto height, which breaks percentage heights and leaves the canvas as a fixed-size strip.
+- **Load it eagerly.** `activation="visible"` or `"click"` would put a Run control under the content, out of reach; the build warns.
+- **Keep it dim.** The scene sits under the scrim, so darker than looks right on its own is right.
+- **Respect reduced motion.** Show a still frame when the reader asks for less motion, as the waves scene does.
+- **Keep it light.** It loads with the page. Cap the pixel ratio, pause when the tab is hidden, and show a still fallback where WebGL is missing; the [three.js scene in Media guests](/runes/media-guests#live-program) does all three.
 
 ### Cover attributes
 

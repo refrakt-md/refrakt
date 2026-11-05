@@ -70,17 +70,9 @@ The plan package extends the `refrakt` CLI with subcommands under `refrakt plan`
 
 To view or publish your plan as a site, scaffold one with `create-refrakt --type plan` and use the standard adapter dev server and build — see [Publish a Plan Site](/plan/docs/plan-site).
 
-### Cross-page pipeline
-
-The plan package registers pipeline hooks that:
-
-- **Register**: Scan all pages for plan runes and index entities into the site-wide registry
-- **Aggregate**: Build cross-page indexes for backlog and decision-log views
-- **Post-process**: Resolve aggregation rune placeholders with indexed entity data
-
 ### File timestamps
 
-All plan runes automatically receive `created` and `modified` dates from the content pipeline's `$file.created` and `$file.modified` variables. These are derived from git commit history (with filesystem stat as fallback) and displayed in each rune's header metadata. Authors can override them with explicit attribute values.
+Every plan rune shows when its file was created and last modified, read from git. Set `created` or `modified` on the rune to override either.
 
 ## Directory structure
 

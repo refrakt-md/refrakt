@@ -554,25 +554,6 @@ const { prepTime, difficulty, tag } = Astro.props;
 </div>
 ```
 
-
-## Theme Integration
-
-When creating a theme for Astro, export an `AstroTheme` object from the `./astro` subpath:
-
-```typescript
-// astro/index.ts
-import type { AstroTheme } from '@refrakt-md/astro';
-import { defaultLayout, docsLayout } from '@refrakt-md/transform';
-
-export const theme: AstroTheme = {
-  manifest: { /* ... */ },
-  layouts: {
-    default: defaultLayout,
-    docs: docsLayout,
-  },
-};
-```
-
 ## Differences from SvelteKit
 
 | Concern | SvelteKit | Astro |

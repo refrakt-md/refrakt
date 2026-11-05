@@ -433,7 +433,7 @@ This guide walks through building a custom theme package from the ground up, usi
 
 	### Define layouts
 
-	Your theme needs layout configs that describe page structure. The simplest approach is to use the built-in layouts from `@refrakt-md/transform`:
+	Your theme needs layout configs that describe page structure, exported from a subpath per adapter (`./svelte`, `./astro`, `./nuxt`, `./next`, `./eleventy`). The simplest approach is to use the built-in layouts from `@refrakt-md/transform`:
 
 	{% tabs %}
 
@@ -468,6 +468,82 @@ This guide walks through building a custom theme package from the ground up, usi
 		import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
 
 		export const theme: HtmlTheme = {
+		  manifest: { /* from manifest.json */ },
+		  layouts: {
+		    'default': defaultLayout,
+		    'docs': docsLayout,
+		    'blog-article': blogArticleLayout,
+		  },
+		};
+		```
+
+		{% /tab %}
+
+		{% tab name="Astro" %}
+
+		```typescript
+		// astro/index.ts
+		import type { AstroTheme } from '@refrakt-md/astro';
+		import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
+
+		export const theme: AstroTheme = {
+		  manifest: { /* from manifest.json */ },
+		  layouts: {
+		    'default': defaultLayout,
+		    'docs': docsLayout,
+		    'blog-article': blogArticleLayout,
+		  },
+		};
+		```
+
+		{% /tab %}
+
+		{% tab name="Nuxt" %}
+
+		```typescript
+		// nuxt/index.ts
+		import type { NuxtTheme } from '@refrakt-md/nuxt';
+		import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
+
+		export const theme: NuxtTheme = {
+		  manifest: { /* from manifest.json */ },
+		  layouts: {
+		    'default': defaultLayout,
+		    'docs': docsLayout,
+		    'blog-article': blogArticleLayout,
+		  },
+		};
+		```
+
+		{% /tab %}
+
+		{% tab name="Next.js" %}
+
+		```typescript
+		// next/index.ts
+		import type { NextTheme } from '@refrakt-md/next';
+		import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
+
+		export const theme: NextTheme = {
+		  manifest: { /* from manifest.json */ },
+		  layouts: {
+		    'default': defaultLayout,
+		    'docs': docsLayout,
+		    'blog-article': blogArticleLayout,
+		  },
+		};
+		```
+
+		{% /tab %}
+
+		{% tab name="Eleventy" %}
+
+		```typescript
+		// eleventy/index.ts
+		import type { EleventyTheme } from '@refrakt-md/eleventy';
+		import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
+
+		export const theme: EleventyTheme = {
 		  manifest: { /* from manifest.json */ },
 		  layouts: {
 		    'default': defaultLayout,

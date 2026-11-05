@@ -67,38 +67,6 @@ An empty `href` renders the content unchanged, with no link. A template can writ
 
 `link` adds no `data-rune` of its own, so it is not a boundary for the structured data inside it. A [`character`](/runes/storytelling/character) inside a link still publishes as a `Person`.
 
-## Output contract
-
-Wrapped:
-
-```html
-<a href="/guide" data-link="wrap">
-  <h2>The guide</h2>
-  <p>Read it first.</p>
-</a>
-```
-
-Stretched over one rune, inside its root with the rune's BEM element class:
-
-```html
-<section class="rf-hint …" data-rune="hint">
-  …
-  <a href="/post" data-name="link" data-link="stretch" class="rf-hint__link" aria-label="…"></a>
-</section>
-```
-
-Stretched over anything else, inside a host element:
-
-```html
-<div data-link="host">
-  <h2 id="the-guide">The guide</h2>
-  <p>See <a href="/index">the index</a>.</p>
-  <a href="/guide" data-name="link" data-link="stretch" aria-labelledby="the-guide"></a>
-</div>
-```
-
-Themes style these through `[data-link]`: the skeleton positions the stretched link over its host, and Lumina resets the wrapped link's colour and underline and draws the focus ring.
-
 ## Attributes
 
 | Attribute | Type | Required | Description |

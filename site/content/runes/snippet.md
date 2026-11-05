@@ -11,9 +11,7 @@ type: rune
 
 Embed the contents of a file as a syntax-highlighted code block. The file lives anywhere in your project tree (relative to the project root); refrakt reads it at build time, slices it by line range if you ask, and renders it like any other fenced code block. When the source file changes, the embedded version updates automatically on the next build — no copy-paste drift.
 
-{% hint type="note" %}
-The snippet rune is implemented as an AST preprocessor: by the time the transform phase reaches it, every `{% snippet %}` tag has been replaced with a Markdoc `fence` node. This is what makes it compose transparently inside `{% codegroup %}`, `{% diff %}`, and any future container rune that consumes fence nodes — they see snippets exactly the same as triple-backtick code blocks.
-{% /hint %}
+A snippet is read as an ordinary code block, so it works anywhere a fenced block does: inside `{% codegroup %}`, `{% diff %}` and the like.
 
 ## Embed a file
 
@@ -240,7 +238,7 @@ Renders with the gutter starting at 15 (file coordinates), matching what you'd s
 
 {% snippet path="packages/runes/src/lang-map.ts" lines="15-25" linenumbers=true /%}
 
-The implementation is pure CSS — `pre[data-linenumbers]` gets a `counter-reset` seeded by an inlined `--rf-start-line` custom property the fence schema computes from `data-lines`. No JS, no DOM rewriting.
+With `lines`, the numbers start at the first line shown, so they match the file.
 
 ## Highlighting specific lines
 
@@ -291,18 +289,6 @@ This repository marks exactly one. Almost every `snippet` on these pages demonst
 If `--check` is noisy after a marking pass, the remedy is **unmarking pages**, not loosening the comparison. A marker that fires on a page whose prose did not depend on the slice is a selection error.
 
 No `title` attribute. Snippet's output is a fence; to label it, wrap it in `{% figure caption="..." %}` (a caption below) or `{% codegroup title="..." %}` (a title bar above).
-
-## Output
-
-A snippet renders as exactly what a fenced code block renders: a `<pre>`, with nothing wrapped around it. What sets it apart is provenance on the `<pre>` itself — `data-source` carries the project-relative path and `data-lines` the resolved range — so `pre[data-source]` is the selector for snippet-derived code, in a theme or in tooling that wants an "edit this file" link.
-
-```html
-<pre data-language="typescript" data-source="packages/runes/src/lang-map.ts" data-lines="74-78">
-  <code data-language="typescript">…</code>
-</pre>
-```
-
-There is no `.rf-snippet` element. Releases before v0.39.0 wrapped a standalone snippet in `<figure class="rf-snippet" data-source-path="…">`; the figure carried nothing the `<pre>` did not already, so it was removed. Move selectors on `.rf-snippet` or `[data-source-path]` to `pre[data-source]`. For chrome around a snippet, compose it — `{% codegroup title="..." %}` adds a title bar.
 
 ## View source — recursively
 
