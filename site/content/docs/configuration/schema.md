@@ -55,10 +55,6 @@ A symlink at the repo root (`refrakt.config.schema.json` → `packages/transform
 The schema is hand-maintained, but it doesn't drift: `packages/transform/test/config-schema.test.ts` reads the `RefraktConfig`, `SiteConfig`, `EntityRoute`, `XrefPattern`, `RouteRule`, and `PlanConfig` interfaces out of `@refrakt-md/types` and fails if the schema is missing a field — or describes one the types don't have.
 {% /hint %}
 
-## Local-development reference
-
-When working inside the refrakt monorepo itself, the root `refrakt.config.json` references the schema via the relative-path symlink. New projects scaffolded with `create-refrakt` reference the published URL. Both forms are valid; pick whichever your editor's filesystem watch handles best.
-
 ## Versioning
 
 Both schemas are published at two URL forms:

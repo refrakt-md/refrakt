@@ -28,7 +28,7 @@ A spec in accepted status with a version number and scope summary.
 
 	## Solution
 
-	`tint` is a core rune that overrides colour tokens within its parent rune's scope. The identity transform reads tint definitions and injects CSS custom properties as inline styles on the container element.
+	`tint` sets the colours of the rune it is placed in. An author names one of the theme's tints, or gives colours inline, and everything inside the rune uses them.
 	{% /spec %}
 
 {% /preview %}

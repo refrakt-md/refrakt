@@ -170,6 +170,8 @@ Pin the version for reproducibility; for production also honour `prefers-reduced
 {% sandbox src="wireframe-waves" height="fill" /%}
 ```
 
+Inside a filling sandbox, size a full-bleed canvas with `position: fixed; inset: 0` rather than `height: 100%`: the content sits in a wrapper of automatic height, so percentage heights collapse.
+
 ## Deferred activation — keep heavy sandboxes off the critical path
 
 A sandbox is **eager** by default: its iframe and every dependency download as the page renders. That's fine for a small demo, but a heavy scene — a three.js render, a large framework playground — shouldn't tax a perf-sensitive page (a landing page, a long article) before the visitor has even scrolled to it.

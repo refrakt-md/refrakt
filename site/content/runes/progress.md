@@ -78,20 +78,6 @@ An optional **body** is the label — it may hold inline markup, and its text al
 
 The rune stays generic; computing `progressDone`/`progressTotal` is the data layer's job.
 
-## Output contract
-
-```html
-<div class="rf-progress" data-rune="progress"
-     role="progressbar" aria-valuenow="3" aria-valuemin="0" aria-valuemax="4"
-     aria-label="Acceptance criteria" style="--rf-progress: 75%">
-  <span class="rf-progress__label">Acceptance criteria</span>
-  <span class="rf-progress__value">3/4</span>
-  <span class="rf-progress__track"><span class="rf-progress__fill"></span></span>
-</div>
-```
-
-The fill width is driven by the `--rf-progress` custom property, so themes restyle the bar without touching the markup.
-
 ## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:progress"} /%}

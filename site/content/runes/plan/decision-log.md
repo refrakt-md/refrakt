@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:decision-log"} /%}
 
-An aggregation rune that renders a chronological list of architecture decision records from the entity registry. Supports filtering by status and sorting by date or ID. The rune produces a sentinel that the pipeline resolves with real decision data.
+An aggregation rune that renders a chronological list of architecture decision records from the entity registry. Supports filtering by status and sorting by date or ID.
 
 ## All decisions (newest first)
 
@@ -35,14 +35,9 @@ An aggregation rune that renders a chronological list of architecture decision r
 
 {% /preview %}
 
-### Output structure
+### What it shows
 
-Renders as an ordered list (`ol.rf-decision-log__list`) where each entry (`li.rf-decision-log__entry`) contains:
-
-- Date (`<time>` element)
-- Status badge (color-coded via `[data-status]`)
-- Decision ID
-- Title
+An ordered list, newest first, where each entry shows the decision's date, a status badge, its ID and its title.
 
 ## Attributes
 

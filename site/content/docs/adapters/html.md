@@ -233,20 +233,3 @@ The HTML adapter has minimal dependencies:
 | `@refrakt-md/transform` | Yes | Identity transform engine, layout transform, `renderToHtml` |
 | `@refrakt-md/types` | Yes | Shared TypeScript interfaces |
 | `@refrakt-md/behaviors` | Optional | Client-side progressive enhancement for interactive runes |
-
-## Theme Integration
-
-Themes work with the HTML adapter through their config and CSS exports. No special `./html` export is needed — the `./transform` export (theme config) and `.` export (CSS) are sufficient:
-
-```typescript
-import { themeConfig } from 'my-theme/transform';
-import { createTransform } from '@refrakt-md/transform';
-
-const transform = createTransform(themeConfig);
-```
-
-For CSS, reference the theme's stylesheet in `renderFullPage`:
-
-```typescript
-renderFullPage(input, { stylesheets: ['/path/to/theme.css'] });
-```

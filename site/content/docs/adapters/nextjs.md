@@ -389,15 +389,3 @@ The adapter works with both the Pages Router and App Router, but the `RefraktCon
 | `@refrakt-md/behaviors` | Yes | Client-side progressive enhancement for interactive runes |
 | `next` | Peer | Next.js framework |
 | `react` | Peer | React runtime |
-
-## Theme Integration
-
-Themes work with the Next.js adapter through their `./next` subpath export:
-
-```typescript
-import manifest from '@refrakt-md/lumina/manifest';
-import { layouts } from '@refrakt-md/lumina/layouts';
-const theme = { manifest, layouts };
-```
-
-This provides the `NextTheme` object with the manifest and layout configs. For CSS, import the theme's main export in your root layout.

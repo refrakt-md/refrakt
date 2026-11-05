@@ -278,26 +278,3 @@ The `behaviors` Svelte action from `@refrakt-md/svelte` initializes `@refrakt-md
   <!-- Content with behavior-enhanced runes -->
 </div>
 ```
-
-## Theme Integration
-
-When creating a theme for SvelteKit, export a `SvelteTheme` object from the `./svelte` subpath:
-
-```typescript
-// svelte/index.ts
-import type { SvelteTheme } from '@refrakt-md/svelte';
-import { registry, elements } from '@refrakt-md/svelte';
-import { defaultLayout, docsLayout } from '@refrakt-md/transform';
-
-export const theme: SvelteTheme = {
-  manifest: { /* ... */ },
-  layouts: {
-    default: defaultLayout,
-    docs: docsLayout,
-  },
-  components: registry,
-  elements,
-};
-```
-
-See [Creating a Theme](/extend/theme-authoring/creating-a-theme) for the full guide.

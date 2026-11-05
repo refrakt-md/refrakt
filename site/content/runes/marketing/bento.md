@@ -145,11 +145,9 @@ Footer note.          <!-- footer -->
 
 ## Frame & elevation
 
-`elevation` floats the cell box (`box-shadow`). Because heading-sugar cells have no per-cell attribute surface, **grid-level `elevation`** on the `bento` cascades to every cell as a default — mirroring `media-position`; a cell's own value still wins. The grid never takes this chrome itself (the cells are the visual cards) — so `{% bento elevation="raised" %}` lifts each cell, not the grid box.
+`elevation` lifts each cell off the page. Set on the `bento`, it applies to every cell, as `media-position` does; a cell's own value still wins. The grid itself never takes a shadow, so `{% bento elevation="raised" %}` lifts the cells, not the grid.
 
-{% hint type="note" %}
-The `frame` axis is **not** available on `bento` — see the universal attribute table below. `frame-aspect` and `frame-anchor` written on a bento are accepted by the parser and then dropped: the engine emits no `--bento-media-aspect` or `--bento-media-anchor` from them. Use `media-ratio` for the cell aspect instead. Whether the `frame` cascade described for `card` should extend here is tracked as BUG-017.
-{% /hint %}
+`bento` does not take the `frame` attributes; set a cell's aspect with `media-ratio`.
 
 {% preview source=true %}
 

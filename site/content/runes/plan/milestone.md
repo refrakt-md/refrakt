@@ -57,7 +57,7 @@ A milestone with all goals achieved.
 	# v0.4.0 — Foundation
 
 	- Core rune system operational
-	- Identity transform engine complete
+	- Static site build complete
 	- Lumina theme baseline shipped
 	{% /milestone %}
 

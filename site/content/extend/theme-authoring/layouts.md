@@ -429,3 +429,30 @@ Layouts are part of the theme configuration passed to the adapter. Both adapters
 	{% /tab %}
 
 {% /tabs %}
+
+## Nav active state
+
+Each rendered page evaluates every nav against its current URL and applies up to two attributes:
+
+| Attribute                | When                                                                              | Maximum per nav  |
+|--------------------------|-----------------------------------------------------------------------------------|------------------|
+| `aria-current="page"`    | The item's resolved `href` equals the current URL                                  | 1                |
+| `data-active="ancestor"` | The item's resolved `href` is the **longest strict prefix** of the current URL    | 1                |
+
+Both rules are independent. `aria-current` and `data-active` can land on different items of the same nav — for example, when the reader is on `/extend/rune-authoring/output-contract`, an item linking to `/extend/rune-authoring/` would get `data-active="ancestor"` while the (deeper, unlinked) current page produces no `aria-current` anywhere in the nav.
+
+URL comparison normalises trailing slashes and `index` suffixes, and is case-insensitive. External links (`https://`, `mailto:`) never receive either attribute.
+
+### Styling it
+
+Lumina styles `aria-current="page"` and `data-active="ancestor"` with visually distinct treatments — the exact-match state gets the stronger emphasis, ancestor gets a subtler accent. Themes can collapse the two into a single style if they prefer; the contract is the two attributes, not two visual treatments.
+
+```css
+.rf-nav-item__link[aria-current="page"] {
+  /* strong emphasis: bold + accent color + indicator */
+}
+
+.rf-nav-item__link[data-active="ancestor"] {
+  /* subtle accent color */
+}
+```

@@ -111,37 +111,6 @@ The GitHub URL is built from `SiteConfig.repoUrl` + `SiteConfig.repoBranch`. Bot
 | `repoUrl` | — | Canonical repo URL. When absent, the inline link has no `href` (or falls back to an in-page snippet anchor when one exists on the page) and a one-time per-page build warning fires. |
 | `repoBranch` | `"main"` | Accepts any git ref — branch / tag / commit SHA. Use a SHA for archival URLs that won't drift when the file is edited. |
 
-## Output contract
-
-Without preview, the inline form:
-
-```html
-<span class="rf-file-ref" data-rune="file-ref">
-  <a href="https://github.com/.../blob/main/path/to/file.ts#L42-L58">label</a>
-</span>
-```
-
-With `preview="drawer"`:
-
-```html
-<span class="rf-file-ref" data-rune="file-ref">
-  <a href="#drawer-path-to-file-ts-L42-L58"
-     aria-controls="drawer-path-to-file-ts-L42-L58"
-     aria-expanded="false"
-     data-target-type="drawer">label</a>
-</span>
-<!-- ... and at the page root: -->
-<section class="rf-drawer" id="drawer-path-to-file-ts-L42-L58" data-rune="drawer">
-  <header class="rf-drawer__header">…</header>
-  <div class="rf-drawer__body">
-    <pre data-language="typescript" data-source="path/to/file.ts" data-lines="42-58"><code>…</code></pre>
-  </div>
-  <footer class="rf-drawer__footer">
-    <a href="https://github.com/.../#L42-L58">View source on GitHub →</a>
-  </footer>
-</section>
-```
-
 ## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:file-ref"} /%}

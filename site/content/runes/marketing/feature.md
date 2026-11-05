@@ -98,7 +98,7 @@ Use `media-position="end"` to place definitions alongside a media column — an 
 
 		- **Framework agnostic**
 
-		  The identity transform is pure data. Render with Svelte, React, or anything else.
+		  Render your pages with Svelte, React, Vue or plain HTML.
 	{% /feature %}
 
 {% /preview %}
@@ -111,39 +111,37 @@ Use `media-position="start"` to swap the column order — media on the left, def
 
 	{% feature media-position="start" %}
 		{% codegroup %}
-		```ts title="transform.ts"
-		const ast = Markdoc.parse(content);
-		const tree = Markdoc.transform(ast, {
-		  tags,
-		  nodes
-		});
+		```markdown title="content/index.md"
+		---
+		title: Welcome
+		---
+
+		{% hero %}
+		# Welcome
+		{% /hero %}
 		```
 
-		```html title="output.html"
-		<section class="rf-hero">
-		  <header class="rf-hero__body">
-		    <h1>Welcome</h1>
-		  </header>
-		</section>
+		```shell title="Terminal"
+		npm run dev
 		```
 		{% /codegroup %}
 
 		---
 
-		pipeline
+		three steps
 		## How it works
 
-		- **Parse**
+		- **Write**
 
-		  Markdoc turns your Markdown into an AST.
+		  Write Markdown, and reach for a rune where the content needs structure.
 
-		- **Transform**
+		- **Preview**
 
-		  Rune schemas reinterpret the AST nodes based on context.
+		  The dev server reloads the page as you type.
 
-		- **Render**
+		- **Publish**
 
-		  The identity transform adds BEM classes and structural elements. Your theme takes it from there.
+		  Build static pages and host them anywhere.
 	{% /feature %}
 
 {% /preview %}
@@ -172,7 +170,7 @@ When `layout` is unset it **derives from `media-position`** (stacked media → `
 
 	- **Framework agnostic**
 
-	  The identity transform is pure data — render with anything.
+	  Render with Svelte, React, Vue or plain HTML.
 
 	- **Type-safe output**
 
@@ -203,7 +201,7 @@ A `grid` is great when the feature has room, but cramped on a phone. Add `collap
 
 	- **Framework agnostic**
 
-	  The identity transform is pure data — render with anything.
+	  Render with Svelte, React, Vue or plain HTML.
 
 	- **Type-safe output**
 

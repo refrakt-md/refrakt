@@ -192,28 +192,6 @@ See [collection → per-item templates](/runes/collection#per-item-templates) fo
 
 In a `grid`, every card in a row shares the height of the tallest one, and the body stretches to fill that height — so the footers line up along a common baseline regardless of how much body each card has.
 
-## Output contract
-
-```html
-<div class="rf-card" data-rune="card" data-media-position="top">
-  <div data-section="media" data-name="media">…</div>
-  <div data-name="content">
-    <div data-name="body">
-      <p data-name="eyebrow">…</p>  <!-- leading paragraph before a heading -->
-      <h3 data-name="title">…</h3>  <!-- the body's leading heading -->
-      …
-    </div>
-    <footer data-name="footer">…</footer>
-  </div>
-  <!-- only when href is set: focusable, labelled by the card's title -->
-  <a data-name="link" href="…" data-link="stretch" aria-labelledby="…"></a>
-</div>
-```
-
-The media / content split, responsive collapse, and mobile full-bleed media header all come from the shared `layouts/split.css` (keyed off `data-layout` / `data-section="media"` / `data-media-position`), so `card` ships only its box chrome.
-
-In **cover mode** the root carries `data-media-position="cover"` plus `data-cover-scope="full"` (and `rf-card--cover`); `content-place` emits `data-content-place` and the `--cover-place-block`/`--cover-place-inline` custom properties, `height` emits `data-height`, and `aspect` an inline `aspect-ratio`. The default scrim is added unless `scrim="none"` or a `tint` opts out; `scrim-type="frost"` adds `data-scrim-type`/`data-scrim-blur` (the scrim renders on the media well's `::after`, never the self-surface bg layer). The overlay foreground scheme (`data-color-scheme`) lands on the `[data-name="content"]` overlay — not the root — so the card box surface keeps the page palette.
-
 ## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:card"} /%}

@@ -432,27 +432,6 @@ if (hasInteractiveRunes(page.renderable)) {
 | **HMR** | Vite plugin with virtual modules and content HMR | Nuxt module watches content directory |
 | **Theme type** | `SvelteTheme` (includes components, elements) | `NuxtTheme` (manifest + layouts only) |
 
-## Theme Integration
-
-When creating a theme with Nuxt support, export a `NuxtTheme` object from the `./nuxt` subpath:
-
-```typescript
-// nuxt/index.ts
-import type { NuxtTheme } from '@refrakt-md/nuxt';
-import manifest from '../manifest.json';
-import { defaultLayout, docsLayout } from '@refrakt-md/transform';
-
-export const theme: NuxtTheme = {
-  manifest,
-  layouts: {
-    default: defaultLayout,
-    docs: docsLayout,
-  },
-};
-```
-
-See [Creating a Theme](/extend/theme-authoring/creating-a-theme) for the full guide.
-
 ## Dependencies
 
 | Package | Required | Purpose |
