@@ -59,13 +59,6 @@ Track whether a character is alive, dead, unknown, or missing.
 
 {% /preview %}
 
-### Attributes
-
-#### `character`
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:character"} /%}
-
-#### `character-section`
-
-{% include file="rune-attributes.md" variables={r: "rune:character-section"} /%}
-

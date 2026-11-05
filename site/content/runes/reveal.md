@@ -37,13 +37,6 @@ Headings automatically split content into reveal steps.
 
 Reveal supports an optional eyebrow, headline, and blurb above the steps. Place a short paragraph before your step headings to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
-### Attributes
-
-#### `reveal`
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:reveal"} /%}
-
-#### `reveal-step`
-
-{% include file="rune-attributes.md" variables={r: "rune:reveal-step"} /%}
-

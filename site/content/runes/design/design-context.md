@@ -51,10 +51,6 @@ Compose child design runes inside a design-context block.
 
 {% /preview %}
 
-## Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:design-context"} /%}
-
 ## Cross-page token injection
 
 Tokens defined in a design-context are registered by the build pipeline and injected into any `{% sandbox context="..." %}` that references the same scope — even on a different page.
@@ -110,3 +106,7 @@ Use distinct `scope` values to maintain separate token sets — for example, sep
 {% sandbox context="brand-a" %}...{% /sandbox %}
 {% sandbox context="brand-b" %}...{% /sandbox %}
 ```
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:design-context"} /%}

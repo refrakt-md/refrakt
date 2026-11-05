@@ -72,6 +72,4 @@ Steps supports an optional eyebrow, headline, and blurb above the section above 
 
 ## Attributes
 
-### `step`
-
-{% include file="rune-attributes.md" variables={r: "rune:step"} /%}
+{% include file="rune-attributes.md" variables={r: "rune:steps"} /%}

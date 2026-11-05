@@ -74,7 +74,6 @@ Enable `showContrast` and `showA11y` to display WCAG contrast ratios and AA/AAA 
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:palette"} /%}
-

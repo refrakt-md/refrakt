@@ -67,20 +67,6 @@ Without H2 headings, all stops are grouped into a single implicit day.
 
 {% /preview %}
 
-### Attributes
-
-#### `itinerary`
-
-{% include file="rune-attributes.md" variables={r: "rune:itinerary"} /%}
-
-#### `itinerary-day`
-
-{% include file="rune-attributes.md" variables={r: "rune:itinerary-day"} /%}
-
-#### `itinerary-stop`
-
-{% include file="rune-attributes.md" variables={r: "rune:itinerary-stop"} /%}
-
 ### Day attributes
 
 | Attribute | Type | Default | Description |
@@ -102,3 +88,7 @@ Without H2 headings, all stops are grouped into a single implicit day.
 ## Section header
 
 Itinerary supports an optional eyebrow, headline, and blurb above the section above itinerary stops. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:itinerary"} /%}

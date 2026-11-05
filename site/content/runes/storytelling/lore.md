@@ -40,7 +40,6 @@ Use the `category` attribute to classify different types of lore.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:lore"} /%}
-

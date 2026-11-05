@@ -24,6 +24,7 @@ tint-lock: false
 		- rune-authoring/registration
 		- rune-authoring/composed-runes
 		- rune-authoring/patterns
+		- rune-authoring/reference-pages
 
 		## Plugin authoring
 

@@ -110,20 +110,6 @@ Use `layout="cards"` for side-by-side cards. Ideal for pricing comparisons or wh
 
 {% /preview %}
 
-## Attributes
-
-### `comparison`
-
-{% include file="rune-attributes.md" variables={r: "rune:comparison"} /%}
-
-### `comparison-column`
-
-{% include file="rune-attributes.md" variables={r: "rune:comparison-column"} /%}
-
-### `comparison-row`
-
-{% include file="rune-attributes.md" variables={r: "rune:comparison-row"} /%}
-
 ## Markdown reinterpretation
 
 | Markdown | Interpretation |
@@ -138,3 +124,7 @@ Use `layout="cards"` for side-by-side cards. Ideal for pricing comparisons or wh
 ## Section header
 
 Comparison supports an optional eyebrow, headline, and blurb above the section above the comparison table. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:comparison"} /%}

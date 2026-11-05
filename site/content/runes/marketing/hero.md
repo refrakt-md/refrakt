@@ -67,10 +67,6 @@ Use `align="start"` for a more editorial feel. `align` takes `start`, `center` (
 
 {% /preview %}
 
-### Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:hero"} /%}
-
 ## Cover — content over a full-bleed backdrop
 
 `media-position="cover"` turns the media zone into a full-bleed backdrop: the media fills the section interior and the headline, blurb, and actions overlay it. A legibility scrim and a light-on-dark foreground are applied automatically — it's a one-attribute switch on the same content.
@@ -184,3 +180,7 @@ The body splits on `---` into **media → content** zones (media-first in source
 | `media-ratio` | `string` | — | Media's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
 | `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:hero"} /%}

@@ -216,10 +216,6 @@ A `grid` is great when the feature has room, but cramped on a phone. Add `collap
 
 {% /preview %}
 
-### Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:feature"} /%}
-
 ## Section header
 
 Feature supports an optional eyebrow, headline, and blurb above the section above feature items. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
@@ -235,3 +231,6 @@ The body splits on `---` into **media → content** zones (media-first in source
 | `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack **and** a `grid` of items reflows to one column: `sm`, `md`, `lg`, `never` |
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:feature"} /%}

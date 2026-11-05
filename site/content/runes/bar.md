@@ -94,6 +94,10 @@ Geometry comes from the universal `[data-zone-layout="bar"]` selector in Lumina'
 }
 ```
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:bar"} /%}
+
 ## See also
 
 - [Blocks & layout](/extend/theme-authoring/blocks-and-layout) — the spec this rune projects.

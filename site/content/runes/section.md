@@ -151,10 +151,6 @@ The zones count as `card`'s do: one zone is the content, two are media and conte
 
 {% /preview %}
 
-## Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:section"} /%}
-
 ## Anatomy
 
 | Slot | From | Class |
@@ -169,3 +165,7 @@ The zones count as `card`'s do: one zone is the content, two are media and conte
 | Footer | a trailing zone after a second `---`, with `media-position` | `.rf-section__footer` |
 
 The header slots are wrapped in `.rf-section__preamble`; the whole block is `.rf-section`.
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:section"} /%}

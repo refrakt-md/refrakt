@@ -293,7 +293,6 @@ A SQLite adapter is specified but not yet implemented. It will slot into the sam
 
 ## Attributes
 
-
 Every attribute in one table. Format-specific ones say so in their description — `CSV/TSV:` or `JSON:`; the rest apply to every source.
 
 {% include file="rune-attributes.md" variables={r: "rune:data"} /%}

@@ -46,16 +46,6 @@ Different narrative structures for various storytelling needs.
 
 {% /preview %}
 
-### Attributes
-
-#### `plot`
-
-{% include file="rune-attributes.md" variables={r: "rune:plot"} /%}
-
-#### `beat`
-
-{% include file="rune-attributes.md" variables={r: "rune:beat"} /%}
-
 ### Beat markers
 
 | Marker | Status | Description |
@@ -65,3 +55,6 @@ Different narrative structures for various storytelling needs.
 | `[ ]` | Planned | Not yet started |
 | `[-]` | Abandoned | Dropped from the storyline |
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:plot"} /%}

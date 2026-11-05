@@ -47,7 +47,6 @@ Use `pageSize` to paginate large tables.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:datatable"} /%}
-

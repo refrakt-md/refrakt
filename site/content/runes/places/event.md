@@ -30,11 +30,10 @@ An event with date, location, agenda, and a registration link.
 
 {% /preview %}
 
-### Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:event"} /%}
-
 ## Section header
 
 Event supports an optional eyebrow, headline, and blurb above the section above event details. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:event"} /%}

@@ -88,6 +88,6 @@ Both forms can be mixed, and document order is preserved. Two things worth knowi
 - **Tracks must be consecutive.** The track listing is collected as one run, so prose written between two tracks ends it — anything after that becomes the playlist's body rather than another track.
 - **An explicit `type` always wins.** A `{% track type="song" %}` inside a podcast stays a song. The attribute means what it says; the playlist only supplies a kind when the track states none.
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:track"} /%}

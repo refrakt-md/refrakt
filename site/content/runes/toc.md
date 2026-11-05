@@ -27,7 +27,6 @@ Control how deep the heading hierarchy goes with `depth`:
 {% toc depth=2 /%}
 ```
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:toc"} /%}
-

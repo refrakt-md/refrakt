@@ -74,10 +74,6 @@ Per-page **dedup**: N mentions of the same entity collapse to one hoisted drawer
 
 See [file-ref](/runes/file-ref) for the path-based sibling that uses the same `preview` attribute over file content rather than registered entities.
 
-## Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:xref"} /%}
-
 ## Resolution order
 
 Resolution splits entity lookup from URL resolution so the two can succeed independently:
@@ -185,3 +181,7 @@ Themes can style cross-references by entity type using BEM modifier classes:
   cursor: help;
 }
 ```
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:xref"} /%}

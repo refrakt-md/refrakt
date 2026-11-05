@@ -59,7 +59,6 @@ Enable `wrap` for text that flows around the image rather than staying in a stri
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:mediatext"} /%}
-

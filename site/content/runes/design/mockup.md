@@ -432,7 +432,6 @@ Use `device="none"` for a minimal dashed border with no chrome.
 	{% /mockup %}
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:mockup"} /%}
-

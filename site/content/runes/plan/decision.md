@@ -62,7 +62,6 @@ A decision still under review.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:decision"} /%}
-

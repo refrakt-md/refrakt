@@ -201,10 +201,6 @@ Value formatting is done with shared markdoc functions, usable **anywhere markdo
 
 Formatting lives in these functions, not in `fields` or a projection mini-language.
 
-## Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:collection"} /%}
-
 ## Body zones — preamble, template, fallback
 
 When you give `collection` a body, split it on a top-level `---` (horizontal rule) into up to three zones — the same convention as [`card`](/runes/card):
@@ -263,6 +259,10 @@ They're list-scoped (the whole query), not per-group — a group's own count app
 ```
 
 When `group` is set, items are wrapped in `div.rf-collection__group[data-group]` with a `h3.rf-collection__group-title`. With `group-display="accordion"` the groups are instead a `div.rf-accordion` of `details.rf-accordion-item[data-group]` panels — reusing the [`accordion`](/runes/accordion) rune's classes (`__header` / `__title` / `__count` / `__body`). The `table` layout emits a `table.rf-collection__table` with `<thead>` + one `<tr data-entity-id>` per entity.
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:collection"} /%}
 
 ## See also
 

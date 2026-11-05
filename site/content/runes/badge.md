@@ -71,10 +71,6 @@ Common usage patterns. Authors pick the sentiment that matches intent — the la
 | Archived status     | `{% badge type="status" sentiment="neutral" %}Archived{% /badge %}`      |
 | Category tag        | `{% badge %}Frontend{% /badge %}`                                        |
 
-## Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:badge"} /%}
-
 Both attribute value sets match the universal metadata-system dimensions exactly — no new enums are introduced.
 
 ## Output
@@ -108,3 +104,7 @@ Badge composes with any layout that lets you place inline content. Inside nav it
 ```
 
 In tables, badges work as cell content for status columns. In headings, they flag a section's state. In prose, they flag a single sentence.
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:badge"} /%}

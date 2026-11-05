@@ -72,7 +72,6 @@ A POST endpoint with a request body and response example.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:api"} /%}
-

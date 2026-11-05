@@ -47,7 +47,6 @@ Use `variant="inline"` to show annotations as highlighted blocks within the flow
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:annotate"} /%}
-

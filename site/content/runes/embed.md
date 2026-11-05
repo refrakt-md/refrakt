@@ -44,7 +44,6 @@ Children become fallback content displayed when the embed cannot load.
 | Spotify | `https://open.spotify.com/...` |
 | Generic | Any other URL (rendered as iframe) |
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:embed"} /%}
-

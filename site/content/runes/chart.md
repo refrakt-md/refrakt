@@ -53,7 +53,6 @@ Use `type="line"` for trend data.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:chart"} /%}
-

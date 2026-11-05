@@ -54,16 +54,6 @@ Use `type` and `alignment` to classify organizations.
 
 {% /preview %}
 
-### Attributes
-
-#### `faction`
-
-{% include file="rune-attributes.md" variables={r: "rune:faction"} /%}
-
-#### `faction-section`
-
-{% include file="rune-attributes.md" variables={r: "rune:faction-section"} /%}
-
 ### Layout attributes
 
 A faction's `scene` field (the image at the top of each section) is the media zone; `media-position` controls where it sits relative to the content. Beside layouts (`start`/`end`) collapse to a stack at narrow widths.
@@ -75,3 +65,6 @@ A faction's `scene` field (the image at the top of each section) is the media zo
 | `valign` | `string` | — | Cross-axis alignment when scene is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:faction"} /%}

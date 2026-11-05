@@ -127,7 +127,6 @@ The preview toolbar controls the sandbox iframe -- theme toggles propagate into 
 
 See the [sandbox rune docs](/runes/sandbox) for full details on framework presets, dependencies, and data-source panels.
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:preview"} /%}
-

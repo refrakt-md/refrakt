@@ -77,10 +77,6 @@ Because the drawer is id-addressable, the same drawer can be referenced from N p
 
 Multiple xrefs to {% ref "auth-system" /%} or to {% ref "auth-system" label="this same drawer" /%} all resolve to the same anchor target — the drawer above. Clicking either opens it; the behaviors layer doesn't care which trigger fired.
 
-## Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:drawer"} /%}
-
 ## Progressive enhancement
 
 The drawer is built on the **no-JS-visible / JS-hidden** contract: the body always renders, the dialog UX is the enhancement.
@@ -193,6 +189,10 @@ Trigger with {% ref "page-source" label="view this page's source" /%}.
 {% /drawer %}
 
 Nested drawers and multiple simultaneous open drawers aren't supported in v1 — native `<dialog>` enforces single-modal, and stacked modals are an antipattern.
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:drawer"} /%}
 
 ## See also
 

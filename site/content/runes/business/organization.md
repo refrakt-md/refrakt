@@ -49,11 +49,10 @@ A corporation profile with structured data.
 
 {% /preview %}
 
-### Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:organization"} /%}
-
 ## Section header
 
 Organization supports an optional eyebrow, headline, and blurb above the section above details. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:organization"} /%}

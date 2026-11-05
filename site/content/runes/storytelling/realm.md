@@ -57,16 +57,6 @@ Use the `type` attribute to categorize your locations.
 
 {% /preview %}
 
-### Attributes
-
-#### `realm`
-
-{% include file="rune-attributes.md" variables={r: "rune:realm"} /%}
-
-#### `realm-section`
-
-{% include file="rune-attributes.md" variables={r: "rune:realm-section"} /%}
-
 ### Layout attributes
 
 A realm's `scene` field (the image at the top of each section) is the media zone; `media-position` controls where it sits relative to the content. Beside layouts (`start`/`end`) collapse to a stack at narrow widths.
@@ -78,3 +68,6 @@ A realm's `scene` field (the image at the top of each section) is the media zone
 | `valign` | `string` | — | Cross-axis alignment when scene is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:realm"} /%}

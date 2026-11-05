@@ -51,16 +51,6 @@ Use `{% timeline-entry %}` tags for more control over date and label values.
 
 {% /preview %}
 
-### Attributes
-
-#### `timeline`
-
-{% include file="rune-attributes.md" variables={r: "rune:timeline"} /%}
-
-#### `timeline-entry`
-
-{% include file="rune-attributes.md" variables={r: "rune:timeline-entry"} /%}
-
 ### Entry attributes
 
 | Attribute | Type | Default | Description |
@@ -72,3 +62,6 @@ Use `{% timeline-entry %}` tags for more control over date and label values.
 
 Timeline supports an optional eyebrow, headline, and blurb above the section above entries. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:timeline"} /%}

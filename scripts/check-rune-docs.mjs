@@ -203,8 +203,12 @@ export function attributeCoverage(artifact, dir = RUNES_DIR) {
 			continue;
 		}
 		const text = readFileSync(file, 'utf8');
+		// A child's table is rendered by its parent's include (SPEC-193 D1.6), when
+		// the artifact lists it among the parent's children.
+		const children = new Map((artifact.children ?? []).map((r) => [r.child, r.rune]));
 		for (const rune of runes) {
-			if (!text.includes(`variables={r: "rune:${rune}"}`))
+			const via = children.get(rune) ?? rune;
+			if (!text.includes(`variables={r: "rune:${via}"}`))
 				missing.push(`${rune} (on /runes/${page})`);
 		}
 	}
@@ -254,6 +258,48 @@ export function introCoverage(dir = RUNES_DIR, pages = findDocPages(dir)) {
 				fix: 'delete it; the intro writes the <h1>',
 			});
 		}
+	}
+	return findings;
+}
+
+/**
+ * SPEC-193 D1 — a rune page has one attribute include, its own, under
+ * `## Attributes`, after its task sections: the only section that may follow it
+ * is "See also". The include renders the rune's children as well, so a page never
+ * includes a child's table itself. Code fences are skipped.
+ */
+export function attributeSections(dir = RUNES_DIR, pages = findDocPages(dir)) {
+	const findings = [];
+	const INCLUDE =
+		/\{%\s*include\s+file="rune-attributes\.md"\s+variables=\{\s*r:\s*"rune:([a-z-]+)"\s*\}\s*\/%\}/g;
+	for (const [name, page] of pages) {
+		if (!page.isRune || PAGELESS.has(name)) continue;
+		const source = readFileSync(join(dir, page.rel), 'utf8');
+		const prose = source.replace(/^(`{3,}|~{3,})[^\n]*\n[\s\S]*?^\1[ \t]*$/gm, '');
+		const includes = [...prose.matchAll(INCLUDE)];
+		const add = (problem, fix) => findings.push({ page: page.rel, problem, fix });
+		if (includes.length !== 1) {
+			add(
+				includes.length === 0 ? 'no attribute table' : `${includes.length} attribute includes`,
+				`one {% include file="rune-attributes.md" variables={r: "rune:${name}"} /%}; it renders the children too`,
+			);
+			continue;
+		}
+		const [include] = includes;
+		if (include[1] !== name)
+			add(`the attribute include names \`${include[1]}\``, `name the page's rune, \`${name}\``);
+		const headings = [...prose.matchAll(/^(#{1,6}) (.+)$/gm)];
+		const above = headings.filter((h) => h.index < include.index).at(-1);
+		if (!above || above[0] !== '## Attributes')
+			add('the attribute include is not under `## Attributes`', 'put it under `## Attributes`');
+		const after = headings.filter(
+			(h) => h.index > include.index && h[1] === '##' && h[2].trim() !== 'See also',
+		);
+		if (after.length)
+			add(
+				`\`## ${after[0][2]}\` follows the attribute table`,
+				'move the task sections above `## Attributes`',
+			);
 	}
 	return findings;
 }
@@ -320,6 +366,13 @@ function main() {
 			for (const n of handWritten)
 				console.error(`    ${n}  — delete the table; the include renders it from the schema`);
 		}
+	}
+
+	const attributes = attributeSections();
+	if (attributes.length) {
+		failed = true;
+		console.error(`✗ ${attributes.length} rune page attribute section problem(s) (SPEC-193 D1):`);
+		for (const f of attributes) console.error(`    ${f.page}: ${f.problem} — ${f.fix}`);
 	}
 
 	const intro = introCoverage();

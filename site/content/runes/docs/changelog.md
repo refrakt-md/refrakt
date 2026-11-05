@@ -72,16 +72,6 @@ Use `{% changelog-release %}` tags for more control over version and date values
 
 {% /preview %}
 
-### Attributes
-
-#### `changelog`
-
-{% include file="rune-attributes.md" variables={r: "rune:changelog"} /%}
-
-#### `changelog-release`
-
-{% include file="rune-attributes.md" variables={r: "rune:changelog-release"} /%}
-
 ### Release attributes
 
 | Attribute | Type | Default | Description |
@@ -94,3 +84,6 @@ Use `{% changelog-release %}` tags for more control over version and date values
 
 Changelog supports an optional eyebrow, headline, and blurb above the section above entries. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:changelog"} /%}

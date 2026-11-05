@@ -38,10 +38,6 @@ A complete recipe with ingredients, instructions, and a tip.
 
 {% /preview %}
 
-### Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:recipe"} /%}
-
 ## Section header
 
 Recipe supports an optional eyebrow, headline, and blurb above the section above ingredients and method. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
@@ -117,3 +113,7 @@ A recipe is a bordered card by default. The same recipe becomes a full-bleed her
 {% /preview %}
 
 This differs from [cover mode](#cover-mode) above: cover overlays the title *on* the image (a poster), while the hero stacks a display-size title above an edge-to-edge image. Both are one-line switches on the same content. See [Surfaces → Card vs hero](/runes/surfaces#card-vs-hero) for the full axis reference.
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:recipe"} /%}

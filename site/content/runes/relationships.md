@@ -61,10 +61,6 @@ Because `$item` means the same thing here as in a `collection` body, the **same 
 - **`limit`** — a positive integer cap.
 - **`layout`** — `list` (default, stacked) or `grid` (responsive multi-column), mirroring [`collection`](/runes/collection#layouts). With `group`, the grid arranges each group's edges into columns (the group title spans the row); item chrome comes from the item — the no-body built-in becomes a card, or use a `{% card %}` in the body template.
 
-## Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:relationships"} /%}
-
 ## Empty state and body zones
 
 Like [`collection`](/runes/collection), `relationships` supports an empty state and `---`-delimited body zones. The self-closing form takes an `empty` fallback:
@@ -96,6 +92,10 @@ In `layout="grid"` the no-body built-in is an `article.rf-relationships__card` (
 ## Where edges come from
 
 `relationships` only *renders* the graph — it doesn't build it. Plugins contribute edges during the registry's aggregate phase, so the kinds you see depend on which plugins are installed. See [plugin authoring → pipeline](/extend/plugin-authoring/pipeline) for the `relate()` / `getRelated()` contract.
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:relationships"} /%}
 
 ## See also
 

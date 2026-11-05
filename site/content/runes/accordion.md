@@ -67,13 +67,6 @@ Suppresses the whole subtree, panels included, and the JSON-LD with it. Nothing 
 
 `"none"` is the only value. `FAQPage` has no subtype to narrow to, and switching to another type (`ItemList`, say) would need the container's property renamed *and* each panel's type and properties changed, which an attribute on the container cannot reach.
 
-### Attributes
-
-#### `accordion`
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:accordion"} /%}
-
-#### `accordion-item`
-
-{% include file="rune-attributes.md" variables={r: "rune:accordion-item"} /%}
-

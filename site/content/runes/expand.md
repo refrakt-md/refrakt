@@ -44,10 +44,6 @@ embedded in the {% ref "auth-spec-drawer" label="auth spec drawer" /%}.
 
 The `canonical=true` attribute appends a "view canonical" link to the embedded content — useful when the embed is a peek and the canonical lives elsewhere.
 
-## Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:expand"} /%}
-
 ## Resolution model
 
 For each `{% expand %}` placeholder the resolver:
@@ -114,6 +110,10 @@ When `canonical=true`, expand renders a `<a class="rf-expand__canonical-link">` 
   </a>
 </section>
 ```
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:expand"} /%}
 
 ## See also
 

@@ -185,7 +185,6 @@ Sidebar (appears first on mobile).
 {% /grid %}
 ```
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:grid"} /%}
-

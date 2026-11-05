@@ -78,10 +78,6 @@ An optional **body** is the label — it may hold inline markup, and its text al
 
 The rune stays generic; computing `progressDone`/`progressTotal` is the data layer's job.
 
-## Attributes
-
-{% include file="rune-attributes.md" variables={r: "rune:progress"} /%}
-
 ## Output contract
 
 ```html
@@ -95,6 +91,10 @@ The rune stays generic; computing `progressDone`/`progressTotal` is the data lay
 ```
 
 The fill width is driven by the `--rf-progress` custom property, so themes restyle the bar without touching the markup.
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:progress"} /%}
 
 ## See also
 

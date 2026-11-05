@@ -116,6 +116,10 @@ The Lumina default is stacked-then-multi-column:
 
 The behaviour follows container width, not authoring choice — the same `{% deflist %}` reads stacked on narrow screens and multi-column on wider ones. If you need explicit "force stacked" or "force grid" control, a sibling `definition-grid` primitive is the right place to add it (not yet implemented).
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:deflist"} /%}
+
 ## See also
 
 - [Blocks & layout](/extend/theme-authoring/blocks-and-layout) — the spec this rune projects.

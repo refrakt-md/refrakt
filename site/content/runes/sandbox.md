@@ -477,7 +477,6 @@ Named `data-source` values create labelled tabs in the source panel.
 
 Without a preview wrapper, the sandbox renders inline with no chrome — useful for embedding a live widget in the middle of prose.
 
-
 {% sandbox %}
 <style>
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -617,7 +616,6 @@ You can combine file-sourced and inline content. Write additional HTML, CSS, or 
 
 If the named directory does not exist, the sandbox displays an error message in place of the preview.
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:sandbox"} /%}
-

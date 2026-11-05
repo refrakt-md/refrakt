@@ -39,7 +39,6 @@ Set `bidirectional` to `false` for one-way relationships like mentorship or unre
 
 Every bond is also an edge in the site's relationship graph, with its `type` as the edge kind (`bond` when it has none). [`relationships`](/runes/relationships) lists it on both characters' pages, or only on the `from` side when `bidirectional` is `false`. `from` and `to` may name a character by any of its `aliases`. A bond whose `from` or `to` names no character, realm, faction, lore or plot is reported as a build warning and left out of the graph.
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:bond"} /%}
-

@@ -60,7 +60,6 @@ Use `filter` to match against frontmatter fields and `sort` to control ordering.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:blog"} /%}
-

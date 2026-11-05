@@ -122,6 +122,6 @@ const config = mergeThemeConfig(luminaConfig, {
 
 Then use `{% icon name="my-logo" /%}` in your content.
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:icon"} /%}

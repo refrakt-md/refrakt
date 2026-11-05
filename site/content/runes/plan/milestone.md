@@ -63,7 +63,6 @@ A milestone with all goals achieved.
 
 {% /preview %}
 
-### Attributes
+## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:milestone"} /%}
-
