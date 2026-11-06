@@ -15,7 +15,8 @@ already-parsed content. This spec is the mechanism:
 - the inventory of `custom` content models (D6) and the grammar extensions that replace them
   (D7);
 - opaque visuals (D8);
-- when the legacy levers are removed (D9), and the migration order (D10).
+- when the legacy levers are removed (D9), and the migration order (D10);
+- a template never names an HTML element (D11).
 
 ## Prerequisites
 
@@ -309,6 +310,58 @@ tokens.
 Rune by rune, each moves under {% ref "SPEC-181" /%}'s staging process, as plugin runes moving
 to compositions do now.
 
+### D11: a template never names an HTML element
+
+A template places slots, fields, metadata blocks, groups and runes. It has no tag that emits
+an element by name (`{% tag name="div" %}`), and no tag that takes free attributes.
+
+- **Elements come from facts the definition declares.**
+  - A group's arrangement picks its element: a `ladder` is `<ol>` when the rune declares a
+    `sequence`, `<ul>` otherwise ({% ref "SPEC-156" /%} D3).
+  - A value's `metaType` picks the value element (SPEC-145 D28).
+  - A primitive picks its own elements.
+- **Why not a free element tag:**
+  - **The theme boundary.** An element no vocabulary describes is structure no theme
+    knows, which {% ref "ADR-043" /%} and {% ref "ADR-044" /%} bound away.
+  - **Meaning.** `ol`, `aside`, `header` and `time` are claims about content. A free tag
+    could assert an order or a role the definition never declared.
+  - **Engine-owned attributes.** Free attributes could write `data-rune` (a name-resolution
+    boundary that silently drops schema properties, SPEC-145 D19), `data-field`,
+    `data-zone-layout` or `data-sequence`.
+  - **No code in templates.** {% ref "ADR-045" /%} decision 2 holds only if `script`,
+    `iframe`, `style` and `on*` cannot be written. Theme and plugin templates ship in
+    third-party packages.
+  - **Checks.** A contract records such an element, but no check can say anything about it,
+    and the editor has no edit hint for it.
+- **The needs a free tag would serve, and where they go:**
+
+  | Need | Where |
+  |---|---|
+  | Grouping or arranging parts | `{% group name layout %}` (SPEC-156 D2) |
+  | A header, body or footer zone | the `section` primitive's zones ({% ref "SPEC-160" /%}) |
+  | A semantic wrapper (`aside`, `footer`) | a closed `as=` on `group`, admitted one value at a time with its first case, as `layout` admits topologies |
+  | An inline wrapper around part of a line | an inline `group`, same rules (missing today) |
+  | Decoration (ornament, divider, flourish) | glyph and ornament sets ({% ref "SPEC-164" /%}), or CSS |
+  | An icon beside a value | `metaFields` icons |
+  | Structure the vocabulary cannot express | an opaque slot drawn by the plugin (D8) |
+
+- **The same rule binds `prepare`** (D2): it returns no tree, so it cannot emit an element
+  either. Elements that native transforms build today (`breadcrumb`'s `nav`, `ol` and `li`)
+  move to the template and follow this rule.
+
+**What names an element today, measured on 2026-11-06.** The `structure` field itself is
+unused in first-party configs; elements are named in three other places:
+
+| Where | What | Maps to |
+|---|---|---|
+| `layout` created wrappers | eleven `{ tag: 'div' }` wrappers (nine content wrappers, two nested) and nine `{ tag: 'header' }` preambles, some inside `variants` (core, docs, learning, marketing, media, places, storytelling) | `section`'s header and body zones; a `group` where a wrapper is styled; nothing where it is not |
+| `contentWrapper` | two `div`s (`packages/runes/src/config.ts`, `plugins/places/src/config.ts`) | a `group`, or nothing |
+| `metaFields.*.tag` | `time` on plan's temporal fields (`plugins/plan/src/config.ts`) | the value element from `metaType: temporal`, which D28 already implies |
+
+Each rune's work item confirms its rows. An entry that maps to no row is a vocabulary gap,
+recorded and closed the way D7 closes content-model gaps. A `div` that exists only so that CSS
+has something to select needs no replacement: the template places its children directly.
+
 ## Acceptance criteria
 
 - [ ] A definition may declare `prepare` and `computes`; a definition without them loads as a composition, unchanged
@@ -319,6 +372,8 @@ to compositions do now.
 - [ ] A theme `templates/codegroup.md` replaces its arrangement and passes SPEC-177's checks
 - [ ] A rune with a template that also declares a D5 assembly field reports `engine-config-assembly-with-template`
 - [ ] `refrakt reference` reports a full grammar, not a description, for every rune moved off `custom`
+- [ ] The template language has no tag that emits an element by name or takes free attributes, and a test pins it (D11)
+- [ ] Every element-naming config entry of a moved rune maps to a D11 row, or is recorded as a vocabulary gap
 - [ ] The theme-authoring and plugin-authoring docs describe one arrangement convention for every rune
 
 ## Open questions

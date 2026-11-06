@@ -114,6 +114,13 @@ most runes and a sentence for these fourteen.
    `diagram`, `juxtapose`) places its drawing as a single slot. Its title, legend, caption and
    controls are fields and slots around that slot, which a theme may arrange. The drawing's own
    CSS stays the plugin's, written in tokens only (ADR-044 tier 3).
+7. **A template never names an HTML element.** It places slots, fields, groups and runes.
+   Elements come from what the definition declares: a group's arrangement, a value's
+   `metaType`, a primitive. This is what lets the deprecated `structure`, `layout` and
+   `contentWrapper` fields go without moving their free `tag` into templates, where it would
+   reopen the theme boundary, let a template assert meaning the definition never declared, and
+   need an allowlist to keep templates code-free. SPEC-194 D11 maps each need such a tag would
+   serve to the vocabulary.
 
 ### Decision 2: content models are declarative everywhere
 
