@@ -406,32 +406,25 @@ pressure is real.
    amount, a number or a coordinate is {% ref "SPEC-166" /%}'s contract, and the format is the
    theme's `formats` (ADR-043 decision 4). The two duration implementations collapse into one
    there, and no `prepare` stage parses a duration.
-2. **Small, generic computations become named patterns.** {% ref "ADR-036" /%} ("name the
-   pattern; do not open a language") rules out an expression syntax. Each recurring
-   computation instead becomes one named, schema-validated pattern with parameters, declared
-   under `computes`. A pattern needs no code, so **site-authored definitions can use it too**:
+2. **Small, generic computations become registered functions**, written in `computes` with
+   Markdoc's own call syntax, the same functions templates and pages already call:
 
    ```yaml
    computes:
-     panels.label:
-       pattern: item-label          # an author's list by index, else the first non-empty source
-       list: labels
-       sources: [label, source.basename, language.name]
-     totalTime:
-       pattern: sum
-       of: [prepTime, cookTime]
-       kind: duration
+     panels.label: first(item($attrs.labels, $index), $node.label, basename($node.source), language($node.language))
+     totalTime:    sum($attrs.prepTime, $attrs.cookTime)
    ```
 
-   The two patterns the table supports are `item-label` (four runes) and `sum` (two). The proposed
-   bar for admitting a pattern is at least two adopters, in the spirit of ADR-036's adopter
-   counts.
+   A function needs no code in the definition, so **site-authored definitions can use them
+   too**. {% ref "SPEC-195" /%} specifies the function set, its typed signatures, the
+   `matches()` bridge to the SPEC-070 filter grammar, and the rule that the place decides the
+   result: under `computes` it is a field, in a template it is display text. That rule is what
+   keeps these values in the input half, where a theme's replacement template cannot change
+   or lose them and a schema row may read them (ADR-045 decision 4).
 
-   This answers SPEC-145's `{% let %}` candidate in the input half rather than the template.
-   It has to be there:
-   - a value computed in the template is lost when a theme replaces the template;
-   - a schema row reading a template-computed value would make published data depend on the
-     template, which ADR-045 decision 4 forbids.
+   *Revised 2026-11-07.* An earlier draft of this section proposed YAML named patterns
+   (`pattern: item-label`). They were dropped: they would have been a third syntax beside
+   Markdoc's function calls and the SPEC-070 grammar, for the same operations.
 3. **Shared domain logic becomes a primitive.** If two runes really need the same rule (say
    `compare` and `codegroup` agree on what a code panel's label is), the ADR-044 shape applies:
    a primitive owns the code (a `code-panel` that computes its own label), and both runes place
@@ -439,13 +432,6 @@ pressure is real.
 
 **What would remain for `prepare`** is the last row of the table: rules that belong to one rune.
 That is the case where privacy (D3) costs nothing.
-
-If this direction holds, a follow-up spec would:
-
-- specify `item-label` and `sum`, and the rule for admitting further patterns;
-- answer SPEC-145's open `{% let %}` points (which operations; whether a computed name must
-  also appear in `metaFields`; how a schema row reads it) under `computes`;
-- reconcile `compare` and `codegroup` labels as its acceptance case.
 
 ## References
 
@@ -456,5 +442,6 @@ If this direction holds, a follow-up spec would:
 - {% ref "SPEC-161" /%} D3: a primitive may own code, a composition may not.
 - {% ref "SPEC-177" /%}: theme and site templates.
 - {% ref "SPEC-186" /%}, {% ref "SPEC-182" /%}: the content-model features D7 builds on.
+- {% ref "SPEC-195" /%}: the value vocabulary `computes` is written in.
 
 {% /spec %}
