@@ -93,9 +93,9 @@ The body is a template, as for any composition (D4 has the example).
   `$node.<name>` in `emitAttributes`. Today `emitAttributes` reads only item-model fields and
   heading-extracted values, so this is a small addition, made with `codegroup` (D10).
 
-*Open:* whether `$computed` is its own scope or computed values join `$attrs`. A separate scope
-keeps "the author wrote this" apart from "code derived this", which the precedence rules in
-SPEC-177 D3 depend on.
+- **`$computed` is its own scope** (*decided 2026-11-07*). Computed values never join `$attrs`.
+  SPEC-177 D3's precedence tells an author's explicit value from a default, and a computed
+  value is neither, so mixing the scopes would blur both.
 
 ### D2: `prepare` computes; it does not parse or build
 
@@ -140,10 +140,10 @@ export const prepareCodegroup: Prepare<CodegroupInput, CodegroupComputed> = ({ f
 - **A site's `runes/` directory may name a registered stage but never define one.** A
   site-authored definition stays code-free, so this restates {% ref "SPEC-161" /%} D3 precisely:
   a template never runs code, and a definition file never contains it.
-- *Open:* whether a site may name a stage registered for a different rune (reusing
-  `codegroup`'s labelling in its own rune). This makes stages a public API, so stages that may
-  be reused would need to be versioned like runes. The proposed default is **no** until a case
-  appears: a stage may be named only by the definition its package ships.
+- **A stage is private to its rune** (*decided 2026-11-07*). It may be named only by the
+  definition its package ships. Letting other runes name it would make every stage's input and
+  output a public API, versioned like a rune, and no case needs that yet. Shared logic is
+  reused another way; see "Future: reusing computation" below.
 
 ### D4: every rune with a template is arrangeable
 
@@ -378,8 +378,6 @@ has something to select needs no replacement: the template places its children d
 
 ## Open questions
 
-- **`$computed` or `$attrs`** (D1). A separate scope is proposed.
-- **Reusable stages** (D3). "No" is proposed until a case appears.
 - **Edit hints.** The block editor reads edit hints from output. A computed value is not
   editable. Does `computes` mark it so, or does the editor infer it from the value not being
   in the content model?
@@ -387,6 +385,67 @@ has something to select needs no replacement: the template places its children d
   that carry the behaviour (`tabs`), so a theme's template keeps it. A rune whose behaviour
   script reads its own private structure would break under a replacement template. Either such
   behaviour moves into a primitive, or the definition marks that part as one opaque slot (D8).
+
+## Future: reusing computation
+
+Not decided here. Recorded because D3 closes one route to reuse, and the code shows the
+pressure is real.
+
+**What repeats today, measured on 2026-11-07:**
+
+| Computation | Where | How it differs |
+|---|---|---|
+| A label per item: an author's comma list by index, else a fallback chain | `codegroup` (`labels` → fence label → source basename → prettified language), `compare` (`labels` → raw `data-language` → "Panel N"), `juxtapose` (`labels` → none), `conversation` (`speakers`, cycled, after the bold speaker) | the two code-panel runes disagree: `compare` neither prettifies the language nor reads the source |
+| Parsing and formatting durations | `parseIsoDuration` and `formatDurationLocale` in `packages/transform/src/engine.ts`; `parseDuration` and `formatDuration` in `plugins/media/src/duration.ts`, used by `track`, `audio` and `playlist` | two implementations of one value kind |
+| Adding values up | `budget`'s subtotal; `recipe`'s `totalTime` (SPEC-145's open `{% let %}` question) | no shared operation |
+| Domain-specific rules | `comparison`'s row alignment, `form`'s field-type inference, `codegroup`'s language-name table | none: genuinely per rune |
+
+**Three kinds of reuse, none of which needs a shared stage:**
+
+1. **Value kinds belong to the value primitives.** Parsing and formatting a duration, an
+   amount, a number or a coordinate is {% ref "SPEC-166" /%}'s contract, and the format is the
+   theme's `formats` (ADR-043 decision 4). The two duration implementations collapse into one
+   there, and no `prepare` stage parses a duration.
+2. **Small, generic computations become named patterns.** {% ref "ADR-036" /%} ("name the
+   pattern; do not open a language") rules out an expression syntax. Each recurring
+   computation instead becomes one named, schema-validated pattern with parameters, declared
+   under `computes`. A pattern needs no code, so **site-authored definitions can use it too**:
+
+   ```yaml
+   computes:
+     panels.label:
+       pattern: item-label          # an author's list by index, else the first non-empty source
+       list: labels
+       sources: [label, source.basename, language.name]
+     totalTime:
+       pattern: sum
+       of: [prepTime, cookTime]
+       kind: duration
+   ```
+
+   The two patterns the table supports are `item-label` (four runes) and `sum` (two). The proposed
+   bar for admitting a pattern is at least two adopters, in the spirit of ADR-036's adopter
+   counts.
+
+   This answers SPEC-145's `{% let %}` candidate in the input half rather than the template.
+   It has to be there:
+   - a value computed in the template is lost when a theme replaces the template;
+   - a schema row reading a template-computed value would make published data depend on the
+     template, which ADR-045 decision 4 forbids.
+3. **Shared domain logic becomes a primitive.** If two runes really need the same rule (say
+   `compare` and `codegroup` agree on what a code panel's label is), the ADR-044 shape applies:
+   a primitive owns the code (a `code-panel` that computes its own label), and both runes place
+   it.
+
+**What would remain for `prepare`** is the last row of the table: rules that belong to one rune.
+That is the case where privacy (D3) costs nothing.
+
+If this direction holds, a follow-up spec would:
+
+- specify `item-label` and `sum`, and the rule for admitting further patterns;
+- answer SPEC-145's open `{% let %}` points (which operations; whether a computed name must
+  also appear in `metaFields`; how a schema row reads it) under `computes`;
+- reconcile `compare` and `codegroup` labels as its acceptance case.
 
 ## References
 
