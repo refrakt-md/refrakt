@@ -118,6 +118,14 @@ export const prepareCodegroup: Prepare<CodegroupInput, CodegroupComputed> = ({ f
   - a context of locale, site and source path.
 
   It never receives raw AST.
+
+  *One exception, named rather than general:* `preview` and `sandbox` display an example's own
+  source text, which no resolved field holds (they read `config.variables.__source` today). The
+  definition declares that need (`input: [source]`), and only then does the context carry the
+  raw source of the rune's own body. No other rune gets it.
+- **The example above shows the stage's shape, not a rune that needs it.** With
+  {% ref "SPEC-195" /%}'s functions, `codegroup`'s two values are expressions under `computes`
+  and it needs no stage (D10).
 - **Output:** exactly the values `computes` declares, nothing else.
   - An undeclared key is an error (`prepare-undeclared-value`).
   - A missing required key is an error (`prepare-missing-value`).
@@ -127,6 +135,8 @@ export const prepareCodegroup: Prepare<CodegroupInput, CodegroupComputed> = ({ f
   content-model or template concern.
 - **It is pure and synchronous.** Data fetching stays where it is today, in the cross-page
   pipeline hooks. `prepare` can read what a hook put in its context, but cannot start I/O.
+- **Context comes from the pipeline as values only.** How the pipeline group's resolvers, which
+  build trees today, fit this rule is open (see Open questions).
 - **Facts, not arrangement.** Where a transform today chooses an arrangement while it parses
   (`codegroup`'s single-fence branch), `prepare` reports the fact (`single: true`) and the
   template decides what to do with it.
@@ -232,7 +242,7 @@ computation moves to `prepare`:
 | Rune | Extension | `prepare` |
 |---|---|---|
 | `storyboard` | node-started groups: each image starts a panel | none |
-| `preview` | a field taken from anywhere: the fence | none |
+| `preview` | a field taken from anywhere: the fence | renders the example's source and HTML; it reads the raw source (D2's named exception). *Corrected 2026-11-07*: an earlier draft said none |
 | `tabs` | inline extraction from headings: a tab's image | none |
 | `form` | repeated choice, a SPEC-186 D1 group for blockquote + list, `position: last` for the submit paragraph | field type inference (option count, modifier words) |
 
@@ -295,9 +305,16 @@ tokens.
 
 ### D10: migration order
 
-1. **`codegroup`** is the acceptance case. Its parse is declarative already, its computation is
-   small, and its arrangement (tabs, or a single panel with chrome) is one a theme plausibly
-   wants to change.
+1. **Two acceptance cases**, one per half of the mechanism:
+   - **`codegroup` for the template and `computes`.** Its parse is declarative already, its two
+     computed values are SPEC-195 expressions, and its arrangement (tabs, or a single panel with
+     chrome) is one a theme plausibly wants to change.
+   - **`embed` for `prepare`.** Provider detection and the embed-URL rewrite are real
+     rune-specific computation (`packages/runes/src/tags/embed.ts`), with no second adopter
+     that would make them functions.
+
+   *Revised 2026-11-07.* An earlier draft made `codegroup` the single acceptance case, before
+   the measurement below showed it needs no stage.
 2. **The "declarable today" runes in D6**: they need no new grammar and no `prepare`, so each
    one probably becomes a plain composition (ADR-044 tier 1) rather than a native rune with a
    template.
@@ -362,13 +379,59 @@ Each rune's work item confirms its rows. An entry that maps to no row is a vocab
 recorded and closed the way D7 closes content-model gaps. A `div` that exists only so that CSS
 has something to select needs no replacement: the template places its children directly.
 
+## The native runes that remain, measured
+
+*Measured on 2026-11-07* from the catalogs (`packages/runes/src/index.ts` and each
+`plugins/*/src/index.ts`), every rune's source, and the conversion plans in `plan/`.
+
+| | Runes |
+|---|---|
+| All runes (core 62, plugins 65) | 127 |
+| Already compositions (`hero`, `cta`, `testimonial`) | 3 |
+| Planned compositions | 58 |
+| **Remaining native** | **66** (core 58, plugins 8) |
+
+**The plan behind the 58 is mostly draft.** Only `steps`, `feature`, `pricing` and `card`, with
+their child runes, are planned in accepted or implemented specs. The rest come from the plugin
+audits (SPEC-147 to SPEC-157), {% ref "SPEC-162" /%}, SPEC-165, SPEC-167 and SPEC-171, all
+drafts. Fewer conversions would move runes into the table below.
+
+**What the 66 need.** Each rune is counted once, in the first group that applies:
+
+| Group | Count | Runes |
+|---|---|---|
+| Needs `prepare` | **6** | `embed` (provider detection, URL rewrite), `diff` (line diff), `form` (field-type inference), `sandbox` and `preview` (raw source, D2's exception), `design-context` (collects tokens from child runes) |
+| Cross-page pipeline or preprocess | 18 | `nav`, `toc`, `breadcrumb`, `pagination`, `collection`, `relationships`, `aggregate`, `xref`, `expand`, `blog`, `snippet`, `include`, `data`, `region`, `layout`, `drawer`, `file-ref`, `plan-history` |
+| Drawing or behaviour, nothing to compute | 11 | `codegroup`, `tabs`, `gallery`, `accordion`, `datatable`, `chart`, `diagram`, `reveal`, `juxtapose`, `audio`, `map` |
+| SPEC-195 functions only | 8 | `grid`, `details`, `compare`, `conversation`, `progress`, `actions`, `figure`, `map-pin` |
+| Purely declarative | 23 | among them `hint`, `badge`, `bar`, `code`, `section`, `deflist`, `pullquote`, `tint`, `textblock`, `mediatext`, `storyboard`; five need a D7 extension |
+
+**60 of the 66 need no `prepare` stage.** The six that do hold genuinely rune-specific logic,
+which is what D2 intends the stage for.
+
+**Confidence.** Each rune's source was read. For `nav`, `diff`, `form`, `sandbox`, `map`,
+`section`, `snippet`, `include`, `data` and `icon` the reading was a skim; their rows are the
+first to recheck in each rune's work item.
+
+**Two gaps it found:**
+
+- **The pipeline group builds output in code.** These runes emit a placeholder, and a
+  postProcess resolver later builds their tree. For example, `resolveCollections`, and the
+  breadcrumb resolver's `nav`, `ol` and `li` (`packages/runes/src/config.ts`). D2 assumes a
+  pipeline hook only supplies values, and D11 binds templates and `prepare`, not resolvers. So
+  18 runes would still build markup no theme can arrange. See Open questions.
+- **`preview` and `sandbox` read raw source.** This is now D2's named exception, and D6's row
+  for `preview` is corrected.
+
 ## Acceptance criteria
 
 - [ ] A definition may declare `prepare` and `computes`; a definition without them loads as a composition, unchanged
 - [ ] `prepare` receives resolved fields and attributes, never AST, and its output is checked against `computes` in development and tests (`prepare-undeclared-value`, `prepare-missing-value`)
 - [ ] Computed values are readable in the template as `$computed.<name>` and, per item, through `$each`, and may feed `metaFields` and the schema row
 - [ ] A plugin registers stages in `Plugin.prepare`; a definition naming an unregistered stage reports `prepare-unknown`; a site definition cannot contain code
-- [ ] `codegroup` is a definition with a `prepare` stage and a template; its contract and SEO baseline are unchanged, or every difference is explained
+- [ ] `codegroup` is a definition with expression `computes` and a template, and no `prepare` stage; its contract and SEO baseline are unchanged, or every difference is explained
+- [ ] `embed` is a definition with a `prepare` stage and a template; its contract and SEO baseline are unchanged, or every difference is explained
+- [ ] `preview` and `sandbox` declare their need for raw source, and no other rune's context carries it
 - [ ] A theme `templates/codegroup.md` replaces its arrangement and passes SPEC-177's checks
 - [ ] A rune with a template that also declares a D5 assembly field reports `engine-config-assembly-with-template`
 - [ ] `refrakt reference` reports a full grammar, not a description, for every rune moved off `custom`
@@ -378,6 +441,11 @@ has something to select needs no replacement: the template places its children d
 
 ## Open questions
 
+- **Pipeline resolvers that build output.** 18 of the 66 remaining native runes are completed by
+  a cross-page resolver that builds their tree. Should a resolver produce data (entities, a
+  page list, a heading list) that the rune's template arranges, the same split D2 makes for
+  `prepare` but at the pipeline stage? This is the largest group of remaining native runes, and
+  without an answer it is the largest part of the output a theme cannot arrange.
 - **Edit hints.** The block editor reads edit hints from output. A computed value is not
   editable. Does `computes` mark it so, or does the editor infer it from the value not being
   in the content model?

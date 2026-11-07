@@ -111,18 +111,42 @@ depend on the template).
 
 | Family | Functions | Notes |
 |---|---|---|
-| Values | `duration()`, `amount()`, `number()`, `date()` as explicit coercions | an attribute declared with a `kind` arrives already typed; the coercions are for untyped sources |
+| Values | `duration()`, `amount()`, `number()`, `date()`, `coordinates()` as explicit coercions | an attribute declared with a `kind` arrives already typed; the coercions are for untyped sources. `duration` accepts clock times (`mm:ss`, `audio`'s chapters) as well as ISO 8601. `coordinates` is a new value kind for `map` and `map-pin`, to add to SPEC-166 |
+| Arithmetic | `add`, `subtract`, `multiply`, `divide`, `mod`, `round`, `clamp` | named functions, not operators, so D9 holds. `progress` (value/max as a clamped, rounded percentage), `conversation` (`$index` mod the speaker count), `embed` (aspect-ratio padding), `drawer` (heading-level clamp) |
 | Reductions | `count`, `sum`, `avg`, `min`, `max` | one implementation shared with SPEC-138's `measure`; each takes listed values or a repeated field (`sum($items.amount)`) |
-| Lists | `split`, `item`, `size`, `join` | `split` and `item` follow D6's fan-out rule |
-| Text | `first`, `humanize`, `basename`, `language`, `concat` | `first` returns the first non-empty argument, any number of them; Markdoc's two-argument `default` is left as it is |
+| Lists | `split`, `item`, `size`, `join` | `split` and `item` follow D6's fan-out rule; `split` takes an optional delimiter (`grid`'s `c:r` spans) |
+| Text | `first`, `text`, `humanize`, `basename`, `language`, `concat` | `first` returns the first non-empty argument, any number of them; Markdoc's two-argument `default` is left as it is. `text($slot)` is a slot's plain text (`progress`'s `aria-label`) |
+| Choice | `if(condition, then, else)`, `lookup(table, key)` | `if` is a value, not control flow (`progress`'s display default, `codegroup`'s `name:lines` label). `lookup` reads a table declared in the definition (`showcase`'s attribute aliases, and the table behind `language`) |
 | Predicates | `matches`, `equals`, `and`, `or`, `not` | `matches` is D5's bridge; the rest are Markdoc's own |
 | Formatting | `currency`, `date`, `number` (existing) | they call SPEC-166's formatters and defer display text to stage 4, as SPEC-166 D6.4 requires of primitives |
+
+*Extended 2026-11-07* with the arithmetic, choice, `text`, clock-time and `coordinates` entries,
+from the measurement below. Not every one of them meets the two-adopter bar alone: `mod` and
+`text` have one adopter each today. Arithmetic is admitted as a family, since its members share
+one implementation and meaning. `text` is admitted because a slot's plain text is the input
+`aria-label`s and summaries need; recheck it if no second adopter appears.
 
 - **Admission.** A new function joins the set when it has at least two adopters, or when it
   closes a SPEC-138 core gap. A function one rune alone needs belongs in that rune's `prepare`
   stage (SPEC-194 D2).
 - **`language`** maps a code-fence language to its display name. It is `codegroup`'s table,
   moved into the vocabulary because `compare` needs it too.
+- **Candidates not admitted**, each with one adopter today:
+  - **URL parsing** (host, query parameter, path rewrite) would move `embed` off its `prepare`
+    stage;
+  - **per-item search** (`find`, `some`: the first item with a link, whether any item is
+    media) serves `actions` and `figure`, and may be better as content-model facts than as
+    functions;
+  - **collecting values from child runes** serves `design-context`, and is closer to a
+    pipeline concern than to a function.
+
+  Each is admitted when a second rune needs it.
+
+**How many runes this serves, measured 2026-11-07.** Of the 66 runes that stay native after
+every planned composition ({% ref "SPEC-194" /%}, "The native runes that remain"), 8 need this
+vocabulary and nothing else: `grid`, `details`, `compare`, `conversation`, `progress`,
+`actions`, `figure` and `map-pin`. `codegroup`, `juxtapose`, `audio` and `map` also use it
+beside their behaviour or drawing. Only 6 of the 66 still need a `prepare` stage.
 
 ### D5: `matches()` makes the filter grammar the one predicate language
 
@@ -289,6 +313,7 @@ first gap). One SPEC-166 implementation unblocks both.
 - [ ] `functions.ts` is reimplemented over the shared formatters and operations; output is unchanged except that the site's locale is used
 - [ ] `recipe` publishes `totalTime` from `computes`, and the SEO baseline diff shows it
 - [ ] An expression nested deeper than three calls reports `expression-depth`
+- [ ] `grid`, `details`, `compare`, `conversation`, `progress`, `actions`, `figure` and `map-pin` express their computations with the function set, or each gap is recorded as a candidate function
 
 ## Open questions
 
