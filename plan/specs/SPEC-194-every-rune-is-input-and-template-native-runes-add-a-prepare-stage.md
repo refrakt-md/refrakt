@@ -16,7 +16,8 @@ already-parsed content. This spec is the mechanism:
   (D7);
 - opaque visuals (D8);
 - when the legacy levers are removed (D9), and the migration order (D10);
-- a template never names an HTML element (D11).
+- a template never names an HTML element (D11);
+- a rune reads data from three scopes, and only the entity registry makes it wait (D12).
 
 ## Prerequisites
 
@@ -135,8 +136,8 @@ export const prepareCodegroup: Prepare<CodegroupInput, CodegroupComputed> = ({ f
   content-model or template concern.
 - **It is pure and synchronous.** Data fetching stays where it is today, in the cross-page
   pipeline hooks. `prepare` can read what a hook put in its context, but cannot start I/O.
-- **Context comes from the pipeline as values only.** How the pipeline group's resolvers, which
-  build trees today, fit this rule is open (see Open questions).
+- **Context comes from the three scopes of D12, as values only.** Resolvers return data, never
+  markup (D12.5).
 - **Facts, not arrangement.** Where a transform today chooses an arrangement while it parses
   (`codegroup`'s single-fence branch), `prepare` reports the fact (`single: true`) and the
   template decides what to do with it.
@@ -379,6 +380,158 @@ Each rune's work item confirms its rows. An entry that maps to no row is a vocab
 recorded and closed the way D7 closes content-model gaps. A `div` that exists only so that CSS
 has something to select needs no replacement: the template places its children directly.
 
+### D12: a rune reads data from three scopes, and only the registry makes it wait
+
+*Decided 2026-11-08*, answering the open question the measurement below raised about pipeline
+resolvers that build output.
+
+| Scope | Read through | Known | Runes that read it |
+|---|---|---|---|
+| the rune's own input | `$attrs`, slots, `$computed` | at transform | every rune |
+| the page and the site's page index | `$page`, `$site`, and the functions over them ({% ref "SPEC-195" /%}) | at transform, once every page is parsed | `pagination`, `breadcrumb`, `toc`, `nav` (auto), `drawer`, `file-ref` |
+| the entity registry | a `data:` entry with a registry query | after every page is transformed | `collection`, `relationships`, `aggregate`, `blog`, `xref`, `expand` |
+
+1. **The loader parses every page before it transforms any.** `processContentTree`
+   (`packages/content/src/site.ts:611–678`) runs one loop that parses and transforms each page
+   in turn. It becomes two loops in the same function:
+   1. frontmatter, route, parse and title for every page, then the page index is built;
+   2. variables (now including the index), preprocess and transform.
+
+   The content tree has already read every file before the loop starts, and everything the
+   index needs comes from frontmatter, route and AST: the title is the frontmatter's or the
+   first H1's (`derivePageTitle`). The ASTs are held between the loops; each is dropped after
+   its transform.
+2. **`$page` grows; `$site` is new.** `$page` exists already (`url`, `path`, `dir`, `slug`,
+   `title`, `draft`; `buildPageContentVariables`). It gains `parent`, `ancestors`, `children`,
+   `prev`, `next` and `headings`, and `$site` holds `pages` and the page tree. They are getters
+   over the index, computed only when read. Anything that takes a parameter is a function
+   instead (`neighbours($page, "section")`, `url(slug)`, `select($page, …)`), since Markdoc has
+   no method calls.
+3. **Data lists are repeated slots.** A definition declares a list it reads under `data:`, and
+   the template iterates it like any repeated slot, with `$item` bound to each entry as
+   `collection` binds it today (`projectItem`):
+
+   ```yaml
+   data:
+     entries: select($page, "heading", concat("level:2..", add($attrs.depth, 1)))   # the page as written
+     items:   { query: entities, type: $attrs.type, filter: $attrs.filter, sort: $attrs.sort, limit: $attrs.limit }   # the registry
+   ```
+
+   Single values need no declaration: an expression reads `$page.prev.url` directly. The range
+   `2..3` assumes SPEC-138's comparison gap is closed; SPEC-070 has no range today.
+4. **Only a registry read defers.** A rune whose `data:` contains a registry query is expanded
+   after the pipeline, with its authored source preserved, through `transformDeferredTemplate`
+   (`packages/runes/src/deferred-body.ts`), as `collection`'s body already is. The schema
+   applier runs after expansion, as the auto breadcrumb's already does. Every other rune is
+   expanded at transform. The loader sees which scope a definition reads from its `data:` and
+   expressions, without running it.
+5. **Resolvers return data, never markup.** A resolver finds, sorts and limits, and returns
+   entries; the rune's template arranges them. This extends D2 and D11 to the pipeline. What
+   it removes:
+   - the built-in renderers (`renderBuiltInItem`, `renderTable`, the group wrappers in
+     `collection-resolve.ts`, `buildAutoBreadcrumb`'s `nav`, `ol` and `li`), which become
+     default templates;
+   - the `__slug:` placeholders and the postProcess pass that resolves them, since `url()`
+     resolves at transform;
+   - the region pass after the pipeline (`site.ts:813–853`), since layout regions see `$page` at
+     transform;
+   - the SEO re-harvest workaround for breadcrumbs (`site.ts:785–811`), since their structured
+     data exists at the first harvest.
+6. **Layouts see `$page`.** Layouts are already transformed once per page: `resolveLayouts`
+   runs inside the page loop, and `parseLayout` calls `Markdoc.transform` for every layout in
+   the chain, with no cache (`packages/content/src/layout.ts:65`). Passing the page's variables
+   to that transform costs nothing extra. The comment in `site.ts` saying layouts "are parsed
+   once and shared across pages" is wrong and is corrected with this change.
+7. **Manual and automatic forms share one definition.** `breadcrumb`, `pagination` and `nav`
+   each have a written form and an automatic one, built today by two code paths. Under this
+   decision both fill the same data, and one template arranges both. An author's explicit value
+   wins through `first(…)`.
+8. **The page as written versus what runes registered.** `select($page, type, filter)` reads
+   the page's own AST: headings, images, code blocks, tables, links and rune tags with their
+   attributes. It sees what was written, not what runes derive: a `figure` rune's caption, taken
+   from its first paragraph, is not in the AST. A list that needs derived values reads the
+   registry with a page filter, and waits.
+
+**Costs and limits:**
+
+- **Nav order needs reading from layout ASTs.** Auto pagination prefers the reading order
+  written in a layout's `{% nav %}` over sibling order, and reads it today from the transformed
+  nav after `__slug:` resolution (`collectNavSequences`). The index has to read it from the AST,
+  through nav's content model. That is straightforward once the model is declarative (D6 lists
+  it as declarable today). Pagination moves only after that, so its output does not change in
+  between.
+- **Contributed pages are not in the index.** Pages from `entityRoutes` or a plugin's
+  `contributePages` ({% ref "SPEC-069" /%}) are created during the pipeline, from registered
+  entities. `$site` at transform holds file-backed pages only. A pagination or nav that must
+  include contributed pages reads the registry and waits. This follows from the scope rule, but
+  authors may notice it, so it is documented.
+- **Titles are derived before preprocess**, as today. A title that only an `{% include %}`
+  supplies is still not seen.
+- **The dev server is unaffected.** Any content change already reloads the whole site
+  (`invalidateSite()`, `packages/sveltekit/src/plugin.ts:283`), so there is no per-page
+  dependency tracking to keep correct.
+
+**Examples.** `pagination`, with no `data:` and no deferral:
+
+```yaml
+computes:
+  prevUrl:   first(url($attrs.prev), if($attrs.auto, $page.prev.url))
+  prevLabel: first($attrs["prev-label"], if($attrs.auto, $page.prev.title), $attrs.prev)
+  nextUrl:   first(url($attrs.next), if($attrs.auto, $page.next.url))
+  nextLabel: first($attrs["next-label"], if($attrs.auto, $page.next.title), $attrs.next)
+```
+
+```md
+{% if $computed.prevUrl %}
+	{% link href=$computed.prevUrl %}
+		{% group name="prev" layout="bar" %}
+			{% icon name="arrow-left" /%}
+			{% $computed.prevLabel %}
+		{% /group %}
+	{% /link %}
+{% /if %}
+```
+
+`toc`, reading the page as written:
+
+```md
+{% group name="entries" layout="ladder" %}
+	{% slot name="entries" each %}
+		{% link href=concat("#", $item.id) %}{% $item.text %}{% /link %}
+	{% /slot %}
+{% /group %}
+```
+
+`collection`, reading the registry and deferred. The author's body, when present, replaces the
+`item` fragment, so a theme can arrange every collection on a site without touching an author's
+item template:
+
+```md
+{% template layout="grid" %}
+	{% grid %}
+		{% slot name="items" each %}
+			{% fragment name="item" %}
+				{% card href=$item.url %}
+					### {% $item.data.title %}
+				{% /card %}
+			{% /fragment %}
+		{% /slot %}
+	{% /grid %}
+{% /template %}
+```
+
+**Open within D12:**
+
+- **Two-level iteration**: a repeated slot inside a repeated slot. Grouped collections,
+  `relationships`' groups, nested headings in `toc` and most nav designs need exactly two
+  levels. It is unverified whether expansion supports it today.
+- **`nav`'s tree.** Deeper than two levels, nav stays one opaque nested-list primitive drawn in
+  the shared vocabulary (D8), and the template arranges everything around it.
+- **A variable list of fields** (`collection`'s `fields="status,priority"`) needs a small
+  primitive that shows the named fields of an entity, since a template cannot iterate a list of
+  names.
+- **The `fragment` override point** depends on {% ref "SPEC-168" /%} D8, a draft.
+
 ## The native runes that remain, measured
 
 *Measured on 2026-11-07* from the catalogs (`packages/runes/src/index.ts` and each
@@ -419,7 +572,8 @@ first to recheck in each rune's work item.
   postProcess resolver later builds their tree. For example, `resolveCollections`, and the
   breadcrumb resolver's `nav`, `ol` and `li` (`packages/runes/src/config.ts`). D2 assumes a
   pipeline hook only supplies values, and D11 binds templates and `prepare`, not resolvers. So
-  18 runes would still build markup no theme can arrange. See Open questions.
+  18 runes would still build markup no theme can arrange. *Answered by D12*: resolvers return
+  data, most of these runes read the page index at transform, and only registry reads wait.
 - **`preview` and `sandbox` read raw source.** This is now D2's named exception, and D6's row
   for `preview` is corrected.
 
@@ -438,14 +592,14 @@ first to recheck in each rune's work item.
 - [ ] The template language has no tag that emits an element by name or takes free attributes, and a test pins it (D11)
 - [ ] Every element-naming config entry of a moved rune maps to a D11 row, or is recorded as a vocabulary gap
 - [ ] The theme-authoring and plugin-authoring docs describe one arrangement convention for every rune
+- [ ] The loader parses every page before transforming any, and `$page` (with `parent`, `ancestors`, `children`, `prev`, `next`, `headings`) and `$site` are available at transform, including in layouts (D12)
+- [ ] A rune whose `data:` reads the registry is deferred and expanded after the pipeline; no other rune is (D12.4)
+- [ ] `pagination`, `breadcrumb` and `toc` are definitions read from `$page` at transform, each with one template for its written and automatic forms; contracts and SEO baseline are unchanged, or every difference is explained
+- [ ] `collection`'s built-in rendering is its default template, and an author's body replaces its `item` fragment with no change to existing pages
+- [ ] The `__slug:` placeholders, the post-pipeline region pass and the breadcrumb SEO re-harvest are removed
 
 ## Open questions
 
-- **Pipeline resolvers that build output.** 18 of the 66 remaining native runes are completed by
-  a cross-page resolver that builds their tree. Should a resolver produce data (entities, a
-  page list, a heading list) that the rune's template arranges, the same split D2 makes for
-  `prepare` but at the pipeline stage? This is the largest group of remaining native runes, and
-  without an answer it is the largest part of the output a theme cannot arrange.
 - **Edit hints.** The block editor reads edit hints from output. A computed value is not
   editable. Does `computes` mark it so, or does the editor infer it from the value not being
   in the content model?

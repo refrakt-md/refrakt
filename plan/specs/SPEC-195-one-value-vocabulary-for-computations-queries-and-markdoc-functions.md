@@ -111,10 +111,11 @@ depend on the template).
 
 | Family | Functions | Notes |
 |---|---|---|
-| Values | `duration()`, `amount()`, `number()`, `date()`, `coordinates()` as explicit coercions | an attribute declared with a `kind` arrives already typed; the coercions are for untyped sources. `duration` accepts clock times (`mm:ss`, `audio`'s chapters) as well as ISO 8601. `coordinates` is a new value kind for `map` and `map-pin`, to add to SPEC-166 |
+| Values | `toDuration`, `toAmount`, `toNumber`, `toDate`, `toCoordinates` as explicit coercions | an attribute declared with a `kind` arrives already typed; the coercions are for untyped sources. `toDuration` accepts clock times (`mm:ss`, `audio`'s chapters) as well as ISO 8601. `coordinates` is a new value kind for `map` and `map-pin`, to add to SPEC-166. *Renamed 2026-11-08* from `duration()`, `number()` and so on: `number` and `date` are already the formatters' names |
 | Arithmetic | `add`, `subtract`, `multiply`, `divide`, `mod`, `round`, `clamp` | named functions, not operators, so D9 holds. `progress` (value/max as a clamped, rounded percentage), `conversation` (`$index` mod the speaker count), `embed` (aspect-ratio padding), `drawer` (heading-level clamp) |
 | Reductions | `count`, `sum`, `avg`, `min`, `max` | one implementation shared with SPEC-138's `measure`; each takes listed values or a repeated field (`sum($items.amount)`) |
-| Lists | `split`, `item`, `size`, `join` | `split` and `item` follow D6's fan-out rule; `split` takes an optional delimiter (`grid`'s `c:r` spans) |
+| Lists | `split`, `item`, `join` | `split` and `item` follow D6's fan-out rule; `split` takes an optional delimiter (`grid`'s `c:r` spans). A list's length is `count`; an earlier draft also had `size`, which did the same |
+| Page and site | `url`, `neighbours`, `select` | read the page index of {% ref "SPEC-194" /%} D12, so they work at transform once every page is parsed |
 | Text | `first`, `text`, `humanize`, `basename`, `language`, `concat` | `first` returns the first non-empty argument, any number of them; Markdoc's two-argument `default` is left as it is. `text($slot)` is a slot's plain text (`progress`'s `aria-label`) |
 | Choice | `if(condition, then, else)`, `lookup(table, key)` | `if` is a value, not control flow (`progress`'s display default, `codegroup`'s `name:lines` label). `lookup` reads a table declared in the definition (`showcase`'s attribute aliases, and the table behind `language`) |
 | Predicates | `matches`, `equals`, `and`, `or`, `not` | `matches` is D5's bridge; the rest are Markdoc's own |
@@ -234,6 +235,104 @@ These keep {% ref "ADR-036" /%} ("name the pattern; do not open a language") tru
 - **Nesting is linted.** An expression nested deeper than three calls reports
   `expression-depth`, a warning. It is the signal that a computation wants a dedicated function
   or a `prepare` stage.
+
+## Function reference
+
+The complete set, *compiled 2026-11-08* from D4 and SPEC-194 D12. Arguments in `[brackets]`
+are optional; `…values` takes any number. Kinds are SPEC-166's (`duration`, `amount`,
+`number`, `date`) plus `coordinates`. Lists are arrays, or comma lists split by D6's rule.
+Indexes count from 0.
+
+**Exist today, unchanged in meaning**
+
+| Function | Arguments | Returns | What it does |
+|---|---|---|---|
+| `and` | `…values` | boolean | true when every value is truthy (Markdoc) |
+| `or` | `…values` | boolean | true when any value is truthy; returns a boolean, not the value (Markdoc) |
+| `not` | `value` | boolean | negation (Markdoc) |
+| `equals` | `…values` | boolean | true when all values are identical (Markdoc) |
+| `default` | `value, fallback` | any | `fallback` when `value` is `undefined`; an empty string passes through (Markdoc) |
+| `debug` | `value` | string | the value as JSON, for development (Markdoc) |
+| `concat` | `…values` | string | joins the values' text, no separator |
+| `join` | `list, [separator=", "]` | string | joins a list's entries |
+| `humanize` | `text` | string | `prepTime` → "Prep Time", `blocked-by` → "Blocked By" |
+| `currency` | `value, [code="USD"]` | display text | formats an amount; under SPEC-166 D6 it uses the site's locale and `formats`, and display text is produced at stage 4 |
+| `date` | `value` | display text | formats a date, likewise |
+| `number` | `value` | display text | formats a number, likewise |
+
+**New: values**
+
+| Function | Arguments | Returns | What it does | Needed by |
+|---|---|---|---|---|
+| `toDuration` | `text` | duration | reads ISO 8601 (`PT15M`) or a clock time (`mm:ss`, `h:mm:ss`) | `audio` chapters, `recipe` |
+| `toAmount` | `text, [currency]` | amount | reads "€1,200" and "$40"; how a range ("100–200") is read is SPEC-166's to decide | `budget` |
+| `toNumber` | `text` | number | reads "1,234.5"; `undefined` when it is not a number | `progress`, `grid` |
+| `toDate` | `text` | date | reads an ISO date | date filters, `blog` |
+| `toCoordinates` | `text` | coordinates | reads "59.33, 18.07" | `map`, `map-pin` |
+
+**New: arithmetic**
+
+| Function | Arguments | Returns | What it does | Needed by |
+|---|---|---|---|---|
+| `add` | `…values` | the operands' kind | sums numbers, or durations, or amounts of one currency; mixed kinds report `function-argument-kind` | `recipe`, `toc` (depth + 1) |
+| `subtract` | `a, b` | the operands' kind | `a − b` | date and duration differences |
+| `multiply` | `…values` | number | product | `progress` (× 100) |
+| `divide` | `a, b` | number | `a ÷ b`; dividing by zero returns `undefined`, never `Infinity` | `progress`, `embed` |
+| `mod` | `a, b` | number | remainder | `conversation` (`$index` mod speaker count) |
+| `round` | `value, [digits=0]` | number | rounds half away from zero | `progress` |
+| `clamp` | `value, min, max` | number | limits to the range | `progress`, `drawer` (heading level) |
+
+**New: reductions** (one implementation with SPEC-138's `measure`)
+
+| Function | Arguments | Returns | What it does | Needed by |
+|---|---|---|---|---|
+| `count` | `list` | number | number of entries | empty states, `collection` |
+| `sum` | `list` or `…values` | the entries' kind | total | `budget`, `recipe`, `aggregate` |
+| `avg` | `list` or `…values` | the entries' kind | mean | `aggregate` |
+| `min` | `list` or `…values` | the entries' kind | smallest | `aggregate`, `drawer` |
+| `max` | `list` or `…values` | the entries' kind | largest | `aggregate` |
+
+**New: lists and text**
+
+| Function | Arguments | Returns | What it does | Needed by |
+|---|---|---|---|---|
+| `split` | `text, [delimiter=","]` | list | D6's rule: split, trim, drop empty entries | `grid` (`c:r` spans), `labels`, `speakers` |
+| `item` | `list, index` | entry | the entry at `index`; `undefined` past the end | `codegroup`, `compare`, `juxtapose`, `conversation` |
+| `first` | `…values` | any | the first argument that is neither `undefined` nor empty | every fallback chain |
+| `text` | `slot` | string | a slot's plain text (`text($slots.label)`) | `progress`'s `aria-label` |
+| `basename` | `path` | string | last path segment: `src/lib/a.ts` → `a.ts` | `codegroup`, `file-ref` |
+| `language` | `code` | string | a code-fence language's display name: `ts` → "TypeScript"; unknown codes are capitalised | `codegroup`, `compare` |
+
+**New: choice and predicates**
+
+| Function | Arguments | Returns | What it does | Needed by |
+|---|---|---|---|---|
+| `if` | `condition, then, [else]` | any | a value, not control flow: `then` when `condition` is truthy, else `else` | `pagination`, `progress`, `codegroup` |
+| `lookup` | `table, key, [fallback]` | any | the value under `key` in an object, written inline or declared once in the definition | `showcase` aliases, `language` |
+| `matches` | `record, query` | boolean | evaluates a SPEC-070 query against a record, with `field-match.ts`'s parser and matcher (D5) | `symbol`'s `when`, `condition`, template `{% if %}` |
+
+**New: page and site** (SPEC-194 D12)
+
+| Function | Arguments | Returns | What it does | Needed by |
+|---|---|---|---|---|
+| `url` | `slugOrUrl` | URL | a URL passes through; a slug resolves through the page index; an unknown slug reports `url-unknown-slug` and returns `undefined`, so `first(…)` falls through | `pagination`, `nav`, `breadcrumb` |
+| `neighbours` | `page, [scope="siblings"]` | `{ prev, next }` | the previous and next page, among siblings or across the page's top-level section | `pagination` with `scope="section"` |
+| `select` | `page, type, [filter]` | list | entries of one kind from the page as written. `type` is `heading` (`text`, `id`, `level`), `image` (`src`, `alt`), `fence` (`language`), `table`, `link` (`href`, `text`) or `tag:<name>` (the tag's attributes); `filter` is a SPEC-070 query over the entries | `toc`, lists of figures, code listings or links |
+
+**Not functions**
+
+These are variables and declarations, listed so the whole surface is in one place:
+
+- **Variables:** `$attrs`, `$computed`, `$slots`, and inside a repeated slot `$item` (a data
+  list's entry) or `$each` (a content-model item), and `$index`.
+- **`$page`:** `url`, `path`, `dir`, `slug`, `title`, `draft` (existing); `parent`,
+  `ancestors`, `children`, `prev`, `next`, `headings` (SPEC-194 D12).
+- **`$site`:** `pages` and the page tree.
+- **A registry read** is a `data:` entry (`{ query: entities, type, filter, sort, limit }`), not
+  a function, because it is what makes a rune wait (SPEC-194 D12.4).
+
+**Totals.** 12 exist; 29 are new: 5 values, 7 arithmetic, 5 reductions, 6 lists and text,
+3 choice and predicates, 3 page and site.
 
 ## Worked examples
 
