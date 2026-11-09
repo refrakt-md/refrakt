@@ -1,6 +1,13 @@
-{% spec id="SPEC-142" status="draft" tags="runes, types, dx, architecture" %}
+{% spec id="SPEC-142" status="superseded" tags="runes, types, dx, architecture" supersedes="SPEC-194" %}
 
 # Infer the transform signature from the rune's own declarations
+
+> **Superseded on 2026-11-09** by {% ref "SPEC-194" /%} ({% ref "ADR-048" /%}). The `transform`
+> bodies this spec types are replaced by templates, and the declarations it infers from move
+> into definition frontmatter, which TypeScript cannot read. The code that remains, six `prepare`
+> stages, is checked at runtime against its `computes` declaration (SPEC-194 D2), and templates
+> are checked against the content model when a definition loads. D6, which was never about
+> types, is carried to {% ref "BUG-049" /%}.
 
 `transform(resolved, attrs, config)` is the one place a rune does real work, and
 both of its interesting parameters are untyped:
