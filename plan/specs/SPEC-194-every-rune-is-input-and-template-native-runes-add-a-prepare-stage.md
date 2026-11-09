@@ -241,7 +241,7 @@ computation moves to `prepare`:
 | Rune | Declarative model | `prepare` |
 |---|---|---|
 | `nav` | `sections` on `heading:1`, with `implicitSection` for a flat list | none (slug resolution is a pipeline step) |
-| `symbol` (group kinds) | `when: { attribute: kind, in: [class, interface, module] }`, then `sections` on `heading:3` + `emitTag: symbol-group` | none |
+| `symbol` (group kinds) | one `sections` model on `heading:3`; the template varies the arrangement by `kind` ({% ref "SPEC-169" /%} D2 and D5: a definition's content model never depends on attribute values). *Corrected 2026-11-09*: an earlier draft used `when` | none |
 | `symbol-group` | `sections` on `heading:4` + `emitTag: symbol-member` | none |
 | `definition` | sequence: a term group (headings, and paragraphs read by an `itemModel` for image, icon or bold text), then the description | none (`processChildren` is the identity function today; the split is in `transform`) |
 | `bento` | `sections` for cells | none; pushing frame attributes down to cells is the template's (SPEC-145 D32) |
@@ -545,7 +545,16 @@ item template:
 
 - **Two-level iteration**: a repeated slot inside a repeated slot. Grouped collections,
   `relationships`' groups, nested headings in `toc` and the two template-arranged levels of
-  `nav` all need it. It is unverified whether expansion supports it today.
+  `nav` all need it. *Measured 2026-11-09: not supported today.* Expansion rejects any named
+  slot inside an `each` slot (`slot-inside-each`, `packages/runes/src/lib/composition.ts:934`),
+  because a rune-level field placed there would repeat once per item. An item also exposes only
+  its `emitAttributes`, never a list of its own. The extension it needs:
+  - an item may carry a list of its own: a group's entries, a section's sub-items;
+  - inside an `each`, `{% slot name="<item field>" each %}` iterates that list;
+  - the check distinguishes an item's field (allowed) from the rune's field (still rejected,
+    for the original reason).
+
+  Exactly one nested level, no deeper, matching the `nav` decision above.
 - **The `fragment` override point** depends on {% ref "SPEC-168" /%} D8, a draft.
 
 ## The native runes that remain, measured

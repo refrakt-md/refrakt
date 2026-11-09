@@ -87,12 +87,32 @@ The same call means different things depending on where it is written:
 |---|---|---|
 | `computes` | a field of the rune | carry `metaFields` meaning, feed the schema row, be placed by the template; a replacement template cannot change or remove it |
 | `when`, `condition` | a structural choice made in the input | select a content model, decide whether a field renders |
-| a template or page | display text | be shown; never published, never a field |
+| a template or page, as content | display text | be shown; never published, never a field |
+| a template or page, as an attribute of a rune it places (`{% collection filter=… %}`, `{% link href=… %}`) | that placed rune's input | be whatever that attribute is to the placed rune |
+| a template or page, in `{% if %}` | an arrangement choice | choose what is shown, never whether a slot is placed at all (SPEC-177 D5) |
 
 So no function is restricted by where it may be called: a theme may display `sum(…)`. Only a
-definition can make a value **meaningful**, which keeps {% ref "ADR-043" /%} (labels and
-meaning are the definition's) and {% ref "ADR-045" /%} decision 4 (published data does not
-depend on the template).
+definition can make a value **meaningful** for its own rune, which keeps {% ref "ADR-043" /%}
+(labels and meaning are the definition's) and {% ref "ADR-045" /%} decision 4 (published data
+does not depend on the template).
+
+*Extended 2026-11-09* with the attribute and `{% if %}` rows, after a count of real usage:
+
+- **Few calls are affected.** Of the 24 function calls in content that renders today, 23 are
+  already display text or a condition choosing a partial: `humanize`, `date` and `equals`,
+  mostly in `plan-site/` partials and the plan plugin's built-in item bodies. The one
+  attribute call is `filter=concat("milestone:", $item.id)` in
+  `plan-site/content/_partials/entity/milestone.md:8`. No composed definition, staged rune or
+  fixture calls a function.
+- **An attribute call is the placed rune's input**, not the outer rune's. A replacement template
+  that changed it would change the placed rune's input, so ADR-045 decision 4's
+  structured-data comparison is what catches a change that matters.
+- **Some attributes are read before functions run**: `data`'s `where` and the
+  {% ref "SPEC-129" /%} include reject function calls (`packages/runes/test/data-rune.test.ts:358`).
+  The docs list those attributes rather than leaving authors to find them.
+- **A substitution gap to fix:** {% ref "WORK-709" /%} records that `$row` is not substituted
+  inside a function's arguments in partials, so `not($row.plugin)` was always true. D8's
+  scopes must hold inside arguments as well as at the top level.
 
 ### D3: every function has a typed signature
 
@@ -113,7 +133,7 @@ depend on the template).
 |---|---|---|
 | Values | `toDuration`, `toAmount`, `toNumber`, `toDate`, `toCoordinates` as explicit coercions | an attribute declared with a `kind` arrives already typed; the coercions are for untyped sources. `toDuration` accepts clock times (`mm:ss`, `audio`'s chapters) as well as ISO 8601. `coordinates` is a new value kind for `map` and `map-pin`, to add to SPEC-166. *Renamed 2026-11-08* from `duration()`, `number()` and so on: `number` and `date` are already the formatters' names |
 | Arithmetic | `add`, `subtract`, `multiply`, `divide`, `mod`, `round`, `clamp` | named functions, not operators, so D9 holds. `progress` (value/max as a clamped, rounded percentage), `conversation` (`$index` mod the speaker count), `embed` (aspect-ratio padding), `drawer` (heading-level clamp) |
-| Reductions | `count`, `sum`, `avg`, `min`, `max` | one implementation shared with SPEC-138's `measure`; each takes listed values or a repeated field (`sum($items.amount)`) |
+| Reductions | `count`, `sum`, `avg`, `min`, `max` | one implementation shared with SPEC-138's `measure`; each takes listed values, or a list and the name of the field to reduce (`sum($items, "amount")`). A path through a list (`$items.amount`) is not a projection: Markdoc resolves it to `undefined` (verified 2026-11-09) |
 | Lists | `split`, `item`, `join` | `split` and `item` follow D6's fan-out rule; `split` takes an optional delimiter (`grid`'s `c:r` spans). A list's length is `count`; an earlier draft also had `size`, which did the same |
 | Page and site | `url`, `neighbours`, `select` | read the page index of {% ref "SPEC-194" /%} D12, so they work at transform once every page is parsed |
 | Text | `first`, `text`, `humanize`, `basename`, `language`, `concat` | `first` returns the first non-empty argument, any number of them; Markdoc's two-argument `default` is left as it is. `text($slot)` is a slot's plain text (`progress`'s `aria-label`) |
@@ -158,17 +178,15 @@ beside their behaviour or drawing. Only 6 of the 66 still need a `prepare` stage
 - `matches(value, query)` evaluates a SPEC-070 query against a record (`$attrs`, `$item`, a
   repeated slot's item), with the grammar's semantics unchanged. It is the same parser and
   matcher as `field-match.ts`.
-- **`when` takes an expression:**
+- **Not in content models.** A definition's content model never depends on attribute values:
+  {% ref "SPEC-169" /%} D2 (accepted) keeps `when` rejected for compositions, and SPEC-194 gives
+  native runes the same definition format. Where an arrangement varies with an attribute, the
+  model stays one and the template branches with `{% if matches(…) %}`. `symbol` is the case
+  SPEC-169 D5 already settles that way. The `when` models native runes use today (`steps`,
+  `itinerary`) keep working until those runes move, and both are planned compositions.
 
-  ```yaml
-  content:
-    when:
-      - if: matches($attrs, "kind:class,interface,module")
-        model: { … }
-  ```
-
-  The existing condition objects (`attribute in`, `exists`, `hasChild`) stay valid. They are
-  documented as shorthand, and a codemod rewrites them.
+  *Corrected 2026-11-09.* An earlier draft let `when` take an expression, which contradicted
+  SPEC-169 D2.
 - **`metaFields.*.condition` takes an expression** as well as a bare attribute name. A bare
   name stays shorthand for "this attribute is non-empty".
 - **SPEC-138's core gaps land in the grammar, not in functions.** Comparison, existence and
@@ -197,14 +215,25 @@ and "build a predicate" in a filter would confuse more than the second syntax co
 - a query is a SPEC-070 string, as today;
 - for what the grammar cannot express, SPEC-138's structured form (an engine plugin) is the
   route;
-- `concat` stays for text, and the docs stop presenting it as the way to build filter strings
-  once structured predicates exist.
+- `concat` stays for text, and stops being presented as the way to build filter strings once
+  structured predicates exist. *Measured 2026-11-09:* the site's docs never present it that way
+  (`site/content/runes/data.md` says the opposite). The one place that teaches it is the doc
+  comment in `packages/runes/src/functions.ts` (lines 12 and 65), and the one live use is the
+  milestone partial above. Both move to the structured form together.
 
 ### D8: frontmatter expressions, and how they meet `prepare`
 
 - **A frontmatter expression is a YAML string**, parsed with Markdoc's attribute-expression
-  parser so it has exactly the grammar a template has. *To verify in the first work item:*
-  wrapping the string as an attribute of a throwaway tag and reading its AST.
+  parser so it has exactly the grammar a template has. *Verified 2026-11-09:*
+  - wrapping the string as an attribute of a throwaway tag (`{% x v=<expression> /%}`) and
+    reading the attribute parses every expression in this spec, including nested calls,
+    `if(…)` and bracketed paths (`$attrs["prev-label"]`);
+  - the result is Markdoc's own `Function`/`Variable` AST, evaluated with
+    `.resolve({ functions, variables })`, with no tag or transform needed;
+  - a malformed expression parses to an `error` node (`parse-error`), reported as
+    `expression-syntax` with its location;
+  - `Markdoc.validate` does **not** report an unknown function, so `function-unknown` (D3) is
+    refrakt's own check over the AST.
 - **A `computes` entry is one of two things:**
 
   ```yaml
@@ -300,10 +329,10 @@ Indexes count from 0.
 | Function | Arguments | Returns | What it does | Needed by |
 |---|---|---|---|---|
 | `count` | `list` | number | number of entries | empty states, `collection` |
-| `sum` | `list` or `…values` | the entries' kind | total | `budget`, `recipe`, `aggregate` |
-| `avg` | `list` or `…values` | the entries' kind | mean | `aggregate` |
-| `min` | `list` or `…values` | the entries' kind | smallest | `aggregate`, `drawer` |
-| `max` | `list` or `…values` | the entries' kind | largest | `aggregate` |
+| `sum` | `list, [field]` or `…values` | the entries' kind | total; with `field`, of that field of each entry | `budget`, `recipe`, `aggregate` |
+| `avg` | `list, [field]` or `…values` | the entries' kind | mean | `aggregate` |
+| `min` | `list, [field]` or `…values` | the entries' kind | smallest | `aggregate`, `drawer` |
+| `max` | `list, [field]` or `…values` | the entries' kind | largest | `aggregate` |
 
 **New: lists and text**
 
@@ -365,7 +394,7 @@ content:
           - { name: description, match: text, pattern: '^(.+?)\s*:' }
           - { name: amount, match: text, pattern: ':\s*(.+)$', kind: amount }
 computes:
-  subtotal: sum($items.amount)
+  subtotal: sum($items, "amount")
 ```
 
 Twin: `{% aggregate … measure="sum:points" /%}`. Whether a range is its midpoint is the `amount`
@@ -382,13 +411,15 @@ computes:
 Twin: D6's fan-out rule, which BUG-025 also needs.
 
 **`symbol`: one predicate form.** Today: a content-model function branching on
-`GROUP_KINDS.includes(attrs.kind)` (`plugins/docs/src/tags/symbol.ts`).
+`GROUP_KINDS.includes(attrs.kind)` (`plugins/docs/src/tags/symbol.ts`). Under SPEC-169 D5 the
+model is one `sections` model at `heading:3`, and the template chooses the arrangement:
 
-```yaml
-content:
-  when:
-    - if: matches($attrs, "kind:class,interface,module")
-      model: { type: sections, sectionHeading: "heading:3", emitTag: symbol-group }
+```md
+{% if matches($attrs, "kind:class,interface,module") %}
+	{% slot name="sections" each %} … {% /slot %}
+{% else /%}
+	{% slot name="body" /%}
+{% /if %}
 ```
 
 Twin: `{% collection type="symbol" filter="kind:class,interface,module" /%}`, the same query
@@ -418,7 +449,7 @@ first gap). One SPEC-166 implementation unblocks both.
 - [ ] `computes` accepts expression strings, checked when the definition loads (`function-unknown`, `function-argument-kind`, `computes-kind-mismatch`, `computes-cycle`)
 - [ ] A rune whose `computes` entries are all expressions loads without a `prepare` stage
 - [ ] `matches()` evaluates SPEC-070 queries with the same parser and matcher as `field-match.ts`
-- [ ] `when` and `metaFields.*.condition` accept expressions; the existing condition forms still load, and a codemod rewrites them
+- [ ] `metaFields.*.condition` and template `{% if %}` accept expressions, including `matches()`; a bare attribute name still works as a condition
 - [ ] One fan-out implementation serves `field-match.ts`, `splitOn`, `split` and `item`; BUG-025 is fixed through it
 - [ ] `first`, `item`, `basename` and `language` exist, and `codegroup`, `compare` and `juxtapose` label panels through one expression; every label difference this causes is listed and accepted
 - [ ] `sum` shares its implementation with SPEC-138's `measure`
@@ -429,8 +460,10 @@ first gap). One SPEC-166 implementation unblocks both.
 
 ## Open questions
 
-- **How much the "display text only" rule constrains in practice.** Measure how many templates
-  and pages call functions today, and for what, before the first work item.
+None remain within this spec. The last one (how much the "display text only" rule constrains)
+was answered by the 2026-11-09 count recorded under D2. The open items it depends on belong to
+other specs: value kinds ({% ref "SPEC-166" /%}) and range comparisons in the filter grammar
+({% ref "SPEC-138" /%}).
 
 ## References
 
