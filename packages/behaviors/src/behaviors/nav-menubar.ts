@@ -27,7 +27,10 @@ export function navMenubarBehavior(el: HTMLElement): CleanupFn {
 		const trigger = group.querySelector<HTMLElement>(
 			'[data-field="title"], h1, h2, h3, h4, h5, h6',
 		);
-		const panel = group.querySelector<HTMLElement>(':scope > ul, :scope > ol');
+		// `nav-group` wraps its list (and any intro/footer) in a
+		// `data-name="panel"` element (SPEC-054); select by that name, not by
+		// the list element (BUG-048, SPEC-196 D6).
+		const panel = group.querySelector<HTMLElement>(':scope > [data-name="panel"]');
 		if (!trigger || !panel) continue;
 
 		const triggerId = trigger.id || uniqueId('rf-nav-trigger');
