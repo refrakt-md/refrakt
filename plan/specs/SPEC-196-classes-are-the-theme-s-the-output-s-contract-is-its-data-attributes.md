@@ -98,10 +98,9 @@ classes: [ … ]        // a mapping table (D3)
 classes: { bem: { prefix: "rf" }, add: [ … ] }   // BEM plus mapped classes
 ```
 
-- **`"bem"` reproduces today's output exactly.** It uses a rune's declared `block` as the
-  block name where it has one (`codegroup` for `data-rune="code-group"`, `toc` for
-  `table-of-contents`), and its `data-rune` name otherwise. `ThemeConfig.prefix` becomes this
-  generator's option.
+- **`"bem"` reproduces today's output exactly**, except for the nine runes D10 renames. It
+  names each block after the rune's `data-rune`. `ThemeConfig.prefix` becomes this generator's
+  option.
 - **`"none"`** serves classless stylesheets (Pico, Water.css), and themes written entirely
   against data attributes.
 - **The setting is declarative.** It is data in the theme's config, never a function. A theme
@@ -233,7 +232,8 @@ skimmed):
   :scope > ol` (`packages/behaviors/src/behaviors/nav-menubar.ts:30`), but `nav-group` always
   wraps its items in `<div data-name="panel">` (`packages/runes/src/tags/nav.ts:252`), so every
   group is skipped. It was confirmed by reading, not run, and there is no menubar behaviour test.
-  The swap to `[data-name="panel"]` fixes it.
+  The swap to `[data-name="panel"]` fixes it. Filed as {% ref "BUG-048" /%}, to be fixed on its
+  own, ahead of this spec.
 
 ### D7: contracts in two layers
 
@@ -273,6 +273,42 @@ by {% ref "ADR-044" /%}: its per-rune stylesheets drain as runes compose, and `h
 - **D7 changes the contract file's shape.** That is a breaking change for anyone reading
   `structures.json`, and it ships through {% ref "SPEC-189" /%}'s migration table.
 
+### D10: the BEM name is the rune name
+
+*Decided 2026-11-09.* The `"bem"` generator names every block after the rune's `data-rune`, and
+`block` stops being a separate name. Definitions already reject a `block` key (`STYLE_KEYS`,
+`packages/runes/src/lib/composition.ts:1735`), and its only remaining consumer would be the BEM
+generator, so the alias is removed rather than admitted.
+
+Nine runes change class names, *measured 2026-11-09*. The counts are `.rf-` selectors across
+Lumina, the skeleton and plugin styles, by pattern, so approximate:
+
+| Rune (`data-rune`) | Classes today | Classes after | Selectors |
+|---|---|---|---|
+| `code-group` | `rf-codegroup` | `rf-code-group` | ~26 |
+| `table-of-contents` | `rf-toc` | `rf-table-of-contents` | ~12 |
+| `pull-quote` | `rf-pullquote` | `rf-pull-quote` | ~21 |
+| `text-block` | `rf-textblock` | `rf-text-block` | ~31 |
+| `media-text` | `rf-mediatext` | `rf-media-text` | ~35 |
+| `tab-group` | `rf-tabs` | `rf-tab-group` | ~10 |
+| `data-table` | `rf-datatable` | `rf-data-table` | ~20 |
+| `how-to` (learning) | `rf-howto` | `rf-how-to` | ~13 |
+| `featured-tier` (marketing) | `rf-tier`, shared with `tier` | `rf-featured-tier` | ~20, shared |
+
+- **It ships through {% ref "SPEC-189" /%}'s migration table.** For one release the generator
+  emits both names, old and new, so stylesheets can move. A warning names every selector still
+  using an old name. The old names are then removed. The rename is a fixed map, so a codemod
+  rewrites selectors in CSS.
+- **D2's byte-identical promise covers every other rune.** For these nine, the release that
+  emits both names is additive, and the release that drops the old names is the breaking step
+  SPEC-189 records.
+- **`featured-tier` is a special case.** It is a variant of `tier` given its own rune name, so
+  today both share one block. After the rename, a style meant for both must name both. The
+  cleaner end is the one {% ref "SPEC-161" /%} D4's `pricing` composition reaches: one `tier`
+  with a featured attribute. The rename should land with, or after, that conversion, not before.
+- **`how-to` and the pricing runes are planned compositions**, so their classes would come from
+  `data-rune` under D8 anyway. The rename makes the change happen once, under one rule.
+
 ## Rationale
 
 - **It moves a presentation decision to the presentation layer.** Class names are how a
@@ -300,11 +336,6 @@ by {% ref "ADR-044" /%}: its per-rune stylesheets drain as runes compose, and `h
 
 ## Open questions
 
-- **`block` in definitions.** Definitions reject a `block` key today (`STYLE_KEYS`,
-  `packages/runes/src/lib/composition.ts:1735`). A native rune whose `block` differs from its
-  `data-rune` (`codegroup`, `toc`) either keeps `block` as a declared BEM name when it moves to a
-  definition, or its classes are renamed through SPEC-189. Keeping it is byte-identical;
-  renaming removes an alias nobody but the BEM generator needs.
 - **Combining settings across themes.** A theme that extends Lumina may want Lumina's BEM plus
   its own mapped classes; `{ bem, add }` covers that. Whether a child theme can also *drop* the
   parent's mapping is undecided; add-only suggests not.

@@ -215,7 +215,7 @@ Each `RuneConfig` field (`packages/transform/src/types.ts`) falls into one of th
 
 | Group | Fields | Fate |
 |---|---|---|
-| Identity and vocabulary | `block`, `modifiers`, `contextModifiers`, `metaFields`, `blocks`, `sections`, `provides`, `universalAttributes`, `mediaSlots`, `frameTarget`, `substrateTarget`, `rootAttributes`, `interactive`, `editHints`, `sequence`, `sequenceDirection`, `staggerItems`, `parent`, `requiresParent`, `sectionRoleExceptions`, `guestFit`, `composed`, the axis defaults (`defaultWidth`, `defaultSpacing`, `defaultInset`, `defaultReading`, `contentMeasure`, `defaultDensity`, `defaultElevation`, `defaultProminence`, `childDensity`) | kept; generated from the definition |
+| Identity and vocabulary | `modifiers`, `contextModifiers` (a list of parents, emitted as `data-in`, SPEC-196 D5), `metaFields`, `blocks`, `sections`, `provides`, `universalAttributes`, `mediaSlots`, `frameTarget`, `substrateTarget`, `rootAttributes`, `interactive`, `editHints`, `sequence`, `sequenceDirection`, `staggerItems`, `parent`, `requiresParent`, `sectionRoleExceptions`, `guestFit`, `composed`, the axis defaults (`defaultWidth`, `defaultSpacing`, `defaultInset`, `defaultReading`, `contentMeasure`, `defaultDensity`, `defaultElevation`, `defaultProminence`, `childDensity`) | kept; generated from the definition |
 | Structure assembly | `structure`, `layout`, `contentWrapper`, `autoLabel`, `projection`, `postTransform` | deprecated; the template does it |
 | Classified on 2026-11-09 | `variants`, `styles`, `staticModifiers`, `checklist`, `scope` | each settled below |
 
@@ -229,14 +229,12 @@ Each `RuneConfig` field (`packages/transform/src/types.ts`) falls into one of th
 | `checklist` | nothing: no engine code reads it (checkbox detection runs on every list item) | 2: `work`, `bug` | **removed** |
 | `scope` | the i18n key prefix, stamped from the owning plugin (`assemble.ts:155`) | 0 authored | **identity, generated**: no authored replacement is needed |
 
-- **`block` names a rune for BEM, nothing more.** Which classes the output carries is the
-  theme's setting ({% ref "SPEC-196" /%}). `block` is the name the built-in `"bem"` generator
-  uses where it differs from `data-rune` (`codegroup` for `code-group`), so keeping it keeps
-  today's classes byte for byte. It no longer decides whether a rune has classes. Definitions
-  reject a `block` key today (`STYLE_KEYS`, SPEC-145 D2), so a native rune that moves to a
-  definition either keeps `block` as a declared BEM name, admitted only for that purpose, or
-  its classes are renamed to its `data-rune` through SPEC-189's migration table. SPEC-196 lists
-  this as open.
+- **`block` goes away.** Which classes the output carries is the theme's setting
+  ({% ref "SPEC-196" /%}), and its `"bem"` generator names every block after the rune's
+  `data-rune` (SPEC-196 D10, *decided 2026-11-09*). The nine runes whose `block` differs from
+  their name (`codegroup` for `code-group`, `toc` for `table-of-contents`, and others) are
+  renamed through {% ref "SPEC-189" /%}'s migration table. Definitions keep rejecting a `block`
+  key (`STYLE_KEYS`, SPEC-145 D2).
 - **A rune with a definition gets its engine config generated**, as `composedRuneConfig` does.
   `config.ts` keeps only runes that have not moved.
 - **A deprecated field on a rune that has a template is an error**
@@ -657,8 +655,7 @@ first to recheck in each rune's work item.
 None remain at the top level. What is still open sits where it applies:
 
 - within D12: two-level iteration (specified, not built) and the `fragment` override point,
-  which depends on {% ref "SPEC-168" /%} D8;
-- in {% ref "SPEC-196" /%}: whether `block` stays a declared BEM name in definitions.
+  which depends on {% ref "SPEC-168" /%} D8.
 
 ## Future: reusing computation
 
