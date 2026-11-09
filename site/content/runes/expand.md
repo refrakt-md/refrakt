@@ -15,34 +15,31 @@ The motivating use case is in-context plan-content previews: write a blog post a
 
 ## Embed an entity
 
-The minimum case — a single ID:
+The minimum case — a single ID. The work item below is rendered from its plan file:
 
-```markdoc
-{% expand "SPEC-066" /%}
-```
+{% preview source=true %}
 
-This renders the spec in place. Its headings stay out of the page's table of contents, and their anchors are prefixed with the entity's ID so they never clash with the page's own.
+	{% expand "WORK-026" /%}
 
-The block is live below — wrapped in a `{% drawer %}` so the spec doesn't dominate the docs page. Click {% ref "spec-066-preview" label="open the embedded spec" /%} (or press `s`) to open it.
+{% /preview %}
 
-{% drawer id="spec-066-preview" title="SPEC-066 — Expand rune" shortcut="s" size="lg" %}
-	{% expand "SPEC-066" canonical=true label="View full spec source" /%}
-{% /drawer %}
+Its headings stay out of the page's table of contents, and their anchors are prefixed with the entity's ID so they never clash with the page's own.
 
 ## Compose with a drawer
 
 The "see it in action" pitch is `{% expand %}` inside `{% drawer %}`: the reader stays on the host page, clicks an inline `{% ref %}` to open a side panel containing the full embedded entity, closes it, keeps reading. Same content lives in one place (the plan file); both the link and the inline embed update when the source does.
 
-```markdoc
-This implementation is described in {% ref "auth-spec" /%}, which is also
-embedded in the {% ref "auth-spec-drawer" label="auth spec drawer" /%}.
+{% preview source=true %}
 
-{% drawer id="auth-spec-drawer" title="Auth spec" shortcut="s" %}
-	{% expand "SPEC-066" canonical=true /%}
-{% /drawer %}
-```
+	The expand rune has a written specification. {% ref "spec-066-preview" label="Open it" /%} (or press `s`) to read it without leaving the page.
 
-The `canonical=true` attribute appends a "view canonical" link to the embedded content — useful when the embed is a peek and the canonical lives elsewhere.
+	{% drawer id="spec-066-preview" title="SPEC-066 — Expand rune" shortcut="s" size="lg" %}
+		{% expand "SPEC-066" canonical=true label="View full spec source" /%}
+	{% /drawer %}
+
+{% /preview %}
+
+The `canonical=true` attribute appends a "view canonical" link to the embedded content — useful when the embed is a peek and the canonical lives elsewhere. `label` sets that link's text.
 
 ## What can be embedded
 
@@ -76,10 +73,6 @@ The resolver tracks a stack of `(type, id)` tuples per-page-render. Embedding th
 When `canonical=true`, expand renders a `<a class="rf-expand__canonical-link">` after the embedded content with `href` resolved via the [xref chain](/runes/xref) — entity `sourceUrl` first, then patterns, then unresolved.
 
 `data-canonical-href` on the wrapper is **always populated** when the URL resolves, regardless of the `canonical` attribute — themes and tooling can always reach the URL even when the visible link isn't rendered.
-
-```markdoc
-{% expand "SPEC-066" canonical=true label="Read the full spec on trace" /%}
-```
 
 ## Attributes
 

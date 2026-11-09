@@ -15,27 +15,17 @@ It's generic over the edge **kind**, which is an arbitrary string. Plugins contr
 
 ## Selecting edges — `of` + `kind`
 
-`of` is the entity to describe, passed **explicitly** as an id (or a bound entity). On a generated entity page you pass the page entity — the same `$item.id` you'd hand to [`expand`](/runes/expand):
+`of` is the entity to describe, passed **explicitly** as an id (or a bound entity). With no body, edges are grouped by kind, each rendered as a title link to the related entity — the zero-config built-in:
 
-```markdoc
-{% relationships of=$item.id /%}
-```
+{% preview source=true %}
 
-`kind` narrows to specific edge kinds (comma-separated); `type` restricts the *related* entity types:
+	{% relationships of="WORK-259" /%}
 
-```markdoc
-{% relationships of=$item.id kind="blocks,blocked-by" type="work,bug" /%}
-```
-
-With no body, edges are grouped by kind, each rendered as a title link to the related entity — the zero-config built-in:
-
-```
-Implements      → SPEC-001 Auth system
-Blocked by      → WORK-014 Token store
-Related         → ADR-003 Session strategy
-```
+{% /preview %}
 
 Group headings are the kinds, humanized via the shared [`humanize`](/runes/collection#formatter-functions) function (`blocked-by` → "Blocked By") — no per-domain label table.
+
+`kind` narrows to specific edge kinds (comma-separated), and `type` restricts the *related* entity types: `kind="blocks,blocked-by" type="work,bug"` keeps only dependency edges to work items and bugs. On a generated entity page, pass the page entity as `of=$item.id` — the same binding you'd hand to [`expand`](/runes/expand).
 
 ## How Markdown is read
 
@@ -52,15 +42,17 @@ The body, when you give one, is a template rather than content to show as writte
 
 Give `relationships` a **body** and it becomes the per-edge template, transformed once per edge with **`$item`** bound to the related entity (the same contract as `collection` — `id`/`type`/`url`/`data`) and **`$kind`** bound to the edge kind:
 
-```markdoc
-{% relationships of=$item.id kind="blocks,blocked-by" layout="grid" %}
-	{% card href=$item.url %}
-	{% humanize($kind) %}
-	### {% $item.data.title %}
-	Status: {% $item.data.status %}
-	{% /card %}
-{% /relationships %}
-```
+{% preview source=true %}
+
+	{% relationships of="SPEC-066" type="work,bug" layout="grid" %}
+		{% card href=$item.url %}
+		{% humanize($kind) %}
+		### {% $item.data.title %}
+		Status: {% $item.data.status %}
+		{% /card %}
+	{% /relationships %}
+
+{% /preview %}
 
 Because `$item` means the same thing here as in a `collection` body, the **same card partials are reusable across both runes** — a `work-card.md` partial works whether it's fed by a collection query or a relationship edge.
 
@@ -74,11 +66,13 @@ Because `$item` means the same thing here as in a `collection` body, the **same 
 
 ## Empty state and body zones
 
-Like [`collection`](/runes/collection), `relationships` supports an empty state and `---`-delimited body zones. The self-closing form takes an `empty` fallback:
+Like [`collection`](/runes/collection), `relationships` supports an empty state and `---`-delimited body zones. The self-closing form takes an `empty` fallback, shown when the entity has no matching edges:
 
-```markdoc
-{% relationships of=$item.id empty="No relationships yet." /%}
-```
+{% preview source=true %}
+
+	{% relationships of="SPEC-066" kind="blocked-by" empty="Nothing blocks this spec." /%}
+
+{% /preview %}
 
 With a body, split on a top-level `---` into **preamble** (rendered above the edges only when there are any), **template** (the per-edge template), and **fallback** (shown when there are none) — so a "Relationships" heading can live inside the rune and disappear when the entity has no edges. The preamble and fallback can read `$count` (edges matched, pre-limit) and `$shown` (edges rendered, post-limit), just as in [`collection`](/runes/collection#count-variables-count-and-shown).
 

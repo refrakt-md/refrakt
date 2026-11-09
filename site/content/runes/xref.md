@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:xref"} /%}
 
-The author provides an identifier — the system finds the page, constructs the link, and uses the entity's title as link text. Self-closing tag. `{% ref %}` is the same rune under another name, so `{% ref "WORK-9138" /%}` is documented here. To put the entity's content into the page instead of a link to it, use [expand](/runes/expand); to link a project file by its path, use [file-ref](/runes/file-ref); for a side panel that a reference opens, declare a [drawer](/runes/drawer).
+The author provides an identifier — the system finds the page, constructs the link, and uses the entity's title as link text. Self-closing tag. `{% ref %}` is the same rune under another name, so `{% ref "WORK-026" /%}` is documented here. To put the entity's content into the page instead of a link to it, use [expand](/runes/expand); to link a project file by its path, use [file-ref](/runes/file-ref); for a side panel that a reference opens, declare a [drawer](/runes/drawer).
 
 {% hint type="note" %}
 The `xref` rune requires the cross-page pipeline (Level 2). At Level 1 (static transform), references render as plain text.
@@ -17,40 +17,45 @@ The `xref` rune requires the cross-page pipeline (Level 2). At Level 1 (static t
 
 ## By ID
 
-Reference an entity by its unique identifier. The registry resolves the URL and title automatically.
+Reference an entity by its unique identifier. The registry resolves the URL and title automatically. A page's ID is its URL:
 
-```markdoc
-Depends on {% xref "WORK-9138" /%}
-See {% xref "SPEC-9008" /%} for details.
-This implements {% xref "ADR-9007" /%}.
-```
+{% preview source=true %}
+
+Shared files live in {% xref "/docs/authoring/partials" /%}; to place an entity's content on the page, use {% xref "/runes/expand" /%}.
+
+{% /preview %}
+
+Other entities carry their own IDs: on a site that publishes its plan, `{% xref "WORK-9138" /%}` links to that work item and reads its title.
 
 ## By name
 
 Reference an entity by its display name. Name lookup is case-insensitive and searches `name` and `title` fields across all registered entities.
 
-```markdoc
-{% xref "Veshra" /%} never forgave the betrayal.
-The {% xref "authentication" /%} guide covers setup.
-```
+{% preview source=true %}
+
+{% xref "Veshra" /%} never forgave the betrayal, and never returned to {% xref "Hollowmere" /%}.
+
+{% /preview %}
 
 ## Custom label
 
 Override the default link text with the `label` attribute. The link still points to the resolved entity.
 
-```markdoc
-{% xref "WORK-9138" label="the base implementation" /%}
-{% xref "Veshra" label="the exile" /%}
-```
+{% preview source=true %}
+
+{% xref "Veshra" label="The Bone Witch" /%} watched the gates of Hollowmere close behind her.
+
+{% /preview %}
 
 ## Type hint
 
 When a name is ambiguous (multiple entities share the same name), the `type` attribute narrows the lookup to a specific entity type.
 
-```markdoc
-{% xref "Sanctuary" type="realm" /%}
-{% xref "Sanctuary" type="character" /%}
-```
+{% preview source=true %}
+
+The road ends at {% xref "Hollowmere" type="realm" /%}.
+
+{% /preview %}
 
 Without a type hint, ambiguous references use the first match and emit a build warning.
 
@@ -161,7 +166,7 @@ Every package that registers entities works with `xref` automatically. Common ty
 
 | Source | Entity types | Example |
 |--------|-------------|---------|
-| Core | `page`, `heading` | `{% xref "getting-started" /%}` |
+| Core | `page`, `heading` | `{% xref "/docs/getting-started" /%}` |
 | @refrakt-md/storytelling | `character`, `realm`, `faction`, `lore`, `bond` | `{% xref "Veshra" /%}` |
 | @refrakt-md/learning | `term`, `lesson` | `{% xref "polymorphism" /%}` |
 | @refrakt-md/business | `person`, `organization` | `{% xref "Acme Corp" /%}` |

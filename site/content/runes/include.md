@@ -11,9 +11,13 @@ type: rune
 
 `{% include %}` pastes a shared file's content into the page, like `{% partial %}` — but early enough that `{% data %}` and `{% snippet %}` inside that file resolve.
 
+Every rune page on this site ends with one, and the [Attributes](#attributes) table at the foot of this page is its output:
+
 ```markdoc
-{% include file="attribute-table.md" variables={rune: "card"} /%}
+{% include file="rune-attributes.md" variables={r: "rune:include"} /%}
 ```
+
+The file, `_partials/rune-attributes.md`, reads its rows with `{% data %}`, so a `{% partial %}` could not pull it in. It is shown here as a fence because a second copy of it would add a second attribute table to this page.
 
 Both runes read the same `_partials/` directory and the same [file roots](/docs/authoring/partials#namespaced-partials-via-file-roots), so moving between them changes the call site and nothing else. A file's location does not depend on its contents.
 
@@ -64,25 +68,23 @@ content/
 
 ## Passing variables
 
-`variables` works the way it does on `partial` — a map of bindings the file reads with `$`.
-
-**Included file** (`_partials/attribute-table.md`):
+`variables` works the way it does on `partial` — a map of bindings the file reads with `$`. The file included at the top of this page opens like this:
 
 ```markdoc
-{% data src="_data/rune-attributes.json" root="attributes" where=$q %}
-### {% $row.name %}
-
+{% data src="site/content/_data/rune-attributes.json" root="own" where=$r headers="Attribute, Type, Required, Description" %}
+{% code %}{% $row.name %}{% /code %}
+---
+{% code %}{% $row.type %}{% /code %}
+---
+{% if $row.required %}✓{% else /%}—{% /if %}
+---
 {% $row.description %}
 {% /data %}
 ```
 
-**Usage:**
+and the call passes `variables={r: "rune:include"}`, which the file reads as `$r`.
 
-```markdoc
-{% include file="attribute-table.md" variables={q: "rune:card scope:own"} /%}
-```
-
-The difference from `partial` is where the binding lands. A partial's variables are a scope the transform reads, which is exactly the phase a preprocessor rune never reaches. An include substitutes them into the content as it pastes, so a binding reaches `{% data where=$q %}` — the case above.
+The difference from `partial` is where the binding lands. A partial's variables are a scope the transform reads, which is exactly the phase a preprocessor rune never reaches. An include substitutes them into the content as it pastes, so a binding reaches `{% data where=$r %}` — the case above.
 
 One consequence worth knowing: variables the include **does not** bind are left alone rather than blanked, so `{% $page.slug %}` inside an included file still resolves against the page. A partial cannot do that — its scope replaces the variable surface.
 

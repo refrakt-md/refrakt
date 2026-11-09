@@ -71,17 +71,15 @@ Headings create pin groups that can be toggled as map layers.
 
 ## Height variants
 
-Control the map height with the `height` attribute.
+Control the map height with the `height` attribute: `small`, `medium` (the default), `large`, or `full`. A single pin needs little room:
 
-```markdoc
-{% map height="small" %}
-- **London** - 51.5074, -0.1278
-{% /map %}
+{% preview source=true %}
 
-{% map height="large" %}
-- **Tokyo** - 35.6762, 139.6503
-{% /map %}
-```
+	{% map height="small" zoom="15" %}
+	- **Tate Modern** - *Modern art in a former power station* - 51.5076, -0.0994
+	{% /map %}
+
+{% /preview %}
 
 ## Attributes
 
