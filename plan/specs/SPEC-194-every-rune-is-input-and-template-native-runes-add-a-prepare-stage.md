@@ -698,12 +698,13 @@ used by `pull-quote`, the core `blockquote` node, epigraphs and, through `pull-q
    the inside one; `fills` must say so by model order or explicitly.
 6. A behaviour difference to accept or fix: today an explicit `author` ignores the paragraph
    entirely; with per-attribute `fills`, an explicit `author` could still take `source` from it.
-7. **A simplification to accept: the excerpt loses its `<aside>`.** SPEC-185 D1 renders an excerpt
-   as `<aside aria-hidden="true">` around the figure. Keeping it needs a template branch that would
-   place the quote slot twice, which SPEC-145 D30 rejects. Here an excerpt is the same `<figure>`
-   with `aria-hidden="true"` and `data-quote="excerpt"`. Since `aria-hidden` takes it out of the
-   accessibility tree, the `<aside>`'s meaning reached nobody. It amends SPEC-185 D1 and D4, a
-   shipped spec, so it needs explicit agreement (ADR-048 decision 3).
+7. **The excerpt loses its `<aside>`** (*decided 2026-11-09*). SPEC-185 D1 rendered an excerpt
+   as `<aside aria-hidden="true">` around the figure. Keeping it needs a template branch that
+   would place the quote slot twice, which SPEC-145 D30 rejects. An excerpt is now the same
+   `<figure>` with `aria-hidden="true"` and `data-quote="excerpt"`. Since `aria-hidden` takes it out
+   of the accessibility tree, the `<aside>`'s meaning reached nobody. SPEC-185 D1 and D4 are
+   amended to match; the change ships as a SPEC-189 migration row, since CSS targeting
+   `aside[data-quote]` must move to `[data-quote="excerpt"]`.
 
 **The rule this sets.** When a template needs structure it cannot express, the answer is a small
 primitive with a role in the shared design language, placed by every rune that needs it, never an
@@ -724,7 +725,7 @@ render helpers, `nodes.ts`, drawer and its resolvers, `collection-helpers.ts`, `
 | `attribution` | `<figcaption><cite>`, by placement | `name`, `source` | `pull-quote`, the `blockquote` node, epigraphs, `testimonial` | D13 |
 | `code-block` | `<pre><code>` with `data-language` | a source string, `language`; optionally line numbers, highlights, line range | the fence node (`nodes.ts:143`), `sandbox` (`:198`), `diagram` (`:41`), `preview`'s three source views (`:163`, `:184`, `:199`), the design plugin's themed-source `postTransform`, `file-ref`'s drawer body (`file-ref-resolve.ts:288`) | `{% code %}` is inline only, and a template can write a literal fence but cannot fill one from a value. Raw source is D2's named exception, so `prepare` can produce the string and only a primitive can show it |
 | `caption` | `<figcaption>` inside a figure, `<caption>` inside a table, a neutral element elsewhere | a text value or an inline slot | `figure` (`:70`), `gallery` (`:49`, `:58`), `diagram`'s title (`:34`), `chart` (`:71`), `aggregate`'s chart title (`aggregate-resolve.ts:119`) | D8 has a template arrange a drawing's title around it, but it cannot write a `figcaption`, and placing `figure` inside a root that is already a figure would nest them |
-| `image` | `<img src alt>` from attribute values, resolving the `icon:` and `placeholder:` schemes | `src`, `alt` | `cast`'s portrait from `image=` (`cast.ts:39`), `tab`'s `image=` (`tabs.ts:18`), both through the image node (`nodes.ts:378`) | Markdoc's image syntax takes no variable `src`. Content images placed by a slot are fine; only an image from an attribute is stuck. Two small users, so it may wait for a third |
+| `image` | `<img src alt>` from attribute values, resolving the `icon:` and `placeholder:` schemes | `src`, `alt` | `cast`'s portrait from `image=` (`cast.ts:39`), `tab`'s `image=` (`tabs.ts:18`), both through the image node (`nodes.ts:378`) | Markdoc's image syntax takes no variable `src`. Content images placed by a slot are fine; only an image from an attribute is stuck. Two small users: it **waits for a third** (*decided 2026-11-09*); until then `cast` and `tab` keep their image in code |
 
 `attribution`, `code-block` and `caption` share one rule: **the element follows the placement**,
 so a template cannot produce invalid HTML by placing them somewhere unexpected.

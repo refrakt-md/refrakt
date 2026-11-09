@@ -43,7 +43,7 @@ to the reader and defined by a theme or a pack.
 |---|---|---|---|
 | **quotation** | someone else's words cited in support of the text; the text is the subject | `>` in running text | `<blockquote>`, or `<figure>` with a `<figcaption>` when attributed |
 | **featured quotation** | a statement presented for its own sake; who said it is part of it | `{% pullquote %}` | `<figure><blockquote>…</blockquote><figcaption>…</figcaption></figure>` |
-| **pull quote** | an excerpt of this text, repeated large for a skimming eye | `{% pullquote excerpt %}` | `<aside aria-hidden="true">` holding the same structure |
+| **pull quote** | an excerpt of this text, repeated large for a skimming eye | `{% pullquote excerpt %}` | the same `<figure>`, with `aria-hidden="true"` and `data-quote="excerpt"` (*amended 2026-11-09*; was an `<aside aria-hidden="true">` holding the figure) |
 | **epigraph** | a short attributed quotation that opens a work or a section | `>` with an attribution, by position (D5) | `<figure>` with a `<figcaption>` |
 
 The roles are the author's choice. What each looks like is the theme's.
@@ -100,8 +100,11 @@ gains **`quote` as an alias**, the name for its default case; renaming is not de
 
 - **By default it is a featured quotation**, read by assistive technology, as every current use of it
   (this site's examples quote other people) already is.
-- **`excerpt` marks a true pull quote**: the words already appear in the text, so it renders as an
-  `<aside aria-hidden="true">` and a screen reader does not read the passage twice.
+- **`excerpt` marks a true pull quote**: the words already appear in the text, so it is hidden
+  with `aria-hidden="true"` and a screen reader does not read the passage twice. *Amended
+  2026-11-09* by {% ref "SPEC-194" /%} D13: it stays a `<figure>`, marked `data-quote="excerpt"`,
+  rather than an `<aside>`; `aria-hidden` already removed the `<aside>`'s meaning from the
+  accessibility tree.
 - **Its structure is `<figure><blockquote>…</blockquote><figcaption>…</figcaption></figure>`.** The
   authored blockquote's content is the `<blockquote>`'s; it is never nested in a second one. An
   attribution, when present, is the `<figcaption>`.
@@ -152,8 +155,7 @@ Every role that carries a source reads it the same way and renders it the same w
 - **Rendered** as `<figcaption>`, the name in `<cite>`.
   *Amended 2026-11-09* by {% ref "SPEC-194" /%} D13: the shared part becomes the template-only
   `attribution` primitive, so a rune written as a definition can place it. The output is
-  unchanged. D13 also proposes dropping the excerpt's `<aside>` (D1, D4), which needs agreement
-  before it lands.
+  unchanged. D13 also drops the excerpt's `<aside>` (D1 and D4, amended).
 - A quotation (role 1) with an attribution becomes a `<figure>`; without one it stays a bare
   `<blockquote>`.
 
