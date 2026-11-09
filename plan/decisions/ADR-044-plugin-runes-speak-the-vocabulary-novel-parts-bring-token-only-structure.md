@@ -102,6 +102,9 @@ belongs to the plugin, which works through those same two interfaces.
   `chart`, `diagram`, `juxtapose`, …) moves to the owning package (the plugin, or the skeleton
   for core) and is rewritten in tokens only. Lumina ends as vocabulary skin plus presets, with no
   rune named in it. That end state is the evidence that ADR-043 and this decision hold.
+  *Mechanism, 2026-11-09:* {% ref "SPEC-196" /%} D11 drains it. Each conversion triages the
+  rune's stylesheet (dropped, promoted into the vocabulary, or a recorded drawing exception),
+  and a Lumina lint with a shrinking allowlist fails on new selectors naming a domain rune.
 - **The plugin-authoring guide is rewritten around the tiers.** It explains which tier to
   choose and why, the primitive-plus-composition shape, placing core primitives from a native
   rune, and token-only structure CSS. Its `styles/` example becomes a tier-3 example, not a

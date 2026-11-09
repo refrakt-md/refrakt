@@ -81,6 +81,10 @@ The body is a template, as for any composition (D4 has the example).
   - `prepare` names a registered stage (D3).
   - `computes` declares every value the stage returns: its name, its type, and whether it sits
     on the rune or on each item of a repeated slot (`panels.label`).
+- **One more key for every definition, `role`** (*added 2026-11-09*): `primitive` (something
+  other runes place), `drawing` (an opaque visual, D8) or domain, the default. It is a claim to
+  be part of the shared design language, and it decides whether the theme's `"bem"` setting
+  gives the rune classes ({% ref "SPEC-196" /%} D8). A composition declares it too.
 - **Nothing else about the format changes.** A definition without `prepare` is a composition,
   exactly as today.
 - **Computed values are values, not slots.**
@@ -230,11 +234,12 @@ Each `RuneConfig` field (`packages/transform/src/types.ts`) falls into one of th
 | `scope` | the i18n key prefix, stamped from the owning plugin (`assemble.ts:155`) | 0 authored | **identity, generated**: no authored replacement is needed |
 
 - **`block` goes away.** Which classes the output carries is the theme's setting
-  ({% ref "SPEC-196" /%}), and its `"bem"` generator names every block after the rune's
-  `data-rune` (SPEC-196 D10, *decided 2026-11-09*). The nine runes whose `block` differs from
-  their name (`codegroup` for `code-group`, `toc` for `table-of-contents`, and others) are
-  renamed through {% ref "SPEC-189" /%}'s migration table. Definitions keep rejecting a `block`
-  key (`STYLE_KEYS`, SPEC-145 D2).
+  ({% ref "SPEC-196" /%}). Its `"bem"` generator classes primitives and drawings, named after
+  their `data-rune`, and gives domain runes none (SPEC-196 D8, D10, *revised 2026-11-09*). A
+  native rune keeps its configured `block` and today's classes until it moves to a definition.
+  Then a primitive whose `block` differed from its name is renamed through
+  {% ref "SPEC-189" /%}'s migration table, and a domain rune loses its classes as its stylesheet
+  is triaged (SPEC-196 D11). Definitions keep rejecting a `block` key (`STYLE_KEYS`, SPEC-145 D2).
 - **A rune with a definition gets its engine config generated**, as `composedRuneConfig` does.
   `config.ts` keeps only runes that have not moved.
 - **A deprecated field on a rune that has a template is an error**
@@ -359,7 +364,11 @@ Every other behaviour needs only selector changes, listed in {% ref "SPEC-196" /
 6. **The opaque visuals (D8)** last: they gain the least.
 
 Rune by rune, each moves under {% ref "SPEC-181" /%}'s staging process, as plugin runes moving
-to compositions do now.
+to compositions do now. That includes its fifth gate: the rune's stylesheet is triaged, and
+parity with its current look is not the bar ({% ref "SPEC-196" /%} D11). For a domain rune
+that stays native, this is the larger part of the work: about 1,000 of Lumina's rune-stylesheet
+selectors belong to runes that stay native, and each move is a design pass, not a mechanical
+migration.
 
 ### D11: a template never names an HTML element
 

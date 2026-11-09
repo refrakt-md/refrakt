@@ -79,7 +79,7 @@ most runes and a sentence for these fourteen.
 
 ## Decision
 
-**Option 4.** It is made of two decisions.
+**Option 4.** It is made of three decisions.
 
 ### Decision 1: every rune is input + template; native runes add a `prepare` stage
 
@@ -137,6 +137,21 @@ most runes and a sentence for these fourteen.
    cannot be described by the grammar is recorded as a gap against the grammar and closed
    there. It does not get its own parser.
 
+### Decision 3: converting a rune aims at a simpler design language, not parity
+
+*Added 2026-11-09.*
+
+1. **A converted rune ships no rune CSS.** Whether it becomes a composition or a native
+   definition, a domain rune is styled through the primitives it places and the universal
+   dimensions. Parity with how it looks today is not the bar.
+2. **Its stylesheet is triaged at conversion.** Each rule is dropped as an accepted
+   simplification, promoted into a primitive, a dimension or the shared vocabulary, or kept as
+   a recorded exception (a drawing, or a reviewed special case on `[data-rune]`). A Lumina lint
+   with an allowlist that may only shrink holds the line ({% ref "SPEC-196" /%} D11), and the
+   triage is a go-live gate ({% ref "SPEC-181" /%}).
+3. **Only the vocabulary gets classes.** The theme's default `"bem"` setting classes primitives
+   and drawings, declared by a definition's `role`, and never domain runes (SPEC-196 D8).
+
 ## Rationale
 
 - **It gives a theme author one convention.** CSS on the vocabulary for everything, plus a
@@ -174,5 +189,45 @@ most runes and a sentence for these fourteen.
   Under this decision, `prepare` reports the fact and the template decides.
 - **Tooling gains a full grammar** for the fourteen runes that today report only a prose
   `description` in `refrakt reference`, the language server and the editor.
+- **The vocabulary must grow ahead of the conversions.** Every rule a triage promotes needs a
+  primitive, a dimension or a vocabulary value to land in. Gaps found during conversions are
+  the expected input to that work, not a reason to keep rune CSS.
+
+## Implementation order
+
+*Recorded 2026-11-09.* Neither "after every composition" nor "all first": what changes the
+cost or shape of conversions comes first, and the native-rune work follows the compositions,
+which prove the definition format on many runes first.
+
+0. **Accept this decision** and review {% ref "SPEC-194" /%}, {% ref "SPEC-195" /%} and
+   {% ref "SPEC-196" /%} together before any work items.
+1. **Independent fixes, now:** {% ref "BUG-048" /%}; SPEC-196 D6 (behaviour scripts select by
+   attribute, which also fixes the prefix bug) and D5 (the additive attributes).
+2. **Vocabulary first:**
+   - the primitive and dimension work the triage will need: {% ref "SPEC-160" /%}'s `section`
+     and `card`, {% ref "SPEC-156" /%}'s arrangements, and the draft sentiment and glyph specs
+     ({% ref "SPEC-163" /%}, {% ref "SPEC-164" /%});
+   - SPEC-195's basics, which unblock conversions such as `recipe`'s `totalTime` and `budget`'s
+     sum: the function registry with signatures, `computes` expressions, `matches`, `first`,
+     `item`, `split` and the fan-out rule ({% ref "BUG-025" /%}). Values may stay strings until
+     {% ref "SPEC-166" /%} lands;
+   - the Lumina lint (SPEC-196 D11), with an allowlist that starts as today's rune stylesheets.
+3. **Template-language extensions**, each just before its first user: two-level iteration
+   (SPEC-194 D12) and `fragment` ({% ref "SPEC-168" /%} D8).
+4. **The composition migration continues** (the plugin audits SPEC-147 to SPEC-157), each
+   conversion with its stylesheet triaged and its rune removed from the allowlist. Two proofs
+   run alongside: `codegroup` as a native definition with `computes` and no `prepare`
+   (SPEC-194 D10), and the loader split for `$page` and `$site` (SPEC-194 D12).
+5. **SPEC-196's role-based classes** land before the first native domain rune moves to a
+   definition, so that it loses its classes the way compositions do.
+6. **The remaining native runes move to definitions**, in SPEC-194 D10's order: functions-only
+   runes, then `prepare` (`embed`), then the pipeline runes through D12, then the drawings. Each
+   is triaged like a conversion.
+7. **Removals, last**, once nothing first-party uses them (SPEC-194 D9): the structure-assembly
+   config fields, the `runes:` section of theme config, `CustomModel`, and SPEC-196 D10's old
+   class names. `featured-tier` goes with the `pricing` composition.
+
+One rule holds throughout: **no conversion is merged that would need its CSS triaged twice.**
+If a conversion is ready before the vocabulary it needs, the vocabulary is extended first.
 
 {% /decision %}

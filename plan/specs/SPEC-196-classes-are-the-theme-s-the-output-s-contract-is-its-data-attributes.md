@@ -9,15 +9,17 @@ The identity transform puts the same facts on its output twice: as data attribut
 classes built from them (`rf-codegroup__topbar`, `rf-hint--warning`). This spec makes the data
 attributes the contract, and makes classes a theme setting:
 
-- **`classes: "bem"`** is a built-in generator that reproduces today's output byte for byte. It
-  is the default, so nothing changes for Lumina or for any site's CSS;
+- **`classes: "bem"`** is the default built-in generator. It classes **the vocabulary**:
+  primitives and drawings. Domain runes get no rune classes (D8). A rune not yet moved to a
+  definition keeps today's classes, so nothing changes until each rune is converted;
 - **`classes: "none"`** emits no classes, for classless stylesheets;
 - **a mapping table** adds the classes a theme names, so a theme can be built on a CSS framework
   with fixed class names (DaisyUI, Bootstrap) or on utility classes.
 
-It also settles which runes get BEM classes. That question is no longer about a rune's
-implementation (native or composed) or its role (primitive or domain rune). Every rune's output
-carries the same data attributes, and the theme's setting decides what classes follow.
+It also settles which runes get BEM classes, by what a rune is for, not by how it is built.
+Converting a rune aims at a simpler design language, not at parity with its current look: a
+domain rune is styled through the primitives it places and the universal dimensions, and its
+own stylesheet is triaged away at conversion (D11).
 
 ## Context
 
@@ -98,9 +100,10 @@ classes: [ … ]        // a mapping table (D3)
 classes: { bem: { prefix: "rf" }, add: [ … ] }   // BEM plus mapped classes
 ```
 
-- **`"bem"` reproduces today's output exactly**, except for the nine runes D10 renames. It
-  names each block after the rune's `data-rune`. `ThemeConfig.prefix` becomes this generator's
-  option.
+- **`"bem"` classes primitives and drawings** (D8), naming each block after the rune's
+  `data-rune` (D10). A rune still configured in code keeps its configured `block` and today's
+  classes until it moves to a definition, so the setting changes no output on the day it
+  lands. `ThemeConfig.prefix` becomes this generator's option.
 - **`"none"`** serves classless stylesheets (Pico, Water.css), and themes written entirely
   against data attributes.
 - **The setting is declarative.** It is data in the theme's config, never a function. A theme
@@ -251,24 +254,42 @@ skimmed):
 - The two committed copies of `structures.json` stay in lock-step as now. The vocabulary
   contract replaces them, and Lumina's class contract is added beside its copy.
 
-### D8: compositions get classes too, under `"bem"`
+### D8: `"bem"` classes primitives and drawings, never domain runes
 
-Under `"bem"`, the generator gives a composed rune `rf-{rune}` classes from its `data-rune` and
-`data-name`s, as it does any other rune. That amends SPEC-145 D2's "a composed rune has no
-block":
+*Revised 2026-11-09.* An earlier draft gave every rune classes under `"bem"`, composed ones
+included, so that existing rune CSS would keep matching after conversion. Parity is the wrong
+goal: a class that exists invites a rule that names the rune, which is the per-rune styling
+{% ref "ADR-044" /%} drains. So `"bem"` classes only what the shared design language is made
+of:
 
-- **What stands:** a composed rune **ships no CSS**, D2's load-bearing half, which keeps
-  untrusted CSS out of the hosted story. D2a's block-less engine config also stands.
-- **What changes:** classes are the theme's to generate, for every rune alike.
+| A definition's `role` | What it is | Classes under `"bem"` |
+|---|---|---|
+| `primitive` | something other runes place: `section`, `card`, `grid`, `tab-group`, the value primitives, `nav`'s tree | `rf-{rune}` and its elements: these *are* the vocabulary themes style |
+| `drawing` | a rune whose inside the vocabulary cannot express: `chart`, `map`, `diagram`, `audio`, `juxtapose` (SPEC-194 D8) | `rf-{rune}` and its elements, as hooks for its own token-only CSS (ADR-044 tier 3) |
+| domain (the default) | a rune that arranges primitives: `recipe`, `hero`, `codegroup`, `pagination`, `collection` | **none**. It carries `data-rune` and its parts' `data-name`s like every rune, and is styled through the primitives it places |
 
-Whether Lumina *writes* rune-specific CSS against those classes is a separate question, governed
-by {% ref "ADR-044" /%}: its per-rune stylesheets drain as runes compose, and `hero`, `cta` and
-`testimonial` show that no rune CSS is needed where the vocabulary suffices.
+- **`role` is declared in the definition** ({% ref "SPEC-194" /%} D1). It defaults to domain, so
+  a rune has to claim to be part of the vocabulary.
+- **For composed domain runes this is SPEC-145 D2 unchanged:** no block, and no CSS shipped. A
+  composed *primitive* (`card` once SPEC-160 D3 composes it) does get classes, which is the one
+  amendment to D2.
+- **The rare special case** a theme needs for one domain rune is CSS on `[data-rune]`, which
+  ADR-043 lists as the theme's special-case hook, and which D11's lint keeps on a reviewed list.
+- **A theme that wants per-rune classes** can add them with a mapping entry
+  (`{ match: { rune: "recipe" }, add: "…" }`). It is possible, explicit, and never the default.
+
+The three composed runes show that this works: `hero`, `cta` and `testimonial` have no rune CSS
+anywhere and render through `section`, `pullquote` and the universal dimensions.
 
 ### D9: migration
 
-- **Nothing changes by default.** `"bem"` is byte-identical, so Lumina's CSS, every site's CSS,
-  and the SEO and structure baselines are untouched.
+- **Nothing changes on the day the setting lands.** Every rune is still configured in code (and
+  keeps its classes) or is a composed domain rune (which has none already), so Lumina's CSS,
+  every site's CSS and the SEO and structure baselines are untouched.
+- **Classes then change one rune at a time**, when the rune becomes a definition: a domain rune
+  loses its classes through D11's triage, and a primitive keeps them under its D10 name. Each is
+  a breaking change for that rune, recorded in its migration note, as SPEC-181 already does for
+  each composition's go-live.
 - **D5 is additive** (new attributes only), and D6 is internal to refrakt's packages.
 - **D7 changes the contract file's shape.** That is a breaking change for anyone reading
   `structures.json`, and it ships through {% ref "SPEC-189" /%}'s migration table.
@@ -280,41 +301,78 @@ by {% ref "ADR-044" /%}: its per-rune stylesheets drain as runes compose, and `h
 `packages/runes/src/lib/composition.ts:1735`), and its only remaining consumer would be the BEM
 generator, so the alias is removed rather than admitted.
 
-Nine runes change class names, *measured 2026-11-09*. The counts are `.rf-` selectors across
-Lumina, the skeleton and plugin styles, by pattern, so approximate:
+Nine runes have a configured `block` that differs from their `data-rune` (*measured
+2026-11-09*). What happens to each depends on its role (D8). Selector counts are `.rf-`
+selectors across Lumina, the skeleton and plugin styles, by pattern, so approximate:
 
-| Rune (`data-rune`) | Classes today | Classes after | Selectors |
-|---|---|---|---|
-| `code-group` | `rf-codegroup` | `rf-code-group` | ~26 |
-| `table-of-contents` | `rf-toc` | `rf-table-of-contents` | ~12 |
-| `pull-quote` | `rf-pullquote` | `rf-pull-quote` | ~21 |
-| `text-block` | `rf-textblock` | `rf-text-block` | ~31 |
-| `media-text` | `rf-mediatext` | `rf-media-text` | ~35 |
-| `tab-group` | `rf-tabs` | `rf-tab-group` | ~10 |
-| `data-table` | `rf-datatable` | `rf-data-table` | ~20 |
-| `how-to` (learning) | `rf-howto` | `rf-how-to` | ~13 |
-| `featured-tier` (marketing) | `rf-tier`, shared with `tier` | `rf-featured-tier` | ~20, shared |
+| Rune (`data-rune`) | Classes today | Role (provisional) | Outcome | Selectors |
+|---|---|---|---|---|
+| `tab-group` | `rf-tabs` | primitive | renamed `rf-tab-group` | ~10 |
+| `data-table` | `rf-datatable` | primitive | renamed `rf-data-table` | ~20 |
+| `pull-quote` | `rf-pullquote` | primitive (placed by `testimonial`) | renamed `rf-pull-quote` | ~21 |
+| `media-text` | `rf-mediatext` | primitive | renamed `rf-media-text` | ~35 |
+| `text-block` | `rf-textblock` | primitive, to confirm | renamed `rf-text-block` | ~31 |
+| `code-group` | `rf-codegroup` | domain | no classes once it is a definition; its CSS is triaged (D11) | ~26 |
+| `table-of-contents` | `rf-toc` | domain | likewise | ~12 |
+| `how-to` (learning) | `rf-howto` | domain, a planned composition | likewise | ~13 |
+| `featured-tier` (marketing) | `rf-tier`, shared with `tier` | domain, a planned composition | likewise, with the `pricing` composition | ~20, shared |
 
-- **It ships through {% ref "SPEC-189" /%}'s migration table.** For one release the generator
-  emits both names, old and new, so stylesheets can move. A warning names every selector still
-  using an old name. The old names are then removed. The rename is a fixed map, so a codemod
-  rewrites selectors in CSS.
-- **D2's byte-identical promise covers every other rune.** For these nine, the release that
-  emits both names is additive, and the release that drops the old names is the breaking step
-  SPEC-189 records.
-- **`featured-tier` is a special case.** It is a variant of `tier` given its own rune name, so
-  today both share one block. After the rename, a style meant for both must name both. The
-  cleaner end is the one {% ref "SPEC-161" /%} D4's `pricing` composition reaches: one `tier`
-  with a featured attribute. The rename should land with, or after, that conversion, not before.
-- **`how-to` and the pricing runes are planned compositions**, so their classes would come from
-  `data-rune` under D8 anyway. The rename makes the change happen once, under one rule.
+*Revised 2026-11-09* with D8: an earlier draft renamed all nine. Only runes that keep classes
+are renamed; a domain rune's classes go when it becomes a definition, so renaming it first would
+change its selectors twice.
+
+- **The renames ship through {% ref "SPEC-189" /%}'s migration table.** For one release the
+  generator emits both names, old and new, and a warning names every selector still using an
+  old one. The old names are then removed. The rename is a fixed map, so a codemod rewrites
+  selectors in CSS.
+- **Which runes are primitives is settled rune by rune.** The roles above are provisional.
+  `text-block` in particular may be a domain rune; each is confirmed in the work item that gives
+  it a definition.
+
+### D11: a converted rune ships no rune CSS: its stylesheet is triaged
+
+*Decided 2026-11-09.* Converting a rune, to a composition or to a native definition, aims at a
+simpler design language that relies on primitives and universal dimensions, not at parity with
+how the rune looks today. So conversion is where its stylesheet is dealt with, rule by rule.
+
+**Every rule in the rune's stylesheet ends in one of three places:**
+
+| Outcome | When | Example |
+|---|---|---|
+| **dropped** | the difference is an accepted simplification | a rune-specific gap or border the primitive's own spacing replaces |
+| **promoted** | the rule expresses something other runes need too | a new universal dimension value, an arrangement, a primitive option, a vocabulary value (`data-meta-type`, `data-sentiment`) |
+| **an exception, on the list** | the rune is a drawing (D8), or a reviewed special case on `[data-rune]` | `map`'s tiles, `chart`'s bars |
+
+Visual differences after conversion are expected. Each one is either accepted or becomes a
+vocabulary improvement that every rune gets.
+
+**A lint holds the line where CSS is written.** Lumina's coverage test fails on any selector
+naming a domain rune (`.rf-<rune>…` or `[data-rune="<rune>"]`) that is not on a reviewed
+allowlist:
+
+- the allowlist starts as today's rune stylesheets, so nothing fails on the day the lint lands;
+- it may only shrink: a test fails if an entry is added without a drawing role or a recorded
+  reason;
+- each conversion removes its rune from the list, which is its triage gate
+  ({% ref "SPEC-181" /%}'s fifth go-live gate);
+- drawings keep their entries, with their CSS in tokens only (ADR-044 tier 3).
+
+**The scale is real.** About 1,000 of Lumina's 1,780 rune-stylesheet selectors belong to runes
+that stay native, mostly domain runes (`collection`, `pagination`, `codegroup`, `form`, `blog`,
+`relationships`, `actions` and others). `nav` alone has 229, and most of those stay with its
+tree primitive. Triaging them is design work, not a mechanical migration. The allowlist lets it
+happen one rune at a time.
 
 ## Rationale
 
 - **It moves a presentation decision to the presentation layer.** Class names are how a
   stylesheet is organised. They have never been meaning, and the output already carries the
   meaning separately.
-- **It ends the native/composed split in CSS without choosing which runes deserve classes.**
+- **It ends the native/composed split in CSS.** Whether a rune has classes follows from what it
+  is for (D8), never from how it is built.
+- **It keeps pressure on the vocabulary.** A domain rune that cannot be styled through
+  primitives and dimensions shows a gap in them. D11 turns that gap into a vocabulary
+  improvement instead of another rune stylesheet.
 - **It makes existing CSS frameworks usable as themes.** A framework with fixed class names
   (DaisyUI's `btn` and `alert`, Bootstrap's `card`) cannot be retargeted with selectors; a
   mapping is the only way to use it. Utility-first themes gain less: a Tailwind site can already
@@ -326,12 +384,15 @@ Lumina, the skeleton and plugin styles, by pattern, so approximate:
 
 - [ ] Every fact a class carries today also has a data attribute (D5), and a test derives the list of classes from the engine and fails on one without a twin
 - [ ] `@refrakt-md/behaviors` and the Svelte components contain no `.rf-` selectors, and a test enforces it (D6)
-- [ ] `classes: "bem"` produces byte-identical output to today across the structure contracts, the SEO baseline and Lumina's CSS coverage test
+- [ ] On the day `classes: "bem"` lands, output is byte-identical to today across the structure contracts, the SEO baseline and Lumina's CSS coverage test (every rune is still configured in code or is a composed domain rune)
+- [ ] Under `"bem"`, a definition with `role: primitive` or `role: drawing` gets `rf-{rune}` classes, and a domain definition gets none (D8)
+- [ ] Lumina's coverage test fails on a selector naming a domain rune that is not on the allowlist; the allowlist starts as today's rune stylesheets and a test fails when an entry is added without a drawing role or a recorded reason (D11)
 - [ ] `classes: "none"` produces output with no engine-made classes, and every behaviour still works
 - [ ] A mapping table adds classes by vocabulary match, joins all matching entries in order, reports unknown keys and values, and cannot add attributes or elements
 - [ ] An element's owner for matching and for `"bem"` is its nearest ancestor with `data-rune` (D4), with a test on nested runes
 - [ ] The vocabulary contract records data-attribute selectors, and Lumina ships a class contract generated from its setting (D7)
 - [ ] A fixture theme built on a mapping table renders `hint`, `codegroup` and a composed `hero` with framework classes only
+- [ ] The renames in D10 ship through SPEC-189 with one release emitting both names, for the runes that keep classes only
 - [ ] The theme-authoring docs describe the setting, with `"bem"`, `"none"` and a mapping-table example
 
 ## Open questions
@@ -353,7 +414,8 @@ Lumina, the skeleton and plugin styles, by pattern, so approximate:
 - {% ref "ADR-045" /%}: contracts per theme.
 - {% ref "ADR-035" /%}: the skin format, which is why the setting is declarative.
 - {% ref "ADR-048" /%}, {% ref "SPEC-194" /%}: the native/composed boundary this removes from CSS; SPEC-194 D5 keeps `block` as the BEM name.
-- {% ref "SPEC-145" /%}: D2 and D2a, amended by D8.
+- {% ref "SPEC-145" /%}: D2 and D2a, which D8 keeps for domain runes and amends for composed primitives.
+- {% ref "SPEC-181" /%}: the go-live gates D11 adds a fifth to.
 - {% ref "SPEC-189" /%}: the migration table for the contract change.
 
 {% /spec %}

@@ -156,6 +156,11 @@ live, or become documented project runes, together.
 3. any authored content whose meaning changes has a codemod, run over this repository's
    content, and the plugin rune has accepted the new form for at least one release (D7);
 4. it does not depend on a primitive whose spec is still `draft`.
+5. its stylesheet has been triaged: every rule in it was dropped as an accepted simplification,
+   promoted into a primitive, a universal dimension or the shared vocabulary, or kept as a
+   recorded exception (a drawing, or a reviewed `[data-rune]` special case), and the rune has
+   left the Lumina lint's allowlist. Parity with the rune's current look is not the bar.
+   *Added 2026-11-09* by {% ref "SPEC-196" /%} D11.
 
 ## Decisions
 
@@ -183,7 +188,7 @@ not also have a copy in a test fixture directory.
 
 ### D5 — going live is its own work item, one rune at a time
 
-Going live is never part of a conversion. A rune goes live once the four gates in the rollout
+Going live is never part of a conversion. A rune goes live once the five gates in the rollout
 are met. Runes are grouped only when they cannot be migrated separately. Storytelling goes
 live as a whole, by the SPEC-147 decision.
 
