@@ -1,4 +1,4 @@
-{% bug id="BUG-048" status="reported" severity="major" source="SPEC-196" tags="nav, behaviors, menubar, accessibility, keyboard" milestone="v0.50.0" %}
+{% bug id="BUG-048" status="fixed" severity="major" source="SPEC-196" tags="nav, behaviors, menubar, accessibility, keyboard" milestone="v0.50.0" pr="refrakt-md/refrakt#789" %}
 
 # The menubar nav behaviour skips every group, so menubars get no ARIA or keyboard support
 
@@ -79,5 +79,20 @@ expanded state, no arrow-key navigation, and no Escape.
 
 - {% ref "SPEC-196" /%} D6: the behaviour audit that found it.
 - {% ref "SPEC-054" /%}: the panel wrapper.
+
+## Resolution
+
+Completed: 2026-11-09
+
+Branch: `claude/rune-composition-layout-convention-hkqrzx`
+
+### What was done
+- `packages/behaviors/src/behaviors/nav-menubar.ts`: the panel lookup is `:scope > [data-name="panel"]` instead of `:scope > ul, :scope > ol`.
+- `packages/content/test/nav-menubar-behaviour.test.ts` (new): renders a menubar nav through the real `nav` schema and engine into jsdom, and asserts every group is wired (roles, `aria-haspopup`/`aria-expanded`/`aria-controls`, `role="menu"`), one group open at a time on click, the keyboard model (ArrowRight between triggers, ArrowDown into the submenu, Escape closes and returns focus), and the mobile trigger. The first three tests fail on the old selector (verified by reverting it).
+- Changeset: `@refrakt-md/behaviors` patch.
+
+### Notes
+- The test lives in `@refrakt-md/content` because it needs the schema, the engine and the behaviour together, as `composition-behaviour.test.ts` already does.
+- The mobile trigger lookup (`:scope > [data-name="trigger"]`) was checked against the output and is correct; it now has a test too.
 
 {% /bug %}
