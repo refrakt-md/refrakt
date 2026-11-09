@@ -1,4 +1,4 @@
-{% bug id="BUG-048" status="reported" severity="major" source="SPEC-196" tags="nav, behaviors, menubar, accessibility, keyboard" %}
+{% bug id="BUG-048" status="reported" severity="major" source="SPEC-196" tags="nav, behaviors, menubar, accessibility, keyboard" milestone="v0.50.0" %}
 
 # The menubar nav behaviour skips every group, so menubars get no ARIA or keyboard support
 
