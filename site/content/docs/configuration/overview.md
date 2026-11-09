@@ -42,7 +42,7 @@ The singular shape produces `sites.default` after normalization. Multi-site repo
 ```
 
 {% hint type="note" %}
-**Legacy flat shape** — projects upgraded from before v0.11.0 may still use a flat top-level shape (`{ "contentDir": "...", "theme": "...", "target": "..." }`). It continues to load, but the loader emits a one-time deprecation warning per process. The flat shape is **deprecated in v0.12.0** and slated for **removal in v1.0**. Run `refrakt config migrate` to upgrade to the nested form before the cutover.
+A flat top-level shape (`{ "contentDir": "...", "theme": "...", "target": "..." }`) still loads, but it is **deprecated**: the loader emits a one-time warning per process. Use `site` or `sites`; `refrakt config migrate` converts a flat config for you.
 {% /hint %}
 
 ## Top-level sections
@@ -118,7 +118,7 @@ The schema URL is versioned per minor release. The unversioned alias (`https://r
 
 ## Migrating an existing config
 
-If you have a flat-shape config from before v0.11.0, it keeps loading, but the loader emits a once-per-process deprecation warning and the shape is **slated for removal in v1.0**. Migrate to the nested form with `refrakt config migrate`:
+A flat-shape config still loads, but it is deprecated and the loader emits a once-per-process warning. Convert it to the nested form with `refrakt config migrate`:
 
 ```bash
 # Preview the migration

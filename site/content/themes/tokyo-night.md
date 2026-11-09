@@ -5,9 +5,9 @@ description: Neon-on-night palette by Enkia. Day + Storm canonical pair. The lin
 
 # Tokyo Night
 
-Tokyo Night is Enkia's blue-magenta-cyan palette, inspired by the neon-on-night aesthetic of the city it's named for. Three variants: **Storm** (the canonical dark), **Moon** (lighter dark), and **Day** (light). Phase 1 of the SPEC-057 lineup ships the canonical pair — Storm + Day. Moon defers to a future milestone.
+Tokyo Night is Enkia's blue-magenta-cyan palette, inspired by the neon-on-night aesthetic of the city it's named for. Three variants: **Storm** (the canonical dark), **Moon** (lighter dark), and **Day** (light). The preset ships the canonical pair — Storm + Day.
 
-Tokyo Night is the **role-split champion** of the lineup. It deliberately uses distinct hues for `type`, `function`, `parameter`, `keyword`, `number`, `tag`, and `attribute` — the {% ref "SPEC-056" preview="drawer" /%} extended-role contract was sized around palettes like Tokyo Night, so if any palette validates the widening, this is the one that does. MIT licensed.
+Tokyo Night is the **role-split champion** of the lineup. It deliberately uses distinct hues for `type`, `function`, `parameter`, `keyword`, `number`, `tag`, and `attribute` — exactly the splits refrakt's extended syntax roles exist to carry. MIT licensed.
 
 This page is rendered on a site whose active preset is **niwaki**. The Tokyo Night look you see in the palettes and the live preview below is scoped to those subtrees via `tint="tokyo-night"` — the surrounding prose stays in niwaki.
 
@@ -71,7 +71,7 @@ The shared TypeScript+JSX snippet rendered through Tokyo Night. Pay attention to
 
 {% codegroup tint="tokyo-night" %}
 ```ts
-// A small user-service shape — exercises the SPEC-056 role splits
+// A small user-service shape
 interface User {
   id: number;
   name: string;
@@ -89,7 +89,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Tokyo Night exercises **6+ of the 7** SPEC-056 extended optional roles distinctly in dark mode — the highest count in the Phase 1 lineup. If you're picking a palette specifically to show off SPEC-056's widening, this is the one.
+Tokyo Night gives **6+ of the 7** extended optional syntax roles distinct colours in dark mode — the highest count in the catalog. If you want a palette that shows off the extended roles, this is the one.
 
 ## Composing with tideline
 
@@ -111,7 +111,7 @@ Tideline's Plex Sans + Plex Mono survive; Tokyo Night's chrome and syntax win.
 
 ## Other variants
 
-Phase 1 ships only Storm + Day. Tokyo Night Moon — a slightly lighter dark variant some readers prefer — defers to a future milestone. If you'd like Moon as a separate preset, [open an issue](https://github.com/refrakt-md/refrakt/issues/new).
+The preset ships only Storm + Day. Tokyo Night Moon — a slightly lighter dark variant some readers prefer — is not included. If you'd like Moon as a separate preset, [open an issue](https://github.com/refrakt-md/refrakt/issues/new).
 
 ## Attribution
 

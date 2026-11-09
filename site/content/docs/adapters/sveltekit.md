@@ -76,7 +76,7 @@ interface SvelteTheme {
 }
 ```
 
-- `layouts` — maps layout names to `LayoutConfig` objects (or legacy Svelte components)
+- `layouts` — maps layout names to `LayoutConfig` objects (or Svelte components)
 - `components` — maps rune `typeof` values to Svelte components for custom rendering
 - `elements` — maps HTML element names to Svelte component overrides
 

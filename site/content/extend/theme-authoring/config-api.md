@@ -26,19 +26,19 @@ interface ThemeConfig {
 | `tokenPrefix` | Convention for CSS custom property naming. Used by documentation and tooling, not the engine itself |
 | `icons` | SVG strings organized by group and variant. Structural groups (e.g., `hint`) are used by `StructureEntry.icon` config to inject icons into rune headers. The `global` group is used by the `{% icon %}` content rune to resolve author-chosen icons by name |
 | `runes` | Maps each rune's `typeName` (PascalCase, e.g. `Hint`) to its transform configuration. The engine matches the kebab-cased key against the `data-rune` attribute on the tag |
-| `tints` / `backgrounds` / `frames` | Named preset registries — colour tints, `bg` layers, and `frame` media-surface chrome (SPEC-086). All share the same `extends` resolution. See [Surface chrome](/extend/theme-authoring/surfaces) for `frames`. |
+| `tints` / `backgrounds` / `frames` | Named preset registries — colour tints, `bg` layers, and `frame` media-surface chrome. All share the same `extends` resolution. See [Surface chrome](/extend/theme-authoring/surfaces) for `frames`. |
 
 ## RuneConfig
 
 Each entry in `runes` describes how a single rune type is transformed. Every field is optional; almost every rune sets `block`.
 
 {% hint type="warning" %}
-**Some config paths are rune identity, not theme configuration.** They say what a rune *is* — what its content means — rather than how it looks. A theme that could rewrite them could change what the same markdown means, so it may not: an override of one is ignored with a build warning naming the rune and the path, and a variant delta carrying one is a config-load error. Everything else here stays fully theme-owned. See {% ref "ADR-028" /%}.
+**Some config paths are rune identity, not theme configuration.** They say what a rune *is* — what its content means — rather than how it looks. A theme that could rewrite them could change what the same markdown means, so it may not: an override of one is ignored with a build warning naming the rune and the path, and a variant delta carrying one is a config-load error. Everything else here stays fully theme-owned.
 {% /hint %}
 
 #### Guarded paths
 
-The guard is **path-granular** ({% ref "SPEC-158" /%}): a whole key where the whole key is identity, and a single sub-field where only that sub-field is.
+The guard is **path-granular**: a whole key where the whole key is identity, and a single sub-field where only that sub-field is.
 
 | Path | Why it is identity |
 |------|--------------------|
@@ -49,7 +49,7 @@ The guard is **path-granular** ({% ref "SPEC-158" /%}): a whole key where the wh
 | `sequence` | Whether an ordinal is *information* (below) |
 | `metaFields.*.metaType` | What kind of field a meta field is — `label`, `sentimentMap` and `transform` on the same entry stay overridable |
 
-`sequence` is the case that makes the rule concrete. On a playlist the number *is* the track number — an identifier a listener says out loud. A theme that restyled a playlist from `numbered` to `connected` would not change how it looks; **it would delete the track numbers**. So `numbered` vs `connected` encodes a fact about the content, and the rune owns it ({% ref "ADR-030" /%} rule 3). `sequenceDirection` — the responsive collapse of the same list — is presentation, and stays the theme's.
+`sequence` is the case that makes the rule concrete. On a playlist the number *is* the track number — an identifier a listener says out loud. A theme that restyled a playlist from `numbered` to `connected` would not change how it looks; **it would delete the track numbers**. So `numbered` vs `connected` encodes a fact about the content, and the rune owns it. `sequenceDirection` — the responsive collapse of the same list — is presentation, and stays the theme's.
 
 `metaFields.*.metaType` is the same split one level down: a theme may relabel a `status` field, recolour it with its own `sentimentMap`, or give it a value `transform`, but retyping it from `status` to `category` changes what the author declared their data to mean. A guarded sub-field is dropped while the rest of its entry merges, and an override entry that leaves `metaType` out keeps the declared one.
 
@@ -57,9 +57,9 @@ A `layout` wrapper's `attrs` may not write an attribute an identity field emits 
 
 #### Composed runes
 
-A [composed rune](/extend/rune-authoring/composed-runes)'s config cannot be overridden at all. It is generated from its definition, and a theme cannot know which definition it faces, so an override of its `blocks` or `metaFields` would be a guess that silently resolves to nothing. An entry under `runes:` keyed to a composed rune is reported at build time, naming the theme, the rune and the path, and dropped whole ({% ref "ADR-042" /%}). Native runes are unaffected: only their identity paths above are guarded.
+A [composed rune](/extend/rune-authoring/composed-runes)'s config cannot be overridden at all. It is generated from its definition, and a theme cannot know which definition it faces, so an override of its `blocks` or `metaFields` would be a guess that silently resolves to nothing. An entry under `runes:` keyed to a composed rune is reported at build time, naming the theme, the rune and the path, and dropped whole. Native runes are unaffected: only their identity paths above are guarded.
 
-A theme has two routes instead. It styles a composed rune through the vocabulary it is built from, targeting `[data-rune="…"]` in CSS where it wants to special-case one, or it replaces the rune's template ({% ref "ADR-045" /%}).
+A theme has two routes instead. It styles a composed rune through the vocabulary it is built from, targeting `[data-rune="…"]` in CSS where it wants to special-case one, or it replaces the rune's template.
 
 ### block
 
@@ -72,15 +72,15 @@ Grid: { block: 'grid' }
 
 The engine produces the block class (`.rf-grid`) and sets `data-rune="grid"` on the root element.
 
-A config may leave `block` out. That is how a composed rune is configured ({% ref "SPEC-145" /%} D2a): it has no BEM block and ships no CSS, but its modifiers, universal attributes and metadata blocks still have to render. With no block, the engine runs every step it runs for any rune *except* emitting `rf-*` classes. Modifiers become `data-*` attributes, universal attributes apply, metadata renders (a composed rune has no `layout`, so its template places each block with `{% metablock %}`, and a theme's `blocks` override reaches it as it reaches a projected block) and the internal field bag is stripped, but neither the root nor its named children get a class. Such a rune is addressable only by `[data-rune]`, its `data-*` modifiers and the primitives it contains, and `refrakt contracts` describes it that way, with no BEM selectors.
+A config may leave `block` out. That is how a composed rune is configured: it has no BEM block and ships no CSS, but its modifiers, universal attributes and metadata blocks still have to render. With no block, the engine runs every step it runs for any rune *except* emitting `rf-*` classes. Modifiers become `data-*` attributes, universal attributes apply, metadata renders (a composed rune has no `layout`, so its template places each block with `{% metablock %}`, and a theme's `blocks` override reaches it as it reaches a projected block) and the internal field bag is stripped, but neither the root nor its named children get a class. Such a rune is addressable only by `[data-rune]`, its `data-*` modifiers and the primitives it contains, and `refrakt contracts` describes it that way, with no BEM selectors.
 
-**Rune identity** (ADR-028) — not theme-overridable.
+**Rune identity** — not theme-overridable.
 
 ### modifiers
 
 Reads values from meta tags or HTML attributes and produces BEM modifier classes plus data attributes.
 
-**Rune identity** (ADR-028) — not theme-overridable. Which modifiers a rune declares is what gates the `cover` and `content-place` axes, so a theme that could add one would grant an attribute the rune's own schema rejects.
+**Rune identity** — not theme-overridable. Which modifiers a rune declares is what gates the `cover` and `content-place` axes, so a theme that could add one would grant an attribute the rune's own schema rejects.
 
 ```typescript
 modifiers: {
@@ -143,7 +143,7 @@ FeaturedTier: { block: 'tier', staticModifiers: ['featured'] }
 
 ### metaFields
 
-A pure-data manifest of the rune's meta-bearing fields — domain semantics only (type, label, sentiment, optional rich rendering). Blocks reference these fields by name; the engine resolves them against modifier values and renders them. This is the SPEC-080 replacement for hand-built metadata in `structure`.
+A pure-data manifest of the rune's meta-bearing fields — domain semantics only (type, label, sentiment, optional rich rendering). Blocks reference these fields by name; the engine resolves them against modifier values and renders them. Use it instead of hand-built metadata in `structure`.
 
 ```typescript
 metaFields: {
@@ -182,7 +182,7 @@ A field may be given as `{ field, align }` to push it to the row end (`bar` only
 
 ### layout
 
-The recursive skeleton (SPEC-081). The transform emits **flat `data-name` slots**; `layout` declares how they are grouped and ordered. Keyed by a container's `data-name`, or the reserved `'root'` for the rune's top-level children.
+The recursive skeleton. The transform emits **flat `data-name` slots**; `layout` declares how they are grouped and ordered. Keyed by a container's `data-name`, or the reserved `'root'` for the rune's top-level children.
 
 ```typescript
 layout: {
@@ -201,7 +201,7 @@ Projected `blocks` and transform slots a list doesn't name are appended in trans
 
 ### variants
 
-Modifier-keyed config deltas (SPEC-091): a rune's *structure* can vary by a modifier without branching in the transform. The outer key is a declared modifier (the axis), the inner key one of its values, and the payload a partial `RuneConfig` merged over base — in declaration order — before assembly.
+Modifier-keyed config deltas: a rune's *structure* can vary by a modifier without branching in the transform. The outer key is a declared modifier (the axis), the inner key one of its values, and the payload a partial `RuneConfig` merged over base — in declaration order — before assembly.
 
 ```typescript
 variants: {
@@ -218,10 +218,10 @@ variants: {
 
 Selection rides the modifier system — the modifier's own `default` picks the active value, so there is no separate condition language and no `defaultVariants`. A delta may override assembly/decoration fields (`layout`, `structure`, `styles`, `contentWrapper`, `staticModifiers`, `autoLabel`, `editHints`) but **not** identity paths (see [Guarded paths](#guarded-paths)); every axis must be a declared modifier. Both invariants are checked at config load. Requires the rune to be on the flat-slot + base-`layout` model. See the variants section in [Blocks & layout](/extend/theme-authoring/blocks-and-layout).
 
-### structure (legacy)
+### structure
 
 {% hint type="warning" %}
-`structure` is a **legacy** field, superseded by `metaFields` + `blocks` + `layout` above. No first-party rune declares it — the engine keeps a back-compat branch only for injecting icons/badges into runes that don't project metadata. New runes should use the block-and-layout model. The [StructureEntry](#structureentry) API below documents the legacy injection shape.
+`structure` is deprecated; use `metaFields` + `blocks` + `layout` above. No first-party rune declares it. The engine still applies it, for injecting icons or badges into a rune that projects no metadata. The [StructureEntry](#structureentry) API below documents its shape.
 {% /hint %}
 
 It injects new HTML elements into a rune's output — headers, icons, badges — keyed by name, each defining a `StructureEntry`:
@@ -359,9 +359,9 @@ Budget: {
 
 Available roles: `'header'`, `'preamble'`, `'title'`, `'description'`, `'body'`, `'footer'`, `'media'`.
 
-**Rune identity** (ADR-028) — not theme-overridable. This is a join table rather than a posture: the keys are `data-name` values the rune's own transform emits and the values are a closed engine vocabulary, so a theme owns neither side. All it could do is rewire a pair — and `reading`, `prominence` and `frame` applicability hang off exactly those pairs. Styling the emitted `data-section` stays entirely the theme's business.
+**Rune identity** — not theme-overridable. This is a join table rather than a posture: the keys are `data-name` values the rune's own transform emits and the values are a closed engine vocabulary, so a theme owns neither side. All it could do is rewire a pair — and `reading`, `prominence` and `frame` applicability hang off exactly those pairs. Styling the emitted `data-section` stays entirely the theme's business.
 
-Since v0.31.0 the map is **declared in the rune's tag module** and referenced here, so `createContentModelSchema` has the fact at construction. `mediaSlots` and `frameTarget` moved with it for the same reason. The engine's read path is unchanged — it still reads `config.sections`.
+The map is **declared in the rune's tag module** and referenced here, so `createContentModelSchema` has the fact at construction. `mediaSlots` and `frameTarget` are declared there for the same reason. The engine reads `config.sections`.
 
 ```typescript
 // tags/card.ts
@@ -418,7 +418,7 @@ See [Dimensions](/extend/theme-authoring/dimensions#checklist) for marker values
 
 Ordered list style. The engine emits `data-sequence` on `<ol>` elements within the rune.
 
-**Rune identity** ({% ref "ADR-030" /%} rule 3) — not theme-overridable. Whether the ordinal is information is a fact about the content: switching a playlist to `connected` would delete its track numbers. `sequenceDirection` stays theme-owned.
+**Rune identity** — not theme-overridable. Whether the ordinal is information is a fact about the content: switching a playlist to `connected` would delete its track numbers. `sequenceDirection` stays theme-owned.
 
 ```typescript
 Steps: { block: 'steps', sequence: 'connected' }
@@ -471,7 +471,7 @@ AccordionItem: { block: 'accordion-item', parent: 'Accordion' }
 
 ### frameTarget
 
-SPEC-086 — which surface `frame` chrome decorates: `'media'` (the `[data-section="media"]` zone) or `'self'` (the rune root, for runes whose body *is* the media, like `figure`/`showcase`). Defaults to `'media'` when the rune declares a media section; `frame` on a rune with no resolvable target emits a build warning. See [Surface chrome](/extend/theme-authoring/surfaces).
+Which surface `frame` chrome decorates: `'media'` (the `[data-section="media"]` zone) or `'self'` (the rune root, for runes whose body *is* the media, like `figure`/`showcase`). Defaults to `'media'` when the rune declares a media section; `frame` on a rune with no resolvable target emits a build warning. See [Surface chrome](/extend/theme-authoring/surfaces).
 
 ```typescript
 Figure: { block: 'figure', frameTarget: 'self' }
@@ -479,7 +479,7 @@ Figure: { block: 'figure', frameTarget: 'self' }
 
 ### requiresParent
 
-A hard nesting requirement (SPEC-084): the rune is only meaningful inside the named parent (PascalCase `typeName`). Unlike `parent` (an advisory editor grouping), this is **validated** — the engine warns when the rune appears without that parent as its nearest ancestor rune.
+A hard nesting requirement: the rune is only meaningful inside the named parent (PascalCase `typeName`). Unlike `parent` (an advisory editor grouping), this is **validated** — the engine warns when the rune appears without that parent as its nearest ancestor rune.
 
 ```typescript
 BreadcrumbItem: { block: 'breadcrumb-item', parent: 'Breadcrumb', requiresParent: 'Breadcrumb' }
@@ -538,7 +538,7 @@ Sandbox: { block: 'sandbox', rootAttributes: { 'data-interactive': 'true' } }
 
 ### projection
 
-Declarative tree reshaping by `data-name`, applied *after* assembly. Per SPEC-081 it is the escape hatch for bending a tree a theme does **not** own (a third-party rune's output); a rune declaring its *own* structure should use `layout` instead.
+Declarative tree reshaping by `data-name`, applied *after* assembly. It is the escape hatch for bending a tree a theme does **not** own (a third-party rune's output); a rune declaring its *own* structure should use `layout` instead.
 
 ```typescript
 Comparison: {
@@ -596,7 +596,7 @@ The `ctx` object contains:
 |----------|------|-------------|
 | `modifiers` | `Record<string, string>` | All resolved modifier values |
 | `parentType` | `string \| undefined` | The parent rune's `data-rune` value (kebab-case), if nested |
-| `fields` | `Record<string, unknown>` | The parsed SPEC-082 `data-rune-fields` bag — for non-modifier field values (the engine strips the bag attribute before `postTransform` runs) |
+| `fields` | `Record<string, unknown>` | The parsed `data-rune-fields` bag — for non-modifier field values (the engine strips the bag attribute before `postTransform` runs) |
 
 {% hint type="warning" %}
 Use declarative config first. `postTransform` is for edge cases that truly can't be expressed with modifiers, structure, or styles. It makes the config harder to analyze statically — the [inspect and audit tools](/docs/cli/inspect) can't introspect programmatic transforms.
@@ -604,7 +604,7 @@ Use declarative config first. `postTransform` is for edge cases that truly can't
 
 ## StructureEntry
 
-Defines an element injected into a rune's output via the **legacy** `structure` config (see [structure (legacy)](#structure-legacy)). New runes project metadata with `metaFields` + `blocks` instead; this API is documented for the back-compat injection path.
+Defines an element injected into a rune's output via the deprecated [`structure`](#structure) config. New runes project metadata with `metaFields` + `blocks` instead.
 
 ```typescript
 interface StructureEntry {
@@ -839,7 +839,7 @@ Per-rune merge is **shallow for most fields** — overriding `structure` or `sty
 {% /hint %}
 
 {% hint type="warning" %}
-The [guarded paths](#guarded-paths) are **rune identity** (ADR-028) and are not overridable here. An override carrying one is dropped — the rune's own declaration stands — and a build warning names the rune and the path. Adding a modifier, or rewiring a section role, would change which universal attributes an author may write on that rune, and applicability is a fact about the rune rather than about the theme. A theme still styles the emitted `data-section` / modifier attributes however it likes; it just does not define them.
+The [guarded paths](#guarded-paths) are **rune identity** and are not overridable here. An override carrying one is dropped — the rune's own declaration stands — and a build warning names the rune and the path. Adding a modifier, or rewiring a section role, would change which universal attributes an author may write on that rune, and applicability is a fact about the rune rather than about the theme. A theme still styles the emitted `data-section` / modifier attributes however it likes; it just does not define them.
 {% /hint %}
 
 ## Real-world examples
@@ -912,3 +912,5 @@ Recipe: {
 ```
 
 `metaFields` declares the facts once; the `metadata` block projects them as a labelled def-list; `layout` nests that block in the content column under the header, beside the media. The `metaType`/`sentimentMap` fields drive generic badge styling — no rune-specific CSS. See [Blocks & layout](/extend/theme-authoring/blocks-and-layout) and [Dimensions](/extend/theme-authoring/dimensions) for the full system.
+
+Background: {% ref "ADR-028" preview="drawer" /%}

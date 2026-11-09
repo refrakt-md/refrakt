@@ -166,7 +166,7 @@ export const frameAxis: UniversalAxisFacet = {
 	placement: 'media',
 	contract: {
 		description:
-			'Surface chrome (SPEC-086): a named preset from the theme registry with inline `frame-*` overrides layered on top.',
+			'Surface chrome: a named preset from the theme registry with inline `frame-*` overrides layered on top.',
 		source: 'meta',
 		inputs: ['frame', ...FRAME_FACET_META],
 		dataAttributes: [

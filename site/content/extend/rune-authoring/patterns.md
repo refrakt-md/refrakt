@@ -170,7 +170,7 @@ These three recur across runes and name **different axes** — pick the one that
 
 - **`type`** — a semantic *kind* that carries meaning beyond color: an icon, an implied label, sometimes behavior. Color is a side effect. Examples: `hint type="warning"` (admonition kind), `api method="POST"`, `diff type`.
 - **`sentiment`** — a pure *tone* cue, nothing but a color signal: `positive` / `caution` / `negative` / `neutral`, backed by the shared sentiment tokens (`--rf-color-success` / `-warning` / `-danger` / `-muted`, see `dimensions/metadata.css`). Examples: `badge sentiment`, `progress sentiment`.
-- **`variant`** — an enumerated *visual style* that is **not** about tone: `feature variant=…`. (A variant naming a *look* belongs to the theme: SPEC-185 withdrew `pullquote variant` for that reason.).
+- **`variant`** — an enumerated *visual style* that is **not** about tone: `feature variant=…`. (A variant naming a *look* belongs to the theme, not the rune.)
 
 If the values are `positive`/`caution`/`negative`, it's a **`sentiment`**, not a `variant`.
 
@@ -205,7 +205,6 @@ A single block-agnostic behavior binds on `[data-layout="carousel"]` (not on any
 
 **Graduation rule:** a value enters the canonical pool when a **second** rune needs the same concept *with the same contract*. Until then it stays local. This guards both premature abstraction (a pool full of one-offs) and no abstraction (three runes reinventing the same concept). A private spelling of a canonical concept (e.g. `compare`'s `side-by-side`/`stacked`) is a defect to migrate — with deprecations — when that rune is next touched; a genuinely unique arrangement is a legitimate local value.
 
-See {% ref "ADR-018" /%} for the full decision.
 
 ---
 
@@ -346,7 +345,7 @@ Everything inside the `{% recipe %}` tags is reinterpreted: the heading becomes 
 
 A food blog lays a recipe out differently. The recipe's name, image and times come first, then the story, then a card with the ingredients and method. The story sits *between* the rune's parts, so it cannot simply go before or after the rune.
 
-A rune may declare **one narrative field** for this (ADR-047). Its `match` names the editorial runes `textblock` and `mediatext`, and nothing else:
+A rune may declare **one narrative field** for this. Its `match` names the editorial runes `textblock` and `mediatext`, and nothing else:
 
 ```yaml
 story: { match: "tag:textblock|tag:mediatext", optional: true, greedy: true }
@@ -482,3 +481,5 @@ The walker rules:
 Set `data-target-type="{rune-name}"` on resolved xref anchors so the behaviours layer can identify "this link points at a drawer / popover / modal / future-thing" and intercept the click. The xref resolver propagates this from the registered entity's `type` automatically — runes that register entities don't need to set the attribute themselves; they just need to be registered in the `EntityRegistry`.
 
 Drawer ([`{% drawer %}`](/runes/drawer)) is the canonical consumer: its behaviours layer queries `a[data-target-type="drawer"]` and turns matching clicks into `dialog.showModal()` calls.
+
+Background: {% ref "ADR-018" preview="drawer" /%}

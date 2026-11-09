@@ -79,7 +79,7 @@ export const motionAxis: UniversalAxisFacet = {
 	placement: 'carrier',
 	contract: {
 		description:
-			'Scroll-reveal entrance (SPEC-105). The author declares the character, the theme owns the choreography, a behaviour owns the timing.',
+			'Scroll-reveal entrance. You choose its character; the theme decides how it moves.',
 		source: 'attribute',
 		inputs: ['reveal', 'stagger'],
 		dataAttributes: ['data-reveal', 'data-stagger'],

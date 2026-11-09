@@ -9,7 +9,7 @@ A refrakt.md plugin is an npm package that exports a `Plugin` object. It can def
 
 ## How a plugin rune looks right in any theme
 
-A theme renders two interfaces: the **vocabulary** (meta types, sentiments, zone layouts, section roles, media kinds, the universal axes) and the **token set** (`--rf-color-*`, `--rf-spacing-*`, `--rf-radius-*`, the type scale). It configures no rune ([ADR-043](/extend/theme-authoring/overview#covering-the-vocabulary)). So a plugin rune looks right in a theme its author never saw only if it is built from those two interfaces. Take the first of these tiers that fits (ADR-044):
+A theme renders two interfaces: the **vocabulary** (meta types, sentiments, zone layouts, section roles, media kinds, the universal axes) and the **token set** (`--rf-color-*`, `--rf-spacing-*`, `--rf-radius-*`, the type scale). It [configures no rune](/extend/theme-authoring/overview#covering-the-vocabulary). So a plugin rune looks right in a theme its author never saw only if it is built from those two interfaces. Take the first of these tiers that fits:
 
 1. **A composition, whenever possible.** A rune written as a [composed rune](/extend/rune-authoring/composed-runes) emits only core runes and vocabulary, so every theme already covers it. Entities, cards, metadata lists and labelled values are compositions.
 2. **A native rune that emits the vocabulary**, when it needs code: parsing, arithmetic, fetching.
@@ -501,7 +501,7 @@ Add the export to the package's `package.json`:
 }
 ```
 
-That's the minimum for legacy plugins. The `handler` receives the argv tail (everything after `refrakt mypkg hello`) and is responsible for parsing and printing.
+That's the minimum for a CLI-only command. The `handler` receives the argv tail (everything after `refrakt mypkg hello`) and is responsible for parsing and printing.
 
 ### Making your commands MCP-friendly
 
@@ -542,7 +542,7 @@ A JSON Schema describing the structured input shape. Tools without one fall back
 
 #### `mcpHandler`
 
-A function that accepts the structured input directly and returns the result. When MCP invokes a tool with an `mcpHandler`, it bypasses argv serialization entirely — the cleanest path. Without an `mcpHandler`, MCP falls back to **argv-shimming**: it serializes the input object into argv strings, calls the legacy `handler`, captures stdout, and tries to parse it as JSON. This works but loses structured I/O.
+A function that accepts the structured input directly and returns the result. When MCP invokes a tool with an `mcpHandler`, it bypasses argv serialization entirely — the cleanest path. Without an `mcpHandler`, MCP falls back to **argv-shimming**: it serializes the input object into argv strings, calls the `handler`, captures stdout, and tries to parse it as JSON. This works but loses structured I/O.
 
 ```ts
 {
@@ -589,5 +589,5 @@ npx create-refrakt my-plugin --type plugin --scope @acme
 This emits a `Plugin` package with one example rune (`callout`) built on
 `createContentModelSchema` + `createComponentRenderable`, its `theme.runes`
 config, per-rune CSS, and a fixture — it builds and renders under the identity
-transform out of the box. `@refrakt-md/*` are declared as `peerDependencies`
-(ADR-023), so the plugin resolves against the consuming site's refrakt.
+transform out of the box. `@refrakt-md/*` are declared as `peerDependencies`,
+so the plugin resolves against the consuming site's refrakt.

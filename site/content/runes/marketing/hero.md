@@ -53,7 +53,7 @@ Code fences inside a hero become copyable command blocks — great for install c
 
 ## Start-aligned
 
-Use `align="start"` for a more editorial feel. `align` takes `start`, `center` (the default) or `end`. The older `left`, `right` and `justify` are no longer accepted; `refrakt migrate hero <paths> --apply` rewrites them.
+Use `align="start"` for a more editorial feel. `align` takes `start`, `center` (the default) or `end`.
 
 {% preview source=true %}
 

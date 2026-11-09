@@ -20,9 +20,9 @@ The `xref` rune requires the cross-page pipeline (Level 2). At Level 1 (static t
 Reference an entity by its unique identifier. The registry resolves the URL and title automatically.
 
 ```markdoc
-Depends on {% xref "RF-138" /%}
-See {% xref "SPEC-008" /%} for details.
-This implements {% xref "ADR-007" /%}.
+Depends on {% xref "WORK-9138" /%}
+See {% xref "SPEC-9008" /%} for details.
+This implements {% xref "ADR-9007" /%}.
 ```
 
 ## By name
@@ -39,7 +39,7 @@ The {% xref "authentication" /%} guide covers setup.
 Override the default link text with the `label` attribute. The link still points to the resolved entity.
 
 ```markdoc
-{% xref "RF-138" label="the base implementation" /%}
+{% xref "WORK-9138" label="the base implementation" /%}
 {% xref "Veshra" label="the exile" /%}
 ```
 
@@ -56,11 +56,11 @@ Without a type hint, ambiguous references use the first match and emit a build w
 
 ## Preview drawer
 
-Set `preview="drawer"` to keep the inline link *and* hoist a drawer containing the entity's expanded body, opening on click. Same shape `{% file-ref %}` uses — one preview vocabulary across both reference runes (SPEC-078).
+Set `preview="drawer"` to keep the inline link *and* hoist a drawer containing the entity's expanded body, opening on click. Same shape `{% file-ref %}` uses — one preview vocabulary across both reference runes.
 
 {% preview source=true %}
 
-This page is itself the work of {% ref "SPEC-078" preview="drawer" /%}: a single shared `preview` attribute on every reference rune that hoists a drawer instead of navigating away.
+The plan behind {% ref "SPEC-078" preview="drawer" label="this preview drawer" /%} opens here in a drawer, without leaving the page.
 
 {% /preview %}
 
@@ -82,7 +82,7 @@ Resolution splits entity lookup from URL resolution so the two can succeed indep
 2. **URL resolution** — if the matched entity has a usable `sourceUrl`, that's the href (`data-xref-source="registry"`). Otherwise the resolver iterates the patterns configured in `refrakt.config.json#/xrefs`; first regex that matches the ID wins (`data-xref-source="pattern"`).
 3. **Unresolved** — if neither the entity's `sourceUrl` nor any pattern produces a URL, the ref renders as a styled `rf-xref--unresolved` span with a build warning.
 
-This means a registered entity *without* a canonical URL — like plan content scanned outside any site's content tree (SPEC-064) — still resolves correctly: the registry provides label and type; a configured pattern provides the URL.
+This means a registered entity *without* a canonical URL — like plan content scanned outside any site's content tree — still resolves correctly: the registry provides label and type; a configured pattern provides the URL.
 
 ## Configurable URL patterns
 

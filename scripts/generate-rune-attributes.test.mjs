@@ -316,7 +316,7 @@ describe('against the real rune set', () => {
 	});
 
 	it('sources that prose from the facets rather than a second copy here', () => {
-		expect(AXIS_DESCRIPTIONS.tint).toMatch(/SPEC-053/);
+		expect(AXIS_DESCRIPTIONS.tint).toMatch(/^Per-rune colour override/);
 		const tintRow = artifact.axesAvailable.find((r) => r.axis === 'tint');
 		expect(tintRow.description).toBe(AXIS_DESCRIPTIONS.tint);
 	});

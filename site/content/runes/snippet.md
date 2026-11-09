@@ -228,7 +228,7 @@ These rules make snippet safe to use on sites that accept untrusted author conte
 
 ## Line numbers
 
-Set `linenumbers=true` to show a numbered gutter. The starting number derives from `lines=` so the gutter reflects the file's real offsets — `lines="74-125"` starts the count at 74, not 1. SPEC-062 / WORK-304.
+Set `linenumbers=true` to show a numbered gutter. The starting number derives from `lines=` so the gutter reflects the file's real offsets — `lines="74-125"` starts the count at 74, not 1.
 
 ```markdoc
 {% snippet path="packages/runes/src/lang-map.ts" lines="15-25" linenumbers=true /%}

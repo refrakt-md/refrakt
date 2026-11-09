@@ -13,10 +13,6 @@ Present visual content in a constrained viewport with optional decorative chrome
 
 Showcase is the degenerate `frameTarget: "self"` case of the [surface model](/runes/surfaces): its body *is* the media, so `frame` chrome (shadow, displacement, offset, aspect) lands on the showcase itself. Its distinct value is **breakout** — spilling past a non-clipping ancestor.
 
-{% hint type="warning" %}
-SPEC-086 — showcase's old `shadow` / `bleed` / `offset` / `aspect` / `place` attributes are now **deprecated aliases** for the `frame-*` facets below. They still work (with a build warning) for one minor release, then are removed. Use the `frame-*` facets.
-{% /hint %}
-
 ## Basic usage
 
 Wrap any visual content in a showcase to give it a framed presentation.
@@ -88,8 +84,6 @@ Facets compose freely.
 	{% /showcase %}
 
 {% /preview %}
-
-**Deprecated aliases** (emit a build warning): `shadow` → `frame-shadow` (`soft`/`hard`/`elevated` → `sm`/`md`/`lg`), `bleed` → `frame-displace`, `offset` → `frame-offset` (named scale; raw lengths warn), `aspect` → `frame-aspect`, `place` → `frame-place`.
 
 ## Attributes
 

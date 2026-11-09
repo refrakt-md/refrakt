@@ -23,7 +23,7 @@ The minimum case — a single ID:
 
 This renders the spec in place. Its headings stay out of the page's table of contents, and their anchors are prefixed with the entity's ID so they never clash with the page's own.
 
-The block is live below — wrapped in a `{% drawer %}` so the spec doesn't dominate the docs page. Click {% ref "spec-066-preview" label="view SPEC-066 inline" /%} (or press `s`) to open it.
+The block is live below — wrapped in a `{% drawer %}` so the spec doesn't dominate the docs page. Click {% ref "spec-066-preview" label="open the embedded spec" /%} (or press `s`) to open it.
 
 {% drawer id="spec-066-preview" title="SPEC-066 — Expand rune" shortcut="s" size="lg" %}
 	{% expand "SPEC-066" canonical=true label="View full spec source" /%}
@@ -73,7 +73,7 @@ The resolver tracks a stack of `(type, id)` tuples per-page-render. Embedding th
 
 ## Canonical-link affordance
 
-When `canonical=true`, expand renders a `<a class="rf-expand__canonical-link">` after the embedded content with `href` resolved via the [xref chain](/runes/xref) — entity `sourceUrl` first, then patterns (per SPEC-065's xref resolver), then unresolved.
+When `canonical=true`, expand renders a `<a class="rf-expand__canonical-link">` after the embedded content with `href` resolved via the [xref chain](/runes/xref) — entity `sourceUrl` first, then patterns, then unresolved.
 
 `data-canonical-href` on the wrapper is **always populated** when the URL resolves, regardless of the `canonical` attribute — themes and tooling can always reach the URL even when the visible link isn't rendered.
 

@@ -19,7 +19,7 @@ A work item ready for implementation with acceptance criteria and approach.
 
 {% preview source=true %}
 
-	{% work id="RF-142" status="ready" priority="high" complexity="moderate" milestone="v0.5.0" tags="tint,theming" %}
+	{% work id="WORK-9142" status="ready" priority="high" complexity="moderate" milestone="v0.5.0" tags="tint,theming" %}
 	# Implement tint rune dark mode support
 
 	The tint rune currently handles single-scheme colour tokens. It needs to support dual light/dark definitions.
@@ -43,7 +43,7 @@ A work item blocked by a dependency.
 
 {% preview source=true %}
 
-	{% work id="RF-215" status="blocked" priority="medium" complexity="complex" assignee="alice" %}
+	{% work id="WORK-9215" status="blocked" priority="medium" complexity="complex" assignee="alice" %}
 	# Alignment system migration
 
 	Migrate all runes from manual alignment classes to the new alignment system.

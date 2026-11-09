@@ -45,7 +45,7 @@ It is stated once rather than repeated on all 130-odd runes, because an axis is 
 {
   "universalAxes": {
     "elevation": {
-      "description": "The chrome/depth ladder (SPEC-107)…",
+      "description": "How far the rune sits off the page, from sunken to overlay…",
       "source": "attribute",
       "inputs": ["elevation"],
       "values": ["sunken", "flush", "flat", "raised", "floating", "overlay"],
@@ -125,7 +125,7 @@ Runes that share a block name (e.g., Tier and FeaturedTier both use `tier`) are 
 Validates **your project's sites** — config resolution first, then content — for every site in `refrakt.config.json`. Exits non-zero when any finding is at error severity.
 
 {% hint type="warning" %}
-**This changed in v0.36.0.** `refrakt validate` used to validate refrakt's own built-in theme config and print a checkmark — a self-test of the library, reported as though it were a check of your work. The theme-authoring checks moved to [`refrakt theme validate`](#refrakt-theme-validate), and `--config` / `--manifest` moved with them.
+`refrakt validate` checks your content, not a theme. To check a theme's config or manifest, use [`refrakt theme validate`](#refrakt-theme-validate), which takes `--config` and `--manifest`.
 {% /hint %}
 
 ```shell
@@ -212,7 +212,7 @@ Currently supports JSON config files via CLI; TypeScript configs require the mod
 
 ### refrakt theme coverage
 
-A theme configures no rune, so it cannot promise each rune looks right. It covers the vocabulary instead: every meta type, sentiment, zone layout, sequence, section role, media kind and universal-axis value. Every rune that speaks the vocabulary then renders, including runes written after the theme shipped (ADR-043). `theme coverage` reports, for each value, whether the theme's CSS styles it, leaves it to the base stylesheet, or nothing does.
+A theme configures no rune, so it cannot promise each rune looks right. It covers the vocabulary instead: every meta type, sentiment, zone layout, sequence, section role, media kind and universal-axis value. Every rune that speaks the vocabulary then renders, including runes written after the theme shipped. `theme coverage` reports, for each value, whether the theme's CSS styles it, leaves it to the base stylesheet, or nothing does.
 
 ```shell
 # The theme's CSS, read recursively; the base is @refrakt-md/skeleton

@@ -34,7 +34,7 @@ my-template/
   "title": "Documentation site",
   "description": "Multi-section docs with sidebar nav.",
   "category": "docs",
-  "refrakt": ">=0.25 <0.26",            // validated at install (ADR-023)
+  "refrakt": ">=0.25 <0.26",            // validated at install
   "site": {
     "theme": { "package": "@refrakt-md/lumina", "presets": ["@refrakt-md/lumina/presets/niwaki"] },
     "plugins": ["@refrakt-md/docs", "@refrakt-md/marketing"],

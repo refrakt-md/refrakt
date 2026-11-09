@@ -7,7 +7,7 @@ description: Cream paper + maritime navy, with IBM Plex Sans and Plex Mono. The 
 
 Tideline is the warm-branded preset — cream-and-maritime-navy across body, surface, status, and code. Named for the line where land meets water; the cream reads as paper/sand, the navy as deep water.
 
-For users upgrading from pre-v0.14.0 Lumina, tideline restores the original cream-and-navy look with one deliberate upgrade: typography moves from Outfit to **IBM Plex Sans** (body) and **IBM Plex Mono** (code) per the SPEC-051 v1.0 cleanup.
+Tideline sets body text in **IBM Plex Sans** and code in **IBM Plex Mono**.
 
 This page is rendered on a site whose active preset is **niwaki**. The Tideline look you see in the palettes and the live preview below is scoped to those subtrees via `tint="tideline"` — the surrounding prose stays in niwaki.
 
@@ -24,7 +24,7 @@ This page is rendered on a site whose active preset is **niwaki**. The Tideline 
 }
 ```
 
-If you specifically depended on the Outfit font, pin it back via `theme.tokens.font.sans` after opting in:
+To use a different typeface, override `theme.tokens.font.sans` after opting in — for example, Outfit:
 
 ```jsonc
 {
@@ -132,7 +132,7 @@ Here's the same TypeScript+JSX snippet used across the preset doc pages, rendere
 
 {% codegroup tint="tideline" %}
 ```ts
-// A small user-service shape — exercises the SPEC-056 role splits
+// A small user-service shape
 interface User {
   id: number;
   name: string;
@@ -150,7 +150,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Tideline's syntax palette was authored at the 9-role tier and doesn't set {% ref "SPEC-056" preview="drawer" /%}'s extended roles (`type`, `tag`, `attribute`, `operator`, `number`, `regex`). Those fall back through the broad-mapping derivation — type and attribute paint like function, tag like keyword, operator like punctuation. Compare with [Nord](/themes/nord) to see what the extended-role splits look like in practice.
+Tideline's syntax palette was authored at the 9-role tier and doesn't set the extended syntax roles (`type`, `tag`, `attribute`, `operator`, `number`, `regex`). Those fall back through the broad-mapping derivation — type and attribute paint like function, tag like keyword, operator like punctuation. Compare with [Nord](/themes/nord) to see what the extended-role splits look like in practice.
 
 ## Typography
 
@@ -159,7 +159,7 @@ Tideline's syntax palette was authored at the 9-role tier and doesn't set {% ref
 - mono: IBM Plex Mono (400, 500)
 {% /typography %}
 
-Plex Sans is humanist, slightly warm — pairs more naturally with the cream-paper / maritime-navy palette than Outfit's geometric leanings did — and the matching Plex Mono gives tideline a cohesive Plex-family identity (Sans + Mono designed to work together).
+Plex Sans is humanist, slightly warm — pairs naturally with the cream-paper / maritime-navy palette — and the matching Plex Mono gives tideline a cohesive Plex-family identity (Sans + Mono designed to work together).
 
 ## Composing with niwaki
 

@@ -1,6 +1,6 @@
 ---
 title: Motion dimension
-description: The theme-side motion dimension — the reveal character contract, the physics tokens, the data-reveal × data-in-view choreography, transform composition, and the data-animate enhancement gate (SPEC-105)
+description: The theme-side motion dimension — the reveal character contract, the physics tokens, the data-reveal × data-in-view choreography, transform composition, and the data-animate enhancement gate
 ---
 
 # Motion dimension (theme config)
@@ -115,7 +115,7 @@ Because the theme styles the rune's **named anatomy** (`[data-section="media"]`,
 
 The cardinal rule (and the classic scroll-reveal footgun avoided): **SSR / no-JS / crawler / reduced-motion render the fully-visible final state.** Never bake `opacity: 0` into SSR HTML that only JS removes.
 
-The hide-then-reveal CSS is scoped under a **root `data-animate` flag the behaviour adds on boot**. No flag (no JS) → every section fully rendered, no motion. The reduced-motion path reuses the global reset ([WORK-352](/extend/theme-authoring/css)) which neutralises animation/transition durations, and the behaviour also marks everything in-view immediately — so the final state is reached without animation.
+The hide-then-reveal CSS is scoped under a **root `data-animate` flag the behaviour adds on boot**. No flag (no JS) → every section fully rendered, no motion. The reduced-motion path reuses the [global reduced-motion reset](/extend/theme-authoring/css), which neutralises animation/transition durations, and the behaviour also marks everything in-view immediately — so the final state is reached without animation.
 
 ## Writing your own
 
@@ -127,3 +127,5 @@ A new theme ships its own `dimensions/motion.css` and reveal tokens. The framewo
 4. Drive stagger off `--rf-reveal-index`.
 
 Everything else — distances, easings, per-part offsets, the cascade rhythm — is yours.
+
+Background: {% ref "SPEC-105" preview="drawer" /%}

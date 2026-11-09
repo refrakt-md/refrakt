@@ -50,7 +50,7 @@ export const elevationFacet: Facet = {
 				warnings: [
 					{
 						code: 'elevation-deprecated-alias',
-						message: `[refrakt] elevation="${raw}" is deprecated (SPEC-107) — use "${mapped}". The alias will be removed in a future minor.`,
+						message: `[refrakt] elevation="${raw}" is deprecated — use "${mapped}". The alias will be removed in a future minor.`,
 					},
 				],
 			};
@@ -67,7 +67,7 @@ export const elevationAxis: UniversalAxisFacet = {
 	placement: 'carrier',
 	contract: {
 		description:
-			'The chrome/depth ladder (SPEC-107). The skin maps each rung to a chrome bundle by attribute, so there is no BEM class.',
+			'How far the rune sits off the page, from sunken to overlay. The theme decides what each step looks like.',
 		source: 'attribute',
 		inputs: ['elevation'],
 		values: ELEVATION_VALUES,

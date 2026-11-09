@@ -42,7 +42,7 @@ Both halves are read from the rune's schema, so they match what Markdoc validati
 
 ### Declared output slots
 
-A rune that declares its output instead of building it in a transform (`emits`, SPEC-143) also lists its slots — which field becomes which named node, with every default spelled out:
+A rune that declares its output instead of building it in a transform (`emits`) also lists its slots — which field becomes which named node, with every default spelled out:
 
 ```
 Output slots (<article data-rune="work">, in this order):

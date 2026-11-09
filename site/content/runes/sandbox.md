@@ -213,7 +213,7 @@ Here a `data-shape="tree"` binding feeds this site's own rune-section page tree 
 
 `data-shape="graph"` projects the queried entities as **nodes** and walks their [relationship edges](/runes/relationships) into a node-link payload — `window.RF_DATA = { shape: "graph", nodes, edges }`, where each edge is `{ from, to, kind }`. Only edges whose *both* endpoints are in the selection are kept, so the graph is closed: ready for a node-link or force-directed layout.
 
-Here a single `data="type:spec type:work type:decision type:milestone" data-shape="graph"` binding feeds this project's **own plan** — every spec, work item, decision, and milestone, wired by their SPEC-072 relationships — to a three.js force-directed graph. Specs, decisions, and milestones glow brightest; work items cluster around the specs they implement. Drag to rotate, hover a node for its title and status. Like the star-map, it's a heavy scene, so it mounts on `activation="visible"`:
+Here a single `data="type:spec type:work type:decision type:milestone" data-shape="graph"` binding feeds this project's **own plan** — every spec, work item, decision, and milestone, wired by their relationships — to a three.js force-directed graph. Specs, decisions, and milestones glow brightest; work items cluster around the specs they implement. Drag to rotate, hover a node for its title and status. Like the star-map, it's a heavy scene, so it mounts on `activation="visible"`:
 
 {% sandbox data="type:spec type:work type:decision type:milestone" data-shape="graph" data-fields="title,status" data-limit=600 activation="visible" height=520 %}
 <style>

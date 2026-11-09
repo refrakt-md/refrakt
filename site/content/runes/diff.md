@@ -86,7 +86,7 @@ The default mode shows changes in a single column with line numbers, `+`/`-` pre
 
 ## Header from fence `source`
 
-When no `title=` is set, diff derives the header from each panel's fence `source` annotation (auto-populated when the panel is a `{% snippet %}`, authorable on hand-written fences). Matching paths collapse to a single label; differing paths render as `before → after`. SPEC-062 / WORK-304.
+When no `title=` is set, diff derives the header from each panel's fence `source` annotation (auto-populated when the panel is a `{% snippet %}`, authorable on hand-written fences). Matching paths collapse to a single label; differing paths render as `before → after`.
 
 {% diff %}
 ```js {% source="src/server.js" %}

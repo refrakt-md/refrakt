@@ -74,13 +74,13 @@ export const prominenceAxis: UniversalAxisFacet = {
 	placement: 'header',
 	contract: {
 		description:
-			"Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
+			"Header emphasis. Scales a rune's header, or its featured quotation; the theme decides the type size for each step.",
 		source: 'attribute',
 		inputs: ['prominence'],
 		values: PROMINENCE_VALUES,
 		dataAttributes: ['data-prominence'],
 		condition:
-			'requires a page-section header — a `sections` role of header, preamble, title or description — or the `featured-quotation` capability (SPEC-185 D9). Dropped with a warning otherwise.',
+			'requires a page-section header — a `sections` role of header, preamble, title or description — or the `featured-quotation` capability. Dropped with a warning otherwise.',
 	},
 	describeForRune: (config) => {
 		if (!takesProminence(config)) return NO_PROMINENCE_REASON;

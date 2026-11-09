@@ -243,7 +243,7 @@ export const bgFacet: Facet = {
 			} else {
 				warnings.push({
 					code: 'raw-css-overlay',
-					message: `[refrakt] raw-CSS \`overlay\` on \`${ctx.rune}\` is deprecated (SPEC-088) — use \`overlay="dark|light|<token>"\` for a flat wash or \`scrim\` for a legibility gradient. The raw passthrough will be removed in a future minor.`,
+					message: `[refrakt] raw-CSS \`overlay\` on \`${ctx.rune}\` is deprecated — use \`overlay="dark|light|<token>"\` for a flat wash or \`scrim\` for a legibility gradient. The raw passthrough will be removed in a future minor.`,
 					dedupeKey: ctx.rune,
 				});
 				overlayAttrs.style = `background: ${overlay}`;
@@ -307,7 +307,7 @@ export const bgAxis: UniversalAxisFacet = {
 	placement: 'carrier',
 	contract: {
 		description:
-			"The background layer (SPEC-088): image, video, gradient, flat overlay wash and legibility scrim, in a single injected layer behind the rune's content.",
+			"The background layer: image, video, gradient, flat overlay wash and legibility scrim, in a single injected layer behind the rune's content.",
 		source: 'meta',
 		inputs: BG_META,
 		selectors: ['.{block}--has-bg'],

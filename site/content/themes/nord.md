@@ -26,7 +26,7 @@ The palette is structured as four named groups: **Polar Night** (the dark canvas
 
 The palette swatches below sit on Nord's canonical canvas (Polar Night nord0 in dark mode, Snow Storm nord6 in light mode) so the contrast story is honest — Nord wasn't designed to be read on a warm-cream canvas, and showing it that way would lie about the palette.
 
-This page is rendered on a site whose active preset is **niwaki**, not Nord. The Nord look you see in the swatches and the live code example below is scoped to those subtrees via the `tint="nord"` universal attribute — the surrounding prose stays in niwaki. That's the {% ref "SPEC-056" preview="drawer" /%} scoped-tint projection working end-to-end.
+This page is rendered on a site whose active preset is **niwaki**, not Nord. The Nord look you see in the swatches and the live code example below is scoped to those subtrees via the `tint="nord"` universal attribute — the surrounding prose stays in niwaki. That's scoped tint projection working end-to-end.
 
 {% palette title="Nord — light" tint="nord" tint-mode="light" showContrast=true showA11y=true %}
 - Polar Night nord0 / Text (variable): #2e3440
@@ -60,7 +60,7 @@ Here's a TypeScript snippet rendered through Nord's full integrated look — chr
 
 {% codegroup tint="nord" %}
 ```ts
-// A small user-service shape — exercises the SPEC-056 role splits
+// A small user-service shape
 interface User {
   id: number;
   name: string;
@@ -78,7 +78,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Notice the role splits Nord makes that earlier 9-role syntax presets couldn't carry: **types** (`User`) read in Frost mint, distinct from **functions** (`findUser`, `db.users.findOne`) in Frost cyan; **JSX tags** (`Button`) take a different Frost hue than **keywords**; **JSX attributes** (`onClick`, `variant`) get their own Frost shade; **numbers** (`42`) sit in Aurora orange; **regex** (`/^\d+$/`) reads in Aurora yellow. These are SPEC-056's optional extended roles doing real work.
+Notice the role splits Nord makes that earlier 9-role syntax presets couldn't carry: **types** (`User`) read in Frost mint, distinct from **functions** (`findUser`, `db.users.findOne`) in Frost cyan; **JSX tags** (`Button`) take a different Frost hue than **keywords**; **JSX attributes** (`onClick`, `variant`) get their own Frost shade; **numbers** (`42`) sit in Aurora orange; **regex** (`/^\d+$/`) reads in Aurora yellow. These are the optional extended syntax roles doing real work.
 
 ## Composing with tideline
 

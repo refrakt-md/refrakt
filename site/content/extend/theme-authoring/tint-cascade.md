@@ -48,4 +48,4 @@ Porting the cascade to a non-SvelteKit adapter means three things, in this order
 
 A theme that ships its own toggle must read `data-tint-lock` and hide itself when it is set, and must write to the `rf-theme` localStorage key so the pre-paint script picks the value up on the next navigation.
 
-See {% ref "SPEC-052" preview="drawer" /%} for the full design rationale.
+Background: {% ref "SPEC-052" preview="drawer" /%}

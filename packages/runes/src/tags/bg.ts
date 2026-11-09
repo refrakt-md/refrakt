@@ -35,7 +35,7 @@ export const bg: Schema = {
 			type: String,
 			required: false,
 			description:
-				'Flat wash over the background: none | dark | light | a token name (raw CSS is deprecated)',
+				'Flat wash over the background: none | dark | light | a token name. Raw CSS is deprecated; use `scrim` for a gradient',
 		},
 		'overlay-opacity': {
 			type: String,

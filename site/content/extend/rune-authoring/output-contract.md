@@ -38,7 +38,6 @@ return createComponentRenderable({
 | `children` | `RenderableTreeNodes` | Content children — the actual output |
 | `properties` | `Record<string, Tag \| RenderableNodeCursor>` | Metadata tags consumed by the engine (each gets `data-field="kebab-name"`) |
 | `refs` | `Record<string, Tag \| RenderableNodeCursor>` | Named structural elements (each gets `data-name="key"`) |
-| `property` | `string` (optional) | **Deprecated, ignored.** It once set `data-field` on the root, which nothing read; it is removed in the release after v0.43.0 |
 | `id` | `string` (optional) | HTML id attribute |
 | `class` | `string` (optional) | CSS class to add |
 
@@ -52,7 +51,7 @@ It never sets `typeof` or `property`. Structured data is declared once, as a tab
 
 ## Declaring slots instead of a transform
 
-Most runes do one thing in their transform: take each resolved field, give it a name, and hand the lot to `createComponentRenderable`. When that is *all* a rune does, it declares it with `emits` and writes no `transform` at all (SPEC-143):
+Most runes do one thing in their transform: take each resolved field, give it a name, and hand the lot to `createComponentRenderable`. When that is *all* a rune does, it declares it with `emits` and writes no `transform` at all:
 
 ```typescript
 export const work = createContentModelSchema({
