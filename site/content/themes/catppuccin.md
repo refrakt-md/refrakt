@@ -7,7 +7,7 @@ description: Soft pastel palette family — Latte (light) + Mocha (dark). Modern
 
 Catppuccin is one of the most actively maintained palette projects in the modern editor era — a soft-pastel family with four flavours (Latte, Frappé, Macchiato, Mocha) and an unusually thorough published specification. Every hue has a name, a documented purpose, and a syntax-highlighting role.
 
-Phase 1 of the SPEC-057 lineup ships the canonical pair: **Latte** as the light mode, **Mocha** as the dark mode. The mid-darks (Frappé and Macchiato) defer to a future milestone — the canonical pair is enough to demonstrate Catppuccin's identity, and the mechanism doesn't preclude shipping the siblings later as separate presets if there's demand. MIT licensed.
+The preset ships the canonical pair: **Latte** as the light mode, **Mocha** as the dark mode. MIT licensed.
 
 This page is rendered on a site whose active preset is **niwaki**. The Catppuccin look you see in the palettes and the live preview below is scoped to those subtrees via `tint="catppuccin"` — the surrounding prose stays in niwaki.
 
@@ -68,7 +68,7 @@ The shared TypeScript+JSX snippet rendered through Catppuccin. Watch for the **M
 
 {% codegroup tint="catppuccin" %}
 ```ts
-// A small user-service shape — exercises the SPEC-056 role splits
+// A small user-service shape
 interface User {
   id: number;
   name: string;
@@ -86,7 +86,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Catppuccin exercises **six of the seven** {% ref "SPEC-056" preview="drawer" /%} extended optional roles distinctly: `type` (Yellow), `parameter` (Maroon), `number` (Peach), `regex` (Pink), `operator` (Sky), `string-expression` (Pink). `attribute` and `tag` collapse with `type` and `keyword` respectively — Catppuccin's intent, not the contract's limitation.
+Catppuccin gives **six of the seven** extended optional syntax roles distinct colours: `type` (Yellow), `parameter` (Maroon), `number` (Peach), `regex` (Pink), `operator` (Sky), `string-expression` (Pink). `attribute` and `tag` collapse with `type` and `keyword` respectively — Catppuccin's intent, not the contract's limitation.
 
 ## Composing with tideline
 
@@ -108,7 +108,7 @@ Tideline's Plex Sans + Plex Mono survives the composition; Catppuccin's chrome a
 
 ## Other flavours
 
-Phase 1 ships only the Latte + Mocha canonical pair. Frappé and Macchiato — Catppuccin's mid-dark flavours, sometimes preferred over Mocha for less screen contrast — are deferred to a future milestone. If you'd like them shipped as separate presets (`catppuccin-frappe`, `catppuccin-macchiato`), [open an issue](https://github.com/refrakt-md/refrakt/issues/new).
+The preset ships only the Latte + Mocha canonical pair. Frappé and Macchiato — Catppuccin's mid-dark flavours, sometimes preferred over Mocha for less screen contrast — are not included. If you'd like them shipped as separate presets (`catppuccin-frappe`, `catppuccin-macchiato`), [open an issue](https://github.com/refrakt-md/refrakt/issues/new).
 
 ## Attribution
 

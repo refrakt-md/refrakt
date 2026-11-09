@@ -71,7 +71,6 @@ Each rune ships a sensible default — a `card` is `flat`, a `hint` is `flush`, 
 
 {% /preview %}
 
-> The old `elevation="none|sm|md|lg"` shadow scale is superseded. The deprecated values still resolve — `none`→`flat`, `sm`/`md`→`raised`, `lg`→`floating` — with a build warning; run `refrakt migrate elevation <path>` to update authored content. The codemod touches the `elevation` attribute only: `frame-shadow` reuses the identical `none/sm/md/lg` values on the media surface and is left untouched.
 
 ### `prominence` — the section-header family
 

@@ -259,7 +259,7 @@ The mobile menu behavior handles panel toggling for responsive layouts. It uses 
 | Data attribute | Purpose |
 |----------------|---------|
 | `data-mobile-menu-toggle` | Toggles the header menu panel (the first `.rf-mobile-panel` that isn't `--nav`). The behavior keeps `aria-expanded` in sync with panel state. |
-| `data-mobile-menu-open` | Legacy alias of `data-mobile-menu-toggle` — kept for themes that wired it explicitly. |
+| `data-mobile-menu-open` | Deprecated alias of `data-mobile-menu-toggle`; use that instead. |
 | `data-mobile-menu-close` | Closes all open panels (still wired for themes that include an explicit close button). |
 | `data-mobile-nav-toggle` | Toggles the nav panel (`.rf-mobile-panel--nav`). |
 

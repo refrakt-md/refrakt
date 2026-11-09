@@ -5,11 +5,11 @@ description: Pavel Pertsev's warm retro palette — earthy oranges, deep greens,
 
 # Gruvbox
 
-Gruvbox is Pavel Pertsev's warm retro palette — earthy oranges, deep greens, mustard yellows, and Mediterranean reds on a coffee-and-cream canvas. It's the **only warm palette** in the SPEC-057 lineup, a deliberate counterweight to five blue/cool members. The catalog needed visual variety; Gruvbox provides it.
+Gruvbox is Pavel Pertsev's warm retro palette — earthy oranges, deep greens, mustard yellows, and Mediterranean reds on a coffee-and-cream canvas. It's the **only warm palette** in the theme catalog, a counterweight to the blue and cool members.
 
 Gruvbox is also the most "unix terminal heritage" of the lineup. The original Gruvbox was a Vim colorscheme, and the syntax conventions trace from that lineage — Statement keywords in red, function definitions in yellow, types in green, constants in purple — rather than the modern editor-theme scene's bluer conventions.
 
-Phase 1 ships **light medium + dark medium**, the canonical contrast pair. Gruvbox also ships "soft" and "hard" contrast levels per mode; those defer to a future milestone if there's demand. MIT licensed.
+The preset ships **light medium + dark medium**, the canonical contrast pair. Gruvbox's "soft" and "hard" contrast levels are not included. MIT licensed.
 
 This page is rendered on a site whose active preset is **niwaki**. The Gruvbox look you see in the palettes and the live preview below is scoped to those subtrees via `tint="gruvbox"` — the surrounding prose stays in niwaki.
 
@@ -66,7 +66,7 @@ The shared TypeScript+JSX snippet rendered through Gruvbox. Notice the warm-spec
 
 {% codegroup tint="gruvbox" %}
 ```ts
-// A small user-service shape — exercises the SPEC-056 role splits
+// A small user-service shape
 interface User {
   id: number;
   name: string;
@@ -84,7 +84,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Gruvbox exercises **4 of 7** {% ref "SPEC-056" preview="drawer" /%} extended roles distinctly in dark mode: `type` (Green) ≠ `function` (Yellow), `regex` (Orange) ≠ `string` (Green), `operator` (Orange), `attribute` (Blue) ≠ `function`. `number` collapses with `constant` (both purple) — Gruvbox's intent.
+Gruvbox gives **4 of 7** extended syntax roles distinct colours in dark mode: `type` (Green) ≠ `function` (Yellow), `regex` (Orange) ≠ `string` (Green), `operator` (Orange), `attribute` (Blue) ≠ `function`. `number` collapses with `constant` (both purple) — Gruvbox's intent.
 
 ## Composing with tideline
 
@@ -106,7 +106,7 @@ Tideline's Plex Sans + Plex Mono pairs surprisingly well with Gruvbox's warm pal
 
 ## Other contrast levels
 
-Phase 1 ships only "medium" contrast in both light and dark. Gruvbox publishes "soft" (lower contrast) and "hard" (higher contrast) variants per mode. If you'd like those as separate presets (`gruvbox-soft`, `gruvbox-hard`), [open an issue](https://github.com/refrakt-md/refrakt/issues/new).
+The preset ships only "medium" contrast in both light and dark. Gruvbox publishes "soft" (lower contrast) and "hard" (higher contrast) variants per mode. If you'd like those as separate presets (`gruvbox-soft`, `gruvbox-hard`), [open an issue](https://github.com/refrakt-md/refrakt/issues/new).
 
 ## Attribution
 

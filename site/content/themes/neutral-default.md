@@ -70,7 +70,7 @@ Refrakt sites are statically generated; content updates require a rebuild.
 {% /hint %}
 
 {% hint type="warning" %}
-The legacy `@refrakt-md/legacy` package was retired in v0.14.0.
+Removing a preset changes every page that relies on its colours.
 {% /hint %}
 
 {% hint type="caution" %}
@@ -131,4 +131,4 @@ The neutral default is the unconditional starting point — there's no config sn
 }
 ```
 
-To swap to a different colour identity entirely, layer in a preset. See [Tideline](/themes/tideline) for the cream-and-navy preset that restores Lumina's pre-v0.14.0 appearance, or [Niwaki](/themes/niwaki) for Japanese-garden syntax colours.
+To swap to a different colour identity entirely, layer in a preset. See [Tideline](/themes/tideline) for the cream-and-navy preset, or [Niwaki](/themes/niwaki) for Japanese-garden syntax colours.

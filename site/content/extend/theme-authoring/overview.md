@@ -21,7 +21,7 @@ All runes are rendered through configuration and CSS. Runes that need client-sid
 
 ### Covering the vocabulary
 
-A theme renders a vocabulary and configures no rune (ADR-043). It cannot promise that a particular rune looks right. Instead it covers every value the runes speak: each meta type, sentiment, zone layout, section role, media kind and universal-axis value. A theme that does renders every rune, including runes written after it shipped. [`refrakt theme coverage`](/docs/cli/theme-tools#refrakt-theme-coverage) reports which values your CSS styles, which it leaves to the base stylesheet, and which nothing styles. Run it beside `refrakt contracts --check` as part of a theme's definition of done.
+A theme renders a vocabulary and configures no rune. It cannot promise that a particular rune looks right. Instead it covers every value the runes speak: each meta type, sentiment, zone layout, section role, media kind and universal-axis value. A theme that does renders every rune, including runes written after it shipped. [`refrakt theme coverage`](/docs/cli/theme-tools#refrakt-theme-coverage) reports which values your CSS styles, which it leaves to the base stylesheet, and which nothing styles. Run it beside `refrakt contracts --check` as part of a theme's definition of done.
 
 ## The two-layer system
 
@@ -207,7 +207,7 @@ Your CSS targets these selectors:
 - [Interactive Components](/extend/theme-authoring/components) — How interactivity works without framework components
 - [Layouts](/extend/theme-authoring/layouts) — Declarative page layout system with `LayoutConfig`
 
-## Framework-agnostic by default (ADR-024)
+## Framework-agnostic by default
 
 `create-refrakt --type theme` scaffolds a **framework-agnostic** theme: design
 tokens, CSS, the identity-transform config (`./transform`), and layout *configs*

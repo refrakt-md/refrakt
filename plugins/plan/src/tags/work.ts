@@ -32,7 +32,7 @@ export const workSections = slotSections(workEmits);
 export const work = createContentModelSchema({
 	provides: ['prose'],
 	attributes: {
-		id: { type: String, required: true, description: 'Unique identifier (e.g., "RF-142").' },
+		id: { type: String, required: true, description: 'Unique identifier (e.g., "WORK-042").' },
 		status: {
 			type: String,
 			required: false,

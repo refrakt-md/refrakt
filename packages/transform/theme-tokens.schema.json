@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://refrakt.md/schemas/theme-tokens.json",
   "title": "refrakt ThemeTokensConfig",
-  "description": "A theme/preset token-override config (SPEC-048 universal token contract). Used by refrakt.config.json theme.tokens and by preset modules. Every namespace is optional — a preset overrides only what it needs.",
+  "description": "A theme/preset token-override config. Used by refrakt.config.json theme.tokens and by preset modules. Every namespace is optional — a preset overrides only what it needs.",
   "type": "object",
   "additionalProperties": false,
   "properties": {

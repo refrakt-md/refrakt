@@ -1,6 +1,6 @@
 ---
 title: Surface model
-description: The theme-side surface model — frame/background preset registries, frameTarget/substrateTarget routing, the inset token, host-owned clip, and the substrate ownership split (SPEC-086/087)
+description: The theme-side surface model — frame/background preset registries, frameTarget/substrateTarget routing, the inset token, host-owned clip, and the substrate ownership split
 ---
 
 # Surface model (theme config)
@@ -75,7 +75,7 @@ Memorable named recipes (a pattern + facets bundle) are a deferred **project** c
 
 ## showcase migration
 
-`showcase` is the degenerate `frameTarget: 'self'` case — its body *is* the media slot, so it collapses into the frame model. Its bespoke attributes are **deprecated aliases** for `frame-*` (they warn for one minor release, then are removed); breakout is retained as its distinct value.
+`showcase` is the degenerate `frameTarget: 'self'` case — its body *is* the media slot, so it collapses into the frame model. Its bespoke attributes are **deprecated aliases** for `frame-*` and warn when used; breakout is retained as its distinct value.
 
 | Old (`showcase`) | New |
 |------------------|-----|
@@ -86,3 +86,5 @@ Memorable named recipes (a pattern + facets bundle) are a deferred **project** c
 | `place=` | `frame-place=` |
 
 See [Surfaces](/runes/surfaces) for the content-author attribute reference and live examples.
+
+Background: {% ref "SPEC-086" preview="drawer" /%} · {% ref "SPEC-087" preview="drawer" /%}

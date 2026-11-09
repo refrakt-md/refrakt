@@ -200,7 +200,7 @@ The parent may be a composed rune: the modifier keys on its `data-rune`, which a
 
 All visual values reference CSS custom properties (design tokens) rather than hard-coded values. This makes themes customizable and ensures dark mode works correctly.
 
-**The token set is a public contract, for plugins as well as themes (ADR-044).** A theme defines these tokens; a plugin whose rune has parts no vocabulary covers styles them with these tokens and nothing else, so the plugin follows any theme. Renaming or removing a token is a breaking change for both. `refrakt plugins validate` reports a plugin stylesheet's literal colours, sizes and font stacks. See [Building a Custom Plugin](/extend/plugin-authoring/authoring#how-a-plugin-rune-looks-right-in-any-theme).
+**The token set is a public contract, for plugins as well as themes.** A theme defines these tokens; a plugin whose rune has parts no vocabulary covers styles them with these tokens and nothing else, so the plugin follows any theme. Renaming or removing a token is a breaking change for both. `refrakt plugins validate` reports a plugin stylesheet's literal colours, sizes and font stacks. See [Building a Custom Plugin](/extend/plugin-authoring/authoring#how-a-plugin-rune-looks-right-in-any-theme).
 
 ### Token categories
 
@@ -377,7 +377,7 @@ It also works on a single element, for example a `pre` that needs a different wi
 
 ### Theming charts (`--rf-chart-*`)
 
-Charts use a **provider-agnostic theming contract** (SPEC-083): the `rf-chart` renderer holds no palette or dimensions of its own — every paint and geometry value is an `--rf-chart-*` custom property that Lumina ships on `.rf-chart`. Retone one chart (or all of them) by overriding the props alone, with no renderer or selector changes — and a future canvas/d3 provider reads the same vocabulary.
+Charts use a **provider-agnostic theming contract**: the `rf-chart` renderer holds no palette or dimensions of its own — every paint and geometry value is an `--rf-chart-*` custom property that Lumina ships on `.rf-chart`. Retone one chart (or all of them) by overriding the props alone, with no renderer or selector changes — and a future canvas/d3 provider reads the same vocabulary.
 
 | Group | Properties |
 |-------|------------|

@@ -23,7 +23,7 @@ npx create-refrakt my-presets  --type preset-pack
 npx create-refrakt my-template --type template --scope @acme
 ```
 
-## Versioning & compatibility (ADR-023)
+## Versioning & compatibility
 
 Every scaffold bakes in the compatibility convention so you start correct:
 
@@ -53,3 +53,5 @@ See the per-layer guides: [templates](/extend/distributing/templates) ·
 [preset packs](/extend/distributing/preset-packs) ·
 [themes](/extend/theme-authoring/overview) ·
 [plugins](/extend/plugin-authoring/authoring).
+
+Background: {% ref "ADR-023" preview="drawer" /%}

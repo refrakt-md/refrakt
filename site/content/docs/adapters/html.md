@@ -134,7 +134,7 @@ const html = renderFullPage({ theme, page }, {
 });
 ```
 
-Empty string when the site uses the legacy string-theme form or declares no overrides — safe to interpolate either way.
+Empty string when the site uses the string theme form or declares no overrides — safe to interpolate either way.
 
 See the [design tokens contract](/docs/themes/css) and the [scoped tint projection](/themes/nord) pages for the full token surface.
 

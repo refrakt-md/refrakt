@@ -8,7 +8,7 @@ description: The standardised rune-fixture format — Markdoc + YAML frontmatter
 A **fixture** is a small, canonical example of a rune: the rune's actual
 Markdoc, with optional YAML frontmatter carrying metadata. One source of truth,
 many consumers — `RUNE_EXAMPLES`, the `inspect` command, the gallery, docs, and
-AI few-shot all read fixtures. This page documents the format (SPEC-102).
+AI few-shot all read fixtures. This page documents the format.
 
 ## Where fixtures live
 

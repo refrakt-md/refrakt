@@ -114,5 +114,3 @@ A few choices in the cascade design that might not be obvious:
 {% hint type="note" %}
 Building a theme, or wiring the cascade into an adapter? The resolution function, the SSR hook contract, and the anti-flash pre-paint script are documented in [theme authoring → tint cascade](/extend/theme-authoring/tint-cascade).
 {% /hint %}
-
-See {% ref "SPEC-052" preview="drawer" /%} for the full design rationale.

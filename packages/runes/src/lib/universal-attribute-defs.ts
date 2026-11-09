@@ -28,13 +28,13 @@ export const universalAttributes: Record<string, SchemaAttribute> = {
 		required: false,
 		matches: ['fine', 'ui', 'prose'],
 		description:
-			'Reading register for this block’s body (SPEC-108): fine | ui | prose. The theme owns the editorial treatment.',
+			'Reading register for this block’s body: fine | ui | prose. The theme sets how each one looks.',
 	},
 	dropcap: {
 		type: Boolean,
 		required: false,
 		description:
-			'Style the opening letter of a prose body as a drop cap (SPEC-108). Honoured only when the body reads as prose; ignored otherwise.',
+			'Style the opening letter of a prose body as a drop cap. Honoured only when the body reads as prose; ignored otherwise.',
 	},
 	spacing: {
 		type: String,
@@ -56,7 +56,7 @@ export const universalAttributes: Record<string, SchemaAttribute> = {
 		required: false,
 		matches: ['sunken', 'flush', 'flat', 'raised', 'floating', 'overlay', 'none', 'sm', 'md', 'lg'],
 		description:
-			'Surface depth on the SPEC-107 ladder (sunken→overlay); none/sm/md/lg are deprecated aliases',
+			'Surface depth, from sunken to overlay. Deprecated: none, sm, md and lg (read as flat, raised, raised and floating)',
 	},
 	prominence: {
 		type: String,

@@ -35,7 +35,7 @@ A curated lineup of widely-recognised palettes, ported as integrated refrakt pre
 |---|---|---|---|
 | [Nord](/themes/nord) | Arctic Frost + Aurora on Polar Night | Light + Dark | type vs function (Frost-7 vs Frost-8) |
 | [Dracula](/themes/dracula) | Purple/pink/cyan on near-black | Dark only | type (Cyan) vs function (Green); regex (Red) vs string (Yellow) |
-| [Solarized](/themes/solarized) | Same 16 hues across both modes | Light + Dark (mode-symmetric accents) | type (Yellow), number (Orange), regex (Green), operator (Violet) — full SPEC-056 spread |
+| [Solarized](/themes/solarized) | Same 16 hues across both modes | Light + Dark (mode-symmetric accents) | type (Yellow), number (Orange), regex (Green), operator (Violet) — the full extended-role spread |
 | [Catppuccin](/themes/catppuccin) | Soft pastel — Latte + Mocha | Light + Dark | parameter (Maroon — distinct from variable); 6 of 7 extended roles |
 | [Tokyo Night](/themes/tokyo-night) | Neon-on-night — Day + Storm | Light + Dark | 6 of 7 extended roles distinct; the lineup's role-split champion |
 | [One Dark](/themes/one-dark) | Atom's signature blue-grey + warm accents | Dark only | type (Yellow), regex (Cyan), operator (Cyan), tag (Red) |

@@ -76,6 +76,6 @@ On each page, a nav marks the item that links to that page, and highlights the i
 
 ## Migrating a flat-slug nav
 
-If your nav currently uses bare slugs that span multiple subdirectories (a common pattern before this resolution model was introduced), the build will surface every ambiguity at once. Each error message tells you the available candidates — converting bare slugs to multi-segment slugs (or explicit links) one by one is usually mechanical.
+If your nav uses bare slugs that span multiple subdirectories, the build will surface every ambiguity at once. Each error message tells you the available candidates — converting bare slugs to multi-segment slugs (or explicit links) one by one is usually mechanical.
 
-The migration is also a chance to revisit links that were previously "working" by coincidence — under the legacy resolver, a bare slug could silently resolve to a different page depending on which page the reader was viewing. Multi-segment slugs make the destination explicit and unambiguous regardless of context.
+Multi-segment slugs make the destination explicit and unambiguous regardless of which page the reader is viewing.

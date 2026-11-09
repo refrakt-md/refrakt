@@ -29,7 +29,7 @@ The `colorScheme: "dark"` forces Dracula's dark canvas on every page; without it
 
 ## The palette
 
-Dracula publishes a formal [palette spec](https://spec.draculatheme.com/) with named hues. Each accent has a documented syntax role; the contract surface {% ref "SPEC-056" preview="drawer" /%} carries lands all of them on distinct refrakt roles — most notably `type` (Cyan) separated from `function` (Green), the splits Nord first validated.
+Dracula publishes a formal [palette spec](https://spec.draculatheme.com/) with named hues. Each accent has a documented syntax role; refrakt's extended syntax roles land all of them on distinct refrakt roles — most notably `type` (Cyan) separated from `function` (Green), the splits Nord first validated.
 
 {% palette title="Dracula" tint="dracula" tint-mode="dark" showContrast=true showA11y=true %}
 - Background (canvas): #282a36
@@ -51,7 +51,7 @@ The shared TypeScript+JSX snippet used across the preset doc pages, rendered thr
 
 {% codegroup tint="dracula" %}
 ```ts
-// A small user-service shape — exercises the SPEC-056 role splits
+// A small user-service shape
 interface User {
   id: number;
   name: string;

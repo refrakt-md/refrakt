@@ -81,9 +81,6 @@ A tinted panel is the universal `tint`:
 
 `align` places the quote: centred in the measure (the default), or floated `left` or `right` beside the text, set against a rule.
 
-{% hint type="note" %}
-`variant` is deprecated: its values named looks, which belong to the theme. `accent` maps to `tint="subtle"` and `prominence="prominent"`; `default` and `editorial` map to nothing. It is accepted with a warning for this release.
-{% /hint %}
 
 ## Attributes
 

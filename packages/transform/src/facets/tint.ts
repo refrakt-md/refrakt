@@ -96,7 +96,7 @@ export const tintAxis: UniversalAxisFacet = {
 	placement: 'carrier',
 	contract: {
 		description:
-			'Per-rune colour override (SPEC-053): a named tint from the theme registry, with inline per-token overrides layered on top.',
+			'Per-rune colour override: a named tint from the theme registry, with inline per-token overrides layered on top.',
 		source: 'meta',
 		inputs: ['tint', 'tint-mode', 'tint-{token}', 'tint-dark-{token}'],
 		tokens: TINT_TOKENS,

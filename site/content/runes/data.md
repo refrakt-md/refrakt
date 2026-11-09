@@ -112,7 +112,7 @@ The body is bound to a row before anything inside it is resolved, so a `{% snipp
 {% /data %}
 ```
 
-Each row gets its own code block, read from the file that row names. Before v0.39.0 the snippet was resolved before any row was bound, so every row rendered the same "`path` attribute is required" error.
+Each row gets its own code block, read from the file that row names.
 
 ### A variable inside backticks is literal
 
@@ -273,7 +273,7 @@ data: `where` references `$missing`, which is not defined here
 data: `where` is empty
 ```
 
-This matters more than it sounds. An unreadable `where` used to resolve to an empty string, and an empty filter is *no* filter — so the page rendered the whole source instead of erroring. On a page filtering one rune's attributes out of a catalogue, that renders every rune's attributes under that rune's heading and looks completely plausible.
+An error is the safe answer: an empty filter is *no* filter, so a `where` that quietly read as empty would render the whole source. On a page filtering one rune's attributes out of a catalogue, that would show every rune's attributes under that rune's heading, and look completely plausible.
 
 Omitting an attribute is untouched: only attributes you actually wrote are checked.
 

@@ -67,9 +67,6 @@ The dark overlay ensures text remains legible over the image.
 {% /hero %}
 ```
 
-{% hint type="warning" %}
-A **raw-CSS** `overlay` (e.g. `overlay="linear-gradient(…)"`) is deprecated — it emits a build warning and will be removed. Use `scrim` for a legibility gradient, or `overlay="dark|light|<token>"` for a flat wash.
-{% /hint %}
 
 ## Scrim
 

@@ -7,7 +7,7 @@ description: Atom's signature dark theme — blue-grey canvas with warm accents.
 
 One Dark is Atom's signature theme — the palette that defined the "blue-grey canvas + warm accents" aesthetic now common across modern editors. Tokyo Night and Catppuccin Mocha both trace lineage here. Atom itself was the first widely-adopted editor with custom theme APIs, and One Dark was the default that shipped with it.
 
-Phase 1 of SPEC-057 ships One Dark as **dark-only**. The official "One Light" sibling is a separate published theme (not a `modes` overlay on the same hue family) and defers to a future milestone. MIT licensed.
+One Dark ships as **dark-only**. The official "One Light" sibling is a separate published theme (not a `modes` overlay on the same hue family) and is not included. MIT licensed.
 
 This page is rendered on a site whose active preset is **niwaki**. The One Dark look you see in the palette and the live preview below is scoped to those subtrees via `tint="one-dark"` — the surrounding prose stays in niwaki.
 
@@ -52,7 +52,7 @@ The shared TypeScript+JSX snippet rendered through One Dark. Notice the warm-on-
 
 {% codegroup tint="one-dark" %}
 ```ts
-// A small user-service shape — exercises the SPEC-056 role splits
+// A small user-service shape
 interface User {
   id: number;
   name: string;
@@ -70,7 +70,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-One Dark exercises **4 of 7** {% ref "SPEC-056" preview="drawer" /%} extended roles distinctly: `type` (Yellow) ≠ `function` (Blue), `regex` (Cyan) ≠ `string` (Green), `operator` (Cyan), `tag` (Red) ≠ `keyword` (Purple). `number` collapses with `constant`, `attribute` with `constant` (both orange) — Atom's intent.
+One Dark gives **4 of 7** extended syntax roles distinct colours: `type` (Yellow) ≠ `function` (Blue), `regex` (Cyan) ≠ `string` (Green), `operator` (Cyan), `tag` (Red) ≠ `keyword` (Purple). `number` collapses with `constant`, `attribute` with `constant` (both orange) — Atom's intent.
 
 ## Composing with tideline
 

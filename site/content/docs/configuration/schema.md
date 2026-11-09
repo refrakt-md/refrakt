@@ -45,7 +45,7 @@ A symlink at the repo root (`refrakt.config.schema.json` → `packages/transform
 
 ## What the schema covers
 
-- **All three shapes** — flat (legacy, deprecated in v0.12), singular `site`, plural `sites` — with `oneOf` enforcing mutual exclusivity between `site` and `sites`.
+- **All three shapes** — flat (deprecated), singular `site`, plural `sites` — with `oneOf` enforcing mutual exclusivity between `site` and `sites`.
 - **Top-level sections** — `plugins`, `plan`, `xrefs`, `fileRoots`, `site`/`sites`, plus the deprecated flat-shape shorthands.
 - **`SiteConfig` definition** — every site-scoped field with its type, description, and required-ness.
 - **`PlanConfig` definition** — `plan.dir`.

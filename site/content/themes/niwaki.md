@@ -50,7 +50,7 @@ Here's the same TypeScript+JSX snippet used across the preset doc pages, rendere
 
 {% codegroup tint="niwaki" %}
 ```ts
-// A small user-service shape — exercises the SPEC-056 role splits
+// A small user-service shape
 interface User {
   id: number;
   name: string;
@@ -68,7 +68,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Niwaki, like tideline, was authored at the 9-role tier and doesn't set {% ref "SPEC-056" preview="drawer" /%}'s extended roles. `type`, `attribute`, and other identifier-family scopes paint like function (sakura); `tag` paints like keyword (wakaba); `number` and `regex` fall through to constant and string respectively. Compare with [Nord](/themes/nord), which splits them out into the Frost and Aurora families.
+Niwaki, like tideline, was authored at the 9-role tier and doesn't set the extended syntax roles. `type`, `attribute`, and other identifier-family scopes paint like function (sakura); `tag` paints like keyword (wakaba); `number` and `regex` fall through to constant and string respectively. Compare with [Nord](/themes/nord), which splits them out into the Frost and Aurora families.
 
 ## Composing with tideline
 

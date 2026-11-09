@@ -26,7 +26,7 @@ One core participant reads every `registers` block and does the registering, in 
 
 ## The vocabulary
 
-The block holds data only: strings, booleans, and lists or records of those. It round-trips through `JSON.parse(JSON.stringify(…))`, and `createContentModelSchema` rejects anything else, a function, an unknown key, a class instance, when the module is imported. There is no expression form and no predicate. That is deliberate (ADR-036): a domain that needs logic writes a plugin hook.
+The block holds data only: strings, booleans, and lists or records of those. It round-trips through `JSON.parse(JSON.stringify(…))`, and `createContentModelSchema` rejects anything else, a function, an unknown key, a class instance, when the module is imported. There is no expression form and no predicate. That is deliberate: a domain that needs logic writes a plugin hook.
 
 Declare exactly one of `entity` or `edge`.
 

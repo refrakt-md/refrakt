@@ -13,9 +13,9 @@ Universal theming dimensions solve this. A handful of semantic data attributes d
 
 | Dimension | Attribute | Values | Controls | Declared by |
 |-----------|-----------|--------|----------|-------------|
-| **Meta type** | `data-meta-type` | `status`, `category`, `quantity`, `temporal`, `tag`, `id` | Typography hints (monospace, tabular-nums) | `MetaField.metaType` (or legacy `StructureEntry.metaType`) |
-| **Sentiment** | `data-meta-sentiment` | `positive`, `negative`, `caution`, `neutral` | Badge / value color | `MetaField.sentimentMap` (or legacy `StructureEntry.sentimentMap`) |
-| **Zone layout** | `data-zone-layout` | `bar`, `definition-list` | Geometric shape of a metadata block (flex row, dt/dd grid) | A block's `layout` primitive in `blocks` (SPEC-080) |
+| **Meta type** | `data-meta-type` | `status`, `category`, `quantity`, `temporal`, `tag`, `id` | Typography hints (monospace, tabular-nums) | `MetaField.metaType` (or `StructureEntry.metaType`) |
+| **Sentiment** | `data-meta-sentiment` | `positive`, `negative`, `caution`, `neutral` | Badge / value color | `MetaField.sentimentMap` (or `StructureEntry.sentimentMap`) |
+| **Zone layout** | `data-zone-layout` | `bar`, `definition-list` | Geometric shape of a metadata block (flex row, dt/dd grid) | A block's `layout` primitive in `blocks` |
 | **Density** | `data-density` | `full`, `compact`, `minimal` | Spacing and detail level | `RuneConfig.defaultDensity` + context |
 | **Section** | `data-section` | `header`, `preamble`, `eyebrow`, `title`, `description`, `body`, `footer`, `media` | Structural anatomy | `RuneConfig.sections` |
 | **Media** | `data-media` | `portrait`, `cover`, `thumbnail`, `hero`, `icon` | Image treatment | `RuneConfig.mediaSlots` |
@@ -27,7 +27,7 @@ Universal theming dimensions solve this. A handful of semantic data attributes d
 
 The first three style metadata content. **Meta type** and **sentiment** describe the field itself; **zone layout** describes the geometric shape around groups of fields. The remaining dimensions style the rune's structure, content, and behavior.
 
-> **Type-vs-layout split.** `data-meta-type` says what a value *is*, and the stylesheet decides its look from it: a pill for `status` / `category` / `tag`, monospace for `id` / `code`, tabular nums for `quantity` / `temporal`, primary color for `id`. The engine adds no class (ADR-043). The arrangement around the values (bar row, def-list cell) comes from `data-zone-layout`. The same field renders as a chip in one block and as plain text in another with no per-field config change — the field's `metaType` and decorations decide its intrinsic shape, the block's layout primitive decides the surrounding geometry.
+> **Type-vs-layout split.** `data-meta-type` says what a value *is*, and the stylesheet decides its look from it: a pill for `status` / `category` / `tag`, monospace for `id` / `code`, tabular nums for `quantity` / `temporal`, primary color for `id`. The engine adds no class. The arrangement around the values (bar row, def-list cell) comes from `data-zone-layout`. The same field renders as a chip in one block and as plain text in another with no per-field config change — the field's `metaType` and decorations decide its intrinsic shape, the block's layout primitive decides the surrounding geometry.
 
 ---
 
@@ -35,7 +35,7 @@ The first three style metadata content. **Meta type** and **sentiment** describe
 
 Metadata badges — status indicators, categories, durations, tags — appear across dozens of runes. The metadata system provides three dimensions so themes can style every badge generically.
 
-### Declaring metadata — `metaFields`, `blocks`, `layout` (SPEC-080)
+### Declaring metadata — `metaFields`, `blocks`, `layout`
 
 Runes declare their meta-bearing fields via the `metaFields` manifest on `RuneConfig`. Each entry is pure data — no rendering hints. Named `blocks` project fields from the manifest into a layout primitive, and the `layout` map places every child explicitly. See [Blocks & layout](/extend/theme-authoring/blocks-and-layout) for the full model.
 
@@ -79,26 +79,9 @@ Recipe: {
 | `splitOn` | `string` | Treat the value as a delimited collection — split on this character, render one element per item. Used for `tags`-style fields |
 | `transform` | `'duration' \| 'uppercase' \| 'capitalize'` | Value transform applied before rendering |
 
-### Legacy `StructureEntry` fields
-
-`StructureEntry` children may still declare metadata inline via `metaType` /
-`sentimentMap` — the engine sets the matching `data-meta-*` attributes. Prefer
-`metaFields` for new runes; it's the supported projection path.
-
-> **Removed in v0.18.0 (WORK-313):** the `slots` array + slot-based assembly,
-> and the automatic universal `.rf-badge` class on meta-typed `StructureEntry`
-> children. The before/after `structure` assembly itself is unchanged. Since
-> WORK-671 no class is needed at all: a `status`, `category` or `tag` entry is
-> drawn as a pill by the stylesheet, from its `data-meta-type`.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `metaType` | `'status' \| 'category' \| 'quantity' \| 'temporal' \| 'tag' \| 'id'` | Same semantics as `MetaField.metaType` |
-| `sentimentMap` | `Record<string, 'positive' \| 'negative' \| 'caution' \| 'neutral'>` | Same semantics as `MetaField.sentimentMap` |
-
 ### How the engine emits them
 
-Every field value is one element carrying its meta attributes, and no class. The engine states what the value is; whether it looks like a pill is the stylesheet's (ADR-043 decision 3):
+Every field value is one element carrying its meta attributes, and no class. The engine states what the value is; whether it looks like a pill is the stylesheet's:
 
 ```html
 <!-- A recipe's difficulty="easy": a category, so the base stylesheet draws a pill -->
@@ -210,19 +193,19 @@ See [Blocks & layout](/extend/theme-authoring/blocks-and-layout) for the complet
 
 ### Labels
 
-`MetaField` (or legacy `StructureEntry`) entries can include a `label` field. In `definition-list` it becomes the `<dt>`; in a `bar` it's ignored (bar fields are unlabelled, eyebrow-style, by contract). It is also used as the text for `href` links and `icon`-decorated fields.
+`MetaField` (or `StructureEntry`) entries can include a `label` field. In `definition-list` it becomes the `<dt>`; in a `bar` it's ignored (bar fields are unlabelled, eyebrow-style, by contract). It is also used as the text for `href` links and `icon`-decorated fields.
 
 ```typescript
 prepTime: { metaType: 'temporal', label: 'Prep', tag: 'time', condition: 'prepTime' }
 ```
 
-For legacy `StructureEntry`-only paths, `labelHidden: true` makes the label visually hidden but accessible to screen readers — useful when the value is self-explanatory (like an ID badge where "WORK-042" doesn't need a visible "ID:" prefix).
+On a `StructureEntry`, `labelHidden: true` makes the label visually hidden but accessible to screen readers — useful when the value is self-explanatory (like an ID badge where "WORK-9042" doesn't need a visible "ID:" prefix).
 
 ---
 
 ## Quotation roles
 
-A quotation is one of four roles, and a theme styles the role, never the bare `blockquote` element (SPEC-185). The role is the author's choice; how it looks is the theme's.
+A quotation is one of four roles, and a theme styles the role, never the bare `blockquote` element. The role is the author's choice; how it looks is the theme's.
 
 | Role | What it is | Authored as |
 |---|---|---|
@@ -247,7 +230,7 @@ Style the role through that attribute, with its `blockquote` and `figcaption` as
 - **A plain `>` is a quotation.** The core `blockquote` node marks it, since no rune consumes it. When its last line is an attribution, `— **Name**, Source`, it is a `<figure data-quote="quotation">` holding the `<blockquote>` and a `<figcaption>`, the name in `<cite>`; every role renders its attribution so.
 - **A rune that reinterprets `>` carries no marker.** A recipe's tips, a comparison's callouts and a conversation's lines are not quotations, so a theme has nothing to undo on them.
 - **A composition places the rune that is what it reinterprets.** A composed recipe's tips are notes, so its template places them in a `{% hint %}`, and the theme's hint treatment applies. A composition does not style `>` itself.
-- **A featured quotation is loud by `prominence`.** `featured` and `excerpt` take the prominence scale a section header takes (SPEC-185 D9). A rune declares the `featured-quotation` capability in `provides` to open it. Ramp the quote's size from its resting size, as Lumina does: it sets `--rf-title-size` on the role and sizes the `blockquote` with `var(--rf-prominence-size, var(--rf-title-size))`.
+- **A featured quotation is loud by `prominence`.** `featured` and `excerpt` take the prominence scale a section header takes. A rune declares the `featured-quotation` capability in `provides` to open it. Ramp the quote's size from its resting size, as Lumina does: it sets `--rf-title-size` on the role and sizes the `blockquote` with `var(--rf-prominence-size, var(--rf-title-size))`.
 - **The reading register is context.** A quotation in `prose` and one in `ui` (a card body) may look different; Lumina sets one quieter in `ui`.
 - **The unmarked fallback.** A blockquote with no marker, from content transformed outside refrakt, deserves a minimal, zero-specificity fallback so it stays legible.
 
@@ -384,7 +367,7 @@ Feature: {
 
 A theme restyles the pill once, here, rather than in each rune. A rune keeps only what is its own: its spacing, and `card`'s one-step-smaller size.
 
-### Reading register (SPEC-108)
+### Reading register
 
 A **reading register** classifies how a body's *running text* reads — a refinement of `data-section="body"`, emitted as `data-reading`. It's the body-text counterpart to the container axes (`elevation`/`width`/`prominence`): the author/layout/rune picks the register; **the theme owns the magnitude**.
 
@@ -419,7 +402,7 @@ The vocabulary is small and ordered tightest-UI → most-editorial:
 }
 ```
 
-Per-rune defaults live on `RuneConfig.defaultReading`; a layout's content-region default lives on its `content` slot's `reading`. The **editorial-header composition** — a full-bleed frame with contained, readable text — is the SPEC-107 × SPEC-108 payoff:
+Per-rune defaults live on `RuneConfig.defaultReading`; a layout's content-region default lives on its `content` slot's `reading`. The **editorial-header composition** — a full-bleed frame with contained, readable text — combines `width`, `prominence` and the reading register:
 
 ```markdoc
 {% blog elevation="flush" width="full" prominence="display" reading="prose" %}
@@ -573,7 +556,7 @@ Set by behavior scripts at runtime, not by rune config. The engine doesn't emit 
 
 ### Surface
 
-Surface chrome is theme-only — runes don't hard-code their look. Each rune declares a default *position* on the surface axes via its config (`defaultElevation` / `defaultProminence`), and the theme maps each axis value to CSS. Authors override per-instance (`elevation="raised"`); a theme can re-point a rune's default via `mergeThemeConfig` (SPEC-107).
+Surface chrome is theme-only — runes don't hard-code their look. Each rune declares a default *position* on the surface axes via its config (`defaultElevation` / `defaultProminence`), and the theme maps each axis value to CSS. Authors override per-instance (`elevation="raised"`); a theme can re-point a rune's default via `mergeThemeConfig`.
 
 Lumina styles the **`elevation`** depth ladder by attribute — no rune-name lists:
 

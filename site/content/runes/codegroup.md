@@ -93,7 +93,7 @@ To force a tab bar on a single fence, provide the `labels` attribute.
 
 ## Tab labels from fence annotations
 
-When neither `labels=` nor a per-fence `label` annotation is set, codegroup derives each tab label from the fence's `source` annotation — automatically populated when the panel is a `{% snippet %}`, and authorable on hand-written fences. SPEC-062 / WORK-304.
+When neither `labels=` nor a per-fence `label` annotation is set, codegroup derives each tab label from the fence's `source` annotation — automatically populated when the panel is a `{% snippet %}`, and authorable on hand-written fences.
 
 ```markdoc
 {% codegroup %}

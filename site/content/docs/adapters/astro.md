@@ -451,7 +451,7 @@ const head = buildSeoHead({
 // head.jsonLd   — page JSON-LD + WebSite + Organization script tags
 ```
 
-When the site-level fields are omitted the output stays minimal — only per-page meta tags are emitted, matching the pre-v0.14.4 behaviour. The four fields live at the top level of `SiteConfig`:
+When the site-level fields are omitted the output stays minimal — only per-page meta tags are emitted. The four fields live at the top level of `SiteConfig`:
 
 ```json
 {

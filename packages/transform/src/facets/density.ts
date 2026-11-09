@@ -41,7 +41,7 @@ export const densityAxis: UniversalAxisFacet = {
 	axis: 'density',
 	placement: 'carrier',
 	contract: {
-		description: 'How tightly a rune packs its content (SPEC-025).',
+		description: 'How tightly a rune packs its content.',
 		source: 'attribute',
 		inputs: ['density'],
 		values: DENSITY_VALUES,

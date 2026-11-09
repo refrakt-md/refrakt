@@ -147,7 +147,7 @@ A delimited model splits the content at each `---` into zones, and each zone is 
 - **Only `hr` is a delimiter**, and **zones are fixed**. `dynamicZones` is rejected: its zones have no names, so a template has nothing to place.
 - **The composition consumes the author's `---`.** The template re-emits one where a placed rune should split. Here `section`, given `media-position`, gets a media zone and a content zone, and its header reads the slots named `headline` and `blurb` (a slot named for its role fills it with no warning). The template's `---` is unconditional, and an empty media zone is one `section` omits, as the `{% if %}` section below explains.
 
-**A titled region with media places `section`, not `card`.** Both split on `---`, but `card` draws a surface, which a composition rarely wants under its content (ADR-041). `section` reads zones only when `media-position` is given, so a composition opts in by passing the attribute through, with a default: `{% section media-position=$attrs["media-position"] %}`. Its `media` attribute (`portrait | cover | thumbnail | hero | icon`) names what the media zone holds, so a portrait is cropped round with no CSS of the composition's own.
+**A titled region with media places `section`, not `card`.** Both split on `---`, but `card` draws a surface, which a composition rarely wants under its content. `section` reads zones only when `media-position` is given, so a composition opts in by passing the attribute through, with a default: `{% section media-position=$attrs["media-position"] %}`. Its `media` attribute (`portrait | cover | thumbnail | hero | icon`) names what the media zone holds, so a portrait is cropped round with no CSS of the composition's own.
 
 Use a delimited model when the template must **address a field inside a zone**: wrap a zone's trailing list, place one list here and another there. A composition that only passes the zones through to one rune that splits them itself needs one greedy field, not zones.
 
@@ -348,7 +348,7 @@ content:
 {% /card %}
 ```
 
-A field whose match names only `tag:textblock` and `tag:mediatext` is the rune's narrative field (ADR-047). It is inferred, so there is nothing to declare. A rune has at most one, and its schema row never maps it: the story around a rune is not the rune. `refrakt inspect` and `refrakt reference` name it. See [the narrative field](/extend/rune-authoring/patterns#the-narrative-field) for when to use one.
+A field whose match names only `tag:textblock` and `tag:mediatext` is the rune's narrative field. It is inferred, so there is nothing to declare. A rune has at most one, and its schema row never maps it: the story around a rune is not the rune. `refrakt inspect` and `refrakt reference` name it. See [the narrative field](/extend/rune-authoring/patterns#the-narrative-field) for when to use one.
 
 ### `{% if %}`, and what it hides
 
@@ -584,7 +584,7 @@ A project rune without `schema` still publishes what the runes it places emit, a
 
 ## Converting a plugin rune: staging, then going live
 
-A composition that replaces a plugin rune is reviewed on the site before it replaces anything. refrakt's own conversions work this way (SPEC-181), and a plugin of your own can follow the same steps.
+A composition that replaces a plugin rune is reviewed on the site before it replaces anything. refrakt's own conversions work this way, and a plugin of your own can follow the same steps.
 
 **Stage it.** The definition goes in `site/staged-runes/<rune>.md`, under the plugin rune's own name. The repository's `staging` site renders the same content as `main`, with that directory as its `runes.dir` and a `"<rune>": "__project__"` entry in `runes.prefer`, so the composition stands in for the plugin rune on every page. Preferring the rune also settles the aliases it shares with the plugin rune (`review` with `testimonial`). The comparison tests read the staged file, and no copy goes in a test fixture directory: a test fails on one.
 

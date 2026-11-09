@@ -4,7 +4,7 @@
 	"prefix": "rf",
 	"universalAxes": {
 		"tint": {
-			"description": "Per-rune colour override (SPEC-053): a named tint from the theme registry, with inline per-token overrides layered on top.",
+			"description": "Per-rune colour override: a named tint from the theme registry, with inline per-token overrides layered on top.",
 			"source": "meta",
 			"inputs": [
 				"tint",
@@ -85,7 +85,7 @@
 			"condition": "suppressed at the `default` value"
 		},
 		"density": {
-			"description": "How tightly a rune packs its content (SPEC-025).",
+			"description": "How tightly a rune packs its content.",
 			"source": "attribute",
 			"inputs": [
 				"density"
@@ -102,7 +102,7 @@
 			"condition": "always present on the rune root; resolution is author ▸ the parent rune's `childDensity` ▸ this rune's `defaultDensity` ▸ `full`"
 		},
 		"reading": {
-			"description": "Editorial register for body text (SPEC-108). The author picks the register; the theme owns the magnitude.",
+			"description": "Editorial register for body text. You pick the register; the theme decides how it looks.",
 			"source": "attribute",
 			"inputs": [
 				"reading"
@@ -120,7 +120,7 @@
 			"condition": "suppressed at the `ui` default, so unmarked bodies carry no attribute"
 		},
 		"dropcap": {
-			"description": "Per-instance drop-cap opt-in (SPEC-108).",
+			"description": "Per-instance drop-cap opt-in.",
 			"source": "attribute",
 			"inputs": [
 				"dropcap"
@@ -132,7 +132,7 @@
 			"condition": "honoured only when the resolved reading register enables it (`prose`); dropped with a warning otherwise"
 		},
 		"elevation": {
-			"description": "The chrome/depth ladder (SPEC-107). The skin maps each rung to a chrome bundle by attribute, so there is no BEM class.",
+			"description": "How far the rune sits off the page, from sunken to overlay. The theme decides what each step looks like.",
 			"source": "attribute",
 			"inputs": [
 				"elevation"
@@ -151,7 +151,7 @@
 			"condition": "emitted only when the author sets it or the rune declares `defaultElevation`"
 		},
 		"prominence": {
-			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header, or its featured quotation (SPEC-185 D9); the skin maps it to a type register by attribute, so there is no BEM class.",
+			"description": "Header emphasis. Scales a rune's header, or its featured quotation; the theme decides the type size for each step.",
 			"source": "attribute",
 			"inputs": [
 				"prominence"
@@ -166,10 +166,10 @@
 			"dataAttributes": [
 				"data-prominence"
 			],
-			"condition": "requires a page-section header — a `sections` role of header, preamble, title or description — or the `featured-quotation` capability (SPEC-185 D9). Dropped with a warning otherwise."
+			"condition": "requires a page-section header — a `sections` role of header, preamble, title or description — or the `featured-quotation` capability. Dropped with a warning otherwise."
 		},
 		"motion": {
-			"description": "Scroll-reveal entrance (SPEC-105). The author declares the character, the theme owns the choreography, a behaviour owns the timing.",
+			"description": "Scroll-reveal entrance. You choose its character; the theme decides how it moves.",
 			"source": "attribute",
 			"inputs": [
 				"reveal",
@@ -220,7 +220,7 @@
 			"condition": "active only when `media-position` resolves to `cover`"
 		},
 		"frame": {
-			"description": "Surface chrome (SPEC-086): a named preset from the theme registry with inline `frame-*` overrides layered on top.",
+			"description": "Surface chrome: a named preset from the theme registry with inline `frame-*` overrides layered on top.",
 			"source": "meta",
 			"inputs": [
 				"frame",
@@ -252,7 +252,7 @@
 			"condition": "lands on the surface named by `frameTarget`, defaulting to the media zone when the rune declares one. With no target the metas are still consumed but the chrome is dropped with a warning. `data-frame-overflow=\"bleed\"` is stripped with a warning on a clip host."
 		},
 		"substrate": {
-			"description": "Generated pattern fills (SPEC-087). Markers only — the engine sets the attributes and cell/opacity custom properties, CSS draws the pattern.",
+			"description": "Generated pattern fills behind the content, drawn by the theme.",
 			"source": "meta",
 			"inputs": [
 				"substrate",
@@ -272,7 +272,7 @@
 			"condition": "defaults to the rune root. `substrate-target=\"media\"` moves it to the media zone, and is dropped with a warning on a rune with no media section. The facets are inert without a `substrate` pattern."
 		},
 		"bg": {
-			"description": "The background layer (SPEC-088): image, video, gradient, flat overlay wash and legibility scrim, in a single injected layer behind the rune's content.",
+			"description": "The background layer: image, video, gradient, flat overlay wash and legibility scrim, in a single injected layer behind the rune's content.",
 			"source": "meta",
 			"inputs": [
 				"bg-preset",

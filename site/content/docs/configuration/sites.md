@@ -22,7 +22,7 @@ Most projects have one site:
 }
 ```
 
-The SvelteKit plugin (and other adapters) picks the lone site automatically, so single-site projects don't need to pass a `site` option. The legacy flat shape (without the `site` wrapper) still loads but is **deprecated in v0.12.0** and slated for removal in v1.0 — see [Migration](/docs/configuration/migration).
+The SvelteKit plugin (and other adapters) picks the lone site automatically, so single-site projects don't need to pass a `site` option. The flat shape (without the `site` wrapper) still loads but is **deprecated** — see [Migration](/docs/configuration/migration).
 
 ## Multi-site
 

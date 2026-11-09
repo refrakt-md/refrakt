@@ -1,11 +1,11 @@
 ---
 title: Blocks & layout
-description: Plugins declare a metaFields data manifest, project named metadata blocks from it, and assemble the whole skeleton via the recursive layout tree. SPEC-080 / SPEC-081.
+description: Plugins declare a metaFields data manifest, project named metadata blocks from it, and assemble the whole skeleton via the recursive layout tree.
 ---
 
 # Blocks & layout
 
-SPEC-080 makes metadata-bearing rune structure fully explicit. There is
+Metadata-bearing rune structure is fully explicit. There is
 no canonical render order, no auto-derived preamble wrapper, and no
 implicit nesting. Three orthogonal pieces on `RuneConfig` describe the
 whole picture:
@@ -18,8 +18,8 @@ whole picture:
 3. **`layout`** — the recursive skeleton tree. A map keyed by container
    name; an entry either *creates* a wrapper element or *orders* an
    existing one. This is the only thing that decides *where* anything
-   renders, and (SPEC-081) it builds the preamble / content / media
-   grouping that runes used to hand-assemble in TypeScript.
+   renders, and it builds the preamble / content / media grouping,
+   so no rune assembles it by hand in TypeScript.
 
 The shape a field renders as (chip vs. bare text, link, rating widget,
 icon) is intrinsic to the field's `metaType` and decorations — it does
@@ -100,7 +100,7 @@ type LayoutEntry =
 layout?: Record<string, LayoutEntry>;
 ```
 
-The two forms divide the two jobs SPEC-081 separates — the transform
+The two forms divide two separate jobs — the transform
 *labels* slots (semantics), `layout` *nests* them (presentation):
 
 - **An entry with a `tag`** *creates* a wrapper element. Its key becomes
@@ -131,7 +131,7 @@ ones, in transform order — rune content is never dropped. **Omitting
 
 ### Flat emit + declarative grouping
 
-The idiom (SPEC-081): the transform emits a **flat bag of `data-name`
+The idiom: the transform emits a **flat bag of `data-name`
 slots** — `headline`, `blurb`, `eyebrow`, `media`, `ingredients`, … — and
 `layout` composes them into the nested skeleton. The recipe content +
 media split, fully declarative:
@@ -163,8 +163,8 @@ decorations, **independently of the block's layout primitive**.
 ### Pill vs. bare
 
 The engine emits one value element for every field, carrying its
-`data-meta-type` (and `data-meta-sentiment` when mapped), and **no class**
-(ADR-043). The base stylesheet decides the look from the type:
+`data-meta-type` (and `data-meta-sentiment` when mapped), and **no class**.
+The base stylesheet decides the look from the type:
 
 - **Pill**: `[data-meta-type]` ∈ {`status`, `category`, `tag`}.
 - **Bare inline text**: `id`, `quantity`, `temporal`, `code`, or no
@@ -277,7 +277,7 @@ first field present carries `data-lead`.
 
 ### `ladder`
 
-A list of peer items, each free to arrange its own inside (SPEC-156 D3).
+A list of peer items, each free to arrange its own inside.
 It is not a `blocks` layout: a composition's template places it with
 `{% group layout="ladder" %}`, and `cast`'s `list` mode emits it.
 
@@ -362,7 +362,7 @@ layout: {
 `register`), and the `body` slot. The `preamble` entry *creates* the
 `<header>` and fills it with the flat header slots — so `headline` /
 `blurb` are addressable by name instead of being buried in a hand-built
-wrapper (the bug SPEC-081 fixes). The `register` field renders as a link
+wrapper. The `register` field renders as a link
 (`href`), so it appears as bare link text inside its bar — no chip.
 
 ### Character / Recipe — creating a content column + preamble
@@ -413,7 +413,7 @@ fields, blocks, and containers are inherited unchanged. A `layout` entry
 is replaced as a whole, so restate its `tag` when overriding a
 wrapper-creating container.
 
-## variants — modifier-keyed config deltas (SPEC-091)
+## variants — modifier-keyed config deltas
 
 Some runes need their **structure** to vary by a modifier: a `feature`
 tiles its definitions as a grid when media is stacked but stacks them in a
@@ -494,7 +494,7 @@ the selecting modifier value — no new flag needed.
 `projection` reshapes the output tree by `data-name` *after* assembly. It
 is the escape hatch for bending a tree a theme does **not** own — a theme
 adjusting a third-party rune's output without that rune declaring
-`layout`. The boundary (SPEC-081): `layout` is a rune/theme declaring its
+`layout`. The boundary: `layout` is a rune/theme declaring its
 *own* intended structure; `projection` is post-hoc surgery on someone
 else's.
 
@@ -525,7 +525,7 @@ element:
 
 `tag` is `div` for a `bar` block and `dl` for a `definition-list`.
 
-It also surfaces every **`layout`-created wrapper** (SPEC-081) — the whole
+It also surfaces every **`layout`-created wrapper** — the whole
 declarative skeleton, not just projected blocks. A `tag`-entry becomes an
 element carrying its child membership:
 
@@ -542,3 +542,5 @@ The rune's `childOrder` is computed from `layout.root` (the listed names)
 followed by a `{content}` sentinel that stands in for the appended,
 unlisted transform children; the per-wrapper `children` lists describe
 the nested membership below that.
+
+Background: {% ref "SPEC-080" preview="drawer" /%} · {% ref "SPEC-081" preview="drawer" /%}

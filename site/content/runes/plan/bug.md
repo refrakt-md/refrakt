@@ -17,7 +17,7 @@ A bug confirmed with reproduction steps and environment details.
 
 {% preview source=true %}
 
-	{% bug id="RF-201" status="confirmed" severity="major" %}
+	{% bug id="BUG-9201" status="confirmed" severity="major" %}
 	# Showcase bleed breaks with overflow:hidden parent
 
 	## Steps to Reproduce
@@ -45,7 +45,7 @@ A critical severity bug requiring immediate attention.
 
 {% preview source=true %}
 
-	{% bug id="RF-305" status="reported" severity="critical" %}
+	{% bug id="BUG-9305" status="reported" severity="critical" %}
 	# Build fails when no rune packages configured
 
 	## Steps to Reproduce
