@@ -1,4 +1,4 @@
-{% work id="WORK-584" status="in-progress" priority="high" complexity="simple" source="ADR-029" tags="spike, engine, layout, contract, schema, research" %}
+{% work id="WORK-584" status="cancelled" priority="high" complexity="simple" source="ADR-029" tags="spike, engine, layout, contract, schema, research" %}
 
 # Settle the three couplings ADR-029 assumes
 
@@ -106,5 +106,16 @@ where it would fire.
 Ordering: Q3 is the one that can change a decision, so do it first if the three
 are split. Q1 is the one that sizes the follow-up spec. Q2 is bookkeeping on a
 bug already filed.
+
+## Resolution
+
+Completed: 2026-11-09
+
+Cancelled 2026-11-09: its source, ADR-029, was rejected by ADR-048. A theme rearranges a rune through a replacement template (ADR-045, SPEC-177), not through engine config, so the questions this item asked about config overrides no longer decide anything.
+
+### What happens to each question
+- **Q1 (answered):** a theme's `layout` reaches only a rune's own `data-name`d children, never into a nested rune. The finding and its four tests (`packages/transform/test/child-rune-layout.test.ts`) stand as a record of how the engine assembles runes today. They become moot as `layout` is deprecated (SPEC-194 D5).
+- **Q2:** the omission channel (`data-meta-rank`) is still emitted by nothing. That is tracked by BUG-023; ADR-029 decision 5's bound no longer exists to depend on it.
+- **Q3 (still worth answering):** which runes publish a schema.org property from a visible node rather than a meta node. Carried to SPEC-177's open questions: it tells where the replacement-template structured-data check (ADR-045 decision 4) actually protects published data.
 
 {% /work %}

@@ -250,6 +250,15 @@ seen from the side of structured data.
 
 ## Open questions
 
+- **Which runes does the structured-data check actually protect?** *Carried from
+  {% ref "WORK-584" /%} Q3, 2026-11-09.* A replacement template must not change what a rune
+  publishes, and D5 compares it mechanically. Where a rune publishes a property from a meta node
+  or its field bag, no template can affect it. Where it publishes from a visible node (likely
+  `recipe`'s `HowToStep` carriers, {% ref "SPEC-130" /%}'s retype-and-wrap cases), the comparison
+  is what stands between a theme and the published graph. The fixtures in
+  `contracts/seo-baseline/fixtures/` cover all 30 emitting runes and give the list: for each,
+  whether `property=` rides on a node a template places, or only on metas.
+
 - **Public fragments.** Replacing only recipe's header fragment would be finer than replacing
   a template value. It makes fragment names public API, which a plugin then cannot rename
   freely. Deferred until whole-value replacement proves too coarse; the likely shape is a

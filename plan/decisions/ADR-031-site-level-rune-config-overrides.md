@@ -1,6 +1,12 @@
-{% decision id="ADR-031" status="proposed" date="2026-09-19" source="SPEC-094" tags="config, theme, site, runes, overrides, dx, architecture" %}
+{% decision id="ADR-031" status="rejected" date="2026-09-19" source="SPEC-094" tags="config, theme, site, runes, overrides, dx, architecture" %}
 
 # Site-level rune config overrides
+
+> **Rejected on 2026-11-09** by {% ref "ADR-048" /%}. Overriding a rune's engine config is the
+> lever ADR-048 retires, at site level as at theme level. What a site wanted from it is met
+> elsewhere: a site's own `templates/` directory rearranges a rune ({% ref "SPEC-177" /%} D4), a
+> site appends to its theme's class setting ({% ref "SPEC-196" /%} D2), and tokens carry the
+> rest.
 
 ## Context
 

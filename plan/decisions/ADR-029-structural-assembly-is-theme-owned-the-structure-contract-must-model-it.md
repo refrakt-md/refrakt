@@ -1,6 +1,16 @@
-{% decision id="ADR-029" status="proposed" date="2026-09-19" source="SPEC-081" tags="theme, contract, structure, assembly, layout, groups, architecture" %}
+{% decision id="ADR-029" status="rejected" date="2026-09-19" source="SPEC-081" tags="theme, contract, structure, assembly, layout, groups, architecture" %}
 
 # Structural assembly is theme-owned; the structure contract must model it
+
+> **Rejected on 2026-11-09** by {% ref "ADR-048" /%}. A theme rearranges a rune through a
+> replacement template ({% ref "ADR-045" /%}, {% ref "SPEC-177" /%}), never through engine
+> config: engine config becomes compiler output that themes do not touch, and `structure`,
+> `layout` and `contentWrapper` are deprecated ({% ref "SPEC-194" /%} D5). Decision 1 also
+> conflicts with {% ref "ADR-043" /%}, which made all of `metaFields` identity. Decisions 3 and 4
+> survive in another form: a theme-neutral contract plus a per-theme one is
+> {% ref "SPEC-196" /%} D7, and ADR-045 already makes contracts per theme for templates. The
+> spike that served this decision, {% ref "WORK-584" /%}, is cancelled, with its open question
+> on structured data carried to SPEC-177.
 
 ## Context
 

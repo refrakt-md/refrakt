@@ -15,8 +15,8 @@
 >
 > The amendments this decision makes elsewhere carry back-pointers: ADR-045 decision 7
 > (superseded), SPEC-145 D2, SPEC-161 D3, SPEC-168 D9, SPEC-177, SPEC-181 (fifth gate) and
-> SPEC-185 D6. ADR-029 and ADR-031 are still `proposed`; rejecting them, as the Consequences
-> say they should be, is a separate step.
+> SPEC-185 D6. ADR-029 and ADR-031 were rejected the same day, as the Consequences say they
+> should be, and WORK-584, the spike serving ADR-029, was cancelled.
 
 ## Context
 
