@@ -32,8 +32,8 @@ For one-off colour overrides. Token values are defined as list items inside the 
 	{% hint type="check" %}
 
 		{% tint %}
-		- background: #ecfdf5
-		- accent: #059669
+		- bg: #ecfdf5
+		- primary: #059669
 		- border: #a7f3d0
 		{% /tint %}
 
@@ -47,7 +47,7 @@ For one-off colour overrides. Token values are defined as list items inside the 
 
 | You write | It becomes |
 |-----------|------------|
-| A list item `name: value`, such as `- accent: #059669` | That colour token, set to the value |
+| A list item `name: value`, such as `- primary: #059669` | That colour token, set to the value |
 | A `Dark` heading | The list items after it are the dark-scheme values |
 | A `Light` heading, or no heading | The list items are the light-scheme values |
 | A list item whose name is not a tint token, or any other content | Ignored |
@@ -61,9 +61,9 @@ The `mode` attribute forces dark or light mode on a section, regardless of the u
 	{% hint type="note" %}
 
 		{% tint mode="dark" %}
-		- background: #1e293b
-		- primary: #e2e8f0
-		- accent: #38bdf8
+		- bg: #1e293b
+		- text: #e2e8f0
+		- primary: #38bdf8
 		- border: #334155
 		{% /tint %}
 
@@ -82,15 +82,15 @@ Provide separate token sets for light and dark colour schemes using headings ins
 
 	{% tint %}
 	## Light
-	- background: #fdf6e3
-	- primary: #5c4a32
-	- accent: #c47d3b
+	- bg: #fdf6e3
+	- text: #5c4a32
+	- primary: #c47d3b
 	- border: #e0d5c0
 
 	## Dark
-	- background: #2a2118
-	- primary: #e8d5b7
-	- accent: #e0a86e
+	- bg: #2a2118
+	- text: #e8d5b7
+	- primary: #e0a86e
 	- border: #4a3f33
 	{% /tint %}
 
@@ -109,10 +109,10 @@ Start from a named tint and override specific tokens.
 {% hint type="note" %}
 
 	{% tint preset="warm" %}
-	- accent: #e94560
+	- primary: #e94560
 	{% /tint %}
 
-	Inherits all tokens from the "warm" preset, with a custom accent colour.
+	Inherits all tokens from the "warm" preset, with a custom primary colour.
 
 {% /hint %}
 ```
@@ -171,24 +171,24 @@ Themes define named tints in their configuration. Light values are set as inline
 tints: {
   warm: {
     light: {
-      background: '#fdf6e3',
-      primary: '#5c4a32',
-      accent: '#c47d3b',
+      bg: '#fdf6e3',
+      text: '#5c4a32',
+      primary: '#c47d3b',
       border: '#e0d5c0',
     },
     dark: {
-      background: '#2a2118',
-      primary: '#e8d5b7',
-      accent: '#e0a86e',
+      bg: '#2a2118',
+      text: '#e8d5b7',
+      primary: '#e0a86e',
       border: '#4a3f33',
     },
   },
   dark: {
-    mode: 'dark',
+    lockMode: 'dark',
     dark: {
-      background: '#1a1a2e',
-      primary: '#e0e0e0',
-      accent: '#e94560',
+      bg: '#1a1a2e',
+      text: '#e0e0e0',
+      primary: '#e94560',
     },
   },
 }

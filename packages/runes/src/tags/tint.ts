@@ -1,17 +1,21 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, Schema, RenderableTreeNodes } from '@markdoc/markdoc';
+import { TINT_TOKENS } from '@refrakt-md/transform';
 import { declareUniversalPosture, groupByHeading } from '../lib/index.js';
 const { Tag } = Markdoc;
 
-export const TINT_TOKENS = [
-	'background',
-	'surface',
-	'primary',
-	'secondary',
-	'accent',
-	'border',
-] as const;
+export { TINT_TOKENS };
 export type TintToken = (typeof TINT_TOKENS)[number];
+
+/** Older names, still read. */
+const TOKEN_ALIASES: Record<string, TintToken> = { background: 'bg' };
+const ALIAS_WARNED = new Set<string>();
+function warnAlias(alias: string, token: string): void {
+	if (ALIAS_WARNED.has(alias)) return;
+	ALIAS_WARNED.add(alias);
+	// eslint-disable-next-line no-console
+	console.warn(`[refrakt] tint token \`${alias}\` is deprecated — use \`${token}\`.`);
+}
 
 const TOKEN_PATTERN = /^\s*(\w+)\s*:\s*(.+)\s*$/;
 
@@ -41,7 +45,11 @@ function parseTintBody(children: Node[]): {
 		item(item, section) {
 			const match = textContent(item).match(TOKEN_PATTERN);
 			if (!match) return;
-			const token = match[1].toLowerCase();
+			let token = match[1].toLowerCase();
+			if (token in TOKEN_ALIASES) {
+				warnAlias(token, TOKEN_ALIASES[token]);
+				token = TOKEN_ALIASES[token];
+			}
 			if ((TINT_TOKENS as readonly string[]).includes(token)) {
 				(section === 'dark' ? dark : light)[token] = match[2].trim();
 			}
