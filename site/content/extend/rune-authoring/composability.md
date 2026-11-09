@@ -84,7 +84,7 @@ one with the knowledge):
 
 ```ts
 Hint: { block: 'hint', contextModifiers: { hero: 'in-hero', feature: 'in-feature' } }
-// → `.rf-hint--in-hero` when a hint is inside a hero
+// → `data-in="hero"` (and `.rf-hint--in-hero`) when a hint is inside a hero
 ```
 
 Reach for one only when the slot-level adaptation above isn't enough. Every

@@ -119,21 +119,23 @@ For each modifier with a resolved value, the engine:
 
 ### contextModifiers
 
-Adds a BEM modifier class when the rune is nested inside a specific parent rune. The key is the parent's `typeName` (matched against `data-rune` after kebab-casing); the value is the modifier suffix.
+Marks the rune when it is nested inside a specific parent rune: the engine sets `data-in="<parent>"` and adds a BEM modifier class beside it. The key is the parent's `typeName` (matched against `data-rune` after kebab-casing); the value is the modifier suffix.
 
 ```typescript
 // Hint config
 contextModifiers: { 'Hero': 'in-hero', 'Feature': 'in-feature' }
 
 // When Hint is inside a Hero:
-// class="rf-hint rf-hint--note rf-hint--in-hero"
+// data-in="hero" class="rf-hint rf-hint--note rf-hint--in-hero"
 ```
+
+Style `[data-in="hero"]`, not the class: the attribute is the output's contract, and the class exists only for themes that use classes.
 
 This enables context-aware styling — a Hint inside a Hero can be more compact, a CTA inside Pricing can be left-aligned.
 
 ### staticModifiers
 
-BEM modifier classes that are always applied, regardless of meta tag values. Useful for rune variants that share a block but have fixed differences.
+**Deprecated.** BEM modifier classes that are always applied, regardless of meta tag values. In every first-party use the fact is already said by an attribute (`data-rune`, `data-media-position`), so style that attribute instead; the field goes once nothing first-party uses it.
 
 ```typescript
 // FeaturedTier shares the 'tier' block but always gets --featured

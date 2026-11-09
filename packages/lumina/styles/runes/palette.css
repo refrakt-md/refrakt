@@ -80,7 +80,7 @@
 	}
 
 	/* Context-aware: no outer margin when inside design-context */
-	.rf-palette--in-design-context {
+	.rf-palette:where([data-in="design-context"]) {
 		margin: 0;
 	}
 }

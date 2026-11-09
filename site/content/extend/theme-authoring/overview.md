@@ -171,7 +171,7 @@ When the identity transform encounters a tag with `data-rune="hint"`, it:
 2. **Reads modifiers**: Reads modifier values from the `data-rune-fields` bag (e.g. `{"hintType":"warning"}`), falls back to defaults
 3. **Builds BEM classes**: `.rf-hint` (block) + `.rf-hint--note` (modifier value)
 4. **Sets data attributes**: `data-hint-type="note"` for CSS attribute selectors
-5. **Checks context**: If nested inside `Hero`, adds `.rf-hint--in-hero`
+5. **Checks context**: If nested inside `Hero`, sets `data-in="hero"` and adds `.rf-hint--in-hero`
 6. **Injects structure**: Creates header element with icon and title spans
 7. **Labels children**: Applies `data-name` attributes based on `autoLabel` config
 8. **Removes consumed meta**: Strips meta tags that were read for modifiers

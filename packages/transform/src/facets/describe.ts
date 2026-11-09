@@ -16,7 +16,10 @@ export interface FacetContract {
 			mapTarget?: string;
 		}
 	>;
-	contextModifiers?: Record<string, { suffix: string; selector: string }>;
+	contextModifiers?: Record<
+		string,
+		{ suffix: string; selector: string; attributeSelector: string }
+	>;
 	staticModifiers?: Array<{ name: string; selector: string }>;
 }
 

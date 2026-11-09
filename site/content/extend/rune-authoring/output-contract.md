@@ -318,11 +318,11 @@ autoLabel: { summary: 'header' },
 
 ### `contextModifiers`
 
-Adds BEM modifiers when the rune is nested inside a parent rune:
+Marks the rune when it is nested inside a parent rune:
 
 ```typescript
 contextModifiers: { 'Hero': 'in-hero', 'Feature': 'in-feature' },
-// When inside a Hero: class adds "rf-hint--in-hero"
+// When inside a Hero: data-in="hero", and class adds "rf-hint--in-hero"
 ```
 
 ### `styles`
@@ -343,7 +343,7 @@ styles: {
 
 ### `staticModifiers`
 
-Modifier classes always applied, regardless of content:
+**Deprecated** — the fact it carries is already said by an attribute, which stylesheets select. Modifier classes always applied, regardless of content:
 
 ```typescript
 staticModifiers: ['featured'],

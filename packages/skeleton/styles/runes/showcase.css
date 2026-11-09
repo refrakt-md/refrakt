@@ -7,10 +7,10 @@
 .rf-showcase__viewport {
 	position: relative;
 }
-:has(> .rf-showcase[data-displace]:not(.rf-showcase--in-bento-cell)) {
+:has(> .rf-showcase[data-displace]:not([data-in="bento-cell"])) {
 	overflow: visible;
 }
-.rf-showcase--in-bento-cell {
+.rf-showcase:where([data-in="bento-cell"]) {
 	flex: 1;
 	min-height: 0;
 }

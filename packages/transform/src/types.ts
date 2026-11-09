@@ -245,7 +245,8 @@ export interface RuneConfig {
 
 	/** Context-aware modifiers — adds a BEM modifier when nested inside a parent rune.
 	 *  Key = parent typeof (e.g., 'Hero'), Value = modifier suffix (e.g., 'in-hero').
-	 *  Produces classes like: rf-callout--in-hero */
+	 *  Produces classes like: rf-callout--in-hero, and `data-in="hero"` beside
+	 *  the class (SPEC-196 D5) — style the attribute, not the class. */
 	contextModifiers?: Record<string, string>;
 
 	/** Structural overrides — additional elements to inject (keyed by data-name).
@@ -345,7 +346,11 @@ export interface RuneConfig {
 	styles?: Record<string, string | { prop: string; template?: string; transform?: NamedTransform }>;
 
 	/** Modifier class suffixes always applied (no meta source needed).
-	 *  E.g., `['featured']` → class includes `rf-tier--featured` */
+	 *  E.g., `['featured']` → class includes `rf-tier--featured`
+	 *  @deprecated SPEC-196 D5 / SPEC-194 D5: a static modifier carries a fact
+	 *  that an attribute already says (`data-rune`, `data-media-position`), so
+	 *  style that attribute instead. The field goes with the structure-assembly
+	 *  fields once nothing first-party uses it. */
 	staticModifiers?: string[];
 
 	/** Default page grid width for this rune.

@@ -68,30 +68,27 @@
  * its height comes from its content and `height` / `aspect`, never from the
  * cover layer's portrait default, and an unplaced overlay sits mid-band. These
  * win over the shared cover layer (dimensions/cover.css) by specificity. */
-.rf-section--cover[data-media-position="cover"] {
+.rf-section[data-media-position="cover"] {
 	--cover-aspect: auto;
 	container-type: normal;
 	min-height: clamp(22rem, 55vh, 40rem);
 }
-.rf-section--cover[data-media-position="cover"][data-aspect] {
+.rf-section[data-media-position="cover"][data-aspect] {
 	min-height: 0;
 }
-.rf-section--cover[data-media-position="cover"][data-height="sm"] {
+.rf-section[data-media-position="cover"][data-height="sm"] {
 	min-height: 12rem;
 }
-.rf-section--cover[data-media-position="cover"][data-height="md"] {
+.rf-section[data-media-position="cover"][data-height="md"] {
 	min-height: 18rem;
 }
-.rf-section--cover[data-media-position="cover"][data-height="lg"] {
+.rf-section[data-media-position="cover"][data-height="lg"] {
 	min-height: 26rem;
 }
-.rf-section--cover[data-media-position="cover"][data-height="xl"] {
+.rf-section[data-media-position="cover"][data-height="xl"] {
 	min-height: 34rem;
 }
-.rf-section--cover[data-media-position="cover"]:is(
-		[data-content-place="auto"],
-		:not([data-content-place])
-	)
+.rf-section[data-media-position="cover"]:is([data-content-place="auto"], :not([data-content-place]))
 	> [data-name="content"] {
 	align-self: center;
 	justify-self: stretch;

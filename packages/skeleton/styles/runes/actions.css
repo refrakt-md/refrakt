@@ -42,12 +42,12 @@
  * actions, not a page's call to action, and stacking them full-width would push
  * the bar's other half off its line. */
 @media (max-width: 640px) {
-	.rf-actions--in-bar,
-	.rf-actions--in-bar .rf-actions__list {
+	.rf-actions:where([data-in="bar"]),
+	.rf-actions:where([data-in="bar"]) .rf-actions__list {
 		flex-direction: row;
 		align-items: center;
 	}
-	.rf-actions--in-bar .rf-actions__action > a {
+	.rf-actions:where([data-in="bar"]) .rf-actions__action > a {
 		width: auto;
 	}
 }

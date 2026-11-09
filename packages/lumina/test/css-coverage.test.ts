@@ -191,6 +191,24 @@ function parseAllCssSelectors(): Set<string> {
 	return selectors;
 }
 
+/** Every `.rf-{block}[data-in="{parent}"]` a stylesheet selects — the
+ *  attribute form of a context modifier (SPEC-196 D5). The `:where()` form
+ *  (`.rf-hint:where([data-in="hero"])`, used to keep a retargeted rule's
+ *  specificity) is normalised to the bare one. */
+function parseContextAttributeSelectors(): Set<string> {
+	const selectors = new Set<string>();
+	for (const dir of [...runeDirs, ...dimensionDirs]) {
+		for (const file of readdirSync(dir).filter((f) => f.endsWith('.css'))) {
+			const root = postcss.parse(readFileSync(join(dir, file), 'utf-8'));
+			root.walkRules((rule) => {
+				const matches = rule.selector.matchAll(/(\.rf-[\w-]+)(?::where\()?(\[data-in="[\w-]+"\])/g);
+				for (const m of matches) selectors.add(`${m[1]}${m[2]}`);
+			});
+		}
+	}
+	return selectors;
+}
+
 /** Parse all CSS files in the dimensions directory and collect attribute selectors */
 function parseDimensionSelectors(): Set<string> {
 	const selectors = new Set<string>();
@@ -368,33 +386,62 @@ describe('Lumina CSS coverage', () => {
 		});
 	});
 
+	// SPEC-196 D5: a context modifier is also emitted as `data-in="<parent>"`,
+	// and stylesheets select that, not the `--in-{parent}` class.
 	describe('context modifier selectors', () => {
+		const contextAttributeSelectors = parseContextAttributeSelectors();
+
 		it.each(contextRunes)(
 			'%s has all context modifier selectors styled',
 			(_name, _block, config) => {
 				const block = `${prefix}-${config.block}`;
-				const expected = Object.values(config.contextModifiers!).map(
-					(suffix) => `.${block}--${suffix}`,
+				const expected = Object.keys(config.contextModifiers!).map(
+					(parent) => `.${block}[data-in="${parent}"]`,
 				);
 				const missing = expected.filter(
-					(s) => !allCssSelectors.has(s) && !KNOWN_MISSING_SELECTORS.has(s),
+					(s) => !contextAttributeSelectors.has(s) && !KNOWN_MISSING_SELECTORS.has(s),
 				);
 
 				expect(missing, `Missing context modifier selectors`).toEqual([]);
 			},
 		);
+
+		it.each(contextRunes)(
+			'%s has no CSS on its context modifier classes',
+			(_name, _block, config) => {
+				const block = `${prefix}-${config.block}`;
+				const classes = Object.values(config.contextModifiers!).map(
+					(suffix) => `.${block}--${suffix}`,
+				);
+				expect(
+					classes.filter((s) => allCssSelectors.has(s)),
+					'Select [data-in="<parent>"] instead of the context modifier class',
+				).toEqual([]);
+			},
+		);
 	});
 
+	// SPEC-196 D5: `staticModifiers` is deprecated. In every first-party use the
+	// fact is already said by an attribute (`data-rune`, `data-media-position`),
+	// so stylesheets select that and leave the class unstyled.
 	describe('static modifier selectors', () => {
-		it.each(staticRunes)('%s has all static modifier selectors styled', (_name, _block, config) => {
-			const block = `${prefix}-${config.block}`;
-			const expected = config.staticModifiers!.map((mod) => `.${block}--${mod}`);
-			const missing = expected.filter(
-				(s) => !allCssSelectors.has(s) && !KNOWN_MISSING_SELECTORS.has(s),
-			);
+		const staticClasses = (block: string, config: RuneConfig): string[] => {
+			const mods = [...(config.staticModifiers ?? [])];
+			for (const values of Object.values(config.variants ?? {})) {
+				for (const delta of Object.values(values ?? {})) {
+					mods.push(...((delta as Partial<RuneConfig>).staticModifiers ?? []));
+				}
+			}
+			return mods.map((mod) => `.${prefix}-${block}--${mod}`);
+		};
 
-			expect(missing, `Missing static modifier selectors`).toEqual([]);
-		});
+		it.each(Object.entries(runes))(
+			'%s has no CSS on its static modifier classes',
+			(_name, config) => {
+				const used = staticClasses(config.block!, config).filter((s) => allCssSelectors.has(s));
+				expect(used, 'Select the attribute that says the same fact instead').toEqual([]);
+			},
+		);
 	});
 
 	describe('coverage summary', () => {

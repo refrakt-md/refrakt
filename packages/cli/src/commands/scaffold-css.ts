@@ -106,28 +106,22 @@ function generateBlockCss(merged: MergedBlockContract, prefix: string): string {
 		}
 	}
 
-	// Context modifier selectors
+	// Context modifier selectors. SPEC-196 D5: select the `data-in` attribute,
+	// not the `--in-{parent}` class the engine also emits.
 	if (Object.keys(merged.contextModifiers).length > 0) {
 		lines.push('');
 		lines.push(`/* Context modifiers */`);
 		for (const [parent, ctx] of Object.entries(merged.contextModifiers)) {
+			const block = ctx.selector.slice(0, -`--${ctx.suffix}`.length);
 			lines.push(`/* When inside ${parent}: */`);
-			lines.push(`${ctx.selector} {`);
+			lines.push(`${block}${ctx.attributeSelector} {`);
 			lines.push('');
 			lines.push('}');
 		}
 	}
 
-	// Static modifier selectors
-	if (merged.staticModifiers.length > 0) {
-		lines.push('');
-		lines.push(`/* Static modifiers */`);
-		for (const mod of merged.staticModifiers) {
-			lines.push(`${mod.selector} {`);
-			lines.push('');
-			lines.push('}');
-		}
-	}
+	// Static modifiers get no stub: the field is deprecated (SPEC-196 D5), and
+	// the fact it carries is selected through the attribute that says it.
 
 	// Element selectors
 	if (Object.keys(merged.elements).length > 0) {

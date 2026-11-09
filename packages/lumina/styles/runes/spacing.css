@@ -90,7 +90,7 @@
 	}
 
 	/* Context-aware: no outer margin when inside design-context */
-	.rf-spacing--in-design-context {
+	.rf-spacing:where([data-in="design-context"]) {
 		margin: 0;
 	}
 }

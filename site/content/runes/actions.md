@@ -72,7 +72,7 @@ A composition places `actions` around a slot, so its authors keep writing a plai
 
 ## In a bar
 
-Inside a [`bar`](/runes/bar), actions are metadata actions rather than a page's call to action: compact, at the height of the badges beside them, and tonal rather than filled, a primary included. They stay in a row on a phone. The context is `.rf-actions--in-bar`, so a theme styles it like any other context modifier. Each link may carry an [icon](/runes/icon), and a link to a [drawer](/runes/drawer#triggering-from-a-link) on the page opens it.
+Inside a [`bar`](/runes/bar), actions are metadata actions rather than a page's call to action: compact, at the height of the badges beside them, and tonal rather than filled, a primary included. They stay in a row on a phone. The context is `data-in="bar"`, so a theme styles it like any other context modifier. Each link may carry an [icon](/runes/icon), and a link to a [drawer](/runes/drawer#triggering-from-a-link) on the page opens it.
 
 ```markdoc
 {% bar %}

@@ -46,20 +46,20 @@ Modifier classes come from three sources:
 }
 ```
 
-**Context modifiers** — applied when nested inside a parent rune:
+**Context modifiers** — applied when nested inside a parent rune. The engine sets `data-in="<parent>"` on the rune (and a `--in-{parent}` class beside it); select the attribute:
 ```css
 /* Hint inside a Hero gets compact styling */
-.rf-hint--in-hero {
+.rf-hint[data-in="hero"] {
   margin: 1rem 0 0;
   padding: 0.625rem 1rem;
   font-size: 0.875rem;
 }
 ```
 
-**Static modifiers** — always applied to certain rune variants:
+**Static modifiers** are deprecated. A static modifier class repeats a fact an attribute already says, so select the attribute instead:
 ```css
-/* FeaturedTier always has --featured */
-.rf-tier--featured {
+/* FeaturedTier: its own data-rune, not the --featured class */
+.rf-tier[data-rune="featured-tier"] {
   border: 2px solid var(--rf-color-primary);
 }
 ```
@@ -167,18 +167,18 @@ See [Universal Theming Dimensions](/extend/theme-authoring/dimensions) for the f
 
 ## Context-aware styling
 
-Context modifiers enable runes to adapt their appearance when nested inside other runes. The modifier class is added to the root element, so all CSS can be scoped under it:
+Context modifiers enable runes to adapt their appearance when nested inside other runes. The engine sets `data-in="<parent>"` on the root element (with a `--in-{parent}` class beside it, for themes that use classes), so all CSS can be scoped under it. Select the attribute: it is part of the output's contract, and survives a theme that applies no classes.
 
 ```css
 /* Hint inside a hero — a compact callout */
-.rf-hint--in-hero {
+.rf-hint[data-in="hero"] {
   margin: var(--rf-spacing-cozy) 0 0;
   padding: var(--rf-spacing-sm) var(--rf-spacing-cozy);
   font-size: var(--rf-text-sm);
 }
 
 /* Hint inside a feature block — narrower still */
-.rf-hint--in-feature {
+.rf-hint[data-in="feature"] {
   margin: var(--rf-spacing-snug) 0 0;
   padding: var(--rf-spacing-sm) var(--rf-spacing-snug);
   font-size: var(--rf-text-sm);
@@ -187,14 +187,14 @@ Context modifiers enable runes to adapt their appearance when nested inside othe
 
 Common context modifier patterns in the base config:
 
-| Rune | Parent | Modifier | Purpose |
+| Rune | Parent | Selector | Purpose |
 |------|--------|----------|---------|
-| Hint | Hero | `in-hero` | Compact callout |
-| Hint | Feature | `in-feature` | Narrow callout |
-| Feature | Hero | `in-hero` | Hero-specific layout |
+| Hint | Hero | `[data-in="hero"]` | Compact callout |
+| Hint | Feature | `[data-in="feature"]` | Narrow callout |
+| Feature | Hero | `[data-in="hero"]` | Hero-specific layout |
 
 The parent may be a composed rune: the modifier keys on its `data-rune`, which a composition keeps. A composed rune has no BEM block of its own, so it cannot carry a context modifier itself — `cta` inside `pricing` is written `align="start"` instead.
-| Feature | Grid | `in-grid` | Grid-aware sizing |
+| Feature | Grid | `[data-in="grid"]` | Grid-aware sizing |
 
 ## Design tokens
 
@@ -503,7 +503,7 @@ All parent-child groupings:
 | `form.css` | `.rf-form`, `.rf-form-field` |
 | `map.css` | `.rf-map`, `.rf-map-pin` |
 | `nav.css` | `.rf-nav`, `.rf-nav-group`, `.rf-nav-item` |
-| `pricing.css` | `.rf-pricing`, `.rf-tier`, `.rf-tier--featured` |
+| `pricing.css` | `.rf-pricing`, `.rf-tier`, `.rf-tier[data-rune="featured-tier"]` |
 | `recipe.css` | `.rf-recipe`, `.rf-recipe-ingredient` |
 | `reveal.css` | `.rf-reveal`, `.rf-reveal-step` |
 | `steps.css` | `.rf-steps`, `.rf-step` |

@@ -38,6 +38,10 @@ const KNOWN_UNSTYLED = new Set([
 	// The dark-mode tint marker: read by the tint cascade's custom properties,
 	// not by a selector.
 	'[data-tint-dark]',
+	// The tinted presence flag (SPEC-196 D5): the attribute twin of the
+	// `--tinted` class, which no rule styled either. A tint's look comes from
+	// the `--tint-*` custom properties, keyed on `[data-tint]`.
+	'[data-tinted]',
 	// Real gaps. The cover axis emits `data-scrim` with a direction and
 	// `data-scrim-type`, while Lumina's scrim rules key on the bg rune's
 	// `data-scrim-dir`, and bg's own `data-scrim` carries a type

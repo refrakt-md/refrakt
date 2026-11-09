@@ -166,10 +166,10 @@
 	 * skin (not skeleton): this overrides the skin rule `.rf-preview { margin: 2rem 0 }`
 	 * by specificity, and that only wins within the same cascade layer — in
 	 * @layer skeleton it loses to the skin margin and the bleed is nullified. */
-		.rf-preview--in-feature {
+		.rf-preview:where([data-in="feature"]) {
 			margin-inline: calc(-1 * var(--rf-content-gutter, 1.5rem));
 		}
-		.rf-preview--in-feature .rf-preview__toolbar {
+		.rf-preview:where([data-in="feature"]) .rf-preview__toolbar {
 			padding-inline: var(--rf-content-gutter, 1.5rem);
 		}
 	}

@@ -58,16 +58,20 @@
 	}
 
 	/* Cover band (SPEC-160 D7) — skin. A flush band sits edge to edge, with no
-	 * radius on its media well. */
-	.rf-section--cover[data-elevation="flush"] > [data-section="media"] {
+	 * radius on its media well. The cover is selected by `data-media-position`,
+	 * not the `--cover` static modifier (SPEC-196 D5); `:where()` keeps the old
+	 * specificity, so the frost scrim still overrides the band scrim below. */
+	.rf-section:where([data-media-position="cover"])[data-elevation="flush"]
+	> [data-section="media"] {
 		border-radius: 0;
 	}
 	/* The default cover scrim is edge-weighted, a caption-strip treatment. Under a
 	 * mid-band overlay it would leave the headline on undarkened media, so with no
 	 * `content-place` the band darkens evenly, slightly bottom-weighted. */
-	.rf-section--cover:is([data-content-place="auto"], :not([data-content-place])):not(
-		[data-scrim="none"]
-	) > [data-section="media"]::after {
+	.rf-section:where([data-media-position="cover"]):is(
+		[data-content-place="auto"],
+		:not([data-content-place])
+	):not([data-scrim="none"]) > [data-section="media"]::after {
 		background-image: var(
 			--cover-scrim-image,
 			linear-gradient(rgb(0 0 0 / 0.45), rgb(0 0 0 / 0.35) 50%, rgb(0 0 0 / 0.55))
