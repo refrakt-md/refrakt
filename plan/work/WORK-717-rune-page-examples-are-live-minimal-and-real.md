@@ -1,4 +1,4 @@
-{% work id="WORK-717" status="ready" priority="medium" complexity="complex" source="SPEC-193" tags="docs, runes, examples, preview" milestone="v0.49.0" %}
+{% work id="WORK-717" status="in-progress" priority="medium" complexity="complex" source="SPEC-193" tags="docs, runes, examples, preview" milestone="v0.49.0" %}
 
 # Rune page examples are live, minimal and real
 
