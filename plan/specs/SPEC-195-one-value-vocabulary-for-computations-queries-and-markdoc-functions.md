@@ -1,4 +1,4 @@
-{% spec id="SPEC-195" status="draft" tags="vocabulary, functions, query, composition, content-model, values, architecture" %}
+{% spec id="SPEC-195" status="accepted" tags="vocabulary, functions, query, composition, content-model, values, architecture" %}
 
 # One value vocabulary for computations, queries and Markdoc functions
 
@@ -58,7 +58,8 @@ reductions and comparisons (D4's value and reduction rows) need it.
   - `codegroup`, `compare` and `juxtapose` `labels`;
   - `conversation` `speakers`.
 
-  BUG-025 (grouping by `tags`) is the one place a list is *not* split and should be.
+  A seventh, grouping by a multi-value field, was added when {% ref "BUG-025" /%} was fixed
+  (v0.39.0, refrakt-md/refrakt#666), with its own split.
 - **Durations are parsed twice:** `parseIsoDuration` (`packages/transform/src/engine.ts`) and
   `parseDuration` (`plugins/media/src/duration.ts`).
 - **Reductions:** `aggregate` counts (`aggregate-resolve.ts`), `budget` sums privately
@@ -72,7 +73,7 @@ Every operation is one registered function with one implementation:
 
 | Place | Who writes there | Form |
 |---|---|---|
-| a definition's frontmatter: `computes`, `when`, `metaFields.*.condition` | rune authors | Markdoc call syntax, in a YAML string |
+| a definition's frontmatter: `computes`, `metaFields.*.condition`, `rootAttributes`, `tag:` | rune authors | Markdoc call syntax, in a YAML string |
 | a template or a page | rune, theme and page authors | Markdoc call syntax, as today |
 | `filter=`, `where`, `entityRoutes.filter` | page and site authors | the SPEC-070 grammar, unchanged |
 
@@ -86,7 +87,7 @@ The same call means different things depending on where it is written:
 | Written in | The result is | So it may |
 |---|---|---|
 | `computes` | a field of the rune | carry `metaFields` meaning, feed the schema row, be placed by the template; a replacement template cannot change or remove it |
-| `when`, `condition` | a structural choice made in the input | select a content model, decide whether a field renders |
+| `condition` | a choice made in the input | decide whether a field renders (a content model never depends on attributes, D5) |
 | a template or page, as content | display text | be shown; never published, never a field |
 | a template or page, as an attribute of a rune it places (`{% collection filter=… %}`, `{% link href=… %}`) | that placed rune's input | be whatever that attribute is to the placed rune |
 | a template or page, in `{% if %}` | an arrangement choice | choose what is shown, never whether a slot is placed at all (SPEC-177 D5) |
@@ -132,7 +133,7 @@ does not depend on the template).
 | Family | Functions | Notes |
 |---|---|---|
 | Values | `toDuration`, `toAmount`, `toNumber`, `toDate`, `toCoordinates` as explicit coercions | an attribute declared with a `kind` arrives already typed; the coercions are for untyped sources. `toDuration` accepts clock times (`mm:ss`, `audio`'s chapters) as well as ISO 8601. `coordinates` is a new value kind for `map` and `map-pin`, to add to SPEC-166. *Renamed 2026-11-08* from `duration()`, `number()` and so on: `number` and `date` are already the formatters' names |
-| Arithmetic | `add`, `subtract`, `multiply`, `divide`, `mod`, `round`, `clamp` | named functions, not operators, so D9 holds. `progress` (value/max as a clamped, rounded percentage), `conversation` (`$index` mod the speaker count), `embed` (aspect-ratio padding), `drawer` (heading-level clamp) |
+| Arithmetic | `add`, `subtract`, `multiply`, `divide`, `mod`, `round`, `clamp` | named functions, not operators, so D9 holds. `progress` (value/max as a clamped, rounded percentage), `conversation` (`$index` mod the speaker count), `drawer` (heading-level clamp). `embed`'s aspect padding no longer needs it: the `frame` primitive owns the ratio (SPEC-194 D14) |
 | Reductions | `count`, `sum`, `avg`, `min`, `max` | one implementation shared with SPEC-138's `measure`; each takes listed values, or a list and the name of the field to reduce (`sum($items, "amount")`). A path through a list (`$items.amount`) is not a projection: Markdoc resolves it to `undefined` (verified 2026-11-09) |
 | Lists | `split`, `item`, `join` | `split` and `item` follow D6's fan-out rule; `split` takes an optional delimiter (`grid`'s `c:r` spans). A list's length is `count`; an earlier draft also had `size`, which did the same |
 | Page and site | `url`, `neighbours`, `select` | read the page index of {% ref "SPEC-194" /%} D12, so they work at transform once every page is parsed |
@@ -200,7 +201,7 @@ It applies everywhere a list is read:
 - `field-match.ts`;
 - `metaFields.*.splitOn`;
 - `split` and `item`;
-- BUG-025's grouping.
+- the multi-value grouping BUG-025's fix added, which moves onto this rule.
 
 Where an existing call site differs (for example, keeping empty entries), the difference is
 recorded in the work item and either adopted as the rule or removed.
@@ -278,9 +279,10 @@ These keep {% ref "ADR-036" /%} ("name the pattern; do not open a language") tru
   SPEC-138 bans `$sample`: contracts and the SEO baseline are reviewed as diffs.
 - **Nesting is linted.** An expression nested deeper than three calls reports
   `expression-depth`, a warning. It is the signal that a computation wants a dedicated function
-  or a `prepare` stage. *Kept 2026-11-09* as a warning at three: the deepest real expression so
-  far, `codegroup`'s label, nests two deep. The limit is revisited once the first definitions
-  are written.
+  or a `prepare` stage. *Kept 2026-11-09* as a warning at three. `codegroup`'s label nests
+  exactly three deep (`first(item(split(…)))`), and its template selector first nested four,
+  which the lint caught; it now names the intermediate fact (`single`) instead. The limit is
+  revisited once the first definitions are written.
 - **One expression language** (*decided 2026-11-09*). `computes` takes only this vocabulary.
   A site with {% ref "SPEC-138" /%}'s engine plugin (mingo) cannot write structured expressions
   under `computes`: that would give expressions two languages, which is what this spec removes.
@@ -328,7 +330,7 @@ Indexes count from 0.
 | `add` | `…values` | the operands' kind | sums numbers, or durations, or amounts of one currency; mixed kinds report `function-argument-kind` | `recipe`, `toc` (depth + 1) |
 | `subtract` | `a, b` | the operands' kind | `a − b` | date and duration differences |
 | `multiply` | `…values` | number | product | `progress` (× 100) |
-| `divide` | `a, b` | number | `a ÷ b`; dividing by zero returns `undefined`, never `Infinity` | `progress`, `embed` |
+| `divide` | `a, b` | number | `a ÷ b`; dividing by zero returns `undefined`, never `Infinity` | `progress` |
 | `mod` | `a, b` | number | remainder | `conversation` (`$index` mod speaker count) |
 | `round` | `value, [digits=0]` | number | rounds half away from zero | `progress` |
 | `clamp` | `value, min, max` | number | limits to the range | `progress`, `drawer` (heading level) |
@@ -360,7 +362,7 @@ Indexes count from 0.
 |---|---|---|---|---|
 | `if` | `condition, then, [else]` | any | a value, not control flow: `then` when `condition` is truthy, else `else` | `pagination`, `progress`, `codegroup` |
 | `lookup` | `table, key, [fallback]` | any | the value under `key` in an object, written inline or declared once in the definition | `showcase` aliases, `language` |
-| `matches` | `record, query` | boolean | evaluates a SPEC-070 query against a record, with `field-match.ts`'s parser and matcher (D5) | `symbol`'s `when`, `condition`, template `{% if %}` |
+| `matches` | `record, query` | boolean | evaluates a SPEC-070 query against a record, with `field-match.ts`'s parser and matcher (D5) | `symbol`'s template `{% if %}`, `condition` |
 
 **New: page and site** (SPEC-194 D12)
 
@@ -374,8 +376,9 @@ Indexes count from 0.
 
 These are variables and declarations, listed so the whole surface is in one place:
 
-- **Variables:** `$attrs`, `$computed`, `$slots`, and inside a repeated slot `$item` (a data
-  list's entry) or `$each` (a content-model item), and `$index`.
+- **Variables:** `$attrs`, `$computed`, `$slots`, `$frontmatter`, and inside a repeated slot
+  `$item` (a data list's entry) or `$each` (a content-model item), `$index`, and in
+  `emitAttributes` and per-item `computes`, `$node` (the matched node's own attributes).
 - **`$page`:** `url`, `path`, `dir`, `slug`, `title`, `draft` (existing); `parent`,
   `ancestors`, `children`, `prev`, `next`, `headings` (SPEC-194 D12).
 - **`$site`:** `pages` and the page tree.
@@ -414,10 +417,14 @@ first two disagree about the same fence ("JavaScript" vs "js").
 
 ```yaml
 computes:
-  panels.label: first(item($attrs.labels, $index), $node.label, basename($node.source), language($node.language))
+  panels.file:  if($node.lines, concat(basename($node.source), ":", $node.lines), basename($node.source))
+  panels.label: first(item(split($attrs.labels), $index), $node.label, $each.file, language(first($node.language, "shell")))
 ```
 
-Twin: D6's fan-out rule, which BUG-025 also needs.
+Twin: D6's fan-out rule, which grouping by a multi-value field also uses.
+
+This is `codegroup`'s own expression ({% ref "SPEC-194" /%} D14). `compare` and `juxtapose`
+use the same chain without the source step.
 
 **`symbol`: one predicate form.** Today: a content-model function branching on
 `GROUP_KINDS.includes(attrs.kind)` (`plugins/docs/src/tags/symbol.ts`). Under SPEC-169 D5 the
@@ -459,12 +466,18 @@ first gap). One SPEC-166 implementation unblocks both.
 - [ ] A rune whose `computes` entries are all expressions loads without a `prepare` stage
 - [ ] `matches()` evaluates SPEC-070 queries with the same parser and matcher as `field-match.ts`
 - [ ] `metaFields.*.condition` and template `{% if %}` accept expressions, including `matches()`; a bare attribute name still works as a condition
-- [ ] One fan-out implementation serves `field-match.ts`, `splitOn`, `split` and `item`; BUG-025 is fixed through it
+- [ ] One fan-out implementation serves `field-match.ts`, `splitOn`, `split`, `item` and multi-value grouping (the split BUG-025's fix added moves onto it)
 - [ ] `first`, `item`, `basename` and `language` exist, and `codegroup`, `compare` and `juxtapose` label panels through one expression; every label difference this causes is listed and accepted
 - [ ] `sum` shares its implementation with SPEC-138's `measure`
 - [ ] `functions.ts` is reimplemented over the shared formatters and operations; output is unchanged except that the site's locale is used
 - [ ] `recipe` publishes `totalTime` from `computes`, and the SEO baseline diff shows it
 - [ ] An expression nested deeper than three calls reports `expression-depth`
+- [ ] A malformed frontmatter expression reports `expression-syntax` with its location (D8)
+- [ ] `computes` accepts the closed `{ value, values }` form; a result outside `values` is an error, and such a value can select a template variant (D8, SPEC-168 D9)
+- [ ] `computes` can read `$page`, `$site`, `$frontmatter` and `$slots`, and per-item keys can read `$node`, `$index` and `$each.<name>`; cycles report `computes-cycle` (D8)
+- [ ] The `to*` coercions, the arithmetic family, `if`, `lookup` and `text` exist with typed signatures (D4)
+- [ ] `url`, `neighbours` and `select` read the page index at transform; an unknown slug reports `url-unknown-slug` and returns `undefined` (D4, SPEC-194 D12)
+- [ ] Only packages register functions; no function reads the clock or a random source; `computes` accepts no expression language but this one (D9)
 - [ ] `grid`, `details`, `compare`, `conversation`, `progress`, `actions`, `figure` and `map-pin` express their computations with the function set, or each gap is recorded as a candidate function
 
 ## Open questions
@@ -484,6 +497,6 @@ other specs: value kinds ({% ref "SPEC-166" /%}) and range comparisons in the fi
 - {% ref "SPEC-162" /%}: `amount` and `tally`.
 - {% ref "ADR-036" /%}: name the pattern; do not open a language.
 - {% ref "ADR-043" /%}, {% ref "ADR-045" /%}: what a theme and a template may change.
-- {% ref "BUG-025" /%}: multi-value grouping.
+- {% ref "BUG-025" /%}: multi-value grouping, fixed in v0.39.0 with its own split.
 
 {% /spec %}

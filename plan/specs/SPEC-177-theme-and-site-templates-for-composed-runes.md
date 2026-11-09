@@ -7,6 +7,11 @@
 {% ref "ADR-045" /%} lets a theme or a site replace a composed rune's template while keeping its
 input. This spec is the mechanism:
 
+> *Widened 2026-11-09* by {% ref "ADR-048" /%}: every rune becomes a definition with a template,
+> so this mechanism applies to every rune, not only composed ones. Its checks read slots from
+> the content model and values from `computes` ({% ref "SPEC-194" /%} D4).
+
+
 - a replacement is a definition file with the input half left out;
 - it can replace one template value and inherit the rest;
 - it can change the defaults of the template selector and the presentation axes with `defaults`;

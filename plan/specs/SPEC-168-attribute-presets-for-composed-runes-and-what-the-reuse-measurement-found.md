@@ -368,8 +368,9 @@ choices of arrangement are facts about the content rather than an author's attri
 ```yaml
 templates: { by: layout }
 computes:
+  single: and(equals(count($slots.panels), 1), not($attrs.labels))
   layout:
-    value: if(and(equals(count($slots.panels), 1), not($attrs.labels)), "single", "tabs")
+    value: if($computed.single, "single", "tabs")
     values: [single, tabs]
 ```
 
@@ -380,6 +381,8 @@ computes:
   which one is chosen: a computed selector has no default for SPEC-177 D3 to change. Which
   arrangement a piece of content gets stays a fact about the content.
 - **This is not a second axis.** One selector, attribute or computed, as above.
+- **A computed selector may not share its name with an attribute**: the definition reports
+  `template-selector-ambiguous`, since `{% template layout="…" %}` could not say which it means.
 
 ## Incidental findings
 

@@ -1,6 +1,22 @@
-{% decision id="ADR-048" status="proposed" date="2026-11-05" source="SPEC-194" tags="theme, composition, template, content-model, native, engine, architecture" %}
+{% decision id="ADR-048" status="accepted" date="2026-11-05" source="SPEC-194" tags="theme, composition, template, content-model, native, engine, css, classes, architecture" %}
 
 # A rune is input and template; code may only compute, and themes arrange every rune
+
+> **Accepted on 2026-11-09**, together with {% ref "SPEC-194" /%}, {% ref "SPEC-195" /%} and
+> {% ref "SPEC-196" /%}, after a review pass that brought the four into line:
+>
+> 1. **A rune has one name, its tag name** (SPEC-196 D10). It is also its `data-rune` and its
+>    block, so moving to a definition changes no class; only eight `data-rune` values change.
+> 2. **`block` is no longer kept** in decision 1.5's list.
+> 3. **The drawings are one list** (SPEC-194 D8): `chart`, `map`, `diagram`, `audio`,
+>    `juxtapose`. `embed` is a domain rune that places a `frame` primitive.
+> 4. **Decision 3 and its terms** are explained under Context, and the implementation order
+>    lands the role-based classes before the first native domain rune moves.
+>
+> The amendments this decision makes elsewhere carry back-pointers: ADR-045 decision 7
+> (superseded), SPEC-145 D2, SPEC-161 D3, SPEC-168 D9, SPEC-177, SPEC-181 (fifth gate) and
+> SPEC-185 D6. ADR-029 and ADR-031 are still `proposed`; rejecting them, as the Consequences
+> say they should be, is a separate step.
 
 ## Context
 
@@ -48,12 +64,22 @@ a computation that needs code. SPEC-194 D6 has the inventory. Examples:
 - **Budget:** `Description: $Amount` is an `itemModel` pattern; the subtotal is arithmetic.
 - **Comparison:** columns from headings and rows from bold-labelled items are declarable;
   aligning rows across columns is a computation.
-- **Codegroup:** its model is declarative already; the tab label's fallback chain is a
-  computation.
+- **Form:** the field groupings are declarable; inferring each field's type from its option
+  count and modifier words is a computation.
 
 A `custom` model is also opaque to tooling: `packages/runes/src/reference.ts` can report only its
 prose `description`. The language server, editor, reference docs and validation see a grammar for
 most runes and a sentence for these fourteen.
+
+### Terms, and the third decision
+
+- **"Native" means written in TypeScript today.** Once a rune moves, it is a definition like any
+  composition; one that needs code names a `prepare` stage. "The first native runes to move"
+  (SPEC-194 D14) means runes that are TypeScript now.
+- **Decision 3 came later.** While settling which runes keep classes ({% ref "SPEC-196" /%}), it
+  became clear that converting a rune had been aiming at parity with its current look, and that
+  this kept rune-specific CSS alive under another name. ADR-044 already states the end the
+  project wants: a theme that names no rune. Decision 3 makes conversions aim at it.
 
 ## Options Considered
 
@@ -103,15 +129,16 @@ most runes and a sentence for these fourteen.
    definition), its `defaults`, and its checks apply to a native rune's template unchanged.
    ADR-045 decision 7 ("native runes are unaffected") is superseded.
 5. **The engine renders the vocabulary; it assembles no rune.**
-   - Kept as vocabulary semantics: `block`, `modifiers`, `metaFields`, `blocks` (a named group
+   - Kept as vocabulary semantics: `modifiers`, `metaFields`, `blocks` (a named group
      of fields the template places), `sequence`, axis defaults, `rootAttributes`, `interactive`
-     and `editHints`. SPEC-194 D5 classifies every field.
+     and `editHints`. SPEC-194 D5 classifies every field. `block` goes: a rune's name is its tag
+     name, and its classes are the theme's (SPEC-196 D10).
    - Deprecated as structure assembly, as each rune moves: `structure`, `layout`,
      `contentWrapper`, `autoLabel`, `projection` and `postTransform`.
    - Engine config becomes compiler output, generated from a definition as
      `composedRuneConfig` already does, and is never a theme surface.
-6. **An opaque visual is one slot.** A rune whose inside is a drawing (`map`, `chart`,
-   `diagram`, `juxtapose`) places its drawing as a single slot. Its title, legend, caption and
+6. **An opaque visual is one slot.** A rune whose inside is a drawing (`chart`, `map`,
+   `diagram`, `audio`, `juxtapose`; the list is SPEC-194 D8's) places its drawing as a single slot. Its title, legend, caption and
    controls are fields and slots around that slot, which a theme may arrange. The drawing's own
    CSS stays the plugin's, written in tokens only (ADR-044 tier 3).
 7. **A template never names an HTML element.** It places slots, fields, groups and runes.
@@ -160,7 +187,8 @@ most runes and a sentence for these fourteen.
 - **It removes the engine's second template language.** Arrangement is expressed once, in the
   template language, which is readable, checkable and overridable.
 - **It keeps code where code is needed, and nowhere else.** `prepare` is small and pure:
-  arithmetic, alignment, inference, label derivation. Everything around it is declared, so
+  provider tables, diffing, field-type inference. Arithmetic and label chains are
+  {% ref "SPEC-195" /%}'s functions. Everything around it is declared, so
   tooling sees every rune's grammar and every rune's output shape.
 - **It completes ADR-043 and ADR-045 rather than reversing them.** ADR-043's line (a theme does
   not change meaning) and ADR-045's (a theme may change arrangement) hold unchanged. This
@@ -186,7 +214,8 @@ most runes and a sentence for these fourteen.
   composed runes.
 - **Each native rune needs a pass** to separate its parse, its computation and its arrangement.
   Some transforms make arrangement decisions while parsing (`codegroup`'s single-fence case).
-  Under this decision, `prepare` reports the fact and the template decides.
+  Under this decision, the fact is computed in the input half and selects a template variant
+  ({% ref "SPEC-168" /%} D9), so the arrangement stays the template's.
 - **Tooling gains a full grammar** for the fourteen runes that today report only a prose
   `description` in `refrakt reference`, the language server and the editor.
 - **The vocabulary must grow ahead of the conversions.** Every rule a triage promotes needs a
@@ -209,24 +238,25 @@ which prove the definition format on many runes first.
      ({% ref "SPEC-163" /%}, {% ref "SPEC-164" /%});
    - SPEC-195's basics, which unblock conversions such as `recipe`'s `totalTime` and `budget`'s
      sum: the function registry with signatures, `computes` expressions, `matches`, `first`,
-     `item`, `split` and the fan-out rule ({% ref "BUG-025" /%}). Values may stay strings until
+     `item`, `split` and the fan-out rule. Values may stay strings until
      {% ref "SPEC-166" /%} lands;
    - the Lumina lint (SPEC-196 D11), with an allowlist that starts as today's rune stylesheets.
 3. **Template-language extensions**, each just before its first user: two-level iteration
    (SPEC-194 D12) and `fragment` ({% ref "SPEC-168" /%} D8).
-4. **The composition migration continues** (the plugin audits SPEC-147 to SPEC-157), each
+4. **SPEC-196's role-based classes**: the `classes` setting with `"bem"` classing primitives and
+   drawings, and `role` on definitions. It changes no output on the day it lands, and it must
+   precede the first native domain rune that becomes a definition (`embed`), so that rune loses
+   its classes the way compositions do.
+5. **The composition migration continues** (the plugin audits SPEC-147 to SPEC-157), each
    conversion with its stylesheet triaged and its rune removed from the allowlist. Alongside it
    run the first native definitions, in SPEC-194 D14's order (`pull-quote` with the
    `attribution` primitive, then `codegroup`, then `embed` with the `frame` primitive), and the
    loader split for `$page` and `$site` (SPEC-194 D12).
-5. **SPEC-196's role-based classes** land before the first native domain rune moves to a
-   definition, so that it loses its classes the way compositions do.
-6. **The remaining native runes move to definitions**, in SPEC-194 D10's order: functions-only
-   runes, then `prepare` (`embed`), then the pipeline runes through D12, then the drawings. Each
-   is triaged like a conversion.
+6. **The remaining native runes move to definitions**, in SPEC-194 D10's order. Each is triaged
+   like a conversion.
 7. **Removals, last**, once nothing first-party uses them (SPEC-194 D9): the structure-assembly
-   config fields, the `runes:` section of theme config, `CustomModel`, and SPEC-196 D10's old
-   class names. `featured-tier` goes with the `pricing` composition.
+   config fields, the `runes:` section of theme config, `CustomModel`, and the old `data-rune`
+   names SPEC-196 D10 replaces. `featured-tier` goes with the `pricing` composition.
 
 One rule holds throughout: **no conversion is merged that would need its CSS triaged twice.**
 If a conversion is ready before the vocabulary it needs, the vocabulary is extended first.
