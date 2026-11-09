@@ -218,9 +218,15 @@ and "build a predicate" in a filter would confuse more than the second syntax co
 - **Scopes** available to a `computes` expression:
   - `$attrs`;
   - other computed values (`$computed`), with cycles reported as `computes-cycle`;
-  - for a per-item key (`panels.label`): the item's emitted values (`$node`) and `$index`.
+  - for a per-item key (`panels.label`): the item's emitted values (`$node`) and `$index`;
+  - the page and the site: `$page`, `$site` and `$frontmatter`.
 
-  Page variables are not available (see Open questions).
+  *Decided 2026-11-09.* An earlier draft kept page variables out of `computes`, so that a rune's
+  fields could not depend on the page it sits on. {% ref "SPEC-194" /%} D12 makes that
+  dependence the point for a whole group of runes: a `pagination` or `breadcrumb` in a layout
+  must compute different values on every page, from `$page`. So page variables are available,
+  and the dependence is documented rather than prevented. A rune that reads the registry is not
+  covered by this: registry reads are `data:` entries, and they defer the rune (SPEC-194 D12.4).
 
 ### D9: guardrails
 
@@ -416,9 +422,6 @@ first gap). One SPEC-166 implementation unblocks both.
 
 ## Open questions
 
-- **Page scope in `computes`.** May an expression read page variables (`$frontmatter`)? Doing
-  so makes a rune's fields depend on the page it sits on, which is sometimes the point (a
-  default author) and sometimes a surprise. Proposed: not at first.
 - **An engine for `computes`.** SPEC-138's engine plugin (mingo) evaluates structured queries.
   Should a site with the plugin also be able to write a structured expression under `computes`?
   It would give code-free runes more power, but expressions would then come in two languages.
