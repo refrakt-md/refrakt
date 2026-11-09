@@ -217,12 +217,26 @@ Each `RuneConfig` field (`packages/transform/src/types.ts`) falls into one of th
 |---|---|---|
 | Identity and vocabulary | `block`, `modifiers`, `contextModifiers`, `metaFields`, `blocks`, `sections`, `provides`, `universalAttributes`, `mediaSlots`, `frameTarget`, `substrateTarget`, `rootAttributes`, `interactive`, `editHints`, `sequence`, `sequenceDirection`, `staggerItems`, `parent`, `requiresParent`, `sectionRoleExceptions`, `guestFit`, `composed`, the axis defaults (`defaultWidth`, `defaultSpacing`, `defaultInset`, `defaultReading`, `contentMeasure`, `defaultDensity`, `defaultElevation`, `defaultProminence`, `childDensity`) | kept; generated from the definition |
 | Structure assembly | `structure`, `layout`, `contentWrapper`, `autoLabel`, `projection`, `postTransform` | deprecated; the template does it |
-| To classify | `variants`, `styles`, `staticModifiers`, `checklist`, `scope` | decided field by field in the first work item; each is either vocabulary or assembly |
+| Classified on 2026-11-09 | `variants`, `styles`, `staticModifiers`, `checklist`, `scope` | each settled below |
+
+**The five fields settled last** (*measured 2026-11-09*):
+
+| Field | What it is | Uses | Fate |
+|---|---|---|---|
+| `variants` | merges a partial config over the base, per modifier value, before assembly | 4: `card`, `section`, `recipe`, `track` | **deprecated with assembly.** Two of the four deltas override assembly (`recipe` and `track` add `layout` wrappers; `recipe`'s is a free `div` with attributes, which D11 forbids). The template expresses each as a `{% if %}`. The other two deltas only add the `cover` static modifier and a root attribute, both already said by `data-media-position="cover"` |
+| `styles` | turns a modifier value into an inline style or custom property | 15 (6 core, 9 plugin) | **vocabulary, but not a definition key.** Definitions already reject a `styles` key (`STYLE_KEYS`, `packages/runes/src/lib/composition.ts:1735`). A definition forwards the attribute to the primitive that owns the style, as `hero` already forwards `valign` to `section`. 8 of the 15 uses are the same `valign → --split-valign` entry, which belongs to the split primitive |
+| `staticModifiers` | always adds `rf-{block}--{name}`, as a class only | 4: `featured-tier`, and `cover` inside 3 variants | **deprecated.** Every use is already said by an attribute (`data-rune="featured-tier"`, `data-media-position="cover"`); {% ref "SPEC-196" /%} D5 retargets the 14 selectors that use it |
+| `checklist` | nothing: no engine code reads it (checkbox detection runs on every list item) | 2: `work`, `bug` | **removed** |
+| `scope` | the i18n key prefix, stamped from the owning plugin (`assemble.ts:155`) | 0 authored | **identity, generated**: no authored replacement is needed |
 
 - **`block` names a rune for BEM, nothing more.** Which classes the output carries is the
   theme's setting ({% ref "SPEC-196" /%}). `block` is the name the built-in `"bem"` generator
   uses where it differs from `data-rune` (`codegroup` for `code-group`), so keeping it keeps
-  today's classes byte for byte. It no longer decides whether a rune has classes.
+  today's classes byte for byte. It no longer decides whether a rune has classes. Definitions
+  reject a `block` key today (`STYLE_KEYS`, SPEC-145 D2), so a native rune that moves to a
+  definition either keeps `block` as a declared BEM name, admitted only for that purpose, or
+  its classes are renamed to its `data-rune` through SPEC-189's migration table. SPEC-196 lists
+  this as open.
 - **A rune with a definition gets its engine config generated**, as `composedRuneConfig` does.
   `config.ts` keeps only runes that have not moved.
 - **A deprecated field on a rune that has a template is an error**
@@ -299,6 +313,19 @@ Each extension is specified and implemented with the first rune that needs it, n
 
 A theme can put a map's legend under the map. It cannot restyle the map's tiles except through
 tokens.
+
+**Parts a behaviour depends on are primitives or opaque slots** (*decided 2026-11-09*, after an
+audit of every behaviour and web component). A replacement template keeps every slot and every
+`data-name`, but a behaviour that relies on element choice or DOM shape needs more than that:
+
+| Depends on | Behaviours | So |
+|---|---|---|
+| a fixed element | `accordion` (native `<details>` and `<summary>`), `tabs` (`<button>`), `datatable` and `chart` (`<table>`), `form` (`<form>`) | the part is a primitive that owns its element |
+| a custom-element root | `rf-chart`, `rf-map`, `rf-diagram`, `rf-audio`, `rf-sandbox`, `rf-nav` | a template never changes the root element of these runes |
+| direct-child order | `tabs` (button *i* pairs with panel *i*), `juxtapose` (two panels by position), carousel (slides are the track's children) | the container and its items are one primitive; "direct children" is documented as its contract |
+| the whole arrangement | `preview`, which turns every other root child into canvas content | `preview` is one opaque slot; a template arranges nothing inside it |
+
+Every other behaviour needs only selector changes, listed in {% ref "SPEC-196" /%} D6.
 
 ### D9: when the legacy levers are removed
 
@@ -627,10 +654,11 @@ first to recheck in each rune's work item.
 
 ## Open questions
 
-- **Interactive runes whose behaviour depends on DOM shape.** The template places primitives
-  that carry the behaviour (`tabs`), so a theme's template keeps it. A rune whose behaviour
-  script reads its own private structure would break under a replacement template. Either such
-  behaviour moves into a primitive, or the definition marks that part as one opaque slot (D8).
+None remain at the top level. What is still open sits where it applies:
+
+- within D12: two-level iteration (specified, not built) and the `fragment` override point,
+  which depends on {% ref "SPEC-168" /%} D8;
+- in {% ref "SPEC-196" /%}: whether `block` stays a declared BEM name in definitions.
 
 ## Future: reusing computation
 

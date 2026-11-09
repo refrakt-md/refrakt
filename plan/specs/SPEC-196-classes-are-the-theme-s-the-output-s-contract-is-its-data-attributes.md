@@ -47,10 +47,21 @@ carries the same data attributes, and the theme's setting decides what classes f
   | modifier, `rf-{block}--{value}` | `modifiersFacet` | yes, `data-{modifier}` |
   | width, spacing, inset (`--{value}`, `--spacing-…`, `--inset-…`) | `facets/box.ts` | yes, from the axis values |
   | `--has-bg` | `facets/bg.ts` | yes, `data-bg` |
-  | `--tinted` | `facets/tint.ts`, only when tint tokens resolve | **unclear**: `data-tint-dark` and colour-scheme attributes exist, but no attribute says "tokens resolved" |
+  | `--tinted` | `facets/tint.ts`, only when tint tokens resolve | **almost**: `data-tint` differs only for an unknown tint name or `tint="custom"` with no tokens (D5) |
   | context modifier, `--{suffix}` when nested in a named parent (`rf-card--in-recipe`) | `contextModifiersFacet` | **none** |
-  | static modifier, always applied | `staticModifiersFacet` | **none** |
-  | `rf-{block}__ordinal` on sequence items | `numberItems` (`engine.ts:905`) | **none** |
+  | static modifier, always applied | `staticModifiersFacet` | **yes, in every first-party use** (D5) |
+  | `rf-{block}__ordinal` on sequence items | `numberItems` (`engine.ts:905`) | **yes**, `data-name="ordinal"` (D5) |
+
+  *Corrected 2026-11-09* after the D5 measurement: an earlier draft listed the last two as
+  having no twin.
+- **Classes made outside the engine.** Some output carries hard-coded classes that no theme
+  setting reaches, and some of them are read back by code:
+  - the code-block wrapper `rf-codeblock` (`packages/runes/src/nodes.ts:146`) and
+    `rf-table-wrapper` (`nodes.ts:426`), read back by `datatable.ts:48` and `compare.ts:52`;
+  - `rf-nav--collapsible`, written by the `nav` schema itself (`packages/runes/src/tags/nav.ts:331`);
+  - the layout chrome in `packages/transform/src/layouts.ts`: the mobile panel, the search
+    trigger's key hint and the docs sidebar (`rf-docs-sidebar`, which `ThemeShell.svelte`
+    selects at lines 76 and 95).
 
 - **JavaScript selects by class.** `@refrakt-md/behaviors` has 29 hard-coded `.rf-` selectors
   (for example `.rf-datatable__sort-indicator`, `.rf-chart__bar`, `.rf-codeblock`), beside 40
@@ -149,19 +160,80 @@ attribute. The engine then emits both, so that nothing is lost when a theme choo
 
 | Class only today | Proposed attribute |
 |---|---|
-| context modifier (`rf-card--in-recipe`) | the parent rune, for example `data-in="recipe"` |
-| static modifier | `data-<name>` |
-| `rf-{block}__ordinal` | `data-name="ordinal"`, as other named parts have |
-| `--tinted` (tokens resolved) | `data-tinted`, if no existing attribute already says it |
+| context modifier (`rf-card--in-recipe`) | **`data-in="<parent rune>"`** on runes that declare the parent |
+| static modifier | **none needed**: retarget the CSS |
+| `rf-{block}__ordinal` | **none needed**: already `data-name="ordinal"` |
+| `--tinted` (tokens resolved) | **`data-tinted`**, a presence flag, or retire the class |
 
-The names are provisional and are settled in the first work item. Each is additive: no existing
-selector stops matching.
+*Settled 2026-11-09* by a measurement of every producer and every CSS selector:
+
+- **Context modifiers are the only fact truly lost under `"none"`.** 9 runes declare them
+  (`hint` in `hero` and `feature`, `actions` in `bar`, `showcase` in `bento-cell`, three design
+  runes in `design-context`, `preview` and `feature`). Lumina and the skeleton use them in 31
+  selectors, most often `actions--in-bar` (11) and `showcase--in-bento-cell` (6). The parent's
+  `data-rune` is on an ancestor, but no ancestor selector says "the nearest enclosing rune".
+  Every suffix is exactly `in-` plus the parent's name, so `contextModifiers` reduces to a list
+  of parents, and `data-in` carries it.
+- **Static modifiers are already said by attributes** in every first-party use:
+  `rf-featured-tier--featured` by `data-rune="featured-tier"`, and the `cover` modifier on
+  `card`, `section` and `recipe` by `data-media-position="cover"` and `data-cover-scope`. The 14
+  selectors using them (9 `section--cover`, always beside `[data-media-position="cover"]`, and
+  5 `tier--featured`) are retargeted, and the field is deprecated (SPEC-194 D5).
+- **The ordinal is already satisfied.** The engine emits `data-name="ordinal"` and
+  `data-meta-type="quantity"` on it (`engine.ts:903`), and every rule styling it uses
+  `[data-sequence="numbered"] > li > [data-name="ordinal"]`. No CSS uses the class.
+- **`--tinted` is styled nowhere** (0 selectors; `[data-tint]` has 16). It differs from
+  `data-tint` only for an unknown tint name or `tint="custom"` with no tokens. `data-tinted=""`
+  follows the `data-tint-dark=""` convention. `data-tint` is not narrowed, since that would
+  change what existing `[data-tint]` rules match.
+- **The names are free.** `data-in`, `data-tinted`, `data-cover` and `data-featured` appear
+  nowhere in the packages or plugins. `data-parent` is taken (a `realm` field), which is why
+  `data-in` is used.
+
+Each addition is additive: no existing selector stops matching.
 
 ### D6: behaviour scripts and components select by attribute only
 
-The 29 `.rf-` selectors in `@refrakt-md/behaviors` move to `data-name` and `data-rune`, and a
-test fails on any `.rf-` selector there. Svelte components are checked the same way. This is
+Selectors in `@refrakt-md/behaviors` and the Svelte components move to `data-name`, `data-rune`
+and the other vocabulary attributes, and a test fails on any `.rf-` selector there. This is
 worth doing first and regardless: it fixes the latent prefix bug.
+
+**Measured 2026-11-09** (every behaviour and web component read; a few toolbar builders
+skimmed):
+
+- **27 class-selector sites**, plus 2 in Svelte (`ThemeShell.svelte` selects `rf-docs-sidebar`):
+  - **13 select classes the behaviour injected itself**, and keep matching under `"none"`;
+  - **14 select classes something else emits**, and break. Their swaps:
+
+    | Behaviour | Selects | Becomes |
+    |---|---|---|
+    | `drawer` | `.rf-drawer__close` | `[data-name="close"]` (exists) |
+    | `rf-diagram` | `.rf-diagram__container`; returns before rendering under `"none"` | `[data-name="container"]` (exists) |
+    | `rf-map` | `.rf-map__container`, `ol` | `[data-name="container"]`, `[data-name="pins"]` (exist) |
+    | `mockup` | `.rf-mockup__frame`, and `parentElement` of the host | `[data-name="frame"]` (exists), `closest('[data-section="media"]')` |
+    | `datatable` | `.rf-datatable__scroll` | `[data-name="scroll"]` (exists) |
+    | `copy` | `rf-codeblock` (×2) | **a new attribute** on the code-block wrapper |
+    | `mobile-menu` | `.rf-mobile-panel` and `--nav` (×3) | **new attributes** on the layout chrome |
+    | `search` | `.rf-search-trigger__kbd` | **a new attribute** on the layout chrome |
+
+    Three of the 14 are dead: `.rf-map__fallback` and `section-nav`'s `.rf-plan-relationships`
+    (×2) have no emitter anywhere.
+- **Classes written onto rune-owned elements** must stop, since under `"none"` they put classes
+  back: `reveal` (`rf-reveal-step--visible`/`--hidden`), `tabs` (an `--active` class derived from
+  the first button's class, which a mapping would turn into junk like `px-3--active`), the audio
+  player (`rf-track--active`) and `copy`. Each already has, or gets, `data-state`, and the CSS
+  moves to it.
+- **Classes on elements a behaviour creates** (about 70 `className =` writes: toolbars, buttons,
+  indicators) are the behaviour's own UI. They also get a `data-name`, so the CSS styling them
+  can move to attributes and `"none"` holds for the whole page. They are lower priority than
+  the two kinds above, because nothing breaks while they keep their classes.
+- **Classes made outside the engine** (listed under "What exists") get data-attribute twins, so
+  the swaps above have something to select.
+- **A bug found on the way:** `nav-menubar` looks for each group's list as `:scope > ul,
+  :scope > ol` (`packages/behaviors/src/behaviors/nav-menubar.ts:30`), but `nav-group` always
+  wraps its items in `<div data-name="panel">` (`packages/runes/src/tags/nav.ts:252`), so every
+  group is skipped. It was confirmed by reading, not run, and there is no menubar behaviour test.
+  The swap to `[data-name="panel"]` fixes it.
 
 ### D7: contracts in two layers
 
@@ -228,8 +300,11 @@ by {% ref "ADR-044" /%}: its per-rune stylesheets drain as runes compose, and `h
 
 ## Open questions
 
-- **The attribute names in D5.** `data-in` for a parent context, and whether `--tinted` needs
-  its own attribute.
+- **`block` in definitions.** Definitions reject a `block` key today (`STYLE_KEYS`,
+  `packages/runes/src/lib/composition.ts:1735`). A native rune whose `block` differs from its
+  `data-rune` (`codegroup`, `toc`) either keeps `block` as a declared BEM name when it moves to a
+  definition, or its classes are renamed through SPEC-189. Keeping it is byte-identical;
+  renaming removes an alias nobody but the BEM generator needs.
 - **Combining settings across themes.** A theme that extends Lumina may want Lumina's BEM plus
   its own mapped classes; `{ bem, add }` covers that. Whether a child theme can also *drop* the
   parent's mapping is undecided; add-only suggests not.
