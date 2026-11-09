@@ -18,7 +18,8 @@ already-parsed content. This spec is the mechanism:
 - when the legacy levers are removed (D9), and the migration order (D10);
 - a template never names an HTML element (D11);
 - a rune reads data from three scopes, and only the entity registry makes it wait (D12);
-- a primitive is a definition too, and places smaller primitives such as `attribution` (D13).
+- a primitive is a definition too, and places smaller primitives such as `attribution` (D13);
+- the first migrations, worked: `pull-quote`, `codegroup`, `embed` (D14).
 
 ## Prerequisites
 
@@ -345,7 +346,9 @@ Every other behaviour needs only selector changes, listed in {% ref "SPEC-196" /
 
 ### D10: migration order
 
-1. **Two acceptance cases**, one per half of the mechanism:
+1. **Three acceptance cases**, worked in D14, in this order:
+   - **`pull-quote` for a primitive written as a definition** (D13), with no `prepare` and no
+     `computes`.
    - **`codegroup` for the template and `computes`.** Its parse is declarative already, its two
      computed values are SPEC-195 expressions, and its arrangement (tabs, or a single panel with
      chrome) is one a theme plausibly wants to change.
@@ -354,7 +357,7 @@ Every other behaviour needs only selector changes, listed in {% ref "SPEC-196" /
      that would make them functions.
 
    *Revised 2026-11-07.* An earlier draft made `codegroup` the single acceptance case, before
-   the measurement below showed it needs no stage.
+   the measurement below showed it needs no stage. *Revised 2026-11-09:* `pull-quote` added as the first case.
 2. **The "declarable today" runes in D6**: they need no new grammar and no `prepare`, so each
    one probably becomes a plain composition (ADR-044 tier 1) rather than a native rune with a
    template.
@@ -604,9 +607,10 @@ of `packages/runes/src/tags/pullquote.ts` and its `PullQuote` engine entry becom
 
 ```md
 ---
-tag: figure
+tag: if($attrs.excerpt, "aside", "figure")
 role: primitive
 aliases: [quote]
+templates: { by: excerpt }
 description: A featured quotation, or with `excerpt` a pull quote repeated from the text
 attributes:
   author:  { type: string, description: "Who said it, when not written as a paragraph" }
@@ -652,12 +656,27 @@ defaults: { density: compact, elevation: flush, reading: prose }
 editHints: { quote: inline }
 ---
 
-{% group name="quote" as="blockquote" %}
-	{% slot name="quote.body" %}{% slot name="body" /%}{% /slot %}
-{% /group %}
+{% template excerpt=false %}
+	{% group name="quote" as="blockquote" %}
+		{% slot name="quote.body" %}{% slot name="body" /%}{% /slot %}
+	{% /group %}
 
-{% attribution name=$attrs.author source=$attrs.source /%}
+	{% attribution name=$attrs.author source=$attrs.source /%}
+{% /template %}
+
+{% template excerpt=true %}
+	{% group name="figure" as="figure" %}
+		{% group name="quote" as="blockquote" %}
+			{% slot name="quote.body" %}{% slot name="body" /%}{% /slot %}
+		{% /group %}
+
+		{% attribution name=$attrs.author source=$attrs.source /%}
+	{% /group %}
+{% /template %}
 ```
+
+The two templates share their inside, which {% ref "SPEC-168" /%} D8's fragments will hold once
+they exist.
 
 | Today | In the definition |
 |---|---|
@@ -667,6 +686,7 @@ editHints: { quote: inline }
 | `renderAttribution` | the `attribution` primitive, below |
 | `new Tag('blockquote', …)` for the bare form, plus `withoutQuoteRole` | `group as="blockquote"` around `quote.body`, falling back to `body`; the authored blockquote is never rendered as its own node |
 | `data-quote` and `aria-hidden` set in code | `rootAttributes` as expressions |
+| the excerpt's `<aside>` root around a `<figure>` (SPEC-185 D1) | the root `tag:` as an expression, and two template variants selected by `excerpt` (SPEC-168 D9); the excerpt's inner figure is `group as="figure"` |
 | `align` defaulted by `fieldMetas` | the attribute's own default; the engine generates the modifier |
 | `block: pullquote`, the axis defaults, `sections`, `provides`, `editHints` | definition keys; the classes become `rf-pull-quote` ({% ref "SPEC-196" /%} D10) |
 | the deprecated `variant` | a {% ref "SPEC-189" /%} migration row, not part of the definition |
@@ -690,25 +710,171 @@ used by `pull-quote`, the core `blockquote` node, epigraphs and, through `pull-q
 
 **What the example needs that does not exist yet**, each settled in `pull-quote`'s work item:
 
-1. `group as="blockquote"`: the first value admitted to D11's closed `as=`.
+1. `group as="blockquote"` and `group as="figure"`: the first two values admitted to D11's
+   closed `as=`.
 2. The `attribution` primitive.
 3. A slot whose fallback content is another slot (`{% slot name="quote.body" %}{% slot name="body" /%}{% /slot %}`).
-4. `rootAttributes` in definitions, as expressions ({% ref "SPEC-195" /%}: input half, so meaningful).
+4. `rootAttributes` and the root `tag:` in definitions, as expressions ({% ref "SPEC-195" /%}:
+   input half, so meaningful). `tag:` takes only element names a definition could write
+   literally; a theme's replacement template cannot change it.
 5. Which filler wins when two fields fill one attribute. Today the paragraph after the quote beats
    the inside one; `fills` must say so by model order or explicitly.
 6. A behaviour difference to accept or fix: today an explicit `author` ignores the paragraph
    entirely; with per-attribute `fills`, an explicit `author` could still take `source` from it.
-7. **The excerpt loses its `<aside>`** (*decided 2026-11-09*). SPEC-185 D1 rendered an excerpt
-   as `<aside aria-hidden="true">` around the figure. Keeping it needs a template branch that
-   would place the quote slot twice, which SPEC-145 D30 rejects. An excerpt is now the same
-   `<figure>` with `aria-hidden="true"` and `data-quote="excerpt"`. Since `aria-hidden` takes it out
-   of the accessibility tree, the `<aside>`'s meaning reached nobody. SPEC-185 D1 and D4 are
-   amended to match; the change ships as a SPEC-189 migration row, since CSS targeting
-   `aside[data-quote]` must move to `[data-quote="excerpt"]`.
+7. **The excerpt keeps its `<aside>`** (*decided 2026-11-09*, revising a decision of the same
+   day to drop it). An earlier draft dropped the `<aside>` because a template branch would place
+   the quote slot twice, which SPEC-145 D30 rejects. Template variants selected by `excerpt`
+   (SPEC-168 D9) place each slot once per variant, so SPEC-185 D1's structure stays:
+   `<aside aria-hidden="true">` holding the figure. The output is unchanged.
 
 **The rule this sets.** When a template needs structure it cannot express, the answer is a small
 primitive with a role in the shared design language, placed by every rune that needs it, never an
 element name in the template. "Candidate primitives", below, records the cases measured so far.
+
+**Containment primitives are admitted with one user.** A primitive whose job is to contain
+something else (an `<iframe>` for embedded content, a sandboxed document) is admitted even with a
+single user, against the usual two-adopter bar. Its security-relevant attributes (`allow`,
+`sandbox`, `loading`, `referrerpolicy`) must be fixed in code, never written by a template or a
+theme's replacement template. `frame`, for `embed` (D14), is the first.
+
+### D14: the first migrations, worked
+
+*Decided 2026-11-09.* The first native runes to move each prove one new part of the mechanism,
+and none depends on a draft spec the way `hint` does (ADR-042 makes it wait for keyed strings
+and {% ref "SPEC-163" /%}'s `sentiment`, which would break {% ref "SPEC-181" /%}'s fourth gate):
+
+1. **`pull-quote`** (D13): the definition format for a primitive, `group as=`, `fills`, template
+   variants selected by an attribute, and root attributes as expressions. It keeps its classes,
+   so little CSS moves.
+2. **`codegroup`**, below: `computes` written with {% ref "SPEC-195" /%}'s functions, template
+   variants selected by a computed value, and placing a primitive with behaviour.
+3. **`embed`**, below: `prepare`, beside expression `computes`, and the first containment
+   primitive.
+
+The pipeline runes (`pagination`, `breadcrumb`, `toc`) follow the loader split (D12).
+
+**`codegroup`** replaces about 140 lines of `packages/runes/src/tags/codegroup.ts` and its engine
+entry:
+
+```md
+---
+tag: section
+role: primitive
+description: Code blocks shown in a window, as tabs when there are several
+attributes:
+  title:    { type: string, description: "Filename in the bar; an empty value shows the bar alone" }
+  labels:   { type: string, description: "Comma-separated tab labels, overriding the derived ones" }
+  overflow: { type: string, matches: [scroll, wrap, hide], default: scroll }
+content:
+  type: sequence
+  fields:
+    panels:
+      match: fence
+      greedy: true
+      emitAttributes: { language: $node.language, source: $node.source, lines: $node.lines, label: $node.label }
+templates: { by: layout }
+computes:
+  layout:
+    value: if(and(equals(count($slots.panels), 1), not($attrs.labels)), "single", "tabs")
+    values: [single, tabs]
+  panels.file:  if($node.lines, concat(basename($node.source), ":", $node.lines), basename($node.source))
+  panels.label: first(item(split($attrs.labels), $index), $node.label, $each.file, language(first($node.language, "shell")))
+metaFields:
+  title: { metaType: code, condition: title, renderWhenEmpty: true }
+blocks:
+  topbar: { fields: [title], layout: bar }
+rootAttributes:
+  data-code-host: "true"
+defaults: { density: compact, elevation: flat }
+editHints: { panels: code }
+---
+
+{% template layout="single" %}
+	{% metablock name="topbar" /%}
+	{% slot name="panels" each %}{% slot /%}{% /slot %}
+{% /template %}
+
+{% template layout="tabs" %}
+	{% metablock name="topbar" /%}
+	{% tab-group %}
+		{% slot name="panels" each %}
+			{% tab name=$each.label %}{% slot /%}{% /tab %}
+		{% /slot %}
+	{% /tab-group %}
+{% /template %}
+```
+
+- **It is a primitive, not a domain rune** ({% ref "SPEC-196" /%} D8's test). `preview` shows three
+  source views built in code today, and places `codegroup` instead; `sandbox` and `file-ref` show
+  source too. And a code window looks the same wherever it appears. So it keeps its look and its
+  classes (`rf-code-group`, SPEC-196 D10), and its stylesheet stays Lumina's.
+- **The single panel is `codegroup`'s own rule**, not `tab-group`'s: a lone fence without custom
+  labels is shown without a tab bar. The choice is a computed template selector (SPEC-168 D9, as
+  amended), so each variant places `panels` once, and a theme can replace either variant without
+  being able to change which one a code group gets.
+- **Its tabs are `tab-group`'s**, the primitive that already owns the tab behaviour. The engine
+  marks that `tab-group` with `data-in="code-group"` (SPEC-196 D5), and the theme styles the
+  tabs-in-the-bar look on `[data-rune="tab-group"][data-in="code-group"]`: two primitives meeting,
+  which is the theme's to style.
+- **Its labels come from SPEC-195's functions**: the fallback chain that is four helpers in code
+  today, and `language()`, shared with `compare`, which today shows "js" where `codegroup` shows
+  "JavaScript". The deepest expression nests three calls.
+- **Triage, as a primitive** (SPEC-196 D11): the question is which rules are the window's own
+  look, not drop or promote. `overflow` is the one rule that may move, to code blocks in general.
+- **Needs first:** SPEC-195's `first`, `item`, `split`, `basename`, `language`, `concat`, `count`,
+  `if`, `and`, `equals`, `not`; `$node` in `emitAttributes` (D1); `$slots` and a sibling per-item
+  value (`$each.file`) in `computes`' scope; and the computed selector in SPEC-168 D9.
+
+**`embed`** is the `prepare` acceptance case:
+
+```md
+---
+tag: figure
+role: drawing
+description: An embedded video, audio or page, from a URL
+attributes:
+  url:    { type: string, required: true, description: "The page or media to embed" }
+  aspect: { type: string, matches: ["16:9", "4:3", "1:1", auto], default: "16:9" }
+  title:  { type: string, description: "Accessible title for the embedded frame" }
+content:
+  type: sequence
+  fields:
+    fallback: { match: any, greedy: true, optional: true }
+prepare: embed
+computes:
+  provider:   { type: string }
+  embedUrl:   { type: string }
+  frameTitle: first($attrs.title, "Embedded content")
+schema:
+  type: VideoObject
+  properties: { title: name, url: contentUrl, embedUrl: embedUrl }
+defaults: { density: compact, elevation: flat }
+editHints: { fallback: none }
+---
+
+{% frame src=$computed.embedUrl title=$computed.frameTitle ratio=$attrs.aspect /%}
+
+{% slot name="fallback" /%}
+```
+
+```ts
+// registered by core as Plugin.prepare.embed
+export const prepareEmbed: Prepare = ({ attrs }) => {
+	const { provider, embedUrl } = detectProvider(attrs.url); // today's provider table, unchanged
+	return { provider, embedUrl };
+};
+```
+
+- **`prepare` and expressions side by side**: `provider` and `embedUrl` are declarations the stage
+  fills; `frameTitle` is an expression. SPEC-195 D8's mixed case.
+- **The schema row reads a computed value** (`embedUrl`), and the published `VideoObject` is
+  unchanged.
+- **The inline `padding-bottom` style goes**: `frame` owns the aspect ratio.
+- **A dead attribute**: `type` is declared ("override auto-detected embed type") and read by
+  nothing. The definition drops it, through a {% ref "SPEC-189" /%} row.
+- **`frame`** is the first containment primitive (D13): an `<iframe>` whose `allow` and `loading`
+  are fixed in code. `embed` is a drawing, so it keeps its classes; its stylesheet moves to
+  `frame` and the fallback.
 
 ### Candidate primitives, measured
 
@@ -747,7 +913,7 @@ so a template cannot produce invalid HTML by placing them somewhere unexpected.
 | `blockquote` | `pull-quote`'s bare form (D13) | the first value |
 | `footer` | `bento-cell`'s footer (`bento.ts:134`) | only if the part is not a `section`; `section`'s footer zone is the better home |
 | `header` | the nine `preamble: { tag: 'header' }` layouts | already mapped to `section`'s header zone (D11); a fallback only |
-| `figure` | `gallery`'s items (`gallery.ts:51`) | only if `gallery` stops being a drawing |
+| `figure` | `pull-quote`'s excerpt, the figure inside its `<aside>` (D13) | admitted with `pull-quote`; `gallery`'s items (`gallery.ts:51`) would also use it if `gallery` stops being a drawing |
 
 No rune builds `aside`, `small`, `address`, `mark` or `abbr` inside its output. `aside` appears only
 as a root (`sidenote`, `annotate`, the excerpt), which a definition's `tag:` covers.

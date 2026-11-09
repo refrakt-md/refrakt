@@ -275,6 +275,19 @@ of:
 
 - **`role` is declared in the definition** ({% ref "SPEC-194" /%} D1). It defaults to domain, so
   a rune has to claim to be part of the vocabulary.
+- **The test for `role: primitive`** (*added 2026-11-09*). Both must hold:
+  1. **another rune places it, or a planned one will**, and the definition names that rune
+     (`testimonial` places `pull-quote`; `preview` will place `code-group`);
+  2. **its look is the same wherever it appears.** A code window looks like a code window in a
+     recipe, a doc or a design preview. A domain rune is the opposite: its identity is its
+     meaning, so its look comes from the primitives it places.
+
+  `hint` fails the second: a warning looks like a warning because of what it means, which is
+  what {% ref "SPEC-163" /%}'s `sentiment` axis carries. `recipe`, `pagination` and `collection`
+  fail both.
+- **Changing a rune's role is reviewed like an allowlist entry** (D11): with a recorded reason.
+  A primitive's CSS is vocabulary and sits outside the allowlist, so claiming the role is the one
+  way to keep rune CSS, and it must not become a loophole.
 - **For composed domain runes this is SPEC-145 D2 unchanged:** no block, and no CSS shipped. A
   composed *primitive* (`card` once SPEC-160 D3 composes it) does get classes, which is the one
   amendment to D2.
@@ -317,8 +330,8 @@ selectors across Lumina, the skeleton and plugin styles, by pattern, so approxim
 | `pull-quote` | `rf-pullquote` | primitive (placed by `testimonial`) | renamed `rf-pull-quote` | ~21 |
 | `media-text` | `rf-mediatext` | primitive | renamed `rf-media-text` | ~35 |
 | `text-block` | `rf-textblock` | primitive, to confirm | renamed `rf-text-block` | ~31 |
-| `code-group` | `rf-codegroup` | domain | no classes once it is a definition; its CSS is triaged (D11) | ~26 |
-| `table-of-contents` | `rf-toc` | domain | likewise | ~12 |
+| `code-group` | `rf-codegroup` | primitive (*revised 2026-11-09*: a code window, placed by `preview`) | renamed `rf-code-group`; its look is kept | ~26 |
+| `table-of-contents` | `rf-toc` | domain | no classes once it is a definition; its CSS is triaged (D11) | ~12 |
 | `how-to` (learning) | `rf-howto` | domain, a planned composition | likewise | ~13 |
 | `featured-tier` (marketing) | `rf-tier`, shared with `tier` | domain, a planned composition | likewise, with the `pricing` composition | ~20, shared |
 

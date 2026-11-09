@@ -215,9 +215,10 @@ which prove the definition format on many runes first.
 3. **Template-language extensions**, each just before its first user: two-level iteration
    (SPEC-194 D12) and `fragment` ({% ref "SPEC-168" /%} D8).
 4. **The composition migration continues** (the plugin audits SPEC-147 to SPEC-157), each
-   conversion with its stylesheet triaged and its rune removed from the allowlist. Two proofs
-   run alongside: `codegroup` as a native definition with `computes` and no `prepare`
-   (SPEC-194 D10), and the loader split for `$page` and `$site` (SPEC-194 D12).
+   conversion with its stylesheet triaged and its rune removed from the allowlist. Alongside it
+   run the first native definitions, in SPEC-194 D14's order (`pull-quote` with the
+   `attribution` primitive, then `codegroup`, then `embed` with the `frame` primitive), and the
+   loader split for `$page` and `$site` (SPEC-194 D12).
 5. **SPEC-196's role-based classes** land before the first native domain rune moves to a
    definition, so that it loses its classes the way compositions do.
 6. **The remaining native runes move to definitions**, in SPEC-194 D10's order: functions-only

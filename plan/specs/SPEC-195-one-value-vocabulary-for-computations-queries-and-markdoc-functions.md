@@ -234,20 +234,29 @@ and "build a predicate" in a filter would confuse more than the second syntax co
     `expression-syntax` with its location;
   - `Markdoc.validate` does **not** report an unknown function, so `function-unknown` (D3) is
     refrakt's own check over the AST.
-- **A `computes` entry is one of two things:**
+- **A `computes` entry is one of three things:**
 
   ```yaml
   computes:
     totalTime: sum($attrs.prepTime, $attrs.cookTime)   # an expression: evaluated by the vocabulary
     single:    { type: boolean }                        # a declaration: filled by the rune's prepare stage
+    layout:                                             # an expression with a closed set of results
+      value: if(equals(count($slots.panels), 1), "single", "tabs")
+      values: [single, tabs]
   ```
 
-  A string is an expression. An object is a declaration that SPEC-194's `prepare` must fill. A
-  rune may mix both. A rune whose every entry is an expression needs no `prepare` stage.
+  A string is an expression. An object with `type` is a declaration that SPEC-194's `prepare`
+  must fill. An object with `value` and `values` is an expression whose result must be one of
+  the listed values; it is the form a template selector needs ({% ref "SPEC-168" /%} D9, as
+  amended), and is only required there. A rune may mix all three. A rune whose every entry is an
+  expression needs no `prepare` stage.
 - **Scopes** available to a `computes` expression:
   - `$attrs`;
   - other computed values (`$computed`), with cycles reported as `computes-cycle`;
-  - for a per-item key (`panels.label`): the item's emitted values (`$node`) and `$index`;
+  - `$slots`, the content model's fields, so a count of items can decide something
+    (*added 2026-11-09*, for `codegroup`);
+  - for a per-item key (`panels.label`): the item's emitted values (`$node`), `$index`, and the
+    item's other computed values (`$each.<name>`), with cycles reported as for `$computed`;
   - the page and the site: `$page`, `$site` and `$frontmatter`.
 
   *Decided 2026-11-09.* An earlier draft kept page variables out of `computes`, so that a rune's
