@@ -17,7 +17,8 @@ already-parsed content. This spec is the mechanism:
 - opaque visuals (D8);
 - when the legacy levers are removed (D9), and the migration order (D10);
 - a template never names an HTML element (D11);
-- a rune reads data from three scopes, and only the entity registry makes it wait (D12).
+- a rune reads data from three scopes, and only the entity registry makes it wait (D12);
+- a primitive is a definition too, and places smaller primitives such as `attribution` (D13).
 
 ## Prerequisites
 
@@ -590,6 +591,123 @@ item template:
 
   Exactly one nested level, no deeper, matching the `nav` decision above.
 - **The `fragment` override point** depends on {% ref "SPEC-168" /%} D8, a draft.
+
+### D13: a primitive is a definition too, and places smaller primitives
+
+*Added 2026-11-09*, from writing `pull-quote` as a definition. A primitive (SPEC-196 D8's
+`role: primitive`) is written in the same format as any rune. Where its template needs structure
+D11 does not let a template name, that structure is a smaller primitive it places, never an
+exception to D11.
+
+**Worked example: `pull-quote`.** It needs no `prepare` stage and no `computes`. About 170 lines
+of `packages/runes/src/tags/pullquote.ts` and its `PullQuote` engine entry become this file:
+
+```md
+---
+tag: figure
+role: primitive
+aliases: [quote]
+description: A featured quotation, or with `excerpt` a pull quote repeated from the text
+attributes:
+  author:  { type: string, description: "Who said it, when not written as a paragraph" }
+  source:  { type: string, description: "Where it is from: a role, a work or a date" }
+  align:   { type: string, matches: [left, center, right], default: center }
+  excerpt: { type: boolean, description: "The words already appear in the text; hidden from assistive technology" }
+content:
+  type: sequence
+  fields:
+    quoted:
+      group:
+        - name: quote
+          match: blockquote
+          model:
+            type: sequence
+            fields:
+              - { name: body, match: any, greedy: true, optional: true }
+              - name: attribution
+                match: paragraph
+                optional: true
+                position: last
+                itemModel:
+                  prefix: '^\s*[—–]\s*$'
+                  fields:
+                    - { name: name, match: strong }
+                    - { name: source, match: text, pattern: '^\s*[,—–]\s*(.+)$', optional: true }
+                fills: { author: $name, source: $source }
+        - name: attribution
+          match: paragraph
+          optional: true
+          itemModel:
+            fields:
+              - { name: name, match: strong }
+              - { name: source, match: text, pattern: '^\s*[-–—,]\s*(.+)$', optional: true }
+          fills: { author: $name, source: $source }
+    body: { match: any, greedy: true, optional: true }
+rootAttributes:
+  data-quote:  if($attrs.excerpt, "excerpt", "featured")
+  aria-hidden: if($attrs.excerpt, "true")
+sections: { quote: body }
+provides: [prose, featured-quotation]
+defaults: { density: compact, elevation: flush, reading: prose }
+editHints: { quote: inline }
+---
+
+{% group name="quote" as="blockquote" %}
+	{% slot name="quote.body" %}{% slot name="body" /%}{% /slot %}
+{% /group %}
+
+{% attribution name=$attrs.author source=$attrs.source /%}
+```
+
+| Today | In the definition |
+|---|---|
+| a `when: { hasChild: blockquote }` model | one model with a group ({% ref "SPEC-186" /%} D1); definitions cannot use `when` ({% ref "SPEC-169" /%} D2) |
+| `splitInsideAttribution` | the nested model on `quote`, with `position: last` |
+| precedence in code: author attribute, then the paragraph after, then the inside one | `fills` ({% ref "SPEC-182" /%} D2): a paragraph supplies `author` and `source` only when the author did not write them |
+| `renderAttribution` | the `attribution` primitive, below |
+| `new Tag('blockquote', …)` for the bare form, plus `withoutQuoteRole` | `group as="blockquote"` around `quote.body`, falling back to `body`; the authored blockquote is never rendered as its own node |
+| `data-quote` and `aria-hidden` set in code | `rootAttributes` as expressions |
+| `align` defaulted by `fieldMetas` | the attribute's own default; the engine generates the modifier |
+| `block: pullquote`, the axis defaults, `sections`, `provides`, `editHints` | definition keys; the classes become `rf-pull-quote` ({% ref "SPEC-196" /%} D10) |
+| the deprecated `variant` | a {% ref "SPEC-189" /%} migration row, not part of the definition |
+
+**The `attribution` primitive.** {% ref "SPEC-185" /%} D6 makes attribution "one shared part" of
+every quotation role. Today that part is `renderAttribution`
+(`packages/runes/src/lib/attribution.ts`): `<figcaption>` holding `<cite>` and a source `<span>`,
+used by `pull-quote`, the core `blockquote` node, epigraphs and, through `pull-quote`,
+`testimonial`. A template cannot build `<figcaption>` or `<cite>` (D11), so it becomes a primitive:
+
+- **template-only**, like `{% group %}` ({% ref "SPEC-156" /%} D2): authors keep writing
+  `**Name** — Source`, the content model reads it, and templates place
+  `{% attribution name=… source=… /%}`;
+- **rendered from values, not nodes.** A placed rune is a name-resolution boundary for
+  structured data ({% ref "SPEC-145" /%} D19), so the values reach the published graph through the
+  outer rune's attributes and field bag (`fills`), and the primitive only displays them;
+- **its element follows its placement:** `<figcaption>` inside a `<figure>`, a neutral element
+  elsewhere, so a template cannot produce invalid HTML by placing it in, say, a card;
+- **one implementation for every role**, styled once under `"bem"` (`rf-attribution`,
+  `rf-attribution__name`, `rf-attribution__source`); it renders nothing when there is no name.
+
+**What the example needs that does not exist yet**, each settled in `pull-quote`'s work item:
+
+1. `group as="blockquote"`: the first value admitted to D11's closed `as=`.
+2. The `attribution` primitive.
+3. A slot whose fallback content is another slot (`{% slot name="quote.body" %}{% slot name="body" /%}{% /slot %}`).
+4. `rootAttributes` in definitions, as expressions ({% ref "SPEC-195" /%}: input half, so meaningful).
+5. Which filler wins when two fields fill one attribute. Today the paragraph after the quote beats
+   the inside one; `fills` must say so by model order or explicitly.
+6. A behaviour difference to accept or fix: today an explicit `author` ignores the paragraph
+   entirely; with per-attribute `fills`, an explicit `author` could still take `source` from it.
+7. **A simplification to accept: the excerpt loses its `<aside>`.** SPEC-185 D1 renders an excerpt
+   as `<aside aria-hidden="true">` around the figure. Keeping it needs a template branch that would
+   place the quote slot twice, which SPEC-145 D30 rejects. Here an excerpt is the same `<figure>`
+   with `aria-hidden="true"` and `data-quote="excerpt"`. Since `aria-hidden` takes it out of the
+   accessibility tree, the `<aside>`'s meaning reached nobody. It amends SPEC-185 D1 and D4, a
+   shipped spec, so it needs explicit agreement (ADR-048 decision 3).
+
+**The rule this sets.** When a template needs structure it cannot express, the answer is a small
+primitive with a role in the shared design language, placed by every rune that needs it, never an
+element name in the template. "Candidate primitives", below, records the cases measured so far.
 
 ## The native runes that remain, measured
 
