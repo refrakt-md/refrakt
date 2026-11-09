@@ -27,6 +27,14 @@ Split the body on a top-level `---` to get two groups. The right group is pushed
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| Content before the first `---` | The left group |
+| A `---`, then more content | The right group, pushed to the end of the row |
+| No `---` at all | A single left-aligned group |
+
 ## Single group
 
 Omit the `---` to render a single left-aligned group.

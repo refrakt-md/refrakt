@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:grid"} /%}
 
-Flexible grid layout. Children separated by horizontal rules (`---`) become cells arranged in a responsive CSS grid. Supports explicit column spans, auto-fill mode, masonry, aspect ratio enforcement, and responsive collapse.
+Flexible grid layout. Children separated by horizontal rules (`---`) become cells arranged in a responsive CSS grid. Supports explicit column spans, auto-fill mode, masonry, aspect ratio enforcement, and responsive collapse. For a set of images with captions and a lightbox, use [gallery](/runes/gallery).
 
 ## Basic usage
 
@@ -30,6 +30,13 @@ Equal columns created by separating content with horizontal rules.
 	{% /grid %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| `---` (a horizontal rule) | The boundary between two cells |
+| The content between rules | One cell, kept as written: text, images, lists or other runes |
 
 ## Unequal columns
 

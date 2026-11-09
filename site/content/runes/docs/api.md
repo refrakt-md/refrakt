@@ -8,7 +8,7 @@ type: rune
 ---
 
 {% include file="rune-intro.md" variables={r: "rune:api"} /%}
-
+Documents one API endpoint: its method, path and authentication as attributes, and the request, parameters and responses as ordinary Markdown in the body.
 API endpoint documentation. Headings become the endpoint title, tables become parameter lists, code blocks become request/response examples, and blockquotes become notes.
 
 ## GET endpoint

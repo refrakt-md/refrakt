@@ -33,6 +33,14 @@ A spec in accepted status with a version number and scope summary.
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A heading | The spec's title |
+| The paragraphs right after it | The spec's summary |
+| Everything after them | The body, in the order written |
+
 ## Draft specification
 
 A minimal spec in draft status.

@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:event"} /%}
 
-Lists become speaker/agenda items, links become registration URLs.
+A single event, such as a conference, meetup or workshop, with its dates, place and registration link, published as structured data.
 
 ## Basic usage
 
@@ -30,9 +30,13 @@ An event with date, location, agenda, and a registration link.
 
 {% /preview %}
 
-## Section header
+## How Markdown is read
 
-Event supports an optional eyebrow, headline, and blurb above the section above event details. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+| You write | It becomes |
+|-----------|------------|
+| A heading | The event's name |
+| The paragraph after it | Its description |
+| A list or blockquote | The event's details, such as the agenda or the speakers |
 
 ## Attributes
 

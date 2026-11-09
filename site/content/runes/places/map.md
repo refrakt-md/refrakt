@@ -25,6 +25,17 @@ List items with coordinates become map pins. Bold text sets the pin name, italic
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A list item | A pin |
+| Bold text in the item | The pin's name |
+| Italic text in the item | The pin's description, shown in its popup |
+| Coordinates such as `48.8606, 2.3376` | The pin's position |
+| An address instead of coordinates | A pin placed by looking the address up |
+| A heading | A group of pins, shown as a layer the reader can toggle |
+
 ## Route
 
 Ordered lists with `route=true` draw a connecting line between pins.
@@ -71,18 +82,6 @@ Control the map height with the `height` attribute.
 - **Tokyo** - 35.6762, 139.6503
 {% /map %}
 ```
-
-## Markdown reinterpretation
-
-| Markdown | Interpretation |
-|---|---|
-| Unordered list | Location pins |
-| Ordered list | Route waypoints (sequential) |
-| Bold text in list item | Pin name |
-| Italic text in list item | Pin description (shown in popup) |
-| Heading | Pin group label (toggleable layers) |
-| Coordinates in text | Direct lat/lng position |
-| Address text | Geocoded via Nominatim at runtime |
 
 ## Attributes
 

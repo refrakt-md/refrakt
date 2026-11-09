@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:tabs"} /%}
 
-Tabbed content panels. Headings become tab labels, the content below each heading becomes the tab panel.
+Tabbed content panels. Headings become tab labels, the content below each heading becomes the tab panel. To let several panels stay open at once, use [accordion](/runes/accordion); for one collapsible block, use [details](/runes/details); to uncover content in order, one step at a time, use [reveal](/runes/reveal).
 
 ## Heading-based tabs
 
@@ -39,6 +39,14 @@ Headings are automatically converted into tab labels.
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A paragraph before the first tab heading | A blurb above the tab bar |
+| A heading (the first heading level you use) | A tab's label; the content up to the next heading of that level is its panel |
+| A `{% tab %}` tag | A tab, labelled by its `name` |
+
 ## Explicit tab tags
 
 Use `{% tab %}` tags for more control over tab names and content.
@@ -56,10 +64,6 @@ Use `{% tab %}` tags for more control over tab names and content.
 	{% /tabs %}
 
 {% /preview %}
-
-## Section header
-
-Tabs supports an optional eyebrow, headline, and blurb above the tab bar. Place a short paragraph before your tab headings to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ## Attributes
 

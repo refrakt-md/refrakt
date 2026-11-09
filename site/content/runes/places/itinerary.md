@@ -9,11 +9,9 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:itinerary"} /%}
 
-Day-by-day travel itineraries. H2 headings become days, and H3 headings with a "time — location" pattern are parsed into timed stops. Content below each stop becomes the stop description.
+A travel plan, day by day, with a time and a place for each stop.
 
 ## Basic usage
-
-Use H2 headings for days and "time — location" headings for individual stops.
 
 {% preview source=true %}
 
@@ -45,6 +43,15 @@ Use H2 headings for days and "time — location" headings for individual stops.
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A `##` heading | A day, labelled with the heading |
+| A heading inside a day, such as `### 9:00 AM — Narita Airport` | A stop: the text before the first dash is its time, the rest its place |
+| The content under a stop heading | The stop's description |
+| A short paragraph, then a `#` heading and a paragraph, before the first day | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+
 ## Single-day itinerary
 
 Without H2 headings, all stops are grouped into a single implicit day.
@@ -66,10 +73,6 @@ Without H2 headings, all stops are grouped into a single implicit day.
 	{% /itinerary %}
 
 {% /preview %}
-
-## Section header
-
-Itinerary supports an optional eyebrow, headline, and blurb above the section above itinerary stops. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ## Attributes
 

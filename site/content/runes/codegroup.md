@@ -29,6 +29,13 @@ Tabs are automatically labeled by their code block language.
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A code fence | A tab, labelled by the fence's language unless something names it ([see below](#tab-labels-from-fence-annotations)) |
+| A single fence, with no `labels` | A plain code block in the chrome, with no tab bar |
+
 ## Custom labels
 
 Use the `labels` attribute to override the default language-based tab names. Useful when multiple tabs share the same language.

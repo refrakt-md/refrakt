@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:recipe"} /%}
 
-Structured recipe content. Unordered lists become ingredients, ordered lists become steps, and blockquotes become chef's tips.
+A recipe: its ingredients, method, timings and tips, published as structured data.
 
 ## Basic usage
 
@@ -38,13 +38,19 @@ A complete recipe with ingredients, instructions, and a tip.
 
 {% /preview %}
 
-## Section header
+## How Markdown is read
 
-Recipe supports an optional eyebrow, headline, and blurb above the section above ingredients and method. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+| You write | It becomes |
+|-----------|------------|
+| A short paragraph, then a heading and a paragraph | The eyebrow, the recipe's name and its description ([Page sections](/docs/authoring/page-sections)) |
+| A bulleted list | The ingredients |
+| A numbered list | The steps |
+| A blockquote | A tip |
+| An image, then `---`, before everything else | The recipe's photo |
 
 ## Place the media
 
-The body splits on `---` into **media → content → footer** zones (media-first in source). `media-position` controls visual placement independently of source order.
+The body splits on `---` into **media → content** zones (media first in source). `media-position` controls visual placement independently of source order.
 
 `media-ratio`, `valign` and `collapse` tune a side-by-side split, as on [card](/runes/card#place-the-media).
 

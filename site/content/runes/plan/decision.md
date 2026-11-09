@@ -44,6 +44,16 @@ A fully documented architecture decision record.
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A heading | The decision's title |
+| The paragraphs right after it | The decision's lead |
+| Anything else before the first `##` | An intro above the sections |
+| A `##` heading | A named section; the content up to the next `##` is its body |
+| `## Context`, `## Options Considered`, `## Decision`, `## Rationale`, `## Consequences` | The standard record sections; aliases such as `## Background` or `## Alternatives` count as the same section |
+
 ## Proposed decision
 
 A decision still under review.

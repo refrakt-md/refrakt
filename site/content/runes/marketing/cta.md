@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:cta"} /%}
 
-A focused call-to-action block. Headings become the headline, paragraphs become the subtitle, and list items with links become action buttons. Code fences become copyable command blocks. Use CTA for action prompts that can appear anywhere on a page — for full-width intro sections, use [Hero](/runes/marketing/hero) instead.
+A focused call to action: a headline, a line of copy, and the buttons or install command that act on it. It can appear anywhere on a page; for a full-width opening band at the top of one, use [hero](/runes/marketing/hero).
 
 ## Basic usage
 
@@ -28,6 +28,15 @@ A headline with a description and action buttons.
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A short paragraph, then a heading and a paragraph | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| More headings and paragraphs | Further copy under the blurb |
+| A list of links | A row of buttons; the first link is the primary action |
+| A code fence | A copyable command line beside the buttons |
+
 ## With command block
 
 Code fences inside a CTA become copyable command blocks.
@@ -45,10 +54,6 @@ Code fences inside a CTA become copyable command blocks.
 	{% /cta %}
 
 {% /preview %}
-
-## Section header
-
-CTA supports an optional eyebrow, headline, and blurb above the headline and description. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ## Attributes
 

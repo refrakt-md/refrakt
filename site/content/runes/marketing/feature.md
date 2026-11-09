@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:feature"} /%}
 
-Feature showcases. List items become feature definitions — bold text is the feature name, the following paragraph is the description.
+A set of features or benefits, each with a name and a short description, optionally beside an image or code sample.
 
 ## Basic usage
 
@@ -36,6 +36,17 @@ A feature grid with named items and descriptions.
 	{% /feature %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A short paragraph, then a heading and a paragraph, before the list | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A list item | A feature |
+| Bold text in the item's first paragraph | The feature's name |
+| An image or icon beside the name | The feature's icon |
+| The paragraph after the name | The feature's description |
+| Media, then `---`, before the rest | A media column beside or above the features ([Place the media](#place-the-media)) |
 
 ## With heading and description
 
@@ -213,10 +224,6 @@ A `grid` is great when the feature has room, but cramped on a phone. Add `collap
 	{% /feature %}
 
 {% /preview %}
-
-## Section header
-
-Feature supports an optional eyebrow, headline, and blurb above the section above feature items. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ## Place the media
 

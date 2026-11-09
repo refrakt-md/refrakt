@@ -9,11 +9,9 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:character"} /%}
 
-Character profiles for worldbuilding and storytelling. Headings within the rune are automatically converted into named sections, and the first image becomes the character portrait.
+Character profiles for worldbuilding and storytelling. For a place, use [realm](/runes/storytelling/realm); for an order, guild or other group, [faction](/runes/storytelling/faction).
 
 ## Basic usage
-
-Headings become character sections, and the first image (if any) is extracted as a portrait.
 
 {% preview source=true %}
 
@@ -30,6 +28,14 @@ Headings become character sections, and the first image (if any) is extracted as
 	{% /character %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| An image before everything else | The character's portrait |
+| Paragraphs before the first heading | The description |
+| A heading | A named section; the content up to the next heading of that level is its body |
 
 ## Roles
 

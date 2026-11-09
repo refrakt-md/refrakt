@@ -29,6 +29,14 @@ Content before `---` becomes the first panel, content after becomes the second. 
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| `---` (a horizontal rule) | The divide between the two panels |
+| The content before it | The first panel |
+| The content after it | The second panel |
+
 ## With sandbox
 
 Panels are not restricted to images. Put two sandboxes with light and dark modes to showcase a component design
@@ -118,13 +126,6 @@ Use `orientation="horizontal"` to stack panels vertically with a horizontal divi
 	{% /juxtapose %}
 
 {% /preview %}
-
-## Markdown reinterpretation
-
-| Markdown | Interpretation |
-|----------|----------------|
-| `---` | Panel separator |
-| Content between separators | Panel body |
 
 ## Attributes
 

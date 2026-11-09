@@ -21,6 +21,16 @@ It's generic over entity type. Anything in the registry works the same way — p
 
 That renders every registered `work` entity whose `status` is `ready`, highest priority first (capped at five for this preview).
 
+## How Markdown is read
+
+With no body, each item renders in a built-in form for the layout. A body is read like this:
+
+| You write | It becomes |
+|-----------|------------|
+| A body | The per-item template, rendered once per entity with `$item` bound ([Per-item templates](#per-item-templates)) |
+| A top-level `---` in the body | A zone boundary: two zones are a preamble and the template, three add a fallback for an empty query ([Body zones](#body-zones-preamble-template-fallback)) |
+| A heading in the template, with `layout="table"` | A column, labelled by the heading; the content under it is the cell template ([Table columns](#table-columns)) |
+
 ## Selecting entities — `type` + `filter`
 
 `type` is the entity type (comma-separated for several: `type="work,bug"`). `filter` narrows the set with space-separated `field:value` clauses.

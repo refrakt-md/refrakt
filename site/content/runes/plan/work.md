@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:work"} /%}
 
-A discrete piece of implementation work with acceptance criteria, priority, complexity, and status tracking. Not a user story — a clear description of what needs to change. H2 headings create named sections for structured content like acceptance criteria, approach, and references. Paragraphs straight after the title become the item's lead; anything else written before the first H2 — a `> Ref:` blockquote, a list, a code block, a table — renders as an intro above the sections.
+A discrete piece of implementation work with acceptance criteria, priority, complexity, and status tracking. Not a user story — a clear description of what needs to change.
 
 Also available as `{% task %}`.
 
@@ -36,6 +36,16 @@ A work item ready for implementation with acceptance criteria and approach.
 	{% /work %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A heading | The item's title |
+| The paragraphs right after it | The item's lead |
+| Anything else before the first `##`, such as a `> Ref:` blockquote, a list or a table | An intro above the sections |
+| A `##` heading | A named section, such as Acceptance Criteria or Approach; the content up to the next `##` is its body |
+| A `## Blocked by` or `## Blocks` section listing IDs | The item's dependencies, which `plan next` and `plan validate` read |
 
 ## Blocked work item
 

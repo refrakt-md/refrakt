@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:organization"} /%}
 
-Headings become the organization name, images become the logo, and links become website/social profiles.
+A profile of a business or organization: its name, description, logo and contact details, published as structured data. To list the people in it, use [cast](/runes/business/cast).
 
 ## Local business
 
@@ -30,6 +30,16 @@ A local business listing with address, hours, and contact info.
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A heading | The organization's name |
+| A paragraph after the heading | Its description |
+| A short paragraph before the heading | An eyebrow above the name |
+| An image before the list | The header image, such as a logo |
+| A list or blockquote | The details: address, hours, phone, links |
+
 ## Corporation
 
 A corporation profile with structured data.
@@ -48,10 +58,6 @@ A corporation profile with structured data.
 	{% /organization %}
 
 {% /preview %}
-
-## Section header
-
-Organization supports an optional eyebrow, headline, and blurb above the section above details. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ## Attributes
 

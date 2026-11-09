@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:palette"} /%}
 
-Displays a grid of color swatches. List items are parsed as `name: #value` pairs. Use `##` headings to create groups. Comma-separated values render as a neutral scale strip.
+Displays a grid of color swatches: a brand palette, a set of semantic colors, a neutral scale. To show a single color inside a sentence, use [swatch](/runes/design/swatch).
 
 ## Basic usage
 
@@ -27,6 +27,14 @@ A simple color palette grid.
 	{% /palette %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A list item `Name: #hex` | A color swatch |
+| A list item with several comma-separated values | A scale strip of those colors |
+| A heading | Starts a group of colors; the heading is its title |
 
 ## Grouped palette
 

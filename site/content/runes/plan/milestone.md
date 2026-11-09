@@ -11,8 +11,6 @@ type: rune
 
 A named release target or goal. Not a sprint — no timebox, no velocity, no ceremonies. A milestone is a coherent set of capabilities that together deliver value. When all work items assigned to it are done, the milestone is complete.
 
-Paragraphs straight after the title become the milestone's lead. Everything after them — a goals list, notes, and any H2 sections — renders as the body, in the order you wrote it.
-
 ## Active milestone
 
 A milestone currently in progress with goals.
@@ -29,6 +27,14 @@ A milestone currently in progress with goals.
 	{% /milestone %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A heading | The milestone's title |
+| The paragraphs right after it | The milestone's lead |
+| Everything after them: a goals list, notes, `##` sections | The body, in the order written |
 
 ## Planning milestone
 

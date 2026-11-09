@@ -9,11 +9,9 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:plot"} /%}
 
-Story arcs, quests, and narrative structures with progress tracking. List items are parsed as beats with status markers — use checkbox syntax to track progress through a storyline.
+Story arcs, quests, and narrative structures, with progress tracked beat by beat. For real-world events in date order, use [timeline](/runes/business/timeline).
 
 ## Basic usage
-
-List items with checkbox markers become plot beats. Use `[x]` for complete, `[>]` for active, `[ ]` for planned, and `[-]` for abandoned.
 
 {% preview source=true %}
 
@@ -28,6 +26,15 @@ List items with checkbox markers become plot beats. Use `[x]` for complete, `[>]
 	{% /plot %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| Paragraphs before the list | The plot's description |
+| A list item | A beat |
+| `[x]`, `[>]`, `[ ]` or `[-]` at the start of an item | The beat's status: complete, active, planned or abandoned |
+| Bold text in the item | The beat's label; the text after it is the beat's description |
 
 ## Plot types
 
@@ -45,15 +52,6 @@ Different narrative structures for various storytelling needs.
 	{% /plot %}
 
 {% /preview %}
-
-### Beat markers
-
-| Marker | Status | Description |
-|--------|--------|-------------|
-| `[x]` | Complete | This beat has been resolved |
-| `[>]` | Active | Currently in progress |
-| `[ ]` | Planned | Not yet started |
-| `[-]` | Abandoned | Dropped from the storyline |
 
 ## Attributes
 

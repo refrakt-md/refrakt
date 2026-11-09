@@ -37,6 +37,17 @@ Related         → ADR-003 Session strategy
 
 Group headings are the kinds, humanized via the shared [`humanize`](/runes/collection#formatter-functions) function (`blocked-by` → "Blocked By") — no per-domain label table.
 
+## How Markdown is read
+
+The body, when you give one, is a template rather than content to show as written:
+
+| You write | It becomes |
+|-----------|------------|
+| A body with no `---` | The template, rendered once per edge |
+| A body split by one `---` | A preamble (above the edges, shown only when there are any), then the template |
+| A second `---` | The part after it is the fallback, shown when there are no edges |
+| A `---` inside a nested tag such as `{% card %}` | Part of that tag; it does not split the body |
+
 ## Per-item templates
 
 Give `relationships` a **body** and it becomes the per-edge template, transformed once per edge with **`$item`** bound to the related entity (the same contract as `collection` — `id`/`type`/`url`/`data`) and **`$kind`** bound to the edge kind:

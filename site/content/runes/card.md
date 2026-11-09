@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:card"} /%}
 
-`{% card %}` is a generic content card: a bordered surface with an optional media zone, a body, and an optional footer. It carries no knowledge of the registry or `$item` — it's a plain presentational component you can drop into prose, or feed from a [`collection`](/runes/collection) body template.
+`{% card %}` is a generic content card: a bordered surface with an optional media zone, a body, and an optional footer. It carries no knowledge of the registry or `$item` — it's a plain presentational component you can drop into prose, or feed from a [`collection`](/runes/collection) body template. To give a block of content a headline and intro without framing it as a tile, use [section](/runes/section).
 
 There is one generic `card` (named by *shape*, not by entity) — refrakt deliberately has no `article-card` / `recipe-card` / per-entity card runes. A designed list item is `{% card %}` fed by entity fields, not a bespoke card per type.
 
@@ -26,6 +26,16 @@ There is one generic `card` (named by *shape*, not by entity) — refrakt delibe
 	{% /card %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| Content with no `---` | The body |
+| One `---` | Splits the content into the media zone (before) and the body (after) |
+| Two `---` | Media, body and footer; leave the first zone empty for a footer without media |
+| A paragraph directly followed by a heading, at the start of the body | The eyebrow above the title |
+| The first heading in the body | The card's title, which also names a linked card for screen readers |
 
 ## Zones
 
@@ -54,9 +64,7 @@ The body divides on `---` (a horizontal rule) into up to three zones — here al
 - **body** — the main content.
 - **footer** (optional, trailing zone) — a muted meta row.
 
-Zones are assigned by count: **1 zone → body**; **2 → media + body**; **3 → media + body + footer**. To have a footer with no media, lead with an empty zone (`--- body --- footer`).
-
-In the body zone, a leading paragraph immediately followed by a heading is treated as an **eyebrow** — the small uppercase kicker above the title (the same pattern as [`section`](/runes/section) and `recipe`). Above, `Brunch classic` is the eyebrow over the `Tequila Sunrise` heading.
+Above, `Brunch classic` is the eyebrow over the `Tequila Sunrise` heading.
 
 ### The media zone isn't just images
 

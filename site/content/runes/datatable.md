@@ -29,6 +29,13 @@ Enable sorting and search on a Markdown table.
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A table | The data table; the first table is used and the rest of the body is left out |
+| The table's header row | The column names that `sortable` and `defaultSort` refer to |
+
 ## With pagination
 
 Use `pageSize` to paginate large tables.

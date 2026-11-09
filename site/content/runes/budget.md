@@ -43,6 +43,15 @@ Use headings for categories and list items with amounts for line items.
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A short paragraph, then a heading and a paragraph, before the first category heading | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A heading | A category, with its subtotal; the content up to the next heading of that level is its body |
+| A heading ending in `(estimate)` or `(est.)` | A category marked as an estimate |
+| A list item written `Description: amount` | A line item, counted in the category subtotal and the total |
+
 ## Summary variant
 
 Use `variant="summary"` to show only category totals without individual line items.
@@ -96,10 +105,6 @@ Mark categories as estimates by adding `(estimate)` or `(est.)` to the heading, 
 	{% /budget %}
 
 {% /preview %}
-
-## Section header
-
-Budget supports an optional eyebrow, headline, and blurb above the categories. Place a short paragraph before the first category heading to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ## Attributes
 

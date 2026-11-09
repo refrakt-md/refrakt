@@ -28,6 +28,14 @@ A markdown list where each item starts with bold-text-plus-colon.
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A list | The definition list, one term and description per item |
+| `**Term:**` at the start of an item | The term; the rest of the item is its description |
+| An item with no bold prefix | An empty term, with the whole item as the description, and a build warning |
+
 ## Inline composition
 
 Inline runes inside the value (after `**Term:**`) compose naturally. Use `{% badge %}` for sentiment-coloured chips, `{% ref %}` for entity links, inline code for identifiers.

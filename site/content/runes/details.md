@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:details"} /%}
 
-Renders as a native `<details>` element.
+Renders as a native `<details>` element. For a set of collapsible panels, such as a FAQ, use [accordion](/runes/accordion); to switch between panels behind a row of labels, use [tabs](/runes/tabs); to uncover content one step at a time, use [reveal](/runes/reveal).
 
 ## Basic usage
 

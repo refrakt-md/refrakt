@@ -13,7 +13,7 @@ type: rune
 
 ## Basic usage
 
-Define groups with headings and page slugs as list items. Items before the first heading become top-level items rendered above any groups.
+Group page slugs or links under headings.
 
 {% preview source=true %}
 
@@ -31,11 +31,21 @@ Define groups with headings and page slugs as list items. Items before the first
 
 {% /preview %}
 
-Each list item is a page slug (e.g., `getting-started`). Slugs resolve **at build time** against the nav's source file — a `{% nav %}` in `site/content/docs/_layout.md` resolves `- getting-started` to `/docs/getting-started`. The page's `title` frontmatter becomes the link text.
+Slugs resolve **at build time** against the nav's source file — a `{% nav %}` in `site/content/docs/_layout.md` resolves `- getting-started` to `/docs/getting-started`.
 
 For pages in subdirectories, write a multi-segment slug: `themes/configuration` resolves to `/extend/theme-authoring/configuration`. For external URLs or anything outside the nav's source directory, use an explicit Markdown link `[Label](/path)`. Full rules and the build error format are documented in [Nav slug resolution](/docs/authoring/nav-slug-resolution).
 
 Each rendered page evaluates every nav against its current URL. The exact-match item gets `aria-current="page"`; the longest-strict-prefix item (if any) gets `data-active="ancestor"`. Themes style both — Lumina ships visually-distinct treatments by default.
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A list before the first heading | Top-level items, shown above the groups |
+| A heading | A group's title; the list under it is the group's items |
+| A list item holding a link, `[Label](/path)` | An item linking there, with that label |
+| A list item holding a page slug, `getting-started` | An item linking to that page, labelled with its `title` frontmatter |
+| `---` between groups, in the `columns` layout | A break that starts a new column |
 
 ## Layouts
 
