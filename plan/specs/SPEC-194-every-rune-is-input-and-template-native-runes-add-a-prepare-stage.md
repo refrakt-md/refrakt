@@ -215,6 +215,10 @@ Each `RuneConfig` field (`packages/transform/src/types.ts`) falls into one of th
 | Structure assembly | `structure`, `layout`, `contentWrapper`, `autoLabel`, `projection`, `postTransform` | deprecated; the template does it |
 | To classify | `variants`, `styles`, `staticModifiers`, `checklist`, `scope` | decided field by field in the first work item; each is either vocabulary or assembly |
 
+- **`block` names a rune for BEM, nothing more.** Which classes the output carries is the
+  theme's setting ({% ref "SPEC-196" /%}). `block` is the name the built-in `"bem"` generator
+  uses where it differs from `data-rune` (`codegroup` for `code-group`), so keeping it keeps
+  today's classes byte for byte. It no longer decides whether a rune has classes.
 - **A rune with a definition gets its engine config generated**, as `composedRuneConfig` does.
   `config.ts` keeps only runes that have not moved.
 - **A deprecated field on a rune that has a template is an error**
