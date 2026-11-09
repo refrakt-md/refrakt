@@ -1,4 +1,4 @@
-{% work id="WORK-716" status="ready" priority="medium" complexity="moderate" source="SPEC-193" tags="docs, runes, orientation" milestone="v0.49.0" %}
+{% work id="WORK-716" status="in-progress" priority="medium" complexity="moderate" source="SPEC-193" tags="docs, runes, orientation" milestone="v0.49.0" %}
 
 # Rune pages say how Markdown is read and when to use the rune, in place of the Section header boilerplate
 
