@@ -30,6 +30,6 @@ Branch: `claude/composition-usage-rune-pages-c87ar6`
 - Corrected inaccuracies found on the way: tabs (no eyebrow/headline), comparison (no header), map (route comes from `route=true`), drawer (`---` does split), recipe (no footer zone), api (body passes through).
 
 ### Notes
-- Found BUG-048: inline `{% tint %}` parses an outdated token list, so `background`/`text` are dropped. Filed, not fixed here.
+- Found BUG-050: inline `{% tint %}` parses an outdated token list, so `background`/`text` are dropped. Filed, not fixed here.
 
 {% /work %}

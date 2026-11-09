@@ -1,4 +1,4 @@
-{% bug id="BUG-048" status="fixed" severity="major" source="SPEC-053" tags="tint, runes" milestone="v0.49.0" pr="refrakt-md/refrakt#786" %}
+{% bug id="BUG-050" status="fixed" severity="major" source="SPEC-053" tags="tint, runes" milestone="v0.49.0" pr="refrakt-md/refrakt#786" %}
 
 # Inline tint tokens use an old list, so background and text are silently dropped
 
