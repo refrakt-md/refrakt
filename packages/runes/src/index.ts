@@ -1081,6 +1081,14 @@ export const runes = {
 			'{% /mediatext %}',
 		],
 	}),
+	link: defineRune({
+		name: 'link',
+		schema: linkTag,
+		description:
+			'A link around any content: a word in a sentence, or a whole block made clickable without nesting links.',
+		category: 'Text & inline',
+		snippet: ['{% link href="${1:/path}" %}${2:content}{% /link %}'],
+	}),
 	icon: defineRune({
 		name: 'icon',
 		schema: icon,
@@ -1269,8 +1277,6 @@ export const runes = {
  * cells, partials, etc. */
 export const tags = {
 	...runeTagMap(runes),
-	// The tag form also wraps blocks (SPEC-160 D8); the node form is unchanged.
-	link: linkTag,
 	...Markdoc.tags,
 	// Markdoc's `if` / `else` declare `primary: { type: Object }`, which is a
 	// statement about *expression syntax*: `{% if $var %}` and

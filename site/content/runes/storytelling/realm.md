@@ -57,16 +57,11 @@ Use the `type` attribute to categorize your locations.
 
 {% /preview %}
 
-### Layout attributes
+## Place the scene
 
 A realm's `scene` field (the image at the top of each section) is the media zone; `media-position` controls where it sits relative to the content. Beside layouts (`start`/`end`) collapse to a stack at narrow widths.
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `media-position` | `string` | `top` | Where the scene sits: `top`, `bottom`, `start` (left), `end` (right) |
-| `media-ratio` | `string` | — | Scene's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
-| `valign` | `string` | — | Cross-axis alignment when scene is beside content: `top`, `center`, `bottom`, `stretch` |
-| `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
+`media-ratio`, `valign` and `collapse` tune a side-by-side split, as on [card](/runes/card#place-the-media).
 
 ## Attributes
 

@@ -62,7 +62,7 @@ Anchors are matched against the **raw** source, so a JSON key or a quoted select
 
 Anchoring is not a dead end. Every refusal names the way through, and all three stay supported permanently:
 
-| Attribute | Use |
+| Write | To |
 |---|---|
 | `through="^}"` | End at a regex, **including** the matching line |
 | `until="^## "` | End at a regex, **excluding** the matching line |

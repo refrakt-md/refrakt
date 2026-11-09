@@ -110,14 +110,7 @@ Give a section `media-position` and it splits on `---` the way [`card`](/runes/c
 
 {% /preview %}
 
-| Attribute | Values | What it does |
-|---|---|---|
-| `media-position` | `top`, `bottom`, `start`, `end`, `cover` | Where the media zone sits. Turns zoning on. |
-| `media-ratio` | `1/3` … `2/3` | The media's share of the row, beside the content |
-| `valign` | `top`, `center`, `bottom`, `stretch` | Cross-axis alignment, beside the content |
-| `collapse` | `sm`, `md`, `lg`, `never` | When a side-by-side split stacks |
-| `media` | `portrait`, `cover`, `thumbnail`, `hero`, `icon` | What the media zone holds, so the media dimension styles it. `portrait` is cropped round. |
-| `guest-fit` | `clip` (default), `bleed` | Whether the media guest is cropped to its zone or may spill past it |
+`media-position` places the media and turns the zones on. Beside the content, `media-ratio` sets the media's share of the row, `valign` aligns the two and `collapse` picks the width at which they stack. `media` says what the zone holds, so it is styled to match: `portrait` is cropped round.
 
 The zones count as `card`'s do: one zone is the content, two are media and content, and three or more add the last as the footer. An empty leading zone means no media, and the media element is left out.
 

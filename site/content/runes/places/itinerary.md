@@ -67,24 +67,6 @@ Without H2 headings, all stops are grouped into a single implicit day.
 
 {% /preview %}
 
-### Day attributes
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `label` | `string` | — | Day label (parsed from H2 heading) |
-| `date` | `string` | — | Date information |
-
-### Stop attributes
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `time` | `string` | — | Time of the stop (parsed from heading text before `—`) |
-| `location` | `string` | — | Location name (parsed from heading text after `—`) |
-| `duration` | `string` | — | How long spent at this location |
-| `activity` | `string` | — | Activity name |
-| `lat` | `string` | — | Latitude coordinate |
-| `lng` | `string` | — | Longitude coordinate |
-
 ## Section header
 
 Itinerary supports an optional eyebrow, headline, and blurb above the section above itinerary stops. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.

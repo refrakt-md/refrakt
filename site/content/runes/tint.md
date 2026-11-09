@@ -134,14 +134,9 @@ A tint sets up to six colours. Each replaces the theme's own colour of the same 
 | `primary` | Links and accents |
 | `border` | Borders and dividers |
 
-## The tint axis on other runes
+## Tint without a child rune
 
-Every rune that carries the tint axis accepts these directly — no `{% tint %}` child needed.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `tint` | `string` | — | Named tint from theme config |
-| `tint-mode` | `string` | — | Colour scheme override: `auto`, `dark`, or `light` |
+A rune that takes a tint also accepts `tint` and `tint-mode` directly, with no `{% tint %}` inside it: `{% hint tint="warm" %}`.
 
 ## Nesting
 

@@ -218,16 +218,11 @@ A `grid` is great when the feature has room, but cramped on a phone. Add `collap
 
 Feature supports an optional eyebrow, headline, and blurb above the section above feature items. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
-### Layout attributes
+## Place the media
 
 The body splits on `---` into **media → content** zones (media-first in source). `media-position` controls visual placement independently of source order. Item arrangement (grid vs. single column) is the separate [`layout`](#item-arrangement-layout) axis — when unset it derives from `media-position` (stacked → grid, beside → list), but the two are independently controllable.
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `media-position` | `string` | `bottom` | Where the media sits: `top`, `bottom` (the default — media beneath the text), `start` (left), `end` (right) |
-| `media-ratio` | `string` | — | Media's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
-| `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
-| `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack **and** a `grid` of items reflows to one column: `sm`, `md`, `lg`, `never` |
+`media-ratio`, `valign` and `collapse` tune a side-by-side split, as on [card](/runes/card#place-the-media); `collapse` also sets where a grid of items reflows to one column.
 
 ## Attributes
 

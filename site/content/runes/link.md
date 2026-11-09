@@ -4,9 +4,10 @@ description: A link around any content — a word in a sentence, or a whole bloc
 category: Text & inline
 plugin: core
 status: stable
+type: rune
 ---
 
-# Link
+{% include file="rune-intro.md" variables={r: "rune:link"} /%}
 
 `{% link %}` is a link written as a tag. Inside a line of text it is an ordinary `<a>`, the same as `[text](url)`, useful when the target is a variable. Around blocks it makes the whole region a link — a figure, a hint, a heading and its paragraph — and works out how to do that without nesting one link inside another.
 
@@ -69,8 +70,4 @@ An empty `href` renders the content unchanged, with no link. A template can writ
 
 ## Attributes
 
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `href` | `string` | — | The link target. Missing or empty renders the content unlinked. |
-| `title` | `string` | — | The link's `title`, inline form only. |
-| `aria-label` | `string` | — | The accessible name of a link around blocks, used before the content's title. |
+{% include file="rune-attributes.md" variables={r: "rune:link"} /%}
