@@ -200,6 +200,9 @@ the paragraph form can be added if authors ask for inline links in it.
 the split is a **primitive's** job, not the composition's. A core primitive may own imperative
 code; only a composition must be declarative. So:
 
+*Restated 2026-11-09* by {% ref "ADR-048" /%} decision 1.3 for every rune: code lives only in a
+`prepare` stage a package registers, and a definition file names one but never contains one.
+
 - `deflist` gains `definition`'s term shapes: a leading heading, or a paragraph holding an
   image, an icon or a bold lead with no colon, as the term; every following block as the
   description. The `**Term:**` form keeps working, and an item that matches no shape keeps

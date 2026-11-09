@@ -7,6 +7,11 @@
 {% ref "ADR-045" /%} lets a theme or a site replace a composed rune's template while keeping its
 input. This spec is the mechanism:
 
+> *Widened 2026-11-09* by {% ref "ADR-048" /%}: every rune becomes a definition with a template,
+> so this mechanism applies to every rune, not only composed ones. Its checks read slots from
+> the content model and values from `computes` ({% ref "SPEC-194" /%} D4).
+
+
 - a replacement is a definition file with the input half left out;
 - it can replace one template value and inherit the rest;
 - it can change the defaults of the template selector and the presentation axes with `defaults`;
@@ -244,6 +249,15 @@ seen from the side of structured data.
   hint names on the slots it places, or declares its own.
 
 ## Open questions
+
+- **Which runes does the structured-data check actually protect?** *Carried from
+  {% ref "WORK-584" /%} Q3, 2026-11-09.* A replacement template must not change what a rune
+  publishes, and D5 compares it mechanically. Where a rune publishes a property from a meta node
+  or its field bag, no template can affect it. Where it publishes from a visible node (likely
+  `recipe`'s `HowToStep` carriers, {% ref "SPEC-130" /%}'s retype-and-wrap cases), the comparison
+  is what stands between a theme and the published graph. The fixtures in
+  `contracts/seo-baseline/fixtures/` cover all 30 emitting runes and give the list: for each,
+  whether `property=` rides on a node a template places, or only on metas.
 
 - **Public fragments.** Replacing only recipe's header fragment would be finer than replacing
   a template value. It makes fragment names public API, which a plugin then cannot rename

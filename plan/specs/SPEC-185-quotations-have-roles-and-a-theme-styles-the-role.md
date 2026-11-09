@@ -150,6 +150,9 @@ Every role that carries a source reads it the same way and renders it the same w
   - **The after form can ship first.** It needs only SPEC-182's paragraph model and SPEC-186 D1; the
     inside form waits for SPEC-186 D2–D3.
 - **Rendered** as `<figcaption>`, the name in `<cite>`.
+  *Amended 2026-11-09* by {% ref "SPEC-194" /%} D13: the shared part becomes the template-only
+  `attribution` primitive, so a rune written as a definition can place it. The output is
+  unchanged. The excerpt keeps its `<aside>` through template variants (SPEC-194 D13).
 - A quotation (role 1) with an attribution becomes a `<figure>`; without one it stays a bare
   `<blockquote>`.
 

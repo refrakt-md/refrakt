@@ -360,6 +360,30 @@ free condition (`when=and(…)`) is rejected: coverage and overlap could no long
 **Trigger:** a rune in which two attributes each change which slots are placed where. Until
 then, `templates: { by }` names one attribute and a template tag carries exactly that one.
 
+**A selector may be a computed value** (*amended 2026-11-09* by {% ref "SPEC-194" /%} D14). Some
+choices of arrangement are facts about the content rather than an author's attribute:
+`codegroup` shows a lone fence without a tab bar. `templates: { by }` may name a value under
+`computes` ({% ref "SPEC-195" /%} D8) instead of an attribute, provided it declares a closed set:
+
+```yaml
+templates: { by: layout }
+computes:
+  single: and(equals(count($slots.panels), 1), not($attrs.labels))
+  layout:
+    value: if($computed.single, "single", "tabs")
+    values: [single, tabs]
+```
+
+- **Coverage is checked as for an attribute**: each declared value has exactly one template, and
+  an expression returning a value outside the set is an error.
+- **It is settled before expansion**, since `computes` belongs to the input half.
+- **A theme or site may replace one computed variant** ({% ref "SPEC-177" /%} D2) but cannot change
+  which one is chosen: a computed selector has no default for SPEC-177 D3 to change. Which
+  arrangement a piece of content gets stays a fact about the content.
+- **This is not a second axis.** One selector, attribute or computed, as above.
+- **A computed selector may not share its name with an attribute**: the definition reports
+  `template-selector-ambiguous`, since `{% template layout="…" %}` could not say which it means.
+
 ## Incidental findings
 
 Recorded so they are not lost, for separate handling:

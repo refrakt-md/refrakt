@@ -1,0 +1,1105 @@
+{% spec id="SPEC-194" status="accepted" tags="composition, template, theme, content-model, native, architecture, engine" %}
+
+# Every rune is input and template; native runes add a prepare stage
+
+## Summary
+
+{% ref "ADR-048" /%} makes every rune one definition: a declared input and a template. A rune
+that needs code is a definition that also names a **`prepare`** stage, TypeScript that computes
+values from already-parsed content. Throughout, "native" means *written in TypeScript today*;
+once moved, every rune is a definition. This spec is the mechanism:
+
+- the definition format for a native rune: `prepare` and `computes` (D1, D2);
+- where code may live (D3);
+- template override for every rune (D4);
+- what engine config keeps and what it loses (D5);
+- the inventory of `custom` content models (D6) and the grammar extensions that replace them
+  (D7);
+- opaque visuals (D8);
+- when the legacy levers are removed (D9), and the migration order (D10);
+- a template never names an HTML element (D11);
+- a rune reads data from three scopes, and only the entity registry makes it wait (D12);
+- a primitive is a definition too, and places smaller primitives such as `attribution` (D13);
+- the first migrations, worked: `pull-quote`, `codegroup`, `embed` (D14).
+
+## Prerequisites
+
+| Needs | From | State on 2026-11-09 |
+|---|---|---|
+| Theme and site templates, their lookup and checks | {% ref "SPEC-177" /%} | draft |
+| The function vocabulary `computes` is written in | {% ref "SPEC-195" /%} | accepted with this spec |
+| Template variants, including a computed selector, and fragments | {% ref "SPEC-168" /%} D8, D9 | draft |
+| Classes as a theme setting, and `role` | {% ref "SPEC-196" /%} | accepted with this spec |
+| First-party definitions loaded from `.md` rune directories | {% ref "SPEC-153" /%} | see spec |
+| Content-model groups, nested models and `position: last` | {% ref "SPEC-186" /%} | accepted |
+| Paragraph `itemModel` and `fills` | {% ref "SPEC-182" /%} | implemented |
+
+D1–D3 and D6–D7 can be built before SPEC-177: a native rune with a template is useful as soon as
+its template replaces its engine structure, even before anyone can override it. D4 needs SPEC-177.
+
+## What exists, measured
+
+- **A composed definition is one Markdoc file.** Frontmatter holds `attributes`, `content`,
+  `metaFields`, `blocks`, `schema` and `defaults`, and the body is the template
+  (`plugins/marketing/runes/testimonial.md`). `defineComposedRune` builds the rune from it, and
+  `composedRuneConfig` (`packages/runes/src/lib/composition.ts`) generates its engine config,
+  marked `composed: true`.
+- **A template places** slots (`{% slot %}`), metadata blocks (`{% metablock %}`), core runes
+  and repeated items. `$each.<name>` exposes exactly the content model's `emitAttributes`.
+- **A native rune is two artifacts.**
+  - A `createContentModelSchema` transform builds a tree with `createComponentRenderable`.
+  - A `RuneConfig` entry (`packages/runes/src/config.ts`, 2,846 lines, plus about 1,600 lines
+    across the plugin configs) adds structure on top of that tree.
+- **Fourteen runes use `type: 'custom'`**, listed in D6. `packages/runes/src/reference.ts`
+  reports such a model as `{ type: 'custom', description }` and nothing more.
+- **No theme overrides any rune** (`luminaOverrides`, `packages/lumina/src/config.ts`).
+  Composed runes refuse overrides ({% ref "WORK-669" /%}).
+
+## Decisions
+
+### D1: a native rune is a definition file that names a `prepare` stage
+
+*Example revised 2026-11-09*: `embed`, the rune D14 works through, replaces an earlier
+`codegroup` example that needed no stage once {% ref "SPEC-195" /%}'s functions existed.
+
+```md
+---
+tag: figure
+attributes:
+  url:    { type: string, required: true }
+  aspect: { type: string, matches: ["16:9", "4:3", "1:1", auto], default: "16:9" }
+  title:  { type: string }
+content:
+  type: sequence
+  fields:
+    fallback: { match: any, greedy: true, optional: true }
+prepare: embed
+computes:
+  provider:   { type: string }
+  embedUrl:   { type: string }
+  frameTitle: first($attrs.title, "Embedded content")
+schema:
+  type: VideoObject
+  properties: { title: name, url: contentUrl, embedUrl: embedUrl }
+---
+```
+
+The body is a template, as for any composition (D14 has the full examples).
+
+- **The same keys as a composition, plus two.**
+  - `prepare` names a registered stage (D3).
+  - `computes` declares every value the stage returns: its name, its type, and whether it sits
+    on the rune or on each item of a repeated slot (`panels.label`). The same key also holds
+    expressions ({% ref "SPEC-195" /%} D8), so a rune may mix values its stage fills with values
+    a function computes.
+- **One more key for every definition, `role`** (*added 2026-11-09*): `primitive` (something
+  other runes place), `drawing` (an opaque visual, D8) or domain, the default. It is a claim to
+  be part of the shared design language, and it decides whether the theme's `"bem"` setting
+  gives the rune classes ({% ref "SPEC-196" /%} D8). A composition declares it too. A primitive
+  also names the runes that place it, `placedBy: [testimonial]`, which is what SPEC-196 D8's
+  test checks.
+- **A rune's name is its tag name** (*added 2026-11-09*). A definition file is named after the
+  tag authors write (`pullquote.md`, `codegroup.md`), and that name is also its `data-rune` and
+  its BEM block. Several native runes today emit a different `data-rune` (`pull-quote`,
+  `code-group`); moving to a definition aligns it with the tag (SPEC-196 D10).
+- **Nothing else about the format changes.** A definition without `prepare` is a composition,
+  exactly as today.
+- **Computed values are values, not slots.**
+  - A rune-level computed value is readable in the template as `$computed.<name>`.
+  - A per-item value is added to what `$each` exposes, beside the content model's
+    `emitAttributes`.
+  - A computed value may also feed `metaFields` and the `schema` row by name, so a subtotal can
+    be both shown and published.
+
+- **A matched node's own attributes.** The example reads a fence's attributes through
+  `$node.<name>` in `emitAttributes`. Today `emitAttributes` reads only item-model fields and
+  heading-extracted values, so this is a small addition, made with `codegroup` (D14).
+
+- **`$computed` is its own scope** (*decided 2026-11-07*). Computed values never join `$attrs`.
+  SPEC-177 D3's precedence tells an author's explicit value from a default, and a computed
+  value is neither, so mixing the scopes would blur both.
+- **A computed value is read-only in the editor** (*decided 2026-11-09*). The block editor
+  infers it: a value under `computes` is not in the content model, so there is nothing an
+  author could edit. No new key marks it. Where a template shows a computed value inside an
+  editable region, the editor displays it and does not make it editable.
+
+### D2: `prepare` computes; it does not parse or build
+
+```ts
+// registered by core as Plugin.prepare.embed
+export const prepareEmbed: Prepare<EmbedInput, EmbedComputed> = ({ attrs }) => {
+	const { provider, embedUrl } = detectProvider(attrs.url); // today's provider table
+	return { provider, embedUrl };
+};
+```
+
+- **Input:**
+  - the resolved fields, with emitted attributes and item-model values already extracted;
+  - the attributes, after defaults;
+  - a context of locale, site and source path.
+
+  It never receives raw AST.
+
+  *One exception, named rather than general:* `preview` and `sandbox` display an example's own
+  source text, which no resolved field holds (they read `config.variables.__source` today). The
+  definition declares that need (`input: [source]`), and only then does the context carry the
+  raw source of the rune's own body. No other rune gets it.
+- **Output:** exactly the values `computes` declares, nothing else.
+  - An undeclared key is an error (`prepare-undeclared-value`).
+  - A missing required key is an error (`prepare-missing-value`).
+  - Both are checked in development and in tests. Production trusts the declaration.
+- **It cannot touch structure.** It returns no tree, creates no slot, and cannot remove,
+  reorder or filter the items of a slot. If items need to be filtered or reordered, that is a
+  content-model or template concern.
+- **It is pure and synchronous.** Data fetching stays where it is today, in the cross-page
+  pipeline hooks. `prepare` can read what a hook put in its context, but cannot start I/O.
+- **Context comes from the three scopes of D12, as values only.** Resolvers return data, never
+  markup (D12.5).
+- **Facts, not arrangement.** Where a transform today chooses an arrangement while it parses
+  (`codegroup`'s single-fence branch), the fact is computed in the input half and selects a
+  template variant ({% ref "SPEC-168" /%} D9): the template decides what to do with it.
+
+### D3: code is registered by a package, never written in a definition
+
+- A plugin registers stages beside its runes: `Plugin.prepare: Record<string, Prepare>`. Core
+  registers its own the same way.
+- A definition names a stage by key. A name that no loaded package registers reports
+  `prepare-unknown` and the rune is not loaded.
+- **A site's `runes/` directory may name a registered stage but never define one.** A
+  site-authored definition stays code-free, so this restates {% ref "SPEC-161" /%} D3 precisely:
+  a template never runs code, and a definition file never contains it.
+- **A stage is private to its rune** (*decided 2026-11-07*). It may be named only by the
+  definition its package ships. Letting other runes name it would make every stage's input and
+  output a public API, versioned like a rune, and no case needs that yet. Shared logic is
+  reused another way; see "Future: reusing computation" below.
+
+### D4: every rune with a template is arrangeable
+
+{% ref "SPEC-177" /%} applies to a native rune's template without change:
+
+- lookup is site, then theme, then definition, per template value and per `defaults` key;
+- every slot must be placed;
+- a replacement file carries only `defaults` and a body, and any input key in it, now
+  including `prepare` and `computes`, reports `template-override-input`;
+- structured data is compared with the definition's own template.
+
+The checks read slots from the content model and values from `computes`, so they run when the
+site loads, without content and without running `prepare`.
+
+`codegroup`'s own templates are in D14: two variants, `single` and `tabs`, chosen by a computed
+selector. An editorial theme that prints code groups as stacked, captioned listings replaces
+only the `tabs` variant, in its `templates/codegroup.md`:
+
+```md
+{% template layout="tabs" %}
+	{% metablock name="topbar" /%}
+
+	{% slot name="panels" each %}
+		{% group name="listing" as="figure" %}
+			{% slot /%}
+			{% caption text=$each.label /%}
+		{% /group %}
+	{% /slot %}
+{% /template %}
+```
+
+It inherits the `single` variant, places every slot once, and changes no input: the label
+fallback chain and the `labels` attribute are untouched. It uses only what a template may:
+`group as="figure"` (D11) and the `caption` primitive ("Candidate primitives", below).
+
+### D5: engine config keeps vocabulary and loses assembly
+
+Each `RuneConfig` field (`packages/transform/src/types.ts`) falls into one of three groups:
+
+| Group | Fields | Fate |
+|---|---|---|
+| Identity and vocabulary | `modifiers`, `contextModifiers` (a list of parents, emitted as `data-in`, SPEC-196 D5), `metaFields`, `blocks`, `sections`, `provides`, `universalAttributes`, `mediaSlots`, `frameTarget`, `substrateTarget`, `rootAttributes`, `interactive`, `editHints`, `sequence`, `sequenceDirection`, `staggerItems`, `parent`, `requiresParent`, `sectionRoleExceptions`, `guestFit`, `composed`, the axis defaults (`defaultWidth`, `defaultSpacing`, `defaultInset`, `defaultReading`, `contentMeasure`, `defaultDensity`, `defaultElevation`, `defaultProminence`, `childDensity`) | kept; generated from the definition |
+| Structure assembly | `structure`, `layout`, `contentWrapper`, `autoLabel`, `projection`, `postTransform` | deprecated; the template does it |
+| Classified on 2026-11-09 | `variants`, `styles`, `staticModifiers`, `checklist`, `scope` | each settled below |
+
+**The five fields settled last** (*measured 2026-11-09*):
+
+| Field | What it is | Uses | Fate |
+|---|---|---|---|
+| `variants` | merges a partial config over the base, per modifier value, before assembly | 4: `card`, `section`, `recipe`, `track` | **deprecated with assembly.** Two of the four deltas override assembly (`recipe` and `track` add `layout` wrappers; `recipe`'s is a free `div` with attributes, which D11 forbids). The template expresses each as a `{% if %}`. The other two deltas only add the `cover` static modifier and a root attribute, both already said by `data-media-position="cover"` |
+| `styles` | turns a modifier value into an inline style or custom property | 15 (6 core, 9 plugin) | **vocabulary, but not a definition key.** Definitions already reject a `styles` key (`STYLE_KEYS`, `packages/runes/src/lib/composition.ts:1735`). A definition forwards the attribute to the primitive that owns the style, as `hero` already forwards `valign` to `section`. 8 of the 15 uses are the same `valign → --split-valign` entry, which belongs to the split primitive |
+| `staticModifiers` | always adds `rf-{block}--{name}`, as a class only | 4: `featured-tier`, and `cover` inside 3 variants | **deprecated.** Every use is already said by an attribute (`data-rune="featured-tier"`, `data-media-position="cover"`); {% ref "SPEC-196" /%} D5 retargets the 14 selectors that use it |
+| `checklist` | nothing: no engine code reads it (checkbox detection runs on every list item) | 2: `work`, `bug` | **removed** |
+| `scope` | the i18n key prefix, stamped from the owning plugin (`assemble.ts:155`) | 0 authored | **identity, generated**: no authored replacement is needed |
+
+- **`block` goes away.** Which classes the output carries is the theme's setting
+  ({% ref "SPEC-196" /%}). Its `"bem"` generator classes primitives and drawings, named after
+  the rune's tag name, and gives domain runes none (SPEC-196 D8, D10, *revised 2026-11-09*). A
+  native rune keeps its configured `block` and today's classes until it moves to a definition.
+  Then a primitive keeps its classes unchanged (its tag name is its old block), only its
+  `data-rune` changes where it differed, and a domain rune loses its classes as its stylesheet is
+  triaged (SPEC-196 D11). Definitions keep rejecting a `block` key (`STYLE_KEYS`, SPEC-145 D2).
+- **A rune with a definition gets its engine config generated**, as `composedRuneConfig` does.
+  `config.ts` keeps only runes that have not moved.
+- **A deprecated field on a rune that has a template is an error**
+  (`engine-config-assembly-with-template`). It also reports while that rune keeps its config,
+  so the two cannot overlap on one rune.
+- **`postTransform` has no replacement in config.** The code it holds goes into `prepare` when
+  it computes a value. When it rearranges, the arrangement goes into the template.
+
+### D6: the `custom` content models, sorted
+
+Each `processChildren` mixes a parse with a computation. Sorted by what is left once the
+computation moves to `prepare`:
+
+**Declarable today**
+
+| Rune | Declarative model | `prepare` |
+|---|---|---|
+| `nav` | `sections` on `heading:1`, with `implicitSection` for a flat list | none (slug resolution is a pipeline step) |
+| `symbol` (group kinds) | one `sections` model on `heading:3`; the template varies the arrangement by `kind` ({% ref "SPEC-169" /%} D2 and D5: a definition's content model never depends on attribute values). *Corrected 2026-11-09*: an earlier draft used `when` | none |
+| `symbol-group` | `sections` on `heading:4` + `emitTag: symbol-member` | none |
+| `definition` | sequence: a term group (headings, and paragraphs read by an `itemModel` for image, icon or bold text), then the description | none (`processChildren` is the identity function today; the split is in `transform`) |
+| `bento` | `sections` for cells | none; pushing frame attributes down to cells is the template's (SPEC-145 D32) |
+
+**Needs a D7 extension**
+
+| Rune | Extension | `prepare` |
+|---|---|---|
+| `storyboard` | node-started groups: each image starts a panel | none |
+| `preview` | a field taken from anywhere: the fence | renders the example's source and HTML; it reads the raw source (D2's named exception). *Corrected 2026-11-07*: an earlier draft said none |
+| `tabs` | inline extraction from headings: a tab's image | none |
+| `form` | repeated choice, a SPEC-186 D1 group for blockquote + list, `position: last` for the submit paragraph | field type inference (option count, modifier words) |
+
+**Declarable, with a computation left**
+
+| Rune | `prepare` |
+|---|---|
+| `budget`, `budget-category` | subtotals, or none once {% ref "SPEC-162" /%}'s `tally` lands |
+| `conversation` | speaker fallback `speakers[i % n]` (the bold speaker is a nested model) |
+| `comparison` | aligning rows across columns against a master label list |
+| `map` | parsing coordinates into numbers (name, description and link are an `itemModel`) |
+
+This sorting is a hypothesis. `form` was read in full; the others from their `processChildren`
+descriptions and the opening of their transforms. The first work item for each rune confirms
+its row or moves it.
+
+### D7: four content-model extensions
+
+Each is a general grammar feature, available to every definition and reported by
+`refrakt reference` like the existing patterns.
+
+1. **Node-started groups.** `sections` takes any node type as its delimiter
+   (`sectionHeading: image`), and the delimiter node stays in its group. Without `emitTag`, a
+   group's leading node is bound like a heading.
+2. **A field from anywhere.** `position: any` on a field takes the first node that matches it,
+   wherever it sits, before the rest of the sequence is walked. It is a sibling of SPEC-186 D3's
+   `position: last`, with the same "only one per model" limit.
+3. **Inline extraction from headings.** `headingExtract` fields accept the inline matches an
+   `itemModel` accepts (`image`, `strong`, `link`, `code`), not only `text`.
+4. **Repeated choice.** `{ type: repeat, of: [ …fields or groups… ] }` matches, in any order and
+   any number of times, whichever alternative fits next, and yields an ordered list of tagged
+   items. The template places them with `{% slot name="…" each %}` and branches on
+   `$each.kind`.
+
+Each extension is specified and implemented with the first rune that needs it, not in advance.
+
+### D8: an opaque visual is one slot
+
+`chart`, `map`, `diagram`, `audio` and `juxtapose` draw something no template can rearrange.
+This is the list of drawings (`role: drawing`, SPEC-196 D8) every document uses; `embed` and
+`gallery` are not on it: `embed` places a `frame` primitive, and `gallery`'s items are content
+with a behaviour.
+
+- Their drawing is one slot.
+- Their title, legend, caption, controls and fallback content are fields and slots around
+  it, which a theme may arrange.
+- The drawing's own CSS stays with the plugin, in tokens only ({% ref "ADR-044" /%} tier 3).
+
+A theme can put a map's legend under the map. It cannot restyle the map's tiles except through
+tokens.
+
+**Parts a behaviour depends on are primitives or opaque slots** (*decided 2026-11-09*, after an
+audit of every behaviour and web component). A replacement template keeps every slot and every
+`data-name`, but a behaviour that relies on element choice or DOM shape needs more than that:
+
+| Depends on | Behaviours | So |
+|---|---|---|
+| a fixed element | `accordion` (native `<details>` and `<summary>`), `tabs` (`<button>`), `datatable` and `chart` (`<table>`), `form` (`<form>`) | the part is a primitive that owns its element |
+| a custom-element root | `rf-chart`, `rf-map`, `rf-diagram`, `rf-audio`, `rf-sandbox`, `rf-nav` | a template never changes the root element of these runes |
+| direct-child order | `tabs` (button *i* pairs with panel *i*), `juxtapose` (two panels by position), carousel (slides are the track's children) | the container and its items are one primitive; "direct children" is documented as its contract |
+| the whole arrangement | `preview`, which turns every other root child into canvas content | `preview` is one opaque slot; a template arranges nothing inside it |
+
+Every other behaviour needs only selector changes, listed in {% ref "SPEC-196" /%} D6.
+
+### D9: when the legacy levers are removed
+
+- **`CustomModel`** is removed in the release after the last first-party rune leaves it. Until
+  then it is marked deprecated in its type, and `refrakt validate` warns on a third-party plugin
+  rune that uses it.
+- **Structure-assembly config fields (D5)** are removed in the release after the last
+  first-party rune leaves them. Their removal is a breaking change for third-party plugins and
+  ships through {% ref "SPEC-189" /%}'s migration table.
+- **A theme's `runes:` section** ({% ref "ADR-043" /%} decision 6) is removed in the same
+  release. By then every lever it offered is either identity (refused already) or assembly
+  (gone), so nothing is left to override.
+
+### D10: migration order
+
+1. **Three acceptance cases**, worked in D14, in this order:
+   - **`pull-quote` for a primitive written as a definition** (D13), with no `prepare` and no
+     `computes`.
+   - **`codegroup` for the template and `computes`.** Its parse is declarative already, its two
+     computed values (`layout`, `panels.file`, `panels.label`) are SPEC-195 expressions, and its
+     arrangement (tabs, or a single panel with
+     chrome) is one a theme plausibly wants to change.
+   - **`embed` for `prepare`.** Provider detection and the embed-URL rewrite are real
+     rune-specific computation (`packages/runes/src/tags/embed.ts`), with no second adopter
+     that would make them functions.
+
+   *Revised 2026-11-07.* An earlier draft made `codegroup` the single acceptance case, before
+   the measurement below showed it needs no stage. *Revised 2026-11-09:* `pull-quote` added as the first case.
+2. **The "declarable today" runes in D6**: they need no new grammar and no `prepare`, so each
+   one probably becomes a plain composition (ADR-044 tier 1) rather than a native rune with a
+   template.
+3. **Each D7 extension**, with its first rune: `storyboard`, `preview`, `tabs`, then `form`.
+4. **The computed rows of D6**, after `budget` follows SPEC-162.
+5. **The remaining native runes without a `custom` model**, ordered by how much engine
+   structure they carry.
+6. **The opaque visuals (D8)** last: they gain the least.
+
+Rune by rune, each moves under {% ref "SPEC-181" /%}'s staging process, as plugin runes moving
+to compositions do now. That includes its fifth gate: the rune's stylesheet is triaged, and
+parity with its current look is not the bar ({% ref "SPEC-196" /%} D11). For a domain rune
+that stays native, this is the larger part of the work: about 1,000 of Lumina's rune-stylesheet
+selectors belong to runes that stay native, and each move is a design pass, not a mechanical
+migration.
+
+### D11: a template never names an HTML element
+
+A template places slots, fields, metadata blocks, groups and runes. It has no tag that emits
+an element by name (`{% tag name="div" %}`), and no tag that takes free attributes.
+
+- **Elements come from facts the definition declares.**
+  - A group's arrangement picks its element: a `ladder` is `<ol>` when the rune declares a
+    `sequence`, `<ul>` otherwise ({% ref "SPEC-156" /%} D3).
+  - A value's `metaType` picks the value element (SPEC-145 D28).
+  - A primitive picks its own elements.
+- **Why not a free element tag:**
+  - **The theme boundary.** An element no vocabulary describes is structure no theme
+    knows, which {% ref "ADR-043" /%} and {% ref "ADR-044" /%} bound away.
+  - **Meaning.** `ol`, `aside`, `header` and `time` are claims about content. A free tag
+    could assert an order or a role the definition never declared.
+  - **Engine-owned attributes.** Free attributes could write `data-rune` (a name-resolution
+    boundary that silently drops schema properties, SPEC-145 D19), `data-field`,
+    `data-zone-layout` or `data-sequence`.
+  - **No code in templates.** {% ref "ADR-045" /%} decision 2 holds only if `script`,
+    `iframe`, `style` and `on*` cannot be written. Theme and plugin templates ship in
+    third-party packages.
+  - **Checks.** A contract records such an element, but no check can say anything about it,
+    and the editor has no edit hint for it.
+- **The needs a free tag would serve, and where they go:**
+
+  | Need | Where |
+  |---|---|
+  | Grouping or arranging parts | `{% group name layout %}` (SPEC-156 D2) |
+  | A header, body or footer zone | the `section` primitive's zones ({% ref "SPEC-160" /%}) |
+  | A semantic wrapper (`aside`, `footer`) | a closed `as=` on `group`, admitted one value at a time with its first case, as `layout` admits topologies |
+  | An inline wrapper around part of a line | an inline `group`, same rules (missing today) |
+  | Decoration (ornament, divider, flourish) | glyph and ornament sets ({% ref "SPEC-164" /%}), or CSS |
+  | An icon beside a value | `metaFields` icons |
+  | Structure the vocabulary cannot express | an opaque slot drawn by the plugin (D8) |
+
+- **The same rule binds `prepare`** (D2): it returns no tree, so it cannot emit an element
+  either. Elements that native transforms build today (`breadcrumb`'s `nav`, `ol` and `li`)
+  move to the template and follow this rule.
+
+**What names an element today, measured on 2026-11-06.** The `structure` field itself is
+unused in first-party configs; elements are named in three other places:
+
+| Where | What | Maps to |
+|---|---|---|
+| `layout` created wrappers | eleven `{ tag: 'div' }` wrappers (nine content wrappers, two nested) and nine `{ tag: 'header' }` preambles, some inside `variants` (core, docs, learning, marketing, media, places, storytelling) | `section`'s header and body zones; a `group` where a wrapper is styled; nothing where it is not |
+| `contentWrapper` | two `div`s (`packages/runes/src/config.ts`, `plugins/places/src/config.ts`) | a `group`, or nothing |
+| `metaFields.*.tag` | `time` on plan's temporal fields (`plugins/plan/src/config.ts`) | the value element from `metaType: temporal`, which D28 already implies |
+
+Each rune's work item confirms its rows. An entry that maps to no row is a vocabulary gap,
+recorded and closed the way D7 closes content-model gaps. A `div` that exists only so that CSS
+has something to select needs no replacement: the template places its children directly.
+
+### D12: a rune reads data from three scopes, and only the registry makes it wait
+
+*Decided 2026-11-08*, answering the open question the measurement below raised about pipeline
+resolvers that build output.
+
+| Scope | Read through | Known | Runes that read it |
+|---|---|---|---|
+| the rune's own input | `$attrs`, slots, `$computed` | at transform | every rune |
+| the page and the site's page index | `$page`, `$site`, and the functions over them ({% ref "SPEC-195" /%}) | at transform, once every page is parsed | `pagination`, `breadcrumb`, `toc`, `nav` (auto), `drawer`, `file-ref` |
+| the entity registry | a `data:` entry with a registry query | after every page is transformed | `collection`, `relationships`, `aggregate`, `blog`, `xref`, `expand` |
+
+1. **The loader parses every page before it transforms any.** `processContentTree`
+   (`packages/content/src/site.ts:611–678`) runs one loop that parses and transforms each page
+   in turn. It becomes two loops in the same function:
+   1. frontmatter, route, parse and title for every page, then the page index is built;
+   2. variables (now including the index), preprocess and transform.
+
+   The content tree has already read every file before the loop starts, and everything the
+   index needs comes from frontmatter, route and AST: the title is the frontmatter's or the
+   first H1's (`derivePageTitle`). The ASTs are held between the loops; each is dropped after
+   its transform.
+2. **`$page` grows; `$site` is new.** `$page` exists already (`url`, `path`, `dir`, `slug`,
+   `title`, `draft`; `buildPageContentVariables`). It gains `parent`, `ancestors`, `children`,
+   `prev`, `next` and `headings`, and `$site` holds `pages` and the page tree. They are getters
+   over the index, computed only when read. Anything that takes a parameter is a function
+   instead (`neighbours($page, "section")`, `url(slug)`, `select($page, …)`), since Markdoc has
+   no method calls.
+3. **Data lists are repeated slots.** A definition declares a list it reads under `data:`, and
+   the template iterates it like any repeated slot, with `$item` bound to each entry as
+   `collection` binds it today (`projectItem`):
+
+   ```yaml
+   data:
+     entries: select($page, "heading", concat("level:2..", add($attrs.depth, 1)))   # the page as written
+     items:   { query: entities, type: $attrs.type, filter: $attrs.filter, sort: $attrs.sort, limit: $attrs.limit }   # the registry
+   ```
+
+   Single values need no declaration: an expression reads `$page.prev.url` directly. The range
+   `2..3` assumes SPEC-138's comparison gap is closed; SPEC-070 has no range today. Building the
+   filter with `concat` is the interim form SPEC-195 D7 allows until SPEC-138's structured
+   predicates exist; `toc` moves to the structured form with them.
+4. **Only a registry read defers.** A rune whose `data:` contains a registry query is expanded
+   after the pipeline, with its authored source preserved, through `transformDeferredTemplate`
+   (`packages/runes/src/deferred-body.ts`), as `collection`'s body already is. The schema
+   applier runs after expansion, as the auto breadcrumb's already does. Every other rune is
+   expanded at transform. The loader sees which scope a definition reads from its `data:` and
+   expressions, without running it.
+5. **Resolvers return data, never markup.** A resolver finds, sorts and limits, and returns
+   entries; the rune's template arranges them. This extends D2 and D11 to the pipeline. What
+   it removes:
+   - the built-in renderers (`renderBuiltInItem`, `renderTable`, the group wrappers in
+     `collection-resolve.ts`, `buildAutoBreadcrumb`'s `nav`, `ol` and `li`), which become
+     default templates;
+   - the `__slug:` placeholders and the postProcess pass that resolves them, since `url()`
+     resolves at transform;
+   - the region pass after the pipeline (`site.ts:813–853`), since layout regions see `$page` at
+     transform;
+   - the SEO re-harvest workaround for breadcrumbs (`site.ts:785–811`), since their structured
+     data exists at the first harvest.
+6. **Layouts see `$page`.** Layouts are already transformed once per page: `resolveLayouts`
+   runs inside the page loop, and `parseLayout` calls `Markdoc.transform` for every layout in
+   the chain, with no cache (`packages/content/src/layout.ts:65`). Passing the page's variables
+   to that transform costs nothing extra. The comment in `site.ts` saying layouts "are parsed
+   once and shared across pages" is wrong and is corrected with this change.
+7. **Manual and automatic forms share one definition.** `breadcrumb`, `pagination` and `nav`
+   each have a written form and an automatic one, built today by two code paths. Under this
+   decision both fill the same data, and one template arranges both. An author's explicit value
+   wins through `first(…)`.
+8. **The page as written versus what runes registered.** `select($page, type, filter)` reads
+   the page's own AST: headings, images, code blocks, tables, links and rune tags with their
+   attributes. It sees what was written, not what runes derive: a `figure` rune's caption, taken
+   from its first paragraph, is not in the AST. A list that needs derived values reads the
+   registry with a page filter, and waits.
+
+**Costs and limits:**
+
+- **Nav order needs reading from layout ASTs.** Auto pagination prefers the reading order
+  written in a layout's `{% nav %}` over sibling order, and reads it today from the transformed
+  nav after `__slug:` resolution (`collectNavSequences`). The index has to read it from the AST,
+  through nav's content model. That is straightforward once the model is declarative (D6 lists
+  it as declarable today). Pagination moves only after that, so its output does not change in
+  between.
+- **Contributed pages are not in the index.** Pages from `entityRoutes` or a plugin's
+  `contributePages` ({% ref "SPEC-069" /%}) are created during the pipeline, from registered
+  entities. `$site` at transform holds file-backed pages only. A pagination or nav that must
+  include contributed pages reads the registry and waits. This follows from the scope rule, but
+  authors may notice it, so it is documented.
+- **Titles are derived before preprocess**, as today. A title that only an `{% include %}`
+  supplies is still not seen.
+- **The dev server is unaffected.** Any content change already reloads the whole site
+  (`invalidateSite()`, `packages/sveltekit/src/plugin.ts:283`), so there is no per-page
+  dependency tracking to keep correct.
+
+**Examples.** `pagination`, with no `data:` and no deferral:
+
+```yaml
+computes:
+  prevUrl:   first(url($attrs.prev), if($attrs.auto, $page.prev.url))
+  prevLabel: first($attrs["prev-label"], if($attrs.auto, $page.prev.title), $attrs.prev)
+  nextUrl:   first(url($attrs.next), if($attrs.auto, $page.next.url))
+  nextLabel: first($attrs["next-label"], if($attrs.auto, $page.next.title), $attrs.next)
+```
+
+```md
+{% if $computed.prevUrl %}
+	{% link href=$computed.prevUrl %}
+		{% group name="prev" layout="bar" %}
+			{% icon name="arrow-left" /%}
+			{% $computed.prevLabel %}
+		{% /group %}
+	{% /link %}
+{% /if %}
+```
+
+`toc`, reading the page as written:
+
+```md
+{% group name="entries" layout="ladder" %}
+	{% slot name="entries" each %}
+		{% link href=concat("#", $item.id) %}{% $item.text %}{% /link %}
+	{% /slot %}
+{% /group %}
+```
+
+`collection`, reading the registry and deferred. Its item is a fragment, declared at the top
+level of the body and used with `{% partial %}`, as {% ref "SPEC-168" /%} D8 specifies. The
+author's body, when present, replaces the `item` fragment, so a theme can arrange every
+collection on a site without touching an author's item template:
+
+```md
+{% fragment name="item" %}
+	{% card href=$item.url %}
+		### {% $item.data.title %}
+	{% /card %}
+{% /fragment %}
+
+{% template layout="grid" %}
+	{% grid %}
+		{% slot name="items" each %}
+			{% partial file="#item" /%}
+		{% /slot %}
+	{% /grid %}
+{% /template %}
+```
+
+**Decided within D12** (*2026-11-09*):
+
+- **`nav`'s tree.** Up to two levels (groups and their items), nav is arranged by its template
+  like any other data list. Deeper than that, the tree is one opaque nested-list primitive drawn
+  in the shared vocabulary (D8), and the template arranges everything around it: the title, the
+  groups, the layout. Templates gain no recursion. That keeps {% ref "ADR-036" /%}'s line: a
+  recursive fragment would be new power in the template language for one rune. The cost is that
+  a theme cannot rearrange individual items below the second level.
+- **A variable list of fields** (`collection`'s `fields="status,priority"`) is shown by a small
+  core primitive, `{% fields of=$item names=$attrs.fields /%}`. It renders the named fields of
+  an entity as labelled values through the shared vocabulary (`metaType`, `data-field`), since a
+  template cannot iterate a list of attribute names.
+
+**Specified within D12, not built yet:**
+
+- **Two-level iteration**: a repeated slot inside a repeated slot. Grouped collections,
+  `relationships`' groups, nested headings in `toc` and the two template-arranged levels of
+  `nav` all need it. *Measured 2026-11-09: not supported today.* Expansion rejects any named
+  slot inside an `each` slot (`slot-inside-each`, `packages/runes/src/lib/composition.ts:934`),
+  because a rune-level field placed there would repeat once per item. An item also exposes only
+  its `emitAttributes`, never a list of its own. The extension it needs:
+  - an item may carry a list of its own: a group's entries, a section's sub-items;
+  - inside an `each`, `{% slot name="<item field>" each %}` iterates that list;
+  - the check distinguishes an item's field (allowed) from the rune's field (still rejected,
+    for the original reason).
+
+  Exactly one nested level, no deeper, matching the `nav` decision above.
+- **The `fragment` override point**: a definition names the fragment an author's body replaces
+  (`deferBody: item`), on top of {% ref "SPEC-168" /%} D8's fragments, which are a draft.
+
+### D13: a primitive is a definition too, and places smaller primitives
+
+*Added 2026-11-09*, from writing `pull-quote` as a definition. A primitive (SPEC-196 D8's
+`role: primitive`) is written in the same format as any rune. Where its template needs structure
+D11 does not let a template name, that structure is a smaller primitive it places, never an
+exception to D11.
+
+**Worked example: `pull-quote`.** It needs no `prepare` stage and no `computes`. About 170 lines
+of `packages/runes/src/tags/pullquote.ts` and its `PullQuote` engine entry become this file:
+
+```md
+---
+tag: if($attrs.excerpt, "aside", "figure")
+role: primitive
+placedBy: [testimonial]
+aliases: [pull-quote, quote]
+templates: { by: excerpt }
+description: A featured quotation, or with `excerpt` a pull quote repeated from the text
+attributes:
+  author:  { type: string, description: "Who said it, when not written as a paragraph" }
+  source:  { type: string, description: "Where it is from: a role, a work or a date" }
+  align:   { type: string, matches: [left, center, right], default: center }
+  excerpt: { type: boolean, description: "The words already appear in the text; hidden from assistive technology" }
+content:
+  type: sequence
+  fields:
+    quoted:
+      group:
+        - name: quote
+          match: blockquote
+          model:
+            type: sequence
+            fields:
+              - { name: body, match: any, greedy: true, optional: true }
+              - name: attribution
+                match: paragraph
+                optional: true
+                position: last
+                itemModel:
+                  prefix: '^\s*[—–]\s*$'
+                  fields:
+                    - { name: name, match: strong }
+                    - { name: source, match: text, pattern: '^\s*[,—–]\s*(.+)$', optional: true }
+                fills: { author: $name, source: $source }
+        - name: attribution
+          match: paragraph
+          optional: true
+          itemModel:
+            fields:
+              - { name: name, match: strong }
+              - { name: source, match: text, pattern: '^\s*[-–—,]\s*(.+)$', optional: true }
+          fills: { author: $name, source: $source }
+    body: { match: any, greedy: true, optional: true }
+rootAttributes:
+  data-quote:  if($attrs.excerpt, "excerpt", "featured")
+  aria-hidden: if($attrs.excerpt, "true")
+sections: { quote: body }
+provides: [prose, featured-quotation]
+defaults: { density: compact, elevation: flush, reading: prose }
+editHints: { quote: inline }
+---
+
+{% template excerpt=false %}
+	{% group name="quote" as="blockquote" %}
+		{% slot name="quote.body" %}{% slot name="body" /%}{% /slot %}
+	{% /group %}
+
+	{% attribution name=$attrs.author source=$attrs.source /%}
+{% /template %}
+
+{% template excerpt=true %}
+	{% group name="figure" as="figure" %}
+		{% group name="quote" as="blockquote" %}
+			{% slot name="quote.body" %}{% slot name="body" /%}{% /slot %}
+		{% /group %}
+
+		{% attribution name=$attrs.author source=$attrs.source /%}
+	{% /group %}
+{% /template %}
+```
+
+The two templates share their inside, which {% ref "SPEC-168" /%} D8's fragments will hold once
+they exist.
+
+| Today | In the definition |
+|---|---|
+| a `when: { hasChild: blockquote }` model | one model with a group ({% ref "SPEC-186" /%} D1); definitions cannot use `when` ({% ref "SPEC-169" /%} D2) |
+| `splitInsideAttribution` | the nested model on `quote`, with `position: last` |
+| precedence in code: author attribute, then the paragraph after, then the inside one | `fills` ({% ref "SPEC-182" /%} D2): a paragraph supplies `author` and `source` only when the author did not write them |
+| `renderAttribution` | the `attribution` primitive, below |
+| `new Tag('blockquote', …)` for the bare form, plus `withoutQuoteRole` | `group as="blockquote"` around `quote.body`, falling back to `body`; the authored blockquote is never rendered as its own node |
+| `data-quote` and `aria-hidden` set in code | `rootAttributes` as expressions |
+| the excerpt's `<aside>` root around a `<figure>` (SPEC-185 D1) | the root `tag:` as an expression, and two template variants selected by `excerpt` (SPEC-168 D9); the excerpt's inner figure is `group as="figure"` |
+| `align` defaulted by `fieldMetas` | the attribute's own default; the engine generates the modifier |
+| `block: pullquote`, the axis defaults, `sections`, `provides`, `editHints` | definition keys. The definition is `pullquote.md`, so its `data-rune` becomes `pullquote` (today `pull-quote`, kept as an alias) and its classes stay `rf-pullquote` ({% ref "SPEC-196" /%} D10) |
+| the deprecated `variant` | a {% ref "SPEC-189" /%} migration row, not part of the definition |
+
+**The `attribution` primitive.** {% ref "SPEC-185" /%} D6 makes attribution "one shared part" of
+every quotation role. Today that part is `renderAttribution`
+(`packages/runes/src/lib/attribution.ts`): `<figcaption>` holding `<cite>` and a source `<span>`,
+used by `pull-quote`, the core `blockquote` node, epigraphs and, through `pull-quote`,
+`testimonial`. A template cannot build `<figcaption>` or `<cite>` (D11), so it becomes a primitive:
+
+- **template-only**, like `{% group %}` ({% ref "SPEC-156" /%} D2): authors keep writing
+  `**Name** — Source`, the content model reads it, and templates place
+  `{% attribution name=… source=… /%}`;
+- **rendered from values, not nodes.** A placed rune is a name-resolution boundary for
+  structured data ({% ref "SPEC-145" /%} D19), so the values reach the published graph through the
+  outer rune's attributes and field bag (`fills`), and the primitive only displays them;
+- **its element follows its placement:** `<figcaption>` inside a `<figure>`, a neutral element
+  elsewhere, so a template cannot produce invalid HTML by placing it in, say, a card;
+- **one implementation for every role**, styled once under `"bem"` (`rf-attribution`,
+  `rf-attribution__name`, `rf-attribution__source`); it renders nothing when there is no name.
+
+**What the example needs that does not exist yet**, each settled in `pull-quote`'s work item:
+
+1. `group as="blockquote"` and `group as="figure"`: the first two values admitted to D11's
+   closed `as=`.
+2. The `attribution` primitive.
+3. A slot whose fallback content is another slot (`{% slot name="quote.body" %}{% slot name="body" /%}{% /slot %}`).
+4. `rootAttributes` and the root `tag:` in definitions, as expressions ({% ref "SPEC-195" /%}:
+   input half, so meaningful). `tag:` takes only element names a definition could write
+   literally; a theme's replacement template cannot change it.
+5. Which filler wins when two fields fill one attribute. Today the paragraph after the quote beats
+   the inside one; `fills` must say so by model order or explicitly.
+6. A behaviour difference to accept or fix: today an explicit `author` ignores the paragraph
+   entirely; with per-attribute `fills`, an explicit `author` could still take `source` from it.
+7. **The excerpt keeps its `<aside>`** (*decided 2026-11-09*, revising a decision of the same
+   day to drop it). An earlier draft dropped the `<aside>` because a template branch would place
+   the quote slot twice, which SPEC-145 D30 rejects. Template variants selected by `excerpt`
+   (SPEC-168 D9) place each slot once per variant, so SPEC-185 D1's structure stays:
+   `<aside aria-hidden="true">` holding the figure. The output is unchanged.
+
+**The rule this sets.** When a template needs structure it cannot express, the answer is a small
+primitive with a role in the shared design language, placed by every rune that needs it, never an
+element name in the template. "Candidate primitives", below, records the cases measured so far.
+
+**Containment primitives are admitted with one user.** A primitive whose job is to contain
+something else (an `<iframe>` for embedded content, a sandboxed document) is admitted even with a
+single user, against the usual two-adopter bar. Its security-relevant attributes (`allow`,
+`sandbox`, `loading`, `referrerpolicy`) must be fixed in code, never written by a template or a
+theme's replacement template. `frame`, for `embed` (D14), is the first.
+
+### D14: the first migrations, worked
+
+*Decided 2026-11-09.* The first native runes to move each prove one new part of the mechanism,
+and none depends on a draft spec the way `hint` does (ADR-042 makes it wait for keyed strings
+and {% ref "SPEC-163" /%}'s `sentiment`, which would break {% ref "SPEC-181" /%}'s fourth gate):
+
+1. **`pull-quote`** (D13): the definition format for a primitive, `group as=`, `fills`, template
+   variants selected by an attribute, and root attributes as expressions. It keeps its classes,
+   so little CSS moves.
+2. **`codegroup`**, below: `computes` written with {% ref "SPEC-195" /%}'s functions, template
+   variants selected by a computed value, and placing a primitive with behaviour.
+3. **`embed`**, below: `prepare`, beside expression `computes`, and the first containment
+   primitive.
+
+The pipeline runes (`pagination`, `breadcrumb`, `toc`) follow the loader split (D12).
+
+**`codegroup`** replaces about 140 lines of `packages/runes/src/tags/codegroup.ts` and its engine
+entry:
+
+```md
+---
+tag: section
+role: primitive
+placedBy: [preview]
+description: Code blocks shown in a window, as tabs when there are several
+attributes:
+  title:    { type: string, description: "Filename in the bar; an empty value shows the bar alone" }
+  labels:   { type: string, description: "Comma-separated tab labels, overriding the derived ones" }
+  overflow: { type: string, matches: [scroll, wrap, hide], default: scroll }
+content:
+  type: sequence
+  fields:
+    panels:
+      match: fence
+      greedy: true
+      emitAttributes: { language: $node.language, source: $node.source, lines: $node.lines, label: $node.label }
+templates: { by: layout }
+computes:
+  single: and(equals(count($slots.panels), 1), not($attrs.labels))
+  layout:
+    value: if($computed.single, "single", "tabs")
+    values: [single, tabs]
+  panels.file:  if($node.lines, concat(basename($node.source), ":", $node.lines), basename($node.source))
+  panels.label: first(item(split($attrs.labels), $index), $node.label, $each.file, language(first($node.language, "shell")))
+metaFields:
+  title: { metaType: code, condition: title, renderWhenEmpty: true }
+blocks:
+  topbar: { fields: [title], layout: bar }
+rootAttributes:
+  data-code-host: "true"
+defaults: { density: compact, elevation: flat }
+editHints: { panels: code }
+---
+
+{% template layout="single" %}
+	{% metablock name="topbar" /%}
+	{% slot name="panels" each %}{% slot /%}{% /slot %}
+{% /template %}
+
+{% template layout="tabs" %}
+	{% metablock name="topbar" /%}
+	{% tabs %}
+		{% slot name="panels" each %}
+			{% tab name=$each.label %}{% slot /%}{% /tab %}
+		{% /slot %}
+	{% /tabs %}
+{% /template %}
+```
+
+- **It is a primitive, not a domain rune** ({% ref "SPEC-196" /%} D8's test). `preview` shows three
+  source views built in code today, and places `codegroup` instead; `sandbox` and `file-ref` show
+  source too. And a code window looks the same wherever it appears. So it keeps its look and its
+  classes (`rf-codegroup`; its `data-rune` becomes `codegroup`, SPEC-196 D10), and its
+  stylesheet stays Lumina's.
+- **The single panel is `codegroup`'s own rule**, not `tab-group`'s: a lone fence without custom
+  labels is shown without a tab bar. The choice is a computed template selector (SPEC-168 D9, as
+  amended), so each variant places `panels` once, and a theme can replace either variant without
+  being able to change which one a code group gets.
+- **Its tabs are `tab-group`'s**, the primitive that already owns the tab behaviour. The engine
+  marks that `tab-group` with `data-in="codegroup"` (SPEC-196 D5), which needs `tab-group`'s
+  definition to list `codegroup` among the parents it records. The theme styles the
+  tabs-in-the-bar look on `[data-rune="tabs"][data-in="codegroup"]`: two primitives meeting,
+  which is the theme's to style.
+- **Its labels come from SPEC-195's functions**: the fallback chain that is four helpers in code
+  today, and `language()`, shared with `compare`, which today shows "js" where `codegroup` shows
+  "JavaScript". The deepest expression nests three calls.
+- **Triage, as a primitive** (SPEC-196 D11): the question is which rules are the window's own
+  look, not drop or promote. `overflow` is the one rule that may move, to code blocks in general.
+- **Needs first:** SPEC-195's `first`, `item`, `split`, `basename`, `language`, `concat`, `count`,
+  `if`, `and`, `equals`, `not`; `$node` in `emitAttributes` (D1); `$slots` and a sibling per-item
+  value (`$each.file`) in `computes`' scope; and the computed selector in SPEC-168 D9.
+
+**`embed`** is the `prepare` acceptance case:
+
+```md
+---
+tag: figure
+description: An embedded video, audio or page, from a URL
+attributes:
+  url:    { type: string, required: true, description: "The page or media to embed" }
+  aspect: { type: string, matches: ["16:9", "4:3", "1:1", auto], default: "16:9" }
+  title:  { type: string, description: "Accessible title for the embedded frame" }
+content:
+  type: sequence
+  fields:
+    fallback: { match: any, greedy: true, optional: true }
+prepare: embed
+computes:
+  provider:   { type: string }
+  embedUrl:   { type: string }
+  frameTitle: first($attrs.title, "Embedded content")
+schema:
+  type: VideoObject
+  properties: { title: name, url: contentUrl, embedUrl: embedUrl }
+defaults: { density: compact, elevation: flat }
+editHints: { fallback: none }
+---
+
+{% frame src=$computed.embedUrl title=$computed.frameTitle ratio=$attrs.aspect /%}
+
+{% slot name="fallback" /%}
+```
+
+```ts
+// registered by core as Plugin.prepare.embed
+export const prepareEmbed: Prepare = ({ attrs }) => {
+	const { provider, embedUrl } = detectProvider(attrs.url); // today's provider table, unchanged
+	return { provider, embedUrl };
+};
+```
+
+- **`prepare` and expressions side by side**: `provider` and `embedUrl` are declarations the stage
+  fills; `frameTitle` is an expression. SPEC-195 D8's mixed case.
+- **The schema row reads a computed value** (`embedUrl`), and the published `VideoObject` is
+  unchanged.
+- **The inline `padding-bottom` style goes**: `frame` owns the aspect ratio.
+- **A dead attribute**: `type` is declared ("override auto-detected embed type") and read by
+  nothing. The definition drops it, through a {% ref "SPEC-189" /%} row.
+- **`frame`** is the first containment primitive (D13): an `<iframe>` whose `allow` and `loading`
+  are fixed in code. `embed` itself is a domain rune: it arranges `frame` and a fallback slot,
+  so under SPEC-196 D8 it loses its classes, and its 8 selectors are triaged into `frame`, which
+  as a primitive keeps classes.
+
+### Candidate primitives, measured
+
+*Measured 2026-11-09*: every shared render helper and every meaningful element choice in rune
+transforms, resolvers and the engine, checked against what a template can already place. The
+render helpers, `nodes.ts`, drawer and its resolvers, `collection-helpers.ts`, `figure`, `gallery`,
+`chart`, `diagram`, `cast` and `tab` were read in full; the plan pipeline, `comparison`, `form`,
+`nav`, `progress` and the engine's value rendering were skimmed.
+
+**New primitives.** Each is template-only, like `attribution`, and renders from values:
+
+| Primitive | Renders | Inputs | Users today | Why nothing existing covers it |
+|---|---|---|---|---|
+| `attribution` | `<figcaption><cite>`, by placement | `name`, `source` | `pull-quote`, the `blockquote` node, epigraphs, `testimonial` | D13 |
+| `code-block` | `<pre><code>` with `data-language` | a source string, `language`; optionally line numbers, highlights, line range | the fence node (`nodes.ts:143`), `sandbox` (`:198`), `diagram` (`:41`), `preview`'s three source views (`:163`, `:184`, `:199`), the design plugin's themed-source `postTransform`, `file-ref`'s drawer body (`file-ref-resolve.ts:288`) | `{% code %}` is inline only, and a template can write a literal fence but cannot fill one from a value. Raw source is D2's named exception, so `prepare` can produce the string and only a primitive can show it |
+| `caption` | `<figcaption>` inside a figure, `<caption>` inside a table, a neutral element elsewhere | a text value or an inline slot | `figure` (`:70`), `gallery` (`:49`, `:58`), `diagram`'s title (`:34`), `chart` (`:71`), `aggregate`'s chart title (`aggregate-resolve.ts:119`) | D8 has a template arrange a drawing's title around it, but it cannot write a `figcaption`, and placing `figure` inside a root that is already a figure would nest them |
+| `image` | `<img src alt>` from attribute values, resolving the `icon:` and `placeholder:` schemes | `src`, `alt` | `cast`'s portrait from `image=` (`cast.ts:39`), `tab`'s `image=` (`tabs.ts:18`), both through the image node (`nodes.ts:378`) | Markdoc's image syntax takes no variable `src`. Content images placed by a slot are fine; only an image from an attribute is stuck. Two small users: it **waits for a third** (*decided 2026-11-09*); until then `cast` and `tab` keep their image in code |
+
+`attribution`, `code-block` and `caption` share one rule: **the element follows the placement**,
+so a template cannot produce invalid HTML by placing them somewhere unexpected.
+
+**Not primitives:**
+
+- **A table from records** (`collection-resolve.ts:161–195`, two paths, and
+  `aggregate-resolve.ts:99`): `data-emit.ts` already turns records into Markdoc table AST, so
+  D12's resolvers can emit through that path and the template places the result.
+- **An empty state** (`collection`, `relationships`, `aggregate`): `{% if %}` and a
+  `{% group name="empty" %}`.
+- **A heading whose level comes from the outline**: only `drawer` needs it
+  (`DRAWER_TITLE_AUTO_MARKER`, `drawer.ts:85`), so it stays inside `drawer`.
+
+**`as=` values.** D11 admits a value only with its first real case:
+
+| Value | Case | Status |
+|---|---|---|
+| `blockquote` | `pull-quote`'s bare form (D13) | the first value |
+| `footer` | `bento-cell`'s footer (`bento.ts:134`) | only if the part is not a `section`; `section`'s footer zone is the better home |
+| `header` | the nine `preamble: { tag: 'header' }` layouts | already mapped to `section`'s header zone (D11); a fallback only |
+| `figure` | `pull-quote`'s excerpt, the figure inside its `<aside>` (D13) | admitted with `pull-quote`; `gallery`'s items (`gallery.ts:51`) could use it when `gallery` becomes a definition |
+
+No rune builds `aside`, `small`, `address`, `mark` or `abbr` inside its output. `aside` appears only
+as a root (`sidenote`, `annotate`, the excerpt), which a definition's `tag:` covers.
+
+**Already covered**, so no gap:
+
+- root elements (`article`, `li`, `nav`, `figure`, `aside`, `details`, `form`): a definition's `tag:`;
+- links from values: `{% link href=… %}` (`nodes.ts:248`) and the `link` value element;
+- dates: `time` is the temporal value element;
+- lists: `ladder` (SPEC-156);
+- definition lists: `deflist`, `field` and `metablock`;
+- inline code: `{% code %}`; icons: `{% icon %}` and `metaFields` icons; ratings: the `marks` value
+  element;
+- headings from values: a Markdown heading in the template with a field or variable inside it.
+
+**Duplications the move removes.** Each is a resolver or helper rebuilding a rune's output by
+hand, which D12's "resolvers return data" ends:
+
+- **Drawer markup is built three times**: `drawer.ts:85–110`, `xref-preview-resolve.ts:181–240` and
+  `file-ref-resolve.ts:290–328`. The two resolvers hard-code `rf-drawer__*` classes and
+  `data-rune="drawer"`, and always use `h3`. Under D12 they place `{% drawer %}`, and `code-block`
+  replaces `file-ref`'s hand-built body.
+- **`renderGroupAccordion` copies `accordion`'s output** (`collection-helpers.ts:323`), with
+  `rf-accordion-item` classes written by hand, for grouped `collection` and `relationships`.
+  Their templates place `accordion` instead.
+- **Entity items are built twice or three times**: `collection` (`collection-resolve.ts:97`),
+  `relationships` (`relationships-resolve.ts:131`) and `aggregate`'s group headings.
+- **The same meaning gets different elements**: only the fence wraps code in a `rf-codeblock`
+  `div`, and `diagram` omits `data-language`; `diagram`'s title is a `<figcaption>` where `chart` and
+  `aggregate` use a table `<caption>`. `code-block` and `caption` make each one decision.
+- **Hand-built `<time>` never carries `datetime`** (`timeline`, `changelog`, `itinerary`,
+  `plan-history`); only the engine's `metaFields` path adds it (`engine.ts:1311`). Moving them to the
+  temporal value element fixes that, and `itinerary`'s clock times ("9:00 AM") mean the temporal
+  kind must handle a time of day ({% ref "SPEC-166" /%}).
+- **`plan-progress` may not place the `progress` rune**: skimmed, to confirm in its work item.
+
+## The native runes that remain, measured
+
+*Measured on 2026-11-07* from the catalogs (`packages/runes/src/index.ts` and each
+`plugins/*/src/index.ts`), every rune's source, and the conversion plans in `plan/`.
+
+| | Runes |
+|---|---|
+| All runes (core 62, plugins 65) | 127 |
+| Already compositions (`hero`, `cta`, `testimonial`) | 3 |
+| Planned compositions | 58 |
+| **Remaining native** | **66** (core 58, plugins 8) |
+
+**The plan behind the 58 is mostly draft.** Only `steps`, `feature`, `pricing` and `card`, with
+their child runes, are planned in accepted or implemented specs. The rest come from the plugin
+audits (SPEC-147 to SPEC-157), {% ref "SPEC-162" /%}, SPEC-165, SPEC-167 and SPEC-171, all
+drafts. Fewer conversions would move runes into the table below.
+
+**What the 66 need.** Each rune is counted once, in the first group that applies:
+
+| Group | Count | Runes |
+|---|---|---|
+| Needs `prepare` | **6** | `embed` (provider detection, URL rewrite), `diff` (line diff), `form` (field-type inference), `sandbox` and `preview` (raw source, D2's exception), `design-context` (collects tokens from child runes) |
+| Cross-page pipeline or preprocess | 18 | `nav`, `toc`, `breadcrumb`, `pagination`, `collection`, `relationships`, `aggregate`, `xref`, `expand`, `blog`, `snippet`, `include`, `data`, `region`, `layout`, `drawer`, `file-ref`, `plan-history` |
+| Drawing or behaviour, nothing to compute | 11 | `codegroup`, `tabs`, `gallery`, `accordion`, `datatable`, `chart`, `diagram`, `reveal`, `juxtapose`, `audio`, `map` |
+| SPEC-195 functions only | 8 | `grid`, `details`, `compare`, `conversation`, `progress`, `actions`, `figure`, `map-pin` |
+| Purely declarative | 23 | among them `hint`, `badge`, `bar`, `code`, `section`, `deflist`, `pullquote`, `tint`, `textblock`, `mediatext`, `storyboard`; five need a D7 extension |
+
+*This table is a snapshot of 2026-11-07.* Later decisions reclassify two rows: `codegroup`
+needs {% ref "SPEC-195" /%}'s functions (D14), and `pullquote` needs `if()` for its root
+attributes (D13). Neither changes the count of runes that need `prepare`.
+
+**60 of the 66 need no `prepare` stage.** The six that do hold genuinely rune-specific logic,
+which is what D2 intends the stage for.
+
+**Confidence.** Each rune's source was read. For `nav`, `diff`, `form`, `sandbox`, `map`,
+`section`, `snippet`, `include`, `data` and `icon` the reading was a skim; their rows are the
+first to recheck in each rune's work item.
+
+**Two gaps it found:**
+
+- **The pipeline group builds output in code.** These runes emit a placeholder, and a
+  postProcess resolver later builds their tree. For example, `resolveCollections`, and the
+  breadcrumb resolver's `nav`, `ol` and `li` (`packages/runes/src/config.ts`). D2 assumes a
+  pipeline hook only supplies values, and D11 binds templates and `prepare`, not resolvers. So
+  18 runes would still build markup no theme can arrange. *Answered by D12*: resolvers return
+  data, most of these runes read the page index at transform, and only registry reads wait.
+- **`preview` and `sandbox` read raw source.** This is now D2's named exception, and D6's row
+  for `preview` is corrected.
+
+## Acceptance criteria
+
+- [ ] A definition may declare `prepare` and `computes`; a definition without them loads as a composition, unchanged
+- [ ] `prepare` receives resolved fields and attributes, never AST, and its output is checked against `computes` in development and tests (`prepare-undeclared-value`, `prepare-missing-value`)
+- [ ] Computed values are readable in the template as `$computed.<name>` and, per item, through `$each`, and may feed `metaFields` and the schema row
+- [ ] A plugin registers stages in `Plugin.prepare`; a definition naming an unregistered stage reports `prepare-unknown`; a site definition cannot contain code
+- [ ] `codegroup` is a definition with expression `computes` and a template, and no `prepare` stage; its contract and SEO baseline are unchanged, or every difference is explained
+- [ ] `embed` is a definition with a `prepare` stage and a template; its contract and SEO baseline are unchanged, or every difference is explained
+- [ ] `preview` and `sandbox` declare their need for raw source, and no other rune's context carries it
+- [ ] A theme `templates/codegroup.md` replaces its arrangement and passes SPEC-177's checks
+- [ ] A rune with a template that also declares a D5 assembly field reports `engine-config-assembly-with-template`
+- [ ] `refrakt reference` reports a full grammar, not a description, for every rune moved off `custom`
+- [ ] The template language has no tag that emits an element by name or takes free attributes, and a test pins it (D11)
+- [ ] Every element-naming config entry of a moved rune maps to a D11 row, or is recorded as a vocabulary gap
+- [ ] The theme-authoring and plugin-authoring docs describe one arrangement convention for every rune
+- [ ] The loader parses every page before transforming any, and `$page` (with `parent`, `ancestors`, `children`, `prev`, `next`, `headings`) and `$site` are available at transform, including in layouts (D12)
+- [ ] A rune whose `data:` reads the registry is deferred and expanded after the pipeline; no other rune is (D12.4)
+- [ ] `pagination`, `breadcrumb` and `toc` are definitions read from `$page` at transform, each with one template for its written and automatic forms; contracts and SEO baseline are unchanged, or every difference is explained
+- [ ] `collection`'s built-in rendering is its default template, and an author's body replaces its `item` fragment with no change to existing pages
+- [ ] The `__slug:` placeholders, the post-pipeline region pass and the breadcrumb SEO re-harvest are removed
+- [ ] A `{% fields of=… names=… /%}` primitive renders an entity's named fields through the shared vocabulary, and `collection`'s default templates use it
+- [ ] The block editor treats values under `computes` as read-only without any new key
+- [ ] Definitions accept `role` (`primitive`, `drawing`, domain by default) and `placedBy`; a definition's name is its tag name, and its `data-rune` follows it (D1)
+- [ ] `pullquote` is a definition with no `prepare` stage, its output unchanged apart from `data-rune` (D13); its excerpt keeps the `<aside>` through template variants
+- [ ] The `attribution` and `frame` primitives exist, are template-only, and render from values; `frame` fixes its `allow` and `loading` in code (D13)
+- [ ] `group as=` accepts only admitted values (`blockquote`, `figure`), and an unknown value is reported (D11)
+- [ ] `emitAttributes` can read a matched node's own attributes through `$node.<name>` (D1)
+- [ ] Each D7 content-model extension lands with its first rune, and `CustomModel` is removed once no first-party rune uses it (D7, D9)
+- [ ] Parts a behaviour depends on are primitives or opaque slots as D8 lists, and a replacement template cannot change a custom-element rune's root element
+- [ ] The removals in D9 land in the release after their last first-party user goes, through SPEC-189
+
+## Open questions
+
+None remain at the top level. What is still open sits where it applies:
+
+- within D12: two-level iteration (specified, not built) and the `fragment` override point,
+  which depends on {% ref "SPEC-168" /%} D8.
+
+## Future: reusing computation
+
+Not decided here. Recorded because D3 closes one route to reuse, and the code shows the
+pressure is real.
+
+**What repeats today, measured on 2026-11-07:**
+
+| Computation | Where | How it differs |
+|---|---|---|
+| A label per item: an author's comma list by index, else a fallback chain | `codegroup` (`labels` → fence label → source basename → prettified language), `compare` (`labels` → raw `data-language` → "Panel N"), `juxtapose` (`labels` → none), `conversation` (`speakers`, cycled, after the bold speaker) | the two code-panel runes disagree: `compare` neither prettifies the language nor reads the source |
+| Parsing and formatting durations | `parseIsoDuration` and `formatDurationLocale` in `packages/transform/src/engine.ts`; `parseDuration` and `formatDuration` in `plugins/media/src/duration.ts`, used by `track`, `audio` and `playlist` | two implementations of one value kind |
+| Adding values up | `budget`'s subtotal; `recipe`'s `totalTime` (SPEC-145's open `{% let %}` question) | no shared operation |
+| Domain-specific rules | `comparison`'s row alignment, `form`'s field-type inference, `codegroup`'s language-name table | none: genuinely per rune |
+
+**Three kinds of reuse, none of which needs a shared stage:**
+
+1. **Value kinds belong to the value primitives.** Parsing and formatting a duration, an
+   amount, a number or a coordinate is {% ref "SPEC-166" /%}'s contract, and the format is the
+   theme's `formats` (ADR-043 decision 4). The two duration implementations collapse into one
+   there, and no `prepare` stage parses a duration.
+2. **Small, generic computations become registered functions**, written in `computes` with
+   Markdoc's own call syntax, the same functions templates and pages already call:
+
+   ```yaml
+   computes:
+     panels.label: first(item($attrs.labels, $index), $node.label, basename($node.source), language($node.language))
+     totalTime:    sum($attrs.prepTime, $attrs.cookTime)
+   ```
+
+   A function needs no code in the definition, so **site-authored definitions can use them
+   too**. {% ref "SPEC-195" /%} specifies the function set, its typed signatures, the
+   `matches()` bridge to the SPEC-070 filter grammar, and the rule that the place decides the
+   result: under `computes` it is a field, in a template it is display text. That rule is what
+   keeps these values in the input half, where a theme's replacement template cannot change
+   or lose them and a schema row may read them (ADR-045 decision 4).
+
+   *Revised 2026-11-07.* An earlier draft of this section proposed YAML named patterns
+   (`pattern: item-label`). They were dropped: they would have been a third syntax beside
+   Markdoc's function calls and the SPEC-070 grammar, for the same operations.
+3. **Shared domain logic becomes a primitive.** If two runes really need the same rule (say
+   `compare` and `codegroup` agree on what a code panel's label is), the ADR-044 shape applies:
+   a primitive owns the code (a `code-panel` that computes its own label), and both runes place
+   it.
+
+**What would remain for `prepare`** is the last row of the table: rules that belong to one rune.
+That is the case where privacy (D3) costs nothing.
+
+## References
+
+- {% ref "ADR-048" /%}: the decision this spec implements.
+- {% ref "ADR-043" /%}, {% ref "ADR-044" /%}, {% ref "ADR-045" /%}: the theme boundary this completes.
+- {% ref "ADR-029" /%}, {% ref "ADR-031" /%}: proposed config-override routes that templates replace.
+- {% ref "SPEC-145" /%}: composed runes and the template language.
+- {% ref "SPEC-161" /%} D3: a primitive may own code, a composition may not.
+- {% ref "SPEC-177" /%}: theme and site templates.
+- {% ref "SPEC-186" /%}, {% ref "SPEC-182" /%}: the content-model features D7 builds on.
+- {% ref "SPEC-195" /%}: the value vocabulary `computes` is written in.
+
+{% /spec %}

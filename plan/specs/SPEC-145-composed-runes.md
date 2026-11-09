@@ -781,6 +781,10 @@ either a weaker vocabulary in worse clothing or a sandbox problem.
 
 ### D2 — a composed rune has no block and ships no CSS
 
+> *Amended 2026-11-09* by {% ref "SPEC-196" /%} D8 and D10: classes are a theme setting, and its
+> default gives classes to a definition with `role: primitive` or `role: drawing`, named after
+> its tag. A composed domain rune still has none, and no composed rune ships CSS.
+
 If it needs its own styling it belongs on the declared emit path, which per
 {% ref "ADR-037" /%} means it is a first-party rune or a plugin — not a user
 definition.

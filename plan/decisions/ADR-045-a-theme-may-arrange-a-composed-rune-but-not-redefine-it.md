@@ -93,6 +93,8 @@ A site has the same need, more often: "keep this rune's input, but lay it out my
 
 7. **Native runes are unaffected.** They have no template to replace. ADR-043 decision 6 still
    covers them.
+   *Superseded 2026-11-09* by {% ref "ADR-048" /%} decision 1.4: every rune becomes a definition
+   with a template, so this decision's other points apply to every rune.
 
 **This amends ADR-043.** In its decision 1, "a rune's structure" and the "order, layout" in
 "which fields a rune shows, their order, layout, labels, and sentiment mapping" move from the
