@@ -4,7 +4,7 @@
 
 A sweep that removes what nothing needs any more: duplicated committed artifacts, dead CSS and
 code, one-off scripts that have done their job, overdue deprecations that aren't attribute-shaped
-(the attribute-shaped ones go through {% ref "SPEC-189" /%}), allowlists that only ever grow, and
+(content deprecations become migration files under {% ref "SPEC-189" /%}), allowlists that only ever grow, and
 two publishable packages the build doesn't guard. Each item is small; the point of one spec is
 that they share a rule (D1), so the next sweep isn't needed.
 
@@ -103,8 +103,8 @@ what the schema can't say.
   questions.
 - **`refrakt migrate snippets`** (342 lines + 219 test): the {% ref "SPEC-131" /%} D7 one-off. It
   uses `--fix` where every other migrate command uses `--apply`, and `lines=` remains supported. It
-  is retired after one release with a deprecation note, or folded into {% ref "SPEC-189" /%}'s
-  hand-written codemod registry.
+  is retired after one release with a deprecation note, or kept as one of the hand-written
+  codemods {% ref "SPEC-189" /%} registers beside its migration files.
 
 ### D8 — one Markdown file walker in the CLI
 
@@ -141,7 +141,7 @@ Markdown files. One helper replaces the four.
 
 ## References
 
-- {% ref "SPEC-189" /%}: attribute-shaped deprecations and the migration table.
+- {% ref "SPEC-189" /%}: content deprecations as migration files.
 - {% ref "SPEC-188" /%}: deletes the metadata backfill script.
 - {% ref "SPEC-191" /%}: the test-suite side of the same cleanup.
 - {% ref "SPEC-114" /%}: the directed dependency model.
