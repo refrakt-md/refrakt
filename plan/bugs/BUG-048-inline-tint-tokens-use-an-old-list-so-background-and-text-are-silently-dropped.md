@@ -1,4 +1,4 @@
-{% bug id="BUG-048" status="confirmed" severity="major" source="SPEC-053" tags="tint, runes" %}
+{% bug id="BUG-048" status="fixed" severity="major" source="SPEC-053" tags="tint, runes" milestone="v0.49.0" pr="refrakt-md/refrakt#786" %}
 
 # Inline tint tokens use an old list, so background and text are silently dropped
 
@@ -32,5 +32,20 @@ The tint reference page's inline examples write `background:`, so they silently 
 
 ## Environment
 - Found while documenting the tint rune (v0.49.0 docs work).
+
+## Resolution
+
+Completed: 2026-11-09
+
+Branch: `claude/composition-usage-rune-pages-c87ar6`
+
+### What was done
+- `packages/runes/src/tags/tint.ts` imports `TINT_TOKENS` from `@refrakt-md/transform` (now exported there) instead of keeping its own list; `background` is read as a deprecated alias of `bg`, with a one-time warning.
+- `packages/runes/test/tint-tokens.test.ts`: the rune's list equals the axis's; every token passes through light and dark; the alias; an unknown name is ignored.
+- `site/content/runes/tint.md` examples use the real token names; the theme-config example uses `lockMode`.
+- Changeset `inline-tint-tokens.md` (patch).
+
+### Notes
+- `secondary` and `accent` have no equivalent and are now ignored rather than emitted to nowhere.
 
 {% /bug %}
