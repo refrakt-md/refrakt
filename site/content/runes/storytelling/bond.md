@@ -17,8 +17,8 @@ Define a relationship between two entities with a type and status.
 
 {% preview source=true %}
 
-	{% bond from="Aragorn" to="Legolas" type="fellowship" status="active" %}
-	Forged during the Council of Elrond, their bond was tested through the War of the Ring. Despite their different backgrounds, they developed a deep mutual respect.
+	{% bond from="Elena" to="Veshra" type="rival" status="strained" %}
+	They studied side by side at the Ashen Spire until Veshra turned to necromancy. Elena still keeps the letters they wrote each other, and still hopes to bring her back.
 	{% /bond %}
 
 {% /preview %}
@@ -29,8 +29,8 @@ Set `bidirectional` to `false` for one-way relationships like mentorship or unre
 
 {% preview source=true %}
 
-	{% bond from="Gandalf" to="Frodo" type="mentorship" status="active" bidirectional=false %}
-	Gandalf chose Frodo as the ring-bearer, guiding him with wisdom and trust throughout the quest.
+	{% bond from="Veshra" to="Elena" type="obsession" status="active" bidirectional=false %}
+	Veshra has followed Elena's every move since the Spire fell, through informants in the Whispering Hand. Elena has no idea.
 	{% /bond %}
 
 {% /preview %}

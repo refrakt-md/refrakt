@@ -18,15 +18,15 @@ Equal columns created by separating content with horizontal rules.
 {% preview source=true %}
 
 	{% grid %}
-	**First column.** This content sits in the first cell of the grid layout.
+	**Opening hours.** Daily 9:00–18:00, with late opening until 21:00 on Fridays in summer.
 
 	---
 
-	**Second column.** Grid cells are separated by horizontal rules in the Markdown source.
+	**Getting there.** Tram 4 to Garden Gate, or a ten-minute walk from the central station.
 
 	---
 
-	**Third column.** The grid automatically distributes available space across columns.
+	**Tickets.** Adults €12, under-16s free. Members skip the queue at the east entrance.
 	{% /grid %}
 
 {% /preview %}
@@ -45,11 +45,11 @@ Use the `spans` attribute to control column widths. Values are space-separated s
 {% preview source=true %}
 
 	{% grid spans="2 1" %}
-	**Wide column.** This column spans two units of the grid, taking up twice the space of the narrow column beside it.
+	**The glasshouses.** Three Victorian glasshouses hold the garden's tropical, desert and alpine collections. The palm house is the oldest, built in 1868 and restored in 2019.
 
 	---
 
-	**Narrow column.** This column takes one unit.
+	**Allow an hour** for all three.
 	{% /grid %}
 
 {% /preview %}
@@ -61,15 +61,15 @@ Control spacing between cells with the `gap` attribute.
 {% preview source=true %}
 
 	{% grid gap="tight" %}
-	**Tight gap.** Less space between cells.
+	**Café** — east lawn
 
 	---
 
-	**Second cell.** The gap is smaller than default.
+	**Shop** — main gate
 
 	---
 
-	**Third cell.** Useful for compact layouts.
+	**Toilets** — by the palm house
 	{% /grid %}
 
 {% /preview %}
@@ -81,32 +81,32 @@ Vertically align cells within their row using the `valign` attribute. Useful whe
 {% preview source=true %}
 
 	{% grid valign="center" spans="2 1" %}
-	**Tall cell.** This cell has more content and takes up more vertical space. The adjacent cell will be vertically centred relative to this one.
+	**Guided walks.** A volunteer guide leads a one-hour walk through the seasonal highlights, starting at the main gate.
 
-	Additional paragraph to increase the height of this cell.
+	Walks run at 11:00 and 14:00 every day except Monday, and are included in the ticket price.
 
 	---
 
-	**Centred.** This shorter cell is vertically centred.
+	**Free** — no booking needed.
 	{% /grid %}
 
 {% /preview %}
 
 ## Responsive collapse
 
-Force the grid to collapse to a single column at a given breakpoint.
+Force the grid to collapse to a single column at a given breakpoint: `sm` (640px), `md` (768px), `lg` (1024px), or `never`.
 
-```markdoc
-{% grid collapse="md" %}
-Sidebar content.
+{% preview source=true %}
 
----
+	{% grid collapse="md" %}
+	**Plan your visit.** Hours, tickets and accessibility information.
 
-Main content.
-{% /grid %}
-```
+	---
 
-Breakpoints: `sm` (640px), `md` (768px), `lg` (1024px), or `never`.
+	**What's in bloom.** Magnolias in the spring walk, and the first alpine gentians.
+	{% /grid %}
+
+{% /preview %}
 
 ## Auto mode
 
@@ -115,19 +115,19 @@ Responsive auto-fill layout. The grid creates as many columns as fit, each at le
 {% preview source=true %}
 
 	{% grid mode="auto" min="200px" %}
-	Card one.
+	**Palm house**
 
 	---
 
-	Card two.
+	**Desert house**
 
 	---
 
-	Card three.
+	**Alpine house**
 
 	---
 
-	Card four.
+	**Rose garden**
 	{% /grid %}
 
 {% /preview %}
@@ -136,23 +136,25 @@ Responsive auto-fill layout. The grid creates as many columns as fit, each at le
 
 Progressive enhancement for masonry-style layouts. Falls back to a standard grid in browsers that don't support CSS masonry.
 
-```markdoc
-{% grid mode="masonry" columns=3 %}
-Short card.
+{% preview source=true %}
 
----
+	{% grid mode="masonry" columns=3 %}
+	**Rose garden.** 400 varieties.
 
-A taller card with more content that takes up more vertical space.
+	---
 
----
+	**Arboretum.** Oaks, limes and a 200-year-old cedar of Lebanon, planted when the garden was still a private estate. The cedar's lowest branch is propped on a timber crutch.
 
-Medium card.
+	---
 
----
+	**Pond.** Water lilies from June.
 
-Another short one.
-{% /grid %}
-```
+	---
+
+	**Herb garden.** Medicinal and kitchen herbs, labelled with their traditional uses.
+	{% /grid %}
+
+{% /preview %}
 
 ## Aspect ratio
 
@@ -161,19 +163,15 @@ Enforce a uniform aspect ratio on all grid cells. Content is cropped with `objec
 {% preview source=true %}
 
 	{% grid mode="auto" min="200px" aspect="1/1" %}
-	![](https://picsum.photos/seed/grid1/400/400)
+	![Moss-covered trunks in an old-growth forest](https://assets.refrakt.md/media-text-old-growth.jpg)
 
 	---
 
-	![](https://picsum.photos/seed/grid2/400/400)
+	![A river winding through a green valley](https://assets.refrakt.md/media-text-valley.jpg)
 
 	---
 
-	![](https://picsum.photos/seed/grid3/400/400)
-
-	---
-
-	![](https://picsum.photos/seed/grid4/400/400)
+	![Raked gravel and stones in a zen garden](https://assets.refrakt.md/media-text-zen-garden.jpg)
 	{% /grid %}
 
 {% /preview %}
@@ -182,15 +180,17 @@ Enforce a uniform aspect ratio on all grid cells. Content is cropped with `objec
 
 Control the order of cells when the grid collapses to a single column on mobile. By default cells stack in source order; `stack="reverse"` places the last cell first.
 
-```markdoc
-{% grid spans="2 1" collapse="md" stack="reverse" %}
-Main content (appears second on mobile).
+{% preview source=true %}
 
----
+	{% grid spans="2 1" collapse="md" stack="reverse" %}
+	**Today's events.** Guided walk at 11:00, bee-keeping talk at 15:00 in the education centre.
 
-Sidebar (appears first on mobile).
-{% /grid %}
-```
+	---
+
+	**Closing early** at 16:00 today for a private event.
+	{% /grid %}
+
+{% /preview %}
 
 ## Attributes
 

@@ -16,17 +16,17 @@ A comic or storyboard layout: a grid of panels, each an image with a caption.
 {% preview source=true %}
 
 	{% storyboard columns=3 %}
-	![Dawn](https://picsum.photos/seed/dawn/600/400)
+	![Knights of the Silver Order in formation](https://assets.refrakt.md/faction-the-silver-order.png)
 
-	The journey begins at first light.
+	The Silver Order rides out of Thornwall at first light.
 
-	![Forest](https://picsum.photos/seed/forest/600/400)
+	![Terraced halls above a river gorge](https://assets.refrakt.md/realm-rivendell.png)
 
-	An unexpected path through the trees.
+	In Hollowmere, Elena finds Lord Ashford's last letter.
 
-	![Summit](https://picsum.photos/seed/summit/600/400)
+	![Flooded tunnels lit by a single lantern](https://assets.refrakt.md/realm-the-undercroft.png)
 
-	The view from the top changes everything.
+	Beneath the city, the Undercroft is already waiting.
 	{% /storyboard %}
 
 {% /preview %}
@@ -38,53 +38,15 @@ A comic or storyboard layout: a grid of panels, each an image with a caption.
 | An image | Starts a new panel |
 | A paragraph after it | The panel's caption |
 
-## Comic style
+## Panel styles
 
-Thick borders and slightly tilted panels give a comic book feel.
+`variant` changes how the panels are framed; `columns` sets how many sit in a row.
 
-{% preview source=true %}
-
-	{% storyboard columns=3 variant="comic" %}
-	![Hero](https://picsum.photos/seed/hero/600/400)
-
-	Our hero sets out on an adventure.
-
-	![Challenge](https://picsum.photos/seed/storm/600/400)
-
-	A storm blocks the way forward!
-
-	![Victory](https://picsum.photos/seed/sunset/600/400)
-
-	Against all odds, a new dawn rises.
-	{% /storyboard %}
-
-{% /preview %}
-
-## Polaroid style
-
-White-framed panels with drop shadows, like pinned photos.
-
-{% preview source=true %}
-
-	{% storyboard columns=2 variant="polaroid" %}
-	![Coast](https://picsum.photos/seed/coast/600/400)
-
-	Summer by the sea
-
-	![Mountains](https://picsum.photos/seed/alpine/600/400)
-
-	Autumn in the mountains
-
-	![City](https://picsum.photos/seed/city/600/400)
-
-	Winter in the city
-
-	![Garden](https://picsum.photos/seed/garden/600/400)
-
-	Spring blooms again
-	{% /storyboard %}
-
-{% /preview %}
+| `variant` | Panels look like |
+|-----------|------------------|
+| `clean` | Minimal frames (the default) |
+| `comic` | Thick borders and slightly tilted panels, like a comic book |
+| `polaroid` | White-framed photos with drop shadows, as if pinned to a board |
 
 ## Attributes
 

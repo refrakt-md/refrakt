@@ -16,17 +16,17 @@ Chronological events: a company's history, a project's milestones, a roadmap. Fo
 {% preview source=true %}
 
 	{% timeline %}
-	## 2023 - Founded
+	## 2015 - Founded
 
-	The company was founded with a mission to simplify content authoring for developer teams.
+	Acme Coffee opened its first café on Main Street, Portland, roasting in the back room.
 
-	## 2024 - Public launch
+	## 2019 - Roastery
 
-	Released v1.0 with support for 15 semantic runes and two themes. Open-sourced the core framework.
+	Moved roasting to a dedicated roastery and began supplying twelve local restaurants.
 
-	## 2025 - Community growth
+	## 2024 - Subscription
 
-	Reached 10,000 users and launched the plugin marketplace for custom runes.
+	Launched a coffee subscription, now shipping fresh roasts to 10,000 homes.
 	{% /timeline %}
 
 {% /preview %}
@@ -46,12 +46,12 @@ Use `{% timeline-entry %}` tags for more control over date and label values.
 {% preview source=true %}
 
 	{% timeline %}
-		{% timeline-entry date="Q1 2024" label="Alpha release" %}
-		Initial release to early testers.
+		{% timeline-entry date="Q1 2024" label="Subscription pilot" %}
+		Two hundred regulars tried a fortnightly delivery from the Main Street café.
 		{% /timeline-entry %}
 
-		{% timeline-entry date="Q3 2024" label="Beta release" %}
-		Public beta with full documentation.
+		{% timeline-entry date="Q3 2024" label="Nationwide launch" %}
+		The subscription opened to every US address, with roast-to-door in three days.
 		{% /timeline-entry %}
 	{% /timeline %}
 

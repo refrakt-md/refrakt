@@ -42,7 +42,7 @@ Omit the `---` to render a single left-aligned group.
 {% preview source=true %}
 
 	{% bar %}
-	Just one side — no right group.
+	Updated 3 March 2026 · 4 min read
 	{% /bar %}
 
 {% /preview %}
@@ -59,9 +59,9 @@ Drop a bar inside any block rune that accepts authored content. The rune emits t
 	{% badge sentiment="positive" %}New{% /badge %}
 	{% /bar %}
 
-	# Card title
+	# Export workspace data
 
-	Body content here.
+	Download every project in a workspace as a single archive.
 {% /card %}
 ```
 

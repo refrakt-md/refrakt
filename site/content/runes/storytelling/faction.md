@@ -18,9 +18,9 @@ Describe a faction with sections that break down its structure.
 {% preview source=true %}
 
 	{% faction name="The Silver Order" type="knightly order" alignment="lawful" size="large" media-position="start" %}
-	![The Silver Order](https://assets.refrakt.md/faction-the-silver-order.png)
+	![Knights of the Silver Order in formation](https://assets.refrakt.md/faction-the-silver-order.png)
 
-	A prestigious order of knights sworn to protect the realm.
+	Knights sworn to hold the Eastern March for three centuries.
 
 	## Ranks
 
@@ -31,7 +31,7 @@ Describe a faction with sections that break down its structure.
 
 	## Holdings
 
-	Their fortress overlooks the capital city from the northern cliffs.
+	Their fortress overlooks Thornwall from the northern cliffs.
 	{% /faction %}
 
 {% /preview %}
@@ -44,23 +44,9 @@ Describe a faction with sections that break down its structure.
 | Paragraphs before the first heading | The description |
 | A heading | A named section; the content up to the next heading of that level is its body |
 
-## Different faction types
+## Classify a faction
 
-Use `type` and `alignment` to classify organizations.
-
-{% preview source=true %}
-
-	{% faction name="The Whispering Hand" type="thieves guild" alignment="chaotic" size="medium" %}
-	An underground network of spies and thieves operating across the port cities.
-
-	## Operations
-
-	- Smuggling
-	- Information brokering
-	- Blackmail
-	{% /faction %}
-
-{% /preview %}
+`type`, `alignment` and `size` are free text shown in the faction's header: a thieves' guild might be `type="thieves guild" alignment="chaotic" size="medium"`, a royal court `type="kingdom" alignment="lawful" size="massive"`.
 
 ## Place the scene
 
