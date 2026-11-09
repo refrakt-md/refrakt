@@ -25,6 +25,14 @@ The minimum case — a `src` attribute relative to the project root. The format 
 
 That is a real file in this repository, read at build time. Change the file and the table updates on the next build — no copy-paste drift. Note the emitted table is a normal table: it renders with or without JavaScript.
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| No body | A table of the shaped rows |
+| A body | A template rendered once per row, with `$row` bound ([Per-row templates](#per-row-templates-give-data-a-body)) |
+| A `---` in the body, when `headers` is set | A cell boundary: the body becomes one table row, a cell per zone ([A table with formatted cells](#a-table-with-formatted-cells)) |
+
 ## Feeding a chart
 
 Because `chart` treats an authored `<table>` as its single source of truth, dropping a `{% data %}` inside it is all it takes. `numeric` types the value column so the chart plots real numbers (see [Typing](#typing-and-the-data-value-channel)).

@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:accordion"} /%}
 
-Collapsible accordion sections. Use explicit `{% accordion-item %}` tags, or write headings directly and they will be automatically converted into accordion panels.
+Collapsible accordion sections. Use explicit `{% accordion-item %}` tags, or write headings directly and they will be automatically converted into accordion panels. For a single collapsible block, use [details](/runes/details); to switch between panels behind a row of labels, use [tabs](/runes/tabs); to uncover content one step at a time, use [reveal](/runes/reveal).
 
 ## Basic usage
 
@@ -33,6 +33,14 @@ Wrap each section in an `{% accordion-item %}` tag with a name.
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A short paragraph, then a heading and a paragraph, before the first panel heading | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A heading | A panel's title; the content up to the next heading of the same level is its body |
+| An `{% accordion-item %}` tag | A panel, titled by its `name` |
+
 ## Heading conversion
 
 Headings are automatically converted into accordion items — no explicit tags needed.
@@ -51,11 +59,7 @@ Headings are automatically converted into accordion items — no explicit tags n
 
 {% /preview %}
 
-## Section header
-
-Accordion supports an optional eyebrow, headline, and blurb above the panels. Place a short paragraph before your content heading to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
-
-### When the panels are not a FAQ
+## When the panels are not a FAQ
 
 An accordion declares itself a `FAQPage`, with each panel a `Question` and its body an `Answer`. That is right for a genuine FAQ and wrong for every other use — a list of definitions, a set of options, the universal-attribute sections on these rune pages. Publishing questions that nobody asked is structured data asserting something untrue.
 

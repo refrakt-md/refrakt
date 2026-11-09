@@ -9,11 +9,9 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:changelog"} /%}
 
-Headings with a `v1.0.0 - date` pattern are automatically converted into release entries.
+A product's version history: one entry per release, with its notes. For dated events that are not releases, such as a company's history, use [timeline](/runes/business/timeline); for instructions a reader follows in order, [steps](/runes/marketing/steps).
 
 ## Heading-based changelog
-
-Headings are parsed into version and date parts, with list items below becoming the release notes.
 
 {% preview source=true %}
 
@@ -32,6 +30,14 @@ Headings are parsed into version and date parts, with list items below becoming 
 	{% /changelog %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A heading such as `v1.2.0 - January 2025` | A release; the version, then the date after the dash |
+| The content under the heading, usually a list | The release notes |
+| A short paragraph, then a heading one level above the releases, before the first release | The eyebrow and headline ([Page sections](/docs/authoring/page-sections)) |
 
 ## Release titles
 
@@ -71,10 +77,6 @@ Use `{% changelog-release %}` tags for more control over version and date values
 	{% /changelog %}
 
 {% /preview %}
-
-## Section header
-
-Changelog supports an optional eyebrow, headline, and blurb above the section above entries. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ## Attributes
 

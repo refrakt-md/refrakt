@@ -33,6 +33,13 @@ Panels are automatically labeled by their code block language.
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A code fence | A panel, labelled by the fence's language, or by the matching entry in `labels` |
+| Anything that is not a fence | Left out |
+
 ## Custom labels
 
 Use the `labels` attribute to override the default language-based labels.

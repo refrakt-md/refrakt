@@ -37,6 +37,15 @@ Same `type` + `filter` attributes as `collection` (and the same [field-match gra
 
 The output is a `<span class="rf-aggregate" data-aggregate="count">N</span>` — inline-safe in prose.
 
+## How Markdown is read
+
+With no body there is nothing to read. A body is split into zones:
+
+| You write | It becomes |
+|-----------|------------|
+| A body with no top-level `---` | The template, rendered once per group |
+| A top-level `---` in the body | A zone boundary: two zones are a preamble and the template, three add a fallback for an empty query |
+
 ## Body-zoned form
 
 Give `aggregate` a body and it iterates — but unlike `collection`, the iteration runs over **groups**, not entities. The body splits on a top-level `---` into up to three zones (same convention as [`card`](/runes/card) and [`collection`](/runes/collection#body-zones-preamble-template-fallback)), and **`$item` binds differently in each**:
@@ -59,7 +68,7 @@ Nothing to report.
 {% /aggregate %}
 ```
 
-The zone positioning is the same as `collection`: **1 zone → template**, **2 → preamble + template**, **3 → preamble + template + fallback**. A `---` *inside* a nested rune isn't a delimiter — only top-level rules split.
+The zone positioning is the same as `collection`. A `---` *inside* a nested rune isn't a delimiter — only top-level rules split.
 
 ### The `$item` projection
 

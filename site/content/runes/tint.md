@@ -43,6 +43,15 @@ For one-off colour overrides. Token values are defined as list items inside the 
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A list item `name: value`, such as `- accent: #059669` | That colour token, set to the value |
+| A `Dark` heading | The list items after it are the dark-scheme values |
+| A `Light` heading, or no heading | The list items are the light-scheme values |
+| A list item whose name is not a tint token, or any other content | Ignored |
+
 ## Colour scheme override
 
 The `mode` attribute forces dark or light mode on a section, regardless of the user's OS preference.

@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:mediatext"} /%}
 
-Side-by-side media and text layouts. Images within the rune are extracted into a media column, and the remaining text forms the body column. Control image placement, size ratio, and text wrapping.
+Side-by-side media and text layouts. Images within the rune are extracted into a media column, and the remaining text forms the body column. Control image placement, size ratio, and text wrapping. To caption a single image (or code, or a table) on its own, use [figure](/runes/figure); to present a screenshot or product shot in a framed viewport, use [showcase](/runes/showcase).
 
 ## Basic usage
 
@@ -26,6 +26,13 @@ Place an image alongside text — the image is automatically extracted and place
 	{% /mediatext %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| An image on a line of its own, anywhere in the body | The media column; several such images all go there |
+| Everything else: paragraphs, headings, lists, an image inside a sentence | The text column, in the order written |
 
 ## Image on the right
 

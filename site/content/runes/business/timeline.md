@@ -9,11 +9,9 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:timeline"} /%}
 
-Chronological events. Headings with a `date - label` pattern are automatically converted into timeline entries.
+Chronological events: a company's history, a project's milestones, a roadmap. For a product's release notes, use [changelog](/runes/docs/changelog); for instructions a reader follows in order, [steps](/runes/marketing/steps); for a story's arc, [plot](/runes/storytelling/plot).
 
 ## Heading-based timeline
-
-Headings are parsed into date and label parts, with content below becoming the description.
 
 {% preview source=true %}
 
@@ -33,6 +31,14 @@ Headings are parsed into date and label parts, with content below becoming the d
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A heading such as `2023 - Founded` | An entry; the text before the first dash or colon is its date, the rest its label |
+| The content under the heading, up to the next one | The entry's description |
+| A short paragraph, then a heading one level above the entries and a paragraph, before the first entry | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+
 ## Explicit entries
 
 Use `{% timeline-entry %}` tags for more control over date and label values.
@@ -50,10 +56,6 @@ Use `{% timeline-entry %}` tags for more control over date and label values.
 	{% /timeline %}
 
 {% /preview %}
-
-## Section header
-
-Timeline supports an optional eyebrow, headline, and blurb above the section above entries. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ## Attributes
 

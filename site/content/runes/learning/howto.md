@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:howto"} /%}
 
-Unordered lists become tools/materials needed, ordered lists become steps.
+Instructions for a task: what it needs, and the steps to follow, published as structured data.
 
 ## Basic usage
 
@@ -34,9 +34,13 @@ A how-to guide with required tools and numbered steps.
 
 {% /preview %}
 
-## Section header
+## How Markdown is read
 
-How-to supports an optional eyebrow, headline, and blurb above the section above the steps. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+| You write | It becomes |
+|-----------|------------|
+| A short paragraph, then a heading and a paragraph, before the lists | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A bulleted list | The tools and materials needed |
+| A numbered list | The steps |
 
 ## Attributes
 

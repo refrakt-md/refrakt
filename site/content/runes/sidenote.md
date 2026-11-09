@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:sidenote"} /%}
 
-Margin notes, footnotes, or tooltips displayed alongside the main content. Useful for providing additional context without interrupting the reading flow.
+Margin notes, footnotes, or tooltips displayed alongside the main content. Useful for providing additional context without interrupting the reading flow. To flag something the reader must notice (a note, warning or caution) in the flow of the text, use [hint](/runes/hint); to set several notes beside the passages they comment on, use [annotate](/runes/annotate).
 
 ## Basic usage
 

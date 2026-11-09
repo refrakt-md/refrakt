@@ -9,11 +9,11 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:comparison"} /%}
 
-Headings become columns, list items become feature rows, and bold labels automatically align rows across columns.
+Compares products, plans or approaches side by side, feature by feature, as a table or as cards.
 
 ## Basic usage
 
-Each `##` heading defines a column. Bold text at the start of list items serves as alignment keys — items with the same bold label across columns appear in the same row.
+Each `##` heading is a column. Items with the same bold label line up in the same row across columns.
 
 {% preview source=true %}
 
@@ -43,6 +43,17 @@ Each `##` heading defines a column. Bold text at the start of list items serves 
 	{% /comparison %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A `##` heading | A column: the thing being compared |
+| A list item under it | A row in that column |
+| Bold text at the start of a list item | The row's label; items with the same label line up across columns |
+| `~~Strikethrough~~` in an item | A limitation or missing capability |
+| An item starting `[x]` or `[ ]` | A check mark or a cross |
+| A blockquote under a heading | A callout badge in that column |
 
 ## Highlighted column
 
@@ -109,21 +120,6 @@ Use `layout="cards"` for side-by-side cards. Ideal for pricing comparisons or wh
 	{% /comparison %}
 
 {% /preview %}
-
-## Markdown reinterpretation
-
-| Markdown | Interpretation |
-|---|---|
-| `## Heading` | Column header — the thing being compared |
-| List item | Feature row for that column |
-| `**Bold text**` at start of list item | Row alignment label |
-| Text after bold | Feature description |
-| `~~Strikethrough~~` | Negative indicator — limitation or missing capability |
-| Blockquote | Callout badge within a column |
-
-## Section header
-
-Comparison supports an optional eyebrow, headline, and blurb above the section above the comparison table. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ## Attributes
 

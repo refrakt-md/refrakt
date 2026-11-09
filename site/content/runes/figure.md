@@ -9,15 +9,17 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:figure"} /%}
 
-A captioned container. A figure holds an image most often, but it accepts any block content (a code block, a table, a diagram, another rune) and captions it, with sizing and alignment controls.
+A captioned container. A figure holds an image most often, but it accepts any block content (a code block, a table, a diagram, another rune) and captions it, with sizing and alignment controls. To set an image beside a passage of text, use [mediatext](/runes/mediatext); to present a screenshot or product shot in a framed viewport with decorative chrome, use [showcase](/runes/showcase).
 
-## What it accepts
+## How Markdown is read
 
-Everything in the body is kept, in the order you wrote it:
+Everything in the body is kept, in the order you wrote it.
 
-- **Media** (an image, a video, or a [`placeholder:` / `icon:` image](/runes/image-schemes)) is the figure's media slot. An image in a paragraph of its own is unwrapped, so it sits directly in the figure.
-- **Anything else** (a fenced code block, a table, a list, a nested rune, a paragraph) is emitted as written.
-- **The caption** comes from the `caption` attribute or, failing that, the first paragraph that holds no image. It always renders last, below the content.
+| You write | It becomes |
+|-----------|------------|
+| An image, a video, or a [`placeholder:` / `icon:` image](/runes/image-schemes) | The figure's media; an image in a paragraph of its own is unwrapped, so it sits directly in the figure |
+| The first paragraph that holds no image, when `caption` is not set | The caption, shown last, below the content |
+| Anything else (a code block, a table, a list, a nested rune, another paragraph) | Kept as written |
 
 ## With caption attribute
 

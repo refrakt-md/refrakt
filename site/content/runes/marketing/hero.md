@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:hero"} /%}
 
-Full-width intro section for the top of a page. Headings and paragraphs become the header, links become action buttons, and code fences become copyable command blocks. The first link is styled as a primary button. For smaller, focused action blocks that can appear anywhere, use [CTA](/runes/marketing/cta) instead.
+A full-width opening band for the top of a page: a headline, a short pitch, and the buttons or install command that start the reader off. For a smaller action block that can appear anywhere, use [cta](/runes/marketing/cta).
 
 ## Basic usage
 
@@ -30,6 +30,16 @@ A centered hero section with headline, description, and action buttons.
 	{% /hero %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A short paragraph, then a heading and a paragraph | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| More headings and paragraphs | Further copy under the blurb |
+| A list of links | A row of buttons; the first link is the primary action |
+| A code fence | A copyable command line beside the buttons |
+| An image or other media, then `---`, before the rest | The hero's media ([Place the media](#place-the-media)) |
 
 ## With command block
 
@@ -154,10 +164,6 @@ Cover (above) turns the **single media zone** into the backdrop, so the hero can
 {% /preview %}
 
 The backdrop sandbox is forced to `height="fill"` and the **backdrop posture** — mounted and running, but pointer-inert, not mounted under `prefers-reduced-motion` (the [boot frame](/runes/bg) stands in), and suspended off-screen. The still subject media remains the crawlable / share representation. See [`bg`](/runes/bg) and [media guests](/runes/media-guests) for the full model.
-
-## Section header
-
-Hero supports an optional eyebrow, headline, and blurb above the headline and description. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ## Place the media
 

@@ -9,11 +9,9 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:storyboard"} /%}
 
-Comic/storyboard layout. Images become panels, following paragraphs become captions.
+A comic or storyboard layout: a grid of panels, each an image with a caption.
 
 ## Basic usage
-
-Each image starts a new panel. Text after the image becomes that panel's caption.
 
 {% preview source=true %}
 
@@ -32,6 +30,13 @@ Each image starts a new panel. Text after the image becomes that panel's caption
 	{% /storyboard %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| An image | Starts a new panel |
+| A paragraph after it | The panel's caption |
 
 ## Comic style
 

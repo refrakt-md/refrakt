@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:faction"} /%}
 
-Organizations, guilds, orders, and groups for worldbuilding. Headings within the rune become named sections for ranks, holdings, goals, and more.
+Organizations, guilds, orders, and groups for worldbuilding. For a single person, use [character](/runes/storytelling/character); for a place, [realm](/runes/storytelling/realm).
 
 ## Basic usage
 
@@ -35,6 +35,14 @@ Describe a faction with sections that break down its structure.
 	{% /faction %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| An image before everything else | The scene illustration ([Place the scene](#place-the-scene)) |
+| Paragraphs before the first heading | The description |
+| A heading | A named section; the content up to the next heading of that level is its body |
 
 ## Different faction types
 

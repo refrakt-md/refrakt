@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:realm"} /%}
 
-Location and place profiles for worldbuilding. Headings within the rune become named sections, and the first image is extracted as a scene illustration.
+Location and place profiles for worldbuilding. For a person, use [character](/runes/storytelling/character); for an order, guild or other group, [faction](/runes/storytelling/faction).
 
 ## Basic usage
 
@@ -34,6 +34,14 @@ Describe a location with sections for geography, features, or history.
 	{% /realm %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| An image before everything else | The scene illustration ([Place the scene](#place-the-scene)) |
+| Paragraphs before the first heading | The description |
+| A heading | A named section; the content up to the next heading of that level is its body |
 
 ## Realm types
 

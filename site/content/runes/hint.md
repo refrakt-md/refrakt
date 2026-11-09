@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:hint"} /%}
 
-Callouts and admonitions. Supports four types: `note`, `warning`, `caution`, and `check`.
+Callouts and admonitions. Supports four types: `note`, `warning`, `caution`, and `check`. For an aside that sits in the margin or as a footnote rather than in the flow, use [sidenote](/runes/sidenote); to attach notes to particular passages of a longer text, use [annotate](/runes/annotate).
 
 ## Basic usage
 

@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:annotate"} /%}
 
-Regular content flows normally while nested note tags appear as annotations alongside the text.
+Regular content flows normally while nested note tags appear as annotations alongside the text. For a single standalone margin note or footnote, use [sidenote](/runes/sidenote); for a callout the reader should not miss, such as a warning, use [hint](/runes/hint).
 
 ## Margin notes
 

@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:playlist"} /%}
 
-A heading becomes the playlist title, an image becomes the cover art, a paragraph becomes the description, and a list becomes the track listing. Bold text in each list item is the track name, parenthetical text is the duration, and italic text is the per-track artist.
+A list of tracks with its cover art: an album, a podcast's episodes, a mix. For a single song or episode, use [track](/runes/media/track); to play one file with chapters or a waveform, [audio](/runes/media/audio).
 
 ## Basic usage
 
@@ -34,6 +34,16 @@ An album with an artist and track listing.
 	{% /playlist %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A heading | The playlist's title |
+| The paragraph after it | Its description |
+| A list item | A track: bold text is its name, `(3:45)` its running time, italic text its artist, a link its audio file, and text after `—` its date |
+| A list inside a track's item | That track's chapter markers or lyrics |
+| An image, then `---`, before the rest | The cover art ([Place the cover](#place-the-cover)) |
 
 ## Podcast
 
@@ -102,10 +112,6 @@ Tracks can include nested lists for chapter markers or lyrics. Use `content="cha
 	{% /playlist %}
 
 {% /preview %}
-
-## Section header
-
-Playlist supports an optional eyebrow, headline, and blurb above the playlist content. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ## Place the cover
 

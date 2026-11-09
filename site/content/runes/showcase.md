@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:showcase"} /%}
 
-Present visual content in a constrained viewport with optional decorative chrome. The showcase rune wraps images, videos, or embedded content — useful for screenshots, product shots, or component previews.
+Present visual content in a constrained viewport with optional decorative chrome. The showcase rune wraps images, videos, or embedded content — useful for screenshots, product shots, or component previews. To caption an image, use [figure](/runes/figure); to set an image beside a passage of text, use [mediatext](/runes/mediatext).
 
 Showcase is the degenerate `frameTarget: "self"` case of the [surface model](/runes/surfaces): its body *is* the media, so `frame` chrome (shadow, displacement, offset, aspect) lands on the showcase itself. Its distinct value is **breakout** — spilling past a non-clipping ancestor.
 

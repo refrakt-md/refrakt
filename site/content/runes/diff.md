@@ -49,6 +49,14 @@ Use `mode="split"` to show before and after side by side. Lines that match appea
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| The first code fence | The "before" side |
+| The second code fence | The "after" side |
+| A `source` annotation on the fences | The header above the diff, when `title` is not set ([see below](#header-from-fence-source)) |
+
 ## Unified diff
 
 The default mode shows changes in a single column with line numbers, `+`/`-` prefixes, and colored backgrounds.

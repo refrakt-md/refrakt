@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:reveal"} /%}
 
-Progressive disclosure. Headings become reveal steps, with content shown one step at a time.
+Progressive disclosure. Headings become reveal steps, with content shown one step at a time. To let the reader open any panel in any order, use [accordion](/runes/accordion); for one collapsible block, use [details](/runes/details); to switch between alternatives, use [tabs](/runes/tabs).
 
 ## Basic usage
 
@@ -33,9 +33,12 @@ Headings automatically split content into reveal steps.
 
 {% /preview %}
 
-## Section header
+## How Markdown is read
 
-Reveal supports an optional eyebrow, headline, and blurb above the steps. Place a short paragraph before your step headings to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+| You write | It becomes |
+|-----------|------------|
+| A short paragraph, then a heading and a paragraph, before the first step heading | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A heading | A step's title; the content up to the next heading of the same level is the step |
 
 ## Attributes
 

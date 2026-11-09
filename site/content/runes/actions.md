@@ -24,6 +24,14 @@ It is what [`hero`](/runes/marketing/hero) and [`cta`](/runes/marketing/cta) ren
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A list of links | A row of buttons, one per list item |
+| The first link of the whole row | The primary action; every other link is secondary |
+| A code fence | A copyable command line beside the buttons |
+
 ## With a command line
 
 A fence is a `command` block, unranked, beside the buttons. On a narrow screen the row stacks, and the command line and the buttons share its width.

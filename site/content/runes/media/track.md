@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:track"} /%}
 
-A heading becomes the track name. Use attributes for artist, duration, and other metadata. Tracks can be used independently or inside a `playlist` rune.
+A single song or podcast episode, with its artist, running time and date, on its own or inside a playlist. For a list of tracks, use [playlist](/runes/media/playlist); to play a file, [audio](/runes/media/audio).
 
 ## Basic usage
 
@@ -22,6 +22,13 @@ A single track with artist and duration.
 	{% /track %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A heading | The track's name |
+| Everything after it | The track's description or show notes |
 
 ## Byline
 

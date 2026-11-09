@@ -32,6 +32,13 @@ Wrap a Mermaid code block with the diagram rune to render it as an SVG.
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A code fence | The diagram's source, drawn as an SVG in the browser; its language comes from the `language` attribute, not the fence |
+| Anything else in the body | Left out |
+
 ## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:diagram"} /%}

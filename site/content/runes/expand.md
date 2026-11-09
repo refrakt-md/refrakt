@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:expand"} /%}
 
-`{% expand %}` resolves a registered entity by id and substitutes the entity's source content **inline** at the point of reference. Symmetric with `{% ref %}` — same registry lookup chain, same disambiguation rules — but the output is the entity's actual content, not a link.
+`{% expand %}` resolves a registered entity by id and substitutes the entity's source content **inline** at the point of reference. Symmetric with `{% ref %}` — same registry lookup chain, same disambiguation rules — but the output is the entity's actual content, not a link. To link to the entity instead, use [xref](/runes/xref); to link to a project file rather than an entity, use [file-ref](/runes/file-ref); to keep the content one click away, put it in a [drawer](/runes/drawer).
 
 The motivating use case is in-context plan-content previews: write a blog post about an architecture decision and embed the ADR directly; write a docs page that implements a spec and show the spec inline; or wrap an embed in a drawer for a "click for context" affordance that doesn't leave the page.
 

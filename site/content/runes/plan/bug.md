@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:bug"} /%}
 
-Separate from work items because bugs have different required sections (reproduction steps, expected/actual behaviour) and different status values. H2 headings create named sections. Content before the first H2 that is not a lead paragraph — a code block, a list, a table — renders as an intro above the sections.
+A defect report, with its reproduction steps, expected and actual behaviour, severity and status. It is separate from a work item because a bug has its own sections and status values.
 
 ## Confirmed bug
 
@@ -38,6 +38,16 @@ A bug confirmed with reproduction steps and environment details.
 	{% /bug %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A heading | The bug's title |
+| The paragraphs right after it | The bug's lead |
+| Anything else before the first `##`, such as a code block, a list or a table | An intro above the sections |
+| A `##` heading | A named section; the content up to the next `##` is its body |
+| `## Steps to Reproduce`, `## Expected`, `## Actual`, `## Environment` | The standard bug sections; aliases such as `## Repro` or `## Env` count as the same section |
 
 ## Critical bug
 

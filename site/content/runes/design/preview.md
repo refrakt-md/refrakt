@@ -23,6 +23,13 @@ Wrap any content in a preview to give it a visual frame with a theme toggle.
 {% /preview %}
 ```
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| The first fenced code block | The source shown in the code view; it is not rendered in the canvas |
+| Everything else | The rendered content inside the frame |
+
 ## Theme modes
 
 The toolbar toggle lets users switch between auto (system preference), light, and dark modes. The `theme` attribute sets the initial mode.

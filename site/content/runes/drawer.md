@@ -9,11 +9,11 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:drawer"} /%}
 
-A body-only rune that declares a richer-than-a-tooltip, lighter-than-a-navigation panel. Trigger it from anywhere on the page via `{% ref "drawer-id" /%}`; without JS the body renders as an in-flow callout at its authored position so readers always have access to the content. With JS, the body is enhanced into a `<dialog>` and the xref click opens it as a modal — esc-to-close, focus trap, and `inert` background come from the platform.
+A body-only rune that declares a richer-than-a-tooltip, lighter-than-a-navigation panel. Trigger it from anywhere on the page via `{% ref "drawer-id" /%}`; without JS the body renders as an in-flow callout at its authored position so readers always have access to the content. With JS, the body is enhanced into a `<dialog>` and the xref click opens it as a modal — esc-to-close, focus trap, and `inert` background come from the platform. To link to an entity without showing its content, use [xref](/runes/xref); to place an entity's content in the flow of the page, use [expand](/runes/expand); to link to a project file, use [file-ref](/runes/file-ref).
 
 ## Declaring a drawer
 
-A drawer is body-only — no trigger section, no `hr` delimiter. The author writes the content; the rune assigns it an addressable id.
+A drawer has no trigger of its own: you write its content and give it an `id`, and links to that id open it.
 
 ```markdoc
 {% drawer id="auth-system" title="Auth system" %}
@@ -39,6 +39,15 @@ A short explainer that lives next to wherever it's mentioned, without forcing th
 
 …fit naturally in the body.
 {% /drawer %}
+
+## How Markdown is read
+
+The title comes from the `title` attribute, not from a heading.
+
+| You write | It becomes |
+|-----------|------------|
+| Content with no `---` | The drawer's body |
+| A top-level `---` | Splits the content into the body (before) and a footer (after) that stays in view ([Body and footer zones](#body-and-footer-zones)) |
 
 ## Triggering from xrefs
 

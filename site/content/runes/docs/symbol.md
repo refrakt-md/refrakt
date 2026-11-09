@@ -9,9 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:symbol"} /%}
 
-Code construct documentation. Headings become the construct name, code fences become type signatures, lists become parameter definitions, and blockquotes become typed annotations (returns, throws, deprecation).
-
-The `kind` attribute controls how Markdown primitives are reinterpreted -- functions get parameter lists, classes get member groups, enums get member definitions.
+Reference documentation for one code construct: a function, class, interface, enum, type alias, module, hook or component. `kind` names which, and decides how the headings inside are read.
 
 ## Function documentation
 
@@ -41,6 +39,16 @@ A function with signature, parameters, return value, and exception documentation
 	{% /symbol %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A `##` heading | The construct's name |
+| The paragraphs right after it | Its description |
+| A fence, a list and blockquotes after that | The body: signature, parameters, and notes such as returns and throws |
+| With `kind` `class`, `interface` or `module`: a `###` heading | A member group, such as Constructor or Methods |
+| A `####` heading inside a group | A member; the content under it is its body |
 
 ## Class documentation
 
@@ -145,10 +153,6 @@ Type aliases are the simplest form -- just a name, description, and type definit
 	{% /symbol %}
 
 {% /preview %}
-
-## Heading levels
-
-Symbol uses fixed heading levels: the construct name is at h2, groups (Constructor, Properties, Methods) split at h3, and individual members at h4.
 
 ## Deprecated construct
 

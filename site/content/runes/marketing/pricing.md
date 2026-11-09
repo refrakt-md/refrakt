@@ -9,11 +9,11 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:pricing"} /%}
 
-Write natural markdown headings with `## Name — Price` to auto-generate tiers, or use explicit `{% tier %}` tags for full control.
+Pricing plans side by side, each with its price, what it includes and a link to sign up, published as structured offers.
 
 ## Heading-based
 
-Write pricing tiers as headings with a `Name — Price` pattern. Content below each heading becomes the tier body.
+Write a heading for each plan, with its name and price.
 
 {% preview source=true %}
 
@@ -38,6 +38,14 @@ Write pricing tiers as headings with a `Name — Price` pattern. Content below e
 	{% /pricing %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A heading `Name — Price` (any dash) | A tier: the plan's name, then its price |
+| The content under it, up to the next tier heading | The tier's body, such as its feature list and a sign-up link |
+| A short paragraph, then a heading and a paragraph, before the first tier | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
 
 ## Explicit tiers
 
@@ -71,10 +79,6 @@ Use `{% tier %}` tags when you need full control over attributes like `featured`
 	{% /pricing %}
 
 {% /preview %}
-
-## Section header
-
-Pricing supports an optional eyebrow, headline, and blurb above the section above pricing tiers. Place a short paragraph before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ## Attributes
 

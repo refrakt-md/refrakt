@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:typography"} /%}
 
-Displays font specimens with live-loaded typefaces. List items are parsed as `role: Family Name (weight1, weight2)`. Supported roles: `heading`, `body`, `mono`, `display`, `caption`.
+Displays font specimens for a design system's typefaces, loading each font live.
 
 ## Basic usage
 
@@ -24,6 +24,13 @@ Define a font system with roles and weights.
 	{% /typography %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A list item `role: Family (600, 700)` | A specimen of that font in each listed weight; the role is `heading`, `body`, `mono`, `display` or `caption` |
+| A list item with no weights, such as `body: Inter` | A specimen at weight 400 |
 
 ## Custom sample text
 

@@ -9,9 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:section"} /%}
 
-Use it to introduce any content block with a title and intro, especially primitives that have no header of their own like [`bento`](/runes/marketing/bento), a grid of [cards](/runes/card), or a [collection](/runes/collection).
-
-The header is anchored to the headline, written as a heading at the start of the section. A paragraph directly before it is the eyebrow, and a paragraph directly after it is the blurb. Everything else is the body. A section that does not start with a heading, or with one paragraph and then a heading, has no header: all of its content is body, so prose placed in a section is never re-read as an eyebrow.
+Use it to introduce any content block with a title and intro, especially primitives that have no header of their own like [`bento`](/runes/marketing/bento), a grid of [cards](/runes/card), or a [collection](/runes/collection). To frame content as a bordered tile, one of a grid or list of items, use [card](/runes/card).
 
 ## Basic usage
 
@@ -37,6 +35,18 @@ The header is anchored to the headline, written as a heading at the start of the
 	{% /section %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A heading at the start of the section | The headline |
+| A paragraph directly before that heading | The eyebrow |
+| A paragraph directly after it | The blurb |
+| A blockquote after the headline and blurb, then `**Name** — Source` | The epigraph ([An epigraph](#an-epigraph)) |
+| Everything else | The body |
+| Content that does not start with a heading, or with one paragraph and then a heading | All body: the section has no header, so prose is never re-read as an eyebrow |
+| `---`, when `media-position` is set | Splits the media, the content and a footer ([Media beside or above the content](#media-beside-or-above-the-content)) |
 
 ## Header-only or body-only
 

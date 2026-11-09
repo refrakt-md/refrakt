@@ -26,6 +26,14 @@ A breadcrumb trail using the default `/` separator.
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A list | The trail, one crumb per item, in order |
+| An item that is a link | A crumb that links to that page |
+| An item without a link | A plain-text crumb, normally the current page |
+
 ## Custom separator
 
 Use the `separator` attribute to change the divider between items.

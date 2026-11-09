@@ -22,20 +22,14 @@ Point the `folder` attribute at a content directory containing your blog posts.
 
 {% /preview %}
 
-## Grid layout
+## How Markdown is read
 
-Use the `layout` attribute to switch between `list`, `grid`, and `compact` display modes.
+The posts come from `folder`; the body only adds a header above them.
 
-{% preview source=true %}
-
-	{% blog folder="/blog" layout="grid" %}
-	{% /blog %}
-
-{% /preview %}
-
-## Section header
-
-Blog supports an optional headline and blurb above the post list. See [Page sections](/docs/authoring/page-sections) for the full syntax.
+| You write | It becomes |
+|-----------|------------|
+| A heading | The headline above the post list ([Page sections](/docs/authoring/page-sections)) |
+| A paragraph after it | The blurb |
 
 {% preview source=true %}
 
@@ -45,6 +39,17 @@ Blog supports an optional headline and blurb above the post list. See [Page sect
 
 	Stay up to date with the newest updates and tutorials.
 
+	{% /blog %}
+
+{% /preview %}
+
+## Grid layout
+
+Use the `layout` attribute to switch between `list`, `grid`, and `compact` display modes.
+
+{% preview source=true %}
+
+	{% blog folder="/blog" layout="grid" %}
 	{% /blog %}
 
 {% /preview %}

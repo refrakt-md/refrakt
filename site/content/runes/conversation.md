@@ -29,6 +29,14 @@ Use blockquotes with bold speaker names to create a conversation.
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A blockquote | A message; messages alternate left and right |
+| Bold text at the start of a blockquote, such as `**Alice:**` | The message's speaker |
+| A blockquote with no bold name, when `speakers` is set | A message from the next name in `speakers`, in turn |
+
 ## Named speakers
 
 Use the `speakers` attribute to automatically alternate between named speakers without inline bold markup.

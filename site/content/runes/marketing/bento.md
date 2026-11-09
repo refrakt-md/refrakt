@@ -13,7 +13,7 @@ A grid of cells. Each cell is a small card living in a grid track. There are two
 
 ## Heading sugar
 
-Each heading becomes a cell; the heading itself is the cell title. Tile size comes from the heading **level**, with a fixed mapping: `#` → `full`, `##` → `large`, `###` → `medium`, `####+` → `small`. The mapping is absolute, so `### Coral` always produces a medium tile regardless of what else is in the grid. Content before the first heading renders loose, above the grid. (Every cell title still renders as an h3 in the DOM — input level is purely a sizing dial.)
+Write a heading for each cell. The heading's level sets the tile's size, whatever else is in the grid, so `### Coral` is always a medium tile.
 
 {% preview source=true %}
 
@@ -40,6 +40,15 @@ Each heading becomes a cell; the heading itself is the cell title. Tile size com
 	{% /bento %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A heading | A cell, titled with the heading; `#` makes a full tile, `##` large, `###` medium, `####` and deeper small |
+| The content under a heading, up to the next | The cell's body |
+| `---` inside a cell | Splits it into media and body; with two, the last part is a footer ([Media zones](#media-zones)) |
+| Content before the first heading | Loose content above the grid |
 
 ## Cell sizes
 

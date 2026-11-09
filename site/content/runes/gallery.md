@@ -9,6 +9,8 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:gallery"} /%}
 
+A run of images laid out as a grid, a carousel or a masonry wall, each with a caption from its alt text and a click-to-enlarge lightbox. To arrange mixed content (text, cards, any block) in columns, use [grid](/runes/grid).
+
 ## Basic grid gallery
 
 Images are displayed in a responsive grid by default.
@@ -25,6 +27,14 @@ Images are displayed in a responsive grid by default.
 	{% /gallery %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| An image (or a video) | One tile of the gallery |
+| The image's alt text | The tile's caption, shown below it |
+| Anything else (a paragraph, a heading) | Nothing: the gallery shows only its images |
 
 ## Carousel layout
 

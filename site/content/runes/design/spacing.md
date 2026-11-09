@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:spacing"} /%}
 
-Displays design tokens for spacing, border radius, and shadows. Content is organized by `##` sections — `Spacing`, `Radius`, and `Shadows` — with `name: value` list items in each.
+Displays a design system's spacing scale, border radii and shadows as documentation.
 
 {% hint type="note" %}
 **Not the `spacing` attribute.** This rune *renders a design system's spacing scale* as documentation. The universal `spacing` attribute — which adjusts the rhythm around any block rune — is a different thing with the same name; see [Surfaces](/runes/surfaces#spacing-and-inset).
@@ -39,6 +39,14 @@ A complete spacing system with scale, radii, and shadows.
 	{% /spacing %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A `Spacing` heading, then `unit:` and `scale:` list items | The spacing scale, built from the unit and the comma-separated steps |
+| A `Radius` heading, then `name: value` list items | A sample of each radius |
+| A `Shadows` heading, then `name: value` list items | A sample of each shadow |
 
 ## Spacing scale only
 

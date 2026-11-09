@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:audio"} /%}
 
-An audio player element. Supports waveform visualisation, inline chapter markers, and connection to a named `playlist` rune. A paragraph becomes the description, and a list becomes inline chapter markers with timestamps.
+An audio player, with an optional waveform, chapter markers, and a link to a playlist it plays from. To list tracks rather than play one, use [playlist](/runes/media/playlist) or [track](/runes/media/track).
 
 ## Basic usage
 
@@ -20,6 +20,13 @@ A simple audio player with a source file.
 	{% audio src="https://archive.org/download/musopen-chopin/Nocturne%20Op.%209%20no.%202%20in%20E%20flat%20major.mp3" title="Nocturne Op. 9 No. 2 in E-flat major" artist="Frederic Chopin" /%}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A paragraph | The recording's description |
+| A list | Chapter markers: bold text is a chapter's label, `(0:45)` its start time |
 
 ## With waveform
 

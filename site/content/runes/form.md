@@ -27,6 +27,17 @@ List items are automatically mapped to the correct input types based on their na
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A list item | A field, with its input type inferred from its name ([Smart type inference](#smart-type-inference)) |
+| A blockquote, then a list | A selection field labelled by the blockquote: radio buttons for up to four options, a dropdown for more, checkboxes with `(multiple)` |
+| A blockquote with no list after it | Help text |
+| A heading | A fieldset, with the heading as its legend |
+| The last paragraph that is all bold | The submit button |
+| Any other paragraph | Descriptive text between the fields |
+
 ## Fieldset groups
 
 Headings create `<fieldset>` sections with legends.

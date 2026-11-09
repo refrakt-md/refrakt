@@ -41,6 +41,15 @@ The attribution can also be the quote's own last line, opening with a dash: `—
 
 {% /preview %}
 
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A blockquote | The quotation |
+| A paragraph after the blockquote, `**Name** — Source` | The attribution: the bold name, then the source after a dash or a comma |
+| A last line inside the blockquote that opens with a dash, `— **Name**, Source` | The attribution |
+| Text with no blockquote around it | The quotation itself |
+
 ## A pull quote
 
 When the words already appear in the text, add `excerpt`. The quote renders as an `<aside aria-hidden="true">`, so a screen reader does not read the passage twice. It looks the same as a featured quotation.

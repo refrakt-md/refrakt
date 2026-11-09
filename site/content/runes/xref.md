@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:xref"} /%}
 
-The author provides an identifier — the system finds the page, constructs the link, and uses the entity's title as link text. Self-closing tag.
+The author provides an identifier — the system finds the page, constructs the link, and uses the entity's title as link text. Self-closing tag. `{% ref %}` is the same rune under another name, so `{% ref "WORK-9138" /%}` is documented here. To put the entity's content into the page instead of a link to it, use [expand](/runes/expand); to link a project file by its path, use [file-ref](/runes/file-ref); for a side panel that a reference opens, declare a [drawer](/runes/drawer).
 
 {% hint type="note" %}
 The `xref` rune requires the cross-page pipeline (Level 2). At Level 1 (static transform), references render as plain text.

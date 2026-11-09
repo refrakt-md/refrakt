@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:chart"} /%}
 
-The first column becomes axis labels, the header row becomes series names, and data cells become values.
+Draws a chart from a Markdown table: write the data as a table and pick the kind of chart with `type`.
 
 ## Bar chart
 
@@ -27,6 +27,15 @@ The default chart type displays data as vertical bars.
 	{% /chart %}
 
 {% /preview %}
+
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A table | The chart's data; the first table is used and the rest of the body is dropped |
+| The table's first column | The labels along the category axis |
+| The other header cells | The series names |
+| The other cells | The values |
 
 ## Line chart
 
