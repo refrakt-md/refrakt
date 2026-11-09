@@ -709,6 +709,80 @@ used by `pull-quote`, the core `blockquote` node, epigraphs and, through `pull-q
 primitive with a role in the shared design language, placed by every rune that needs it, never an
 element name in the template. "Candidate primitives", below, records the cases measured so far.
 
+### Candidate primitives, measured
+
+*Measured 2026-11-09*: every shared render helper and every meaningful element choice in rune
+transforms, resolvers and the engine, checked against what a template can already place. The
+render helpers, `nodes.ts`, drawer and its resolvers, `collection-helpers.ts`, `figure`, `gallery`,
+`chart`, `diagram`, `cast` and `tab` were read in full; the plan pipeline, `comparison`, `form`,
+`nav`, `progress` and the engine's value rendering were skimmed.
+
+**New primitives.** Each is template-only, like `attribution`, and renders from values:
+
+| Primitive | Renders | Inputs | Users today | Why nothing existing covers it |
+|---|---|---|---|---|
+| `attribution` | `<figcaption><cite>`, by placement | `name`, `source` | `pull-quote`, the `blockquote` node, epigraphs, `testimonial` | D13 |
+| `code-block` | `<pre><code>` with `data-language` | a source string, `language`; optionally line numbers, highlights, line range | the fence node (`nodes.ts:143`), `sandbox` (`:198`), `diagram` (`:41`), `preview`'s three source views (`:163`, `:184`, `:199`), the design plugin's themed-source `postTransform`, `file-ref`'s drawer body (`file-ref-resolve.ts:288`) | `{% code %}` is inline only, and a template can write a literal fence but cannot fill one from a value. Raw source is D2's named exception, so `prepare` can produce the string and only a primitive can show it |
+| `caption` | `<figcaption>` inside a figure, `<caption>` inside a table, a neutral element elsewhere | a text value or an inline slot | `figure` (`:70`), `gallery` (`:49`, `:58`), `diagram`'s title (`:34`), `chart` (`:71`), `aggregate`'s chart title (`aggregate-resolve.ts:119`) | D8 has a template arrange a drawing's title around it, but it cannot write a `figcaption`, and placing `figure` inside a root that is already a figure would nest them |
+| `image` | `<img src alt>` from attribute values, resolving the `icon:` and `placeholder:` schemes | `src`, `alt` | `cast`'s portrait from `image=` (`cast.ts:39`), `tab`'s `image=` (`tabs.ts:18`), both through the image node (`nodes.ts:378`) | Markdoc's image syntax takes no variable `src`. Content images placed by a slot are fine; only an image from an attribute is stuck. Two small users, so it may wait for a third |
+
+`attribution`, `code-block` and `caption` share one rule: **the element follows the placement**,
+so a template cannot produce invalid HTML by placing them somewhere unexpected.
+
+**Not primitives:**
+
+- **A table from records** (`collection-resolve.ts:161–195`, two paths, and
+  `aggregate-resolve.ts:99`): `data-emit.ts` already turns records into Markdoc table AST, so
+  D12's resolvers can emit through that path and the template places the result.
+- **An empty state** (`collection`, `relationships`, `aggregate`): `{% if %}` and a
+  `{% group name="empty" %}`.
+- **A heading whose level comes from the outline**: only `drawer` needs it
+  (`DRAWER_TITLE_AUTO_MARKER`, `drawer.ts:85`), so it stays inside `drawer`.
+
+**`as=` values.** D11 admits a value only with its first real case:
+
+| Value | Case | Status |
+|---|---|---|
+| `blockquote` | `pull-quote`'s bare form (D13) | the first value |
+| `footer` | `bento-cell`'s footer (`bento.ts:134`) | only if the part is not a `section`; `section`'s footer zone is the better home |
+| `header` | the nine `preamble: { tag: 'header' }` layouts | already mapped to `section`'s header zone (D11); a fallback only |
+| `figure` | `gallery`'s items (`gallery.ts:51`) | only if `gallery` stops being a drawing |
+
+No rune builds `aside`, `small`, `address`, `mark` or `abbr` inside its output. `aside` appears only
+as a root (`sidenote`, `annotate`, the excerpt), which a definition's `tag:` covers.
+
+**Already covered**, so no gap:
+
+- root elements (`article`, `li`, `nav`, `figure`, `aside`, `details`, `form`): a definition's `tag:`;
+- links from values: `{% link href=… %}` (`nodes.ts:248`) and the `link` value element;
+- dates: `time` is the temporal value element;
+- lists: `ladder` (SPEC-156);
+- definition lists: `deflist`, `field` and `metablock`;
+- inline code: `{% code %}`; icons: `{% icon %}` and `metaFields` icons; ratings: the `marks` value
+  element;
+- headings from values: a Markdown heading in the template with a field or variable inside it.
+
+**Duplications the move removes.** Each is a resolver or helper rebuilding a rune's output by
+hand, which D12's "resolvers return data" ends:
+
+- **Drawer markup is built three times**: `drawer.ts:85–110`, `xref-preview-resolve.ts:181–240` and
+  `file-ref-resolve.ts:290–328`. The two resolvers hard-code `rf-drawer__*` classes and
+  `data-rune="drawer"`, and always use `h3`. Under D12 they place `{% drawer %}`, and `code-block`
+  replaces `file-ref`'s hand-built body.
+- **`renderGroupAccordion` copies `accordion`'s output** (`collection-helpers.ts:323`), with
+  `rf-accordion-item` classes written by hand, for grouped `collection` and `relationships`.
+  Their templates place `accordion` instead.
+- **Entity items are built twice or three times**: `collection` (`collection-resolve.ts:97`),
+  `relationships` (`relationships-resolve.ts:131`) and `aggregate`'s group headings.
+- **The same meaning gets different elements**: only the fence wraps code in a `rf-codeblock`
+  `div`, and `diagram` omits `data-language`; `diagram`'s title is a `<figcaption>` where `chart` and
+  `aggregate` use a table `<caption>`. `code-block` and `caption` make each one decision.
+- **Hand-built `<time>` never carries `datetime`** (`timeline`, `changelog`, `itinerary`,
+  `plan-history`); only the engine's `metaFields` path adds it (`engine.ts:1311`). Moving them to the
+  temporal value element fixes that, and `itinerary`'s clock times ("9:00 AM") mean the temporal
+  kind must handle a time of day ({% ref "SPEC-166" /%}).
+- **`plan-progress` may not place the `progress` rune**: skimmed, to confirm in its work item.
+
 ## The native runes that remain, measured
 
 *Measured on 2026-11-07* from the catalogs (`packages/runes/src/index.ts` and each

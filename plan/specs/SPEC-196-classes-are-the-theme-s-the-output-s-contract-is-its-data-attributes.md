@@ -61,6 +61,11 @@ own stylesheet is triaged away at conversion (D11).
   - the code-block wrapper `rf-codeblock` (`packages/runes/src/nodes.ts:146`) and
     `rf-table-wrapper` (`nodes.ts:426`), read back by `datatable.ts:48` and `compare.ts:52`;
   - `rf-nav--collapsible`, written by the `nav` schema itself (`packages/runes/src/tags/nav.ts:331`);
+  - rune markup rebuilt by hand in resolvers and helpers, with the rune's classes written
+    literally: a drawer in `xref-preview-resolve.ts:181` and `file-ref-resolve.ts:290`
+    (`rf-drawer__*`), and accordion items in `collection-helpers.ts:323` (`rf-accordion-item`).
+    A theme's setting never reaches them. {% ref "SPEC-194" /%}'s "Candidate primitives" has these
+    resolvers place the real runes instead, which removes the hard-coded classes;
   - the layout chrome in `packages/transform/src/layouts.ts`: the mobile panel, the search
     trigger's key hint and the docs sidebar (`rf-docs-sidebar`, which `ThemeShell.svelte`
     selects at lines 76 and 95).
