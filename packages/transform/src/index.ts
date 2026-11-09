@@ -123,6 +123,7 @@ export {
 	UNIVERSAL_POSTURE_REASONS,
 	PROMINENCE_VALUES,
 	FEATURED_QUOTATION_CAPABILITY,
+	TINT_TOKENS,
 } from './facets/index.js';
 export type {
 	UniversalAxisFacet,
