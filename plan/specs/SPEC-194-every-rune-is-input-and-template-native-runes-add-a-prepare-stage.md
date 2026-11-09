@@ -97,6 +97,10 @@ The body is a template, as for any composition (D4 has the example).
 - **`$computed` is its own scope** (*decided 2026-11-07*). Computed values never join `$attrs`.
   SPEC-177 D3's precedence tells an author's explicit value from a default, and a computed
   value is neither, so mixing the scopes would blur both.
+- **A computed value is read-only in the editor** (*decided 2026-11-09*). The block editor
+  infers it: a value under `computes` is not in the content model, so there is nothing an
+  author could edit. No new key marks it. Where a template shows a computed value inside an
+  editable region, the editor displays it and does not make it editable.
 
 ### D2: `prepare` computes; it does not parse or build
 
@@ -524,16 +528,24 @@ item template:
 {% /template %}
 ```
 
+**Decided within D12** (*2026-11-09*):
+
+- **`nav`'s tree.** Up to two levels (groups and their items), nav is arranged by its template
+  like any other data list. Deeper than that, the tree is one opaque nested-list primitive drawn
+  in the shared vocabulary (D8), and the template arranges everything around it: the title, the
+  groups, the layout. Templates gain no recursion. That keeps {% ref "ADR-036" /%}'s line: a
+  recursive fragment would be new power in the template language for one rune. The cost is that
+  a theme cannot rearrange individual items below the second level.
+- **A variable list of fields** (`collection`'s `fields="status,priority"`) is shown by a small
+  core primitive, `{% fields of=$item names=$attrs.fields /%}`. It renders the named fields of
+  an entity as labelled values through the shared vocabulary (`metaType`, `data-field`), since a
+  template cannot iterate a list of attribute names.
+
 **Open within D12:**
 
 - **Two-level iteration**: a repeated slot inside a repeated slot. Grouped collections,
-  `relationships`' groups, nested headings in `toc` and most nav designs need exactly two
-  levels. It is unverified whether expansion supports it today.
-- **`nav`'s tree.** Deeper than two levels, nav stays one opaque nested-list primitive drawn in
-  the shared vocabulary (D8), and the template arranges everything around it.
-- **A variable list of fields** (`collection`'s `fields="status,priority"`) needs a small
-  primitive that shows the named fields of an entity, since a template cannot iterate a list of
-  names.
+  `relationships`' groups, nested headings in `toc` and the two template-arranged levels of
+  `nav` all need it. It is unverified whether expansion supports it today.
 - **The `fragment` override point** depends on {% ref "SPEC-168" /%} D8, a draft.
 
 ## The native runes that remain, measured
@@ -601,12 +613,11 @@ first to recheck in each rune's work item.
 - [ ] `pagination`, `breadcrumb` and `toc` are definitions read from `$page` at transform, each with one template for its written and automatic forms; contracts and SEO baseline are unchanged, or every difference is explained
 - [ ] `collection`'s built-in rendering is its default template, and an author's body replaces its `item` fragment with no change to existing pages
 - [ ] The `__slug:` placeholders, the post-pipeline region pass and the breadcrumb SEO re-harvest are removed
+- [ ] A `{% fields of=… names=… /%}` primitive renders an entity's named fields through the shared vocabulary, and `collection`'s default templates use it
+- [ ] The block editor treats values under `computes` as read-only without any new key
 
 ## Open questions
 
-- **Edit hints.** The block editor reads edit hints from output. A computed value is not
-  editable. Does `computes` mark it so, or does the editor infer it from the value not being
-  in the content model?
 - **Interactive runes whose behaviour depends on DOM shape.** The template places primitives
   that carry the behaviour (`tabs`), so a theme's template keeps it. A rune whose behaviour
   script reads its own private structure would break under a replacement template. Either such

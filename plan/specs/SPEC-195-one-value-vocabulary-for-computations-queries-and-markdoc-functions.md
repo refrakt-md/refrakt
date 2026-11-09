@@ -240,7 +240,14 @@ These keep {% ref "ADR-036" /%} ("name the pattern; do not open a language") tru
   SPEC-138 bans `$sample`: contracts and the SEO baseline are reviewed as diffs.
 - **Nesting is linted.** An expression nested deeper than three calls reports
   `expression-depth`, a warning. It is the signal that a computation wants a dedicated function
-  or a `prepare` stage.
+  or a `prepare` stage. *Kept 2026-11-09* as a warning at three: the deepest real expression so
+  far, `codegroup`'s label, nests two deep. The limit is revisited once the first definitions
+  are written.
+- **One expression language** (*decided 2026-11-09*). `computes` takes only this vocabulary.
+  A site with {% ref "SPEC-138" /%}'s engine plugin (mingo) cannot write structured expressions
+  under `computes`: that would give expressions two languages, which is what this spec removes.
+  The engine stays a query tier. The question is reopened only when a real computation outgrows
+  the function set and no function or `prepare` stage fits it.
 
 ## Function reference
 
@@ -422,13 +429,8 @@ first gap). One SPEC-166 implementation unblocks both.
 
 ## Open questions
 
-- **An engine for `computes`.** SPEC-138's engine plugin (mingo) evaluates structured queries.
-  Should a site with the plugin also be able to write a structured expression under `computes`?
-  It would give code-free runes more power, but expressions would then come in two languages.
-  Proposed: no, until a real case outgrows the function set.
 - **How much the "display text only" rule constrains in practice.** Measure how many templates
   and pages call functions today, and for what, before the first work item.
-- **The nesting limit.** Three is a guess, to be checked against the first real definitions.
 
 ## References
 
