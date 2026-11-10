@@ -44,10 +44,12 @@ Give `relationships` a **body** and it becomes the per-edge template, transforme
 
 {% preview source=true %}
 
-	{% relationships of="SPEC-066" type="work,bug" layout="grid" %}
+	{% relationships of="SPEC-066" type="work,bug" layout="grid" group="none" %}
 		{% card href=$item.url %}
-		{% humanize($kind) %}
+		{% humanize($kind) %} · {% $item.id %}
+
 		### {% $item.data.title %}
+
 		Status: {% $item.data.status %}
 		{% /card %}
 	{% /relationships %}
