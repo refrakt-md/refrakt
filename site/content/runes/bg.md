@@ -16,12 +16,14 @@ Put an image, a video, a gradient or an animation behind a hero, a section or an
 {% preview source=true %}
 
 	{% hero %}
-		{% bg src="https://assets.refrakt.md/media-text-valley.jpg" /%}
+		{% bg src="https://assets.refrakt.md/media-text-valley.jpg" overlay="dark" /%}
 		# The valley trail
 		Eleven miles along the river, from the trailhead to the falls.
 	{% /hero %}
 
 {% /preview %}
+
+Over a photo, add `overlay="dark"` (or `light`) or a [scrim](#scrim) so the text stays readable; either one also switches the text to the matching color.
 
 ## Play a video or animation
 
@@ -57,7 +59,7 @@ A color can also be `transparent`, or a theme color at partial opacity: `to="pri
 
 ## Darken or lighten the image
 
-`overlay` lays a flat wash over the background so the text stays readable: `dark`, `light`, or a theme color name such as `primary`. `overlay-opacity` sets its strength.
+`overlay` lays a flat wash over the background so the text stays readable: `dark`, `light`, or a theme color name such as `primary`. `dark` and `light` also switch the text to light or dark to match. `overlay-opacity` sets the wash's strength.
 
 {% preview source=true %}
 
@@ -92,7 +94,7 @@ This image is softened and anchored to its top edge:
 {% preview source=true %}
 
 	{% hero %}
-		{% bg src="https://assets.refrakt.md/figure-coral-reef.jpg" blur="sm" position="top" /%}
+		{% bg src="https://assets.refrakt.md/figure-coral-reef.jpg" blur="sm" position="top" overlay="dark" /%}
 		# Reef survey 2026
 		Forty volunteers, twelve dive sites, one count of every coral colony.
 	{% /hero %}
