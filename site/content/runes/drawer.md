@@ -13,32 +13,19 @@ A body-only rune that declares a richer-than-a-tooltip, lighter-than-a-navigatio
 
 ## Declaring a drawer
 
-A drawer has no trigger of its own: you write its content and give it an `id`, and links to that id open it.
+A drawer has no trigger of its own: you write its content and give it an `id`, and links to that id open it. Until a link opens it, it renders in place, as it does here:
 
-```markdoc
-{% drawer id="auth-system" title="Auth system" %}
-A short explainer that lives next to wherever it's mentioned, without forcing
-the reader to navigate away.
+{% preview source=true %}
 
-- code blocks
-- embedded runes
-- rich Markdown
+	{% drawer id="auth-system" title="Auth system" %}
+	Sign-in issues a short-lived access token and a long-lived refresh token, both in HttpOnly cookies.
 
-…fit naturally in the body.
-{% /drawer %}
-```
+	- Access tokens expire after 15 minutes.
+	- Refresh tokens last 30 days and rotate on every use.
+	- Signing out revokes the refresh token on the server.
+	{% /drawer %}
 
-Renders as a styled in-flow `<section>` at the authored position (progressively enhanced into a `<dialog>` when the behaviors script loads):
-
-{% drawer id="auth-system" title="Auth system" %}
-A short explainer that lives next to wherever it's mentioned, without forcing the reader to navigate away.
-
-- code blocks
-- embedded runes
-- rich Markdown
-
-…fit naturally in the body.
-{% /drawer %}
+{% /preview %}
 
 ## How Markdown is read
 
@@ -53,12 +40,11 @@ The title comes from the `title` attribute, not from a heading.
 
 The drawer registers itself as a page-scoped entity. Any `{% ref %}` to its id on the same page resolves to `<a href="#drawer-{id}" data-target-type="drawer">…</a>` — a normal anchor without JS, an open-dialog trigger with JS.
 
-```markdoc
-Reading about {% ref "auth-system" label="our auth subsystem" /%}? It's
-the kind of detail that lives in a drawer, not a separate page.
-```
+{% preview source=true %}
 
-Reading about {% ref "auth-system" label="our auth subsystem" /%}? It's the kind of detail that lives in a drawer, not a separate page.
+Sessions follow the rules of {% ref "auth-system" label="the auth system" /%}, so a stolen access token is useful for 15 minutes at most.
+
+{% /preview %}
 
 The trigger anchor is just an anchor. Without JS, clicking scrolls to the drawer at its authored position via fragment navigation. With JS, the behaviors layer queries `a[data-target-type="drawer"]` whose href matches a drawer on this page and intercepts the click to call `dialog.showModal()`.
 
@@ -68,12 +54,14 @@ The trigger anchor is just an anchor. Without JS, clicking scrolls to the drawer
 
 A link whose target is a drawer on the same page opens it too: a Markdown link, a `{% link %}`, or an item in [`actions`](/runes/actions). The build gives it the same anchor and `data-target-type="drawer"` that `{% ref %}` gets. Because a link's text takes inline tags, a trigger can carry an [icon](/runes/icon), and any rune that places links can place one.
 
-```markdoc
-{% actions %}
-- [{% icon name="package" /%} Install](#install)
-- [{% icon name="code" /%} Source](#source)
-{% /actions %}
-```
+{% preview source=true %}
+
+	{% actions %}
+	- [{% icon name="shield" /%} Auth system](#auth-system)
+	- [{% icon name="code" /%} View source](#page-source)
+	{% /actions %}
+
+{% /preview %}
 
 - The target is the drawer's `id`, as with `{% ref %}`. Its anchor, `#drawer-{id}`, works as well.
 - When a drawer and a heading share an id, the link opens the drawer.
@@ -132,33 +120,21 @@ The title's heading sits one level below the heading before the drawer, so it fi
 
 ## Body and footer zones
 
-The drawer body splits on a top-level `---` into two zones — **body** and **footer** — the same split `{% card %}` uses. Without a `---`, everything is body. The footer renders below the body with a top divider and slightly muted text:
+The drawer body splits on a top-level `---` into two zones — **body** and **footer** — the same split `{% card %}` uses. Without a `---`, everything is body. The footer renders below the body with a top divider and slightly muted text. The canonical case is a body that embeds an entity with [`expand`](/runes/expand) and a footer that links onward with `{% ref %}`:
 
-```markdoc
-{% drawer id="auth" title="Auth system" %}
-The auth system uses JWTs with refresh tokens.
+{% preview source=true %}
 
-- Tokens live in HttpOnly cookies
-- 15-minute access, 30-day refresh
-- Rotation on every refresh
+	Counting entities per group is the job of the {% ref "aggregate-spec" label="aggregate rune" /%}.
 
----
+	{% drawer id="aggregate-spec" title="Aggregate rune" %}
+		{% expand "SPEC-076" /%}
 
-[Read the full design doc on Notion →](https://example.com/auth-design)
-{% /drawer %}
-```
+		---
 
-The footer zone is generic markdoc — any inline content goes there, not only hardcoded URLs. The canonical case is a `{% ref %}` pointing at the same entity the body expanded:
+		The {% ref "Aggregate" /%} page shows it at work.
+	{% /drawer %}
 
-```markdoc
-{% drawer id="aggregate" title="Aggregate rune" %}
-	{% expand "SPEC-076" /%}
-
-	---
-
-	See {% ref "SPEC-076" /%}
-{% /drawer %}
-```
+{% /preview %}
 
 The xref resolves the URL from the registry, so the link stays correct as the entity moves and the author doesn't memorise URLs.
 
@@ -170,10 +146,11 @@ The header and footer stay in place while the body scrolls, so a long entity or 
 
 [`xref`](/runes/xref) and [`file-ref`](/runes/file-ref) each accept `preview="drawer"` which **hoists** a drawer for the referenced target. The inline link stays in prose; the drawer is emitted at the page root and opens on click:
 
-```markdoc
-See {% file-ref path="packages/types/src/config.ts" symbol="SiteConfig" label="SiteConfig" preview="drawer" /%}
-for the shape.
-```
+{% preview source=true %}
+
+See {% file-ref path="packages/types/src/config.ts" symbol="SiteConfig" label="SiteConfig" preview="drawer" /%} for the shape of a site's configuration.
+
+{% /preview %}
 
 Hoisted drawers use the same `<section class="rf-drawer">` shape as author-declared drawers — same chrome, same body / footer zones, same behaviors-layer enhancement. The chrome footer is populated by the rune that hoists (file-ref: GitHub link; xref: entity page link).
 
@@ -181,19 +158,15 @@ Hoisted drawers use the same `<section class="rf-drawer">` shape as author-decla
 
 ## Composition
 
-Drawers compose like any block container — embed runes, code blocks, even the snippet rune for a "view source" drawer. The drawer below is live on this page; click {% ref "page-source" label="view this page's source" /%} (or press `.`) to open it.
+Drawers compose like any block container — embed runes, code blocks, even the snippet rune for a "view source" drawer. Click {% ref "page-source" label="view this page's source" /%} (or press `.`) to open the one below.
 
-```markdoc
-{% drawer id="page-source" title="View source" shortcut="." size="lg" %}
-	{% snippet path=$file.path lang="markdoc" /%}
-{% /drawer %}
+{% preview source=true %}
 
-Trigger with {% ref "page-source" label="view this page's source" /%}.
-```
+	{% drawer id="page-source" title="View source" shortcut="." size="lg" %}
+		{% snippet path=$file.path lang="markdoc" /%}
+	{% /drawer %}
 
-{% drawer id="page-source" title="View source" shortcut="." size="lg" %}
-	{% snippet path=$file.path lang="markdoc" /%}
-{% /drawer %}
+{% /preview %}
 
 Nested drawers and multiple simultaneous open drawers aren't supported in v1 — native `<dialog>` enforces single-modal, and stacked modals are an antipattern.
 

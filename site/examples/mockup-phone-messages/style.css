@@ -1,0 +1,73 @@
+html,
+body {
+	height: 100%;
+}
+body {
+	margin: 0;
+	font-family: system-ui, sans-serif;
+	background: #f8fafc;
+	color: #1e293b;
+}
+.header {
+	padding: 12px 16px 8px;
+	font-size: 28px;
+	font-weight: 700;
+}
+.search {
+	margin: 0 16px 12px;
+	padding: 8px 12px;
+	background: #e2e8f0;
+	border-radius: 10px;
+	font-size: 14px;
+	color: #94a3b8;
+}
+.msg {
+	display: flex;
+	gap: 12px;
+	padding: 12px 16px;
+	border-bottom: 1px solid #f1f5f9;
+}
+.avatar {
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+.msg-body {
+	flex: 1;
+	min-width: 0;
+}
+.msg-top {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+}
+.msg-name {
+	font-weight: 600;
+	font-size: 15px;
+}
+.msg-time {
+	font-size: 12px;
+	color: #94a3b8;
+}
+.msg-text {
+	font-size: 14px;
+	color: #64748b;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	margin-top: 2px;
+}
+.badge {
+	width: 20px;
+	height: 20px;
+	background: #6366f1;
+	border-radius: 50%;
+	color: #fff;
+	font-size: 11px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-top: 6px;
+	flex-shrink: 0;
+}

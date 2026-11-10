@@ -14,9 +14,11 @@ Every status transition, priority change, criteria check-off, and resolution is 
 
 Show the full history for a single entity by passing its ID.
 
-```markdoc
-{% plan-history id="WORK-024" /%}
-```
+{% preview source=true %}
+
+	{% plan-history id="WORK-716" /%}
+
+{% /preview %}
 
 Each event in the timeline shows:
 
@@ -37,12 +39,13 @@ Events are displayed newest-first. When more than 3 criteria change in a single 
 
 Omit the `id` attribute for a project-wide feed grouped by commit.
 
-```markdoc
-{% plan-history /%}
-{% plan-history limit=10 /%}
-{% plan-history type="work" /%}
-{% plan-history since="7d" /%}
-```
+{% preview source=true %}
+
+	{% plan-history type="spec" limit=5 /%}
+
+{% /preview %}
+
+`limit` caps the number of commits shown, `type` keeps one entity type (`work`, `bug`, `spec`, `decision`), and `since` keeps recent activity only (`since="7d"`).
 
 In global mode, events from the same commit are grouped together, showing the commit message and a compact summary for each affected entity. This makes atomic operations visible — when a spec is accepted and 5 work items are created in one commit, they appear as a single grouped entry.
 

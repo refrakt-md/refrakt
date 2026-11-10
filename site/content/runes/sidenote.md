@@ -18,7 +18,7 @@ A margin note that sits alongside the main text.
 {% preview source=true %}
 
 	{% sidenote variant="sidenote" %}
-	This is a margin note that provides additional context without interrupting the main flow of the text. It can contain **rich formatting** and [links](/docs/getting-started).
+	Gutenberg's first press was adapted from a **wine press** — the same screw mechanism the Rhineland vineyards around Mainz had used for centuries. [More on the Gutenberg Bible](https://en.wikipedia.org/wiki/Gutenberg_Bible).
 	{% /sidenote %}
 
 {% /preview %}
@@ -30,7 +30,7 @@ Use `variant="footnote"` for content that appears at the bottom of the section.
 {% preview source=true %}
 
 	{% sidenote variant="footnote" %}
-	This appears as a footnote, typically rendered at the bottom of the content section with a separator line.
+	Estimates of the first print run vary between 158 and 180 copies; 49 are known to survive.
 	{% /sidenote %}
 
 {% /preview %}
@@ -42,7 +42,7 @@ Use `variant="tooltip"` for a subtle inline callout.
 {% preview source=true %}
 
 	{% sidenote variant="tooltip" %}
-	This appears as a tooltip-style callout with a subtle border and background.
+	A forme is the frame of locked type that is inked and pressed onto the paper.
 	{% /sidenote %}
 
 {% /preview %}

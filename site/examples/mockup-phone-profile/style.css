@@ -1,0 +1,63 @@
+html,
+body {
+	height: 100%;
+}
+body {
+	margin: 0;
+	font-family: system-ui, sans-serif;
+	background: #f8fafc;
+	color: #1e293b;
+	padding: 16px;
+	box-sizing: border-box;
+}
+.profile {
+	text-align: center;
+	padding: 20px 0 16px;
+}
+.avatar {
+	width: 72px;
+	height: 72px;
+	border-radius: 50%;
+	background: linear-gradient(135deg, #f97316, #ec4899);
+	margin: 0 auto 12px;
+}
+.name {
+	font-size: 18px;
+	font-weight: 700;
+}
+.handle {
+	font-size: 13px;
+	color: #94a3b8;
+}
+.stats {
+	display: flex;
+	justify-content: center;
+	gap: 24px;
+	margin: 16px 0;
+}
+.stat-val {
+	font-size: 17px;
+	font-weight: 700;
+}
+.stat-label {
+	font-size: 11px;
+	color: #94a3b8;
+}
+.follow-btn {
+	display: block;
+	margin: 0 20px;
+	padding: 10px;
+	background: #6366f1;
+	color: #fff;
+	border-radius: 10px;
+	text-align: center;
+	font-size: 14px;
+	font-weight: 600;
+}
+.bio {
+	font-size: 13px;
+	color: #64748b;
+	text-align: center;
+	margin: 14px 20px 0;
+	line-height: 1.4;
+}

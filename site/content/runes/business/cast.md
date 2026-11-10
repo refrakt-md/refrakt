@@ -59,11 +59,11 @@ Use `{% cast-member %}` tags for more control, including bios.
 
 	{% cast %}
 		{% cast-member name="Alice Johnson" role="CEO" %}
-		Alice founded the company in 2020.
+		Alice opened the first Acme café in 2015 and still cups every new roast.
 		{% /cast-member %}
 
 		{% cast-member name="Bob Smith" role="CTO" %}
-		Bob leads the engineering team.
+		Bob built the ordering app and runs the team behind the coffee subscription.
 		{% /cast-member %}
 	{% /cast %}
 

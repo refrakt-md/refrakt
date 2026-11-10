@@ -126,14 +126,14 @@ On a `figure` or `showcase` the frame lands on the rune itself; on a `card` or `
 {% preview source=true %}
 
 	{% card elevation="raised" frame-aspect="16/9" frame-anchor="top" %}
-	![Framed, top-anchored crop](https://picsum.photos/seed/galleryframe/800/600)
+	![Moss-covered trunks in an old-growth forest](https://assets.refrakt.md/media-text-old-growth.jpg)
 	---
 	### Framed media
 	`frame-aspect` sets the shape; `frame-anchor` picks the focal point of the crop.
 	{% /card %}
 
 	{% card frame-aspect="16/9" frame-displace="top-end" frame-offset="md" frame-oversize="1.15" frame-shadow="md" %}
-	![A displaced peek with silhouette shadow](https://picsum.photos/seed/gallerypeek/800/600)
+	![Steam rising from terraced hot springs](https://assets.refrakt.md/figure-hot-springs.jpg)
 	---
 	### Displaced peek + silhouette shadow
 	`frame-displace` + `frame-oversize` push the guest past its slot; the host clips it to a peek, and `frame-shadow` traces the cropped silhouette — not the card.
@@ -344,7 +344,7 @@ The full fill vocabulary lives in [tint](/runes/tint) and [bg](/runes/bg).
 	{% /card %}
 
 	{% card media-position="cover" content-place="center center" height="lg" %}
-	![A coastal scene](https://picsum.photos/seed/gallerycover/800/1000)
+	![Fish over a shallow coral reef](https://assets.refrakt.md/figure-coral-reef.jpg)
 
 	---
 

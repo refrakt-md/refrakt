@@ -1,0 +1,42 @@
+.counter {
+	font-family: system-ui;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 16px;
+}
+.counter button {
+	padding: 6px 16px;
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	background: white;
+	cursor: pointer;
+	font-size: 16px;
+}
+.counter button:hover {
+	background: #f3f4f6;
+}
+.counter span {
+	font-size: 24px;
+	font-weight: 600;
+	min-width: 3ch;
+	text-align: center;
+}
+@media (prefers-color-scheme: dark) {
+	.counter button {
+		background: #374151;
+		border-color: #4b5563;
+		color: #f3f4f6;
+	}
+	.counter button:hover {
+		background: #4b5563;
+	}
+}
+[data-theme="dark"] .counter button {
+	background: #374151;
+	border-color: #4b5563;
+	color: #f3f4f6;
+}
+[data-theme="dark"] .counter button:hover {
+	background: #4b5563;
+}

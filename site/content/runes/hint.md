@@ -18,7 +18,7 @@ Display supplementary information with a visual callout.
 {% preview source=true %}
 
 	{% hint type="note" %}
-	This is a note with helpful information.
+	The staging site rebuilds on every push to `main`, so a change can take a few minutes to appear.
 	{% /hint %}
 
 {% /preview %}
@@ -30,19 +30,19 @@ Use different types to convey different levels of importance.
 {% preview source=true %}
 
 	{% hint type="note" %}
-	This is a **note** — useful for supplementary information.
+	Exports include archived projects unless you clear **Include archived**.
 	{% /hint %}
 
 	{% hint type="warning" %}
-	This is a **warning** — something to be careful about.
+	Renaming a workspace changes its URL. Update any bookmarks and webhooks that point at the old one.
 	{% /hint %}
 
 	{% hint type="caution" %}
-	This is a **caution** — a serious potential issue.
+	Deleting a workspace removes every project in it. This cannot be undone.
 	{% /hint %}
 
 	{% hint type="check" %}
-	This is a **check** — a success or completion message.
+	Your export is ready. The download link stays valid for seven days.
 	{% /hint %}
 
 {% /preview %}

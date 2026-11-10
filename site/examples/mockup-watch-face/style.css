@@ -1,0 +1,42 @@
+html,
+body {
+	height: 100%;
+}
+body {
+	margin: 0;
+	font-family: system-ui, sans-serif;
+	background: #000;
+	color: #fff;
+}
+.app {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100vh;
+	padding: 12px;
+	text-align: center;
+	box-sizing: border-box;
+}
+.time {
+	font-size: 36px;
+	font-weight: 200;
+	letter-spacing: 2px;
+}
+.date {
+	font-size: 11px;
+	color: #f97316;
+	margin-top: 2px;
+	font-weight: 600;
+}
+.rings {
+	display: flex;
+	gap: 8px;
+	margin-top: 12px;
+}
+.ring {
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	border: 3px solid;
+}

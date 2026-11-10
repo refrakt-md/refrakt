@@ -1,0 +1,30 @@
+<div class="app">
+  <div class="toolbar">
+    <span class="toolbar-btn">File</span>
+    <span class="toolbar-btn">Edit</span>
+    <span class="toolbar-btn">View</span>
+    <span style="flex:1"></span>
+    <span style="color:#94a3b8; font-size:12px;">main.ts — project</span>
+  </div>
+  <div class="workspace">
+    <div class="panel">
+      <div class="panel-title">Explorer</div>
+      <div class="file">src/</div>
+      <div class="file active">&nbsp;&nbsp;main.ts</div>
+      <div class="file">&nbsp;&nbsp;utils.ts</div>
+      <div class="file">&nbsp;&nbsp;types.ts</div>
+      <div class="file">package.json</div>
+    </div>
+    <div class="editor">
+      <div><span class="ln">1</span><span class="kw">import</span> { <span class="fn">createApp</span> } <span class="kw">from</span> <span class="str">'./app'</span>;</div>
+      <div><span class="ln">2</span></div>
+      <div><span class="ln">3</span><span class="cm">// Initialize the application</span></div>
+      <div><span class="ln">4</span><span class="kw">const</span> app = <span class="fn">createApp</span>({</div>
+      <div><span class="ln">5</span>&nbsp;&nbsp;port: <span class="str">3000</span>,</div>
+      <div><span class="ln">6</span>&nbsp;&nbsp;env: <span class="str">'production'</span>,</div>
+      <div><span class="ln">7</span>});</div>
+      <div><span class="ln">8</span></div>
+      <div><span class="ln">9</span>app.<span class="fn">listen</span>();</div>
+    </div>
+  </div>
+</div>

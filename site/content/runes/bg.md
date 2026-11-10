@@ -15,35 +15,45 @@ A directive rune that produces no visible output. Place `{% bg %}` as the first 
 
 Add a background image to any rune that supports backgrounds.
 
-```markdoc
-{% hint type="note" %}
-{% bg src="/images/texture.jpg" %}
-Content with a background image.
-{% /hint %}
-```
+{% preview source=true %}
 
-## Video background
+	{% hero %}
+		{% bg src="https://assets.refrakt.md/media-text-valley.jpg" /%}
+		# The valley trail
+		Eleven miles along the river, from the trailhead to the falls.
+	{% /hero %}
 
-Use a looping video as the background.
+{% /preview %}
 
-```markdoc
-{% hero %}
-{% bg video="/videos/loop.mp4" %}
-# Welcome
-{% /hero %}
-```
+## Video and animated backgrounds
+
+`video` takes the URL of a looping video and plays it, muted, behind the content: `{% bg video="/media/surf.mp4" /%}`. For a generated, animated backdrop, put a `{% sandbox %}` inside the bg instead:
+
+{% preview source=true %}
+
+	{% hero %}
+		{% bg overlay="dark" overlay-opacity="0.4" %}
+			{% sandbox src="wireframe-waves" /%}
+		{% /bg %}
+		# Tide tables
+		High and low water for every harbour on the coast, updated daily.
+	{% /hero %}
+
+{% /preview %}
 
 ## Gradient fill
 
 A token-driven gradient is the most common generated backdrop (heroes, CTAs). Set it inline with `gradient` (direction), `from`/`to` (and optional `via`) — **semantic token names**, resolved to `var(--rf-color-*)` so the gradient tracks the theme/`tint` — and `gradient-type` (`linear` default, `radial`, `conic`). A gradient raises the bg layer with no image needed.
 
-```markdoc
-{% hero %}
-{% bg gradient="to-b" from="primary" to="surface" %}
-# Gradient hero
-A two-stop linear gradient, top to bottom, from token colours.
-{% /hero %}
-```
+{% preview source=true %}
+
+	{% hero %}
+		{% bg gradient="to-b" from="primary" to="surface" /%}
+		# Spring workshop
+		Two days of hands-on sessions, April 12–13, in Lisbon.
+	{% /hero %}
+
+{% /preview %}
 
 Directions are a bounded set: `to-t`, `to-b`, `to-l`, `to-r`, `to-tr`, `to-br`, `to-bl`, `to-tl` (no raw angles — that's the escape hatch's job). These also work as host-level facets (`bg-gradient`, `bg-from`/`bg-to`/`bg-via`, `bg-gradient-type`) without a `{% bg %}` child, and a theme can register a named gradient preset (`bg="brand-fade"`).
 
@@ -59,14 +69,15 @@ Each gradient stop accepts three forms:
 
 A flat colour wash over the background, for legibility. `dark` / `light` are presets; a **token name** (e.g. `overlay="primary"`) washes with `var(--rf-color-primary)` at `overlay-opacity`.
 
-```markdoc
-{% hero %}
-{% bg src="/images/photo.jpg" overlay="dark" %}
-# Readable heading
-The dark overlay ensures text remains legible over the image.
-{% /hero %}
-```
+{% preview source=true %}
 
+	{% hero %}
+		{% bg src="https://assets.refrakt.md/media-text-old-growth.jpg" overlay="dark" /%}
+		# Old-growth forest walk
+		A two-hour loop under trees that were standing before the town was founded.
+	{% /hero %}
+
+{% /preview %}
 
 ## Scrim
 
@@ -74,61 +85,39 @@ A structured legibility treatment behind overlaid text — richer than a flat ov
 
 The `scrim*` attributes are **universal attributes on the rune the background sits behind**, not attributes of `{% bg %}` — `bg` supplies the image, the rune carries the treatment:
 
-```markdoc
-{% hero scrim="bottom" scrim-strength="lg" %}
-{% bg src="/images/photo.jpg" %}
-# Legible over the photo
-A bottom-weighted gradient scrim keeps the heading readable.
-{% /hero %}
-```
+{% preview source=true %}
+
+	{% hero scrim="bottom" scrim-strength="lg" %}
+		{% bg src="https://assets.refrakt.md/figure-hot-springs.jpg" /%}
+		# The hot springs
+		Open year-round. The upper pools close at dusk.
+	{% /hero %}
+
+{% /preview %}
 
 `scrim-strength` (`sm`/`md`/`lg`) tunes the gradient; `scrim-blur` (`sm`/`md`/`lg`) tunes frost. In `cover` mode the same scrim targets the media well (see [card](/runes/card)).
 
-## Blur
+## Blur, position and fit
 
-Apply a blur effect to the background image.
+Control how the image sits behind the content. This one is softened and anchored to its top edge:
 
-```markdoc
-{% hint type="note" %}
-{% bg src="/images/bg.jpg" blur="sm" %}
-Subtle blur softens the background.
-{% /hint %}
-```
+{% preview source=true %}
 
-## Position and fit
+	{% hero %}
+		{% bg src="https://assets.refrakt.md/figure-coral-reef.jpg" blur="sm" position="top" /%}
+		# Reef survey 2026
+		Forty volunteers, twelve dive sites, one count of every coral colony.
+	{% /hero %}
 
-Control how the background image is positioned and scaled within its container.
+{% /preview %}
 
-```markdoc
-{% hint type="note" %}
-{% bg src="/images/portrait.jpg" position="top" fit="contain" %}
-The image is anchored to the top and scaled to fit without cropping.
-{% /hint %}
-```
-
-## Fixed background
-
-Create a parallax-style effect where the background stays fixed during scroll.
-
-```markdoc
-{% hero %}
-{% bg src="/images/landscape.jpg" fixed=true %}
-# Parallax Hero
-The background stays in place as you scroll.
-{% /hero %}
-```
-
-## Combined attributes
-
-All attributes can be used together for full control.
-
-```markdoc
-{% hero %}
-{% bg src="/images/scene.jpg" overlay="dark" blur="lg" position="top" opacity="0.8" %}
-# Full Control
-Dark overlay, heavy blur, top-aligned, and slightly transparent.
-{% /hero %}
-```
+| Set | To | Effect |
+|-----|----|--------|
+| `blur` | `sm`, `md`, `lg` | Softens the image behind the text |
+| `position` | A CSS background position, such as `top` or `bottom left` | Which part of the image stays in view |
+| `fit` | `cover` (default) or `contain` | Crop the image to fill, or show all of it |
+| `opacity` | `0` to `1` | Fades the image into the background colour |
+| `fixed` | `true` | Keeps the image in place while the page scrolls past, a parallax effect |
 
 ## Named presets & the escape hatch
 

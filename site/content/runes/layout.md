@@ -13,18 +13,19 @@ Structural runes that define page layout. `{% layout %}` wraps the entire layout
 
 ## Defining regions
 
-A `_layout.md` file uses regions to place content into theme slots.
+A `_layout.md` file uses regions to place content into theme slots. A layout describes every page beneath it rather than rendering where it is written, so it is shown here as the file you write:
 
 ```markdoc
 {% layout %}
 	{% region name="header" %}
-	# Site Title
+	# Trail Guide
 	{% /region %}
 
 	{% region name="nav" %}
 		{% nav %}
-		- page-one
-		- page-two
+		- getting-started
+		- day-hikes
+		- overnight-routes
 		{% /nav %}
 	{% /region %}
 {% /layout %}

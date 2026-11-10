@@ -13,7 +13,7 @@ An aggregation rune that renders a live view of plan entities from the entity re
 
 The examples below pass `limit=5` so they stay scannable; in real dashboards omit the attribute (or set it higher) to render the full set.
 
-## Ready items sorted by priority
+## Basic usage
 
 {% preview source=true %}
 
@@ -21,49 +21,9 @@ The examples below pass `limit=5` so they stay scannable; in real dashboards omi
 
 {% /preview %}
 
-## In-progress items
+## Filter, sort and pick types
 
-{% preview source=true %}
-
-	{% backlog filter="status:in-progress" sort="priority" limit=5 /%}
-
-{% /preview %}
-
-## Grouped by status
-
-{% preview source=true %}
-
-	{% backlog sort="priority" group="status" limit=10 /%}
-
-{% /preview %}
-
-## Bugs only
-
-{% preview source=true %}
-
-	{% backlog show="bug" sort="severity" limit=5 /%}
-
-{% /preview %}
-
-## Decisions
-
-{% preview source=true %}
-
-	{% backlog show="decision" sort="date" limit=5 /%}
-
-{% /preview %}
-
-## Specs
-
-{% preview source=true %}
-
-	{% backlog show="spec" limit=5 /%}
-
-{% /preview %}
-
-## Multi-field filter
-
-Filters combine with AND logic. Multiple values for the same field combine with OR.
+`filter` takes space-separated `field:value` pairs. Different fields combine with AND; several values for the same field combine with OR. This shows ready items that are high *or* critical priority:
 
 {% preview source=true %}
 
@@ -71,23 +31,29 @@ Filters combine with AND logic. Multiple values for the same field combine with 
 
 {% /preview %}
 
-## Top N (limit)
+The other views are the same rune with different values:
 
-`limit=N` caps the rendered set after sort and before group. Useful for "top N by priority" dashboards.
+| To show | Write |
+|---------|-------|
+| Work in progress | `filter="status:in-progress"` |
+| Bugs, by severity | `show="bug" sort="severity"` |
+| Decision records, by date | `show="decision" sort="date"` |
+| Specs | `show="spec"` |
+| Milestones | `show="milestone"` |
+| Newest first | a `-` before the sort field, e.g. `sort="-date"` |
+| The top N | `limit=N` — applied after sorting and before grouping |
 
-## Grouped by tag
+`show` defaults to `all`, which means work items and bugs together.
 
-`group` accepts a multi-value field. `group="tags"` gives one group per tag, and an item tagged `runes, data` appears under both. A group's size is the number of entities carrying that tag, so the sizes can add up to more than the number of items shown.
+## Group items
+
+`group` gathers items under a heading per value of a field: `status` (the default), `priority`, `assignee`, `milestone`, `type` or `tags`. `group-display="accordion"` collapses each group instead.
+
+A multi-value field such as `tags` gives one group per tag, and an item tagged `runes, data` appears under both. A group's size is the number of entities carrying that tag, so the sizes can add up to more than the number of items shown.
 
 {% preview source=true %}
 
 	{% backlog show="work" filter="status:ready" group="tags" limit=5 /%}
-
-{% /preview %}
-
-{% preview source=true %}
-
-	{% backlog filter="status:ready" sort="priority" limit=3 /%}
 
 {% /preview %}
 

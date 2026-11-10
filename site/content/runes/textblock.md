@@ -18,7 +18,7 @@ The `dropcap` attribute adds a large decorative first letter for an editorial fe
 {% preview source=true %}
 
 	{% textblock dropcap=true %}
-	Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+	Mainz, 1450. In a rented workshop off the cathedral square, a goldsmith named Johannes Gutenberg was casting letters in an alloy of lead, tin and antimony. Each one was a mirror image, set by hand into a composing stick, locked into a forme and inked with a varnish of linseed oil and soot. Five years later his press had printed some 180 copies of the Bible — about as many as a scriptorium could copy in a lifetime.
 	{% /textblock %}
 
 {% /preview %}
@@ -44,7 +44,7 @@ The `lead` attribute styles the text as a larger introductory paragraph.
 {% preview source=true %}
 
 	{% textblock lead=true %}
-	This is the opening paragraph of the article, styled with larger text and heavier weight to draw the reader in.
+	Before the press, a book was a year of a scribe's life. Within fifty years of Gutenberg, Europe had printed some twenty million.
 	{% /textblock %}
 
 {% /preview %}

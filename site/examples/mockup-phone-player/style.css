@@ -1,0 +1,74 @@
+html,
+body {
+	height: 100%;
+}
+body {
+	margin: 0;
+	font-family: system-ui, sans-serif;
+	background: #f8fafc;
+	color: #1e293b;
+}
+.now-playing {
+	padding: 32px 20px 20px;
+	text-align: center;
+}
+.art {
+	width: 180px;
+	height: 180px;
+	margin: 0 auto 20px;
+	border-radius: 12px;
+	background: linear-gradient(135deg, #c4b5fd, #818cf8, #6366f1);
+}
+.title {
+	font-size: 18px;
+	font-weight: 700;
+}
+.artist {
+	font-size: 14px;
+	color: #64748b;
+	margin-top: 2px;
+}
+.progress {
+	margin: 20px 20px 0;
+	height: 3px;
+	background: #e2e8f0;
+	border-radius: 2px;
+}
+.progress-fill {
+	height: 100%;
+	width: 40%;
+	background: #6366f1;
+	border-radius: 2px;
+}
+.times {
+	display: flex;
+	justify-content: space-between;
+	margin: 6px 20px 0;
+	font-size: 11px;
+	color: #94a3b8;
+}
+.controls {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 32px;
+	margin-top: 16px;
+	font-size: 20px;
+	color: #334155;
+}
+.play {
+	width: 48px;
+	height: 48px;
+	background: #6366f1;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.play::after {
+	content: "";
+	border-style: solid;
+	border-width: 8px 0 8px 14px;
+	border-color: transparent transparent transparent #fff;
+	margin-left: 2px;
+}

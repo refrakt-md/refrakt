@@ -15,33 +15,35 @@ A snippet is read as an ordinary code block, so it works anywhere a fenced block
 
 ## Embed a file
 
-The minimum case — a `path` attribute relative to the project root.
+The minimum case — a `path` attribute relative to the project root. With nothing else, the whole file is embedded:
 
-```markdoc
-{% snippet path="packages/runes/src/lang-map.ts" lines="1-40" /%}
-```
+{% preview source=true %}
 
-Renders as a live embed of refrakt's own language-map module (the one snippet itself uses for extension inference):
+	{% snippet path="site/examples/counter/script.js" /%}
 
-{% snippet path="packages/runes/src/lang-map.ts" lines="1-40" /%}
+{% /preview %}
 
-The reader is looking at the actual file in this repository, sliced to its first 40 lines. The build re-reads the file every time it runs, so this stays in sync.
+The reader is looking at the actual script behind this site's counter example. The build re-reads the file every time it runs, so this stays in sync.
 
 ## Address by name, not by line number
 
 A line range is a coordinate into a file nobody promised to hold still. Edit anything above the range and the snippet quietly starts quoting something else — it still renders, still highlights, still looks right. Prefer an anchor:
 
-```markdoc
-{% snippet path="packages/types/src/config.ts" symbol="SiteConfig" /%}
-```
+{% preview source=true %}
 
-`symbol` names a declaration. The anchor is built from the language's own keywords, so the region is found wherever it has moved to — and if the symbol is renamed or deleted, the snippet **fails loudly** instead of rendering a plausible wrong span.
+	{% snippet path="packages/runes/src/lang-map.ts" symbol="inferLanguage" /%}
+
+{% /preview %}
+
+`symbol` names a declaration — here one function out of an 85-line module. The anchor is built from the language's own keywords, so the region is found wherever it has moved to — and if the symbol is renamed or deleted, the snippet **fails loudly** instead of rendering a plausible wrong span.
 
 `match` is the general form: a raw regex applied per line. `symbol` is sugar over it, and `match` is what to reach for in a language whose keywords refrakt does not carry.
 
-```markdoc
-{% snippet path="packages/lumina/styles/runes/hint.css" match="^\.rf-hint\s*\{" /%}
-```
+{% preview source=true %}
+
+	{% snippet path="site/examples/counter/style.css" match="^.counter span" /%}
+
+{% /preview %}
 
 Anchors are matched against the **raw** source, so a JSON key or a quoted selector works. A match landing inside a comment is skipped — a declaration mentioned in a comment is talking about code rather than being it.
 
@@ -96,15 +98,15 @@ Slice the file with the `lines` attribute. Four formats:
 
 {% hint type="note" %}
 **The `lines=` invocations on this page are deliberate.** They demonstrate the attribute, so they keep it — and they are the reason `refrakt migrate snippets` refuses most of what it finds here. Everywhere else, [anchor by name](#address-by-name-not-by-line-number): a line range is a coordinate into a file nobody promised to hold still.
-
-Several of these also slice mid-construct — opening on a blank line, or in the middle of a comment block — which is itself a symptom of line addressing, and why the codemod cannot infer an anchor for them.
 {% /hint %}
 
-```markdoc
-{% snippet path="packages/runes/src/lang-map.ts" lines="15-35" title="LANG_MAP definition" /%}
-```
+This takes the `formatter` block out of the repository's Biome config:
 
-{% snippet path="packages/runes/src/lang-map.ts" lines="15-35" title="LANG_MAP definition" /%}
+{% preview source=true %}
+
+	{% snippet path="biome.jsonc" lines="36-41" /%}
+
+{% /preview %}
 
 ## Captions and titles
 
@@ -114,29 +116,25 @@ Snippet itself has no `title` attribute — it's structurally a `fence` by the t
 
 `{% figure caption="…" %}` captions the code the way it captions an image, below it. Use it when the label describes the excerpt.
 
-```markdoc
-{% figure caption="The language used when no extension matches" %}
-	{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
-{% /figure %}
-```
+{% preview source=true %}
 
-{% figure caption="The language used when no extension matches" %}
-	{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
-{% /figure %}
+	{% figure caption="The counter's click handler: one function, called with +1 or −1" %}
+		{% snippet path="site/examples/counter/script.js" symbol="update" /%}
+	{% /figure %}
+
+{% /preview %}
 
 ### A title bar above: `codegroup`
 
 `{% codegroup title="…" %}` puts title-bar chrome around a single fence, the way an editor tab names a file. Use it when the label is a filename or a heading.
 
-```markdoc
-{% codegroup title="FALLBACK_LANG constant" %}
-	{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
-{% /codegroup %}
-```
+{% preview source=true %}
 
-{% codegroup title="FALLBACK_LANG constant" %}
-	{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
-{% /codegroup %}
+	{% codegroup title="counter/index.html" %}
+		{% snippet path="site/examples/counter/index.html" /%}
+	{% /codegroup %}
+
+{% /preview %}
 
 ## Language inference
 
@@ -158,13 +156,13 @@ The language is inferred from the file extension via a shared map:
 | `.sh`, `.bash` | `bash` |
 | (others) | `text` (no highlighting) |
 
-Override with `lang=` when the extension doesn't tell the full story (a `.config` file that's actually JSONC, for instance).
+Override with `lang=` when the extension doesn't tell the full story. A SvelteKit `tsconfig.json` carries comments, so it is really JSONC; read as `json`, its comments would highlight as errors:
 
-```markdoc
-{% snippet path="packages/runes/src/lang-map.ts" lines="1-5" lang="javascript" /%}
-```
+{% preview source=true %}
 
-{% snippet path="packages/runes/src/lang-map.ts" lines="1-5" lang="javascript" /%}
+	{% snippet path="site/tsconfig.json" lang="jsonc" /%}
+
+{% /preview %}
 
 ## Composition
 
@@ -177,8 +175,8 @@ Multiple snippets become tabs in a codegroup. Tab labels come from the inferred 
 {% preview source=true %}
 
 	{% codegroup %}
-		{% snippet path="packages/runes/src/lang-map.ts" lines="1-5" /%}
-		{% snippet path="packages/runes/src/util.ts" lines="1-5" /%}
+		{% snippet path="site/examples/counter/index.html" /%}
+		{% snippet path="site/examples/counter/script.js" /%}
 	{% /codegroup %}
 
 {% /preview %}
@@ -188,10 +186,10 @@ Mixed children — snippets and triple-backtick fences in the same codegroup —
 {% preview source=true %}
 
 	{% codegroup %}
-		{% snippet path="packages/runes/src/lang-map.ts" lines="1-5" /%}
-		```python
-		# An inline Python snippet alongside a real file
-		def hello(): pass
+		{% snippet path="site/examples/counter/script.js" /%}
+		```html
+		<!-- Load the script after the counter's markup -->
+		<script src="script.js"></script>
 		```
 	{% /codegroup %}
 
@@ -199,13 +197,13 @@ Mixed children — snippets and triple-backtick fences in the same codegroup —
 
 ### Inside `{% diff %}`
 
-Two snippets become before/after for a diff comparison.
+Two snippets become before/after for a diff comparison — here the counter's button rule against its dark-theme override.
 
 {% preview source=true %}
 
 	{% diff mode="split" %}
-		{% snippet path="packages/runes/src/lang-map.ts" lines="42-50" /%}
-		{% snippet path="packages/runes/src/util.ts" lines="42-50" /%}
+		{% snippet path="site/examples/counter/style.css" lines="8-15" /%}
+		{% snippet path="site/examples/counter/style.css" lines="35-39" /%}
 	{% /diff %}
 
 {% /preview %}
@@ -230,13 +228,13 @@ These rules make snippet safe to use on sites that accept untrusted author conte
 
 Set `linenumbers=true` to show a numbered gutter. The starting number derives from `lines=` so the gutter reflects the file's real offsets — `lines="74-125"` starts the count at 74, not 1.
 
-```markdoc
-{% snippet path="packages/runes/src/lang-map.ts" lines="15-25" linenumbers=true /%}
-```
+The gutter below starts at 16 (file coordinates), matching what you'd see in your editor:
 
-Renders with the gutter starting at 15 (file coordinates), matching what you'd see in your editor:
+{% preview source=true %}
 
-{% snippet path="packages/runes/src/lang-map.ts" lines="15-25" linenumbers=true /%}
+	{% snippet path="site/examples/counter/style.css" lines="16-24" linenumbers=true /%}
+
+{% /preview %}
 
 With `lines`, the numbers start at the first line shown, so they match the file.
 
@@ -244,13 +242,13 @@ With `lines`, the numbers start at the first line shown, so they match the file.
 
 `highlight="74-78"` emphasizes specific lines without cropping. Unlike `lines=` (which slices), highlight keeps the surrounding context visible and draws the eye to the lines that matter. Use it for "look at this part" callouts inside a larger code block.
 
-```markdoc
-{% snippet path="packages/runes/src/lang-map.ts" lines="10-40" linenumbers=true highlight="18-22" /%}
-```
+This shows Biome's formatter settings with file lines 39–40 — the tab indent and the line width — emphasized via a neutral surface tint and a primary-coloured left rail:
 
-Renders the slice 10-40 with file lines 18-22 emphasized via a neutral surface tint and a primary-coloured left rail:
+{% preview source=true %}
 
-{% snippet path="packages/runes/src/lang-map.ts" lines="10-40" linenumbers=true highlight="18-22" /%}
+	{% snippet path="biome.jsonc" lines="36-53" linenumbers=true highlight="39-40" /%}
+
+{% /preview %}
 
 Range syntax matches Shiki: single ranges (`"74-78"`), single lines (`"82"`), or comma-separated mixed (`"74-78,82,90-92"`). Indices are **file coordinates** — if you've set `lines="10-40" highlight="20"`, the highlighted line is file line 20, not the 20th line of the slice. Less surprising for citing line numbers from a real file.
 
@@ -294,13 +292,13 @@ No `title` attribute. Snippet's output is a fence; to label it, wrap it in `{% f
 
 Snippet's killer trick: feed it `$file.path` from the page-variable surface ({% xref "/docs/authoring/variables" /%}) to embed the page's own source.
 
-```markdoc
-{% snippet path=$file.path lang="markdoc" /%}
-```
+At build time it reads the page you're looking at right now and inlines its content. The reader sees the markdown that generates the page they're reading. The "see it in action" pitch in one rune.
 
-Renders as the snippet block below — at build time it reads the page you're looking at right now and inlines its content. The reader sees the markdown that generates the page they're reading. The "see it in action" pitch in one rune.
+{% preview source=true %}
 
-{% snippet path=$file.path lang="markdoc" /%}
+	{% snippet path=$file.path lang="markdoc" /%}
+
+{% /preview %}
 
 ## Attributes
 

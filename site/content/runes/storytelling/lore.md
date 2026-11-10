@@ -13,29 +13,29 @@ Content is rendered directly as the lore body, with optional spoiler protection.
 
 ## Basic usage
 
-Wrap any in-world knowledge in a lore entry with a title and category.
+Wrap any in-world knowledge in a lore entry with a title and a `category` — `history`, `magic`, `culture`, or whatever grouping your world needs.
 
 {% preview source=true %}
 
-	{% lore title="The Prophecy of the Chosen One" category="prophecy" spoiler=true %}
-	An ancient text found in the ruins of the First Temple.
-
-	> *When darkness covers the land and the last star fades,
-	> one shall rise from forgotten blood to forge the world anew.*
-
-	The prophecy has been interpreted differently by various factions throughout history.
+	{% lore title="The Founding of Thornwall" category="history" %}
+	Three centuries ago, river traders raised a wall of thorn and stone where the river bends beneath the northern cliffs. The city that grew behind it still bears the name, and the first warden's seal still opens its gates.
 	{% /lore %}
 
 {% /preview %}
 
-## Categories
+## Hide spoilers
 
-Use the `category` attribute to classify different types of lore.
+`spoiler=true` hides the entry until the reader chooses to reveal it.
 
 {% preview source=true %}
 
-	{% lore title="The Founding of Ironhold" category="history" %}
-	In the third age, a band of dwarven exiles discovered rich veins of mithril beneath the Grey Peaks. They established Ironhold, which grew into the greatest forge-city the world had ever seen.
+	{% lore title="The Bone Witch's Oath" category="prophecy" spoiler=true %}
+	A verse scratched into the last standing wall of the Ashen Spire.
+
+	> *When the warden falls and the lanterns fade,
+	> the one who was cast out shall return to claim the March.*
+
+	The Silver Order reads it as a warning. Veshra reads it as a promise.
 	{% /lore %}
 
 {% /preview %}

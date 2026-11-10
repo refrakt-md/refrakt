@@ -15,14 +15,14 @@ There is one generic `card` (named by *shape*, not by entity) — refrakt delibe
 
 {% preview source=true %}
 
-	{% card href="/runes/collection" %}
+	{% card %}
 	---
-	### Collection rune
-	The plural counterpart to `ref` and `expand` — query the registry and render the results.
+	### Valley loop
+	Nine kilometres along the river and back over the ridge, with a café at the halfway bridge.
 
 	---
 
-	Core rune · see also `expand`
+	Walk · Moderate · 3 hours
 	{% /card %}
 
 {% /preview %}
@@ -129,10 +129,10 @@ A card exposes two decorable surfaces ([surface model](/runes/surfaces)): the **
 {% preview source=true %}
 
 	{% card elevation="raised" frame-aspect="16/9" frame-anchor="top left" %}
-	![Dashboard](https://picsum.photos/seed/carddash/800/450)
+	![Moss-covered trunks in an old-growth forest](https://assets.refrakt.md/media-text-old-growth.jpg)
 	---
-	### Framed media
-	`elevation` floats the card; `frame-*` presents the image in its media zone.
+	### Old-growth trail
+	A shaded two-hour walk among trees that predate the town.
 	{% /card %}
 
 {% /preview %}
