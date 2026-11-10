@@ -5,175 +5,69 @@ description: Pure HTML rendering for refrakt.md — no framework required
 
 # HTML Adapter
 
-The HTML adapter (`@refrakt-md/html`) renders refrakt.md content to plain HTML strings. No framework runtime, no build tooling beyond TypeScript — just static HTML files.
+The HTML adapter (`@refrakt-md/html`) renders refrakt.md content to plain HTML strings. There is no framework runtime and no plugin: you write a Node.js build script that loads the content, renders each page, and writes static HTML files, plus a small client entry that enables interactive runes.
 
 ## Installation
-
-```shell
-npm install @refrakt-md/html @refrakt-md/content @refrakt-md/runes @refrakt-md/transform @refrakt-md/highlight @refrakt-md/types @markdoc/markdoc
-```
-
-Or scaffold a complete project:
 
 ```shell
 npx create-refrakt my-site --target html
 ```
 
+Or install it alongside the [core packages](/docs/adapters/adapters-overview#dependencies):
+
+```shell
+npm install @refrakt-md/html
+```
+
+The scaffold also uses `esbuild` to bundle the client entry.
+
 ## Configuration
 
-Set `target` to `"html"` in `refrakt.config.json`:
-
-```json
-{
-  "contentDir": "./content",
-  "theme": "@refrakt-md/lumina",
-  "target": "html",
-  "routeRules": [
-    { "pattern": "**", "layout": "default" }
-  ]
-}
-```
-
-## HtmlTheme Interface
-
-The HTML adapter uses a simpler theme interface than SvelteKit — no component registry or element overrides:
+There is nothing to register. The build script reads `refrakt.config.json` through `createRefraktLoader()` (or `loadContent()` directly). `security` (untrusted-content sanitization) and `variables` (Markdoc `{% $name %}` values) are passed to whichever you call:
 
 ```typescript
-interface HtmlTheme {
-  manifest: ThemeManifest;
-  layouts: Record<string, LayoutConfig>;
-}
-```
-
-All runes render through the identity transform + CSS. Interactive runes get their behavior from `@refrakt-md/behaviors` via client-side initialization.
-
-## Core API
-
-### `renderPage(input)`
-
-Renders a page's content to an HTML fragment. Applies the layout transform and HTML-specific tree transforms (table wrapping), then produces an HTML string. Does not include `<!DOCTYPE>` or `<head>`.
-
-```typescript
-import { renderPage } from '@refrakt-md/html';
-
-const html = renderPage({ theme, page });
-```
-
-### `renderFullPage(input, options?)`
-
-Renders a complete HTML document with `<!DOCTYPE>`, `<head>` (title, meta, OG tags, JSON-LD, stylesheets), `<body>` (content + context data), and script tags.
-
-```typescript
-import { renderFullPage } from '@refrakt-md/html';
-
-const html = renderFullPage(
-  { theme, page },
-  {
-    stylesheets: ['/styles.css'],
-    scripts: ['/behaviors.js'],
-    headExtra: '<link rel="icon" href="/favicon.ico">',
-    lang: 'en',
-    seo: page.seo,
-  }
-);
-```
-
-### `PageShellOptions`
-
-| Option | Type | Description |
-|--------|------|-------------|
-| `stylesheets` | `string[]` | CSS stylesheet URLs for `<link>` tags in `<head>` |
-| `scripts` | `string[]` | JavaScript URLs for `<script>` tags before `</body>` |
-| `headExtra` | `string` | Extra HTML to inject into `<head>` (use to inline highlight + site-tokens CSS) |
-| `lang` | `string` | HTML `lang` attribute (default: `"en"`) |
-| `baseUrl` | `string` | Base URL for canonical URLs and absolute OG URLs |
-| `siteName` | `string` | Human-readable site name for og:site_name and JSON-LD entries |
-| `defaultImage` | `string` | Default og:image for pages without their own image |
-| `logo` | `string` | Site logo for Organization JSON-LD schema |
-| `seo` | `PageSeo` | SEO metadata (JSON-LD schemas and Open Graph tags) |
-
-When `siteName`, `baseUrl`, `defaultImage`, or `logo` are supplied, `renderFullPage` emits `og:site_name`, absolutizes `og:url` and adds a canonical `<link>`, falls back missing images to `defaultImage`, and appends WebSite + Organization JSON-LD entries — matching the SvelteKit reference adapter's output. Source these from your `refrakt.config.json` via `resolveSite()` and pass them per page.
-
-### Security and Markdoc variables
-
-The HTML adapter's build script loads content directly via `loadContent`, so `security` (untrusted-content sanitisation) and `variables` (Markdoc `{% $name %}` interpolation) are passed as positional arguments at the call site. The scaffolded `build.ts` shows the order; edit it to thread your own values:
-
-```typescript
-const loadedSite = await loadContent(
-  contentDir,
-  '/',
-  icons,
-  communityTags,
-  undefined,       // sandboxExamplesDir
-  { version: '1.0.0' }, // variables
-  'strict',        // securityPolicy
-);
-```
-
-For most static sites neither option is needed; they exist for hosted-product or per-build interpolation scenarios.
-
-### `composeSiteTokensCss(site, configDir)`
-
-Composes the site-level token overrides CSS (`theme.tokens`, `theme.modes`, `theme.presets`, `site.tints`) into a single string. Re-exported from `@refrakt-md/transform/node` for convenience.
-
-```typescript
-import { composeSiteTokensCss, renderFullPage } from '@refrakt-md/html';
-import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
-import { dirname, resolve } from 'node:path';
-
-const configPath = resolve('refrakt.config.json');
-const config = loadRefraktConfig(configPath);
-const { site } = resolveSite(config);
-
-const siteTokensCss = await composeSiteTokensCss(site, dirname(configPath));
-
-const html = renderFullPage({ theme, page }, {
-  stylesheets: ['/styles.css'],
-  // Inline site-tokens CSS so site-level --rf-* overrides resolve last.
-  headExtra: siteTokensCss ? `<style>${siteTokensCss}</style>` : '',
+const loader = createRefraktLoader({
+  variables: { version: '1.0.0' },
+  security: 'strict',
 });
 ```
 
-Empty string when the site uses the string theme form or declares no overrides — safe to interpolate either way.
+For most static sites neither is needed.
 
-See the [design tokens contract](/docs/themes/css) and the [scoped tint projection](/themes/nord) pages for the full token surface.
+## Minimal setup
 
-## Client-Side Behaviors
-
-Interactive runes (tabs, accordion, datatable, etc.) need client-side JavaScript. The HTML adapter provides an `initPage()` function that dynamically imports `@refrakt-md/behaviors`:
-
-```typescript
-import { initPage } from '@refrakt-md/html/client';
-
-// Initialize behaviors — reads page context from embedded JSON
-const cleanup = initPage(document);
-
-// Call cleanup when navigating away (SPA) or tearing down
-cleanup();
+```
+build.ts            # Loads content, writes build/**/index.html
+client.ts           # Client entry — initializes behaviors
+refrakt.config.json
 ```
 
-`initPage` reads page context from a `<script id="rf-context">` JSON block that `renderFullPage` embeds in the document. It registers web component elements, initializes rune behaviors, and initializes layout behaviors.
-
-{% hint type="note" %}
-`@refrakt-md/behaviors` is an optional peer dependency. If not installed, the page renders correctly but interactive runes (tabs, accordion, etc.) won't have JavaScript enhancement.
-{% /hint %}
-
-## Usage Example
-
-A complete build script that loads content, applies transforms, and writes static HTML:
+{% codegroup labels="build.ts, client.ts" %}
 
 ```typescript
 import { createRefraktLoader } from '@refrakt-md/content';
-import { renderFullPage } from '@refrakt-md/html';
+import { renderFullPage, composeSiteTokensCss } from '@refrakt-md/html';
 import type { HtmlTheme } from '@refrakt-md/html';
-import { defaultLayout } from '@refrakt-md/transform';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import * as path from 'node:path';
 import manifest from '@refrakt-md/lumina/manifest';
 import { layouts } from '@refrakt-md/lumina/layouts';
 
-const theme: HtmlTheme = { manifest, layouts: { default: defaultLayout } };
-const loader = createRefraktLoader();
+const theme: HtmlTheme = { manifest, layouts };
+const configPath = path.resolve('refrakt.config.json');
+const { site: siteConfig } = resolveSite(loadRefraktConfig(configPath));
+const loader = createRefraktLoader({ configPath });
+
+/** Convert Markdoc Tag instances to plain objects before the identity transform. */
+function serialize(node: any): any {
+  if (node == null || typeof node !== 'object') return node;
+  if (Array.isArray(node)) return node.map(serialize);
+  if (node.$$mdtype === 'Tag') {
+    return { $$mdtype: 'Tag', name: node.name, attributes: node.attributes, children: (node.children ?? []).map(serialize) };
+  }
+  return node;
+}
 
 async function build() {
   const [site, transform, hl] = await Promise.all([
@@ -181,7 +75,7 @@ async function build() {
     loader.getTransform(),
     loader.getHighlightTransform(),
   ]);
-
+  const siteTokensCss = await composeSiteTokensCss(siteConfig, path.dirname(configPath));
   const pages = site.pages
     .filter(p => !p.route.draft)
     .map(p => ({ url: p.route.url, title: p.frontmatter.title ?? '', draft: false }));
@@ -189,7 +83,6 @@ async function build() {
   for (const page of site.pages) {
     if (page.route.draft) continue;
 
-    // Serialize → identity transform → highlight
     const renderable = hl(transform(serialize(page.renderable)));
     const regions = Object.fromEntries(
       [...page.layout.regions.entries()].map(([name, r]) => [
@@ -200,36 +93,91 @@ async function build() {
 
     const html = renderFullPage(
       { theme, page: { renderable, regions, title: page.frontmatter.title ?? '', url: page.route.url, pages } },
-      { stylesheets: ['/styles.css'], seo: page.seo }
+      {
+        stylesheets: ['/styles.css'],
+        scripts: ['/client.js'],
+        // Highlight CSS first, then site tokens, so overrides resolve last
+        headExtra: (hl.css ? `<style>${hl.css}</style>` : '') + (siteTokensCss ? `<style>${siteTokensCss}</style>` : ''),
+        seo: page.seo,
+        siteName: siteConfig.siteName,
+        baseUrl: siteConfig.baseUrl,
+        defaultImage: siteConfig.defaultImage,
+        logo: siteConfig.logo,
+        tintCascade: page.tintCascade,
+      }
     );
 
     const filePath = page.route.url === '/'
       ? 'build/index.html'
       : path.join('build', page.route.url.slice(1), 'index.html');
-
     mkdirSync(path.dirname(filePath), { recursive: true });
     writeFileSync(filePath, html);
   }
 }
 
-function serialize(node: any): any {
-  if (node == null || typeof node !== 'object') return node;
-  if (Array.isArray(node)) return node.map(serialize);
-  if (node.$$mdtype === 'Tag') {
-    return { $$mdtype: 'Tag', name: node.name, attributes: node.attributes, children: (node.children ?? []).map(serialize) };
-  }
-  return node;
-}
-
 build();
 ```
 
-## Dependencies
+```typescript
+import { initPage } from '@refrakt-md/html/client';
 
-The HTML adapter has minimal dependencies:
+initPage();
+```
 
-| Package | Required | Purpose |
-|---------|----------|---------|
-| `@refrakt-md/transform` | Yes | Identity transform engine, layout transform, `renderToHtml` |
-| `@refrakt-md/types` | Yes | Shared TypeScript interfaces |
-| `@refrakt-md/behaviors` | Optional | Client-side progressive enhancement for interactive runes |
+{% /codegroup %}
+
+The build also has to put the theme CSS at `/styles.css` (copy the theme package's `index.css`, or only the used rune files — see below) and bundle `client.ts` to `build/client.js`, for example with esbuild (`bundle: true, format: 'iife', platform: 'browser'`). The scaffolded `build.ts` does both.
+
+## Core API
+
+### `renderPage(input)`
+
+Renders a page to an HTML fragment: selects the layout from `routeRules`, applies the layout transform and the HTML-specific tree transforms (table wrapping), and serializes. No `<!DOCTYPE>` or `<head>`. Use it when your own template supplies the document shell.
+
+```typescript
+import { renderPage } from '@refrakt-md/html';
+
+const html = renderPage({ theme, page });
+```
+
+### `renderFullPage(input, options?)`
+
+Renders a complete document: `<!DOCTYPE>`, a `<head>` with title, meta, Open Graph, JSON-LD, and stylesheets, the no-flash theme attributes and pre-paint script, the page body, the `#rf-context` data block, and script tags.
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `stylesheets` | `string[]` | Stylesheet URLs for `<link>` tags in `<head>` |
+| `scripts` | `string[]` | Script URLs loaded before `</body>` |
+| `headExtra` | `string` | Extra HTML for `<head>` (use it to inline highlight and site-tokens CSS) |
+| `bodyExtra` | `string` | Extra HTML before `</body>` |
+| `lang` | `string` | `<html lang>` (default `"en"`) |
+| `seo` | `PageSeo` | The page's SEO data (`page.seo`) |
+| `baseUrl`, `siteName`, `defaultImage`, `logo` | `string` | The [site-level SEO fields](/docs/adapters/adapters-overview#seo-and-structured-data) |
+| `tintCascade` | `ResolvedTintCascade` | The page's tint cascade (`page.tintCascade`), for the no-flash `<html>` tint attributes and `color-scheme` meta |
+| `locale` | `LocaleContext` | Locale strings for client behaviors; omit for English |
+
+### `composeSiteTokensCss(site, configDir)`
+
+Composes the [site-level token overrides](/docs/adapters/adapters-overview#site-level-token-overrides) into one CSS string — empty when there are none. Re-exported from `@refrakt-md/transform/node`.
+
+### `computeUsedCssBlocks()` / `buildUsedCssImports()`
+
+The used-rune CSS analysis, re-exported from `@refrakt-md/transform/node`. The scaffolded build uses it to copy only `base.css` and the per-rune files the content needs, falling back to the theme barrel if analysis fails.
+
+### `applyHtmlTransforms(tree)`
+
+The HTML-specific tree transforms `renderPage` applies, exported for custom render paths.
+
+### `initPage(container?)`
+
+From `@refrakt-md/html/client`. Reads the `#rf-context` block that `renderFullPage` embeds, then registers the custom elements and initializes rune and layout behaviors. It dynamically imports `@refrakt-md/behaviors` and resolves to a cleanup function — call it before swapping the DOM if you add SPA-style navigation.
+
+## Shared setup
+
+These work the same way for every adapter; see the overview:
+
+- [CSS](/docs/adapters/adapters-overview#css) — copied into the build and linked via `stylesheets`
+- [Site-level token overrides](/docs/adapters/adapters-overview#site-level-token-overrides) — `composeSiteTokensCss()`, inlined via `headExtra`
+- [Behaviors](/docs/adapters/adapters-overview#behaviors) — `initPage()`
+- [SEO and structured data](/docs/adapters/adapters-overview#seo-and-structured-data) — `renderFullPage` options
+- [Dependencies](/docs/adapters/adapters-overview#dependencies)

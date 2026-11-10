@@ -71,7 +71,7 @@ A multi-value field such as `tags` gives one group per tag, and an item tagged `
 
 Each entity is shown the same way, whatever its type:
 
-- **Cards** (the default): the identifier on the left of the top line, a coloured status badge on the right, and the title below. When the backlog mixes types and isn't grouped by type, a small type label sits beside the identifier.
+- **Cards** (the default): the identifier on the left of the top line, a colored status badge on the right, and the title below. When the backlog mixes types and isn't grouped by type, a small type label sits beside the identifier.
 - **Table**: Identifier, Type, Status and Title columns.
 
 A backlog of one type also shows that type's key field: priority for work items, severity for bugs. For anything richer, write your own [`collection`](/runes/collection) body. With `group`, items are gathered under a heading per group value.

@@ -150,7 +150,7 @@ Examples:
   npx create-refrakt my-theme --type theme --scope @my-org
   npx create-refrakt my-plugin --type plugin --scope @my-org
   npx create-refrakt my-presets --type preset-pack
-  npx create-refrakt my-docs --framework svelte --template docs-starter
+  npx create-refrakt my-docs --framework sveltekit --template docs-starter
   npx create-refrakt my-template --type template --scope @my-org
   npx create-refrakt my-plan --type plan
   npx create-refrakt my-plan --type plan --target sveltekit
@@ -386,7 +386,7 @@ Done! Your refrakt.md site-template package is ready.
 
 Edit template.json + content/, then publish. Consume it with:
 
-  npx create-refrakt my-site --framework svelte --template ${scope ? `${scope}/${projectName}` : projectName}
+  npx create-refrakt my-site --framework sveltekit --template ${scope ? `${scope}/${projectName}` : projectName}
 `);
 	} else if (type === 'plan') {
 		if (targetExplicit) {

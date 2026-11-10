@@ -21,7 +21,7 @@ Every plan entity — specs, work items, bugs, decisions, milestones — is a `.
 ### New standalone project
 
 ```shell
-npm create refrakt my-plan --type plan
+npx create-refrakt my-plan --type plan
 cd my-plan
 npm install
 ```

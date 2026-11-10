@@ -160,7 +160,7 @@ Add `layout="chart"` and the grouped counts render as a chart instead of a body 
 - Add a **`value`** sub-filter to chart a second series (the achieved count per group) beside the totals.
 - An empty query renders the `empty` fallback, never a broken chart.
 
-No body is needed — `aggregate` supplies the data table. Chart appearance (palette, geometry, sentiment colouring) comes from the chart rune's `--rf-chart-*` theming contract.
+No body is needed — `aggregate` supplies the data table. Chart appearance (palette, geometry, sentiment coloring) comes from the chart rune's `--rf-chart-*` theming contract.
 
 ## Empty state
 

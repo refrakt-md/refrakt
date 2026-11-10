@@ -17,7 +17,7 @@ Every block rune exposes one or two decorable **surfaces**, and a small, univers
 | `reading` | text | how the body text reads — UI text vs long-form prose |
 | `frame` / `frame-*` | media | present the media — aspect, crop, silhouette shadow, displacement |
 | `substrate` / `substrate-*` | self (default) | a generated pattern (dots, grid, …) |
-| `tint` | colour | recolour the surface (see [tint](/runes/tint)) |
+| `tint` | color | recolor the surface (see [tint](/runes/tint)) |
 | `bg` | image | an image/video layer behind content (see [bg](/runes/bg)) |
 
 **Universal, but not unconditional.** Some of these axes need something to act on: `prominence` needs a rune with a section header, `reading` and `dropcap` need one whose body holds **prose** (a `datatable`'s main region is a table, so neither applies there), the `frame-*` facets need a media surface. A rune that has none of those never honoured the attribute — `{% grid reading="prose" %}` did nothing at all. Since 0.32.0 the rune's schema says so, so writing one where it cannot apply is a build error (`Invalid attribute: 'reading'`) rather than silence. Nothing about *what renders* changed; only whether you are told.
@@ -27,7 +27,7 @@ To see what a given rune accepts, run [`refrakt reference <rune>`](/docs/cli/ref
 The page walks the model along its four editorial axes:
 
 - **Chrome** — the depth, header weight, and framing that shape a surface.
-- **Fills** — the colour, pattern, and gradient layers that paint it.
+- **Fills** — the color, pattern, and gradient layers that paint it.
 - **Cover** — the poster layout, where content overlays the media.
 - **Posture** — how a clickable surface treats the guests inside it.
 
@@ -250,9 +250,9 @@ The invention of the printing press revolutionised the spread of information…
 {% /textblock %}
 ```
 
-## Fills — colour, pattern, gradient
+## Fills — color, pattern, gradient
 
-Three fill layers paint the surface itself. **`tint`** recolours a rune to a named palette — the whole surface, border, and text shift together (and `tint-mode` can pin the scheme):
+Three fill layers paint the surface itself. **`tint`** recolors a rune to a named palette — the whole surface, border, and text shift together (and `tint-mode` can pin the scheme):
 
 {% preview source=true %}
 
@@ -277,7 +277,7 @@ Three fill layers paint the surface itself. **`tint`** recolours a rune to a nam
 | `substrate-opacity` | `sm\|md\|lg` | ink strength |
 | `substrate-fill` | `inherit` (default) / `inset` | sit on the surface, or the recessed inset fill |
 
-A substrate fills the rune's **self** surface by default — a banner pattern covers the whole banner. Opt into the media well with `substrate-target="media"`. `substrate-fill="inset"` lays it over a slightly recessed fill that still tracks the surface colour:
+A substrate fills the rune's **self** surface by default — a banner pattern covers the whole banner. Opt into the media well with `substrate-target="media"`. `substrate-fill="inset"` lays it over a slightly recessed fill that still tracks the surface color:
 
 {% preview source=true %}
 
@@ -308,13 +308,13 @@ A substrate fills the rune's **self** surface by default — a banner pattern co
 
 {% /preview %}
 
-**Gradient fills** are token-driven — `from`/`to` take semantic colour names that resolve to `var(--rf-color-*)`, so the gradient tracks the theme. A gradient-only card needs an intrinsic `height` to show:
+**Gradient fills** are token-driven — `from`/`to` take semantic color names that resolve to `var(--rf-color-*)`, so the gradient tracks the theme. A gradient-only card needs an intrinsic `height` to show:
 
 {% preview source=true %}
 
 	{% card height="md" bg-gradient="to-br" bg-from="primary" bg-to="info" %}
 	### Gradient fill
-	A two-stop linear gradient from token colours — no image needed.
+	A two-stop linear gradient from token colors — no image needed.
 	{% /card %}
 
 	{% card height="md" bg-gradient="to-t" bg-from="surface" bg-via="primary" bg-to="info" bg-gradient-type="radial" %}
@@ -413,7 +413,7 @@ Every dial here composes with a *media guest*, not just an image — a `codegrou
 
 ## See also
 
-- [tint](/runes/tint) · [bg](/runes/bg) — the colour and image/gradient fill layers.
+- [tint](/runes/tint) · [bg](/runes/bg) — the color and image/gradient fill layers.
 - [card → cover mode](/runes/card#cover-mode) and [recipe → cover mode](/runes/learning/recipe#cover-mode) — the poster layouts.
 - [media-guest interaction posture](/extend/rune-authoring/composability#media-guest-interaction-posture) — the demotion contract.
 - [Surface model](/extend/theme-authoring/surfaces) — the theme-side configuration: `frame`/`bg` preset registries, `frameTarget`/`substrateTarget` routing, the inset token, host-owned clip, and the substrate ownership split.

@@ -84,7 +84,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Gruvbox gives **4 of 7** extended syntax roles distinct colours in dark mode: `type` (Green) ≠ `function` (Yellow), `regex` (Orange) ≠ `string` (Green), `operator` (Orange), `attribute` (Blue) ≠ `function`. `number` collapses with `constant` (both purple) — Gruvbox's intent.
+Gruvbox gives **4 of 7** extended syntax roles distinct colors in dark mode: `type` (Green) ≠ `function` (Yellow), `regex` (Orange) ≠ `string` (Green), `operator` (Orange), `attribute` (Blue) ≠ `function`. `number` collapses with `constant` (both purple) — Gruvbox's intent.
 
 ## Composing with tideline
 
@@ -102,7 +102,7 @@ Gruvbox gives **4 of 7** extended syntax roles distinct colours in dark mode: `t
 }
 ```
 
-Tideline's Plex Sans + Plex Mono pairs surprisingly well with Gruvbox's warm palette — the humanist letterforms feel more at home on cream-coloured paper than on cool surfaces.
+Tideline's Plex Sans + Plex Mono pairs surprisingly well with Gruvbox's warm palette — the humanist letterforms feel more at home on cream-colored paper than on cool surfaces.
 
 ## Other contrast levels
 

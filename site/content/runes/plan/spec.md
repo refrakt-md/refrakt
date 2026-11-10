@@ -20,15 +20,15 @@ A spec in accepted status with a version number and scope summary.
 	{% spec id="SPEC-9008" status="accepted" version="1.2" tags="tint,theming" %}
 	# Tint Rune
 
-	Section-level colour context override via CSS custom properties.
+	Section-level color context override via CSS custom properties.
 
 	## Problem
 
-	A page has a single colour context. Some sections need a different palette — a dark hero, a branded callout, a seasonal promotion. Currently there is no way to override colour tokens within a section scope.
+	A page has a single color context. Some sections need a different palette — a dark hero, a branded callout, a seasonal promotion. Currently there is no way to override color tokens within a section scope.
 
 	## Solution
 
-	`tint` sets the colours of the rune it is placed in. An author names one of the theme's tints, or gives colours inline, and everything inside the rune uses them.
+	`tint` sets the colors of the rune it is placed in. An author names one of the theme's tints, or gives colors inline, and everything inside the rune uses them.
 	{% /spec %}
 
 {% /preview %}

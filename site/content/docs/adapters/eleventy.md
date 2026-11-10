@@ -1,116 +1,89 @@
 ---
 title: Eleventy Adapter
-description: Using refrakt.md with Eleventy v3 — the simplest adapter, no bundler required
+description: Using refrakt.md with Eleventy v3 — no bundler required
 ---
 
 # Eleventy Adapter
 
-The Eleventy adapter (`@refrakt-md/eleventy`) integrates refrakt.md with [Eleventy (11ty) v3](https://www.11ty.dev/). It is the simplest adapter — no Vite, no bundler, just Eleventy's template engine and data cascade. Content is loaded at build time, transformed to HTML strings, and injected into Nunjucks (or Liquid) templates.
+The Eleventy adapter (`@refrakt-md/eleventy`) integrates refrakt.md with [Eleventy (11ty) v3](https://www.11ty.dev/). There is no Vite and no bundler: a global data file loads the content at build time and renders every page to an HTML string, pagination turns that data into one output page per content page, and a Nunjucks (or Liquid) template writes the HTML. It sits between the HTML adapter (a raw API) and SvelteKit (a full application framework) in complexity.
 
 ## Installation
 
 ```shell
-npm install @refrakt-md/eleventy @refrakt-md/content @refrakt-md/runes @refrakt-md/transform @refrakt-md/types @refrakt-md/lumina @markdoc/markdoc
+npx create-refrakt my-site --target eleventy
 ```
+
+Or add it to an existing Eleventy project, alongside the [core packages](/docs/adapters/adapters-overview#dependencies):
+
+```shell
+npm install @refrakt-md/eleventy
+```
+
+Peer dependency: `@11ty/eleventy` 3. Eleventy 3 is ESM-native, and the adapter, data files, and config all use `import`/`export` — set `"type": "module"` in `package.json`.
 
 ## Configuration
 
-Set `target` to `"eleventy"` in `refrakt.config.json`:
-
-```json
-{
-  "contentDir": "./content",
-  "theme": "@refrakt-md/lumina",
-  "target": "eleventy",
-  "routeRules": [
-    { "pattern": "**", "layout": "default" }
-  ]
-}
-```
-
-## EleventyTheme Interface
-
-Like the HTML adapter, the Eleventy adapter uses a theme interface with no component registry — all runes render through the identity transform and `renderToHtml()`:
-
-```typescript
-interface EleventyTheme {
-  manifest: ThemeManifest;
-  layouts: Record<string, LayoutConfig>;
-}
-```
-
-Interactive runes get their behavior from `@refrakt-md/behaviors` via client-side initialization in the template.
-
-## Project Structure
-
-A typical Eleventy + refrakt project looks like this:
-
-```
-my-site/
-├── content/                # Markdoc content (separate from Eleventy templates)
-│   ├── index.md
-│   └── docs/
-│       └── getting-started.md
-├── _data/
-│   └── refrakt.js          # Global data file — loads and transforms content
-├── _includes/
-│   └── base.njk            # Base Nunjucks template
-├── pages.njk               # Pagination template — one page per content item
-├── eleventy.config.js      # Eleventy configuration
-├── refrakt.config.json     # refrakt configuration
-└── package.json
-```
-
-{% hint type="note" %}
-Keep the content directory separate from Eleventy's template input directory. Eleventy should not try to process `.md` files in `content/` as its own Markdown — refrakt handles all Markdown processing through Markdoc.
-{% /hint %}
-
-## Plugin Setup
-
-Register the refrakt plugin in your Eleventy configuration file. The plugin configures passthrough file copy for theme CSS:
+Register the plugin in `eleventy.config.js`. It passthrough-copies the theme CSS and the behaviors bundle and watches the content directory under `--serve`:
 
 {% codegroup labels="eleventy.config.js" %}
 
 ```javascript
-import { refraktPlugin } from '@refrakt-md/eleventy';
+import { refraktPlugin, writeSiteTokensCss } from '@refrakt-md/eleventy';
+import { resolve } from 'node:path';
+
+// Compose the site-level token overrides once, at config-load time
+await writeSiteTokensCss(resolve('refrakt.config.json'), resolve('src/_generated/site-tokens.css'));
 
 export default function (eleventyConfig) {
   eleventyConfig.addPlugin(refraktPlugin, {
     cssFiles: ['node_modules/@refrakt-md/lumina/index.css'],
-    cssPrefix: '/css',
+    contentDir: resolve('content'),
   });
 
-  // Ignore the content directory — refrakt processes it, not Eleventy
-  eleventyConfig.ignores.add('content/**');
+  eleventyConfig.addPassthroughCopy({
+    // The theme barrel @imports these relative to itself
+    'node_modules/@refrakt-md/lumina/tokens': '/css/tokens',
+    'node_modules/@refrakt-md/lumina/styles': '/css/styles',
+    'node_modules/@refrakt-md/behaviors/dist/index.js': '/js/behaviors.js',
+    'src/_generated/site-tokens.css': '/css/site-tokens.css',
+  });
 
   return {
-    dir: {
-      input: '.',
-      includes: '_includes',
-      data: '_data',
-      output: '_site',
-    },
+    dir: { input: 'src', output: '_site', includes: '_includes', data: '_data' },
   };
 }
 ```
 
 {% /codegroup %}
 
-### RefraktEleventyOptions
-
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `configPath` | `string` | `'./refrakt.config.json'` | Path to the refrakt config file |
-| `cssFiles` | `string[]` | — | CSS file paths to passthrough copy (typically from `node_modules`) |
-| `cssPrefix` | `string` | `'/css'` | URL prefix for copied CSS files in the output |
-| `behaviorFile` | `string` | — | Path to the behaviors JS bundle for passthrough copy |
-| `jsPrefix` | `string` | `'/js'` | URL prefix for copied JS files in the output |
+| `configPath` | `string` | `'./refrakt.config.json'` | Path to the refrakt config |
+| `site` | `string` | — | Which site to use from a multi-site config |
+| `cssFiles` | `string[]` | — | CSS files to passthrough-copy (typically from `node_modules`) |
+| `cssPrefix` | `string` | `'/css'` | Output location for the copied CSS |
+| `behaviorFile` | `string` | — | The behaviors bundle to passthrough-copy |
+| `jsPrefix` | `string` | `'/js'` | Output location for the copied bundle |
+| `contentDir` | `string` | — | Content directory to watch under `eleventy --serve` |
+| `examplesDir` | `string` | — | Sandbox examples directory to watch |
 
-## Global Data File
+Keep the content directory outside Eleventy's input directory (or add it to `eleventyConfig.ignores`), so Eleventy does not process refrakt's `.md` files as its own Markdown. Content edits under `--serve` trigger a full rebuild rather than HMR, typically visible in a second or two.
 
-The `createDataFile` function produces an Eleventy [global data file](https://www.11ty.dev/docs/data-global/) that loads all refrakt content, applies the identity and layout transforms, and returns an array of page objects with pre-rendered HTML.
+To copy only the per-rune CSS your content uses instead of the whole theme, pass `getUsedCssCopyMap()` (a passthrough map for the used rune blocks) to `addPassthroughCopy()`, and generate one `<link>` per block from `getUsedCssImports()`.
 
-Create `_data/refrakt.js`. Read the site config so the four SEO-enrichment fields (`siteName`, `baseUrl`, `defaultImage`, `logo`) flow into every page's pre-built meta tags:
+## Minimal setup
+
+```
+content/                 # Markdoc content, outside Eleventy's input
+src/
+├── _data/refrakt.js     # Global data file — loads and renders content
+├── _includes/base.njk   # Base template
+└── pages.njk            # Pagination — one page per content item
+eleventy.config.js
+refrakt.config.json
+```
+
+{% codegroup labels="src/_data/refrakt.js, src/pages.njk, src/_includes/base.njk" %}
 
 ```javascript
 import { createDataFile } from '@refrakt-md/eleventy';
@@ -119,8 +92,7 @@ import manifest from '@refrakt-md/lumina/manifest';
 import { layouts } from '@refrakt-md/lumina/layouts';
 import { resolve } from 'node:path';
 
-const config = loadRefraktConfig(resolve('refrakt.config.json'));
-const { site } = resolveSite(config);
+const { site } = resolveSite(loadRefraktConfig(resolve('refrakt.config.json')));
 
 export default createDataFile({
   theme: { manifest, layouts },
@@ -134,45 +106,18 @@ export default createDataFile({
 });
 ```
 
-### createDataFile Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `theme` | `EleventyTheme` | — | Theme definition (required) |
-| `contentDir` | `string` | `'./content'` | Path to the content directory |
-| `basePath` | `string` | `'/'` | Base URL path for all generated pages |
-| `plugins` | `Plugin[]` | — | Plugins to include in the content pipeline |
-| `seo` | `SeoToHtmlOptions` | — | Site-level SEO fields (`siteName`, `baseUrl`, `defaultImage`, `logo`) threaded into every page's emitted meta tags. Surfaces og:site_name, absolute canonical URLs, image fallback, and WebSite + Organization JSON-LD entries when supplied. |
-| `security` | `SecurityPolicy` | `'trusted'` | Security policy for untrusted author content. Pass `'strict'` to sanitise scripts in author markdown for hosted-product use. |
-| `variables` | `Record<string, unknown>` | — | Markdoc variables available in content via `{% $name %}` syntax. Real JavaScript values, not source-text expressions. |
-
-### EleventyPageData
-
-Each item in the returned array has this shape:
-
-```typescript
-interface EleventyPageData {
-  url: string;                    // e.g. '/docs/getting-started/'
-  title: string;                  // Page title from frontmatter
-  html: string;                   // Pre-rendered HTML (identity + layout transform)
-  seo: {
-    title: string;                // Resolved page title
-    description: string;          // Meta description
-    metaTags: string;             // Pre-built <meta> tags (OG, Twitter)
-    jsonLd: string;               // Pre-built <script type="application/ld+json"> tags
-  };
-  frontmatter: Record<string, unknown>;
-  contextJson: string;            // Pre-serialized JSON for #rf-context (pages + currentUrl)
-  hasInteractiveRunes: boolean;   // Whether this page needs behavior JS
-}
+```jinja
+---
+layout: base.njk
+pagination:
+  data: refrakt
+  size: 1
+  alias: page
+permalink: "{{ page.url }}{% if not page.url.endsWith('/') %}/{% endif %}"
+---
 ```
 
-## Base Template
-
-Use a Nunjucks template that outputs the pre-rendered HTML with the `| safe` filter (to prevent HTML escaping):
-
 ```jinja
-{# _includes/base.njk #}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -182,6 +127,7 @@ Use a Nunjucks template that outputs the pre-rendered HTML with the `| safe` fil
   {{ page.seo.metaTags | safe }}
   {{ page.seo.jsonLd | safe }}
   <link rel="stylesheet" href="/css/index.css">
+  <link rel="stylesheet" href="/css/site-tokens.css">
 </head>
 <body>
   {{ page.html | safe }}
@@ -207,159 +153,52 @@ Use a Nunjucks template that outputs the pre-rendered HTML with the `| safe` fil
 </html>
 ```
 
-The `contextJson` field contains the pre-serialized pages list and current URL. The `#rf-context` script element makes this data available to behaviors like navigation, search, and version-switcher. The behavior script is conditionally included based on `hasInteractiveRunes` — pages with only static runes ship zero JavaScript.
+{% /codegroup %}
 
-{% hint type="warning" %}
-Always use `| safe` when outputting `page.html`, `page.seo.metaTags`, `page.seo.jsonLd`, and `page.contextJson`. Without it, Nunjucks escapes the HTML entities and the output renders as visible markup instead of formatted content.
-{% /hint %}
+Eleventy iterates over the `refrakt` data array and writes each item to `<url>/index.html`. Always use `| safe` on `page.html`, `page.seo.metaTags`, `page.seo.jsonLd`, and `page.contextJson`; without it Nunjucks escapes the HTML and the page shows raw markup. The behavior script is included only where `page.hasInteractiveRunes` is true, so static pages ship no JavaScript. A reference template ships in the package at `@refrakt-md/eleventy/templates/base.njk`.
 
-A reference template is included in the package at `@refrakt-md/eleventy/templates/base.njk`.
+## createDataFile
 
-## Pagination
+`createDataFile()` returns an Eleventy [global data](https://www.11ty.dev/docs/data-global/) function that loads all content, renders each page through its layout, and returns one object per page.
 
-Use Eleventy's [pagination](https://www.11ty.dev/docs/pagination/) to generate one HTML page per content item from the global data:
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `theme` | `EleventyTheme` | — | `{ manifest, layouts }` (required) |
+| `contentDir` | `string` | `'./content'` | The content directory |
+| `basePath` | `string` | `'/'` | Base URL path for all pages |
+| `plugins` | `Plugin[]` | — | Loaded plugin objects to run in the content pipeline |
+| `seo` | `SeoToHtmlOptions` | — | The site-level SEO fields (`siteName`, `baseUrl`, `defaultImage`, `logo`), applied to every page's tags |
+| `security` | `SecurityPolicy` | `'trusted'` | Policy for untrusted author content; `'strict'` sanitizes author scripts |
+| `variables` | `Record<string, unknown>` | — | Markdoc variables for `{% $name %}` (real values) |
+| `search` | `boolean` | `true` | `false` strips the search chrome |
 
-```jinja
----js
-{
-  pagination: {
-    data: "refrakt",
-    size: 1,
-    alias: "page"
-  },
-  permalink: "{{ page.url }}",
-  layout: "base.njk"
-}
----
-```
-
-Save this as `pages.njk` at the root of your input directory. Eleventy iterates over the `refrakt` data array and generates a page for each item, using the `url` from the content as the output permalink.
-
-## CSS Setup
-
-Theme CSS needs to be copied into the output directory. The plugin's `cssFiles` option handles this via Eleventy's passthrough file copy:
-
-```javascript
-eleventyConfig.addPlugin(refraktPlugin, {
-  cssFiles: ['node_modules/@refrakt-md/lumina/index.css'],
-  cssPrefix: '/css',
-});
-```
-
-This copies `index.css` to `_site/css/index.css`. Reference it in your template with:
-
-```html
-<link rel="stylesheet" href="/css/index.css">
-```
-
-For plugin CSS, add their stylesheets to the `cssFiles` array:
-
-```javascript
-cssFiles: [
-  'node_modules/@refrakt-md/lumina/index.css',
-  'node_modules/@refrakt-md/marketing/styles/index.css',
-],
-```
-
-## Site-level token overrides
-
-Any `theme.tokens`, `theme.modes`, `theme.presets`, or `site.tints` you declare in `refrakt.config.json` becomes a `:root { --rf-* }` stylesheet via the `writeSiteTokensCss` helper. Eleventy doesn't run on Vite, so there's no virtual module — you generate the file at config-load time and passthrough-copy it like any other static asset:
-
-```javascript
-import { refraktPlugin, writeSiteTokensCss } from '@refrakt-md/eleventy';
-import { resolve } from 'node:path';
-
-// Compose site-tokens CSS once at config-load time.
-await writeSiteTokensCss(
-  resolve('refrakt.config.json'),
-  resolve('src/_generated/site-tokens.css'),
-);
-
-export default function (eleventyConfig) {
-  eleventyConfig.addPlugin(refraktPlugin, {
-    cssFiles: ['node_modules/@refrakt-md/lumina/index.css'],
-    cssPrefix: '/css',
-  });
-
-  eleventyConfig.addPassthroughCopy({
-    'src/_generated/site-tokens.css': '/css/site-tokens.css',
-  });
-
-  return { /* ... */ };
-}
-```
-
-Reference the generated stylesheet in your base template *after* the theme barrel CSS so site-level `--rf-*` overrides resolve last:
-
-```html
-<link rel="stylesheet" href="/css/index.css">
-<link rel="stylesheet" href="/css/site-tokens.css">
-```
-
-Empty config (no overrides) still produces a (zero-byte) file, so the `<link>` never 404s. See the [design tokens contract](/docs/themes/css) and the [scoped tint projection](/themes/nord) pages for the full token surface.
-
-## Behavior Initialization
-
-Interactive runes (tabs, accordion, datatable, etc.) need client-side JavaScript from `@refrakt-md/behaviors`. Use the plugin's `behaviorFile` option to copy the behaviors bundle to your output:
-
-```javascript
-eleventyConfig.addPlugin(refraktPlugin, {
-  cssFiles: ['node_modules/@refrakt-md/lumina/index.css'],
-  behaviorFile: 'node_modules/@refrakt-md/behaviors/dist/index.js',
-  jsPrefix: '/js',
-});
-```
-
-Or use Eleventy's passthrough copy directly:
-
-```javascript
-eleventyConfig.addPassthroughCopy({
-  'node_modules/@refrakt-md/behaviors/dist/index.js': 'js/behaviors.js',
-});
-```
-
-### hasInteractiveRunes
-
-The `hasInteractiveRunes()` utility checks whether a rendered tree contains runes that need client-side behavior initialization. Each `EleventyPageData` item includes a pre-computed `hasInteractiveRunes` boolean, which the base template uses to conditionally include the behavior script — pages with only static runes ship zero JavaScript.
-
-You can also use `hasInteractiveRunes` directly in custom templates or build scripts:
+Each item has this shape:
 
 ```typescript
-import { hasInteractiveRunes } from '@refrakt-md/eleventy';
-
-if (hasInteractiveRunes(page.renderable)) {
-  // Include behavior script
+interface EleventyPageData {
+  url: string;                    // e.g. '/docs/getting-started'
+  title: string;                  // Page title from frontmatter
+  html: string;                   // Pre-rendered page HTML, layout included
+  seo: {
+    title: string;                // Resolved page title
+    description: string;          // Meta description
+    metaTags: string;             // Pre-built <meta>/<link> tags (OG, Twitter, canonical)
+    jsonLd: string;               // Pre-built <script type="application/ld+json"> tags
+  };
+  frontmatter: Record<string, unknown>;
+  contextJson: string;            // Serialized { pages, currentUrl } for #rf-context
+  hasInteractiveRunes: boolean;   // Whether the page needs the behaviors script
 }
 ```
 
-{% hint type="note" %}
-`@refrakt-md/behaviors` is optional. Without it, the page renders correctly but interactive runes will not have JavaScript enhancement.
-{% /hint %}
+`hasInteractiveRunes()` is also exported for custom templates or build scripts that work with a rendered tree directly.
 
-## ESM Compatibility
+## Shared setup
 
-Eleventy 3.0 is ESM-native. The `@refrakt-md/eleventy` package, data files, and configuration files all use ES module syntax (`import`/`export`). Ensure your `package.json` has `"type": "module"`.
+These work the same way for every adapter; see the overview:
 
-## Differences from Other Adapters
-
-| Feature | Eleventy | SvelteKit | HTML |
-|---------|----------|-----------|------|
-| Build tool | Eleventy CLI | Vite | Custom script |
-| Template language | Nunjucks/Liquid | Svelte | None (API) |
-| Dev server | `--serve` (live reload) | `vite dev` (HMR) | Manual |
-| Component overrides | No | Yes (Svelte) | No |
-| Data loading | Global data file | Vite plugin + virtual modules | Direct API call |
-| Output | Static HTML | SSR + SPA | Static HTML |
-| Client routing | No (full page loads) | Yes (SvelteKit router) | No |
-
-The Eleventy adapter sits between the HTML adapter and the SvelteKit adapter in complexity. It provides Eleventy's template system and data cascade without requiring a bundler, while the HTML adapter gives you a raw API and the SvelteKit adapter gives you a full application framework.
-
-## Dependencies
-
-| Package | Required | Purpose |
-|---------|----------|---------|
-| `@refrakt-md/content` | Yes | Content loading, routing, layout cascade, cross-page pipeline |
-| `@refrakt-md/transform` | Yes | Identity transform engine, layout transform, `renderToHtml` |
-| `@refrakt-md/behaviors` | Yes | Client-side progressive enhancement + `hasInteractiveRunes` detection |
-| `@refrakt-md/types` | Yes | Shared TypeScript interfaces |
-| `@11ty/eleventy` | Peer | Eleventy v3 (ESM) |
+- [CSS](/docs/adapters/adapters-overview#css) — passthrough-copied, linked from the template
+- [Site-level token overrides](/docs/adapters/adapters-overview#site-level-token-overrides) — `writeSiteTokensCss()`, linked after the theme CSS (an empty config still writes a zero-byte file, so the link never 404s)
+- [Behaviors](/docs/adapters/adapters-overview#behaviors) — the inline module script above
+- [SEO and structured data](/docs/adapters/adapters-overview#seo-and-structured-data) — the `seo` option of `createDataFile()`
+- [Dependencies](/docs/adapters/adapters-overview#dependencies)

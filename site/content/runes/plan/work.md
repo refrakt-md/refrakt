@@ -22,7 +22,7 @@ A work item ready for implementation with acceptance criteria and approach.
 	{% work id="WORK-9142" status="ready" priority="high" complexity="moderate" milestone="v0.5.0" tags="tint,theming" %}
 	# Implement tint rune dark mode support
 
-	The tint rune currently handles single-scheme colour tokens. It needs to support dual light/dark definitions.
+	The tint rune currently handles single-scheme color tokens. It needs to support dual light/dark definitions.
 
 	## Acceptance Criteria
 	- [ ] Tint rune accepts light and dark content sections
@@ -32,7 +32,7 @@ A work item ready for implementation with acceptance criteria and approach.
 	- [ ] Inspector audits contrast ratios for both variants
 
 	## Approach
-	Authors write the light and dark values under their own headings in the tint body. Each set applies in its colour scheme, and a tint with only light values keeps the page's dark colours.
+	Authors write the light and dark values under their own headings in the tint body. Each set applies in its color scheme, and a tint with only light values keeps the page's dark colors.
 	{% /work %}
 
 {% /preview %}

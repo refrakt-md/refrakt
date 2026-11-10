@@ -5,14 +5,14 @@ description: Refrakt's flagship Lumina theme plus the curated lineup of syntax p
 
 # Themes
 
-Refrakt ships with **Lumina**, a complete theme covering chrome (page bg, surfaces, typography, primary, status), code-surface tokens, and syntax highlighting. Lumina is what every new `npm create refrakt` project sees out of the box.
+Refrakt ships with **Lumina**, a complete theme covering chrome (page bg, surfaces, typography, primary, status), code-surface tokens, and syntax highlighting. Lumina is what every new `npx create-refrakt` project sees out of the box.
 
 Layered on top of Lumina are **presets** — named `ThemeTokensConfig` modules that override a scope-eligible subset of the contract. Two kinds:
 
 - **Theme presets** override chrome (typography, body bg, surfaces). They reshape the entire visual identity of a site. Layer one on Lumina via `theme.presets` in `refrakt.config.json`.
 - **Syntax presets** override syntax highlighting (and optionally code-surface canvas + chrome accents). They reshape how code reads, optionally with their own canvas. Two flavours: **scoped** presets like niwaki touch only the foreground; **integrated** presets like Nord ship chrome + canvas + foreground together. Layer alongside or instead of a chrome preset.
 
-Both can be opt-in as the **active** preset for a whole site, or registered as a named **tint** (`theme.tints[].extends`) for inline scoped use on a single section or code block. See [Tint and colour scheme](/docs/concepts/tint) for the scoping mechanics and [Theme authoring](/extend/theme-authoring/overview) if you're building your own.
+Both can be opt-in as the **active** preset for a whole site, or registered as a named **tint** (`theme.tints[].extends`) for inline scoped use on a single section or code block. See [Tint and color scheme](/docs/concepts/tint) for the scoping mechanics and [Theme authoring](/extend/theme-authoring/overview) if you're building your own.
 
 ## Lumina
 

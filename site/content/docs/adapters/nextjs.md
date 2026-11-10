@@ -5,310 +5,141 @@ description: Using refrakt.md with Next.js App Router and React Server Component
 
 # Next.js Adapter
 
-The Next.js adapter (`@refrakt-md/next`) connects refrakt.md to [Next.js](https://nextjs.org) App Router. It renders content as static HTML via React Server Components with zero client-side hydration for content — only interactive rune behaviors load JavaScript.
+The Next.js adapter (`@refrakt-md/next`) connects refrakt.md to the [Next.js](https://nextjs.org) App Router. Content renders to static HTML in a React Server Component and is injected with `dangerouslySetInnerHTML`, so React never hydrates it; only pages with interactive runes load JavaScript, through a small client component.
 
 ## Installation
 
 ```shell
-npm install @refrakt-md/next @refrakt-md/content @refrakt-md/runes @refrakt-md/transform @refrakt-md/highlight @refrakt-md/types @markdoc/markdoc
+npx create-refrakt my-site --target next
 ```
+
+Or add it to an existing Next.js project, alongside the [core packages](/docs/adapters/adapters-overview#dependencies):
+
+```shell
+npm install @refrakt-md/next
+```
+
+Peer dependencies: `next` 14 or 15 and `react` 18 or 19. Node.js 18+.
 
 ## Configuration
 
-Set `target` to `"next"` in `refrakt.config.json`:
+There is no Next.js plugin. Let Next transpile the refrakt packages, and set `output: 'export'` for a static site:
 
-```json
-{
-  "contentDir": "./content",
-  "theme": "@refrakt-md/lumina",
-  "target": "next",
-  "routeRules": [
-    { "pattern": "**", "layout": "default" }
-  ]
-}
+{% codegroup labels="next.config.mjs" %}
+
+```javascript
+/** @type {import('next').NextConfig} */
+export default {
+  output: 'export',
+  transpilePackages: [
+    '@markdoc/markdoc',
+    '@refrakt-md/runes',
+    '@refrakt-md/content',
+    '@refrakt-md/types',
+    '@refrakt-md/next',
+    '@refrakt-md/transform',
+  ],
+};
 ```
 
-## NextTheme Interface
+{% /codegroup %}
 
-The Next.js adapter uses the `NextTheme` interface — structurally identical to `HtmlTheme`:
+Content is loaded with `createRefraktLoader()` from `@refrakt-md/content`, or its typed shorthand `createNextLoader()` from `@refrakt-md/next` (async). Both accept `configPath`, `site`, `variables` (real values for `{% $name %}`), and `security` (`'trusted'` by default, `'strict'` for untrusted content):
 
 ```typescript
-interface NextTheme {
-  manifest: ThemeManifest;
-  layouts: Record<string, LayoutConfig>;
-}
-```
-
-All runes render through the identity transform + CSS. Interactive runes get their behavior from `@refrakt-md/behaviors` via the `BehaviorInit` client component.
-
-## Project Structure
-
-A Next.js refrakt.md site uses a catch-all route in the App Router:
-
-```
-app/
-├── layout.tsx              # Root layout — imports theme CSS
-├── [[...slug]]/
-│   └── page.tsx            # Server Component — loads + renders content
-content/
-├── index.md
-├── docs/
-│   ├── _layout.md
-│   └── getting-started.md
-refrakt.config.json
-```
-
-The `[[...slug]]/page.tsx` is an optional catch-all route that handles both the root `/` path and all nested paths like `/docs/getting-started`.
-
-## Content Loading
-
-Load content using `createRefraktLoader` from `@refrakt-md/content` (or the convenience wrapper `createNextLoader` from `@refrakt-md/next`) in a Server Component. The loader handles config loading, plugin merging, theme assembly, and caching automatically. Use `generateStaticParams` for static export:
-
-```typescript
-// Either the shared loader directly:
-import { createRefraktLoader } from '@refrakt-md/content';
-const loader = createRefraktLoader({
-  variables: { version: '1.0.0' }, // Markdoc {% $version %} interpolation
-  security: 'strict',              // sanitise untrusted author content
-});
-
-// Or the typed Next.js shorthand:
 import { createNextLoader } from '@refrakt-md/next';
 const loader = await createNextLoader({ variables: { version: '1.0.0' } });
 ```
 
-Both accept the same four optional fields: `configPath`, `site`, `variables`, `security`.
+## Minimal setup
 
-{% codegroup labels="app/[[...slug]]/page.tsx" %}
+```
+app/
+├── layout.tsx          # Root layout — theme CSS + site token overrides
+└── [[...slug]]/
+    └── page.tsx        # Server Component — loads and renders content
+refrakt.config.json
+```
+
+`[[...slug]]` is an optional catch-all, so one route handles both `/` and every nested path.
+
+{% codegroup labels="app/[[...slug]]/page.tsx, app/layout.tsx" %}
 
 ```typescript
+import { notFound } from 'next/navigation';
 import { createRefraktLoader } from '@refrakt-md/content';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import manifest from '@refrakt-md/lumina/manifest';
 import { layouts } from '@refrakt-md/lumina/layouts';
-const theme = { manifest, layouts };
 import { RefraktContent, buildUrlFromParams, buildMetadata, hasInteractiveRunes } from '@refrakt-md/next';
 import { BehaviorInit } from '@refrakt-md/next/client';
 import type { PageParams } from '@refrakt-md/next';
 
+const theme = { manifest, layouts };
 const loader = createRefraktLoader();
+const { site: siteConfig } = resolveSite(loadRefraktConfig('refrakt.config.json'));
+const seoSite = {
+  siteName: siteConfig.siteName,
+  baseUrl: siteConfig.baseUrl,
+  defaultImage: siteConfig.defaultImage,
+  logo: siteConfig.logo,
+};
 
 export async function generateStaticParams() {
   const site = await loader.getSite();
   return site.pages
     .filter(p => !p.route.draft)
-    .map(p => ({
-      slug: p.route.url === '/' ? [] : p.route.url.slice(1).split('/'),
-    }));
+    .map(p => ({ slug: p.route.url === '/' ? [] : p.route.url.slice(1).split('/') }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<PageParams> }) {
-  const resolvedParams = await params;
-  const url = buildUrlFromParams(resolvedParams);
+  const url = buildUrlFromParams(await params);
   const site = await loader.getSite();
   const page = site.pages.find(p => p.route.url === url);
   if (!page) return {};
-  return buildMetadata({ title: page.frontmatter.title as string, seo: page.seo });
+  return buildMetadata({ title: page.frontmatter.title as string, frontmatter: page.frontmatter, seo: page.seo, ...seoSite });
 }
 
 export default async function Page({ params }: { params: Promise<PageParams> }) {
-  const resolvedParams = await params;
-  const url = buildUrlFromParams(resolvedParams);
+  const url = buildUrlFromParams(await params);
   const [site, transform, hl] = await Promise.all([
     loader.getSite(),
     loader.getTransform(),
     loader.getHighlightTransform(),
   ]);
   const page = site.pages.find(p => p.route.url === url);
-  if (!page) return notFound();
+  if (!page) notFound();
 
   const renderable = hl(transform(page.renderable));
+  const regions = Object.fromEntries(
+    [...page.layout.regions.entries()].map(([name, r]) => [
+      name,
+      { name: r.name, mode: r.mode, content: r.content.map(c => hl(transform(c))) },
+    ])
+  );
   const pages = site.pages
     .filter(p => !p.route.draft)
     .map(p => ({ url: p.route.url, title: p.frontmatter.title ?? '', draft: false }));
 
-  const pageData = {
-    renderable,
-    title: page.frontmatter.title ?? '',
-    url,
-    pages,
-    regions: {},
-  };
-
   return (
     <>
-      <RefraktContent theme={theme} page={pageData} />
-      {hasInteractiveRunes(renderable) && (
-        <BehaviorInit pages={pages} currentUrl={url} />
-      )}
+      {hl.css && <style dangerouslySetInnerHTML={{ __html: hl.css }} />}
+      <RefraktContent
+        theme={theme}
+        page={{ renderable, regions, title: page.frontmatter.title ?? '', url, pages }}
+      />
+      {hasInteractiveRunes(renderable) && <BehaviorInit pages={pages} currentUrl={url} />}
     </>
   );
 }
 ```
-
-{% /codegroup %}
-
-## RefraktContent Server Component
-
-`RefraktContent` is a React Server Component that renders refrakt content to HTML. It calls `renderPage()` to produce an HTML string, then injects it with `dangerouslySetInnerHTML`:
-
-```typescript
-import { RefraktContent } from '@refrakt-md/next';
-
-// In a Server Component:
-<RefraktContent theme={theme} page={pageData} className="rf-content" />
-```
-
-**Why `dangerouslySetInnerHTML`?** The identity transform produces HTML with BEM classes and `rf-*` custom elements. These are not React components — they are raw HTML that React should pass through untouched. Using `dangerouslySetInnerHTML` means React never tries to reconcile or hydrate the content tree. The HTML is rendered on the server and sent to the browser as-is.
-
-This is the same approach as the HTML adapter, just wrapped in a React component for ergonomics.
-
-### Props
-
-| Prop | Type | Description |
-|------|------|-------------|
-| `theme` | `NextTheme` | Theme manifest and layout configs |
-| `page` | `LayoutPageData` | Page content (renderable tree, regions, title, URL, pages list) |
-| `className` | `string?` | Optional CSS class on the wrapper `<div>` |
-
-## BehaviorInit Client Component
-
-Interactive runes (tabs, accordion, datatable, etc.) need client-side JavaScript. `BehaviorInit` is a `'use client'` component that dynamically imports `@refrakt-md/behaviors` and initializes them:
-
-```typescript
-import { BehaviorInit } from '@refrakt-md/next/client';
-
-<BehaviorInit pages={pages} currentUrl={url} />
-```
-
-**Lifecycle:**
-1. On mount, dynamically imports `@refrakt-md/behaviors`
-2. Sets page context (`RfContext.pages`, `RfContext.currentUrl`)
-3. Registers custom elements (`registerElements()`)
-4. Initializes rune behaviors (`initRuneBehaviors()`) and layout behaviors (`initLayoutBehaviors()`)
-5. On unmount, runs cleanup functions returned by the init calls
-6. On client-side navigation (route change via `usePathname()`), re-runs the full cycle
-
-**The `./client` export** is a separate entry point so the `'use client'` directive only applies to `BehaviorInit`. The main `@refrakt-md/next` entry point stays server-safe — it never imports React client hooks or browser APIs.
-
-### Conditional Loading
-
-Use `hasInteractiveRunes()` to detect whether a page needs behaviors:
-
-```typescript
-import { hasInteractiveRunes } from '@refrakt-md/next';
-
-// Only include BehaviorInit on pages that need it
-{hasInteractiveRunes(renderable) && (
-  <BehaviorInit pages={pages} currentUrl={url} />
-)}
-```
-
-This avoids loading `@refrakt-md/behaviors` on pages that have no interactive runes.
-
-## Metadata Helper
-
-The `buildMetadata()` function transforms refrakt SEO data into a Next.js Metadata object for the App Router. Thread the four site-level fields from `refrakt.config.json` (`siteName`, `baseUrl`, `defaultImage`, `logo`) to enrich the output:
-
-```typescript
-import { buildMetadata, buildJsonLd } from '@refrakt-md/next';
-import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
-
-const { site } = resolveSite(loadRefraktConfig('refrakt.config.json'));
-const seoSite = {
-  siteName: site.siteName,
-  baseUrl: site.baseUrl,
-  defaultImage: site.defaultImage,
-  logo: site.logo,
-};
-
-export async function generateMetadata({ params }) {
-  const page = await loadPage(params.slug);
-  return buildMetadata({
-    title: page.title,
-    frontmatter: page.frontmatter,
-    seo: page.seo,
-    ...seoSite,
-  });
-}
-```
-
-It extracts `title`, `description`, Open Graph tags, Twitter Card metadata, and JSON-LD schemas from the page's SEO data. When site-level fields are supplied, the generated metadata also sets `metadataBase` (so Next.js absolutizes relative URLs natively), `openGraph.siteName`, and an image fallback:
-
-| Field | Source |
-|-------|--------|
-| `metadataBase` | `new URL(baseUrl)` |
-| `title` | `seo.og.title` or `title` |
-| `description` | `seo.og.description` or `frontmatter.description` |
-| `openGraph.title` | `seo.og.title` or `title` |
-| `openGraph.description` | `seo.og.description` or `frontmatter.description` |
-| `openGraph.siteName` | `siteName` |
-| `openGraph.images` | `seo.og.image` or `defaultImage` fallback |
-| `openGraph.url` | `seo.og.url` |
-| `openGraph.type` | `seo.og.type` |
-| `twitter.card` | `summary_large_image` when an image resolves, `summary` otherwise |
-| `twitter.title` | `seo.og.title` or `title` |
-| `twitter.description` | `seo.og.description` or `frontmatter.description` |
-| `twitter.images` | `seo.og.image` or `defaultImage` fallback |
-
-## JSON-LD Structured Data
-
-Use `buildJsonLd()` to extract JSON-LD schemas from page SEO data. Pass the same site-level fields to append synthetic WebSite + Organization entries:
-
-```typescript
-import { buildJsonLd } from '@refrakt-md/next';
-
-const jsonLd = buildJsonLd({
-  title: page.title,
-  frontmatter: page.frontmatter,
-  seo: page.seo,
-  ...seoSite, // siteName + baseUrl + logo from refrakt.config.json
-});
-
-{jsonLd.map((schema, i) => (
-  <script
-    key={i}
-    type="application/ld+json"
-    dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-  />
-))}
-```
-
-When `baseUrl + siteName` are supplied, `buildJsonLd` appends synthetic WebSite + Organization entries to the page-level JSON-LD array, matching the SvelteKit reference adapter's output.
-
-## CSS Injection
-
-Import the theme CSS in your root layout:
-
-{% codegroup labels="app/layout.tsx" %}
-
-```typescript
-import '@refrakt-md/lumina';          // Full theme CSS (index.css)
-import '@refrakt-md/lumina/base.css'; // Or just the base tokens
-
-export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  );
-}
-```
-
-{% /codegroup %}
-
-Next.js automatically processes CSS imports and includes them in the build output.
-
-## Site-level token overrides
-
-Any `theme.tokens`, `theme.modes`, `theme.presets`, or `site.tints` you declare in `refrakt.config.json` is composed into a `:root { --rf-* }` stylesheet via the `getSiteTokensCss` helper. Inline it in your root layout as a `<style />` block — the cleanest path for Next.js's Server Component model:
-
-{% codegroup labels="app/layout.tsx" %}
 
 ```typescript
 import '@refrakt-md/lumina';
 import { getSiteTokensCss } from '@refrakt-md/next';
 import type { ReactNode } from 'react';
 
+// Composed once per server process, not once per request
 const siteTokensCssPromise = getSiteTokensCss();
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
@@ -316,9 +147,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang="en">
       <head>
-        {siteTokensCss && (
-          <style dangerouslySetInnerHTML={{ __html: siteTokensCss }} />
-        )}
+        {siteTokensCss && <style dangerouslySetInnerHTML={{ __html: siteTokensCss }} />}
       </head>
       <body>{children}</body>
     </html>
@@ -328,64 +157,69 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
 {% /codegroup %}
 
-The promise is captured at module-scope so the CSS is composed once per server process, not once per request. The inline `<style>` block ships in `<head>` after the theme CSS so site-level `--rf-*` overrides resolve last in the cascade.
+The root layout imports the theme barrel (`@refrakt-md/lumina`), which Next.js bundles like any CSS import. To import only the CSS your content uses, generate the import list at build time with `getUsedCssImports()` (it returns `base.css` plus one specifier per used rune block). The inline site-tokens `<style>` sits in `<head>` after the theme CSS so your overrides win.
 
-**Alternative — linked stylesheet.** If you prefer a `<link>` over an inline `<style>`, write the result to `public/site-tokens.css` at build time via a `next.config.mjs` hook:
+If you prefer a linked stylesheet, write `await getSiteTokensCss()` to `public/site-tokens.css` from `next.config.mjs` at build time, and add `<link rel="stylesheet" href="/site-tokens.css">` after the theme CSS.
 
-```javascript
-// next.config.mjs
-import { getSiteTokensCss } from '@refrakt-md/next';
-import { writeFileSync } from 'node:fs';
+## RefraktContent
 
-const css = await getSiteTokensCss();
-writeFileSync('./public/site-tokens.css', css);
+`RefraktContent` is a Server Component that calls `renderPage()` (layout selection, layout transform, `renderToHtml()`) and injects the resulting HTML string with `dangerouslySetInnerHTML`.
 
-export default { /* ... */ };
+| Prop | Type | Description |
+|------|------|-------------|
+| `theme` | `NextTheme` | Theme manifest and layout configs (`{ manifest, layouts }`) |
+| `page` | `LayoutPageData` | Renderable tree, regions, title, URL, pages list |
+| `search` | `boolean?` | `false` strips the search chrome |
+| `className` | `string?` | CSS class on the wrapper `<div>` |
+
+**Why `dangerouslySetInnerHTML`?** The identity transform produces HTML with BEM classes and `rf-*` custom elements, not React components. Injecting it means React never reconciles or hydrates the content tree; the server's HTML reaches the browser as-is. There is therefore no component registry in this adapter. For component overrides, render `page.renderable` with the `Renderer` from `@refrakt-md/react` instead.
+
+## BehaviorInit
+
+`BehaviorInit` (from `@refrakt-md/next/client`) is a `'use client'` component that renders nothing. On mount it dynamically imports `@refrakt-md/behaviors`, sets the page context, registers the custom elements, and initializes rune and layout behaviors; on unmount it runs their cleanup. It re-runs the cycle on every App Router navigation (it watches `usePathname()`).
+
+Render it only where `hasInteractiveRunes(renderable)` is true, so pages without interactive runes never load the behaviors bundle.
+
+The `./client` entry is separate so the `'use client'` directive covers only `BehaviorInit`; the main `@refrakt-md/next` entry stays server-safe and never imports React client hooks or browser APIs.
+
+## Metadata and JSON-LD
+
+`buildMetadata()` turns the page's SEO data into a Next.js `Metadata` object. With the site-level fields it also sets `metadataBase` (so Next absolutizes relative URLs itself), `openGraph.siteName`, and the image fallback:
+
+| Field | Source |
+|-------|--------|
+| `metadataBase` | `new URL(baseUrl)` |
+| `title`, `openGraph.title`, `twitter.title` | `seo.og.title` or `title` |
+| `description`, `openGraph.description`, `twitter.description` | `seo.og.description` or `frontmatter.description` |
+| `openGraph.siteName` | `siteName` |
+| `openGraph.images`, `twitter.images` | `seo.og.image` or `defaultImage` |
+| `openGraph.url` / `openGraph.type` | `seo.og.url` / `seo.og.type` |
+| `twitter.card` | `summary_large_image` when an image resolves, `summary` otherwise |
+
+`Metadata` has no JSON-LD field, so render it separately with `buildJsonLd()`, which takes the same input and returns the schema objects (plus WebSite + Organization entries when `baseUrl` is set):
+
+```typescript
+import { buildJsonLd } from '@refrakt-md/next';
+
+{buildJsonLd({ title, frontmatter: page.frontmatter, seo: page.seo, ...seoSite }).map((schema, i) => (
+  <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+))}
 ```
 
-Then add `<link rel="stylesheet" href="/site-tokens.css">` to your layout after the theme CSS import.
+## Custom elements
 
-See the [design tokens contract](/docs/themes/css) and the [scoped tint projection](/themes/nord) pages for the full token surface.
+The identity transform emits custom elements such as `<rf-icon>` and `<rf-nav>`, registered at runtime by `@refrakt-md/behaviors`. Because the HTML is injected rather than rendered as JSX, React's custom-element handling (which differs between React 18 and 19) never applies — no configuration is needed.
 
-## Custom Elements
+## Pages Router
 
-The identity transform produces custom elements like `<rf-icon>`, `<rf-diagram>`, and `<rf-nav>`. These are web components registered by `@refrakt-md/behaviors` at runtime. React passes them through as unknown HTML elements — no special configuration needed.
+`RefraktContent` and `BehaviorInit` are designed for the App Router. With the Pages Router, call `renderPage()` in `getStaticProps` and initialize behaviors yourself.
 
-{% hint type="note" %}
-React 19 has improved custom element support. For React 18 projects, custom element attributes are passed as properties on the DOM node rather than attributes, but this does not affect refrakt.md since the HTML is injected via `dangerouslySetInnerHTML`.
-{% /hint %}
+## Shared setup
 
-## Differences from SvelteKit
+These work the same way for every adapter; see the overview:
 
-| Feature | SvelteKit | Next.js |
-|---------|-----------|---------|
-| **Rendering** | Svelte Renderer walks tree as components | `renderToHtml()` produces string, injected via `dangerouslySetInnerHTML` |
-| **Component runes** | Svelte components via component registry | Not supported — all runes use identity transform |
-| **Element overrides** | Table, Pre elements replaced with Svelte components | Table wrapping handled by CSS; code copy by behaviors |
-| **Behaviors** | `use:behaviors` Svelte action | `BehaviorInit` client component with `useEffect` |
-| **Build integration** | Vite plugin with virtual modules + HMR | Manual content loading in Server Components |
-| **SEO** | `<svelte:head>` in ThemeShell | `generateMetadata()` + `buildMetadata()` |
-| **Navigation** | SvelteKit client-side routing | Next.js App Router navigation |
-
-The content output is identical — the same Markdoc runes produce the same BEM classes, data attributes, and structural HTML. The difference is how that HTML reaches the browser.
-
-## Compatibility
-
-| Dependency | Version |
-|-----------|---------|
-| Next.js | 14.x or 15.x |
-| React | 18.x or 19.x |
-| Node.js | 18+ |
-
-The adapter works with both the Pages Router and App Router, but the `RefraktContent` Server Component and `BehaviorInit` client component are designed for the App Router pattern. For Pages Router usage, call `renderPage()` directly in `getStaticProps`.
-
-## Dependencies
-
-| Package | Required | Purpose |
-|---------|----------|---------|
-| `@refrakt-md/transform` | Yes | Identity transform engine, layout transform, `renderToHtml` |
-| `@refrakt-md/types` | Yes | Shared TypeScript interfaces |
-| `@refrakt-md/content` | Yes | Content loading, routing, layout cascade |
-| `@refrakt-md/behaviors` | Yes | Client-side progressive enhancement for interactive runes |
-| `next` | Peer | Next.js framework |
-| `react` | Peer | React runtime |
+- [CSS](/docs/adapters/adapters-overview#css) — imported in `app/layout.tsx`
+- [Site-level token overrides](/docs/adapters/adapters-overview#site-level-token-overrides) — `getSiteTokensCss()`
+- [Behaviors](/docs/adapters/adapters-overview#behaviors) — `BehaviorInit`
+- [SEO and structured data](/docs/adapters/adapters-overview#seo-and-structured-data) — `buildMetadata()` + `buildJsonLd()`
+- [Dependencies](/docs/adapters/adapters-overview#dependencies)

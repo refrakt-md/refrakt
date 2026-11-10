@@ -1883,7 +1883,7 @@
 		{
 			"rune": "tint",
 			"title": "Tint",
-			"description": "Section-level colour overrides via CSS custom properties",
+			"description": "Section-level color overrides via CSS custom properties",
 			"status": "stable",
 			"unstable": false,
 			"package": "core",
@@ -3885,7 +3885,7 @@
 		{
 			"rune": "tint",
 			"title": "Tint",
-			"description": "Section-level colour overrides via CSS custom properties",
+			"description": "Section-level color overrides via CSS custom properties",
 			"status": "stable",
 			"unstable": false,
 			"package": "core",

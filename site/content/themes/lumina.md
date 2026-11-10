@@ -28,7 +28,7 @@ A *preset* is a named `ThemeTokensConfig` shipped as a module. Sites opt in via 
 }
 ```
 
-Presets merge in declared order, last-write-wins per token. The refrakt documentation site you're reading right now uses `presets: ["@refrakt-md/lumina/presets/niwaki"]` — code blocks render in Japanese-garden colours; everything else stays neutral.
+Presets merge in declared order, last-write-wins per token. The refrakt documentation site you're reading right now uses `presets: ["@refrakt-md/lumina/presets/niwaki"]` — code blocks render in Japanese-garden colors; everything else stays neutral.
 
 ## Compose them
 

@@ -86,7 +86,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Catppuccin gives **six of the seven** extended optional syntax roles distinct colours: `type` (Yellow), `parameter` (Maroon), `number` (Peach), `regex` (Pink), `operator` (Sky), `string-expression` (Pink). `attribute` and `tag` collapse with `type` and `keyword` respectively — Catppuccin's intent, not the contract's limitation.
+Catppuccin gives **six of the seven** extended optional syntax roles distinct colors: `type` (Yellow), `parameter` (Maroon), `number` (Peach), `regex` (Pink), `operator` (Sky), `string-expression` (Pink). `attribute` and `tag` collapse with `type` and `keyword` respectively — Catppuccin's intent, not the contract's limitation.
 
 ## Composing with tideline
 
