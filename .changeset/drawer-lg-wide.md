@@ -3,4 +3,4 @@
 '@refrakt-md/runes': patch
 ---
 
-**A `size="lg"` drawer takes as much of the screen as the gutter leaves**, instead of a fixed 52rem, for content that needs the room: source code, an embedded spec.
+**Drawer sizes.** `size="lg"` is now 64rem, wide enough for a 100-column line of code (it was 52rem); a narrower screen still caps it. A new `size="full"` takes the whole screen inside the gutter.
