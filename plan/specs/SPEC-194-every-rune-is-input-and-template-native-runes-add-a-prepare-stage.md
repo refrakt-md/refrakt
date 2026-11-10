@@ -883,6 +883,78 @@ export const prepareEmbed: Prepare = ({ attrs }) => {
   so under SPEC-196 D8 it loses its classes, and its 8 selectors are triaged into `frame`, which
   as a primitive keeps classes.
 
+### D15: a preprocess rune is a macro definition, with a `preprocess` stage and no template
+
+*Decided 2026-11-10.* `include`, `snippet` and `data` resolve before the transform
+({% ref "SPEC-141" /%}). The measurement below counts them among the native runes, but nothing
+above says what form they take, and D2 rules out the obvious one: a preprocessor receives its
+own AST node and returns AST, which is exactly what `prepare` may not do.
+
+**They are macros, not runes with output.** Each replaces itself with authored Markdoc: `include`
+with a partial's AST, `data` with its row template cloned per row ({% ref "SPEC-127" /%}),
+`snippet` with a fence. Other runes' definitions then transform that content. By the time a
+theme sees the page, `include` and `data` have left no trace, and a snippet is a code block that
+the `code-block` primitive arranges (D13). There is nothing for a template to arrange, so
+ADR-048's "input and template" has no template half to apply to.
+
+```md
+---
+tag: include
+attributes:
+  file:      { type: string, required: true }
+  variables: { type: object }
+preprocess: include
+---
+```
+
+- **Input in frontmatter, as for every rune.** Attributes and their descriptions are declared
+  the same way, so the rune reference, the block editor and `refrakt edit` read a macro like any
+  other definition. A content model is declared only where the rune has one (`data`'s body is
+  the row template, read as a whole).
+- **`preprocess` names a stage a package registers** (D3), with {% ref "SPEC-141" /%}'s
+  contract unchanged: `(node, page, ctx) → Node | Node[] | void`, one walk in tree order that
+  descends into replacements, the ancestor chain in the context, and `include`'s own cycle stack.
+  It is a separate key from `prepare`, because its contract is the opposite of D2's: it may only
+  return AST, and it never receives resolved fields.
+- **A macro definition has no body, no `computes` and no `role`.** No template, because there is
+  nothing to arrange. No `computes`, because nothing reads `$computed` after a macro is gone.
+  No `role`, because no element of it reaches the output to be classed
+  ({% ref "SPEC-196" /%} D8). A definition that declares `preprocess` together with any of the
+  three reports `macro-with-template`, `macro-with-computes` or `macro-with-role`. It also
+  cannot declare `prepare`.
+- **The throwing transform stays, generated** ({% ref "SPEC-141" /%} D7). A macro that reaches
+  the transform unresolved fails with an error that names the stage and the likely cause (a
+  `partial` instead of an `include`), as `include.ts` and `data.ts` do today by hand. The
+  loader generates it from the declaration.
+- **The ban in {% ref "SPEC-145" /%} D4 stands.** A template renders at transform, after
+  preprocess, so it may not place a macro (`preprocessor-tag`). A repeated block that needs one
+  is an `{% include %}`.
+- **`emitTag` is unaffected.** It stays a declared content-model field, and may still execute at
+  preprocess ({% ref "SPEC-141" /%} D8). It is not a macro: the rune it belongs to has output.
+- **The plugin-level hook stays** (`PluginPipelineHooks.preprocess`, SPEC-141 D2) for concerns
+  that span the whole page tree. Nothing first-party uses it.
+
+**What a preprocess stage sees from D12.** After the loader split, preprocess runs in the second
+loop, when the page index exists. A stage keeps what its context carries today: the page's own
+variables, frontmatter included. It does **not** gain the index-derived members of `$page`
+(`parent`, `ancestors`, `children`, `prev`, `next`) or `$site`. No macro needs them, and a
+preprocessor that read them would paste content that depends on other pages, which nothing in
+the dev server or a future incremental build ({% ref "ADR-025" /%}) tracks. A macro that
+genuinely needs other pages reads the registry instead, and that rune is a deferred definition,
+not a macro (D12.4).
+
+**Paste-time bindings and functions.** `data` binds `$row` and `include` binds `variables` by
+substitution at preprocess; {% ref "SPEC-195" /%}'s functions are evaluated at transform. So a
+call in a row template, `first($row.title, "Untitled")`, sees the literal its argument was
+replaced with. That is the intended order ({% ref "SPEC-195" /%} D8). It does not hold today:
+both substitutions replace a variable only when it is a whole attribute value, not inside a
+function's parameters, so the call reads `undefined` and nothing reports it. That is
+{% ref "BUG-051" /%}, and it is fixed before any macro moves to a definition.
+
+**Order.** The three macros move after the composition migration and the first native
+definitions (D10), in the work item that gives the loader definition-declared `preprocess`.
+They change no output: the walk, the stages and the results are SPEC-141's.
+
 ### Candidate primitives, measured
 
 *Measured 2026-11-09*: every shared render helper and every meaningful element choice in rune
@@ -1028,6 +1100,10 @@ first to recheck in each rune's work item.
 - [ ] The `__slug:` placeholders, the post-pipeline region pass and the breadcrumb SEO re-harvest are removed
 - [ ] A `{% fields of=… names=… /%}` primitive renders an entity's named fields through the shared vocabulary, and `collection`'s default templates use it
 - [ ] The block editor treats values under `computes` as read-only without any new key
+- [ ] `include`, `snippet` and `data` are definitions that declare their attributes in frontmatter and name a registered `preprocess` stage, with no body, `computes` or `role`; their output, contracts and SEO baseline are unchanged (D15)
+- [ ] A definition that declares `preprocess` with a template, `computes`, `role` or `prepare` reports an error naming the conflict (D15)
+- [ ] A macro that reaches the transform unresolved throws an error generated from its declaration, naming the stage (D15)
+- [ ] A preprocess stage's context carries the page's own variables and not `$site` or the index-derived members of `$page` (D15)
 - [ ] Definitions accept `role` (`primitive`, `drawing`, domain by default) and `placedBy`; a definition's name is its tag name, and its `data-rune` follows it (D1)
 - [ ] `pullquote` is a definition with no `prepare` stage, its output unchanged apart from `data-rune` (D13); its excerpt keeps the `<aside>` through template variants
 - [ ] The `attribution` and `frame` primitives exist, are template-only, and render from values; `frame` fixes its `allow` and `loading` in code (D13)
@@ -1101,5 +1177,7 @@ That is the case where privacy (D3) costs nothing.
 - {% ref "SPEC-177" /%}: theme and site templates.
 - {% ref "SPEC-186" /%}, {% ref "SPEC-182" /%}: the content-model features D7 builds on.
 - {% ref "SPEC-195" /%}: the value vocabulary `computes` is written in.
+- {% ref "SPEC-141" /%}: the per-rune preprocess hook and the tree-order walk D15 keeps.
+- {% ref "BUG-051" /%}: paste-time bindings miss variables inside function calls (D15).
 
 {% /spec %}

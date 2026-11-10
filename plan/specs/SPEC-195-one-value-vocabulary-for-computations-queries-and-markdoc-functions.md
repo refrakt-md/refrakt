@@ -267,6 +267,16 @@ and "build a predicate" in a filter would confuse more than the second syntax co
   and the dependence is documented rather than prevented. A rune that reads the registry is not
   covered by this: registry reads are `data:` entries, and they defer the rune (SPEC-194 D12.4).
 
+- **Paste-time bindings come first** (*added 2026-11-10*). `data`'s `$row` and `include`'s
+  `variables` are bound at preprocess by substitution; functions are evaluated at transform. So a
+  function in a row template or an included file sees the literal its argument was replaced
+  with: `{% if equals($row.status, "done") %}` tests each row's own status. The reverse does not
+  hold. A function cannot feed a preprocessor attribute (`{% data where=concat(…) %}`), because
+  the call has not run when `data` reads it, and `data` already reports that as an error. Today
+  the substitution misses a variable inside a function's parameters, so the call reads
+  `undefined` silently: {% ref "BUG-051" /%}, fixed before this vocabulary ships. See
+  {% ref "SPEC-194" /%} D15.
+
 ### D9: guardrails
 
 These keep {% ref "ADR-036" /%} ("name the pattern; do not open a language") true:
