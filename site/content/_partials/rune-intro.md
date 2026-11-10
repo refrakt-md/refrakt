@@ -35,7 +35,7 @@
 		{% /drawer %}
 	{% /if %}
 
-	{% drawer id="rune-source" title="Source" %}
+	{% drawer id="rune-source" title="Source" size="lg" tint-mode="dark" %}
 		{% snippet path=$row.source /%}
 
 		{% link href=$row.sourceUrl %}View {% $row.source %} on GitHub{% /link %}

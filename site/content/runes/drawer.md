@@ -27,7 +27,7 @@ A drawer has no trigger of its own: you write its content and give it an `id`, a
 
 {% /preview %}
 
-The id needs to be unique only on its own page. `side` sets the edge the panel slides in from, and `size` how large it is. The title's heading sits one level below the heading before the drawer; set `headingLevel` to choose it yourself.
+The id needs to be unique only on its own page. `side` sets the edge the panel slides in from, and `size` how large it is: `sm`, `md` (the default), `lg`, which is wide enough for code, or `full`, the whole screen. The title's heading sits one level below the heading before the drawer; set `headingLevel` to choose it yourself.
 
 ## How Markdown is read
 

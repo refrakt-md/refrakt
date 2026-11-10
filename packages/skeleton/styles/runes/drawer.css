@@ -8,7 +8,8 @@
 .rf-drawer {
 	--rf-drawer-size-sm: 22rem;
 	--rf-drawer-size-md: 36rem;
-	--rf-drawer-size-lg: 52rem;
+	/* Wide enough for a 100-column line of code. */
+	--rf-drawer-size-lg: 64rem;
 }
 
 /* Page-scroll lock while any drawer is open. Only the root is locked: also
@@ -90,6 +91,10 @@ dialog.rf-drawer[data-side="right"][data-size="lg"],
 dialog.rf-drawer[data-side="left"][data-size="lg"] {
 	width: var(--rf-drawer-size-lg);
 }
+dialog.rf-drawer[data-side="right"][data-size="full"],
+dialog.rf-drawer[data-side="left"][data-size="full"] {
+	width: calc(100vw - 2 * var(--rf-drawer-gutter));
+}
 dialog.rf-drawer[data-side="top"][data-size="sm"],
 dialog.rf-drawer[data-side="bottom"][data-size="sm"] {
 	height: var(--rf-drawer-size-sm);
@@ -101,4 +106,8 @@ dialog.rf-drawer[data-side="bottom"][data-size="md"] {
 dialog.rf-drawer[data-side="top"][data-size="lg"],
 dialog.rf-drawer[data-side="bottom"][data-size="lg"] {
 	height: var(--rf-drawer-size-lg);
+}
+dialog.rf-drawer[data-side="top"][data-size="full"],
+dialog.rf-drawer[data-side="bottom"][data-size="full"] {
+	height: calc(100vh - 2 * var(--rf-drawer-gutter));
 }
