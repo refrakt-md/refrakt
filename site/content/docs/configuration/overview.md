@@ -42,7 +42,7 @@ The singular shape produces `sites.default` after normalization. Multi-site repo
 ```
 
 {% hint type="note" %}
-A flat top-level shape (`{ "contentDir": "...", "theme": "...", "target": "..." }`) still loads, but it is **deprecated**: the loader emits a one-time warning per process. Use `site` or `sites`; `refrakt config migrate` converts a flat config for you.
+A flat top-level shape (`{ "contentDir": "...", "theme": "...", "target": "..." }`) still loads, but it is deprecated. See [Migration](/docs/configuration/migration) to convert it with `refrakt config migrate`.
 {% /hint %}
 
 ## Top-level sections
@@ -115,17 +115,3 @@ Reference the published JSON Schema at the top of your config file for autocompl
 ```
 
 The schema URL is versioned per minor release. The unversioned alias (`https://refrakt.md/refrakt.config.schema.json`) always serves the latest schema; pin a specific version for stable validation across upgrades. See [Schema](/docs/configuration/schema) for details.
-
-## Migrating an existing config
-
-A flat-shape config still loads, but it is deprecated and the loader emits a once-per-process warning. Convert it to the nested form with `refrakt config migrate`:
-
-```bash
-# Preview the migration
-npx refrakt config migrate
-
-# Write the changes
-npx refrakt config migrate --apply
-```
-
-See [Migration](/docs/configuration/migration).

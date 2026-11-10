@@ -5,9 +5,7 @@ description: Japanese-garden syntax palette — wakaba, sakura, matsu, momiji, i
 
 # Niwaki
 
-Niwaki is a **syntax-only** preset — it overrides only the syntax tokens, leaving chrome, fonts, and status colors to inherit from whatever theme sits beneath. The refrakt documentation site you're reading uses this preset on top of the [neutral default](/themes/neutral-default). Code blocks render in Japanese-garden colors; everything else stays neutral.
-
-The name *niwaki* (庭木) refers to the cloud-pruned trees of Japanese gardens — most often pines. The art of niwaki is patient, multi-decade shaping: pruning what's there to reveal structural form. That maps remarkably well to what a syntax preset does — it doesn't generate code, it shapes how code's existing structure becomes legible. The color names — wakaba (young leaf), sakura (cherry blossom), matsu (pine), momiji (autumn maple), ishi (stone) — are an homage to the tradition we drew the metaphor from.
+Niwaki is refrakt's own **syntax-only** preset: it sets the syntax colors and nothing else, so chrome, fonts and the code canvas come from whatever sits beneath — which is why it composes with any other preset. It is named for the cloud-pruned trees of Japanese gardens, and its five colors are garden elements: wakaba (young leaf) for keywords, sakura (cherry) for functions, matsu (pine) for links and constants, momiji (maple) for strings, ishi (stone) for comments. It sets only the nine base syntax roles, so types paint like functions and tags like keywords. This documentation site uses it.
 
 ## Opt in
 
@@ -22,9 +20,7 @@ The name *niwaki* (庭木) refers to the cloud-pruned trees of Japanese gardens 
 }
 ```
 
-## The palette
-
-Five elements from a Japanese garden mapped to syntax roles. Each color does specific cognitive work — wakaba freshens declarations (keywords), sakura calls attention (functions), matsu roots the references (links and constants), momiji warms the literals (strings and template expressions), ishi recedes (comments and punctuation).
+## Palette
 
 {% palette title="Niwaki — light" tint="niwaki" tint-mode="light" showContrast=true showA11y=true %}
 - Wakaba / Young leaf (keyword): #5e7d2a
@@ -44,9 +40,7 @@ Five elements from a Japanese garden mapped to syntax roles. Each color does spe
 - Ishi (comment, punctuation): #7d7062
 {% /palette %}
 
-## Live preview
-
-Here's the same TypeScript+JSX snippet used across the preset doc pages, rendered through niwaki. Niwaki is foreground-only — chrome, fonts, and code-surface canvas all inherit from whatever theme sits beneath. On this page that's the refrakt site's active niwaki preset, so the snippet looks exactly like every other code block on the site (which is the point: niwaki *is* the site's syntax).
+## Preview
 
 {% codegroup tint="niwaki" %}
 ```ts
@@ -68,56 +62,6 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Niwaki, like tideline, was authored at the 9-role tier and doesn't set the extended syntax roles. `type`, `attribute`, and other identifier-family scopes paint like function (sakura); `tag` paints like keyword (wakaba); `number` and `regex` fall through to constant and string respectively. Compare with [Nord](/themes/nord), which splits them out into the Frost and Aurora families.
+## Attribution
 
-## Composing with tideline
-
-Niwaki composes cleanly with any chrome theme. Use both presets together for tideline chrome with niwaki code:
-
-```jsonc
-{
-  "theme": {
-    "package": "@refrakt-md/lumina",
-    "presets": [
-      "@refrakt-md/lumina/presets/tideline",
-      "@refrakt-md/lumina/presets/niwaki"
-    ]
-  }
-}
-```
-
-Order matters — niwaki ships after tideline so its syntax overrides win. Since niwaki only touches the syntax namespace, every other token (body bg, surface, typography, status) cascades from tideline.
-
-## Authoring a custom tint that pairs with niwaki
-
-Niwaki demonstrates that *scoped* presets — overrides limited to one part of the token contract — are first-class in refrakt. The same pattern works for site-level tints. Define a brand tint inline in `refrakt.config.json`:
-
-```jsonc
-{
-  "site": {
-    "theme": {
-      "package": "@refrakt-md/lumina",
-      "presets": ["@refrakt-md/lumina/presets/niwaki"]
-    },
-    "tints": {
-      "garden-hero": {
-        "extends": "warm",
-        "light": {
-          "bg": "#f5efe6",
-          "primary": "#3d6b3d"
-        },
-        "dark": {
-          "bg": "#1a221a",
-          "primary": "#8ab589"
-        }
-      }
-    }
-  }
-}
-```
-
-Now any page section can opt in with `{% callout tint="garden-hero" %}…{% /callout %}`. The tint extends Lumina's `warm` preset and overrides only `bg` and `primary` per scheme. See [Tint](/runes/tint) for the full tint authoring surface.
-
-## Why scoped?
-
-The neutral default's chrome is already calm, deliberate, and pleasant to read against. A "full Japanese garden" preset would override good chrome with merely-different chrome, dilute the focus, and lock users into an all-or-nothing choice. Scoping niwaki to syntax keeps the strongest part of the metaphor (the colors on code) and lets users compose freely — niwaki on neutral, niwaki on tideline, niwaki on a future custom theme. The preset earns its name through what it commits to most clearly: the code surface.
+Original to refrakt; ships in `@refrakt-md/lumina` under the MIT license.

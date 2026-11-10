@@ -5,11 +5,7 @@ description: Atom's signature dark theme — blue-grey canvas with warm accents.
 
 # One Dark
 
-One Dark is Atom's signature theme — the palette that defined the "blue-grey canvas + warm accents" aesthetic now common across modern editors. Tokyo Night and Catppuccin Mocha both trace lineage here. Atom itself was the first widely-adopted editor with custom theme APIs, and One Dark was the default that shipped with it.
-
-One Dark ships as **dark-only**. The official "One Light" sibling is a separate published theme (not a `modes` overlay on the same hue family) and is not included. MIT licensed.
-
-This page is rendered on a site whose active preset is **niwaki**. The One Dark look you see in the palette and the live preview below is scoped to those subtrees via `tint="one-dark"` — the surrounding prose stays in niwaki.
+One Dark is Atom's signature theme — the blue-grey canvas with warm accents that much of the modern editor scene descends from. It splits `type` (Yellow) from `function` (Blue), `regex` (Cyan) from `string` (Green) and `tag` (Red) from `keyword` (Purple). **Dark-only** — the One Light sibling is a separate theme and is not included, so pair it with `colorScheme: "dark"`.
 
 ## Opt in
 
@@ -25,11 +21,7 @@ This page is rendered on a site whose active preset is **niwaki**. The One Dark 
 }
 ```
 
-The `colorScheme: "dark"` forces One Dark on every page — One Dark has no light variant, so without this the page would render against Lumina's light base with One Dark only kicking in on dark toggle.
-
-## The palette
-
-Atom organises One Dark's palette into **mono** (grayscale text family) and **hue** (six accent families). The dark canvas (`syntax-bg #282c34`) is the recognisable signature; the warm-on-cool contrast (orange/red accents on blue-grey) is what makes it read as "Atom" decades later.
+## Palette
 
 {% palette title="One Dark" tint="one-dark" tint-mode="dark" showContrast=true showA11y=true %}
 - syntax-bg (canvas): #282c34
@@ -46,9 +38,7 @@ Atom organises One Dark's palette into **mono** (grayscale text family) and **hu
 - hue-6-2 (yellow — type): #e5c07b
 {% /palette %}
 
-## Live preview
-
-The shared TypeScript+JSX snippet rendered through One Dark. Notice the warm-on-cool contrast: **strings** in green, **numbers** in orange, **types** in yellow, all sitting on the cool blue-grey canvas.
+## Preview
 
 {% codegroup tint="one-dark" %}
 ```ts
@@ -70,26 +60,6 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-One Dark gives **4 of 7** extended syntax roles distinct colors: `type` (Yellow) ≠ `function` (Blue), `regex` (Cyan) ≠ `string` (Green), `operator` (Cyan), `tag` (Red) ≠ `keyword` (Purple). `number` collapses with `constant`, `attribute` with `constant` (both orange) — Atom's intent.
-
-## Composing with tideline
-
-`presets: ["tideline", "one-dark"]` gives tideline's IBM Plex typography (and light chrome) with One Dark's dark-mode overrides:
-
-```jsonc
-{
-  "theme": {
-    "package": "@refrakt-md/lumina",
-    "presets": [
-      "@refrakt-md/lumina/presets/tideline",
-      "@refrakt-md/lumina/presets/one-dark"
-    ]
-  }
-}
-```
-
-Tideline's typography survives in both modes; tideline's light chrome stays unaffected since One Dark has no light values.
-
 ## Attribution
 
-One Dark is the work of the [Atom](https://github.com/atom/atom) team at GitHub, released under the MIT licence. The refrakt preset module at `@refrakt-md/lumina/presets/one-dark` is derived from the [one-dark-syntax package](https://github.com/atom/atom/tree/master/packages/one-dark-syntax) — specifically the variables in `styles/colors.less`. Atom is no longer actively developed, but One Dark lives on in its influence on every modern theme that uses blue-grey-canvas + warm-accent.
+One Dark is the work of the [Atom](https://github.com/atom/atom) team at GitHub, MIT licensed. The preset is derived from the [one-dark-syntax package](https://github.com/atom/atom/tree/master/packages/one-dark-syntax) (`styles/colors.less`).

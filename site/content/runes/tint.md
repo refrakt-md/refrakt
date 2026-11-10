@@ -11,6 +11,8 @@ type: rune
 
 Override color tokens within a single rune's scope. The tint rune produces no visible output — it modifies how the containing section renders by setting `--tint-*` CSS custom properties and `data-tint` attributes.
 
+This page covers the rune and its attributes. To set a tint or color scheme for a whole page or subtree from frontmatter (`tint`, `tint-mode`, `tint-lock`), see [Tint and color scheme](/docs/concepts/tint); for how a theme implements tints, see [theme authoring → tint cascade](/extend/theme-authoring/tint-cascade).
+
 ## Named tint (attribute form)
 
 The simplest form. Reference a named tint defined in the theme configuration as an attribute on any block rune.
@@ -162,39 +164,9 @@ Tints can nest. An inner tint overrides an outer tint within its scope. CSS cust
 {% /hero %}
 ```
 
-## Theme configuration
+## Where named tints come from
 
-Themes define named tints in their configuration. Light values are set as inline styles (no FOUC). Dark values are provided by the theme's CSS.
-
-```javascript
-// theme config
-tints: {
-  warm: {
-    light: {
-      bg: '#fdf6e3',
-      text: '#5c4a32',
-      primary: '#c47d3b',
-      border: '#e0d5c0',
-    },
-    dark: {
-      bg: '#2a2118',
-      text: '#e8d5b7',
-      primary: '#e0a86e',
-      border: '#4a3f33',
-    },
-  },
-  dark: {
-    lockMode: 'dark',
-    dark: {
-      bg: '#1a1a2e',
-      text: '#e0e0e0',
-      primary: '#e94560',
-    },
-  },
-}
-```
-
-A theme without tint bridge CSS simply ignores tint tokens — the section renders with page defaults.
+A named tint (`tint="warm"`, `preset="warm"`) is defined by the theme, or by the site's `tints` map in `refrakt.config.json` — see [Sites](/docs/configuration/sites). A theme that defines no tints, or ships no tint CSS, ignores tint tokens and the section renders with the page defaults. How a theme defines tints and maps the tokens onto its colors is covered in [theme authoring → tint cascade](/extend/theme-authoring/tint-cascade#named-tints-and-the-css-bridge).
 
 ## Attributes
 

@@ -5,13 +5,7 @@ description: Pavel Pertsev's warm retro palette — earthy oranges, deep greens,
 
 # Gruvbox
 
-Gruvbox is Pavel Pertsev's warm retro palette — earthy oranges, deep greens, mustard yellows, and Mediterranean reds on a coffee-and-cream canvas. It's the **only warm palette** in the theme catalog, a counterweight to the blue and cool members.
-
-Gruvbox is also the most "unix terminal heritage" of the lineup. The original Gruvbox was a Vim colorscheme, and the syntax conventions trace from that lineage — Statement keywords in red, function definitions in yellow, types in green, constants in purple — rather than the modern editor-theme scene's bluer conventions.
-
-The preset ships **light medium + dark medium**, the canonical contrast pair. Gruvbox's "soft" and "hard" contrast levels are not included. MIT licensed.
-
-This page is rendered on a site whose active preset is **niwaki**. The Gruvbox look you see in the palettes and the live preview below is scoped to those subtrees via `tint="gruvbox"` — the surrounding prose stays in niwaki.
+Gruvbox is Pavel Pertsev's warm retro palette — earthy oranges, deep greens and mustard yellows on a coffee-and-cream canvas, and the **only warm palette** in the catalog. Born as a Vim colorscheme, it keeps terminal conventions: keywords in red, functions in yellow, types in green, constants in purple. The preset ships the **medium** contrast level in light and dark; the soft and hard levels are not included.
 
 ## Opt in
 
@@ -26,11 +20,7 @@ This page is rendered on a site whose active preset is **niwaki**. The Gruvbox l
 }
 ```
 
-Both modes ship together; system preference or user toggle picks between them.
-
-## The palette
-
-Gruvbox's hues are organised as "neutral / faded / bright" triads — faded for light mode, bright for dark mode, with neutral as the mid-contrast point. The mode-flipped backgrounds (`bg0` `#fbf1c7` cream / `#282828` charcoal) are the recognisable signature; the accents shift saturation to maintain contrast on whichever canvas they're on.
+## Palette
 
 {% palette title="Gruvbox — light medium" tint="gruvbox" tint-mode="light" showContrast=true showA11y=true %}
 - bg0 (canvas): #fbf1c7
@@ -60,9 +50,7 @@ Gruvbox's hues are organised as "neutral / faded / bright" triads — faded for 
 - bright_purple (constant, number): #d3869b
 {% /palette %}
 
-## Live preview
-
-The shared TypeScript+JSX snippet rendered through Gruvbox. Notice the warm-spectrum identity: **keywords** in red, **functions** in yellow, **types** in green, **numbers** in purple. Sitting on the cream / charcoal canvas, the palette reads as "retro terminal" — a visible contrast with the cool-Nordic feel of Nord or the neon-modern feel of Tokyo Night.
+## Preview
 
 {% codegroup tint="gruvbox" %}
 ```ts
@@ -84,30 +72,6 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Gruvbox gives **4 of 7** extended syntax roles distinct colors in dark mode: `type` (Green) ≠ `function` (Yellow), `regex` (Orange) ≠ `string` (Green), `operator` (Orange), `attribute` (Blue) ≠ `function`. `number` collapses with `constant` (both purple) — Gruvbox's intent.
-
-## Composing with tideline
-
-`presets: ["tideline", "gruvbox"]` gives tideline's IBM Plex typography with Gruvbox's warm chrome and syntax:
-
-```jsonc
-{
-  "theme": {
-    "package": "@refrakt-md/lumina",
-    "presets": [
-      "@refrakt-md/lumina/presets/tideline",
-      "@refrakt-md/lumina/presets/gruvbox"
-    ]
-  }
-}
-```
-
-Tideline's Plex Sans + Plex Mono pairs surprisingly well with Gruvbox's warm palette — the humanist letterforms feel more at home on cream-colored paper than on cool surfaces.
-
-## Other contrast levels
-
-The preset ships only "medium" contrast in both light and dark. Gruvbox publishes "soft" (lower contrast) and "hard" (higher contrast) variants per mode. If you'd like those as separate presets (`gruvbox-soft`, `gruvbox-hard`), [open an issue](https://github.com/refrakt-md/refrakt/issues/new).
-
 ## Attribution
 
-Gruvbox is the work of [Pavel Pertsev (morhetz)](https://github.com/morhetz), released under the MIT licence. The refrakt preset module at `@refrakt-md/lumina/presets/gruvbox` is derived from the [gruvbox.vim source](https://github.com/morhetz/gruvbox/blob/master/colors/gruvbox.vim) and the [palette specification](https://github.com/morhetz/gruvbox#palette). Gruvbox has remained one of the most-installed Vim colorschemes for over a decade.
+Gruvbox is the work of [Pavel Pertsev (morhetz)](https://github.com/morhetz), MIT licensed. The preset is derived from [gruvbox.vim](https://github.com/morhetz/gruvbox/blob/master/colors/gruvbox.vim) and its [palette specification](https://github.com/morhetz/gruvbox#palette).

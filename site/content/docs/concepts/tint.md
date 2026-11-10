@@ -7,6 +7,8 @@ description: How tint, tint-mode, and tint-lock cascade from site config down th
 
 Refrakt's tint cascade lets you express *"all marketing pages are locked to dark mode"* alongside *"docs respect user preference"* and *"this one launch announcement gets the brand-warm tint"* — without inventing a separate route-rules config surface. Every page resolves a `(tint, tintMode, locked)` tuple from four layers of input; later layers override earlier ones per field.
 
+This page covers the frontmatter cascade. The `{% tint %}` rune and the `tint` / `tint-mode` attributes on a single rune are documented on the [tint rune](/runes/tint) page; how a theme or adapter implements the cascade is in [theme authoring → tint cascade](/extend/theme-authoring/tint-cascade).
+
 The refrakt documentation site you're reading is the canonical live example. Open the homepage — locked dark, no toggle. Navigate to `/docs/getting-started` — auto, toggle visible in the top-right. Pick light. Navigate back to `/` — locked dark again; your light preference is preserved silently and reapplies the moment you return to a docs page.
 
 ## The four levels
@@ -18,7 +20,7 @@ Cascade order, last writer wins per field:
 | **1. Site config** | `theme.colorScheme` in `refrakt.config.json` | Site-wide default mode (rarely needed) |
 | **2. Layout frontmatter** | `_layout.md` files | Subtree defaults — "all marketing is dark" |
 | **3. Page frontmatter** | The page itself | Per-page overrides |
-| **4. Rune attribute** | `tint-mode="..."` on a rune | Single-rune override (predates the cascade) |
+| **4. Rune attribute** | `tint-mode="..."` on a rune | Single-rune override (predates the cascade) — see [tint](/runes/tint) |
 
 `undefined` at any level means *inherit from the layer above*. Explicit `null` for `tint` is the canonical *reset to no named tint* idiom — useful when you want to break out of a parent layout's named tint without applying a new one.
 
@@ -54,7 +56,7 @@ site/content/
 └── ...
 ```
 
-Resulting behaviour by URL:
+Resulting behavior by URL:
 
 | URL | Mode | Locked | Toggle |
 |---|---|---|---|
@@ -110,7 +112,3 @@ A few choices in the cascade design that might not be obvious:
 - **`tint-mode: auto` is the default, not the absence of `tint-mode`.** A layout explicitly setting `tint-mode: auto` overrides a parent's `tint-mode: dark` — that's how the docs subtrees unlock themselves from the root's locked-dark default.
 - **`tint-lock` is independent of `tint-mode`.** You can lock a page to `tint-mode: auto` (the user's system preference is final, no toggle UI). Useful for embedded surfaces where you don't want users fiddling but also don't have a brand preference.
 - **The cascade doesn't merge `tint` overlays.** A layout's `tint: warm` plus a page's `tint: brand-special` → the page wins, the layout's `warm` is gone. There's no concept of "stacked tints." Use a named tint preset that already combines what you want.
-
-{% hint type="note" %}
-Building a theme, or wiring the cascade into an adapter? The resolution function, the SSR hook contract, and the anti-flash pre-paint script are documented in [theme authoring → tint cascade](/extend/theme-authoring/tint-cascade).
-{% /hint %}

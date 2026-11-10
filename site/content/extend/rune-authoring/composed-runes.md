@@ -284,7 +284,7 @@ Use it when the reader sees the values as text: a byline, a credit, a caption li
 
 ### `{% metablock %}`
 
-A composed rune has no `layout`, so a declared `metaFields` + `blocks` entry is placed by the template: `{% metablock name="metadata" /%}` marks where the block goes, and the engine renders it there from the rune's own values, exactly as `layout` projection would. It takes only `name`, has no content, stands on its own line, names a declared block, and is placed once.
+A composed rune has no `layout`, so a declared [`metaFields` + `blocks`](/extend/theme-authoring/blocks-and-layout) entry is placed by the template: `{% metablock name="metadata" /%}` marks where the block goes, and the engine renders it there from the rune's own values, exactly as `layout` projection would. It takes only `name`, has no content, stands on its own line, names a declared block, and is placed once.
 
 Use it when the value is an **attribute**: `metaFields` gives each field its meaning (`category`, `status`, `temporal`, …), its sentiment and its formatting, and the theme decides the block's shape. Placing a `{% bar %}` or a `{% deflist %}` with badges in it looks nearly the same and loses all of that — the badges are always tags, and the placed rune is a schema boundary. The rule: **is the value in an attribute? Use a metablock. Is it content someone writes? Place the rune.**
 

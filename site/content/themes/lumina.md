@@ -1,38 +1,32 @@
 ---
 title: Lumina
-description: Refrakt's flagship theme — neutral default palette, two opt-in presets, and the design token contract.
+description: Refrakt's flagship theme — a neutral default palette, nine opt-in presets, and how presets are enabled, composed and previewed.
 ---
 
 # Lumina
 
-Lumina is refrakt's flagship theme. It ships with a quiet warm-neutral palette designed to disappear behind your content, plus two opt-in presets that demonstrate refrakt's preset architecture.
+Lumina is refrakt's flagship theme and what every new `npx create-refrakt` project starts with. Out of the box it renders the [neutral default](/themes/neutral-default): a quiet warm-neutral palette designed to disappear behind your content. On top of that it ships **nine opt-in presets** — two of refrakt's own ([Tideline](/themes/tideline) and [Niwaki](/themes/niwaki)) and seven ported editor palettes. The [themes catalog](/themes/themes-catalog) lists them all and helps you choose.
 
-| Surface | Renders | When to use |
-|---|---|---|
-| [Neutral default](/themes/neutral-default) | Warm-neutral chrome, monochrome primary, quiet-spectrum syntax | Anything that wants the user's brand to lead — docs sites, blogs, marketing pages for the user's brand |
-| [Tideline](/themes/tideline) | Cream paper + maritime navy + IBM Plex Sans/Mono | Personal sites, brand-forward marketing where a touch of nostalgic paperliness fits |
-| [Niwaki](/themes/niwaki) | Japanese-garden syntax palette on whatever chrome sits beneath | Code-heavy docs that want a signature without overhauling chrome |
+## Opt in to a preset
 
-## How presets work
-
-A *preset* is a named `ThemeTokensConfig` shipped as a module. Sites opt in via the `theme.presets` array in `refrakt.config.json`:
+A preset is a named `ThemeTokensConfig` module. Enable one with the `theme.presets` array in `refrakt.config.json`:
 
 ```jsonc
 {
   "site": {
     "theme": {
       "package": "@refrakt-md/lumina",
-      "presets": ["@refrakt-md/lumina/presets/tideline"]
+      "presets": ["@refrakt-md/lumina/presets/nord"]
     }
   }
 }
 ```
 
-Presets merge in declared order, last-write-wins per token. The refrakt documentation site you're reading right now uses `presets: ["@refrakt-md/lumina/presets/niwaki"]` — code blocks render in Japanese-garden colors; everything else stays neutral.
+Presets that ship both modes follow the reader's system preference or the color-scheme toggle. The dark-only presets ([Dracula](/themes/dracula), [One Dark](/themes/one-dark)) have no light values, so add `"colorScheme": "dark"` beside `presets`, or light-mode pages keep Lumina's light chrome.
 
-## Compose them
+## Compose presets
 
-Presets compose. Use both tideline and niwaki together for tideline chrome (Plex + cream + navy) plus niwaki syntax (Japanese-garden code):
+Presets merge in the order you list them, last write wins per token, so a later preset overrides only the tokens it defines. Two common combinations:
 
 ```jsonc
 {
@@ -46,10 +40,27 @@ Presets compose. Use both tideline and niwaki together for tideline chrome (Plex
 }
 ```
 
-Order matters — later presets override earlier ones for any token they both define. Since niwaki overrides only the syntax tokens, it composes cleanly with anything else.
+- **Tideline + Niwaki** — Tideline's chrome (Plex type, cream paper, navy) with Niwaki's syntax colors. Niwaki sets only syntax tokens, so it composes cleanly with anything.
+- **Tideline + an integrated palette** (Nord, Solarized, Catppuccin, …) — the palette's chrome, code canvas and syntax win, while Tideline's IBM Plex typography survives in both modes. With a dark-only palette, Tideline's light chrome stays as it is.
+
+This documentation site uses `presets: ["@refrakt-md/lumina/presets/niwaki"]` on the neutral default.
+
+## How the preset pages are rendered
+
+Each preset page is rendered on this site, whose active preset is Niwaki. The palettes and the code preview on a preset page are scoped to that preset with the `tint="<preset>"` attribute, so they show its colors while the surrounding prose stays in Niwaki. The site registers every preset as a named tint:
+
+```jsonc
+{
+  "site": {
+    "tints": {
+      "nord": { "extends": "@refrakt-md/lumina/presets/nord" }
+    }
+  }
+}
+```
+
+The same mechanism lets you show any preset inside one section of your own site. See [Tint and color scheme](/docs/concepts/tint) for the scoping rules.
 
 ## Authoring custom presets
 
-A preset is any module that exports a `ThemeTokensConfig` as default. Drop it next to your site or publish it as a package — the same `theme.presets` array accepts both package specifiers and relative paths.
-
-See [Theme Configuration](/extend/theme-authoring/config-api) for the full `ThemeTokensConfig` shape.
+A preset is any module that exports a `ThemeTokensConfig` as default. Drop it next to your site or publish it as a package — `theme.presets` accepts both package specifiers and relative paths. See [Theme Configuration](/extend/theme-authoring/config-api) for the full `ThemeTokensConfig` shape.
