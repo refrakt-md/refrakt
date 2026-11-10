@@ -55,5 +55,5 @@ A few things worth knowing before you write your first rune:
 Even if your day-to-day is writing TypeScript and CSS, a few CLI commands are worth knowing:
 
 - [`refrakt inspect <rune>`](/docs/cli/inspect) — see the HTML the identity transform produces for any rune. Indispensable when wiring up BEM CSS or debugging modifier classes.
-- [`refrakt contracts`](/docs/cli/inspect) — generate the full structure contract (every BEM selector, data attribute, structural element) for the active rune set.
+- [`refrakt contracts`](/extend/theme-authoring/tooling#refrakt-contracts) — generate the full structure contract (every BEM selector, data attribute, structural element) for the active rune set.
 - [`refrakt reference dump`](/docs/cli/reference) — emit the full rune syntax reference for the active plugin set. Used to regenerate `AGENTS.md`.

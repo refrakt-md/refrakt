@@ -234,7 +234,7 @@ Style the role through that attribute, with its `blockquote` and `figcaption` as
 - **The reading register is context.** A quotation in `prose` and one in `ui` (a card body) may look different; Lumina sets one quieter in `ui`.
 - **The unmarked fallback.** A blockquote with no marker, from content transformed outside refrakt, deserves a minimal, zero-specificity fallback so it stays legible.
 
-The roles are part of the theme vocabulary: [`refrakt theme coverage`](/docs/cli/theme-tools#refrakt-theme-coverage) reports which of them your CSS styles.
+The roles are part of the theme vocabulary: [`refrakt theme coverage`](/extend/theme-authoring/tooling#refrakt-theme-coverage) reports which of them your CSS styles.
 
 ## Structural dimensions
 

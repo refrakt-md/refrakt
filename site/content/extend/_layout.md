@@ -49,6 +49,12 @@ tint-lock: false
 		- theme-authoring/tooling
 		- theme-authoring/tint-cascade
 
+		## Distributing
+
+		- distributing
+		- distributing/preset-packs
+		- distributing/templates
+
 		## Internationalization
 
 		- i18n/translating

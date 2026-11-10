@@ -1,4 +1,4 @@
-{% work id="WORK-720" status="ready" priority="medium" complexity="moderate" source="SPEC-193" tags="docs, themes, nav, terminology" milestone="v0.49.0" %}
+{% work id="WORK-720" status="in-progress" priority="medium" complexity="moderate" source="SPEC-193" tags="docs, themes, nav, terminology" milestone="v0.49.0" %}
 
 # Theme pages share a template, each topic has one home, and the docs nav and terms are consistent
 
