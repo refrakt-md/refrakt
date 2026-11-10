@@ -37,7 +37,7 @@ Wrap each section in an `{% accordion-item %}` tag with a name.
 
 | You write | It becomes |
 |-----------|------------|
-| A short paragraph, then a heading and a paragraph, before the first panel heading | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A short paragraph, then a heading and a paragraph, before the first panel heading | The eyebrow, headline and blurb ([Page sections](/docs/concepts/page-sections)) |
 | A heading | A panel's title; the content up to the next heading of the same level is its body |
 | An `{% accordion-item %}` tag | A panel, titled by its `name` |
 

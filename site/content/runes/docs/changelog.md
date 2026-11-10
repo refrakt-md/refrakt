@@ -37,7 +37,7 @@ A product's version history: one entry per release, with its notes. For dated ev
 |-----------|------------|
 | A heading such as `v1.2.0 - January 2025` | A release; the version, then the date after the dash |
 | The content under the heading, usually a list | The release notes |
-| A short paragraph, then a heading one level above the releases, before the first release | The eyebrow and headline ([Page sections](/docs/authoring/page-sections)) |
+| A short paragraph, then a heading one level above the releases, before the first release | The eyebrow and headline ([Page sections](/docs/concepts/page-sections)) |
 
 ## Release titles
 

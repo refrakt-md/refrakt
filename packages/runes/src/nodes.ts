@@ -255,7 +255,10 @@ export const linkTag: Schema = {
 		},
 	},
 	transform(node, config) {
-		if (node.inline) return link.transform!.call(link, node, config);
+		if (node.inline) {
+			if (!String(node.attributes.href ?? '')) return node.transformChildren(config);
+			return link.transform!.call(link, node, config);
+		}
 		const { urls, path } = config.variables || {};
 		const dirName = path ? dirname(path) : '/';
 		const raw = String(node.attributes.href ?? '');

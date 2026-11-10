@@ -38,7 +38,7 @@ Numbered instructions a reader follows in order: installing, onboarding, a proce
 | A numbered list | The steps, one per item |
 | Or a heading per step | A step: the heading and the content under it, up to the next |
 | `---` inside a heading-based step | Splits the step's media (before) from its text (after) |
-| A heading one level above the step headings, with a short paragraph before and a paragraph after, ahead of the first step | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A heading one level above the step headings, with a short paragraph before and a paragraph after, ahead of the first step | The eyebrow, headline and blurb ([Page sections](/docs/concepts/page-sections)) |
 | A paragraph before a numbered list | The blurb |
 
 ## Heading-based steps

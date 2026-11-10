@@ -38,7 +38,7 @@ A how-to guide with required tools and numbered steps.
 
 | You write | It becomes |
 |-----------|------------|
-| A short paragraph, then a heading and a paragraph, before the lists | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A short paragraph, then a heading and a paragraph, before the lists | The eyebrow, headline and blurb ([Page sections](/docs/concepts/page-sections)) |
 | A bulleted list | The tools and materials needed |
 | A numbered list | The steps |
 

@@ -108,10 +108,10 @@ so the corpus stays an accurate, runnable reference.
 ## A note on images
 
 Fixtures must be deterministic and offline. For stand-in imagery, use the
-[`placeholder:` / `icon:` image schemes](/runes/image-schemes) rather than
+[`placeholder:` / `icon:` image schemes](/docs/concepts/image-schemes) rather than
 external URLs or `data:` URIs — they resolve to inline SVG with no network.
 
 ## See also
 
 - [Plugin authoring](/extend/plugin-authoring/authoring) — where rune fixtures are declared.
-- [Image schemes](/runes/image-schemes) — deterministic placeholder + icon imagery for fixtures.
+- [Image schemes](/docs/concepts/image-schemes) — deterministic placeholder + icon imagery for fixtures.

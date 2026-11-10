@@ -5,7 +5,7 @@ description: The theme-side surface model — frame/background preset registries
 
 # Surface model (theme config)
 
-Refrakt's surface system gives every rune up to two decorable surfaces — **self** (the rune box) and **media** (a `[data-section="media"]` slot) — and a fill/chrome vocabulary over them. Content authors use the attributes (see [Surfaces](/runes/surfaces)); this page covers the theme-side pieces: the preset registries, the routing config, and the tokens.
+Refrakt's surface system gives every rune up to two decorable surfaces — **self** (the rune box) and **media** (a `[data-section="media"]` slot) — and a fill/chrome vocabulary over them. Content authors use the attributes (see [Surfaces](/docs/concepts/surfaces)); this page covers the theme-side pieces: the preset registries, the routing config, and the tokens.
 
 ## Two surfaces, two vocabularies
 
@@ -85,6 +85,6 @@ Memorable named recipes (a pattern + facets bundle) are a deferred **project** c
 | `aspect=` | `frame-aspect=` |
 | `place=` | `frame-place=` |
 
-See [Surfaces](/runes/surfaces) for the content-author attribute reference and live examples.
+See [Surfaces](/docs/concepts/surfaces) for the content-author attribute reference and live examples.
 
 Background: {% ref "SPEC-086" preview="drawer" /%} · {% ref "SPEC-087" preview="drawer" /%}

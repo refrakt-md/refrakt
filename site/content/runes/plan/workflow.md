@@ -11,7 +11,7 @@ description: Using @refrakt-md/plan with AI assistants, CI pipelines, and team w
 
 ### Setting up AI tool integration
 
-`refrakt plan init` wires a host project for AI-assisted plan management in one step: it scaffolds `plan/` content, writes the canonical `AGENTS.md` with the full workflow guide, and — when Claude is targeted — installs a `SessionStart` hook that runs `install` automatically if the CLI isn't resolvable yet. See the [CLI reference](/runes/plan/cli#refrakt-plan-init) for the complete list of side effects and opt-out flags.
+`refrakt plan init` wires a host project for AI-assisted plan management in one step: it scaffolds `plan/` content, writes the canonical `AGENTS.md` with the full workflow guide, and — when Claude is targeted — installs a `SessionStart` hook that runs `install` automatically if the CLI isn't resolvable yet. See the [CLI reference](/docs/cli/plan#refrakt-plan-init) for the complete list of side effects and opt-out flags.
 
 `AGENTS.md` is the canonical instruction file (following the [AGENTS.md convention](https://agent-rules.org), read by Claude Code, Cursor, Aider, Codex, and other tools). Tool-specific files receive a short pointer back to it:
 

@@ -35,7 +35,7 @@ A centered hero section with headline, description, and action buttons.
 
 | You write | It becomes |
 |-----------|------------|
-| A short paragraph, then a heading and a paragraph | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A short paragraph, then a heading and a paragraph | The eyebrow, headline and blurb ([Page sections](/docs/concepts/page-sections)) |
 | More headings and paragraphs | Further copy under the blurb |
 | A list of links | A row of buttons; the first link is the primary action |
 | A code fence | A copyable command line beside the buttons |
@@ -102,7 +102,7 @@ The band's height comes from `height` (named scale) or `aspect` (a ratio); with 
 
 ### Animated background — a live program as the backdrop
 
-The media zone holds *any* [media guest](/runes/media-guests) — including a running [sandbox](/runes/sandbox). Drop a three.js scene in the media zone and the hero gets an **animated background**: the sandbox becomes an inert presentational backdrop (no pointer events, no focus stops), the content overlays it, and the scrim keeps the text legible. Here a wireframe terrain rolls in slow swells, its crests picking up the site's own [niwaki](/themes/niwaki) accent colours:
+The media zone holds *any* [media guest](/docs/concepts/media-guests) — including a running [sandbox](/runes/sandbox). Drop a three.js scene in the media zone and the hero gets an **animated background**: the sandbox becomes an inert presentational backdrop (no pointer events, no focus stops), the content overlays it, and the scrim keeps the text legible. Here a wireframe terrain rolls in slow swells, its crests picking up the site's own [niwaki](/themes/niwaki) accent colours:
 
 {% preview source=true %}
 
@@ -125,7 +125,7 @@ The sandbox becomes a backdrop: it takes no clicks or focus, and fills the band 
 - **Load it eagerly.** `activation="visible"` or `"click"` would put a Run control under the content, out of reach; the build warns.
 - **Keep it dim.** The scene sits under the scrim, so darker than looks right on its own is right.
 - **Respect reduced motion.** Show a still frame when the reader asks for less motion, as the waves scene does.
-- **Keep it light.** It loads with the page. Cap the pixel ratio, pause when the tab is hidden, and show a still fallback where WebGL is missing; the [three.js scene in Media guests](/runes/media-guests#live-program) does all three.
+- **Keep it light.** It loads with the page. Cap the pixel ratio, pause when the tab is hidden, and show a still fallback where WebGL is missing; the [three.js scene in Media guests](/docs/concepts/media-guests#live-program) does all three.
 
 `scrim` picks the edge the scrim darkens from, or `none` for no scrim, and `scrim-type="frost"` blurs the media instead (`scrim-blur` sets how much).
 
@@ -158,12 +158,12 @@ Cover (above) turns the **single media zone** into the backdrop, so the hero can
 
 		The wireframe terrain is a `bg` sandbox; the install snippet is the positioned media guest. One surface, two media intents.
 
-		- [How surfaces compose](/runes/surfaces)
+		- [How surfaces compose](/docs/concepts/surfaces)
 	{% /hero %}
 
 {% /preview %}
 
-The backdrop sandbox is forced to `height="fill"` and the **backdrop posture** — mounted and running, but pointer-inert, not mounted under `prefers-reduced-motion` (the [boot frame](/runes/bg) stands in), and suspended off-screen. The still subject media remains the crawlable / share representation. See [`bg`](/runes/bg) and [media guests](/runes/media-guests) for the full model.
+The backdrop sandbox is forced to `height="fill"` and the **backdrop posture** — mounted and running, but pointer-inert, not mounted under `prefers-reduced-motion` (the [boot frame](/runes/bg) stands in), and suspended off-screen. The still subject media remains the crawlable / share representation. See [`bg`](/runes/bg) and [media guests](/docs/concepts/media-guests) for the full model.
 
 ## Place the media
 

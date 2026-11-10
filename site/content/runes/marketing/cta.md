@@ -32,7 +32,7 @@ A headline with a description and action buttons.
 
 | You write | It becomes |
 |-----------|------------|
-| A short paragraph, then a heading and a paragraph | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A short paragraph, then a heading and a paragraph | The eyebrow, headline and blurb ([Page sections](/docs/concepts/page-sections)) |
 | More headings and paragraphs | Further copy under the blurb |
 | A list of links | A row of buttons; the first link is the primary action |
 | A code fence | A copyable command line beside the buttons |

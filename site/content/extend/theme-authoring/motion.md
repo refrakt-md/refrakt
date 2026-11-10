@@ -11,7 +11,7 @@ The division of labour is what keeps motion from leaking author concerns into th
 
 | Layer | Owns | Where |
 |-------|------|-------|
-| **Author** | *intent* — `reveal="fade"`, `stagger` | the Markdown (see [Motion](/runes/motion)) |
+| **Author** | *intent* — `reveal="fade"`, `stagger` | the Markdown (see [Motion](/docs/concepts/motion)) |
 | **Engine** | the contract — `data-reveal`, `data-stagger`, `--rf-reveal-index` | framework (`@refrakt-md/transform`) |
 | **Theme** | *choreography* — what moves, how far, how fast, in what order | `dimensions/motion.css` + tokens |
 | **Behaviour** | *timing* — when it fires | `@refrakt-md/behaviors` (`scroll-reveal`) |

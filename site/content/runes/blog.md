@@ -28,7 +28,7 @@ The posts come from `folder`; the body only adds a header above them.
 
 | You write | It becomes |
 |-----------|------------|
-| A heading | The headline above the post list ([Page sections](/docs/authoring/page-sections)) |
+| A heading | The headline above the post list ([Page sections](/docs/concepts/page-sections)) |
 | A paragraph after it | The blurb |
 
 {% preview source=true %}

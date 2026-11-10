@@ -87,7 +87,7 @@ Give a project a ![star](icon:star) star, or read the ![docs](icon:book-open) do
 The image `alt` becomes the accessible label. Group syntax works too
 (`icon:hint/warning`). Reach for the `{% icon %}` rune when you need a `size`
 override or a standalone icon; reach for `icon:` for an icon mid-sentence. See
-[Image schemes](/runes/image-schemes) for the full picture, including the
+[Image schemes](/docs/concepts/image-schemes) for the full picture, including the
 `placeholder:` scheme.
 
 ## Available icons

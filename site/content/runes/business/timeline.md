@@ -37,7 +37,7 @@ Chronological events: a company's history, a project's milestones, a roadmap. Fo
 |-----------|------------|
 | A heading such as `2023 - Founded` | An entry; the text before the first dash or colon is its date, the rest its label |
 | The content under the heading, up to the next one | The entry's description |
-| A short paragraph, then a heading one level above the entries and a paragraph, before the first entry | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A short paragraph, then a heading one level above the entries and a paragraph, before the first entry | The eyebrow, headline and blurb ([Page sections](/docs/concepts/page-sections)) |
 
 ## Explicit entries
 

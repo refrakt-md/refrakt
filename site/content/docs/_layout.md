@@ -17,14 +17,21 @@ tint-lock: false
 		- getting-started
 		- content
 
+		## Concepts
+
+		- concepts/page-sections
+		- concepts/surfaces
+		- concepts/media-guests
+		- concepts/image-schemes
+		- concepts/motion
+		- concepts/tint
+
 		## Authoring
 
 		- authoring/frontmatter
 		- authoring/variables
 		- authoring/partials
-		- authoring/page-sections
 		- authoring/entities
-		- authoring/tint
 		- authoring/nav-slug-resolution
 		- authoring/rich-menubar-panels
 
@@ -49,6 +56,7 @@ tint-lock: false
 		- cli/format
 		- cli/write
 		- cli/theme-tools
+		- cli/plan
 
 		## Adapters
 
