@@ -1,4 +1,4 @@
-{% work id="WORK-721" status="ready" priority="low" complexity="complex" source="SPEC-193" tags="docs, runes, simplification" milestone="v0.49.0" %}
+{% work id="WORK-721" status="in-progress" priority="low" complexity="complex" source="SPEC-193" tags="docs, runes, simplification" milestone="v0.49.0" %}
 
 # The longest rune pages are simplified page by page
 
