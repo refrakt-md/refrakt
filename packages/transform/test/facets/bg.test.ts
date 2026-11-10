@@ -349,6 +349,17 @@ describe('bg facet', () => {
 			expect(result?.state).toBeUndefined();
 		});
 
+		it('switches the text to match a dark or light overlay', () => {
+			const dark = bgFacet.resolve(ctx([['bg-overlay', 'dark']]));
+			expect(dark?.dataAttrs?.['data-color-scheme']).toBe('dark');
+			const light = bgFacet.resolve(ctx([['bg-overlay', 'light']]));
+			expect(light?.dataAttrs?.['data-color-scheme']).toBe('light');
+			const token = bgFacet.resolve(ctx([['bg-overlay', 'primary']]));
+			expect(token?.dataAttrs?.['data-color-scheme']).toBeUndefined();
+			const claimed = bgFacet.resolve(ctx([['bg-overlay', 'dark']], { 'color-scheme': 'light' }));
+			expect(claimed?.dataAttrs?.['data-color-scheme']).toBeUndefined();
+		});
+
 		it('treats scrim="none" as no scrim at all', () => {
 			expect(bgFacet.resolve(ctx([['scrim', 'none']]))).toBeNull();
 		});

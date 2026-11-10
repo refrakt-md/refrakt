@@ -236,6 +236,11 @@ export const bgFacet: Facet = {
 			if (overlay === 'dark' || overlay === 'light') {
 				overlayAttrs['data-bg-overlay'] = overlay;
 				if (overlayOpacity) overlayAttrs.style = `opacity: ${overlayOpacity}`;
+				// A dark wash needs light text and a light wash dark text, as a scrim does.
+				if (!ctx.axis('color-scheme')) {
+					dataAttrs['data-color-scheme'] = overlay;
+					state['color-scheme'] = overlay;
+				}
 			} else if (TOKEN_REF.test(overlay)) {
 				const parts = [`background: var(--rf-color-${overlay})`];
 				if (overlayOpacity) parts.push(`opacity: ${overlayOpacity}`);

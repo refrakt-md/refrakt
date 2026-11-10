@@ -61,6 +61,13 @@
 			rgb(var(--scrim-color, 0 0 0) / var(--scrim-strength, 0.55))
 		);
 	}
+	/* Over a scrim or a flat wash, muted text (a blurb) is too faint to read
+	 * against a photo, so it takes the full foreground color, as on a cover. */
+	[data-bg][data-color-scheme]:has(
+		> [data-name="bg"] > :is([data-name="scrim"], [data-bg-overlay])
+	) {
+		--rf-color-muted: var(--rf-color-text);
+	}
 	[data-name="scrim"][data-scrim="frost"] {
 		-webkit-backdrop-filter: blur(var(--scrim-blur, 8px));
 		backdrop-filter: blur(var(--scrim-blur, 8px));
