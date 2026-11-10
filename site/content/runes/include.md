@@ -125,6 +125,6 @@ Failures render on the page as a caution callout and record a build error; one b
 
 ## See also
 
-- [Partials](/docs/authoring/partials) — the shared `_partials/` directory, file roots, and the choice between the two runes
+- [Partials](/docs/authoring/partials) — the shared `_partials/` directory, file roots, and `variables`
 - [data](/runes/data) — the rune that most often forces this choice
 - [snippet](/runes/snippet) — the other preprocessor rune

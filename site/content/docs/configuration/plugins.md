@@ -58,6 +58,8 @@ When refrakt builds a site (or the CLI looks up a namespace like `refrakt plan n
 
 Either source produces the same result: a list of `DiscoveredPlugin` objects, each tagged with the source that found it.
 
+Migrating a flat config with `refrakt config migrate` fills in `site.plugins` from discovery when the field is absent; see [Migration](/docs/configuration/migration#auto-populating-plugins).
+
 ## Why declare `plugins` explicitly?
 
 For most single-purpose projects you **don't need to declare `plugins`** — auto-discovery picks up every `@refrakt-md/*` package installed in `node_modules`, which covers the common case. Reach for an explicit `plugins` array only when one of these applies:
@@ -170,10 +172,6 @@ npx refrakt plugins list --format json
 ```
 
 The output includes the discovery `source` for each plugin (`"config"` or `"dependency-scan"`), so you can confirm the right resolution path is firing.
-
-## Auto-population during migration
-
-The `refrakt config migrate` command auto-populates `site.plugins` from the project's installed `@refrakt-md/*` packages on first migration if the field is absent. Discovery failures are non-blocking — the migration still applies the shape change.
 
 ## Want to build your own?
 

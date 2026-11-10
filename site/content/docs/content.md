@@ -104,41 +104,7 @@ The page `docs/guides/intro.md` inherits from three layouts in order:
 
 ### Regions
 
-Layouts define named regions using the `{% layout %}` and `{% region %}` runes:
-
-```markdoc
-{% layout %}
-	{% region name="header" %}
-	# My Site
-	{% /region %}
-
-	{% region name="nav" %}
-		{% nav %}
-		## Docs
-		- getting-started
-		{% /nav %}
-	{% /region %}
-{% /layout %}
-```
-
-### Region merge modes
-
-When a child layout defines a region that already exists in a parent, the `mode` attribute controls how they combine:
-
-| Mode | Behavior |
-|------|----------|
-| `replace` | Child region replaces the parent's (default) |
-| `prepend` | Child content is prepended before the parent's |
-| `append` | Child content is appended after the parent's |
-
-```markdoc
-{% region name="nav" mode="append" %}
-## Extra Section
-- new-page
-{% /region %}
-```
-
-This appends additional navigation items to the inherited nav region.
+Each `_layout.md` fills named regions (`header`, `nav`, `sidebar`, `footer`, …) with `{% layout %}` and `{% region %}`. A child layout's region replaces the parent's region of the same name by default, or adds to it with `mode="prepend"` / `mode="append"`. The syntax and the merge modes are on the [Layout & Region](/runes/layout) rune page.
 
 ## Drafts
 

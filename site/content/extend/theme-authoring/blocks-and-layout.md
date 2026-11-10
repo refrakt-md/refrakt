@@ -48,15 +48,16 @@ metaFields: {
 |-------|------|-------------|
 | `metaType` | `'status' \| 'category' \| 'quantity' \| 'temporal' \| 'tag' \| 'id' \| 'code'` | Semantic kind. Drives intrinsic render shape and typography. Emits `data-meta-type` |
 | `label` | `string` | Human-readable label. Used as the `<dt>` in a `definition-list`, and as link/icon text where applicable. Bar fields are unlabelled |
-| `sentimentMap` | `Record<string, 'positive' \| 'negative' \| 'caution' \| 'neutral'>` | Maps the resolved value to a sentiment. Emits `data-meta-sentiment` when matched. Never changes shape — color only |
+| `sentimentMap` | `Record<string, 'positive' \| 'negative' \| 'caution' \| 'neutral'>` | Maps the resolved value to a sentiment. Emits `data-meta-sentiment` when matched; with no map, or no match for the value, the attribute is omitted and the value renders neutrally. Never changes shape — color only |
 | `condition` | `string` | Field renders only when the named modifier has a truthy value |
 | `renderWhenEmpty` | `boolean` | Loosen `condition` to test *presence* instead of truthiness — render when the modifier is defined, even if the value is `""`. Lets an empty-but-present value still project a block (e.g. `codegroup` `title=""` renders the window chrome without a filename) |
 | `href` | `string` | Render the field as a link. The named modifier holds the URL |
 | `rating` | `{ total?: string }` | Render the field as a rating widget. The field value is the filled count; `total` names the modifier holding the max (default `5`) |
 | `icon` | `{ group: string }` | Decorate with a leading icon. The field's *value* selects the glyph within `group` |
-| `tag` | `string` | Element tag override (e.g. `time` for a temporal field) |
-| `splitOn` | `string` | Treat the value as a delimited collection — one element per item |
-| `transform` | `'duration' \| 'uppercase' \| 'capitalize'` | Value transform applied before rendering |
+| `tag` | `string` | Element tag override. Default `span`; use `time` for a temporal field so the engine emits `<time datetime="…">…</time>` |
+| `splitOn` | `string` | Treat the value as a delimited collection — split on this character, one element per item. Used for `tags`-style fields |
+| `transform` | `'duration' \| 'uppercase' \| 'capitalize'` | Value transform applied before rendering. `duration` turns ISO 8601 (`PT30M`) into readable text (`30m`) |
+| `i18nKey` | `string` | Pins the label's translation key. By default it is derived as `{scope}.{block}.{fieldName}`; set this to keep a key stable across a block or field rename |
 
 ## blocks — projected metadata blocks
 
@@ -270,7 +271,7 @@ first field present carries `data-lead`.
 ```
 
 - The skeleton lays the fields out in a column. Lumina sets the whole
-  block small (`--rf-text-sm`), as fine print, emphasises `[data-lead]` by
+  block small (`--rf-text-sm`), as fine print, emphasizes `[data-lead]` by
   weight and mutes the rest, by `:not([data-lead])`.
 - Nothing ranks the values (`data-meta-rank`), so a compact container
   hides none of them.

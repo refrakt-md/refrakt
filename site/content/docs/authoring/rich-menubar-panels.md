@@ -13,41 +13,17 @@ The composition relies on three coordinated rules:
 2. **Position determines slot.** Within a `## group`, the first non-list content block becomes the panel's **intro** slot (a featured hero card or eyebrow). The last non-list block becomes the **footer** slot. Lists and middle content render as the panel's main body.
 3. **`---` is a column boundary, scoped to the layout.** In `layout="columns"`, `---` between `##` sections opens a new column. In a headingless columns nav (used inside a menubar panel), `---` between flat items splits items into columns.
 
-Plus a new `layout="strip"` for compact secondary link rows, and a generalised `auto=true` description / icon enrichment that applies to every layout.
+Two more pieces help: [`layout="strip"`](/runes/nav#strip-compact-secondary-nav) for compact secondary link rows inside a panel, and `auto=true` description / icon enrichment, which applies to every layout (see [Resolution rules](#resolution-rules-any-layout-autotrue)).
+
+This page is the composition guide. The [`nav`](/runes/nav) rune page covers the basics — the content model, each layout, collapsible sidebars, and the attribute table.
 
 {% hint type="note" %}
 **The examples below render live in this page.** Hover (or focus) over a menubar trigger to open its dropdown. The source for each example is shown above the rendered nav.
 {% /hint %}
 
-## Simple menubar — unchanged
+## Simple menubar
 
-A flat dropdown still works exactly as it did. No `---`, no extra content, no nested navs — just `## group` + list of items.
-
-```markdoc
-{% nav layout="menubar" %}
-- [Docs](/docs/getting-started)
-
-## Product
-- [Configuration](/docs/configuration/overview)
-- [Themes](/extend/theme-authoring/overview)
-
-## Resources
-- [Blog](/blog)
-- [Changelog](/releases)
-{% /nav %}
-```
-
-{% nav layout="menubar" %}
-- [Docs](/docs/getting-started)
-
-## Product
-- [Configuration](/docs/configuration/overview)
-- [Themes](/extend/theme-authoring/overview)
-
-## Resources
-- [Blog](/blog)
-- [Changelog](/releases)
-{% /nav %}
+A flat dropdown — `## group` plus a list of items, with no `---`, extra content or nested navs — is the plain [menubar layout](/runes/nav#menubar-header). Everything below builds on it.
 
 ## Adding a nested columns nav
 
@@ -203,7 +179,7 @@ Inline a paragraph (indented as a continuation) under any list item to give that
 
 ## Inline badges
 
-The `{% badge %}` rune is recognised inside or after a nav item's link text. The engine attaches it to the item so themes can render it adjacent to the title.
+The `{% badge %}` rune is recognized inside or after a nav item's link text. The engine attaches it to the item so themes can render it adjacent to the title.
 
 ```markdoc
 {% nav layout="menubar" %}
@@ -291,27 +267,7 @@ The columns layout grows a `---` rule: between `##` sections at the nav's top le
 - [Changelog](/releases)
 {% /nav %}
 
-Three columns: Product+Tools, Themes+Adapters, Resources. Backwards compatible — a columns nav with no `---` still gets one column per `##` section (the today's-behaviour case).
-
-## `layout="strip"` — compact secondary nav
-
-A flat horizontal row of items — no groups, no panels, just compact links. Useful as a persistent secondary nav below the menubar (Vercel / Stripe docs pattern) or nested inside a panel footer slot.
-
-```markdoc
-{% nav layout="strip" %}
-- [Changelog](/releases)
-- [Blog](/blog)
-- [Docs](/docs/getting-started)
-{% /nav %}
-```
-
-{% nav layout="strip" %}
-- [Changelog](/releases)
-- [Blog](/blog)
-- [Docs](/docs/getting-started)
-{% /nav %}
-
-Strip is flat by design — it warns if `##` headings are present.
+Three columns: Product+Tools, Themes+Adapters, Resources. A columns nav with no `---` still gets one column per `##` section.
 
 ## Mobile collapse — Linear vs Vercel from structure
 
@@ -346,7 +302,7 @@ The mobile collapse pattern emerges from how you structured the panel, not from 
 {% /nav %}
 ```
 
-Both patterns work without any layout-level configuration — the structure dictates the behaviour.
+Both patterns work without any layout-level configuration — the structure dictates the behavior.
 
 ## Resolution rules (any layout, `auto=true`)
 
@@ -363,5 +319,5 @@ For navs with `auto=true`, every item gets enriched from its linked page's front
 ## See also
 
 - [Nav slug resolution](/docs/authoring/nav-slug-resolution) — how slugs become URLs at build time, multi-segment slugs, error format, active state
-- The `nav` rune reference for the full attribute table
-- The `badge` rune reference for sentiment / rank / type combinations
+- [nav](/runes/nav) — the rune reference: layouts, collapsible sidebars, the full attribute table
+- [badge](/runes/badge) — sentiment / rank / type combinations

@@ -85,7 +85,7 @@ npx refrakt config migrate --to multi-site --name main --apply
 
 ## Auto-populating `plugins`
 
-On flat → nested migration, `refrakt config migrate` auto-populates the top-level `plugins` field from `discoverPlugins()` if absent. This gives you a working plugin list immediately without remembering which packages contribute commands. Discovery failures are non-blocking.
+On flat → nested migration, `refrakt config migrate` auto-populates `site.plugins` from the project's installed plugin packages (the same dependency scan [plugin discovery](/docs/configuration/plugins) uses) if the field is absent. This gives you a working plugin list immediately without remembering which packages contribute runes and commands. Discovery failures are non-blocking — the migration still applies the shape change.
 
 ## Idempotency
 

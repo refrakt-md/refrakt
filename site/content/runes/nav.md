@@ -196,9 +196,9 @@ icon: rocket
 - `description` — card body. Optional; the card renders title-only when missing.
 - `icon` — icon name resolvable by the `{% icon %}` rune. Optional; the card renders without an icon when missing.
 
-## Mobile behaviour
+## Mobile behavior
 
-Lumina handles responsive behaviour without any author work:
+Lumina handles responsive behavior without any author work:
 
 - `menubar` collapses behind a hamburger button below the breakpoint. The button is emitted by the rune itself — themes show it via media query.
 - `columns` stacks into a single column on narrow viewports.
