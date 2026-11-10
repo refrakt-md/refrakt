@@ -131,4 +131,4 @@ The neutral default is the unconditional starting point — there's no config sn
 }
 ```
 
-To swap to a different color identity entirely, layer in a preset. See [Tideline](/themes/tideline) for the cream-and-navy preset, or [Niwaki](/themes/niwaki) for Japanese-garden syntax colors.
+To swap to a different color identity entirely, layer in a preset — see the [themes catalog](/themes/themes-catalog) to choose one and [Lumina](/themes/lumina#opt-in-to-a-preset) to enable it.

@@ -5,11 +5,7 @@ description: Cream paper + maritime navy, with IBM Plex Sans and Plex Mono. The 
 
 # Tideline
 
-Tideline is the warm-branded preset — cream-and-maritime-navy across body, surface, status, and code. Named for the line where land meets water; the cream reads as paper/sand, the navy as deep water.
-
-Tideline sets body text in **IBM Plex Sans** and code in **IBM Plex Mono**.
-
-This page is rendered on a site whose active preset is **niwaki**. The Tideline look you see in the palettes and the live preview below is scoped to those subtrees via `tint="tideline"` — the surrounding prose stays in niwaki.
+Tideline is refrakt's own warm-branded preset: cream paper and maritime navy across body, surfaces, status and code, named for the line where land meets water. It is the one preset that also sets typography — **IBM Plex Sans** for text, **IBM Plex Mono** for code — and it renders code on navy even in light mode. Its syntax colors set only the nine base roles, so types paint like functions and tags like keywords.
 
 ## Opt in
 
@@ -24,23 +20,7 @@ This page is rendered on a site whose active preset is **niwaki**. The Tideline 
 }
 ```
 
-To use a different typeface, override `theme.tokens.font.sans` after opting in — for example, Outfit:
-
-```jsonc
-{
-  "site": {
-    "theme": {
-      "package": "@refrakt-md/lumina",
-      "presets": ["@refrakt-md/lumina/presets/tideline"],
-      "tokens": {
-        "font": {
-          "sans": "'Outfit', system-ui, sans-serif"
-        }
-      }
-    }
-  }
-}
-```
+To keep the colors but use another typeface, override `theme.tokens.font.sans` (for example `"'Outfit', system-ui, sans-serif"`) after opting in.
 
 ## Palette
 
@@ -65,13 +45,9 @@ To use a different typeface, override `theme.tokens.font.sans` after opting in �
 - Surface: #1a2940
 {% /palette %}
 
-### Primary scale (cerulean → frosted blue)
-
 {% palette title="Primary scale" tint="tideline" %}
 - Primary: #f0f6f9, #dcebf0, #b8d6e2, #a8dadc, #70b4c0, #457b9d, #376585, #1d3557, #182c4a, #12213a, #0c162a
 {% /palette %}
-
-### Status
 
 {% palette title="Status — light" tint="tideline" tint-mode="light" showContrast=true %}
 ## Info
@@ -95,18 +71,6 @@ To use a different typeface, override `theme.tokens.font.sans` after opting in �
 - Border: #a8d4b8
 {% /palette %}
 
-## Code surface
-
-Tideline keeps the distinctive "code on navy" treatment: code blocks render on a saturated navy background with off-white text, even in light mode. The high-contrast code surface is part of the brand identity.
-
-| Token | Light | Dark |
-|---|---|---|
-| `color.code.bg` | `#1d3557` | `#152238` |
-| `color.code.text` | `#f1faee` | `#f1faee` |
-| `color.code.inline-bg` | `#f9ebcc` | `rgba(168, 218, 220, 0.08)` |
-
-Syntax colors are mustard-keyword + frosted-blue (no relation to the niwaki spectrum):
-
 {% palette title="Syntax — light" tint="tideline" tint-mode="light" %}
 - Keyword: #f2cc8f
 - Function: #70b4c0
@@ -126,9 +90,12 @@ Syntax colors are mustard-keyword + frosted-blue (no relation to the niwaki spec
 - Variable: #b8d6e2
 {% /palette %}
 
-## Live preview
+{% typography title="Tideline" %}
+- body: IBM Plex Sans (400, 500, 600, 700)
+- mono: IBM Plex Mono (400, 500)
+{% /typography %}
 
-Here's the same TypeScript+JSX snippet used across the preset doc pages, rendered through Tideline's full integrated look — chrome, syntax colors, and the canonical navy code canvas.
+## Preview
 
 {% codegroup tint="tideline" %}
 ```ts
@@ -150,17 +117,6 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Tideline's syntax palette was authored at the 9-role tier and doesn't set the extended syntax roles (`type`, `tag`, `attribute`, `operator`, `number`, `regex`). Those fall back through the broad-mapping derivation — type and attribute paint like function, tag like keyword, operator like punctuation. Compare with [Nord](/themes/nord) to see what the extended-role splits look like in practice.
+## Attribution
 
-## Typography
-
-{% typography title="Tideline" %}
-- body: IBM Plex Sans (400, 500, 600, 700)
-- mono: IBM Plex Mono (400, 500)
-{% /typography %}
-
-Plex Sans is humanist, slightly warm — pairs naturally with the cream-paper / maritime-navy palette — and the matching Plex Mono gives tideline a cohesive Plex-family identity (Sans + Mono designed to work together).
-
-## Composing with niwaki
-
-`presets: ["tideline", "niwaki"]` gives tideline chrome (Plex + cream + navy) with niwaki-colored code blocks instead of tideline's frosted-blue syntax. Useful when you like the warm-paper feel for the page but want the Japanese-garden code identity. See [Niwaki](/themes/niwaki) for the composition example.
+Original to refrakt; ships in `@refrakt-md/lumina` under the MIT license. IBM Plex is by IBM, under the SIL Open Font License.

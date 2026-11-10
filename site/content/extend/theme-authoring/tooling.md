@@ -167,3 +167,54 @@ refrakt theme info
 ```
 
 Displays the theme name, version, install path, description, and available exports.
+
+## refrakt theme validate
+
+The theme-authoring checks, for people writing a theme rather than a site.
+
+```shell
+refrakt theme validate --config ./my-theme/config.json
+refrakt theme validate --manifest ./my-theme/manifest.json
+refrakt theme validate --config ./config.json --manifest ./manifest.json
+```
+
+Currently supports JSON config files via CLI; TypeScript configs require the module to be built first.
+
+| Flag | Description |
+|------|-------------|
+| `--config <path>` | Path to a `ThemeConfig` (JSON) |
+| `--manifest <path>` | Path to `manifest.json` |
+
+## refrakt theme coverage
+
+A theme configures no rune, so it cannot promise each rune looks right. It covers the vocabulary instead: every meta type, sentiment, zone layout, sequence, section role, media kind and universal-axis value. Every rune that speaks the vocabulary then renders, including runes written after the theme shipped. `theme coverage` reports, for each value, whether the theme's CSS styles it, leaves it to the base stylesheet, or nothing does.
+
+```shell
+# The theme's CSS, read recursively; the base is @refrakt-md/skeleton
+refrakt theme coverage styles
+
+# One row per value, for a test of your own
+refrakt theme coverage styles --json
+```
+
+```
+Theme vocabulary: 105 values — 86 styled by the theme, 6 left to the base stylesheet, 13 unstyled.
+
+  meta-type
+    ✓ [data-meta-type="status"]
+  …
+  width
+    · [data-width="compact"]  (base)
+    ✗ [data-width="content"]
+```
+
+The values are read from the registries that define them, so a value added to refrakt appears in the report without anything to update. A `✗` is information, not a failure: a value at its default (`width="content"`, `prominence="normal"`) needs no rule. Any other `✗` is a gap to style, or a choice to record.
+
+It is part of a theme's definition of done, beside `refrakt contracts --check`. Lumina runs it as a test, `packages/lumina/test/vocabulary-coverage.test.ts`. That test records its unstyled values, with a reason for each, as a set that may only shrink.
+
+| Flag | Description |
+|------|-------------|
+| `<css path>...` | The theme's CSS files or directories (default: `.`) |
+| `--base <dir>` | The base stylesheet (default: the installed `@refrakt-md/skeleton`) |
+| `--no-base` | Read no base stylesheet |
+| `--json` | Print one row per value as JSON |
