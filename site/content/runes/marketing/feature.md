@@ -41,7 +41,7 @@ A feature grid with named items and descriptions.
 
 | You write | It becomes |
 |-----------|------------|
-| A short paragraph, then a heading and a paragraph, before the list | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A short paragraph, then a heading and a paragraph, before the list | The eyebrow, headline and blurb ([Page sections](/docs/concepts/page-sections)) |
 | A list item | A feature |
 | Bold text in the item's first paragraph | The feature's name |
 | An image or icon beside the name | The feature's icon |

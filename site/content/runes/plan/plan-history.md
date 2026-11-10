@@ -69,7 +69,7 @@ The timeline is read from git: every commit that changed an entity's file, compa
 
 ## CLI companion
 
-The [`refrakt plan history`](/runes/plan/cli#refrakt-plan-history) command provides the same history data in the terminal, with additional filtering options (`--author`, `--status`).
+The [`refrakt plan history`](/docs/cli/plan#refrakt-plan-history) command provides the same history data in the terminal, with additional filtering options (`--author`, `--status`).
 
 ## Attributes
 

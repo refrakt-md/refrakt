@@ -19,7 +19,7 @@ A **plugin** is an npm package that extends refrakt with extra runes, layouts, t
 | [`@refrakt-md/business`](/runes/business) | Organizational and team content | 3 runes — cast, organization, timeline |
 | [`@refrakt-md/places`](/runes/places) | Events, maps, and travel | 3 runes — event, map, itinerary |
 | [`@refrakt-md/media`](/runes/media) | Music and audio content | 3 runes — playlist, track, audio |
-| [`@refrakt-md/plan`](/runes/plan) | Spec-driven project planning | 9 runes, [8 CLI commands](/runes/plan/cli), cross-page pipeline |
+| [`@refrakt-md/plan`](/runes/plan) | Spec-driven project planning | 9 runes, [9 CLI commands](/docs/cli/plan), cross-page pipeline |
 
 Each plugin's rune index page (linked from the first column) documents every rune it ships, with worked examples.
 

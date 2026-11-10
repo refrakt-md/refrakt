@@ -74,6 +74,6 @@ Plugins can extend the CLI with additional subcommands. These are available when
 | Plugin | Command | Purpose |
 |--------|---------|---------|
 | [`@refrakt-md/docs`](/runes/docs) | [`refrakt docs extract`](/runes/docs/cli) | Generate API reference docs from TypeScript or Python source |
-| [`@refrakt-md/plan`](/runes/plan) | [`refrakt plan`](/runes/plan/cli) | Project planning — status, next item, update, create, next-id, validate, init, history, migrate |
+| [`@refrakt-md/plan`](/runes/plan) | [`refrakt plan`](/docs/cli/plan) | Project planning — status, next item, update, create, next-id, validate, init, history, migrate |
 
 Run `refrakt --help` to see all available commands and options.

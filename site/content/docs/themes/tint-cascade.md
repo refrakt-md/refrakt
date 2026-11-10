@@ -1,4 +1,4 @@
 ---
 title: Moved
-redirect: /docs/authoring/tint
+redirect: /docs/concepts/tint
 ---

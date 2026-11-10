@@ -49,6 +49,6 @@ See [Schema](/docs/configuration/schema) for the versioned URLs.
 
 ## See also
 
-- [Tint](/docs/authoring/tint) — how `tint`, `tint-mode` and `tint-lock` cascade
+- [Tint](/docs/concepts/tint) — how `tint`, `tint-mode` and `tint-lock` cascade
 - [Entities](/docs/authoring/entities) — what `type` and `id` register the page as
 - [Configuration reference](/docs/configuration/reference) — the same treatment for `refrakt.config.json`

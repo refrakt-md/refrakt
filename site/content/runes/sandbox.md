@@ -90,7 +90,7 @@ Because scripts run for real, you can `import` an ES module straight from a CDN 
 	{% sandbox src="threejs-cube" height=300 /%}
 {% /preview %}
 
-Pin the version for reproducibility; for production also honour `prefers-reduced-motion` and provide a fallback — see the polished [three.js scene in Media guests](/runes/media-guests#live-program).
+Pin the version for reproducibility; for production also honour `prefers-reduced-motion` and provide a fallback — see the polished [three.js scene in Media guests](/docs/concepts/media-guests#live-program).
 
 ## Host-owned height — `height="fill"`
 

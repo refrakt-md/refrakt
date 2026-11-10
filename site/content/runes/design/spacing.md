@@ -12,7 +12,7 @@ type: rune
 Displays a design system's spacing scale, border radii and shadows as documentation.
 
 {% hint type="note" %}
-**Not the `spacing` attribute.** This rune *renders a design system's spacing scale* as documentation. The universal `spacing` attribute — which adjusts the rhythm around any block rune — is a different thing with the same name; see [Surfaces](/runes/surfaces#spacing-and-inset).
+**Not the `spacing` attribute.** This rune *renders a design system's spacing scale* as documentation. The universal `spacing` attribute — which adjusts the rhythm around any block rune — is a different thing with the same name; see [Surfaces](/docs/concepts/surfaces#spacing-and-inset).
 {% /hint %}
 
 ## Full token set

@@ -30,7 +30,7 @@ A people directory for team pages, speaker lineups and contributor lists. To des
 
 | You write | It becomes |
 |-----------|------------|
-| A short paragraph, then a heading and a paragraph, before the list | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A short paragraph, then a heading and a paragraph, before the list | The eyebrow, headline and blurb ([Page sections](/docs/concepts/page-sections)) |
 | A list item `Name - Role` | A member; the text after the dash is their role |
 | An image in a list item | That member's portrait |
 

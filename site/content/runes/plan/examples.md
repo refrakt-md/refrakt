@@ -1,6 +1,7 @@
 ---
 title: Example Plan Data
 description: Sample plan entities used to populate aggregation rune showcases
+draft: true
 ---
 
 # Example Plan Entities

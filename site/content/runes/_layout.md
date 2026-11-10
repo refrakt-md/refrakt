@@ -14,10 +14,6 @@ tint-lock: false
 		## Essentials
 
 		- rune-catalog
-		- image-schemes
-		- media-guests
-		- motion
-		- surfaces
 
 		## Sections & blocks
 
@@ -181,7 +177,6 @@ tint-lock: false
 		- plan/decision-log
 		- plan/milestone
 		- plan/plan-activity
-		- plan/cli
 		- plan/plan-history
 		- plan/plan-progress
 		- plan/workflow

@@ -17,7 +17,7 @@ Everything in the body is kept, in the order you wrote it.
 
 | You write | It becomes |
 |-----------|------------|
-| An image, a video, or a [`placeholder:` / `icon:` image](/runes/image-schemes) | The figure's media; an image in a paragraph of its own is unwrapped, so it sits directly in the figure |
+| An image, a video, or a [`placeholder:` / `icon:` image](/docs/concepts/image-schemes) | The figure's media; an image in a paragraph of its own is unwrapped, so it sits directly in the figure |
 | The first paragraph that holds no image, when `caption` is not set | The caption, shown last, below the content |
 | Anything else (a code block, a table, a list, a nested rune, another paragraph) | Kept as written |
 
@@ -69,7 +69,7 @@ A figure whose body is only media publishes an [`ImageObject`](https://schema.or
 
 ## Elevation & frame
 
-A figure *is* a frame around its image, so it sets `frameTarget: "self"` ([surface model](/runes/surfaces)): `frame` chrome lands on the figure itself. `elevation` floats the figure as a box (`box-shadow`); `frame-shadow` is the image's silhouette `drop-shadow`; `frame-aspect` crops it to a ratio.
+A figure *is* a frame around its image, so it sets `frameTarget: "self"` ([surface model](/docs/concepts/surfaces)): `frame` chrome lands on the figure itself. `elevation` floats the figure as a box (`box-shadow`); `frame-shadow` is the image's silhouette `drop-shadow`; `frame-aspect` crops it to a ratio.
 
 {% preview source=true %}
 	{% figure elevation="floating" frame-aspect="4/3" caption="Framed at 4/3 with a lifted figure" %}

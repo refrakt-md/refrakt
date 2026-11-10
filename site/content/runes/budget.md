@@ -47,7 +47,7 @@ Use headings for categories and list items with amounts for line items.
 
 | You write | It becomes |
 |-----------|------------|
-| A short paragraph, then a heading and a paragraph, before the first category heading | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A short paragraph, then a heading and a paragraph, before the first category heading | The eyebrow, headline and blurb ([Page sections](/docs/concepts/page-sections)) |
 | A heading | A category, with its subtotal; the content up to the next heading of that level is its body |
 | A heading ending in `(estimate)` or `(est.)` | A category marked as an estimate |
 | A list item written `Description: amount` | A line item, counted in the category subtotal and the total |

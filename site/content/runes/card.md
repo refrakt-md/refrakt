@@ -124,7 +124,7 @@ for the full model.
 
 ## Elevation & frame
 
-A card exposes two decorable surfaces ([surface model](/runes/surfaces)): the **self** surface (the card box) takes `elevation` — a `box-shadow` that floats the whole tile — and the **media** surface (the `[data-section="media"]` zone) takes `frame` chrome: aspect, crop anchor, a silhouette `drop-shadow`, displacement, and oversize. The two never collide — `elevation` is the card's z-shadow, `frame-shadow` is the photo's silhouette.
+A card exposes two decorable surfaces ([surface model](/docs/concepts/surfaces)): the **self** surface (the card box) takes `elevation` — a `box-shadow` that floats the whole tile — and the **media** surface (the `[data-section="media"]` zone) takes `frame` chrome: aspect, crop anchor, a silhouette `drop-shadow`, displacement, and oversize. The two never collide — `elevation` is the card's z-shadow, `frame-shadow` is the photo's silhouette.
 
 {% preview source=true %}
 
@@ -137,7 +137,7 @@ A card exposes two decorable surfaces ([surface model](/runes/surfaces)): the **
 
 {% /preview %}
 
-`elevation` lifts the card off the page; `frame` (or a named preset from theme/project config) decorates the media zone. Because the media zone is a clipping host, a displaced or `oversize`d guest is cropped into a peek — `frame-anchor` picks the focal point. See [surfaces](/runes/surfaces) for the full facet list.
+`elevation` lifts the card off the page; `frame` (or a named preset from theme/project config) decorates the media zone. Because the media zone is a clipping host, a displaced or `oversize`d guest is cropped into a peek — `frame-anchor` picks the focal point. See [surfaces](/docs/concepts/surfaces) for the full facet list.
 
 ## Cover mode
 
@@ -168,7 +168,7 @@ A cover card has no natural height (there's no side-by-side content to set it), 
 
 ### The cover scrim
 
-Overlaying text on an arbitrary photo is a legibility footgun, so cover mode turns on a default [scrim](/runes/bg#scrim) on the media surface — a gradient weighted toward the content edge (it follows `content-place`, and you can pin it with an explicit `scrim="top|bottom|left|right"`). The example above instead uses the **frost** treatment (`scrim-type="frost"`, with `scrim-blur` on the `none`/`sm`/`md`/`lg` scale): a frosted-glass blur banded behind the text rather than a gradient. Either way the scrim is masked to the content edge so it never blurs or darkens the whole image, and the foreground reads against the darkened media automatically (`scrim-tone` controls the polarity — a dark scrim yields light text). Opt out with `scrim="none"`, or set a [`tint`](/runes/surfaces) for a bespoke overlay colour.
+Overlaying text on an arbitrary photo is a legibility footgun, so cover mode turns on a default [scrim](/runes/bg#scrim) on the media surface — a gradient weighted toward the content edge (it follows `content-place`, and you can pin it with an explicit `scrim="top|bottom|left|right"`). The example above instead uses the **frost** treatment (`scrim-type="frost"`, with `scrim-blur` on the `none`/`sm`/`md`/`lg` scale): a frosted-glass blur banded behind the text rather than a gradient. Either way the scrim is masked to the content edge so it never blurs or darkens the whole image, and the foreground reads against the darkened media automatically (`scrim-tone` controls the polarity — a dark scrim yields light text). Opt out with `scrim="none"`, or set a [`tint`](/docs/concepts/surfaces) for a bespoke overlay colour.
 
 The scheme is scoped to the overlaid text, not the whole card: the card's own surface — the padded edge framing the media well — keeps the page palette (light in light mode, dark in dark mode), while only the text sitting on the image flips to stay legible.
 

@@ -45,7 +45,7 @@ Write a heading for each plan, with its name and price.
 |-----------|------------|
 | A heading `Name — Price` (any dash) | A tier: the plan's name, then its price |
 | The content under it, up to the next tier heading | The tier's body, such as its feature list and a sign-up link |
-| A short paragraph, then a heading and a paragraph, before the first tier | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A short paragraph, then a heading and a paragraph, before the first tier | The eyebrow, headline and blurb ([Page sections](/docs/concepts/page-sections)) |
 
 ## Explicit tiers
 

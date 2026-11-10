@@ -37,7 +37,7 @@ Headings automatically split content into reveal steps.
 
 | You write | It becomes |
 |-----------|------------|
-| A short paragraph, then a heading and a paragraph, before the first step heading | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A short paragraph, then a heading and a paragraph, before the first step heading | The eyebrow, headline and blurb ([Page sections](/docs/concepts/page-sections)) |
 | A heading | A step's title; the content up to the next heading of the same level is the step |
 
 ## Attributes
