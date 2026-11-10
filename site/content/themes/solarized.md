@@ -28,7 +28,7 @@ Solarized ships both modes so the page renders coherently in either — system p
 
 ## The palette
 
-The Solarized 16-colour palette: eight base tones (the mode-flipped canvas / text family) plus eight accents (mode-symmetric).
+The Solarized 16-color palette: eight base tones (the mode-flipped canvas / text family) plus eight accents (mode-symmetric).
 
 {% palette title="Solarized — light" tint="solarized" tint-mode="light" showContrast=true showA11y=true %}
 - base3 (canvas): #fdf6e3

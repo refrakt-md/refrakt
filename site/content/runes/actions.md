@@ -40,7 +40,7 @@ A fence is a `command` block, unranked, beside the buttons. On a narrow screen t
 
 	{% actions %}
 	```shell
-	npm create refrakt@latest
+	npx create-refrakt
 	```
 
 	- [Read the docs](/docs/getting-started)

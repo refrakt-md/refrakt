@@ -1,11 +1,11 @@
 ---
 title: Nord preset
-description: Nord — Arctic, north-bluish colour palette with integrated canvas. Frost, Aurora, Polar Night, Snow Storm.
+description: Nord — Arctic, north-bluish color palette with integrated canvas. Frost, Aurora, Polar Night, Snow Storm.
 ---
 
 # Nord
 
-Nord is an **integrated** palette preset — unlike [niwaki](/themes/niwaki), which leaves chrome and code surface to whichever theme sits beneath, Nord ships its chrome, code surface, *and* syntax foreground together. The 16 hues were tuned against the Polar Night / Snow Storm canvas families specifically; rendering Nord's foreground on a warm or neutral canvas misrepresents the palette's intent. So Nord claims chrome and canvas as part of the package. Typography, spacing, status sentiments, and radius stay with whatever theme is active — Nord's scope is colour identity, not structural identity.
+Nord is an **integrated** palette preset — unlike [niwaki](/themes/niwaki), which leaves chrome and code surface to whichever theme sits beneath, Nord ships its chrome, code surface, *and* syntax foreground together. The 16 hues were tuned against the Polar Night / Snow Storm canvas families specifically; rendering Nord's foreground on a warm or neutral canvas misrepresents the palette's intent. So Nord claims chrome and canvas as part of the package. Typography, spacing, status sentiments, and radius stay with whatever theme is active — Nord's scope is color identity, not structural identity.
 
 The palette is structured as four named groups: **Polar Night** (the dark canvas family), **Snow Storm** (light text / light canvas), **Frost** (cool blue accents — types, functions, keywords), and **Aurora** (warm accents — red, orange, yellow, green, purple). Read [the Nord palette spec](https://www.nordtheme.com/docs/colors-and-palettes) for the design philosophy.
 
@@ -56,7 +56,7 @@ This page is rendered on a site whose active preset is **niwaki**, not Nord. The
 
 ## Live preview
 
-Here's a TypeScript snippet rendered through Nord's full integrated look — chrome, syntax colours, and code-surface canvas. The `codegroup` below sets `tint="nord"`, so its subtree inherits Nord's chrome, syntax tokens, and code background while the rest of the page stays in niwaki.
+Here's a TypeScript snippet rendered through Nord's full integrated look — chrome, syntax colors, and code-surface canvas. The `codegroup` below sets `tint="nord"`, so its subtree inherits Nord's chrome, syntax tokens, and code background while the rest of the page stays in niwaki.
 
 {% codegroup tint="nord" %}
 ```ts
@@ -96,7 +96,7 @@ Nord composes cleanly with chrome presets like `tideline`. Use both for tideline
 }
 ```
 
-Order matters — Nord ships after tideline so Nord's code surface and syntax tokens win. Tideline's body bg, surfaces, primary, fonts, and status colours stay in place; only the code blocks flip to Nord's canvas.
+Order matters — Nord ships after tideline so Nord's code surface and syntax tokens win. Tideline's body bg, surfaces, primary, fonts, and status colors stay in place; only the code blocks flip to Nord's canvas.
 
 ## Attribution
 

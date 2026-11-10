@@ -20,11 +20,11 @@ dev server (`npm run dev`) and build (`npm run build`).
 
 ## Scaffold a deployable plan site
 
-`npm create refrakt` can generate a full, runnable site whose content *is* your plan. Pass
+`npx create-refrakt` can generate a full, runnable site whose content *is* your plan. Pass
 `--type plan` together with a `--target` adapter:
 
 ```shell
-npm create refrakt my-plan --type plan --target sveltekit
+npx create-refrakt my-plan --type plan --target sveltekit
 cd my-plan
 npm install
 npm run dev

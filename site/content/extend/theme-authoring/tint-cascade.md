@@ -8,7 +8,7 @@ description: How the tint cascade resolves at build time, and the SSR contract a
 Every page resolves a `(tint, tintMode, locked)` tuple from four layers — site config, layout frontmatter, page frontmatter, and rune attribute — with later layers overriding earlier ones per field.
 
 {% hint type="note" %}
-This page is the implementation side: the resolution function, the SSR contract, and the anti-flash script. If you're writing content and want to know what `tint`, `tint-mode`, and `tint-lock` do in frontmatter, read [Tint and colour scheme](/docs/concepts/tint) instead — it covers the cascade order, the field semantics, and the YAML idioms.
+This page is the implementation side: the resolution function, the SSR contract, and the anti-flash script. If you're writing content and want to know what `tint`, `tint-mode`, and `tint-lock` do in frontmatter, read [Tint and color scheme](/docs/concepts/tint) instead — it covers the cascade order, the field semantics, and the YAML idioms.
 {% /hint %}
 
 ## How it works under the hood

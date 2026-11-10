@@ -89,7 +89,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Tokyo Night gives **6+ of the 7** extended optional syntax roles distinct colours in dark mode — the highest count in the catalog. If you want a palette that shows off the extended roles, this is the one.
+Tokyo Night gives **6+ of the 7** extended optional syntax roles distinct colors in dark mode — the highest count in the catalog. If you want a palette that shows off the extended roles, this is the one.
 
 ## Composing with tideline
 

@@ -314,7 +314,7 @@ Feature: {
 |------|----------------|-----------------|
 | `header` | Chrome row (badges, status) | Flex wrap, gap |
 | `preamble` | Intro block (eyebrow + headline + blurb) | Flex column |
-| `eyebrow` | Kicker above the title | Small, uppercase, primary colour; a pill when it holds a link |
+| `eyebrow` | Kicker above the title | Small, uppercase, primary color; a pill when it holds a link |
 | `title` | Primary heading | 1.5rem, bold, scales with density |
 | `description` | Secondary text | Muted color, truncated in compact |
 | `body` | Main content | Standard line height |
@@ -583,7 +583,7 @@ Lumina styles the **`elevation`** depth ladder by attribute — no rune-name lis
 }
 ```
 
-All surfaces consume the `--rune-padding` variable set by the density dimension, so padding automatically scales when density changes. The second surface axis, **`prominence`**, re-points the section-header register (`quiet|normal|prominent|display|marquee`). Lumina publishes each step as custom properties a theme can retune: `--rf-prominence-size` (title), `--rf-prominence-blurb-size`, `--rf-prominence-header-scale` (the header's gaps), `--rf-prominence-band-padding` (a flush band's block padding), `--rf-prominence-header-measure` / `--rf-prominence-blurb-measure` (where the measure sits), and `--rf-prominence-title-gradient`, a switch that turns on Lumina's title gradient at `display` and `marquee`; the title builds the gradient from its own colours. All are cleared at every rune root, so a nested rune keeps its own header; **`width`** (`compact|narrow|wide|full`) is a *layout* axis — page bleed, not chrome. See [Surfaces](/docs/concepts/surfaces) for the author reference and [Surface model](/extend/theme-authoring/surfaces) for the config side.
+All surfaces consume the `--rune-padding` variable set by the density dimension, so padding automatically scales when density changes. The second surface axis, **`prominence`**, re-points the section-header register (`quiet|normal|prominent|display|marquee`). Lumina publishes each step as custom properties a theme can retune: `--rf-prominence-size` (title), `--rf-prominence-blurb-size`, `--rf-prominence-header-scale` (the header's gaps), `--rf-prominence-band-padding` (a flush band's block padding), `--rf-prominence-header-measure` / `--rf-prominence-blurb-measure` (where the measure sits), and `--rf-prominence-title-gradient`, a switch that turns on Lumina's title gradient at `display` and `marquee`; the title builds the gradient from its own colors. All are cleared at every rune root, so a nested rune keeps its own header; **`width`** (`compact|narrow|wide|full`) is a *layout* axis — page bleed, not chrome. See [Surfaces](/docs/concepts/surfaces) for the author reference and [Surface model](/extend/theme-authoring/surfaces) for the config side.
 
 ---
 

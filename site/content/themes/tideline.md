@@ -105,7 +105,7 @@ Tideline keeps the distinctive "code on navy" treatment: code blocks render on a
 | `color.code.text` | `#f1faee` | `#f1faee` |
 | `color.code.inline-bg` | `#f9ebcc` | `rgba(168, 218, 220, 0.08)` |
 
-Syntax colours are mustard-keyword + frosted-blue (no relation to the niwaki spectrum):
+Syntax colors are mustard-keyword + frosted-blue (no relation to the niwaki spectrum):
 
 {% palette title="Syntax — light" tint="tideline" tint-mode="light" %}
 - Keyword: #f2cc8f
@@ -128,7 +128,7 @@ Syntax colours are mustard-keyword + frosted-blue (no relation to the niwaki spe
 
 ## Live preview
 
-Here's the same TypeScript+JSX snippet used across the preset doc pages, rendered through Tideline's full integrated look — chrome, syntax colours, and the canonical navy code canvas.
+Here's the same TypeScript+JSX snippet used across the preset doc pages, rendered through Tideline's full integrated look — chrome, syntax colors, and the canonical navy code canvas.
 
 {% codegroup tint="tideline" %}
 ```ts
@@ -163,4 +163,4 @@ Plex Sans is humanist, slightly warm — pairs naturally with the cream-paper / 
 
 ## Composing with niwaki
 
-`presets: ["tideline", "niwaki"]` gives tideline chrome (Plex + cream + navy) with niwaki-coloured code blocks instead of tideline's frosted-blue syntax. Useful when you like the warm-paper feel for the page but want the Japanese-garden code identity. See [Niwaki](/themes/niwaki) for the composition example.
+`presets: ["tideline", "niwaki"]` gives tideline chrome (Plex + cream + navy) with niwaki-colored code blocks instead of tideline's frosted-blue syntax. Useful when you like the warm-paper feel for the page but want the Japanese-garden code identity. See [Niwaki](/themes/niwaki) for the composition example.

@@ -242,7 +242,7 @@ With `lines`, the numbers start at the first line shown, so they match the file.
 
 `highlight="74-78"` emphasizes specific lines without cropping. Unlike `lines=` (which slices), highlight keeps the surrounding context visible and draws the eye to the lines that matter. Use it for "look at this part" callouts inside a larger code block.
 
-This shows Biome's formatter settings with file lines 39–40 — the tab indent and the line width — emphasized via a neutral surface tint and a primary-coloured left rail:
+This shows Biome's formatter settings with file lines 39–40 — the tab indent and the line width — emphasized via a neutral surface tint and a primary-colored left rail:
 
 {% preview source=true %}
 

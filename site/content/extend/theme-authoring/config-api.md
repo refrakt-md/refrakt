@@ -26,7 +26,7 @@ interface ThemeConfig {
 | `tokenPrefix` | Convention for CSS custom property naming. Used by documentation and tooling, not the engine itself |
 | `icons` | SVG strings organized by group and variant. Structural groups (e.g., `hint`) are used by `StructureEntry.icon` config to inject icons into rune headers. The `global` group is used by the `{% icon %}` content rune to resolve author-chosen icons by name |
 | `runes` | Maps each rune's `typeName` (PascalCase, e.g. `Hint`) to its transform configuration. The engine matches the kebab-cased key against the `data-rune` attribute on the tag |
-| `tints` / `backgrounds` / `frames` | Named preset registries — colour tints, `bg` layers, and `frame` media-surface chrome. All share the same `extends` resolution. See [Surface chrome](/extend/theme-authoring/surfaces) for `frames`. |
+| `tints` / `backgrounds` / `frames` | Named preset registries — color tints, `bg` layers, and `frame` media-surface chrome. All share the same `extends` resolution. See [Surface chrome](/extend/theme-authoring/surfaces) for `frames`. |
 
 ## RuneConfig
 
@@ -51,7 +51,7 @@ The guard is **path-granular**: a whole key where the whole key is identity, and
 
 `sequence` is the case that makes the rule concrete. On a playlist the number *is* the track number — an identifier a listener says out loud. A theme that restyled a playlist from `numbered` to `connected` would not change how it looks; **it would delete the track numbers**. So `numbered` vs `connected` encodes a fact about the content, and the rune owns it. `sequenceDirection` — the responsive collapse of the same list — is presentation, and stays the theme's.
 
-`metaFields.*.metaType` is the same split one level down: a theme may relabel a `status` field, recolour it with its own `sentimentMap`, or give it a value `transform`, but retyping it from `status` to `category` changes what the author declared their data to mean. A guarded sub-field is dropped while the rest of its entry merges, and an override entry that leaves `metaType` out keeps the declared one.
+`metaFields.*.metaType` is the same split one level down: a theme may relabel a `status` field, recolor it with its own `sentimentMap`, or give it a value `transform`, but retyping it from `status` to `category` changes what the author declared their data to mean. A guarded sub-field is dropped while the rest of its entry merges, and an override entry that leaves `metaType` out keeps the declared one.
 
 A `layout` wrapper's `attrs` may not write an attribute an identity field emits — `data-section` (`sections`), `data-media` (`mediaSlots`), `typeof` / `property` (`schema`), `data-sequence` (`sequence`), `data-meta-type` (`metaFields.*.metaType`), or `data-{name}` for a declared modifier. The refused attribute is dropped and reported; the wrapper's other attributes stand. Presentation attributes such as `data-zone-layout` or `data-color-scheme` are unaffected. This is checked once, when the config is assembled, and `refrakt plugin validate` reports it as an error.
 
@@ -160,7 +160,7 @@ metaFields: {
 |-------|-------------|
 | `metaType` | Visual shape — `'status'`/`'category'`/`'tag'` render as chips; `'id'`/`'quantity'`/`'temporal'`/`'code'` render bare. Also drives typography (monospace for `id`/`code`, tabular-nums for `quantity`/`temporal`). **Rune identity** — a theme override of it is dropped; the entry's other fields still merge |
 | `label` | Human-readable label — the `<dt>` in a def-list, the in-chip label in a bar |
-| `sentimentMap` | Maps the resolved value to a sentiment colour (`positive`/`negative`/`caution`/`neutral`) |
+| `sentimentMap` | Maps the resolved value to a sentiment color (`positive`/`negative`/`caution`/`neutral`) |
 | `condition` / `renderWhenEmpty` | Render only when the named modifier is truthy (or merely present) |
 | `href` / `rating` / `icon` | Rich renderings — link, rating widget, leading icon |
 | `splitOn` / `transform` / `tag` | Delimited collection → one chip per item; value transform (`duration`/`uppercase`/`capitalize`); element tag override |

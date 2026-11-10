@@ -14,7 +14,7 @@ Refrakt's surface system gives every rune up to two decorable surfaces — **sel
 | `elevation` | self | depth ladder: `sunken · flush · flat · raised · floating · overlay` (fill, border, resting `box-shadow`) |
 | `prominence` | self | section-header family: `quiet · normal · prominent · display · marquee` (title and blurb size, header spacing, a flush band's padding) |
 | `frame` | media | aspect · displace · offset · oversize · place · anchor · shadow (`drop-shadow`) |
-| `substrate` / inset / `tint` / `bg` | fill | pattern, colour, image |
+| `substrate` / inset / `tint` / `bg` | fill | pattern, color, image |
 
 `elevation` (the self surface's depth — fill, border, resting `box-shadow`) and `frame-shadow` (drop-shadow silhouette on media) never collide — different property, different surface. A rune's resting rung comes from its config `defaultElevation` / `defaultProminence`; an author overrides per-instance, a theme overrides per-rune via `mergeThemeConfig`. The values are styled by attribute (`[data-elevation]` / `[data-prominence]`) — no BEM modifier class. (`width` is the third axis but a *layout* concern, not a surface one — see below.)
 
@@ -60,7 +60,7 @@ The recessed inset fill is derived **at use-site** from the in-scope surface, so
 background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
 ```
 
-`--rf-surface-inset-shift` is a **lightness delta** (an OKLCH `L` amount, not a colour): `0.04` light / `0.06` dark (dark dips a touch deeper), tunable. There is deliberately **no precomputed inset-*colour* token** — a static one would freeze to the untinted `:root` surface and wouldn't track tint. It writes `background-color` only, so insets **don't compound** under nesting; `--rf-surface-inset-shift: 0` disables it per rune. Default consumers: the media wells of `card`/`bento-cell`/`recipe`/`realm`/`faction`/`playlist`, and the `chart`/`diagram` self surface (the standalone "darker surface").
+`--rf-surface-inset-shift` is a **lightness delta** (an OKLCH `L` amount, not a color): `0.04` light / `0.06` dark (dark dips a touch deeper), tunable. There is deliberately **no precomputed inset-*color* token** — a static one would freeze to the untinted `:root` surface and wouldn't track tint. It writes `background-color` only, so insets **don't compound** under nesting; `--rf-surface-inset-shift: 0` disables it per rune. Default consumers: the media wells of `card`/`bento-cell`/`recipe`/`realm`/`faction`/`playlist`, and the `chart`/`diagram` self surface (the standalone "darker surface").
 
 ## substrate ownership
 

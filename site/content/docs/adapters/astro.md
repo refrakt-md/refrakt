@@ -5,43 +5,25 @@ description: Using refrakt.md with Astro for static site generation and MPA cont
 
 # Astro Adapter
 
-The Astro adapter connects refrakt.md to [Astro](https://astro.build) via a single package:
-
-- `@refrakt-md/astro` — Astro integration, BaseLayout component, rendering utilities, SEO helpers, and behavior initialization
-
-Astro is an MPA-first framework, making it a natural fit for refrakt.md's content-first approach. All runes render through `renderToHtml()` with zero client-side JavaScript by default — behavior scripts are only included on pages that use interactive runes.
+The Astro adapter (`@refrakt-md/astro`) connects refrakt.md to [Astro](https://astro.build) through an Astro integration plus rendering, SEO, and behavior helpers. Astro is MPA-first, a natural fit for refrakt's content-first approach: runes render to HTML with `renderPage()`, pages ship zero client JavaScript by default, and the behavior script is included only on pages with interactive runes. It replaces `@astrojs/markdoc` rather than supplementing it.
 
 ## Installation
 
 ```shell
-npm install @refrakt-md/astro @refrakt-md/content @refrakt-md/runes @refrakt-md/transform @refrakt-md/types @refrakt-md/behaviors @refrakt-md/highlight @markdoc/markdoc
+npx create-refrakt my-site --target astro
 ```
 
-Install your theme (Lumina is the default):
+Or add it to an existing Astro project, alongside the [core packages](/docs/adapters/adapters-overview#dependencies):
 
 ```shell
-npm install @refrakt-md/lumina
+npm install @refrakt-md/astro @refrakt-md/behaviors
 ```
+
+`@refrakt-md/behaviors` is listed because the page template imports it directly. Peer dependency: `astro` 5.
 
 ## Configuration
 
-Create a `refrakt.config.json` in your project root with `target` set to `"astro"`:
-
-```json
-{
-  "contentDir": "./content",
-  "theme": "@refrakt-md/lumina",
-  "target": "astro",
-  "routeRules": [
-    { "pattern": "docs/**", "layout": "docs" },
-    { "pattern": "**", "layout": "default" }
-  ]
-}
-```
-
-## Astro Integration
-
-Add the refrakt integration to your `astro.config.mjs`:
+Add the integration to `astro.config.mjs`:
 
 ```javascript
 import { defineConfig } from 'astro/config';
@@ -52,242 +34,93 @@ export default defineConfig({
 });
 ```
 
-The integration:
-
-- Reads `refrakt.config.json` for package configuration
-- Injects theme CSS automatically (from the configured `theme` field)
-- Configures SSR `noExternal` for refrakt packages (ensures they're bundled correctly)
-- Watches the content directory for changes in dev mode
-- Serves `virtual:refrakt/site-tokens.css` carrying any site-level token / preset / mode / tint overrides declared in `refrakt.config.json` (see [Site-level token overrides](#site-level-token-overrides) below)
-
-### Options
-
-```javascript
-refrakt({
-  configPath: './refrakt.config.json', // default
-  site: 'main',                        // optional; required for multi-site configs
-  security: 'strict',                  // optional; default 'trusted'
-  variables: { version: '1.0.0' },     // optional; available as `{% $version %}`
-})
-```
+The integration reads `refrakt.config.json`, configures SSR `noExternal` for the refrakt packages, injects the theme CSS (only the per-rune CSS the content uses) and your site-level token overrides on every page, and reloads the page when content or rune definitions change during `astro dev`.
 
 | Option | Type | Description |
 |--------|------|-------------|
 | `configPath` | `string` | Path to `refrakt.config.json`. Default: `'./refrakt.config.json'` |
-| `site` | `string` | Which site to use from a multi-site config |
-| `security` | `SecurityPolicy` | Security policy for untrusted author content. Default: `'trusted'` (no sanitisation). Pass `'strict'` for hosted-product use. |
-| `variables` | `Record<string, unknown>` | Markdoc variables available in content via `{% $name %}` syntax. Values are real JavaScript values consumed at runtime (different from the SvelteKit plugin's source-text-expression shape). |
+| `site` | `string` | Which site to use; required for a multi-site config |
+| `security` | `SecurityPolicy` | Policy for untrusted author content. Default `'trusted'`; pass `'strict'` for hosted-product use |
+| `variables` | `Record<string, unknown>` | Markdoc variables for `{% $name %}`. Real JavaScript values (unlike the SvelteKit plugin's source-text expressions) |
 
-## Site-level token overrides
+`security` and `variables` reach only the integration's own content pass (the one that works out which rune CSS to inject). Pages render through the loader in `src/setup.ts`, so pass the same values to `createRefraktLoader()` there too.
 
-Any `theme.tokens`, `theme.modes`, `theme.presets`, or `site.tints` you declare in `refrakt.config.json` is automatically picked up by the Astro adapter — no manual CSS authoring required. The integration computes the override CSS once at build time and ships it as `virtual:refrakt/site-tokens.css`, imported after the theme package's base CSS so the `--rf-*` cascade resolves to your overrides last.
+## Minimal setup
 
-```json
-{
-  "sites": {
-    "main": {
-      "theme": {
-        "package": "@refrakt-md/lumina",
-        "presets": ["@refrakt-md/lumina/presets/nord"],
-        "tokens": {
-          "color": { "text": "#1a1a1a" }
-        },
-        "modes": {
-          "dark": { "color": { "text": "#f5f5f5" } }
-        }
-      },
-      "tints": {
-        "nord-scoped": {
-          "extends": "@refrakt-md/lumina/presets/nord"
-        }
-      }
-    }
-  }
-}
-```
+Two files beside `astro.config.mjs` and `refrakt.config.json`: a setup module and a catch-all page.
 
-The above produces:
-
-- `:root { --rf-color-text: #1a1a1a; ... }` (active preset + inline override)
-- `[data-color-scheme="dark"] { --rf-color-text: #f5f5f5; ... }` (mode overlay)
-- `[data-tint="nord-scoped"] { --rf-syntax-keyword: ...; ... }` (scoped tint projection)
-
-See the [design tokens contract](/docs/themes/css) and the [scoped tint projection](/themes/nord) pages for the full token surface.
-
-## AstroTheme Interface
-
-The Astro adapter uses the `AstroTheme` interface for theme objects:
-
-```typescript
-interface AstroTheme {
-  manifest: ThemeManifest;
-  layouts: Record<string, LayoutConfig>;
-}
-```
-
-By default all runes render through the identity transform and `renderToHtml()`. Interactive runes are enhanced client-side by `@refrakt-md/behaviors`. For runes that need custom rendering, use `RfRenderer` with component overrides — see [Component Overrides](#component-overrides) below.
-
-## Project Structure
-
-```
-src/
-├── setup.ts                  # Theme + transform initialization (reads refrakt.config.json)
-├── pages/
-│   └── [...slug].astro       # Catch-all route for content pages
-├── layouts/                  # (optional) custom Astro layouts
-content/
-├── docs/
-│   ├── _layout.md            # Layout cascade for docs section
-│   └── getting-started.md
-├── _layout.md                # Root layout
-└── index.md
-astro.config.mjs
-refrakt.config.json
-```
-
-## Setup Module
-
-The `src/setup.ts` module reads `refrakt.config.json` and initializes the theme, transform pipeline, and content loader. It dynamically imports the theme's manifest and layouts based on the `theme` field in your config — so the page template never hardcodes a specific theme package:
+`src/setup.ts` wraps `createRefraktLoader()` and builds the `AstroTheme` (`{ manifest, layouts }`) from whatever theme package `refrakt.config.json` names, so the page never hard-codes a theme:
 
 {% codegroup labels="src/setup.ts" %}
 
 ```typescript
-import { loadContent } from '@refrakt-md/content';
-import { assembleThemeConfig, createTransform } from '@refrakt-md/transform';
-import { loadPlugin, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
-import type { RefraktConfig } from '@refrakt-md/types';
-import type { Schema } from '@markdoc/markdoc';
+import { createRefraktLoader } from '@refrakt-md/content';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
+import { getThemePackage } from '@refrakt-md/types';
 import { readFileSync } from 'node:fs';
-import * as path from 'node:path';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
 
-const config: RefraktConfig = JSON.parse(
-  readFileSync(path.resolve('refrakt.config.json'), 'utf-8')
-);
-const contentDir = path.resolve(config.contentDir);
-const routeRules = config.routeRules ?? [{ pattern: '**', layout: 'default' }];
+const configPath = resolve('refrakt.config.json');
+const { site } = resolveSite(loadRefraktConfig(configPath));
+const loader = createRefraktLoader({ configPath });
 
-let _transform: ((tree: any) => any) | null = null;
-let _hl: { (tree: any): any; css: string } | null = null;
+export const getTransform = () => loader.getTransform();
+export const getHighlightTransform = () => loader.getHighlightTransform();
+export const getSite = () => loader.getSite();
+
+export const seoSiteFields = {
+  siteName: site.siteName,
+  baseUrl: site.baseUrl,
+  defaultImage: site.defaultImage,
+  logo: site.logo,
+};
+
 let _theme: { manifest: any; layouts: any } | null = null;
-let _communityTags: Record<string, Schema> | undefined;
-let _packages: any[] | undefined;
-
-async function init() {
-  if (_transform) return;
-
-  const [themeModule, layoutsModule] = await Promise.all([
-    import(config.theme + '/transform'),
-    import(config.theme + '/layouts'),
-  ]);
-
-  // Manifest is a JSON file — resolve its path and read directly
-  const { createRequire: cr } = await import('node:module');
-  const manifestPath = cr(import.meta.url).resolve(config.theme + '/manifest');
+export async function getTheme() {
+  if (_theme) return _theme;
+  const themePackage = getThemePackage(site.theme);
+  const { layouts } = await import(themePackage + '/layouts');
+  // The manifest is JSON: resolve and read it (a bare import() of JSON fails in Node ESM)
+  const manifestPath = createRequire(import.meta.url).resolve(themePackage + '/manifest');
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
-
   _theme = {
-    manifest: { ...manifest, routeRules },
-    layouts: layoutsModule.layouts,
+    manifest: { ...manifest, routeRules: site.routeRules ?? [{ pattern: '**', layout: 'default' }] },
+    layouts,
   };
-
-  const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
-
-  let transformConfig = themeConfig;
-
-  const packageNames = config.plugins ?? [];
-  if (packageNames.length > 0) {
-    const loaded = await Promise.all(
-      packageNames.map((name: string) => loadPlugin(name))
-    );
-    const coreRuneNames = new Set(Object.keys(coreRunes));
-    const merged = mergePlugins(loaded, coreRuneNames, config.runes?.prefer);
-
-    _communityTags = Object.keys(merged.tags).length > 0 ? merged.tags : undefined;
-    _packages = loaded.map((l: any) => l.pkg);
-
-    const { config: assembledConfig } = assembleThemeConfig({
-      coreConfig: themeConfig,
-      packageRunes: merged.themeRunes,
-      packageIcons: merged.themeIcons,
-      packageBackgrounds: merged.themeBackgrounds,
-      extensions: merged.extensions as any,
-      provenance: merged.provenance,
-    });
-
-    transformConfig = assembledConfig;
-  }
-
-  _transform = createTransform(transformConfig);
-}
-
-export async function getTransform() { await init(); return _transform!; }
-export async function getTheme() { await init(); return _theme!; }
-
-export async function getHighlightTransform() {
-  if (_hl) return _hl;
-  const { createHighlightTransform } = await import('@refrakt-md/highlight');
-  _hl = await createHighlightTransform((config as any).highlight);
-  return _hl;
-}
-
-export async function getSite() {
-  await init();
-  return loadContent(contentDir, '/', {}, _communityTags, _packages);
+  return _theme;
 }
 ```
 
 {% /codegroup %}
 
-The key details:
-
-- `config.theme` (e.g. `"@refrakt-md/lumina"`) drives the dynamic imports — switching themes in `refrakt.config.json` is all you need
-- The manifest is loaded via `createRequire().resolve()` + `readFileSync` because it's a JSON file (dynamic `import()` without a type attribute fails in Node ESM for JSON)
-- Community packages listed in `config.plugins` are loaded, merged, and their `Plugin` objects are passed to `loadContent()` so pipeline hooks (register, aggregate, post-process) run correctly
-- `getHighlightTransform()` lazily initializes `@refrakt-md/highlight` for syntax highlighting — the highlight transform runs after the identity transform
-
-## Content Loading
-
-Use Astro's `getStaticPaths()` to generate pages from your content directory. The setup module handles config loading, plugin merging, theme assembly, and caching automatically:
+The page generates one route per content page with `getStaticPaths()`, renders it with `renderPage()`, and writes the head with `buildSeoHead()`:
 
 {% codegroup labels="src/pages/[...slug].astro" %}
 
 ```astro
 ---
-import { getTransform, getSite, getTheme, getHighlightTransform } from '../setup';
+import { getTransform, getSite, getTheme, getHighlightTransform, seoSiteFields } from '../setup';
 import { renderPage, buildSeoHead } from '@refrakt-md/astro';
-import type { RendererNode } from '@refrakt-md/types';
 
 export async function getStaticPaths() {
   const [transform, site, hl] = await Promise.all([getTransform(), getSite(), getHighlightTransform()]);
+  const pages = site.pages
+    .filter((p) => !p.route.draft)
+    .map((p) => ({ url: p.route.url, title: p.frontmatter.title ?? '', draft: false }));
 
   return site.pages
     .filter((p) => !p.route.draft)
     .map((page) => {
-      const renderable = hl(transform(page.renderable)) as RendererNode;
       const regions = {};
       for (const [name, region] of page.layout.regions.entries()) {
-        regions[name] = {
-          name: region.name,
-          mode: region.mode,
-          content: region.content.map((c) => hl(transform(c)) as RendererNode),
-        };
+        regions[name] = { name: region.name, mode: region.mode, content: region.content.map((c) => hl(transform(c))) };
       }
-
-      const pages = site.pages
-        .filter((p) => !p.route.draft)
-        .map((p) => ({
-          url: p.route.url,
-          title: p.frontmatter.title ?? '',
-          draft: false,
-        }));
-
-      const slug = page.route.url === '/' ? undefined : page.route.url.slice(1);
-
       return {
-        params: { slug },
+        params: { slug: page.route.url === '/' ? undefined : page.route.url.slice(1) },
         props: {
           page: {
-            renderable,
+            renderable: hl(transform(page.renderable)),
             regions,
             title: page.frontmatter.title ?? '',
             url: page.route.url,
@@ -305,7 +138,7 @@ export async function getStaticPaths() {
 const { page, seo, highlightCss } = Astro.props;
 const theme = await getTheme();
 const html = renderPage({ theme, page });
-const head = buildSeoHead({ title: page.title, frontmatter: page.frontmatter, seo });
+const head = buildSeoHead({ title: page.title, frontmatter: page.frontmatter, seo, ...seoSiteFields });
 const needsBehaviors = html.includes('data-layout-behaviors') || html.includes('data-rune=');
 const contextData = JSON.stringify({ pages: page.pages, currentUrl: page.url });
 ---
@@ -350,41 +183,11 @@ const contextData = JSON.stringify({ pages: page.pages, currentUrl: page.url });
 
 {% /codegroup %}
 
-## BaseLayout Component
+No CSS imports are needed: the integration injects the theme CSS and site-token overrides. The `astro:page-load` listener re-initializes behaviors after each navigation when you use Astro View Transitions. `buildSeoHead()` returns `title`, `metaTags` (description, Open Graph, Twitter, canonical, `og:site_name`), and `jsonLd` (the script tags) as HTML strings.
 
-For convenience, `@refrakt-md/astro` provides a `BaseLayout.astro` component that handles layout selection, rendering, SEO injection, and conditional behavior loading:
+## BaseLayout
 
-{% codegroup labels="src/pages/[...slug].astro" %}
-
-```astro
----
-import BaseLayout from '@refrakt-md/astro/BaseLayout.astro';
-import { getSite, getTransform, getTheme } from '../setup';
-
-export async function getStaticPaths() {
-  // ... same content loading as above
-}
-
-const { page, seo } = Astro.props;
-const theme = await getTheme();
----
-
-<BaseLayout {theme} {page} {seo} />
-```
-
-{% /codegroup %}
-
-The BaseLayout component:
-
-- Selects the layout via `matchRouteRule()` using your route rules
-- Runs `layoutTransform()` to produce the full page tree (sidebar, TOC, breadcrumbs)
-- Renders via `renderToHtml()` + `set:html`
-- Injects SEO meta tags (Open Graph, JSON-LD) into `<head>`
-- Conditionally includes the behavior script only on pages with interactive runes
-
-### Slots
-
-BaseLayout accepts named slots for customization:
+`@refrakt-md/astro/BaseLayout.astro` packages most of the page body above: it renders with `renderPage()`, writes the page's SEO tags into `<head>`, and adds the behavior script (with the `astro:page-load` listener) only when `hasInteractiveRunes()` says the page needs it. It takes `theme`, `page`, `seo`, and optional `lang` (default `'en'`) and `search` (`false` strips the search chrome). It does not take the site-level SEO fields or the highlight CSS, so write the page yourself, as above, when you need either.
 
 ```astro
 <BaseLayout {theme} {page} {seo}>
@@ -393,149 +196,34 @@ BaseLayout accepts named slots for customization:
 </BaseLayout>
 ```
 
-## CSS Injection
+Use it in place of the `<html>` block of the page above; the `head` and `body-end` slots add your own tags.
 
-The `refrakt()` integration automatically injects CSS from the theme specified in `refrakt.config.json`. No manual CSS imports are needed in your page templates — changing the `theme` field in your config is sufficient.
+## Component overrides
 
-## Syntax Highlighting
-
-The setup module exposes `getHighlightTransform()` which lazily initializes `@refrakt-md/highlight`. The highlight transform runs **after** the identity transform and produces CSS that must be injected into `<head>`:
-
-```typescript
-// In getStaticPaths():
-const [transform, site, hl] = await Promise.all([getTransform(), getSite(), getHighlightTransform()]);
-
-// Apply both transforms — identity first, then highlight:
-const renderable = hl(transform(page.renderable));
-
-// Pass the generated CSS as a prop:
-return { params: { slug }, props: { /* ... */ highlightCss: hl.css } };
-```
-
-In the page template, inject the CSS with a `<style>` tag:
-
-```astro
-{highlightCss && <style set:html={highlightCss} />}
-```
-
-Install the highlight package:
-
-```shell
-npm install @refrakt-md/highlight
-```
-
-## SEO
-
-The `buildSeoHead()` helper transforms page SEO data into HTML meta tag strings. Pass per-page input (title, frontmatter, seo) plus the four site-level fields read from `refrakt.config.json` (`siteName`, `baseUrl`, `defaultImage`, `logo`) and the helper emits a complete OG + JSON-LD bundle:
-
-```typescript
-import { buildSeoHead } from '@refrakt-md/astro';
-import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
-
-const { site } = resolveSite(loadRefraktConfig('refrakt.config.json'));
-
-const head = buildSeoHead({
-  title: page.title,
-  frontmatter: page.frontmatter,
-  seo: page.seo,
-  // Site-level fields surface og:site_name, absolute canonical URLs,
-  // image fallback, and WebSite + Organization JSON-LD entries.
-  siteName: site.siteName,
-  baseUrl: site.baseUrl,
-  defaultImage: site.defaultImage,
-  logo: site.logo,
-});
-
-// head.title    — page title string
-// head.metaTags — OG, description, twitter, og:site_name meta tags
-// head.jsonLd   — page JSON-LD + WebSite + Organization script tags
-```
-
-When the site-level fields are omitted the output stays minimal — only per-page meta tags are emitted. The four fields live at the top level of `SiteConfig`:
-
-```json
-{
-  "sites": {
-    "main": {
-      "contentDir": "./content",
-      "theme": "@refrakt-md/lumina",
-      "siteName": "Refrakt",
-      "baseUrl": "https://refrakt.md",
-      "defaultImage": "/og-image.png",
-      "logo": "/favicon-192.png"
-    }
-  }
-}
-```
-
-## Behavior Initialization
-
-Behaviors are interactive enhancements for runes like tabs, accordions, and data tables. The Astro adapter ships zero JavaScript for pages that only use static runes.
-
-### Conditional Loading
-
-After rendering the page HTML, check whether it contains interactive runes or layout behaviors:
-
-```typescript
-const html = renderPage({ theme, page });
-const needsBehaviors = html.includes('data-layout-behaviors') || html.includes('data-rune=');
-```
-
-### View Transitions
-
-When using Astro View Transitions, behaviors must re-initialize after each navigation. The behavior script listens to the `astro:page-load` event:
-
-```javascript
-document.addEventListener('astro:page-load', () => {
-  registerElements();
-  initRuneBehaviors();
-  initLayoutBehaviors();
-});
-```
-
-This is handled automatically by the BaseLayout component.
-
-## Component Overrides
-
-While most runes need only the identity transform, you can register native `.astro` components for runes that need custom rendering. Use `RfRenderer` instead of `renderPage()` to enable component dispatch:
-
-{% codegroup labels="src/pages/[...slug].astro" %}
+Most runes need only the identity transform, but you can register native `.astro` components for runes that need custom rendering. Render with `RfRenderer` instead of `renderPage()`:
 
 ```astro
 ---
 import RfRenderer from '@refrakt-md/astro/RfRenderer.astro';
-import Table from '@refrakt-md/astro/elements/Table.astro';
-import Pre from '@refrakt-md/astro/elements/Pre.astro';
 import MyRecipe from '../components/MyRecipe.astro';
 
 const components = { recipe: MyRecipe };
-const elements = { table: Table, pre: Pre };
 
 // ... getStaticPaths() as before
 const { page } = Astro.props;
 ---
 
-<RfRenderer node={page.renderable} components={components} elements={elements} />
+<RfRenderer node={page.renderable} components={components} />
 ```
 
-{% /codegroup %}
+`RfRenderer` walks the tree. A node whose `data-rune` matches a key in `components` renders through that component; a node whose tag name matches a key in the optional `elements` map renders through that element override; anything else renders as plain HTML via `renderToHtml()`.
 
-### How it works
-
-`RfRenderer` recursively walks the renderable tree. For each tag node:
-
-1. If the node has a `data-rune` attribute matching a key in `components`, the registered `.astro` component renders it
-2. If the node's HTML tag name matches a key in `elements`, the element override renders it
-3. Otherwise, the node renders as plain HTML via `renderToHtml()`
-
-### Component props
-
-Component overrides receive:
+A component override receives:
 
 - **Extracted properties** as named props (e.g., `prepTime`, `difficulty`)
-- **Named refs** as named Astro slots (e.g., `<slot name="headline" />`)
+- **Named refs** as named slots (e.g., `<slot name="headline" />`)
 - **Anonymous content** as the default slot
-- **`tag`** — the original tag object for escape-hatch access
+- **`tag`** — the original tag object, as an escape hatch
 
 ```astro
 ---
@@ -554,19 +242,18 @@ const { prepTime, difficulty, tag } = Astro.props;
 </div>
 ```
 
-## Differences from SvelteKit
+## Compatibility notes
 
-| Concern | SvelteKit | Astro |
-|---------|-----------|-------|
-| **Rendering** | Recursive Svelte Renderer | `renderToHtml()` or recursive `RfRenderer` |
-| **Component registry** | Svelte components for custom runes | `.astro` components via `RfRenderer` |
-| **Behavior cleanup** | SPA lifecycle (navigate, destroy) | MPA — no cleanup needed |
-| **CSS** | Virtual module with tree-shaking | Direct import |
-| **Content loading** | `+page.server.ts` with `load()` | `getStaticPaths()` |
-| **HMR** | Full-reload on content change | Vite watcher via integration |
+**`@astrojs/markdoc`:** this adapter replaces it. Refrakt needs the full schema transform pipeline (rune models, content models, meta injection), which cannot be expressed as plain Markdoc tag registrations.
 
-## Compatibility Notes
+**Content collections:** content is loaded with `createRefraktLoader()` and `getStaticPaths()`, bypassing Astro's content collections. The refrakt pipeline provides the cross-page features (entity registry, aggregation, layout cascade).
 
-**`@astrojs/markdoc` coexistence:** This adapter replaces `@astrojs/markdoc` — it does not supplement it. Refrakt needs the full schema transform pipeline (rune models, content models, meta tag injection) which cannot be expressed as simple Markdoc tag registrations. For a lighter integration that preserves Astro's content collections, use `@refrakt-md/vite` instead.
+## Shared setup
 
-**Astro content collections:** This adapter uses `loadContent()` + `getStaticPaths()`, bypassing Astro's native content collections. The refrakt content pipeline provides richer cross-page features (entity registry, aggregation, layout cascade) than content collections alone.
+These work the same way for every adapter; see the overview:
+
+- [CSS](/docs/adapters/adapters-overview#css) — injected by the integration, tree-shaken to used runes
+- [Site-level token overrides](/docs/adapters/adapters-overview#site-level-token-overrides) — injected as `virtual:refrakt/site-tokens.css`
+- [Behaviors](/docs/adapters/adapters-overview#behaviors) — the inline script above, or `BaseLayout`
+- [SEO and structured data](/docs/adapters/adapters-overview#seo-and-structured-data) — `buildSeoHead()`
+- [Dependencies](/docs/adapters/adapters-overview#dependencies)

@@ -5,9 +5,9 @@ description: Japanese-garden syntax palette — wakaba, sakura, matsu, momiji, i
 
 # Niwaki
 
-Niwaki is a **syntax-only** preset — it overrides only the syntax tokens, leaving chrome, fonts, and status colours to inherit from whatever theme sits beneath. The refrakt documentation site you're reading uses this preset on top of the [neutral default](/themes/neutral-default). Code blocks render in Japanese-garden colours; everything else stays neutral.
+Niwaki is a **syntax-only** preset — it overrides only the syntax tokens, leaving chrome, fonts, and status colors to inherit from whatever theme sits beneath. The refrakt documentation site you're reading uses this preset on top of the [neutral default](/themes/neutral-default). Code blocks render in Japanese-garden colors; everything else stays neutral.
 
-The name *niwaki* (庭木) refers to the cloud-pruned trees of Japanese gardens — most often pines. The art of niwaki is patient, multi-decade shaping: pruning what's there to reveal structural form. That maps remarkably well to what a syntax preset does — it doesn't generate code, it shapes how code's existing structure becomes legible. The colour names — wakaba (young leaf), sakura (cherry blossom), matsu (pine), momiji (autumn maple), ishi (stone) — are an homage to the tradition we drew the metaphor from.
+The name *niwaki* (庭木) refers to the cloud-pruned trees of Japanese gardens — most often pines. The art of niwaki is patient, multi-decade shaping: pruning what's there to reveal structural form. That maps remarkably well to what a syntax preset does — it doesn't generate code, it shapes how code's existing structure becomes legible. The color names — wakaba (young leaf), sakura (cherry blossom), matsu (pine), momiji (autumn maple), ishi (stone) — are an homage to the tradition we drew the metaphor from.
 
 ## Opt in
 
@@ -24,7 +24,7 @@ The name *niwaki* (庭木) refers to the cloud-pruned trees of Japanese gardens 
 
 ## The palette
 
-Five elements from a Japanese garden mapped to syntax roles. Each colour does specific cognitive work — wakaba freshens declarations (keywords), sakura calls attention (functions), matsu roots the references (links and constants), momiji warms the literals (strings and template expressions), ishi recedes (comments and punctuation).
+Five elements from a Japanese garden mapped to syntax roles. Each color does specific cognitive work — wakaba freshens declarations (keywords), sakura calls attention (functions), matsu roots the references (links and constants), momiji warms the literals (strings and template expressions), ishi recedes (comments and punctuation).
 
 {% palette title="Niwaki — light" tint="niwaki" tint-mode="light" showContrast=true showA11y=true %}
 - Wakaba / Young leaf (keyword): #5e7d2a
@@ -120,4 +120,4 @@ Now any page section can opt in with `{% callout tint="garden-hero" %}…{% /cal
 
 ## Why scoped?
 
-The neutral default's chrome is already calm, deliberate, and pleasant to read against. A "full Japanese garden" preset would override good chrome with merely-different chrome, dilute the focus, and lock users into an all-or-nothing choice. Scoping niwaki to syntax keeps the strongest part of the metaphor (the colours on code) and lets users compose freely — niwaki on neutral, niwaki on tideline, niwaki on a future custom theme. The preset earns its name through what it commits to most clearly: the code surface.
+The neutral default's chrome is already calm, deliberate, and pleasant to read against. A "full Japanese garden" preset would override good chrome with merely-different chrome, dilute the focus, and lock users into an all-or-nothing choice. Scoping niwaki to syntax keeps the strongest part of the metaphor (the colors on code) and lets users compose freely — niwaki on neutral, niwaki on tideline, niwaki on a future custom theme. The preset earns its name through what it commits to most clearly: the code surface.

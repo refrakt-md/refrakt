@@ -1,9 +1,9 @@
 ---
-title: Tint and colour scheme
+title: Tint and color scheme
 description: How tint, tint-mode, and tint-lock cascade from site config down through layouts to individual pages.
 ---
 
-# Tint and colour scheme
+# Tint and color scheme
 
 Refrakt's tint cascade lets you express *"all marketing pages are locked to dark mode"* alongside *"docs respect user preference"* and *"this one launch announcement gets the brand-warm tint"* — without inventing a separate route-rules config surface. Every page resolves a `(tint, tintMode, locked)` tuple from four layers of input; later layers override earlier ones per field.
 
@@ -33,7 +33,7 @@ tint-lock: false           # true = ignore user preference, hide the toggle
 | Field | Type | Default | What it does |
 |---|---|---|---|
 | `tint` | `string \| null` | `null` | Applies a named tint preset (defined in theme config) |
-| `tint-mode` | `'auto' \| 'light' \| 'dark'` | `'auto'` | Forces a colour scheme on the page (or subtree) |
+| `tint-mode` | `'auto' \| 'light' \| 'dark'` | `'auto'` | Forces a color scheme on the page (or subtree) |
 | `tint-lock` | `boolean` | `false` | When `true`, ignores user preference and hides the theme-toggle UI |
 
 Named tints come from your theme's tint presets, or from the site-level `tints` map in `refrakt.config.json` — see [Sites](/docs/configuration/sites).

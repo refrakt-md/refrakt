@@ -200,7 +200,7 @@ The parent may be a composed rune: the modifier keys on its `data-rune`, which a
 
 All visual values reference CSS custom properties (design tokens) rather than hard-coded values. This makes themes customizable and ensures dark mode works correctly.
 
-**The token set is a public contract, for plugins as well as themes.** A theme defines these tokens; a plugin whose rune has parts no vocabulary covers styles them with these tokens and nothing else, so the plugin follows any theme. Renaming or removing a token is a breaking change for both. `refrakt plugins validate` reports a plugin stylesheet's literal colours, sizes and font stacks. See [Building a Custom Plugin](/extend/plugin-authoring/authoring#how-a-plugin-rune-looks-right-in-any-theme).
+**The token set is a public contract, for plugins as well as themes.** A theme defines these tokens; a plugin whose rune has parts no vocabulary covers styles them with these tokens and nothing else, so the plugin follows any theme. Renaming or removing a token is a breaking change for both. `refrakt plugins validate` reports a plugin stylesheet's literal colors, sizes and font stacks. See [Building a Custom Plugin](/extend/plugin-authoring/authoring#how-a-plugin-rune-looks-right-in-any-theme).
 
 ### Token categories
 
@@ -386,7 +386,7 @@ Charts use a **provider-agnostic theming contract**: the `rf-chart` renderer hol
 | Typography / grid | `--rf-chart-label-size`, `--rf-chart-label-color`, `--rf-chart-grid-color`, `--rf-chart-grid-width` |
 
 ```css
-/* A theme with thicker, brand-coloured bars — props only, no selectors. */
+/* A theme with thicker, brand-colored bars — props only, no selectors. */
 .rf-chart {
   --rf-chart-series-1: var(--rf-color-primary);
   --rf-chart-series-2: var(--rf-color-accent);
@@ -395,7 +395,7 @@ Charts use a **provider-agnostic theming contract**: the `rf-chart` renderer hol
 }
 ```
 
-**Sentiment colouring.** When a chart's data cells carry `data-meta-sentiment`, bars and points are coloured by the semantic token (`positive→success`, `negative→danger`, `caution→warning`, `neutral→muted`) instead of the rotating palette — so a status breakdown reads green-done / red-blocked with no per-chart config.
+**Sentiment coloring.** When a chart's data cells carry `data-meta-sentiment`, bars and points are colored by the semantic token (`positive→success`, `negative→danger`, `caution→warning`, `neutral→muted`) instead of the rotating palette — so a status breakdown reads green-done / red-blocked with no per-chart config.
 
 ## Dark mode
 

@@ -53,7 +53,7 @@ Code fences inside a hero become copyable command blocks — great for install c
 	Scaffold a project and start writing.
 
 	```shell
-	npm create refrakt
+	npx create-refrakt
 	```
 
 	- [Documentation](/docs/getting-started)
@@ -102,7 +102,7 @@ The band's height comes from `height` (named scale) or `aspect` (a ratio); with 
 
 ### Animated background — a live program as the backdrop
 
-The media zone holds *any* [media guest](/docs/concepts/media-guests) — including a running [sandbox](/runes/sandbox). Drop a three.js scene in the media zone and the hero gets an **animated background**: the sandbox becomes an inert presentational backdrop (no pointer events, no focus stops), the content overlays it, and the scrim keeps the text legible. Here a wireframe terrain rolls in slow swells, its crests picking up the site's own [niwaki](/themes/niwaki) accent colours:
+The media zone holds *any* [media guest](/docs/concepts/media-guests) — including a running [sandbox](/runes/sandbox). Drop a three.js scene in the media zone and the hero gets an **animated background**: the sandbox becomes an inert presentational backdrop (no pointer events, no focus stops), the content overlays it, and the scrim keeps the text legible. Here a wireframe terrain rolls in slow swells, its crests picking up the site's own [niwaki](/themes/niwaki) accent colors:
 
 {% preview source=true %}
 
@@ -141,7 +141,7 @@ Cover (above) turns the **single media zone** into the backdrop, so the hero can
 		{% /bg %}
 		{% codegroup %}
 		```shell
-		npm create refrakt@latest
+		npx create-refrakt
 		```
 		```js
 		import { defineConfig } from '@refrakt-md/sveltekit';

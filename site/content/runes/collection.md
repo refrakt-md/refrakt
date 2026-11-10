@@ -143,7 +143,7 @@ Give `collection` a **body** and it becomes the per-item template: the body is t
 | `$item.type` | yes | the entity type |
 | `$item.url` | yes | resolved URL (`sourceUrl ?? data.url`); empty string, never undefined, when there's no on-site URL |
 | `$item.data.*` | type-specific | the entity's payload. A missing field renders nothing (no warning) |
-| `$item.sentiment` | when mapped | the entity's status sentiment (`positive` / `negative` / `caution` / `neutral`), e.g. to colour a `badge`; empty when unmapped |
+| `$item.sentiment` | when mapped | the entity's status sentiment (`positive` / `negative` / `caution` / `neutral`), e.g. to color a `badge`; empty when unmapped |
 | `$item.mixed` | yes | `true` when the set spans more than one type (and isn't grouped by type) — useful for a conditional type chip |
 | `$item.group` | grouped only | the item's group key (the value of the `group` field); empty when ungrouped |
 | `$item.groupCount` | grouped only | the number of items in this item's group; `0` when ungrouped |

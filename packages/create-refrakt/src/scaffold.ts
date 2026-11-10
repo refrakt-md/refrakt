@@ -1998,7 +1998,7 @@ description: First steps
 A refrakt.md **site template** (SPEC-109). Installed via:
 
 \`\`\`bash
-npx create-refrakt my-site --framework svelte --template ${fullName}
+npx create-refrakt my-site --framework sveltekit --template ${fullName}
 \`\`\`
 
 ## What's here

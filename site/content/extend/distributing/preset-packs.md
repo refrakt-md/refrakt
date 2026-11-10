@@ -54,7 +54,7 @@ chrome ("really a palette preset").
 
 Advisory only. List the theme(s) a `palette` preset was designed against;
 absence means universal. Applying a preset outside its `tunedFor` set is **never
-an error** — the universal contract guarantees it recolours without breaking
+an error** — the universal contract guarantees it recolors without breaking
 geometry — but `refrakt theme presets list` flags the mismatch.
 
 ## Editor support

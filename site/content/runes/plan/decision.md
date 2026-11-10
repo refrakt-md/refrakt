@@ -23,7 +23,7 @@ A fully documented architecture decision record.
 	# Use CSS custom properties for tint token injection
 
 	## Context
-	Tint runes need to override colour tokens within a section scope. The solution must work without JavaScript and cascade through nested elements.
+	Tint runes need to override color tokens within a section scope. The solution must work without JavaScript and cascade through nested elements.
 
 	## Options Considered
 	1. **CSS custom properties on the container** — inline styles setting `--tint-*` tokens, theme bridges via `var()` fallbacks.

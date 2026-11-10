@@ -1,107 +1,68 @@
 ---
 title: Getting Started
-description: Set up refrakt.md and create your first content
+description: Create a refrakt.md site and edit your first page
 ---
 
 # Getting Started
 
-refrakt.md is a content framework built on [Markdoc](https://markdoc.dev). It extends Markdown with semantic runes — tags that transform standard Markdown primitives into structured, typed content.
+refrakt.md is a content framework built on [Markdoc](https://markdoc.dev). You write Markdown, and runes — tags such as `{% hint %}` or `{% recipe %}` — give the Markdown inside them a meaning: a list in a recipe becomes its ingredients, a heading in a nav becomes a group title.
 
-## Quick Start
-
-The fastest way to get started is to scaffold a project:
+## Create a site
 
 ```shell
 npx create-refrakt my-site
 ```
 
-This creates a SvelteKit site with Lumina theme. You can target any supported adapter:
+It asks which framework to build with: `sveltekit`, `astro`, `next`, `nuxt`, `eleventy` or `html`. Pass `--target` to skip the question, for example `npx create-refrakt my-site --target astro`. If you have no preference, choose SvelteKit. [Adapters](/docs/adapters/adapters-overview) compares them.
+
+## Start it
 
 ```shell
-npx create-refrakt my-site --target sveltekit  # default
-npx create-refrakt my-site --target astro
-npx create-refrakt my-site --target next
-npx create-refrakt my-site --target nuxt
-npx create-refrakt my-site --target eleventy
-npx create-refrakt my-site --target html
+cd my-site
+npm install
+npm run dev
 ```
 
-See the [Adapters](/docs/adapters/adapters-overview) section for details on each option.
+Open the address the dev server prints. With the `html` target there is no dev server: run `npm run build` and then `npm run serve`.
 
-Every scaffolded site ships with an `AGENTS.md` at the project root containing the full rune reference for the selected plugins. It's the canonical authoring reference for both human contributors and AI coding tools (Claude Code, Cursor, Aider, Codex). Regenerate it with [`refrakt reference dump`](/docs/cli/reference) after adding or removing entries in `sites.<name>.plugins`, or after upgrading a `@refrakt-md/*` package.
+## Edit your first page
 
-## Installation
-
-Install the core packages in your project:
-
-```shell
-npm install @refrakt-md/runes @refrakt-md/content @markdoc/markdoc
-```
-
-## Project Structure
-
-A refrakt.md project is a directory of Markdown files:
-
-```
-content/
-├── _layout.md
-├── index.md
-└── docs/
-    ├── getting-started.md
-    └── runes/
-        ├── hint.md
-        └── ...
-```
-
-The `_layout.md` file defines layout regions that wrap every page in that directory and its subdirectories. Pages are regular Markdown files with optional frontmatter.
-
-## Your First Layout
-
-Create a `_layout.md` at the root of your content directory:
-
-```markdoc
-{% layout %}
-	{% region name="header" %}
-	# My Site
-	{% /region %}
-
-	{% region name="nav" %}
-		{% nav %}
-		## Docs
-		- getting-started
-		{% /nav %}
-	{% /region %}
-{% /layout %}
-```
-
-This defines a header with your site title and a navigation sidebar. The `{% nav %}` rune turns the list into page links — display text is pulled from each page's `title` frontmatter.
-
-## Your First Page
-
-Create an `index.md`:
+Open `content/index.md`. It is the home page:
 
 ```markdoc
 ---
 title: Welcome
+description: A new refrakt.md site
 ---
 
-# Hello, refrakt.md
+{% cta %}
 
-{% hint type="note" %}
-This callout was created with the hint rune.
+# Welcome to your site
+
+This site is built with refrakt.md — a content framework that extends Markdown with semantic runes.
+
+- [Get Started](/docs/getting-started)
+
+{% /cta %}
+```
+
+Change the heading and save; the page reloads with your change. Inside `{% cta %}`, the heading becomes the call to action's headline and the list of links becomes its buttons.
+
+Add a callout below it:
+
+```markdoc
+{% hint type="check" %}
+Your first rune.
 {% /hint %}
 ```
 
-## Using Runes
+Every page is a Markdown file under `content/`; its path is its URL, so `content/about.md` is `/about`. `content/_layout.md` holds the header and navigation that wrap every page; add your page to its `{% nav %}` list to link it.
 
-Runes are Markdoc tags wrapped in `{% %}` delimiters. They create interpretation contexts for the Markdown inside them — the same primitives take different meaning depending on the wrapping rune.
+## Next
 
-{% hint type="note" %}
-A heading inside `{% nav %}` becomes a navigation group title. A list inside `{% cta %}` becomes action buttons. A list inside `{% feature %}` becomes a feature grid. You write Markdown — the rune decides what it means.
-{% /hint %}
+- [The rune catalogue](/runes/rune-catalog) — every rune, with live examples.
+- [Content](/docs/content) — how pages, layouts and routes fit together.
+- [Configuration](/docs/configuration/overview) — `refrakt.config.json`, plugins and themes.
+- [Manual setup](/docs/manual-setup) — adding refrakt.md to a project you already have.
 
-Browse the individual rune pages in the sidebar for detailed usage and examples.
-
-{% hint type="check" %}
-You're ready to start building with refrakt.md. Explore the rune reference to see what's possible.
-{% /hint %}
+Every scaffolded site has an `AGENTS.md` at its root with the full reference for the runes it uses, for you and for AI coding tools. Regenerate it with [`refrakt reference dump`](/docs/cli/reference) after adding a plugin or upgrading a `@refrakt-md/*` package.

@@ -17,7 +17,7 @@ A theme renders two interfaces: the **vocabulary** (meta types, sentiments, zone
    - **Otherwise:** have the rune place core runes in its output. `cast` builds `cast-member` tags and lets them transform normally. Placed runes follow vocabulary changes for free.
    - **Allowed, but discouraged:** stamping vocabulary attributes (`data-meta-type`, `data-zone-layout`, `data-section`) on your own elements. You then track the vocabulary by hand.
    - **Structured data:** declare it with `metaFields`, so the values live in the field bag. Don't read it back from the tree.
-3. **Genuinely novel visuals bring their own structure CSS, written only in theme tokens.** A map, a chart, a waveform or a diagram has parts no vocabulary describes, and should not be forced into one. For those parts the plugin ships a stylesheet, the `styles/` directory below. It uses theme tokens for every colour, size, radius and font, so it follows whatever theme the site uses. A theme may add its own skin through `[data-rune="…"]`, but does not have to.
+3. **Genuinely novel visuals bring their own structure CSS, written only in theme tokens.** A map, a chart, a waveform or a diagram has parts no vocabulary describes, and should not be forced into one. For those parts the plugin ships a stylesheet, the `styles/` directory below. It uses theme tokens for every color, size, radius and font, so it follows whatever theme the site uses. A theme may add its own skin through `[data-rune="…"]`, but does not have to.
 
 The token set is a public contract for plugins as well as themes: the tokens a theme defines are the ones your stylesheet may use. They are listed in [Design tokens](/extend/theme-authoring/css#design-tokens).
 

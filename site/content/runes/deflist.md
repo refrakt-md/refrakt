@@ -38,7 +38,7 @@ A markdown list where each item starts with bold-text-plus-colon.
 
 ## Inline composition
 
-Inline runes inside the value (after `**Term:**`) compose naturally. Use `{% badge %}` for sentiment-coloured chips, `{% ref %}` for entity links, inline code for identifiers.
+Inline runes inside the value (after `**Term:**`) compose naturally. Use `{% badge %}` for sentiment-colored chips, `{% ref %}` for entity links, inline code for identifiers.
 
 {% preview source=true %}
 

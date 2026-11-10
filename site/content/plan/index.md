@@ -10,7 +10,7 @@ description: Structured project planning with specs, work items, decisions, and 
 Keep your project plan in Git alongside your code. Track progress from the terminal, see your roadmap on the web. No SaaS accounts, no sync issues — just Markdoc files and the CLI.
 
 ```shell
-npm create refrakt my-plan --type plan
+npx create-refrakt my-plan --type plan
 ```
 
 - [Get Started](/plan/docs/plan-overview)
@@ -26,7 +26,7 @@ Start a new standalone planning project, or add planning to an existing repo. Ei
 
 ```shell
 # New project
-npm create refrakt my-plan --type plan
+npx create-refrakt my-plan --type plan
 
 # Existing repo
 npx refrakt plan init  # adds @refrakt-md/cli + @refrakt-md/plan to package.json
@@ -53,7 +53,7 @@ npx refrakt plan update WORK-042 --status done --resolve "Implemented in PR #42"
 Your plan is an ordinary refrakt site. Scaffold a deployable one, then run the standard adapter dev server to browse it live and build it for hosting — customize it like any refrakt project.
 
 ```shell
-npm create refrakt my-plan --type plan --target sveltekit
+npx create-refrakt my-plan --type plan --target sveltekit
 cd my-plan && npm run dev   # live dashboard; npm run build to ship
 ```
 

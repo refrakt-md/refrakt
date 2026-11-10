@@ -17,7 +17,7 @@ description: A content framework built on Markdoc with 100+ semantic runes
 	A content framework built on [Markdoc](https://markdoc.dev). Extend Markdown with 100+ semantic runes — tags that transform standard Markdown into structured, SEO-rich, machine-readable content.
 
 	```shell
-	npm create refrakt
+	npx create-refrakt
 	```
 
 	- [Get Started](/docs/getting-started)

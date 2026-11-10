@@ -16,6 +16,7 @@ tint-lock: false
 
 		- getting-started
 		- content
+		- manual-setup
 
 		## Concepts
 

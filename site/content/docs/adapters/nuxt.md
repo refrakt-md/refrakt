@@ -1,339 +1,168 @@
 ---
 title: Nuxt Adapter
-description: Using refrakt.md with Nuxt 3 for SSR, Vue components, and auto-imports
+description: Using refrakt.md with Nuxt 3 for SSR and Vue rendering
 ---
 
 # Nuxt Adapter
 
-The Nuxt adapter (`@refrakt-md/nuxt`) connects refrakt.md to [Nuxt 3](https://nuxt.com) via a Nuxt module. Content renders as HTML strings through `v-html`, with interactive runes enhanced by `@refrakt-md/behaviors` on the client.
+The Nuxt adapter (`@refrakt-md/nuxt`) connects refrakt.md to [Nuxt 3](https://nuxt.com) through a Nuxt module plus rendering, head, and behavior helpers. Content renders to an HTML string on the server and is injected with `v-html`; interactive runes are enhanced by `@refrakt-md/behaviors` on the client. Like SvelteKit it is Vite-based, so the module handles CSS, token overrides, and content reloading for you.
 
 ## Installation
-
-```shell
-npm install @refrakt-md/nuxt @refrakt-md/content @refrakt-md/runes @refrakt-md/transform @refrakt-md/highlight @refrakt-md/types @markdoc/markdoc
-```
-
-Or scaffold a complete project:
 
 ```shell
 npx create-refrakt my-site --target nuxt
 ```
 
+Or add it to an existing Nuxt project, alongside the [core packages](/docs/adapters/adapters-overview#dependencies):
+
+```shell
+npm install @refrakt-md/nuxt
+```
+
+Peer dependency: `nuxt` 3 (Vue 3). Node.js 18+.
+
 ## Configuration
 
-Set `target` to `"nuxt"` in `refrakt.config.json`:
-
-```json
-{
-  "contentDir": "./content",
-  "theme": "@refrakt-md/lumina",
-  "target": "nuxt",
-  "routeRules": [
-    { "pattern": "**", "layout": "default" }
-  ]
-}
-```
-
-## Nuxt Module Setup
-
-Register the refrakt module in `nuxt.config.ts`:
-
-```typescript
-import { refrakt } from '@refrakt-md/nuxt';
-
-export default defineNuxtConfig({
-  modules: [refrakt],
-});
-```
-
-The module reads `refrakt.config.json` from the project root (configurable via the `configPath` option) and:
-
-- Adds core refrakt packages plus your theme and plugins to `build.transpile`
-- Configures the Vue compiler to treat `rf-*` tags as custom elements
-- Watches the content directory for HMR during development
-
-### Module Options
-
-Pass options via the `refrakt` key in your Nuxt config:
+Register the module in `nuxt.config.ts`, by name or by import:
 
 ```typescript
 export default defineNuxtConfig({
-  modules: [refrakt],
+  modules: ['@refrakt-md/nuxt'],
   refrakt: {
+    // all optional
     configPath: './refrakt.config.json',
     site: 'main',
-    security: 'strict',
-    variables: { version: '1.0.0' },
   },
 });
 ```
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `configPath` | `string` | `"./refrakt.config.json"` | Path to the refrakt configuration file |
+| `configPath` | `string` | `'./refrakt.config.json'` | Path to the refrakt config |
 | `site` | `string` | — | Which site to use from a multi-site config |
-| `security` | `SecurityPolicy` | `'trusted'` | Security policy for untrusted author content |
-| `variables` | `Record<string, unknown>` | — | Markdoc variables available in content via `{% $name %}` |
+| `security` | `SecurityPolicy` | `'trusted'` | Policy for untrusted author content |
+| `variables` | `Record<string, unknown>` | — | Markdoc variables for `{% $name %}` |
 
-## NuxtTheme Interface
+`security` and `variables` reach only the module's own content pass (the one that works out which rune CSS to inject). Pages render through your own loader, so pass the same values to `createRefraktLoader()` there too.
 
-The Nuxt adapter uses the `NuxtTheme` interface for theme objects — similar to the HTML adapter's `HtmlTheme`:
+The module:
 
-```typescript
-interface NuxtTheme {
-  manifest: ThemeManifest;
-  layouts: Record<string, LayoutConfig>;
-}
-```
+- adds the core refrakt packages, your theme, and your plugins to `build.transpile`
+- pushes the theme CSS (only the per-rune CSS the content uses) and `virtual:refrakt/site-tokens.css` onto `nuxt.options.css`, in that order; your own `css` entries layer on top
+- tells the Vue compiler to treat `rf-*` tags as custom elements
+- reloads the page when content or rune definitions change during `nuxt dev`
 
-All runes render through the identity transform + CSS. There is no component registry — the adapter produces HTML strings, not Vue component trees. Interactive runes get their behavior from `@refrakt-md/behaviors` via client-side initialization.
-
-## Project Structure
-
-A Nuxt refrakt.md site uses a catch-all route to handle content pages:
+## Minimal setup
 
 ```
-my-site/
-├── content/                    # Markdoc content files
-│   ├── index.md
-│   └── docs/
-│       └── getting-started.md
-├── pages/
-│   └── [...slug].vue          # Catch-all route for content
-├── components/
-│   └── RefraktContent.vue     # Reusable content renderer
-├── server/
-│   └── utils/
-│       └── refrakt.ts         # Server-side content loading
-├── nuxt.config.ts
-└── refrakt.config.json
+server/
+├── utils/refrakt.ts            # Loader + theme
+└── api/content/[...slug].ts    # Renders one page to HTML
+pages/
+└── [...slug].vue               # Catch-all route
+nuxt.config.ts
+refrakt.config.json
 ```
 
-## Content Loading
+The server loads and renders content; the page fetches the result, sets the head, and initializes behaviors:
 
-### Server Utility
-
-Create a server utility using `createRefraktLoader` — it handles config loading, plugin merging, theme assembly, and caching automatically:
-
-{% codegroup labels="server/utils/refrakt.ts" %}
+{% codegroup labels="server/utils/refrakt.ts, server/api/content/[...slug].ts, pages/[...slug].vue" %}
 
 ```typescript
 import { createRefraktLoader } from '@refrakt-md/content';
+import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 import manifest from '@refrakt-md/lumina/manifest';
 import { layouts } from '@refrakt-md/lumina/layouts';
 
 export const loader = createRefraktLoader();
 export const theme = { manifest, layouts };
-```
-
-{% /codegroup %}
-
-### Catch-All Route
-
-Use `useAsyncData` in a catch-all page to load content on the server:
-
-{% codegroup labels="pages/[...slug].vue" %}
-
-```vue
-<script setup lang="ts">
-import { renderPage, buildRefraktHead, hasInteractiveRunes } from '@refrakt-md/nuxt';
-import { initRuneBehaviors, initLayoutBehaviors } from '@refrakt-md/behaviors';
-
-const route = useRoute();
-const url = '/' + ((route.params.slug as string[])?.join('/') ?? '');
-
-const { data: page } = await useAsyncData(
-  `page-${url}`,
-  () => $fetch(`/api/content${url === '/' ? '' : url}`)
-);
-
-if (!page.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Page not found' });
-}
-
-// SEO
-const head = buildRefraktHead({
-  title: page.value.title,
-  frontmatter: page.value.frontmatter,
-  seo: page.value.seo,
-});
-useHead(head);
-
-// Behaviors
-const contentRef = ref<HTMLElement | null>(null);
-let cleanup: (() => void) | null = null;
-
-function initBehaviors() {
-  if (!contentRef.value) return;
-  cleanup?.();
-  const c1 = initRuneBehaviors(contentRef.value);
-  const c2 = initLayoutBehaviors(contentRef.value);
-  cleanup = () => { c1(); c2(); };
-}
-
-onMounted(initBehaviors);
-onBeforeUnmount(() => cleanup?.());
-
-// Re-init behaviors on client-side navigation
-watch(() => route.fullPath, () => {
-  nextTick(initBehaviors);
-});
-</script>
-
-<template>
-  <div ref="contentRef" v-html="page.html" />
-</template>
-```
-
-{% /codegroup %}
-
-### API Route
-
-Create a server API route that loads content and renders it to HTML:
-
-{% codegroup labels="server/api/content/[...slug].ts" %}
-
-```typescript
-import { renderPage } from '@refrakt-md/nuxt';
-import { getContent, theme } from '~/server/utils/refrakt';
-
-export default defineEventHandler(async (event) => {
-  const slug = getRouterParam(event, 'slug') ?? '';
-  const url = '/' + slug;
-  const site = await loader.getSite();
-
-  const page = site.pages.find(p => p.route.url === url);
-  if (!page) {
-    throw createError({ statusCode: 404, statusMessage: 'Page not found' });
-  }
-
-  const html = renderPage({ theme, page: page as any });
-
-  return {
-    html,
-    title: page.frontmatter?.title ?? '',
-    frontmatter: page.frontmatter,
-    seo: page.seo,
-  };
-});
-```
-
-{% /codegroup %}
-
-## RefraktContent Component
-
-For reusable content rendering, create a Vue component:
-
-{% codegroup labels="components/RefraktContent.vue" %}
-
-```vue
-<script setup lang="ts">
-import { initRuneBehaviors, initLayoutBehaviors } from '@refrakt-md/behaviors';
-
-const props = defineProps<{
-  html: string;
-}>();
-
-const contentRef = ref<HTMLElement | null>(null);
-let cleanup: (() => void) | null = null;
-
-function initBehaviors() {
-  if (!contentRef.value) return;
-  cleanup?.();
-  const c1 = initRuneBehaviors(contentRef.value);
-  const c2 = initLayoutBehaviors(contentRef.value);
-  cleanup = () => { c1(); c2(); };
-}
-
-onMounted(initBehaviors);
-onBeforeUnmount(() => cleanup?.());
-
-watch(() => props.html, () => {
-  nextTick(initBehaviors);
-});
-</script>
-
-<template>
-  <div ref="contentRef" v-html="html" />
-</template>
-```
-
-{% /codegroup %}
-
-## SEO with buildRefraktHead
-
-The `buildRefraktHead` composable produces an object compatible with Nuxt's `useHead()`. It extracts title, description, Open Graph tags, and JSON-LD schemas from the page's SEO data, and threads site-level fields (`siteName`, `baseUrl`, `defaultImage`, `logo`) into og:site_name, absolute canonical URLs, image fallback, and synthetic WebSite + Organization JSON-LD entries:
-
-```typescript
-import { buildRefraktHead } from '@refrakt-md/nuxt';
-import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
 
 const { site } = resolveSite(loadRefraktConfig('refrakt.config.json'));
-
-const head = buildRefraktHead({
-  title: page.title,
-  frontmatter: page.frontmatter,
-  seo: page.seo,
+export const seoSite = {
   siteName: site.siteName,
   baseUrl: site.baseUrl,
   defaultImage: site.defaultImage,
   logo: site.logo,
-});
-
-useHead(head);
+};
 ```
-
-### What it sets
-
-| Tag | Source |
-|-----|--------|
-| `<title>` | `seo.og.title` or `title` |
-| `<meta name="description">` | `seo.og.description` or `frontmatter.description` |
-| `<meta property="og:title">` | `seo.og.title` or `title` |
-| `<meta property="og:description">` | `seo.og.description` or `frontmatter.description` |
-| `<meta property="og:image">` | `seo.og.image` or `baseUrl + defaultImage` fallback |
-| `<meta property="og:url">` | `baseUrl + seo.og.url` (absolutized) |
-| `<meta property="og:type">` | `seo.og.type` |
-| `<meta property="og:site_name">` | `siteName` (when supplied) |
-| `<link rel="canonical">` | `baseUrl + seo.og.url` (absolutized) |
-| `<meta name="twitter:card">` | `summary_large_image` when an image resolves, `summary` otherwise |
-| `<meta name="twitter:title">` | `seo.og.title` or `title` |
-| `<meta name="twitter:description">` | `seo.og.description` or `frontmatter.description` |
-| `<meta name="twitter:image">` | `seo.og.image` or `defaultImage` fallback |
-| `<script type="application/ld+json">` | Each entry in `seo.jsonLd`, plus WebSite + Organization entries when `baseUrl` is supplied |
-
-## useBehaviors Composable
-
-The `useBehaviors` composable is the recommended way to initialize interactive rune behaviors in Nuxt. It handles lifecycle management, cleanup, and re-initialization on client-side navigation automatically:
 
 ```typescript
-import { useBehaviors } from '@refrakt-md/nuxt/client';
+import { renderPage, buildRefraktHead } from '@refrakt-md/nuxt';
+import { loader, theme, seoSite } from '~/server/utils/refrakt';
 
-// In <script setup>:
-useBehaviors({
-  pages: pagesList,       // Array of page metadata for nav/search
-  currentUrl: route.path, // String or Ref<string>
+export default defineEventHandler(async (event) => {
+  const url = '/' + (getRouterParam(event, 'slug') ?? '');
+  const [site, transform, hl] = await Promise.all([
+    loader.getSite(),
+    loader.getTransform(),
+    loader.getHighlightTransform(),
+  ]);
+  const page = site.pages.find(p => p.route.url === url);
+  if (!page || page.route.draft) {
+    throw createError({ statusCode: 404, statusMessage: 'Page not found' });
+  }
+
+  const pages = site.pages
+    .filter(p => !p.route.draft)
+    .map(p => ({ url: p.route.url, title: p.frontmatter.title ?? '', draft: false }));
+  const regions = Object.fromEntries(
+    [...page.layout.regions.entries()].map(([name, r]) => [
+      name,
+      { name: r.name, mode: r.mode, content: r.content.map(c => hl(transform(c))) },
+    ])
+  );
+  const title = page.frontmatter.title ?? '';
+
+  return {
+    html: renderPage({ theme, page: { renderable: hl(transform(page.renderable)), regions, title, url, pages } }),
+    head: buildRefraktHead({ title, frontmatter: page.frontmatter, seo: page.seo, ...seoSite }),
+    highlightCss: hl.css,
+    pages,
+  };
 });
 ```
 
-The composable:
+```vue
+<script setup lang="ts">
+import { useBehaviors } from '@refrakt-md/nuxt/client';
 
-1. Dynamically imports `@refrakt-md/behaviors` on mount (no server-side import)
-2. Sets `RfContext.pages` and `RfContext.currentUrl` for nav, search, and version-switcher behaviors
-3. Registers web component elements and initializes rune + layout behaviors
-4. Cleans up all listeners on unmount
-5. When `currentUrl` is a `Ref`, re-initializes automatically on client-side navigation
+const route = useRoute();
+const { data: page } = await useAsyncData(`page-${route.path}`, () =>
+  $fetch(`/api/content${route.path === '/' ? '' : route.path}`)
+);
+if (!page.value) throw createError({ statusCode: 404, statusMessage: 'Page not found' });
 
-The `./client` subpath export keeps the composable out of the main entry point, so server-side imports of `@refrakt-md/nuxt` never pull in Vue client APIs.
+useHead({
+  ...page.value.head,
+  style: page.value.highlightCss ? [{ innerHTML: page.value.highlightCss }] : [],
+});
 
-## Manual Behavior Lifecycle
+useBehaviors({
+  pages: page.value.pages,
+  currentUrl: computed(() => route.path),
+});
+</script>
 
-If you need more control than `useBehaviors` provides, you can initialize behaviors manually:
+<template>
+  <div v-html="page.html" />
+</template>
+```
+
+{% /codegroup %}
+
+## buildRefraktHead
+
+`buildRefraktHead()` returns `{ title, meta, link, script }`, ready for Nuxt's `useHead()`. It emits the same tags as the other adapters' SEO helpers — description, Open Graph, Twitter, `og:site_name`, a canonical `<link>` (absolutized against `baseUrl`), and one JSON-LD `script` per schema plus WebSite + Organization when `baseUrl` is supplied.
+
+## useBehaviors
+
+`useBehaviors({ pages, currentUrl })` is the recommended way to initialize behaviors. It is exported from `@refrakt-md/nuxt/client` (and re-exported from the main entry). On mount it dynamically imports `@refrakt-md/behaviors`, sets `RfContext.pages` and `RfContext.currentUrl`, registers the custom elements, and initializes rune and layout behaviors; on unmount it cleans up. When `currentUrl` is a `Ref`, it re-initializes whenever the URL changes, which covers client-side navigation.
+
+If you need more control, call the behaviors library yourself on a container ref, and re-run after each route change once the DOM has updated:
 
 ```typescript
 import { initRuneBehaviors, initLayoutBehaviors } from '@refrakt-md/behaviors';
 
-// In setup:
 const contentRef = ref<HTMLElement | null>(null);
 let cleanup: (() => void) | null = null;
 
@@ -347,105 +176,23 @@ function initBehaviors() {
 
 onMounted(initBehaviors);
 onBeforeUnmount(() => cleanup?.());
+watch(() => route.fullPath, () => nextTick(initBehaviors));
 ```
 
-When using Nuxt's client-side navigation, behaviors must be re-initialized after each route change. Watch the route and call `initBehaviors` on `nextTick`:
+`hasInteractiveRunes(renderable)` tells you, on the server, whether a page needs behaviors at all.
 
-```typescript
-const route = useRoute();
+## Vue and custom elements
 
-watch(() => route.fullPath, () => {
-  nextTick(initBehaviors);
-});
-```
+There is no component registry: the adapter produces HTML strings, not Vue component trees. For component overrides, render `page.renderable` with the `Renderer` from `@refrakt-md/vue` instead of `renderPage()`.
 
-{% hint type="note" %}
-`@refrakt-md/behaviors` is an optional dependency. If not installed, the page renders correctly but interactive runes (tabs, accordion, etc.) will not have JavaScript enhancement.
-{% /hint %}
+Because the module marks `rf-*` tags as custom elements, Vue does not warn about the `<rf-*>` tags the identity transform emits. It composes with any existing `isCustomElement` function, so prefixes registered by you or another module are kept.
 
-## CSS Injection
+## Shared setup
 
-The Nuxt module automatically injects the theme package's CSS alongside `virtual:refrakt/site-tokens.css` — the generated stylesheet that carries any `theme.tokens`, `theme.modes`, `theme.presets`, or `site.tints` overrides declared in `refrakt.config.json`. No manual `css` array entries required:
+These work the same way for every adapter; see the overview:
 
-```typescript
-export default defineNuxtConfig({
-  modules: [refrakt],
-});
-```
-
-The two stylesheets are pushed onto `nuxt.options.css` in order — theme defaults first, site overrides second — so the `--rf-*` cascade resolves to your overrides last. If you need additional global CSS, append to the `css` array; your entries layer on top of the refrakt-managed pair.
-
-## Site-level token overrides
-
-Any `theme.tokens`, `theme.modes`, `theme.presets`, or `site.tints` you declare in `refrakt.config.json` is automatically picked up — no manual CSS authoring required. The module computes the override CSS once at build time and ships it as `virtual:refrakt/site-tokens.css`:
-
-```json
-{
-  "sites": {
-    "main": {
-      "theme": {
-        "package": "@refrakt-md/lumina",
-        "presets": ["@refrakt-md/lumina/presets/nord"],
-        "tokens": {
-          "color": { "text": "#1a1a1a" }
-        }
-      },
-      "tints": {
-        "nord-scoped": {
-          "extends": "@refrakt-md/lumina/presets/nord"
-        }
-      }
-    }
-  }
-}
-```
-
-See the [design tokens contract](/docs/themes/css) and the [scoped tint projection](/themes/nord) pages for the full token surface.
-
-## Vue Custom Elements
-
-The Nuxt module automatically configures the Vue compiler to treat tags starting with `rf-` as custom elements. This prevents Vue from issuing warnings about unknown components when the identity transform produces custom element tags.
-
-The module composes with any existing `isCustomElement` function — if you or another Nuxt module have already registered custom element prefixes, those are preserved. You can add additional prefixes in `nuxt.config.ts` before loading the refrakt module, or register them in another module.
-
-## hasInteractiveRunes
-
-The `hasInteractiveRunes` utility checks whether a rendered tree contains runes that need client-side behavior initialization. Use it to conditionally load the behaviors script:
-
-```typescript
-import { hasInteractiveRunes } from '@refrakt-md/nuxt';
-
-if (hasInteractiveRunes(page.renderable)) {
-  // Load and initialize behaviors
-}
-```
-
-## Differences from SvelteKit
-
-| Feature | SvelteKit | Nuxt |
-|---------|-----------|------|
-| **Rendering** | Svelte Renderer component walks the tree, dispatching to registered components | HTML string via `renderToHtml()`, injected with `v-html` |
-| **Component registry** | Maps rune `typeof` to Svelte components for custom rendering | No component registry — all runes render through identity transform |
-| **Element overrides** | Table/code block wrapping handled by shared Markdoc node schemas (framework-agnostic); element override system available for user-defined overrides | Table/code block wrapping handled by shared Markdoc node schemas (framework-agnostic) |
-| **Behaviors** | `use:behaviors` Svelte action handles lifecycle | `useBehaviors` composable or manual `onMounted` / `onBeforeUnmount` |
-| **SEO** | `ThemeShell` injects into `<svelte:head>` | `buildRefraktHead` + `useHead()` |
-| **HMR** | Vite plugin with virtual modules and content HMR | Nuxt module watches content directory |
-| **Theme type** | `SvelteTheme` (includes components, elements) | `NuxtTheme` (manifest + layouts only) |
-
-## Dependencies
-
-| Package | Required | Purpose |
-|---------|----------|---------|
-| `@refrakt-md/transform` | Yes | Identity transform engine, layout transform, `renderToHtml` |
-| `@refrakt-md/types` | Yes | Shared TypeScript interfaces |
-| `@refrakt-md/content` | Yes | Content loading, routing, layout cascade |
-| `@refrakt-md/behaviors` | Yes | Client-side progressive enhancement for interactive runes |
-| `nuxt` | Peer | Nuxt 3 framework |
-
-## Compatibility
-
-The Nuxt adapter requires:
-
-- Nuxt 3.0 or later
-- Vue 3.0 or later
-- Node.js 18 or later
+- [CSS](/docs/adapters/adapters-overview#css) — injected by the module, tree-shaken to used runes
+- [Site-level token overrides](/docs/adapters/adapters-overview#site-level-token-overrides) — injected as `virtual:refrakt/site-tokens.css`
+- [Behaviors](/docs/adapters/adapters-overview#behaviors) — `useBehaviors`
+- [SEO and structured data](/docs/adapters/adapters-overview#seo-and-structured-data) — `buildRefraktHead()` + `useHead()`
+- [Dependencies](/docs/adapters/adapters-overview#dependencies)

@@ -62,12 +62,12 @@ Directions are a bounded set: `to-t`, `to-b`, `to-l`, `to-r`, `to-tr`, `to-br`, 
 Each gradient stop accepts three forms:
 
 - **Token name** — `from="primary"` emits `var(--rf-color-primary)`, theme- and tint-aware.
-- **`transparent`** — the CSS keyword. `from="transparent" to="primary"` fades from clear to the theme colour without falling back to a raw-CSS preset.
+- **`transparent`** — the CSS keyword. `from="transparent" to="primary"` fades from clear to the theme color without falling back to a raw-CSS preset.
 - **`name/alpha`** — Tailwind-style shorthand for a token at partial opacity. `to="primary/0.5"` (decimal) or `to="primary/50"` (percent) compiles to `color-mix(in srgb, var(--rf-color-primary) 50%, transparent)`. Useful for soft washes (`from="transparent" to="primary/0.3"`) that still track the theme's primary.
 
 ## Overlay
 
-A flat colour wash over the background, for legibility. `dark` / `light` are presets; a **token name** (e.g. `overlay="primary"`) washes with `var(--rf-color-primary)` at `overlay-opacity`.
+A flat color wash over the background, for legibility. `dark` / `light` are presets; a **token name** (e.g. `overlay="primary"`) washes with `var(--rf-color-primary)` at `overlay-opacity`.
 
 {% preview source=true %}
 
@@ -81,7 +81,7 @@ A flat colour wash over the background, for legibility. `dark` / `light` are pre
 
 ## Scrim
 
-A structured legibility treatment behind overlaid text — richer than a flat overlay. `scrim` sets the heavy edge (`top`/`bottom`/`left`/`right`); `scrim-type` is `gradient` (default, a directional darken/lighten) or `frost` (a `backdrop-filter` blur + tint); `scrim-tone` (`dark`/`light`) picks whether it darkens or lightens — and **flips the overlaid content's foreground** to match, so a `dark` scrim gives you light text (and `light` gives dark text) without setting colours by hand.
+A structured legibility treatment behind overlaid text — richer than a flat overlay. `scrim` sets the heavy edge (`top`/`bottom`/`left`/`right`); `scrim-type` is `gradient` (default, a directional darken/lighten) or `frost` (a `backdrop-filter` blur + tint); `scrim-tone` (`dark`/`light`) picks whether it darkens or lightens — and **flips the overlaid content's foreground** to match, so a `dark` scrim gives you light text (and `light` gives dark text) without setting colors by hand.
 
 The `scrim*` attributes are **universal attributes on the rune the background sits behind**, not attributes of `{% bg %}` — `bg` supplies the image, the rune carries the treatment:
 
@@ -116,7 +116,7 @@ Control how the image sits behind the content. This one is softened and anchored
 | `blur` | `sm`, `md`, `lg` | Softens the image behind the text |
 | `position` | A CSS background position, such as `top` or `bottom left` | Which part of the image stays in view |
 | `fit` | `cover` (default) or `contain` | Crop the image to fill, or show all of it |
-| `opacity` | `0` to `1` | Fades the image into the background colour |
+| `opacity` | `0` to `1` | Fades the image into the background color |
 | `fixed` | `true` | Keeps the image in place while the page scrolls past, a parallax effect |
 
 ## Named presets & the escape hatch

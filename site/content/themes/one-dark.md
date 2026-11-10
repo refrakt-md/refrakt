@@ -70,7 +70,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-One Dark gives **4 of 7** extended syntax roles distinct colours: `type` (Yellow) ≠ `function` (Blue), `regex` (Cyan) ≠ `string` (Green), `operator` (Cyan), `tag` (Red) ≠ `keyword` (Purple). `number` collapses with `constant`, `attribute` with `constant` (both orange) — Atom's intent.
+One Dark gives **4 of 7** extended syntax roles distinct colors: `type` (Yellow) ≠ `function` (Blue), `regex` (Cyan) ≠ `string` (Green), `operator` (Cyan), `tag` (Red) ≠ `keyword` (Purple). `number` collapses with `constant`, `attribute` with `constant` (both orange) — Atom's intent.
 
 ## Composing with tideline
 

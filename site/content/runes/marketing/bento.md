@@ -258,7 +258,7 @@ Choose `collapse` to match the narrowest width your authored grid can comfortabl
 
 ## Tint a cell
 
-A `tint` or `tint-mode` on a single `{% bento-cell %}` colours that cell alone, for a grid of many colours.
+A `tint` or `tint-mode` on a single `{% bento-cell %}` colors that cell alone, for a grid of many colors.
 
 ## Attributes
 
