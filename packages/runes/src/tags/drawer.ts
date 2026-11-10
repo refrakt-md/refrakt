@@ -64,7 +64,7 @@ export const drawer = createContentModelSchema({
 			required: false,
 			matches: drawerSizes.slice(),
 			description:
-				'Panel size. "sm" / "md" (default) / "lg" — width for left/right sides, height for top/bottom.',
+				'Panel size: "sm", "md" (default), or "lg" for as much of the screen as the gutter leaves. Width for left/right sides, height for top/bottom.',
 		},
 	},
 	contentModel: bodyOnly(),

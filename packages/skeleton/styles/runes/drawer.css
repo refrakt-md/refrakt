@@ -8,7 +8,8 @@
 .rf-drawer {
 	--rf-drawer-size-sm: 22rem;
 	--rf-drawer-size-md: 36rem;
-	--rf-drawer-size-lg: 52rem;
+	/* As much of the screen as the gutter leaves; max-width/max-height cap it. */
+	--rf-drawer-size-lg: 100vw;
 }
 
 /* Page-scroll lock while any drawer is open. Only the root is locked: also

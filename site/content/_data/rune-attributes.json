@@ -1947,7 +1947,7 @@
 			"name": "size",
 			"type": "\"sm\" | \"md\" | \"lg\"",
 			"required": false,
-			"description": "Panel size. \"sm\" / \"md\" (default) / \"lg\" — width for left/right sides, height for top/bottom.",
+			"description": "Panel size: \"sm\", \"md\" (default), or \"lg\" for as much of the screen as the gutter leaves. Width for left/right sides, height for top/bottom.",
 			"page": "drawer"
 		},
 		{
