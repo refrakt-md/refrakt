@@ -9,11 +9,9 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:bg"} /%}
 
-A directive rune that produces no visible output. Place `{% bg %}` as the first child of any block rune to add a background layer with images, video, overlays, blur, and positioning controls.
+Put an image, a video, a gradient or an animation behind a hero, a section or any other block rune. `{% bg %}` shows nothing itself: place it first inside the rune whose background it sets.
 
-## Image background
-
-Add a background image to any rune that supports backgrounds.
+## Basic usage
 
 {% preview source=true %}
 
@@ -25,7 +23,7 @@ Add a background image to any rune that supports backgrounds.
 
 {% /preview %}
 
-## Video and animated backgrounds
+## Play a video or animation
 
 `video` takes the URL of a looping video and plays it, muted, behind the content: `{% bg video="/media/surf.mp4" /%}`. For a generated, animated backdrop, put a `{% sandbox %}` inside the bg instead:
 
@@ -36,14 +34,14 @@ Add a background image to any rune that supports backgrounds.
 			{% sandbox src="wireframe-waves" /%}
 		{% /bg %}
 		# Tide tables
-		High and low water for every harbour on the coast, updated daily.
+		High and low water for every harbor on the coast, updated daily.
 	{% /hero %}
 
 {% /preview %}
 
-## Gradient fill
+## Fill with a gradient
 
-A token-driven gradient is the most common generated backdrop (heroes, CTAs). Set it inline with `gradient` (direction), `from`/`to` (and optional `via`) — **semantic token names**, resolved to `var(--rf-color-*)` so the gradient tracks the theme/`tint` — and `gradient-type` (`linear` default, `radial`, `conic`). A gradient raises the bg layer with no image needed.
+`gradient` sets the direction, and `from` and `to` (with an optional `via`) the colors. The colors are theme color names such as `primary` and `surface`, so the gradient follows the theme and any tint.
 
 {% preview source=true %}
 
@@ -55,19 +53,11 @@ A token-driven gradient is the most common generated backdrop (heroes, CTAs). Se
 
 {% /preview %}
 
-Directions are a bounded set: `to-t`, `to-b`, `to-l`, `to-r`, `to-tr`, `to-br`, `to-bl`, `to-tl` (no raw angles — that's the escape hatch's job). These also work as host-level facets (`bg-gradient`, `bg-from`/`bg-to`/`bg-via`, `bg-gradient-type`) without a `{% bg %}` child, and a theme can register a named gradient preset (`bg="brand-fade"`).
+A color can also be `transparent`, or a theme color at partial opacity: `to="primary/0.3"` or `to="primary/30"`. `gradient-type` switches to a `radial` or `conic` gradient. The same settings work on the rune itself, without a `{% bg %}`, as `bg-gradient`, `bg-from`, `bg-to`, `bg-via` and `bg-gradient-type`.
 
-#### Stop shapes
+## Darken or lighten the image
 
-Each gradient stop accepts three forms:
-
-- **Token name** — `from="primary"` emits `var(--rf-color-primary)`, theme- and tint-aware.
-- **`transparent`** — the CSS keyword. `from="transparent" to="primary"` fades from clear to the theme color without falling back to a raw-CSS preset.
-- **`name/alpha`** — Tailwind-style shorthand for a token at partial opacity. `to="primary/0.5"` (decimal) or `to="primary/50"` (percent) compiles to `color-mix(in srgb, var(--rf-color-primary) 50%, transparent)`. Useful for soft washes (`from="transparent" to="primary/0.3"`) that still track the theme's primary.
-
-## Overlay
-
-A flat color wash over the background, for legibility. `dark` / `light` are presets; a **token name** (e.g. `overlay="primary"`) washes with `var(--rf-color-primary)` at `overlay-opacity`.
+`overlay` lays a flat wash over the background so the text stays readable: `dark`, `light`, or a theme color name such as `primary`. `overlay-opacity` sets its strength.
 
 {% preview source=true %}
 
@@ -81,9 +71,7 @@ A flat color wash over the background, for legibility. `dark` / `light` are pres
 
 ## Scrim
 
-A structured legibility treatment behind overlaid text — richer than a flat overlay. `scrim` sets the heavy edge (`top`/`bottom`/`left`/`right`); `scrim-type` is `gradient` (default, a directional darken/lighten) or `frost` (a `backdrop-filter` blur + tint); `scrim-tone` (`dark`/`light`) picks whether it darkens or lightens — and **flips the overlaid content's foreground** to match, so a `dark` scrim gives you light text (and `light` gives dark text) without setting colors by hand.
-
-The `scrim*` attributes are **universal attributes on the rune the background sits behind**, not attributes of `{% bg %}` — `bg` supplies the image, the rune carries the treatment:
+A scrim shades the background only where the text sits, and switches the text to light or dark to match. It is set on the rune in front of the background, not on `{% bg %}`:
 
 {% preview source=true %}
 
@@ -95,11 +83,11 @@ The `scrim*` attributes are **universal attributes on the rune the background si
 
 {% /preview %}
 
-`scrim-strength` (`sm`/`md`/`lg`) tunes the gradient; `scrim-blur` (`sm`/`md`/`lg`) tunes frost. In `cover` mode the same scrim targets the media well (see [card](/runes/card)).
+`scrim` names the edge it is heaviest at (`top`, `bottom`, `left`, `right`) and `scrim-strength` how heavy it is. `scrim-tone="light"` lightens instead of darkening. `scrim-type="frost"` blurs and tints the background behind the text instead, with `scrim-blur` setting the amount. On a [card](/runes/card) with a cover image, the scrim shades the image.
 
-## Blur, position and fit
+## Position and soften the image
 
-Control how the image sits behind the content. This one is softened and anchored to its top edge:
+This image is softened and anchored to its top edge:
 
 {% preview source=true %}
 
@@ -119,26 +107,17 @@ Control how the image sits behind the content. This one is softened and anchored
 | `opacity` | `0` to `1` | Fades the image into the background color |
 | `fixed` | `true` | Keeps the image in place while the page scrolls past, a parallax effect |
 
-## Named presets & the escape hatch
+## Reuse a background by name
 
-A theme or project registers named `bg` presets (applied with `bg="name"`). A preset's gradient is **structured** and token-driven:
+A background used in many places can be named once in `backgrounds` in `refrakt.config.json`, then applied with `bg="name"` on the rune or `preset` on `{% bg %}`. A theme can ship named backgrounds too; the project's win when the names match.
 
 ```jsonc
-// refrakt.config.json (project) or theme config → backgrounds
 "backgrounds": {
   "brand-fade": { "gradient": { "type": "linear", "direction": "to-br", "stops": ["primary", "surface"] } }
 }
 ```
 
-For the genuine long tail (animations, exotic effects) a preset may carry a raw-CSS **escape hatch**, `style` — a last resort that **bypasses the token system** (you own cross-theme behaviour and portability):
-
-```jsonc
-"backgrounds": {
-  "aurora": { "style": { "background": "conic-gradient(/* … hand-tuned … */)" } }
-}
-```
-
-Backgrounds are valid in **theme** config and **project** config (`refrakt.config.json`); project `backgrounds` merge over theme `backgrounds` by name. A build-time soft warning flags a raw gradient in `style` that the structured `gradient` field now covers.
+For an effect the gradient fields can't express, a named background can carry raw CSS in `style` instead, such as `{ "style": { "background": "conic-gradient(…)" } }`. Raw CSS ignores the theme's colors, so it won't follow a theme change or a tint.
 
 ## Attributes
 
