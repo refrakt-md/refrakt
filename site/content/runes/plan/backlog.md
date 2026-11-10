@@ -9,9 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:backlog"} /%}
 
-An aggregation rune that renders a live view of plan entities from the entity registry. Supports filtering by any field, sorting, grouping, and capping. Use `show` to select entity types — work items, bugs, specs, decisions, or milestones. The list is built from your plan files at build time, so there is nothing to maintain by hand.
-
-The examples below pass `limit=5` so they stay scannable; in real dashboards omit the attribute (or set it higher) to render the full set.
+A list of plan entities: work items, bugs, specs, decisions or milestones, filtered, sorted and grouped. It is built from your plan files at build time, so there is nothing to keep up to date by hand. The examples below pass `limit=5` to stay short; a real dashboard usually leaves it out.
 
 ## Basic usage
 
@@ -57,9 +55,9 @@ A multi-value field such as `tags` gives one group per tag, and an item tagged `
 
 {% /preview %}
 
-## Table layout
+## Show a table
 
-`layout="table"` renders the universal projection as columns — *Identifier · Type · Status · Title* — handy for a dense, mixed-type view:
+Items show as cards by default: the identifier and a status badge on the top line, the title below, and a type label when the backlog mixes types. A backlog of one type adds that type's key field: priority for work items, severity for bugs. `layout="table"` shows Identifier, Type, Status and Title columns instead, for a dense view:
 
 {% preview source=true %}
 
@@ -67,14 +65,7 @@ A multi-value field such as `tags` gives one group per tag, and an item tagged `
 
 {% /preview %}
 
-### What it shows
-
-Each entity is shown the same way, whatever its type:
-
-- **Cards** (the default): the identifier on the left of the top line, a colored status badge on the right, and the title below. When the backlog mixes types and isn't grouped by type, a small type label sits beside the identifier.
-- **Table**: Identifier, Type, Status and Title columns.
-
-A backlog of one type also shows that type's key field: priority for work items, severity for bugs. For anything richer, write your own [`collection`](/runes/collection) body. With `group`, items are gathered under a heading per group value.
+For anything richer, write your own [`collection`](/runes/collection) body.
 
 ## Attributes
 

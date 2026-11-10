@@ -9,7 +9,7 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:mockup"} /%}
 
-Wrap any content in a realistic device frame. Choose from phones, tablets, browsers, and laptops to show how content looks in context.
+Wraps a screenshot, a sandbox or any other content in a device frame — a phone, tablet, browser window, laptop or watch — to show how it looks in context. For a plain image with a caption, use [figure](/runes/figure).
 
 ## Basic usage
 
@@ -21,9 +21,9 @@ The default device is a browser window.
 	{% /mockup %}
 {% /preview %}
 
-## Phone devices
+## Show it on a phone
 
-Use `device` to select a specific phone model.
+`device` picks the frame.
 
 {% preview source=true %}
 	{% mockup device="iphone-15" %}
@@ -31,9 +31,9 @@ Use `device` to select a specific phone model.
 	{% /mockup %}
 {% /preview %}
 
-Other phone options: `iphone-se`, `pixel`, `phone` (generic).
+The other phones are `iphone-se`, `pixel` and a generic `phone`. Phones show a status bar; `statusBar=false` hides it.
 
-## Tablet
+## Show it on a tablet
 
 {% preview source=true %}
 	{% mockup device="ipad" %}
@@ -41,11 +41,11 @@ Other phone options: `iphone-se`, `pixel`, `phone` (generic).
 	{% /mockup %}
 {% /preview %}
 
-Also available: `tablet` (generic).
+`tablet` is a generic alternative.
 
-## Browser with URL
+## Show a URL in the address bar
 
-Show a URL in the address bar with the `url` attribute.
+`url` fills the browser frame's address bar.
 
 {% preview source=true %}
 	{% mockup device="browser" url="https://example.com/dashboard" %}
@@ -53,9 +53,8 @@ Show a URL in the address bar with the `url` attribute.
 	{% /mockup %}
 {% /preview %}
 
-## Dark browser
+## Use dark browser chrome
 
-A dark-themed browser chrome variant.
 
 {% preview source=true %}
 	{% mockup device="browser-dark" url="https://app.example.com" %}
@@ -63,9 +62,9 @@ A dark-themed browser chrome variant.
 	{% /mockup %}
 {% /preview %}
 
-## MacBook
+## Show it on a laptop
 
-Full laptop frame with keyboard and trackpad.
+`device="macbook"` draws the screen above a keyboard and trackpad.
 
 {% preview source=true %}
 	{% mockup device="macbook" %}
@@ -73,9 +72,8 @@ Full laptop frame with keyboard and trackpad.
 	{% /mockup %}
 {% /preview %}
 
-## Watch
+## Show it on a watch
 
-Compact smartwatch frame.
 
 {% preview source=true %}
 	{% mockup device="watch" color="dark" %}
@@ -83,9 +81,9 @@ Compact smartwatch frame.
 	{% /mockup %}
 {% /preview %}
 
-## Color variants
+## Change the bezel color
 
-Control the bezel color with `color`.
+`color` takes `dark` (the default), `light`, or `auto` to follow the page.
 
 {% preview source=true %}
 	{% mockup device="iphone-15" color="light" %}
@@ -93,9 +91,9 @@ Control the bezel color with `color`.
 	{% /mockup %}
 {% /preview %}
 
-## Label
+## Add a caption
 
-Add a caption below the device frame.
+`label` puts a caption below the frame.
 
 {% preview source=true %}
 	{% mockup device="browser" url="https://example.com" label="Homepage — Desktop" %}
@@ -103,9 +101,9 @@ Add a caption below the device frame.
 	{% /mockup %}
 {% /preview %}
 
-## Scale
+## Resize the frame
 
-Shrink or enlarge the device frame with CSS scaling.
+`scale` shrinks or enlarges the whole frame; `0.75` is three-quarters size.
 
 {% preview source=true %}
 	{% mockup device="iphone-15" scale=0.75 %}
@@ -113,9 +111,9 @@ Shrink or enlarge the device frame with CSS scaling.
 	{% /mockup %}
 {% /preview %}
 
-## No frame
+## Drop the device chrome
 
-Use `device="none"` for a minimal dashed border with no chrome.
+`device="none"` draws a plain dashed border instead of a device.
 
 {% preview source=true %}
 	{% mockup device="none" %}
@@ -124,6 +122,10 @@ Use `device="none"` for a minimal dashed border with no chrome.
 
 	{% /mockup %}
 {% /preview %}
+
+## Put a mockup in a card or bento
+
+A mockup works as the media of a [card](/runes/card) or a [bento](/runes/marketing/bento) cell, and scales its frame and content to fit. [Media guests](/docs/concepts/media-guests#mockup) shows it in both.
 
 ## Attributes
 

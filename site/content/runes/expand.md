@@ -9,13 +9,11 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:expand"} /%}
 
-`{% expand %}` resolves a registered entity by id and substitutes the entity's source content **inline** at the point of reference. Symmetric with `{% ref %}` — same registry lookup chain, same disambiguation rules — but the output is the entity's actual content, not a link. To link to the entity instead, use [xref](/runes/xref); to link to a project file rather than an entity, use [file-ref](/runes/file-ref); to keep the content one click away, put it in a [drawer](/runes/drawer).
+`{% expand %}` finds an entity the way `{% ref %}` does, and places the entity's content on the page instead of a link to it: embed a decision record in a blog post about it, or show the spec beside the docs that implement it. The content stays in one file, so every embed updates when it changes. To link to the entity instead, use [xref](/runes/xref); to link to a project file rather than an entity, use [file-ref](/runes/file-ref); to keep the content one click away, put it in a [drawer](/runes/drawer).
 
-The motivating use case is in-context plan-content previews: write a blog post about an architecture decision and embed the ADR directly; write a docs page that implements a spec and show the spec inline; or wrap an embed in a drawer for a "click for context" affordance that doesn't leave the page.
+## Basic usage
 
-## Embed an entity
-
-The minimum case — a single ID. The work item below is rendered from its plan file:
+Give the entity's ID. The work item below is rendered from its plan file:
 
 {% preview source=true %}
 
@@ -23,11 +21,15 @@ The minimum case — a single ID. The work item below is rendered from its plan 
 
 {% /preview %}
 
-Its headings stay out of the page's table of contents, and their anchors are prefixed with the entity's ID so they never clash with the page's own.
+## What can be embedded
 
-## Compose with a drawer
+Any entity whose source the build can read back: a spec, a work item, a decision, a character. Pages and headings cannot be embedded; the build reports an error naming the entity. Runes inside the embedded content render as they would on their own page, and references inside it resolve as they do on the host page.
 
-The "see it in action" pitch is `{% expand %}` inside `{% drawer %}`: the reader stays on the host page, clicks an inline `{% ref %}` to open a side panel containing the full embedded entity, closes it, keeps reading. Same content lives in one place (the plan file); both the link and the inline embed update when the source does.
+An entity cannot embed itself, directly or through another embed; the build fails and names the loop. Embedding the same entity on several pages is fine.
+
+## Show it in a drawer
+
+Put the embed in a [drawer](/runes/drawer) and open it with a `{% ref %}`: the reader gets the full entity in a side panel and stays on the page.
 
 {% preview source=true %}
 
@@ -39,40 +41,19 @@ The "see it in action" pitch is `{% expand %}` inside `{% drawer %}`: the reader
 
 {% /preview %}
 
-The `canonical=true` attribute appends a "view canonical" link to the embedded content — useful when the embed is a peek and the canonical lives elsewhere. `label` sets that link's text.
+`canonical=true` adds a link to the entity's own page after the content, for when the embed is a peek; `label` sets its text.
 
-## What can be embedded
+## Fit the headings into the page
 
-Any entity whose source the build can read back: a spec, a work item, a decision, a character. Pages and headings cannot be embedded; the build reports an error naming the entity. Runes inside the embedded content render as they would on their own page, and references inside it resolve as they do on the host page.
+An embed is a quoted document, not a part of the host page. Its headings keep their levels, stay out of the page's table of contents, and their anchors are prefixed with the entity's ID (`SPEC-066--acceptance-criteria`), so they never clash with the page's own.
 
-## Heading handling
+When the embed really is a subsection of the page, set `level` to the level its top heading should take. Its headings shift down to match and join the table of contents, with unprefixed anchors:
 
-Embedded entities are **quoted documents**, not subsections of the host. By default:
-
-- Heading levels are preserved — a spec's H1 stays H1, its H2 stays H2.
-- Heading anchors are prefixed with the entity's ID (`SPEC-066--acceptance-criteria` instead of `acceptance-criteria`).
-- The host's TOC reflects host-only structure; embedded headings don't appear.
-
-When the embed is genuinely meant to act as a sub-section of the host — rare — set `level=N` to demote headings and merge the embed into the host outline:
-
-| `level=` | Anchors prefixed? | TOC includes? | H1 → | H2 → |
-|----------|-------------------|---------------|------|------|
-| unset (default) | yes | no (isolated) | H1 | H2 |
-| `1` | no | yes (sub-section) | H1 | H2 |
-| `2` | no | yes (sub-section) | H2 | H3 |
-| `3` | no | yes (sub-section) | H3 | H4 |
-
-Demotion clamps at H6 with a build warning. Demotion still applies only to `heading` nodes in the Markdoc tree, not to rune-emitted custom elements styled as headings.
-
-## Cycle detection
-
-The resolver tracks a stack of `(type, id)` tuples per-page-render. Embedding the same entity on two different pages is fine; embedding it inside itself transitively fails the build with the cycle path. `{% ref %}`s inside embedded content **do not** participate — refs are links, not expansions.
-
-## Canonical-link affordance
-
-When `canonical=true`, expand renders a `<a class="rf-expand__canonical-link">` after the embedded content with `href` resolved via the [xref chain](/runes/xref) — entity `sourceUrl` first, then patterns, then unresolved.
-
-`data-canonical-href` on the wrapper is **always populated** when the URL resolves, regardless of the `canonical` attribute — themes and tooling can always reach the URL even when the visible link isn't rendered.
+| `level=` | H1 becomes | H2 becomes | In the table of contents |
+|----------|------------|------------|--------------------------|
+| not set | H1 | H2 | no |
+| `2` | H2 | H3 | yes |
+| `3` | H3 | H4 | yes |
 
 ## Attributes
 
@@ -80,7 +61,6 @@ When `canonical=true`, expand renders a `<a class="rf-expand__canonical-link">` 
 
 ## See also
 
-- [xref](/runes/xref) — same resolution chain, different output (link rather than inline content).
-- [drawer](/runes/drawer) — pairs naturally with `{% expand %}` for "click for context" affordances.
-- [snippet](/runes/snippet) — embed a project file as a code block (different shape; snippet is for source files, expand is for registered entities).
-- [Cross-cutting primitives](/extend/rune-authoring/patterns) — `data-outline-scope` is a neutral convention any rune can adopt; expand is the first consumer.
+- [xref](/runes/xref) — the same lookup, with a link as the output.
+- [drawer](/runes/drawer) — pairs with `{% expand %}` for "click for context".
+- [snippet](/runes/snippet) — embed a project file as a code block rather than a registered entity.

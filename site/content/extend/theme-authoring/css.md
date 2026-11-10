@@ -196,6 +196,21 @@ Common context modifier patterns in the base config:
 The parent may be a composed rune: the modifier keys on its `data-rune`, which a composition keeps. A composed rune has no BEM block of its own, so it cannot carry a context modifier itself — `cta` inside `pricing` is written `align="start"` instead.
 | Feature | Grid | `in-grid` | Grid-aware sizing |
 
+## Styling references
+
+A resolved [`xref`](/runes/xref) is an `<a class="rf-xref rf-xref--{type}">`, so a theme can style links by what they point at (`rf-xref--character`, `rf-xref--page`). A reference that resolves to nothing is a `<span class="rf-xref rf-xref--unresolved">`; give it a muted, dashed look so authors notice it.
+
+```css
+.rf-xref--character { /* e.g. a person icon before the name */ }
+.rf-xref--unresolved {
+  text-decoration: underline dashed;
+  color: var(--rf-color-muted);
+  cursor: help;
+}
+```
+
+An [`expand`](/runes/expand) with `canonical=true` ends with an `rf-expand__canonical-link` link. Its wrapper carries `data-canonical-href` whenever the entity's URL resolves, whether or not the link is shown, so a theme or script can reach it either way.
+
 ## Design tokens
 
 All visual values reference CSS custom properties (design tokens) rather than hard-coded values. This makes themes customizable and ensures dark mode works correctly.

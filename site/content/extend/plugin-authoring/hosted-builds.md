@@ -117,4 +117,18 @@ That is deliberate. The seam is a **prerequisite** for per-file incremental rebu
 - Keep an `fs` fallback only where a path can legitimately live outside the project root (e.g. plugin partial directories in `node_modules`).
 - If your hook needs whole-corpus data, that's the [cross-page pipeline](/extend/plugin-authoring/pipeline) — `ProjectFiles` is for per-file reads.
 
+## Path rules for file-reading runes
+
+`snippet` (`path`), `data` (`src`) and `sandbox` (`src`) read through the provider, so they inherit its containment. Paths resolve against the directory holding `refrakt.config.json` (a sandbox `src` against the examples directory inside it), and every one of these is refused:
+
+| Pattern | Outcome |
+|---------|---------|
+| `path="/etc/passwd"` | Rejected: absolute paths are not allowed. |
+| `path="../../etc/passwd"` | Rejected: the path leaves the project root after normalization. |
+| `path="link-to-outside"` (a symlink pointing outside the root) | Rejected: `fs.realpath` is checked too. |
+| `path="src/"` (a directory) | Rejected: it must be a regular file. |
+| `path="missing.ts"` | Rejected: the build error names the resolved path and the page that referenced it. |
+
+That makes these runes safe on a site that accepts untrusted author content, such as a hosted authoring product or an external editor: the most a malicious author can do is quote a file inside the project root. `data` reports a refused path as an error callout in place of its table; `sandbox` shows an error in place of the preview.
+
 Background: {% ref "SPEC-113" preview="drawer" /%} · {% ref "ADR-025" preview="drawer" /%}

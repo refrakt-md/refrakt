@@ -63,6 +63,15 @@ They differ in what they select and what they emit:
 
 `collection`, `aggregate`, and `relationships` share one `field:value` filter grammar, documented in full on [`collection`](/runes/collection#the-field-match-grammar). The same filter string works in a rune attribute and in [`entityRoutes`](/docs/configuration/entity-routes) JSON.
 
+## How a reference resolves
+
+`{% ref %}` and `{% expand %}` find their entity in two steps, which succeed independently:
+
+1. **The entity.** An exact ID match across all types (or only the type given by `type`), then a case-insensitive match on `name` or `title`. The entity supplies the link text and type.
+2. **The URL.** The entity's own page, when it has one. Otherwise the first pattern in [`xrefs`](/docs/configuration/overview) whose `match` fits the ID.
+
+So an entity registered without a page of its own, such as plan content scanned from outside the site's content tree, still links: the registry supplies the label, a pattern the URL. When neither step yields a URL, the reference renders unresolved and the build warns.
+
 ## Embeddable entities
 
 `{% expand %}` inlines an entity's actual content, so the entity has to be able to produce it. The plugin that registered it either hands over the content directly, or points at the source file and a way to pull the right subtree out of it.

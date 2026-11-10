@@ -9,13 +9,11 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:snippet"} /%}
 
-Embed the contents of a file as a syntax-highlighted code block. The file lives anywhere in your project tree (relative to the project root); refrakt reads it at build time, slices it by line range if you ask, and renders it like any other fenced code block. When the source file changes, the embedded version updates automatically on the next build — no copy-paste drift.
+Embed a project file, or part of one, as a syntax-highlighted code block. The file is read on every build, so the page never drifts from the code. A snippet is an ordinary code block once it is read, so it works anywhere a fenced block does, including inside `{% codegroup %}` and `{% diff %}`.
 
-A snippet is read as an ordinary code block, so it works anywhere a fenced block does: inside `{% codegroup %}`, `{% diff %}` and the like.
+## Basic usage
 
-## Embed a file
-
-The minimum case — a `path` attribute relative to the project root. With nothing else, the whole file is embedded:
+`path` is relative to the project root. With nothing else, the whole file is embedded:
 
 {% preview source=true %}
 
@@ -23,11 +21,11 @@ The minimum case — a `path` attribute relative to the project root. With nothi
 
 {% /preview %}
 
-The reader is looking at the actual script behind this site's counter example. The build re-reads the file every time it runs, so this stays in sync.
+Paths must stay inside the project: absolute paths, `..` that climbs out, symlinks that point out, and directories are build errors, as is a missing file.
 
-## Address by name, not by line number
+## Embed part of a file by name
 
-A line range is a coordinate into a file nobody promised to hold still. Edit anything above the range and the snippet quietly starts quoting something else — it still renders, still highlights, still looks right. Prefer an anchor:
+A line range breaks silently when someone edits the file above it. Name the region instead. `symbol` finds a declaration wherever it has moved to, and fails the build if it is renamed or deleted:
 
 {% preview source=true %}
 
@@ -35,21 +33,11 @@ A line range is a coordinate into a file nobody promised to hold still. Edit any
 
 {% /preview %}
 
-`symbol` names a declaration — here one function out of an 85-line module. The anchor is built from the language's own keywords, so the region is found wherever it has moved to — and if the symbol is renamed or deleted, the snippet **fails loudly** instead of rendering a plausible wrong span.
+`match` takes a regex applied to each line of the raw source, for anything `symbol` does not cover: `match="^.counter span"` picks a CSS rule. Matches inside comments are skipped.
 
-`match` is the general form: a raw regex applied per line. `symbol` is sugar over it, and `match` is what to reach for in a language whose keywords refrakt does not carry.
+### Where the slice ends
 
-{% preview source=true %}
-
-	{% snippet path="site/examples/counter/style.css" match="^.counter span" /%}
-
-{% /preview %}
-
-Anchors are matched against the **raw** source, so a JSON key or a quoted selector works. A match landing inside a comment is skipped — a declaration mentioned in a comment is talking about code rather than being it.
-
-### How far the slice runs
-
-`extent` picks the strategy. It is never inferred from the file, because guessing right most of the time and silently wrong the rest is the failure this feature exists to remove.
+`extent` sets how far the slice runs from the anchor. It is never guessed from the file.
 
 | `extent` | Ends at | For |
 |---|---|---|
@@ -58,49 +46,31 @@ Anchors are matched against the **raw** source, so a JSON key or a quoted select
 | `section` | the next sibling at the anchor's own level | Markdown headings, TOML tables |
 | `paired` | the matching close token | Markdoc, HTML, Svelte |
 
-`auto` only ends a construct in a brace-and-semicolon language. Point it at Python and it refuses, naming `extent="dedent"` — it will not hand back the rest of the file.
+`auto` refuses a language without braces and semicolons, and names `extent="dedent"` instead.
 
-### When an anchor will not do it
-
-Anchoring is not a dead end. Every refusal names the way through, and all three stay supported permanently:
+### When an anchor is not enough
 
 | Write | To |
 |---|---|
-| `through="^}"` | End at a regex, **including** the matching line |
-| `until="^## "` | End at a regex, **excluding** the matching line |
-| `lines="10-25"` | Address by coordinate, as before |
-| `occurrence=2` | Take the *N*th match when the anchor is ambiguous |
+| `through="^}"` | End at a regex, including the matching line |
+| `until="^## "` | End at a regex, excluding the matching line |
+| `occurrence=2` | Take the second match when the anchor matches more than once |
+| `lines="10-25"` | Use a line range |
 
-`until` and `through` are two attributes rather than one flag on purpose: in code the terminator line usually belongs in the slice, and in Markdown it usually does not. Either default would be silently wrong half the time.
+An ambiguous anchor warns and names every line that matched. Prefer a more specific `match` over `occurrence`: another match added above the one you meant shifts the count. An `occurrence` past the last match is an error.
 
-**`occurrence` belongs on this list, not beside `symbol`.** It is counting, and this whole feature exists to replace counting with naming. It is a *better* count than a line number — inserting unrelated content above does not move it — but it still drifts the moment someone adds another match above the one you meant. Reach for a more specific `match=` first, and use `occurrence` only when the anchors are genuinely identical. An ambiguous anchor warns either way, naming every line that matched; `occurrence` selects one, it does not assert you picked correctly.
+## Embed a line range
 
-An `occurrence` past the end refuses rather than clamping to the last match.
-
-### Presentation
-
-`reindent` strips the slice's common leading whitespace, so a class method or a nested key does not render with a ragged left edge. It defaults **on** for `symbol`/`match` and **off** for `lines` — an author who wrote a line range chose those columns, and changing how they render would be a silent visual change.
-
-`linenumbers` and numeric `highlight` stay in **file** coordinates under an anchor, so the numbers remain a pointer back into the real file. But a numeric `highlight` under an anchor carries exactly the coordinate exposure anchoring removes — you are guessing at line numbers the resolver chose. Use `highlight-match` there, which takes regexes and highlights the lines that match.
-
-## Line ranges
-
-Slice the file with the `lines` attribute. Four formats:
+`lines` slices by line number, 1-indexed and inclusive, as your editor counts them. Prefer an anchor where you can.
 
 | Input | Meaning |
 |-------|---------|
-| `"10-25"` | Lines 10 through 25, inclusive |
-| `"10-"` | Line 10 to end of file |
-| `"-20"` | Line 1 through line 20 |
-| `"10"` | Single line (line 10 only) — shorthand for `"10-10"` |
+| `"10-25"` | Lines 10 through 25 |
+| `"10-"` | Line 10 to the end of the file |
+| `"-20"` | Lines 1 through 20 |
+| `"10"` | Line 10 only |
 
-1-indexed (matches editor line numbers), inclusive on both ends. Out-of-range ends clamp to the file length with a build warning; out-of-range starts (entirely past EOF) are a build error.
-
-{% hint type="note" %}
-**The `lines=` invocations on this page are deliberate.** They demonstrate the attribute, so they keep it — and they are the reason `refrakt migrate snippets` refuses most of what it finds here. Everywhere else, [anchor by name](#address-by-name-not-by-line-number): a line range is a coordinate into a file nobody promised to hold still.
-{% /hint %}
-
-This takes the `formatter` block out of the repository's Biome config:
+An end past the end of the file is clamped, with a warning; a start past it is a build error.
 
 {% preview source=true %}
 
@@ -108,37 +78,23 @@ This takes the `formatter` block out of the repository's Biome config:
 
 {% /preview %}
 
-## Captions and titles
+## Show line numbers and highlight lines
 
-Snippet itself has no `title` attribute — it's structurally a `fence` by the time the transform runs, and fences don't carry titles. Label it by wrapping it in a container rune. Two fit, and they look different.
-
-### A caption below: `figure`
-
-`{% figure caption="…" %}` captions the code the way it captions an image, below it. Use it when the label describes the excerpt.
+`linenumbers=true` adds a gutter, and `highlight` emphasizes lines without cutting the rest. Both count in the file's own line numbers, so the gutter below starts at 36 and `highlight="39-40"` marks file lines 39 and 40.
 
 {% preview source=true %}
 
-	{% figure caption="The counter's click handler: one function, called with +1 or −1" %}
-		{% snippet path="site/examples/counter/script.js" symbol="update" /%}
-	{% /figure %}
+	{% snippet path="biome.jsonc" lines="36-53" linenumbers=true highlight="39-40" /%}
 
 {% /preview %}
 
-### A title bar above: `codegroup`
+`highlight` takes ranges, single lines, or a mix: `"74-78,82,90-92"`. With `symbol` or `match`, use `highlight-match` instead, which takes regexes, so you are not guessing line numbers. An anchored slice also has its common indentation stripped (`reindent`), so a method does not render with a ragged left edge; a `lines` slice keeps its columns.
 
-`{% codegroup title="…" %}` puts title-bar chrome around a single fence, the way an editor tab names a file. Use it when the label is a filename or a heading.
+Both `linenumbers` and `highlight` work on a hand-written fence too: `` ```ts {% linenumbers=true highlight="3-5" %} ``.
 
-{% preview source=true %}
+## Set the language
 
-	{% codegroup title="counter/index.html" %}
-		{% snippet path="site/examples/counter/index.html" /%}
-	{% /codegroup %}
-
-{% /preview %}
-
-## Language inference
-
-The language is inferred from the file extension via a shared map:
+The language comes from the file extension:
 
 | Extension | Language |
 |-----------|----------|
@@ -156,7 +112,7 @@ The language is inferred from the file extension via a shared map:
 | `.sh`, `.bash` | `bash` |
 | (others) | `text` (no highlighting) |
 
-Override with `lang=` when the extension doesn't tell the full story. A SvelteKit `tsconfig.json` carries comments, so it is really JSONC; read as `json`, its comments would highlight as errors:
+Set `lang` when the extension is misleading. A `tsconfig.json` holds comments, which would highlight as errors as `json`:
 
 {% preview source=true %}
 
@@ -164,24 +120,21 @@ Override with `lang=` when the extension doesn't tell the full story. A SvelteKi
 
 {% /preview %}
 
-## Composition
+## Add a caption or a title
 
-The pre-resolve model means snippets work inside any container rune that matches `fence` nodes. No special handling required on either side — the container sees a fence, it consumes a fence.
-
-### Inside `{% codegroup %}`
-
-Multiple snippets become tabs in a codegroup. Tab labels come from the inferred language (or set `labels` on codegroup for custom names).
+A snippet has no title of its own. Wrap it in `{% figure caption="…" %}` for a caption below the code, or in `{% codegroup title="…" %}` for a title bar above it, like an editor tab naming the file.
 
 {% preview source=true %}
 
-	{% codegroup %}
-		{% snippet path="site/examples/counter/index.html" /%}
-		{% snippet path="site/examples/counter/script.js" /%}
-	{% /codegroup %}
+	{% figure caption="The counter's click handler: one function, called with +1 or −1" %}
+		{% snippet path="site/examples/counter/script.js" symbol="update" /%}
+	{% /figure %}
 
 {% /preview %}
 
-Mixed children — snippets and triple-backtick fences in the same codegroup — work uniformly:
+## Use snippets in codegroup and diff
+
+Containers that take code blocks take snippets too, mixed freely with fences. In a codegroup each becomes a tab:
 
 {% preview source=true %}
 
@@ -195,9 +148,7 @@ Mixed children — snippets and triple-backtick fences in the same codegroup —
 
 {% /preview %}
 
-### Inside `{% diff %}`
-
-Two snippets become before/after for a diff comparison — here the counter's button rule against its dark-theme override.
+In a diff, two snippets are the before and after; here the counter's button rule against its dark-theme override:
 
 {% preview source=true %}
 
@@ -208,91 +159,27 @@ Two snippets become before/after for a diff comparison — here the counter's bu
 
 {% /preview %}
 
-The diff doesn't know or care that its children came from snippet tags — it sees the same `fence` nodes a triple-backtick block would produce.
+## Know when the code has outgrown its prose
 
-## Sandbox rules
-
-Paths are resolved relative to the directory containing `refrakt.config.json`. The resolver enforces the snippet sandbox at build time:
-
-| Pattern | Outcome |
-|---------|---------|
-| `path="/etc/passwd"` | **Rejected** — absolute paths are not allowed. |
-| `path="../../etc/passwd"` | **Rejected** — paths must stay inside the project root after normalization. |
-| `path="link-to-outside"` (symlink that points outside the project root) | **Rejected** — `fs.realpath` is checked too. |
-| `path="src/"` (a directory) | **Rejected** — must be a regular file. |
-| `path="missing.ts"` (file doesn't exist) | **Rejected** — build error names the resolved path and the page that referenced it. |
-
-These rules make snippet safe to use on sites that accept untrusted author content (a hosted authoring product, an external editor) — the worst a malicious author can do with snippet is point at a file inside the project root.
-
-## Line numbers
-
-Set `linenumbers=true` to show a numbered gutter. The starting number derives from `lines=` so the gutter reflects the file's real offsets — `lines="74-125"` starts the count at 74, not 1.
-
-The gutter below starts at 16 (file coordinates), matching what you'd see in your editor:
-
-{% preview source=true %}
-
-	{% snippet path="site/examples/counter/style.css" lines="16-24" linenumbers=true /%}
-
-{% /preview %}
-
-With `lines`, the numbers start at the first line shown, so they match the file.
-
-## Highlighting specific lines
-
-`highlight="74-78"` emphasizes specific lines without cropping. Unlike `lines=` (which slices), highlight keeps the surrounding context visible and draws the eye to the lines that matter. Use it for "look at this part" callouts inside a larger code block.
-
-This shows Biome's formatter settings with file lines 39–40 — the tab indent and the line width — emphasized via a neutral surface tint and a primary-colored left rail:
-
-{% preview source=true %}
-
-	{% snippet path="biome.jsonc" lines="36-53" linenumbers=true highlight="39-40" /%}
-
-{% /preview %}
-
-Range syntax matches Shiki: single ranges (`"74-78"`), single lines (`"82"`), or comma-separated mixed (`"74-78,82,90-92"`). Indices are **file coordinates** — if you've set `lines="10-40" highlight="20"`, the highlighted line is file line 20, not the 20th line of the slice. Less surprising for citing line numbers from a real file.
-
-Both `linenumbers` and `highlight` are also fence-level annotations — `` ```ts {% linenumbers=true highlight="3-5" %} `` works on any hand-authored fence too, no snippet required.
-
-## Review markers
-
-Anchoring answers *am I quoting the right region*. It cannot answer the next question up: **the region is right, and the prose around it no longer describes what is in it.**
-
-A field is removed, a default flips, a parameter is reordered. The anchor resolves perfectly, the code block renders real current code, and the paragraph above it quietly becomes false. That is the *ordinary* case, because editing a declaration is far more common than renaming one.
+An anchor keeps the snippet on the right code, but the paragraph beside it can still go stale when that code changes. A `reviewed` marker records that someone read this version of the slice against the prose. It freezes nothing: the snippet still shows current code, and a change asks for a re-read.
 
 ```markdoc
 {% snippet path="packages/types/src/config.ts" symbol="SiteConfig" reviewed="a3f91c4e:70b2d118" /%}
 ```
 
-The marker records that a human read this version of the slice and confirmed the prose matched. **It freezes nothing** — the snippet still tracks HEAD and re-resolves every build. When the region changes, a diagnostic asks for a re-read; the page still renders the current code.
-
-### Never written by hand
+The CLI writes markers; don't write them by hand.
 
 ```bash
-refrakt snippet review site/content/runes/file-ref.md   # stamp unmarked
-refrakt snippet review --check                          # report, own exit code
-refrakt snippet review --update                         # re-stamp what changed
+refrakt snippet review site/content/runes/file-ref.md   # stamp unmarked snippets
+refrakt snippet review --check                          # report changed ones
+refrakt snippet review --update                         # show each diff and re-stamp
 ```
 
-`--update` shows the **content diff** of every slice it re-stamps, recovered from the commit that wrote the marker. A commit full of changed hex strings is unreviewable; a commit where someone saw each before/after is the entire point.
+A reformat that leaves the meaning unchanged is re-stamped without asking. Mark only snippets whose prose makes specific claims about the code; marking every one makes `--check` noise that people learn to ignore.
 
-A change that alters the content but not its meaning — a reformat — is re-stamped without prompting, because two hash levels make "it was just the formatter" a fact the tool establishes rather than a judgement you make under time pressure. Everything else is held for you.
+## Show a page's own source
 
-### Mark selectively
-
-Marking every snippet makes `--check` permanently noisy and trains everyone to ignore it. Mark the references whose prose makes **specific claims** about the code beside them.
-
-This repository marks exactly one. Almost every `snippet` on these pages demonstrates the rune that quotes it — the prose says "here is what `lines=` does", not "this code means X" — so a change to the quoted file does not make the surrounding sentence false. A `file-ref` at `package.json` is the sharp counter-example: it changes on every dependency bump, and a marker there would fire constantly while certifying nothing.
-
-If `--check` is noisy after a marking pass, the remedy is **unmarking pages**, not loosening the comparison. A marker that fires on a page whose prose did not depend on the slice is a selection error.
-
-No `title` attribute. Snippet's output is a fence; to label it, wrap it in `{% figure caption="..." %}` (a caption below) or `{% codegroup title="..." %}` (a title bar above).
-
-## View source — recursively
-
-Snippet's killer trick: feed it `$file.path` from the page-variable surface ({% xref "/docs/authoring/variables" /%}) to embed the page's own source.
-
-At build time it reads the page you're looking at right now and inlines its content. The reader sees the markdown that generates the page they're reading. The "see it in action" pitch in one rune.
+Pass `$file.path` ({% xref "/docs/authoring/variables" /%}) to embed the source of the page the reader is on. This one:
 
 {% preview source=true %}
 
