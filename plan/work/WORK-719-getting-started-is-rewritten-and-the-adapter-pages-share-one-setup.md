@@ -1,4 +1,4 @@
-{% work id="WORK-719" status="ready" priority="medium" complexity="moderate" source="SPEC-193" tags="docs, getting-started, adapters" milestone="v0.49.0" %}
+{% work id="WORK-719" status="in-progress" priority="medium" complexity="moderate" source="SPEC-193" tags="docs, getting-started, adapters" milestone="v0.49.0" %}
 
 # Getting started is rewritten, and the adapter pages share one setup
 
