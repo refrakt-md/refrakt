@@ -289,7 +289,7 @@ The media zone holds a *running program* just as readily as an image. A `{% sand
 
 {% /preview %}
 
-The cover demotion is also a feature in its own right: put a sandbox in a `media-position="cover"` media zone and the running scene becomes a full-bleed **animated background** with the content overlaid — see [the animated hero backdrop](/runes/marketing/hero#animated-background-a-live-program-as-the-backdrop).
+The cover demotion is also a feature in its own right: put a sandbox in a `media-position="cover"` media zone and the running scene becomes a full-bleed **animated background** with the content overlaid — see [the animated hero backdrop](/runes/marketing/hero#animate-the-backdrop).
 
 ## Interactive guests & posture
 

@@ -9,9 +9,9 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:card"} /%}
 
-`{% card %}` is a generic content card: a bordered surface with an optional media zone, a body, and an optional footer. It carries no knowledge of the registry or `$item` — it's a plain presentational component you can drop into prose, or feed from a [`collection`](/runes/collection) body template. To give a block of content a headline and intro without framing it as a tile, use [section](/runes/section).
+A self-contained tile: a bordered surface with an optional media zone, a body, and an optional footer. Use it on its own in prose, or as the body template of a [collection](/runes/collection) to list entities; there is one `card` for every kind of item, rather than a card rune per type. To give a block of content a headline and intro without framing it as a tile, use [section](/runes/section).
 
-There is one generic `card` (named by *shape*, not by entity) — refrakt deliberately has no `article-card` / `recipe-card` / per-entity card runes. A designed list item is `{% card %}` fed by entity fields, not a bespoke card per type.
+## Basic usage
 
 {% preview source=true %}
 
@@ -37,9 +37,9 @@ There is one generic `card` (named by *shape*, not by entity) — refrakt delibe
 | A paragraph directly followed by a heading, at the start of the body | The eyebrow above the title |
 | The first heading in the body | The card's title, which also names a linked card for screen readers |
 
-## Zones
+## Add media and a footer
 
-The body divides on `---` (a horizontal rule) into up to three zones — here all three, with a real cover image:
+Put an image before the first `---`, the body after it, and a short meta line after a second `---`. Here `Brunch classic` becomes the eyebrow over the title.
 
 {% preview source=true %}
 
@@ -60,39 +60,21 @@ The body divides on `---` (a horizontal rule) into up to three zones — here al
 
 {% /preview %}
 
-- **media** (optional, leading zone) — laid out beside the body on wide screens and as a full-bleed header on small screens.
-- **body** — the main content.
-- **footer** (optional, trailing zone) — a muted meta row.
+The media zone takes any block, not only an image: a `codegroup`, a `chart`, a `map` or a running `sandbox` fit the same way. [Media guests](/docs/concepts/media-guests) shows each one in a card.
 
-Above, `Brunch classic` is the eyebrow over the `Tequila Sunrise` heading.
+## Place the media
 
-### The media zone isn't just images
+The media always comes first in the source; `media-position` decides where it shows:
 
-The media zone holds *any* content — it's ordinary markdown, transformed in place. An image is the common case, but a `{% codegroup %}`, a `{% sandbox %}`, a chart, or a video embed work equally well:
+- `top` or `bottom` stacks it above or below the body.
+- `start` or `end` puts it beside the body on wide screens, and above it once the card is narrow.
+- `cover` lays the body over the media (see [Cover mode](#cover-mode)).
 
-{% preview source=true %}
+When the media sits beside the body, `media-ratio` sets its share of the width (`1/3` to `2/3`), `valign` aligns the two columns, and `collapse` picks the container width at which they stack (`sm`, `md`, `lg`, or `never`). Every rune with a media zone takes these same attributes.
 
-	{% card %}
-		{% codegroup %}
-		```js
-		export const sum = (a, b) => a + b;
-		```
-		```py
-		def sum(a, b): return a + b
-		```
-		{% /codegroup %}
+## Link the whole card
 
-		---
-
-		### Tiny utilities
-		A starter kit of one-liners.
-	{% /card %}
-
-{% /preview %}
-
-## Whole-card links
-
-`href` makes the entire card clickable. It's rendered as a stretched-link overlay, so real links inside the body or footer stay clickable too (no invalid nested `<a>`). The overlay is a real link: it takes one tab stop, and screen readers announce it by the card's title (`aria-labelledby`).
+`href` makes the entire card one link. Links inside the body or footer stay clickable, and screen readers announce the link by the card's title.
 
 ```markdoc
 {% card href="/guide/getting-started/" %}
@@ -101,30 +83,11 @@ Read the five-minute guide.
 {% /card %}
 ```
 
-Any block can be made a link the same way, with [`{% link %}`](/runes/link) around it.
+Because a linked card is a single click target, an interactive media guest such as a `codegroup` or a live `map` shows its static form and passes clicks through to the link, and the build warns. Drop `href` if the guest needs to stay interactive. To make any other block a link, wrap it in [link](/runes/link).
 
-### Media guests in a linked card
+## Lift the card and frame its media
 
-A linked card is **one** interaction target, so its media guest is
-presentational. An interactive guest in the media zone — a `codegroup`, `tabs`,
-a live `map` — is demoted: its controls go `pointer-events: none` (clicks fall
-through to the card link) and it renders its static fallback rather than live
-chrome. The demotion is scoped to the media zone only — a button or link in the
-body/footer stays clickable. Authoring an interactive guest in a linked card
-emits a build warning; drop `href` or the interactivity. In [cover mode](#cover-mode)
-the media is always an inert backdrop, linked or not. See the [interaction-posture
-contract](/extend/rune-authoring/composability#media-guest-interaction-posture)
-for the full model.
-
-## Place the media
-
-`card` shares the media+content layout vocabulary with `bento-cell` and every other media-bearing rune. The body splits on `---` into **media → body → footer** (media-first, in source order); `media-position` decides where the media sits visually, independently of source order.
-
-`media-ratio` sets the media's share of the row beside the content, `valign` aligns the two, and `collapse` picks the width at which they stack. `height` or `aspect` give the card a fixed shape, and `href` links the whole card.
-
-## Elevation & frame
-
-A card exposes two decorable surfaces ([surface model](/docs/concepts/surfaces)): the **self** surface (the card box) takes `elevation` — a `box-shadow` that floats the whole tile — and the **media** surface (the `[data-section="media"]` zone) takes `frame` chrome: aspect, crop anchor, a silhouette `drop-shadow`, displacement, and oversize. The two never collide — `elevation` is the card's z-shadow, `frame-shadow` is the photo's silhouette.
+`elevation` sets how far the card stands off the page, from `sunken` to `overlay`. The `frame-*` attributes shape the media zone: `frame-aspect` gives it a fixed shape and `frame-anchor` picks the focal point of the crop.
 
 {% preview source=true %}
 
@@ -137,11 +100,11 @@ A card exposes two decorable surfaces ([surface model](/docs/concepts/surfaces))
 
 {% /preview %}
 
-`elevation` lifts the card off the page; `frame` (or a named preset from theme/project config) decorates the media zone. Because the media zone is a clipping host, a displaced or `oversize`d guest is cropped into a peek — `frame-anchor` picks the focal point. See [surfaces](/docs/concepts/surfaces) for the full facet list.
+[Surfaces](/docs/concepts/surfaces) lists every elevation step and frame facet, including displacement and silhouette shadows.
 
 ## Cover mode
 
-`media-position="cover"` is the poster layout: the media well fills the card interior and the body overlays it. It's a one-attribute switch from `top`/`bottom`/`start`/`end` — the same content, restacked. The media stays a media guest, so the thin edge and `--rf-radius-media` are preserved; nothing else about the card changes.
+`media-position="cover"` turns the card into a poster: the media fills the card and the body sits over it.
 
 {% preview source=true %}
 
@@ -158,25 +121,13 @@ A card exposes two decorable surfaces ([surface model](/docs/concepts/surfaces))
 
 {% /preview %}
 
-A cover card has no natural height (there's no side-by-side content to set it), so give it one with `height` (the named scale `sm`/`md`/`lg`/`xl`) or `aspect` (e.g. `aspect="3/4"`). When the card sits in an external grid track (a `bento` cell, a `collection` row), the track wins; otherwise `height`/`aspect` set the shape, falling back to a portrait default. `height`/`aspect` are also the standalone analog of a bento row-span for a `bg`-only card — a card with no media at all, just a [background fill](/runes/bg), needs an intrinsic height to show.
+- **Shape.** A cover card has no natural height, so give it `height` (`sm` to `xl`) or `aspect` (such as `3/4`). Inside a bento cell or a collection row, the grid track sets the size instead. A card with only a [background](/runes/bg) and no media needs `height` or `aspect` too.
+- **Where the text sits.** `content-place` takes a block and an inline position, each `start`, `center` or `end`: `content-place="center center"` centers the text. The default places it along the bottom of a portrait card and the start of a landscape one. It applies only in cover mode.
+- **Legibility.** A cover card darkens the media behind the text with a gradient [scrim](/runes/bg#scrim), and the text turns light to match. `scrim` picks the edge it darkens from, `scrim-type="frost"` blurs instead (as above, with `scrim-blur` setting how much), and `scrim="none"` turns it off.
 
-### Placing the overlay — `content-place`
+## Feed cards from a collection
 
-`content-place` anchors the overlaid content. It's a two-axis logical value — `<block> <inline>`, each `start` / `center` / `end` — mapping to `align`/`justify`. The default, `auto`, adapts to the card's own orientation via a container query: a portrait card drops the content to the block end (a caption band), a landscape card pulls it to the inline start (a side panel). Pin it with an explicit value, e.g. `content-place="center center"` for a centred hero.
-
-`content-place` is inert outside cover mode — there's no overlay to anchor — and the engine warns if you set it on a non-cover card.
-
-### The cover scrim
-
-Overlaying text on an arbitrary photo is a legibility footgun, so cover mode turns on a default [scrim](/runes/bg#scrim) on the media surface — a gradient weighted toward the content edge (it follows `content-place`, and you can pin it with an explicit `scrim="top|bottom|left|right"`). The example above instead uses the **frost** treatment (`scrim-type="frost"`, with `scrim-blur` on the `none`/`sm`/`md`/`lg` scale): a frosted-glass blur banded behind the text rather than a gradient. Either way the scrim is masked to the content edge so it never blurs or darkens the whole image, and the foreground reads against the darkened media automatically (`scrim-tone` controls the polarity — a dark scrim yields light text). Opt out with `scrim="none"`, or set a [`tint`](/docs/concepts/surfaces) for a bespoke overlay color.
-
-The scheme is scoped to the overlaid text, not the whole card: the card's own surface — the padded edge framing the media well — keeps the page palette (light in light mode, dark in dark mode), while only the text sitting on the image flips to stay legible.
-
-In a `recipe`, cover mode uses **header scope**: only the title block overlays the image (a poster header), and the ingredients/steps flow below on the page palette — the same `media-position="cover"` switch, scoped to the part that should sit on the image.
-
-## Feeding a card from a collection
-
-Because the card is plain, a `collection` body template wires entity fields into it — the card neither knows nor cares that it's in a collection:
+In a `collection` body template, `$item` fills the card from each entity's fields:
 
 ```markdoc
 {% collection type="page" filter="url:/blog/*" sort="date-desc" layout="grid" %}
@@ -187,9 +138,7 @@ Because the card is plain, a `collection` body template wires entity fields into
 {% /collection %}
 ```
 
-See [collection → per-item templates](/runes/collection#per-item-templates) for the `$item` contract.
-
-In a `grid`, every card in a row shares the height of the tallest one, and the body stretches to fill that height — so the footers line up along a common baseline regardless of how much body each card has.
+In a grid, cards in a row share the tallest card's height, so their footers line up. See [collection → per-item templates](/runes/collection#per-item-templates) for what `$item` holds.
 
 ## Attributes
 
@@ -197,5 +146,5 @@ In a `grid`, every card in a row shares the height of the tallest one, and the b
 
 ## See also
 
-- [collection](/runes/collection) — feeds cards from registry entities via a body template.
-- The `recipe` rune is built on the same split-layout skeleton (media zone + delimited content).
+- [collection](/runes/collection) — feeds cards from registry entities through a body template.
+- [Surfaces](/docs/concepts/surfaces) and [Media guests](/docs/concepts/media-guests) — the shared vocabulary for frames, cover layouts and what the media zone can hold.

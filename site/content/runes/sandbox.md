@@ -177,7 +177,7 @@ Inside `{% preview source=true %}`, mark elements with `data-source` to choose w
 
 ## Fill the height of its container
 
-`height` takes pixels, or sizes itself to the content when omitted. Set `height="fill"` when the container decides the height. A sandbox used as a [cover backdrop](/runes/marketing/hero#animated-background-a-live-program-as-the-backdrop) gets it automatically.
+`height` takes pixels, or sizes itself to the content when omitted. Set `height="fill"` when the container decides the height. A sandbox used as a [cover backdrop](/runes/marketing/hero#animate-the-backdrop) gets it automatically.
 
 ```markdoc
 {% sandbox src="wireframe-waves" height="fill" /%}
