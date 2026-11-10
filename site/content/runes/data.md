@@ -9,13 +9,11 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:data"} /%}
 
-Feed charts and sortable tables from real data files instead of hand-typed Markdown tables. The `data` rune reads an external tabular source at build time, shapes it (filter, sort, select, type), and emits a plain `<table>` — which `{% chart %}` and `{% datatable %}` consume with no extra work, and which stands on its own as the no-JS fallback.
+Feed tables, charts and sortable tables from real data files instead of hand-typed Markdown tables. `data` reads a file from your project at build time, filters, sorts and selects its rows, and renders a plain table. That table works without JavaScript, and `{% chart %}` and `{% datatable %}` take it like one you typed.
 
-The result is read as an ordinary table, so it works anywhere a table you typed would: inside `{% chart %}` or `{% datatable %}`. Files are read from within the project only.
+## Basic usage
 
-## Ingest a file
-
-The minimum case — a `src` attribute relative to the project root. The format is inferred from the extension.
+`src` is relative to the project root. The format comes from the extension: `.csv`, `.tsv`, `.json`, and `.ndjson` or `.jsonl`; for anything else, set `format`.
 
 {% preview source=true %}
 
@@ -23,43 +21,19 @@ The minimum case — a `src` attribute relative to the project root. The format 
 
 {% /preview %}
 
-That is a real file in this repository, read at build time. Change the file and the table updates on the next build — no copy-paste drift. Note the emitted table is a normal table: it renders with or without JavaScript.
+Change the file and the table updates on the next build.
 
 ## How Markdown is read
 
 | You write | It becomes |
 |-----------|------------|
 | No body | A table of the shaped rows |
-| A body | A template rendered once per row, with `$row` bound ([Per-row templates](#per-row-templates-give-data-a-body)) |
+| A body | A template rendered once per row, with `$row` bound ([Render each row with a template](#render-each-row-with-a-template)) |
 | A `---` in the body, when `headers` is set | A cell boundary: the body becomes one table row, a cell per zone ([A table with formatted cells](#a-table-with-formatted-cells)) |
 
-## Feeding a chart
+## Filter, sort and pick columns
 
-Because `chart` treats an authored `<table>` as its single source of truth, dropping a `{% data %}` inside it is all it takes. `numeric` types the value column so the chart plots real numbers (see [Typing](#typing-and-the-data-value-channel)).
-
-{% preview source=true %}
-
-	{% chart type="bar" title="Revenue by product" %}
-		{% data src="site/examples/revenue.csv" columns="product, revenue" numeric="revenue" /%}
-	{% /chart %}
-
-{% /preview %}
-
-## Feeding a datatable
-
-Same table, handed to `datatable` for runtime search + sort. Typed-numeric columns sort by their real value, not the formatted text (`$1,200` sorts above `$900`, not below it):
-
-{% preview source=true %}
-
-	{% datatable sortable="all" searchable=true %}
-		{% data src="site/examples/revenue.csv" numeric="revenue,units" /%}
-	{% /datatable %}
-
-{% /preview %}
-
-## Shaping the data
-
-Every knob below runs at **build time** on a single intermediate shape, identically regardless of source format. Order: `where` → `sort` → `columns` → `limit`/`offset`, then typing.
+These run at build time, in this order: `where`, `sort`, `columns`, then `limit` and `offset`.
 
 {% preview source=true %}
 
@@ -71,14 +45,62 @@ Every knob below runs at **build time** on a single intermediate shape, identica
 
 {% /preview %}
 
-- **`where`** filters rows with the `field:value` grammar (the same one `collection` and `aggregate` use — exact, `glob*`, or `/regex/`). Repeat a field to OR; combine fields to AND.
-- **`sort`** orders by a column; a `-` prefix descends. A column whose cells are all numeric (even when formatted, like `$1,200`) sorts numerically.
-- **`columns`** selects, reorders, and renames: `"revenue as 'Revenue ($)'"`. Quote an alias that contains spaces or punctuation.
-- **`limit`** / **`offset`** slice the rows — the `data` analogue of snippet's `lines=`.
+- **`where`** filters with the `field:value` form [collection](/runes/collection) uses: exact, `glob*`, or `/regex/`. Repeat a field for OR; combine fields for AND.
+- **`sort`** orders by a column; a `-` prefix sorts descending.
+- **`columns`** selects, reorders, and renames. Quote an alias with spaces or punctuation: `"revenue as 'Revenue ($)'"`.
+- **`limit`** and **`offset`** take a slice of the rows.
 
-## Per-row templates — give `data` a body
+## Treat a column as numbers
 
-Without a body, `data` emits a `<table>`. Give it one and the body is rendered **once per row**, with `$row` bound to that row — so a data file can drive arbitrary Markdoc, not just table cells.
+A column whose cells all read as numbers, even formatted ones like `$1,200` or `98%`, is numeric automatically: it sorts by value, a chart plots it, and the reader still sees the formatted text. Use `numeric="col"` to force it, for a column with a few blanks or footnote markers, and `text="col"` to keep a code like `007` as text.
+
+## Feed a chart
+
+Put `data` inside `{% chart %}`:
+
+{% preview source=true %}
+
+	{% chart type="bar" title="Revenue by product" %}
+		{% data src="site/examples/revenue.csv" columns="product, revenue" numeric="revenue" /%}
+	{% /chart %}
+
+{% /preview %}
+
+## Let readers search and sort
+
+Put `data` inside `{% datatable %}`. Numeric columns sort by value, so `$1,200` sorts above `$900`.
+
+{% preview source=true %}
+
+	{% datatable sortable="all" searchable=true %}
+		{% data src="site/examples/revenue.csv" numeric="revenue,units" /%}
+	{% /datatable %}
+
+{% /preview %}
+
+`data` decides at build time which rows are on the page at all; `datatable` lets readers hide and reorder those rows in the browser. Filter with `where` to leave rows out, and with the datatable's search to let readers narrow them.
+
+## Read nested JSON
+
+Point `root` at the array or object inside the document, as a dotted path (`data.results`) or a JSON Pointer (`/data/results`). Nested fields become dotted column names, which `columns` can pick:
+
+```markdoc
+{% data src="data/api-dump.json" root="data.results" where="region:EMEA"
+   columns="product as Product, geo.country as Country, units as Units"
+   numeric="units" sort="-units" /%}
+```
+
+`orient` says how each element becomes a row:
+
+- `records` (detected): `[{name, revenue}, …]`; the keys become columns.
+- `values` (detected): `[["name","revenue"],["a",10]]`; the first array is the header row.
+- `index`: `{ "us": {…}, … }`; each key becomes a column named by `key-column`.
+
+NDJSON reads one record per line, and every key that appears in any record becomes a column.
+
+## Render each row with a template
+
+Give `data` a body and it renders the body once per row instead of a table, with `$row` bound to that row:
 
 ```markdoc
 {% data src="team.csv" sort="name" %}
@@ -90,13 +112,9 @@ Without a body, `data` emits a `<table>`. Give it one and the body is rendered *
 {% /data %}
 ```
 
-`$row.<column>` reads a cell by its column name — after `columns` renaming, so `columns="full_name as name"` gives you `$row.name`. A column that types as numeric binds as a **number**; everything else binds as the cell's text.
+`$row.<column>` uses the name after `columns` renames it. Numeric columns bind as numbers, the rest as text. Filtering, sorting and slicing run first, as for the table.
 
-Every shaping attribute applies exactly as it does to the table form: `where`, `sort`, `columns`, `limit` and `offset` all run first, and the body sees what survives.
-
-### It composes with runes that read their own children
-
-The rendered rows are spliced in as **siblings**, landing exactly where hand-written ones would. So a parent rune that builds structure from its children — `accordion`, `tabs`, `bento` — works with generated items:
+The rendered rows land where hand-written ones would, so runes that build from their children, such as `accordion`, `tabs` and `bento`, work with them:
 
 ```markdoc
 {% accordion %}
@@ -110,37 +128,13 @@ The rendered rows are spliced in as **siblings**, landing exactly where hand-wri
 {% /accordion %}
 ```
 
-### Other preprocessor runes see the bound row
+A `{% snippet %}`, `{% include %}` or nested `{% data %}` in the body can take its attributes from `$row`, as in `{% snippet path=$row.path /%}`.
 
-The body is bound to a row before anything inside it is resolved, so a `{% snippet %}`, `{% include %}` or nested `{% data %}` in the body can take its attributes from `$row`:
-
-```markdoc
-{% data src="examples.csv" %}
-	{% snippet path=$row.path /%}
-{% /data %}
-```
-
-Each row gets its own code block, read from the file that row names.
-
-### A variable inside backticks is literal
-
-Markdoc does not interpolate inside inline code, so this renders the text `{% $row.name %}` rather than the value:
-
-```markdoc
-### `{% $row.name %}`
-```
-
-Nothing warns — you get a heading per row, each showing the same literal.
-
-This is standard Markdown, and it is the *only* inline construct with the property: links, nested emphasis and rune bodies all pass a variable through fine. Use [`{% code %}`](/runes/code) when you want the value code-styled:
-
-```markdoc
-### {% code %}{% $row.name %}{% /code %}
-```
+Markdoc does not fill in variables inside backticks, so `` `{% $row.name %}` `` prints the tag itself on every row, with no warning. Use `{% code %}{% $row.name %}{% /code %}` for a code-styled value.
 
 ### A table with formatted cells
 
-Set `headers` and the body becomes one table **row** — cells separated by `---` — instead of a run of blocks:
+Set `headers` and the body becomes one table row, with `---` between cells:
 
 ```markdoc
 {% data src="_data/rune-attributes.json" root="attributes" where="rune:card scope:own"
@@ -155,19 +149,15 @@ Set `headers` and the body becomes one table **row** — cells separated by `---
 {% /data %}
 ```
 
-This is how you get a table whose cells carry markup. The bodyless form above builds its cells from literal text — right for arbitrary CSV, where a stray `*` should stay a `*` — so it can render `true` but never `✓`, and `href` but never `` `href` ``. Here the cells are markdown you wrote, so emphasis, links, runes and `{% if %}` all work inside one.
+Use it when cells need markup: the bodyless table shows cell text as-is, so it can print `true` but never `✓`. `chart` and `datatable` take this table the same way.
 
-The emitted table is structurally identical to the bodyless one, so [`chart`](/runes/chart) and [`datatable`](/runes/datatable) consume it unchanged.
-
-Three things to know:
-
-- **The counts must match.** `headers` naming four columns and a body with three `---`-delimited cells is a build error that names both numbers.
-- **`headers` needs a body.** On a self-closing tag it is an error rather than a silent no-op — it would read as a rename of `columns`, which selects and renames *source* columns instead.
-- **A `---` inside a cell splits it.** The same constraint [`card`](/runes/card) and [`grid`](/runes/grid) carry. Watch for it in free-text columns.
+- The number of `headers` must match the number of cells, or the build fails.
+- `headers` needs a body; on a self-closing tag it is an error.
+- A `---` inside a cell's text splits it, as in [card](/runes/card) and [grid](/runes/grid).
 
 ### Nested queries
 
-A `{% data %}` inside another one's body runs as a **subquery**, once per outer row:
+A `{% data %}` in another's body runs once per outer row:
 
 ```markdoc
 {% data src="axes.json" where=$r %}
@@ -181,121 +171,26 @@ A `{% data %}` inside another one's body runs as a **subquery**, once per outer 
 {% /data %}
 ```
 
-`$row` always means **the nearest enclosing query's** row — so the inner table sees attribute rows even though both sources have a `name` column. The one place the outer row reaches in is the subquery's **attributes**: `where=$row.query` is how the subquery gets filtered for this row, which is the whole point.
-
-Because `where` takes a single string and nothing here concatenates, the filter value has to arrive ready-made. Emit it as a column (`query` above holds `"axis:bg"`) rather than trying to build it at the call site.
-
-An empty subquery renders nothing and does **not** take its row with it — a row whose subquery finds no matches still renders its own content.
+Inside the inner body, `$row` is the inner row. The outer row reaches the inner query only through its attributes, as in `where=$row.query`. Nothing builds strings here, so store the ready-made filter (`"axis:bg"`) in a column. An inner query that matches nothing renders nothing, and the outer row still renders.
 
 ### Limits
 
-The binding is deliberately shallow — bind a row, render a block. `{% if %}` works (`{% else /%}` is self-closing), but there is no iteration, and formatting goes through the shared Markdoc functions, the same constraint [`collection`](/runes/collection) templates hold.
-
-Two more:
-
-- **`$item` is not an alias for `$row`.** A collection's `$item` is an entity (`id` / `type` / `url` / `data`); a data row is flat. One name for two shapes is a trap, so reaching for `$item.data.x` here is an error rather than a silent `undefined`.
-- **Not inside `chart` or `datatable`.** Those consume the `<table>` this rune would otherwise emit, so a body there is a build error rather than an empty render.
-- **`numeric` / `text` warn.** They exist to type the `data-value` attribute on table cells; a body emits no cells. Numeric columns still bind to `$row` as numbers.
-
-## Typing and the `data-value` channel
-
-A Markdown table carries only text, so a formatted number (`$1,200`, `1,500`, `98%`) is just a string. `numeric` types a column: every value cell keeps its human-formatted text **and** gains a normalized `data-value` (`"$1,200"` → `data-value="1200"`).
-
-That one attribute is the typed channel both host runes honour:
-
-- `chart` reads `data-value` for the plotted number (falling back to the cell text).
-- `datatable`'s sort prefers `data-value`, so currency and thousands-separated columns sort correctly.
-
-Auto-inference handles the common case — a column whose non-empty cells all parse as numbers becomes numeric automatically. Use `numeric="col"` to force it (e.g. a column with a few blanks or footnote markers) and `text="col"` to keep something like a zero-padded code (`007`) as text. `data-value` is invisible to a reader of the bare table — a pure enhancement.
-
-## JSON and NDJSON
-
-JSON isn't inherently tabular, so its adapter owns three extra knobs; everything downstream is identical to CSV.
-
-**Nested JSON**, plucked with a `root` locator and dotted column paths:
-
-```markdoc
-{% data src="data/api-dump.json" root="data.results" where="region:EMEA"
-   columns="product as Product, geo.country as Country, units as Units"
-   numeric="units" sort="-units" /%}
-```
-
-- **`root`** — a dotted path (`data.results`) or JSON Pointer (`/data/results`) to the array or map inside the document. Defaults to the document itself when it is already an array.
-- **`orient`** — how each element maps to a row:
-  - `records` (default, auto-detected) — `[{name, revenue}, …]`, keys become headers.
-  - `values` (auto-detected) — `[["name","revenue"],["a",10]]`, the first inner array is the header row.
-  - `index` (explicit) — `{ "us": {…}, … }`, an object map; the key becomes a column named by **`key-column`**.
-- **dotted column paths** — nested fields flatten to dotted headers (`geo.country`), so `columns` plucks them by name.
-
-**Object-map JSON** into a datatable:
-
-```markdoc
-{% datatable sortable="all" searchable=true %}
-	{% data src="data/inventory.json" orient="index" key-column="sku"
-	   columns="sku as SKU, name as Item, stock as Stock" numeric="stock" /%}
-{% /datatable %}
-```
-
-**NDJSON** (newline-delimited JSON) parses one record per line; the union of record keys becomes the headers:
-
-```markdoc
-{% data src="data/events.ndjson" columns="ts as Time, type as Event" /%}
-```
-
-## Build time vs. runtime — `data` and `datatable`
-
-`data`'s `where`/`sort`/`columns` overlap conceptually with what `datatable` offers, but they run at a **different time**, and they compose:
-
-| | `data` | `datatable` |
-|---|--------|-------------|
-| When | **Build time** | **Runtime** (client-side) |
-| Effect | Bakes the shaped rows into the static HTML | Lets the reader filter/sort/paginate live |
-| Defines | The no-JS table + what exists on the page | An interactive view over what's there |
-
-Use `data` to scope and type what lands on the page (the honest fallback); wrap it in `datatable` to let readers explore that set. Reach for `data`'s knobs to *remove* rows from the output, and `datatable`'s to let readers *hide* rows they still could reveal.
-
-## Format inference
-
-`format` is inferred from the file extension and can always be overridden.
-
-| Extension | Format |
-|-----------|--------|
-| `.csv` | `csv` |
-| `.tsv` | `tsv` |
-| `.json` | `json` |
-| `.ndjson`, `.jsonl` | `ndjson` |
-| (other) | set `format=` explicitly |
+- `{% if %}` works (`{% else /%}` is self-closing); there is no loop inside a row.
+- `$row` is not `$item`: a collection's `$item` is an entity with `data`, a row is flat, so `$item` here is an error.
+- A body inside `chart` or `datatable` is an error; they need the table.
+- `numeric` and `text` warn on a body, since there are no table cells to type; numeric columns still bind as numbers.
 
 ## When something goes wrong
 
-A sandbox escape, a missing file, a parse error, or a **source that yielded no rows** renders a visible **error callout** in place of the table and records a build error — the build keeps going, and the failure is obvious on the page rather than silently producing a broken table. "No rows" here means the file or the `root` you pointed at held nothing; it is a wrong-target mistake.
+A missing file, a file it cannot parse, a path outside the project, or a file or `root` with no rows shows an error in place of the table, and the build reports it. A `where` that matches nothing is not an error: the rune renders nothing, the way a list of open bugs is empty when there are none.
 
-A **filter that legitimately matched nothing** is not an error. `{% data %}` renders nothing at all and says nothing — asking real data a question with no answer today is normal, and a page listing open bugs when there are none is working, not broken.
+An attribute the rune cannot read is a build error. Attributes are read before functions run, so `where=concat(…)` fails, as do an undefined variable and an empty `where`; read as empty, they would show every row.
 
-An attribute the rune **cannot read** is a build error naming what went wrong. `data` resolves its attributes during the preprocess phase, so a few things that look like they should work cannot:
-
-```
-data: `where` is a call to `concat()`, and `data` reads its attributes
-      during preprocess — before functions are evaluated
-data: `where` references `$missing`, which is not defined here
-data: `where` is empty
-```
-
-An error is the safe answer: an empty filter is *no* filter, so a `where` that quietly read as empty would render the whole source. On a page filtering one rune's attributes out of a catalogue, that would show every rune's attributes under that rune's heading, and look completely plausible.
-
-Omitting an attribute is untouched: only attributes you actually wrote are checked.
-
-That leaves the mistake worth catching on its own: a **misspelt column**. Any `where`, `sort`, or `columns` clause naming a column the source does not have emits a build warning that names the column and lists the ones that exist:
+A column name that the file does not have is a warning that lists the ones it does:
 
 ```
 data "revenue.csv": `where` names a column the source does not have: "regio". Available: region, quarter, revenue.
 ```
-
-The warning fires whether or not the result ends up empty — a clause that matches nothing is a mistake even when another clause still returns rows.
-
-## SQLite — a later tier
-
-A SQLite adapter is specified but not yet implemented. It will slot into the same `{ headers, rows }` contract, but it is **active** rather than passive — its path to a result set is a query (`table="sales"` or `query="SELECT …"` with `params` for safe binding), and rows arrive pre-typed. Because a query engine can reach outside the file, the adapter will open the database **read-only**, **disable extension loading**, and **reject `ATTACH` / file-touching pragmas** on top of the path sandbox — build-time only, never exposed to the client. Tracked as its own work item.
 
 ## Attributes
 
@@ -305,7 +200,7 @@ Every attribute in one table. Format-specific ones say so in their description �
 
 ## See also
 
-- [Chart](/runes/chart) — plots the emitted table; reads `data-value` for real numbers.
-- [Datatable](/runes/datatable) — runtime search/sort over the emitted table; sorts on `data-value`.
-- [Snippet](/runes/snippet) — the sibling preprocess rune (a file → a code fence).
-- [Hosted & in-memory builds](/extend/plugin-authoring/hosted-builds) — the `ProjectFiles` sandbox `data`'s `src` reads through.
+- [Chart](/runes/chart) — plots the emitted table.
+- [Datatable](/runes/datatable) — search and sort over the emitted table in the browser.
+- [Snippet](/runes/snippet) — embeds a project file as a code block.
+- [Hosted & in-memory builds](/extend/plugin-authoring/hosted-builds) — how `src` is read when a build has no local filesystem.
