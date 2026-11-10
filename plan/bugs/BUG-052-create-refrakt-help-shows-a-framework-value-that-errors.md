@@ -1,4 +1,4 @@
-{% bug id="BUG-052" status="in-progress" severity="minor" source="" tags="" milestone="v0.49.0" %}
+{% bug id="BUG-052" status="fixed" severity="minor" source="" tags="" milestone="v0.49.0" pr="refrakt-md/refrakt#792" %}
 
 # create-refrakt --help shows a --framework value that errors
 
@@ -14,5 +14,13 @@ Every example in `--help` runs.
 
 ## Environment
 - `create-refrakt` 0.48.x (`packages/create-refrakt/src/bin.ts`)
+
+## Resolution
+
+Completed: 2026-11-10
+
+Branch: `claude/composition-usage-rune-pages-c87ar6`
+
+The help example (bin.ts), the template-type next steps (bin.ts) and the generated template README (scaffold.ts) now show `--framework sveltekit`. Changeset `create-refrakt-framework-help.md`.
 
 {% /bug %}
