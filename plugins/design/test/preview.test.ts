@@ -166,6 +166,28 @@ A note.
 		expect(code!.children[0]).toContain('<Button />');
 	});
 
+	it("renders a snippet's code block rather than taking it as the source", () => {
+		// The snippet preprocessor marks the fence it produces with `snippet`.
+		const content = `{% preview source=true %}
+\`\`\`js {% snippet=true %}
+let count = 0;
+\`\`\`
+{% /preview %}`;
+		const result = parse(content);
+		const preview = findTag(result as any, (t) => t.attributes['data-rune'] === 'preview');
+		const source = findTag(
+			preview!,
+			(t) => t.name === 'pre' && t.attributes['data-name'] === 'source',
+		);
+		expect(source!.attributes['data-language']).toBe('markdoc');
+		const rendered = findAllTags(
+			preview!,
+			(t) =>
+				t.name === 'pre' && t.attributes['data-language'] === 'js' && !t.attributes['data-name'],
+		);
+		expect(rendered).toHaveLength(1);
+	});
+
 	it('should emit responsive meta property when set', () => {
 		const result = parse(`{% preview responsive="mobile,tablet,desktop" %}
 Some content.

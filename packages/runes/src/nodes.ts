@@ -83,6 +83,9 @@ export const fence: Schema = {
 		// Per-fence tab label hint consumed by `codegroup` (WORK-304). Inert on
 		// standalone fences; ignored when the parent rune doesn't read it.
 		label: { type: String, render: false },
+		// Set by snippet's preprocess, so a consumer can tell a read-in file
+		// from a fence the author wrote (preview treats only the latter as source).
+		snippet: { type: Boolean, render: false },
 	},
 	transform(node, config) {
 		const lang = node.attributes.language || 'shell';

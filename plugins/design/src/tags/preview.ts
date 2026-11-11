@@ -101,9 +101,14 @@ function renderRuneHtml(nodes: Markdoc.RenderableTreeNode[], depth = 0): string 
 	return lines.join('\n');
 }
 
+/** A fence the author wrote as the preview's source. A snippet's fence is content. */
+function isSourceFence(node: Node): boolean {
+	return node.type === 'fence' && node.attributes.snippet !== true;
+}
+
 function extractFence(children: unknown[]): { fence: Node | undefined; rest: unknown[] } {
 	const nodes = children as Node[];
-	const fenceIdx = nodes.findIndex((c) => c.type === 'fence');
+	const fenceIdx = nodes.findIndex(isSourceFence);
 	if (fenceIdx === -1) return { fence: undefined, rest: nodes };
 	const fence = nodes[fenceIdx];
 	return { fence, rest: [...nodes.slice(0, fenceIdx), ...nodes.slice(fenceIdx + 1)] };
@@ -154,7 +159,7 @@ export const preview = createContentModelSchema({
 		const allChildren = asNodes(resolved.children);
 
 		let sourcePre: Markdoc.Tag<'pre'> | undefined;
-		const fenceIdx = allChildren.findIndex((c) => c.type === 'fence');
+		const fenceIdx = allChildren.findIndex(isSourceFence);
 		let contentChildren: Node[];
 		if (fenceIdx !== -1) {
 			const fence = allChildren[fenceIdx];
