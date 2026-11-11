@@ -1,5 +1,20 @@
 # @refrakt-md/design
 
+## 0.49.0
+
+### Patch Changes
+
+- 1fff35b: **A snippet in a preview is the content when it is alone, and the source beside other content.** `{% preview %}` takes its first code block as the source to show, and a `{% snippet %}` becomes a code block before the preview sees it, so a preview holding only a snippet rendered nothing and never showed the tag. The snippet's code block is now marked (`snippet` on the fence): on its own it renders as the preview's content, and `source=true` shows the `{% snippet %}` tag. Beside other content, such as a sandbox, it is still that content's source, read from the file.
+- Updated dependencies [862e41a]
+- Updated dependencies [dca7a2d]
+- Updated dependencies [a906331]
+- Updated dependencies [79fbe34]
+- Updated dependencies [26e923a]
+- Updated dependencies [1fff35b]
+  - @refrakt-md/transform@0.49.0
+  - @refrakt-md/runes@0.49.0
+  - @refrakt-md/types@0.49.0
+
 ## 0.48.0
 
 ### Patch Changes

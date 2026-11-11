@@ -1,5 +1,25 @@
 # @refrakt-md/lumina
 
+## 0.49.0
+
+### Minor Changes
+
+- 862e41a: **Text stays readable over a background.** A `{% bg %}` with `overlay="dark"` or `overlay="light"` now switches the rune's text to light or dark to match, as a scrim already did, unless a tint has set the color scheme. Over a scrim or a dark or light wash, Lumina shows muted text (a blurb) at full strength, as it does on a cover, so it no longer fades into the photo.
+
+### Patch Changes
+
+- 273e31b: **A figure's body sits flush with its edges.** A code block or table at the top or bottom of a `{% figure %}` kept its outer margin, leaving a gap above a code block that an image never had. The first child's top margin and the last body child's bottom margin are now cleared, as in a card; the caption keeps its own gap.
+- Updated dependencies [862e41a]
+- Updated dependencies [dca7a2d]
+- Updated dependencies [a906331]
+- Updated dependencies [79fbe34]
+- Updated dependencies [26e923a]
+- Updated dependencies [1fff35b]
+  - @refrakt-md/transform@0.49.0
+  - @refrakt-md/runes@0.49.0
+  - @refrakt-md/skeleton@0.49.0
+  - @refrakt-md/types@0.49.0
+
 ## 0.48.0
 
 ### Minor Changes

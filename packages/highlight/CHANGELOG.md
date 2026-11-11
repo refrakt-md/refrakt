@@ -1,5 +1,14 @@
 # @refrakt-md/highlight
 
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [862e41a]
+- Updated dependencies [26e923a]
+  - @refrakt-md/transform@0.49.0
+  - @refrakt-md/types@0.49.0
+
 ## 0.48.0
 
 ### Patch Changes
