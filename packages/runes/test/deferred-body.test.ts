@@ -43,6 +43,21 @@ describe('deferred-body capture', () => {
 		expect(stashed).toContain('$item.id');
 	});
 
+	it('keeps a line holding only a function call off the opening tag line', () => {
+		const ast = Markdoc.parse(`{% collectionLike %}
+{% card %}
+{% default($item.kind, "Item") %}
+### {% $item.data.title %}
+{% /card %}
+{% /collectionLike %}`);
+		captureDeferredBodies(ast, (n) => n === 'collectionLike');
+		const stashed = ast.children[0].attributes[DEFERRED_BODY_ATTR] as string;
+		expect(stashed).not.toMatch(/\{% card %\}\{%/);
+		const card = Markdoc.parse(stashed).children[0];
+		expect(card.type).toBe('tag');
+		expect(card.children.map((c) => c.type)).toContain('heading');
+	});
+
 	it('transform of the captured page does not resolve $item (no error, source preserved)', () => {
 		const ast = Markdoc.parse(source);
 		captureDeferredBodies(ast, (n) => n === 'collectionLike');

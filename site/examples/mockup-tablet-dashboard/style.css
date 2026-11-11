@@ -1,0 +1,72 @@
+html,
+body {
+	height: 100%;
+}
+body {
+	margin: 0;
+	font-family: system-ui, sans-serif;
+	background: #f8fafc;
+	color: #1e293b;
+}
+.app {
+	display: flex;
+	height: 100vh;
+}
+.sidebar {
+	width: 200px;
+	background: #fff;
+	border-right: 1px solid #e2e8f0;
+	padding: 20px 0;
+	flex-shrink: 0;
+}
+.sidebar-item {
+	padding: 10px 20px;
+	font-size: 14px;
+	color: #64748b;
+	cursor: pointer;
+}
+.sidebar-item.active {
+	color: #6366f1;
+	background: #eef2ff;
+	border-right: 2px solid #6366f1;
+	font-weight: 600;
+}
+.main {
+	flex: 1;
+	padding: 24px;
+}
+.main h1 {
+	font-size: 22px;
+	margin: 0 0 20px;
+}
+.cards {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 16px;
+}
+.card {
+	background: #fff;
+	border-radius: 12px;
+	padding: 20px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.card-label {
+	font-size: 12px;
+	color: #94a3b8;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+.card-value {
+	font-size: 28px;
+	font-weight: 700;
+	margin: 6px 0 4px;
+}
+.card-change {
+	font-size: 13px;
+}
+.up {
+	color: #22c55e;
+}
+.down {
+	color: #ef4444;
+}

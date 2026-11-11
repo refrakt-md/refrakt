@@ -54,11 +54,11 @@ always ships `content/` (and optional `sandboxes/`) under those fixed names.
 Installing composes three inputs:
 
 ```bash
-npx create-refrakt my-site --framework svelte --template @acme/my-template
-#                          └ adapter            └ purpose (bundled name | dir | package)
+npx create-refrakt my-site --framework sveltekit --template @acme/my-template
+#                          └ adapter               └ purpose (bundled name | dir | package)
 ```
 
-- `--framework` chooses the adapter (svelte/astro/next/nuxt/eleventy/html).
+- `--framework` (alias `--target`) chooses the adapter: `sveltekit`, `astro`, `next`, `nuxt`, `eleventy` or `html`.
 - `--template` chooses the purpose. The template's `site` config is
   framework-agnostic; the scaffolder injects the adapter wiring.
 

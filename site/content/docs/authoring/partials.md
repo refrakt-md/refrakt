@@ -161,25 +161,7 @@ Each partial file is parsed once per build into a Markdoc syntax tree. When the 
 
 ## Partial or include?
 
-refrakt resolves `{% data %}` and `{% snippet %}` in a **preprocess** phase that runs before the transform, walking the page's syntax tree. A partial's content is not in that tree yet, so a preprocessor rune inside one is never seen, survives to its own transform, and stops the build:
-
-```
-{% data %} reached the transform phase unresolved.
-
-If this file is pulled in with {% partial %}: use {% include %} instead.
-```
-
-[`{% include %}`](/runes/include) is refrakt's answer. It resolves in the preprocess phase too, pasting the file's content where the tag was, and the phase continues into what it pasted, so `data` and `snippet` inside it resolve. It reads the same `_partials/` directory and the same file roots, and takes the same `variables` — only the tag name changes.
-
-**Reach for `{% partial %}` first.** It is Markdoc's, it behaves the same way in every Markdoc project, and it covers the common case. **Reach for `{% include %}` when the file contains `{% data %}` or `{% snippet %}`.**
-
-| | `partial` | `include` |
-|---|---|---|
-| Whose tag | Markdoc's | refrakt's |
-| Reads `_partials/` and file roots | yes | yes |
-| Takes `variables` | yes | yes |
-| Contains `data` / `snippet` | **no** — the build stops | yes |
-| Sees the page's own variables | no — its scope replaces them | yes, for anything it does not bind |
+Reach for `{% partial %}` first: it is Markdoc's own tag and covers the common case. When the file contains `{% data %}` or `{% snippet %}`, use [`{% include %}`](/runes/include) instead — it reads the same `_partials/` directory and file roots and takes the same `variables`, but resolves early enough for those runes to work. The include page explains [when to use which](/runes/include#when-to-use-which) and why a partial cannot.
 
 ## Editor support
 

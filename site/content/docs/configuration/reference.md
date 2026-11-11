@@ -85,7 +85,7 @@ Where source links resolve from.
 {% $row.description %}
 {% /data %}
 
-## Internationalisation
+## Internationalization
 
 Locale selection and string overrides — see [i18n](/docs/configuration/i18n) for the resolution order.
 

@@ -12,7 +12,7 @@ one that holds up in an **open plugin ecosystem** where third parties add runes
 neither side knows about.
 
 This is the *how it works* reference. For a catalogue of concrete, ready-to-copy
-patterns, see [**Media guests**](/runes/media-guests).
+patterns, see [**Media guests**](/docs/concepts/media-guests).
 
 ## The governing principle: dependency asymmetry
 
@@ -155,7 +155,7 @@ the engine emits `data-guest-fit` on the media zone (alongside `data-guest-postu
 The two axes are orthogonal — a clip host can demote a guest to presentational,
 a bleed host can host a live one — which is why they are separate attributes
 rather than one. `guestFit` is also the same clip-vs-bleed distinction that
-governs [`frame-displace-mode`](/runes/surfaces): a displaced guest defaults to
+governs [`frame-displace-mode`](/docs/concepts/surfaces): a displaced guest defaults to
 `peek` (cropped to the slot) in a clip host and `bleed` (spills past the zone) in
 a bleed host, so a hero no longer needs `frame-displace-mode="bleed"` spelled
 out. An explicit `frame-displace-mode=` still overrides it.
@@ -175,5 +175,5 @@ above with the rune and its actual parent context.
 
 ## See also
 
-- [**Media guests**](/runes/media-guests) — the catalogue of media-zone composition patterns.
+- [**Media guests**](/docs/concepts/media-guests) — the catalogue of media-zone composition patterns.
 - [Patterns & Best Practices](/extend/rune-authoring/patterns) — child-item rune patterns.

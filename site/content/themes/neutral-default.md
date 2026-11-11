@@ -1,13 +1,13 @@
 ---
 title: Neutral default
-description: Lumina's quiet warm-neutral palette — body colours, syntax palette, status palette, and typography.
+description: Lumina's quiet warm-neutral palette — body colors, syntax palette, status palette, and typography.
 ---
 
 # Neutral default
 
-Lumina ships with a quiet warm-neutral palette designed to disappear behind your content. The brand identity lives in the prism mark and the typographic chrome; the colour palette stays out of the way. This is what every new `npm create refrakt` project sees out of the box, and what the docs site you're reading uses as its chrome (with the [niwaki](/themes/niwaki) preset layered on for syntax).
+Lumina ships with a quiet warm-neutral palette designed to disappear behind your content. The brand identity lives in the prism mark and the typographic chrome; the color palette stays out of the way. This is what every new `npx create-refrakt` project sees out of the box, and what the docs site you're reading uses as its chrome (with the [niwaki](/themes/niwaki) preset layered on for syntax).
 
-The palette walks a deliberately narrow chroma band — warm neutrals from `#f6f4ef` (light bg) to `#1c1a17` (text), with status colours muted enough to read as functional rather than decorative.
+The palette walks a deliberately narrow chroma band — warm neutrals from `#f6f4ef` (light bg) to `#1c1a17` (text), with status colors muted enough to read as functional rather than decorative.
 
 ## Body palette
 
@@ -35,7 +35,7 @@ Dark mode inverts to warm-near-black, with text lifted to the same warm off-whit
 - Surface raised: #2a2622
 {% /palette %}
 
-`primary` is intentionally monochromatic — it shadows `text`. Buttons, links, and accents render in body-text colour, slightly shifted on hover. The brand identity lives in chrome and the prism mark, not in a coloured accent.
+`primary` is intentionally monochromatic — it shadows `text`. Buttons, links, and accents render in body-text color, slightly shifted on hover. The brand identity lives in chrome and the prism mark, not in a colored accent.
 
 ## Status palette
 
@@ -70,7 +70,7 @@ Refrakt sites are statically generated; content updates require a rebuild.
 {% /hint %}
 
 {% hint type="warning" %}
-Removing a preset changes every page that relies on its colours.
+Removing a preset changes every page that relies on its colors.
 {% /hint %}
 
 {% hint type="caution" %}
@@ -131,4 +131,4 @@ The neutral default is the unconditional starting point — there's no config sn
 }
 ```
 
-To swap to a different colour identity entirely, layer in a preset. See [Tideline](/themes/tideline) for the cream-and-navy preset, or [Niwaki](/themes/niwaki) for Japanese-garden syntax colours.
+To swap to a different color identity entirely, layer in a preset — see the [themes catalog](/themes/themes-catalog) to choose one and [Lumina](/themes/lumina#opt-in-to-a-preset) to enable it.

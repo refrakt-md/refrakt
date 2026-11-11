@@ -22,7 +22,7 @@ Universal theming dimensions solve this. A handful of semantic data attributes d
 | **Checklist** | `data-checked` | `checked`, `unchecked`, `active`, `skipped` | Checkbox list items | `RuneConfig.checklist` |
 | **Sequence** | `data-sequence` | `numbered`, `connected`, `plain` | Ordered item indicators | `RuneConfig.sequence` |
 | **State** | `data-state` | `open`, `closed`, `active`, `inactive`, `selected`, `disabled` | Interactive states | Behavior scripts |
-| **Motion** | `data-reveal` × `data-in-view` | `none`, `fade`, `slide`, `scale`, `blur` (+ `data-stagger`) | Scroll-reveal entrance choreography ([its own page](/extend/theme-authoring/motion)) | universal `reveal` / `stagger` + behaviour |
+| **Motion** | `data-reveal` × `data-in-view` | `none`, `fade`, `slide`, `scale`, `blur` (+ `data-stagger`) | Scroll-reveal entrance choreography ([its own page](/extend/theme-authoring/motion)) | universal `reveal` / `stagger` + behavior |
 | **Surface** | (class-based) | `card`, `inline`, `banner`, `inset` | Container treatment | Theme only |
 
 The first three style metadata content. **Meta type** and **sentiment** describe the field itself; **zone layout** describes the geometric shape around groups of fields. The remaining dimensions style the rune's structure, content, and behavior.
@@ -35,49 +35,9 @@ The first three style metadata content. **Meta type** and **sentiment** describe
 
 Metadata badges — status indicators, categories, durations, tags — appear across dozens of runes. The metadata system provides three dimensions so themes can style every badge generically.
 
-### Declaring metadata — `metaFields`, `blocks`, `layout`
+### Declaring metadata
 
-Runes declare their meta-bearing fields via the `metaFields` manifest on `RuneConfig`. Each entry is pure data — no rendering hints. Named `blocks` project fields from the manifest into a layout primitive, and the `layout` map places every child explicitly. See [Blocks & layout](/extend/theme-authoring/blocks-and-layout) for the full model.
-
-```typescript
-Recipe: {
-  block: 'recipe',
-  modifiers: {
-    difficulty: { source: 'meta', default: 'medium' },
-    prepTime: { source: 'meta' },
-    servings: { source: 'meta' },
-    tags: { source: 'meta', noBemClass: true },
-  },
-  metaFields: {
-    prepTime:   { metaType: 'temporal', label: 'Prep',     tag: 'time', condition: 'prepTime' },
-    servings:   { metaType: 'quantity', label: 'Serves',   condition: 'servings' },
-    difficulty: { metaType: 'category', label: 'Difficulty',
-                  sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' } },
-    tags:       { metaType: 'tag',      label: 'Tags',     condition: 'tags', splitOn: ',' },
-  },
-  blocks: {
-    metadata: { fields: ['prepTime', 'servings', 'difficulty'], layout: 'definition-list' },
-    tags:     { fields: ['tags'], layout: 'bar' },
-  },
-  layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
-}
-```
-
-### MetaField fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `metaType` | `'status' \| 'category' \| 'quantity' \| 'temporal' \| 'tag' \| 'id' \| 'code'` | Semantic kind; drives intrinsic render shape and typography. Emits `data-meta-type` |
-| `sentimentMap` | `Record<string, 'positive' \| 'negative' \| 'caution' \| 'neutral'>` | Maps the field's resolved value to a sentiment. Emits `data-meta-sentiment` when matched — color only, never changes shape |
-| `label` | `string` | Human-readable label. Rendered as `<dt>` in a `definition-list`, and as link / icon text where applicable; `bar` fields are unlabelled |
-| `condition` | `string` | Field renders only when the named modifier has a truthy value |
-| `renderWhenEmpty` | `boolean` | Loosen `condition` to test *presence* instead of truthiness — the field renders when its modifier is defined, even if the value is `""`. Lets an empty-but-present value still project a block (e.g. `codegroup` `title=""` renders the window chrome without a filename) |
-| `href` | `string` | Render the field as a link; the named modifier holds the URL. Renders bare (no chip) |
-| `rating` | `{ total?: string }` | Render the field as a rating widget; the value is the filled count, `total` names the modifier holding the max (default `5`) |
-| `icon` | `{ group: string }` | Decorate with a leading icon; the field's *value* selects the glyph within `group` |
-| `tag` | `string` | Element tag override. Default `span`; use `time` for temporal fields so the engine emits `<time datetime="…">…</time>` |
-| `splitOn` | `string` | Treat the value as a delimited collection — split on this character, render one element per item. Used for `tags`-style fields |
-| `transform` | `'duration' \| 'uppercase' \| 'capitalize'` | Value transform applied before rendering |
+A rune declares its meta-bearing fields in the `metaFields` manifest on `RuneConfig` — each field's `metaType`, `sentimentMap`, label and decorations — and projects them into named `blocks`, each rendered by a layout primitive. [Blocks & layout](/extend/theme-authoring/blocks-and-layout) is the reference for the manifest, the `MetaField` keys, and the DOM each primitive emits. This page covers the attributes those declarations produce and the CSS a theme writes against them.
 
 ### How the engine emits them
 
@@ -193,13 +153,7 @@ See [Blocks & layout](/extend/theme-authoring/blocks-and-layout) for the complet
 
 ### Labels
 
-`MetaField` (or `StructureEntry`) entries can include a `label` field. In `definition-list` it becomes the `<dt>`; in a `bar` it's ignored (bar fields are unlabelled, eyebrow-style, by contract). It is also used as the text for `href` links and `icon`-decorated fields.
-
-```typescript
-prepTime: { metaType: 'temporal', label: 'Prep', tag: 'time', condition: 'prepTime' }
-```
-
-On a `StructureEntry`, `labelHidden: true` makes the label visually hidden but accessible to screen readers — useful when the value is self-explanatory (like an ID badge where "WORK-9042" doesn't need a visible "ID:" prefix).
+A field's `label` becomes the `<dt>` in a `definition-list` and is ignored in a `bar` (see [Blocks & layout](/extend/theme-authoring/blocks-and-layout#metafield-fields)). On a deprecated `StructureEntry`, `labelHidden: true` makes the label visually hidden but accessible to screen readers — useful when the value is self-explanatory (like an ID badge where "WORK-9042" doesn't need a visible "ID:" prefix).
 
 ---
 
@@ -234,7 +188,7 @@ Style the role through that attribute, with its `blockquote` and `figcaption` as
 - **The reading register is context.** A quotation in `prose` and one in `ui` (a card body) may look different; Lumina sets one quieter in `ui`.
 - **The unmarked fallback.** A blockquote with no marker, from content transformed outside refrakt, deserves a minimal, zero-specificity fallback so it stays legible.
 
-The roles are part of the theme vocabulary: [`refrakt theme coverage`](/docs/cli/theme-tools#refrakt-theme-coverage) reports which of them your CSS styles.
+The roles are part of the theme vocabulary: [`refrakt theme coverage`](/extend/theme-authoring/tooling#refrakt-theme-coverage) reports which of them your CSS styles.
 
 ## Structural dimensions
 
@@ -314,7 +268,7 @@ Feature: {
 |------|----------------|-----------------|
 | `header` | Chrome row (badges, status) | Flex wrap, gap |
 | `preamble` | Intro block (eyebrow + headline + blurb) | Flex column |
-| `eyebrow` | Kicker above the title | Small, uppercase, primary colour; a pill when it holds a link |
+| `eyebrow` | Kicker above the title | Small, uppercase, primary color; a pill when it holds a link |
 | `title` | Primary heading | 1.5rem, bold, scales with density |
 | `description` | Secondary text | Muted color, truncated in compact |
 | `body` | Main content | Standard line height |
@@ -583,7 +537,7 @@ Lumina styles the **`elevation`** depth ladder by attribute — no rune-name lis
 }
 ```
 
-All surfaces consume the `--rune-padding` variable set by the density dimension, so padding automatically scales when density changes. The second surface axis, **`prominence`**, re-points the section-header register (`quiet|normal|prominent|display|marquee`). Lumina publishes each step as custom properties a theme can retune: `--rf-prominence-size` (title), `--rf-prominence-blurb-size`, `--rf-prominence-header-scale` (the header's gaps), `--rf-prominence-band-padding` (a flush band's block padding), `--rf-prominence-header-measure` / `--rf-prominence-blurb-measure` (where the measure sits), and `--rf-prominence-title-gradient`, a switch that turns on Lumina's title gradient at `display` and `marquee`; the title builds the gradient from its own colours. All are cleared at every rune root, so a nested rune keeps its own header; **`width`** (`compact|narrow|wide|full`) is a *layout* axis — page bleed, not chrome. See [Surfaces](/runes/surfaces) for the author reference and [Surface model](/extend/theme-authoring/surfaces) for the config side.
+All surfaces consume the `--rune-padding` variable set by the density dimension, so padding automatically scales when density changes. The second surface axis, **`prominence`**, re-points the section-header register (`quiet|normal|prominent|display|marquee`). Lumina publishes each step as custom properties a theme can retune: `--rf-prominence-size` (title), `--rf-prominence-blurb-size`, `--rf-prominence-header-scale` (the header's gaps), `--rf-prominence-band-padding` (a flush band's block padding), `--rf-prominence-header-measure` / `--rf-prominence-blurb-measure` (where the measure sits), and `--rf-prominence-title-gradient`, a switch that turns on Lumina's title gradient at `display` and `marquee`; the title builds the gradient from its own colors. All are cleared at every rune root, so a nested rune keeps its own header; **`width`** (`compact|narrow|wide|full`) is a *layout* axis — page bleed, not chrome. See [Surfaces](/docs/concepts/surfaces) for the author reference and [Surface model](/extend/theme-authoring/surfaces) for the config side.
 
 ---
 

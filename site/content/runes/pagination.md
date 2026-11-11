@@ -14,7 +14,15 @@ Where `breadcrumb` shows hierarchy and `nav` shows the broader index, `paginatio
 
 ## Basic usage
 
-Place `{% pagination auto=true /%}` in a `_layout.md` and every page in the cascade gets prev / next links derived from the active sidebar nav order. No per-page authoring needed.
+With `auto=true`, pagination links to the previous and next pages in the sidebar's order. Here it reads this page's own sidebar:
+
+{% preview source=true %}
+
+	{% pagination auto=true /%}
+
+{% /preview %}
+
+Place it in a region of a `_layout.md` and every page in the cascade gets prev / next links, with no per-page authoring:
 
 ```markdoc
 {% region name="pagination" %}
@@ -28,9 +36,11 @@ The first page in the sequence gets no `prev` link; the last gets no `next` link
 
 When a page belongs to a sequence different from its directory siblings (a curated tutorial path, for instance), set prev and next explicitly:
 
-```markdoc
-{% pagination prev="install" next="configuration" /%}
-```
+{% preview source=true %}
+
+	{% pagination prev="breadcrumb" next="nav" /%}
+
+{% /preview %}
 
 Each value accepts either a slug (resolved through the registry) or an absolute URL. The link label defaults to the target page's `title` frontmatter — override per-side with `prev-label` and `next-label` if needed.
 
@@ -46,13 +56,7 @@ The first source that produces a definite position wins.
 
 ### scope
 
-By default, auto-mode picks from the page's direct siblings — pages sharing the same parent URL. For tutorials that span nested subdirectories that should still be read in sequence, widen the candidate set with `scope="section"`:
-
-```markdoc
-{% pagination auto=true scope="section" /%}
-```
-
-`scope="section"` includes every page under the current top-level section (any page whose URL starts with the section root).
+By default, auto-mode picks from the page's direct siblings — pages sharing the same parent URL. For tutorials that span nested subdirectories that should still be read in sequence, widen the candidate set with `scope="section"`, which includes every page under the current top-level section (any page whose URL starts with the section root).
 
 ## Boundaries
 

@@ -11,7 +11,7 @@ type: rune
 
 Present visual content in a constrained viewport with optional decorative chrome. The showcase rune wraps images, videos, or embedded content — useful for screenshots, product shots, or component previews. To caption an image, use [figure](/runes/figure); to set an image beside a passage of text, use [mediatext](/runes/mediatext).
 
-Showcase is the degenerate `frameTarget: "self"` case of the [surface model](/runes/surfaces): its body *is* the media, so `frame` chrome (shadow, displacement, offset, aspect) lands on the showcase itself. Its distinct value is **breakout** — spilling past a non-clipping ancestor.
+Showcase is the degenerate `frameTarget: "self"` case of the [surface model](/docs/concepts/surfaces): its body *is* the media, so `frame` chrome (shadow, displacement, offset, aspect) lands on the showcase itself. Its distinct value is **breakout** — spilling past a non-clipping ancestor.
 
 ## Basic usage
 
@@ -20,27 +20,19 @@ Wrap any visual content in a showcase to give it a framed presentation.
 {% preview source=true %}
 
 	{% showcase %}
-	![Dashboard screenshot](https://picsum.photos/seed/dashboard/800/450)
+		{% sandbox src="acme-dashboard" framework="tailwind" height=460 /%}
 	{% /showcase %}
 
 {% /preview %}
 
 ## Shadow
 
-Add a silhouette `drop-shadow` with `frame-shadow`. Four levels: `none`, `sm`, `md`, `lg`. (This is distinct from `elevation`, which is a `box-shadow` on a rune's *self* surface — see [surfaces](/runes/surfaces).)
-
-{% preview source=true %}
-
-	{% showcase frame-shadow="sm" %}
-	![Interface preview](https://picsum.photos/seed/interface/800/450)
-	{% /showcase %}
-
-{% /preview %}
+Add a silhouette `drop-shadow` with `frame-shadow`. Four levels: `none`, `sm`, `md`, `lg`. (This is distinct from `elevation`, which is a `box-shadow` on a rune's *self* surface — see [surfaces](/docs/concepts/surfaces).)
 
 {% preview source=true %}
 
 	{% showcase frame-shadow="lg" %}
-	![Product shot](https://picsum.photos/seed/product/800/450)
+	![A tequila sunrise in a tall glass](https://assets.refrakt.md/tequila-sunrise.png)
 	{% /showcase %}
 
 {% /preview %}
@@ -52,7 +44,7 @@ Let the showcase spill beyond its container — a breakout host renders `overflo
 {% preview source=true %}
 
 	{% showcase frame-shadow="sm" frame-displace="bottom" frame-offset="lg" %}
-	![App screenshot](https://picsum.photos/seed/appscreen/800/500)
+	![Raked gravel and stones in a zen garden](https://assets.refrakt.md/media-text-zen-garden.jpg)
 	{% /showcase %}
 
 {% /preview %}
@@ -68,7 +60,7 @@ Enforce a uniform aspect ratio with `frame-aspect`. Content is cropped to fit (`
 {% preview source=true %}
 
 	{% showcase frame-aspect="16/9" frame-shadow="sm" %}
-	![Landscape](https://picsum.photos/seed/landscape/800/600)
+	![A river winding through a green valley](https://assets.refrakt.md/media-text-valley.jpg)
 	{% /showcase %}
 
 {% /preview %}
@@ -80,7 +72,7 @@ Facets compose freely.
 {% preview source=true %}
 
 	{% showcase frame-shadow="lg" frame-displace="both" frame-aspect="16/9" %}
-	![Hero image](https://picsum.photos/seed/heroimg/800/500)
+	![Fish over a shallow coral reef](https://assets.refrakt.md/figure-coral-reef.jpg)
 	{% /showcase %}
 
 {% /preview %}

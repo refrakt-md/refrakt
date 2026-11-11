@@ -40,7 +40,7 @@ A fence is a `command` block, unranked, beside the buttons. On a narrow screen t
 
 	{% actions %}
 	```shell
-	npm create refrakt@latest
+	npx create-refrakt
 	```
 
 	- [Read the docs](/docs/getting-started)
@@ -72,18 +72,34 @@ A composition places `actions` around a slot, so its authors keep writing a plai
 
 ## In a bar
 
-Inside a [`bar`](/runes/bar), actions are metadata actions rather than a page's call to action: compact, at the height of the badges beside them, and tonal rather than filled, a primary included. They stay in a row on a phone. The context is `data-in="bar"`, so a theme styles it like any other context modifier. Each link may carry an [icon](/runes/icon), and a link to a [drawer](/runes/drawer#triggering-from-a-link) on the page opens it.
+Inside a [`bar`](/runes/bar), actions are metadata actions rather than a page's call to action: compact, at the height of the badges beside them, and tonal rather than filled, a primary included. They stay in a row on a phone. Each link may carry an [icon](/runes/icon), and a link to a [drawer](/runes/drawer#triggering-from-a-link) on the page opens it.
 
-```markdoc
-{% bar %}
-Composition
----
-{% actions %}
-- [{% icon name="package" /%} Install](#install)
-- [{% icon name="code" /%} Source](#source)
-{% /actions %}
-{% /bar %}
-```
+{% preview source=true %}
+
+	{% bar %}
+		{% badge sentiment="positive" %}Stable{% /badge %}
+
+		---
+
+		{% actions %}
+		- [{% icon name="package" /%} Install](#actions-install)
+		- [{% icon name="code" /%} Source](#actions-source)
+		{% /actions %}
+	{% /bar %}
+
+	{% drawer id="actions-install" title="Install" %}
+	```shell
+	npm install @refrakt-md/marketing
+	```
+	{% /drawer %}
+
+	{% drawer id="actions-source" title="Source" size="lg" tint-mode="dark" %}
+		{% snippet path="packages/runes/src/tags/actions.ts" /%}
+	{% /drawer %}
+
+{% /preview %}
+
+The same row on its own, outside a bar, is the full-size buttons of [Basic usage](#basic-usage).
 
 ## Attributes
 

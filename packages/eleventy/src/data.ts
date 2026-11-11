@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import type { LayoutPageData, SeoToHtmlOptions } from '@refrakt-md/transform';
 import { renderPage, extractSeoData, seoToHtml } from '@refrakt-md/transform';
 import type { Plugin, SecurityPolicy } from '@refrakt-md/types';
+import type { RefraktLoader } from '@refrakt-md/content';
 import type { EleventyTheme } from './types.js';
 import { hasInteractiveRunes } from './behaviors.js';
 
@@ -20,6 +21,8 @@ export interface EleventyPageData {
 	contextJson: string;
 	/** Whether this page contains interactive runes needing behavior JS */
 	hasInteractiveRunes: boolean;
+	/** The syntax-highlight theme's CSS, for a `<style>` in the page head */
+	highlightCss: string;
 }
 
 /**
@@ -32,55 +35,64 @@ export interface EleventyPageData {
  *   import { layouts } from '@refrakt-md/lumina/layouts';
  *   export default createDataFile({ theme: { manifest, layouts } });
  *
- * Returns an async function that loads content, applies transforms,
- * and produces an array of page objects with pre-rendered HTML.
+ * Returns an async function that loads the site named by `refrakt.config.json`
+ * (its content directory, plugins and theme), applies the identity transform
+ * and syntax highlighting, and produces an array of page objects with
+ * pre-rendered HTML.
  */
 export function createDataFile(config: {
 	theme: EleventyTheme;
+	/** Path to refrakt.config.json. Default: `./refrakt.config.json`. */
+	configPath?: string;
+	/** The site to load, when the config declares several. */
+	site?: string;
+	/** @deprecated Ignored: the content directory comes from `refrakt.config.json`. */
 	contentDir?: string;
-	basePath?: string;
-	/** Plugins to include in the content pipeline */
+	/** @deprecated Ignored: plugins come from `refrakt.config.json`. */
 	plugins?: Plugin[];
-	/** Site-level SEO fields surfaced into every page's emitted meta tags.
-	 *  Source these from `SiteConfig` (`siteName`, `baseUrl`, `defaultImage`,
-	 *  `logo`) so the Eleventy output matches the SvelteKit reference. */
+	/** Base URL path every page's route is under. Default: `'/'`. */
+	basePath?: string;
+	/** Site-level SEO fields surfaced into every page's emitted meta tags. */
 	seo?: SeoToHtmlOptions;
 	/** Security policy for untrusted author content. Defaults to `'trusted'`. */
 	security?: SecurityPolicy;
 	/** Markdoc variables available in content via `{% $name %}` syntax. */
 	variables?: Record<string, unknown>;
-	/** Whether to render the site-wide search UI (header button + Cmd/Ctrl+K
-	 *  dialog). Defaults to `true`. Source this from `SiteConfig.search` and
-	 *  pass `false` to strip the search chrome (the trigger + the behavior). */
+	/** Whether to render the site-wide search UI (header button + Cmd/Ctrl+K). */
 	search?: boolean;
 }): () => Promise<EleventyPageData[]> {
-	const {
-		theme,
-		contentDir = './content',
-		basePath = '/',
-		seo: seoOptions,
-		security,
-		variables,
-		search,
-	} = config;
+	const { theme, seo: seoOptions, security, variables, search } = config;
+	if (config.contentDir !== undefined || config.plugins !== undefined) {
+		console.warn(
+			'[refrakt] createDataFile: `contentDir` and `plugins` are ignored; the content directory and plugins come from refrakt.config.json.',
+		);
+	}
+
+	// `--serve` and `--watch` re-run the data file on every change, so the
+	// loader must re-read rather than return its cached site.
+	const dev =
+		process.env.ELEVENTY_RUN_MODE !== undefined && process.env.ELEVENTY_RUN_MODE !== 'build';
+	let loader: Promise<RefraktLoader> | undefined;
 
 	return async function loadRefrakt(): Promise<EleventyPageData[]> {
-		const { loadContent, stderrReporter } = await import('@refrakt-md/content');
+		loader ??= import('@refrakt-md/content').then(({ createRefraktLoader }) =>
+			createRefraktLoader({
+				configPath: resolve(config.configPath ?? 'refrakt.config.json'),
+				site: config.site,
+				basePath: config.basePath,
+				variables,
+				security,
+				dev,
+			}),
+		);
+		const l = await loader;
+		const [site, transform, hl] = await Promise.all([
+			l.getSite(),
+			l.getTransform(),
+			l.getHighlightTransform(),
+		]);
+		const render = (node: unknown) => hl(transform(node));
 
-		// SPEC-135 D5 — the Phase 1/2/3/4 + warnings summary comes from the
-		// reporter, so every adapter prints the same thing without each one
-		// formatting it.
-		const absContentDir = resolve(contentDir);
-		const site = await loadContent(absContentDir, {
-			basePath,
-			plugins: config.plugins,
-			variables,
-			securityPolicy: security,
-			projectRoot: process.cwd(),
-			reporter: stderrReporter,
-		});
-
-		// Build the pages list for LayoutPageData and RfContext
 		const pagesList = site.pages.map((p: any) => ({
 			url: p.route.url,
 			title: (p.frontmatter?.title as string) ?? '',
@@ -94,53 +106,56 @@ export function createDataFile(config: {
 			versionGroup: p.frontmatter?.versionGroup as string | undefined,
 		}));
 
-		return site.pages.map((page: any) => {
-			const url = page.route.url;
-			const title = (page.frontmatter?.title as string) ?? '';
+		return site.pages
+			.filter((page: any) => !page.route.draft)
+			.map((page: any) => {
+				const url = page.route.url;
+				const title = (page.frontmatter?.title as string) ?? '';
+				const renderable = render(page.renderable);
 
-			// Convert layout regions from Map to Record
-			const regions: LayoutPageData['regions'] = {};
-			if (page.layout?.regions instanceof Map) {
-				for (const [name, region] of page.layout.regions) {
-					regions[name] = region;
+				const regions: LayoutPageData['regions'] = {};
+				if (page.layout?.regions instanceof Map) {
+					for (const [name, region] of page.layout.regions) {
+						regions[name] = { ...region, content: region.content.map(render) };
+					}
 				}
-			}
 
-			const pageData: LayoutPageData = {
-				renderable: page.renderable,
-				regions,
-				title,
-				url,
-				pages: pagesList,
-				frontmatter: page.frontmatter ?? {},
-				headings: page.headings,
-			};
+				const pageData: LayoutPageData = {
+					renderable,
+					regions,
+					title,
+					url,
+					pages: pagesList,
+					frontmatter: page.frontmatter ?? {},
+					headings: page.headings,
+				};
 
-			const html = renderPage({ theme, page: pageData, search });
-			const needsBehaviors = hasInteractiveRunes(page.renderable);
+				const html = renderPage({ theme, page: pageData, search });
+				const needsBehaviors = hasInteractiveRunes(renderable);
 
-			const seoData = extractSeoData({
-				title,
-				frontmatter: page.frontmatter ?? {},
-				seo: page.seo,
+				const seoData = extractSeoData({
+					title,
+					frontmatter: page.frontmatter ?? {},
+					seo: page.seo,
+				});
+				const seoHtml = seoToHtml(seoData, seoOptions);
+				const seo = { ...seoHtml, description: seoData.description };
+
+				const contextJson = JSON.stringify({
+					pages: pagesList,
+					currentUrl: url,
+				});
+
+				return {
+					url,
+					title,
+					html,
+					seo,
+					frontmatter: page.frontmatter ?? {},
+					contextJson,
+					hasInteractiveRunes: needsBehaviors,
+					highlightCss: hl.css,
+				};
 			});
-			const seoHtml = seoToHtml(seoData, seoOptions);
-			const seo = { ...seoHtml, description: seoData.description };
-
-			const contextJson = JSON.stringify({
-				pages: pagesList,
-				currentUrl: url,
-			});
-
-			return {
-				url,
-				title,
-				html,
-				seo,
-				frontmatter: page.frontmatter ?? {},
-				contextJson,
-				hasInteractiveRunes: needsBehaviors,
-			};
-		});
 	};
 }

@@ -8,7 +8,7 @@ icon: clipboard-list
 
 Spec-driven project planning with AI-native workflows. Write specs, track work items, record architectural decisions, and manage milestones — all in Markdown files that live alongside your code.
 
-Unlike most rune packages, `@refrakt-md/plan` is more than just runes. It includes a full [CLI toolchain](/runes/plan/cli) for managing your plan from the terminal, a cross-page pipeline for entity indexing, and a [workflow guide](/runes/plan/workflow) for integrating with AI coding assistants.
+Unlike most rune packages, `@refrakt-md/plan` is more than just runes. It includes a full [CLI toolchain](/docs/cli/plan) for managing your plan from the terminal, a cross-page pipeline for entity indexing, and a [workflow guide](/runes/plan/workflow) for integrating with AI coding assistants.
 
 ## Installation
 
@@ -28,7 +28,7 @@ Initialize a plan directory in your project:
 refrakt plan init
 ```
 
-This wires the host project end-to-end: it scaffolds the `plan/` directory with example files, writes the canonical `AGENTS.md` with the full workflow guide, adds `@refrakt-md/cli` + `@refrakt-md/plan` to `devDependencies` with a `plan` script, and (for Claude users) installs a `SessionStart` hook that auto-runs `install` on first use. See [`refrakt plan init`](/runes/plan/cli#refrakt-plan-init) for the complete list of side effects and opt-out flags (`--minimal`, `--no-hooks`, etc.).
+This wires the host project end-to-end: it scaffolds the `plan/` directory with example files, writes the canonical `AGENTS.md` with the full workflow guide, adds `@refrakt-md/cli` + `@refrakt-md/plan` to `devDependencies` with a `plan` script, and (for Claude users) installs a `SessionStart` hook that auto-runs `install` on first use. See [`refrakt plan init`](/docs/cli/plan#refrakt-plan-init) for the complete list of side effects and opt-out flags (`--minimal`, `--no-hooks`, etc.).
 
 ## What's included
 
@@ -56,7 +56,7 @@ These runes use the cross-page pipeline to build site-wide views from your plan 
 
 ### CLI commands
 
-The plan package extends the `refrakt` CLI with subcommands under `refrakt plan`. See the full [CLI reference](/runes/plan/cli).
+The plan package extends the `refrakt` CLI with subcommands under `refrakt plan`. See the full [CLI reference](/docs/cli/plan).
 
 | Command | Purpose |
 |---------|---------|

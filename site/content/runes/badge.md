@@ -31,7 +31,7 @@ Tagged as {% badge %}Frontend{% /badge %} and {% badge %}Tutorial{% /badge %}.
 
 ## Sentiment
 
-The `sentiment` attribute controls the badge's tonal colour, drawn from the theme's success / danger / warning / muted palettes.
+The `sentiment` attribute controls the badge's tonal color, drawn from the theme's success / danger / warning / muted palettes.
 
 {% preview source=true %}
 
@@ -75,7 +75,7 @@ Both attribute value sets match the universal metadata-system dimensions exactly
 
 ## Accessibility
 
-The badge label is a real text node — accessible to screen readers and copy-paste. Do not put visual-only labels in CSS `::before` content; the universal metadata rules use `::before` for the sentiment colour dot (decorative, with no text content) and rely on the children text for meaning.
+The badge label is a real text node — accessible to screen readers and copy-paste. Do not put visual-only labels in CSS `::before` content; the universal metadata rules use `::before` for the sentiment color dot (decorative, with no text content) and rely on the children text for meaning.
 
 For status badges that convey important state (e.g. "Deprecated", "Beta"), prefer placing the badge **inside** the content it qualifies — adjacent to a heading, link text, or list item — so screen readers announce the badge as part of the same context.
 

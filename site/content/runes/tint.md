@@ -1,6 +1,6 @@
 ---
 title: Tint
-description: Section-level colour overrides via CSS custom properties
+description: Section-level color overrides via CSS custom properties
 category: Backgrounds & color
 plugin: core
 status: stable
@@ -9,23 +9,34 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:tint"} /%}
 
-Override colour tokens within a single rune's scope. The tint rune produces no visible output — it modifies how the containing section renders by setting `--tint-*` CSS custom properties and `data-tint` attributes.
+Recolor a single rune: a hint, a hero, a card. The tint rune shows nothing itself; it changes the colors of the rune it sits in. To tint a whole page or section of the site from frontmatter, see [Tint and color scheme](/docs/concepts/tint).
 
-## Named tint (attribute form)
+## Basic usage
 
-The simplest form. Reference a named tint defined in the theme configuration as an attribute on any block rune.
+Most tints are named ones the theme defines, applied with a `tint` attribute on the rune itself:
 
 {% preview source=true %}
 
 	{% hint type="note" tint="warm" %}
-	This hint uses a **warm** tint from the theme. The colours come from the theme's `tints.warm` definition.
+	This hint uses a **warm** tint from the theme. The colors come from the theme's `tints.warm` definition.
 	{% /hint %}
 
 {% /preview %}
 
-## Inline tint (child rune form)
+Tints nest: a tinted rune inside another tinted rune takes its own colors.
 
-For one-off colour overrides. Token values are defined as list items inside the tint body. The tint must be the first child of the parent rune.
+## How Markdown is read
+
+| You write | It becomes |
+|-----------|------------|
+| A list item `name: value`, such as `- primary: #059669` | That color token, set to the value |
+| A `Dark` heading | The list items after it are the dark-scheme values |
+| A `Light` heading, or no heading | The list items are the light-scheme values |
+| A list item whose name is not a tint token, or any other content | Ignored |
+
+## Set colors inline
+
+For a one-off color, put `{% tint %}` first inside the rune and list the colors to change. Colors you don't list keep the page's values.
 
 {% preview source=true %}
 
@@ -37,24 +48,72 @@ For one-off colour overrides. Token values are defined as list items inside the 
 		- border: #a7f3d0
 		{% /tint %}
 
-		This hint has custom colours defined inline. Only the listed tokens are overridden — unlisted ones fall through to the page defaults.
+		This hint has custom colors defined inline. Only the listed tokens are overridden — unlisted ones fall through to the page defaults.
 
 	{% /hint %}
 
 {% /preview %}
 
-## How Markdown is read
+A tint sets up to six colors, each replacing the theme's color of the same role:
 
-| You write | It becomes |
-|-----------|------------|
-| A list item `name: value`, such as `- primary: #059669` | That colour token, set to the value |
-| A `Dark` heading | The list items after it are the dark-scheme values |
-| A `Light` heading, or no heading | The list items are the light-scheme values |
-| A list item whose name is not a tint token, or any other content | Ignored |
+| Token | Purpose |
+|-------|---------|
+| `bg` | Background |
+| `surface` | Raised surfaces, such as cards and panels |
+| `text` | Body text |
+| `muted` | Secondary text |
+| `primary` | Links and accents |
+| `border` | Borders and dividers |
 
-## Colour scheme override
+## Give dark and light values
 
-The `mode` attribute forces dark or light mode on a section, regardless of the user's OS preference.
+Under a `## Light` and a `## Dark` heading, list the colors for each color scheme. Without headings, every value is a light value.
+
+{% preview source=true %}
+
+	{% hint type="note" %}
+
+		{% tint %}
+		## Light
+		- bg: #fdf6e3
+		- text: #5c4a32
+		- primary: #c47d3b
+		- border: #e0d5c0
+
+		## Dark
+		- bg: #2a2118
+		- text: #e8d5b7
+		- primary: #e0a86e
+		- border: #4a3f33
+		{% /tint %}
+
+		This section adapts its warm tint to both color schemes.
+
+	{% /hint %}
+
+{% /preview %}
+
+## Adjust a named tint
+
+`preset` starts from a named tint; the colors you list replace its own.
+
+{% preview source=true %}
+
+	{% hint type="note" %}
+
+		{% tint preset="warm" %}
+		- primary: #e94560
+		{% /tint %}
+
+		Inherits all tokens from the "warm" preset, with a custom primary color.
+
+	{% /hint %}
+
+{% /preview %}
+
+## Force dark or light
+
+`mode` keeps the rune in dark or light whatever the reader's setting:
 
 {% preview source=true %}
 
@@ -73,128 +132,11 @@ The `mode` attribute forces dark or light mode on a section, regardless of the u
 
 {% /preview %}
 
-## Light and dark definitions
+To switch the scheme without changing any colors, set `tint-mode` on the rune instead: `{% hero tint-mode="dark" %}`.
 
-Provide separate token sets for light and dark colour schemes using headings inside the tint body.
+## Where named tints come from
 
-```markdoc
-{% hint type="note" %}
-
-	{% tint %}
-	## Light
-	- bg: #fdf6e3
-	- text: #5c4a32
-	- primary: #c47d3b
-	- border: #e0d5c0
-
-	## Dark
-	- bg: #2a2118
-	- text: #e8d5b7
-	- primary: #e0a86e
-	- border: #4a3f33
-	{% /tint %}
-
-	This section adapts its warm tint to both colour schemes.
-
-{% /hint %}
-```
-
-When no headings are present, all tokens are treated as light-mode values. The `## Light` heading is only needed when `## Dark` is also present.
-
-## Preset with overrides
-
-Start from a named tint and override specific tokens.
-
-```markdoc
-{% hint type="note" %}
-
-	{% tint preset="warm" %}
-	- primary: #e94560
-	{% /tint %}
-
-	Inherits all tokens from the "warm" preset, with a custom primary colour.
-
-{% /hint %}
-```
-
-## Mode-only (no colour tokens)
-
-Switch the colour scheme without custom colours using the `tint-mode` attribute directly on the parent rune.
-
-```markdoc
-{% hero layout="full" tint-mode="dark" %}
-# Welcome
-Build something amazing.
-{% /hero %}
-```
-
-This applies the theme's standard dark mode styles without any custom colour tokens.
-
-## Token set
-
-A tint sets up to six colours. Each replaces the theme's own colour of the same role inside the tinted rune:
-
-| Token | Purpose |
-|-------|---------|
-| `bg` | Background |
-| `surface` | Raised surfaces, such as cards and panels |
-| `text` | Body text |
-| `muted` | Secondary text |
-| `primary` | Links and accents |
-| `border` | Borders and dividers |
-
-## Tint without a child rune
-
-A rune that takes a tint also accepts `tint` and `tint-mode` directly, with no `{% tint %}` inside it: `{% hint tint="warm" %}`.
-
-## Nesting
-
-Tints can nest. An inner tint overrides an outer tint within its scope. CSS custom property inheritance handles this naturally.
-
-```markdoc
-{% hero tint="dark" layout="full" %}
-	# Our Recipes
-
-	{% hint tint="warm" %}
-	This hint has warm colours inside a dark hero.
-	{% /hint %}
-
-{% /hero %}
-```
-
-## Theme configuration
-
-Themes define named tints in their configuration. Light values are set as inline styles (no FOUC). Dark values are provided by the theme's CSS.
-
-```javascript
-// theme config
-tints: {
-  warm: {
-    light: {
-      bg: '#fdf6e3',
-      text: '#5c4a32',
-      primary: '#c47d3b',
-      border: '#e0d5c0',
-    },
-    dark: {
-      bg: '#2a2118',
-      text: '#e8d5b7',
-      primary: '#e0a86e',
-      border: '#4a3f33',
-    },
-  },
-  dark: {
-    lockMode: 'dark',
-    dark: {
-      bg: '#1a1a2e',
-      text: '#e0e0e0',
-      primary: '#e94560',
-    },
-  },
-}
-```
-
-A theme without tint bridge CSS simply ignores tint tokens — the section renders with page defaults.
+A named tint (`tint="warm"`, `preset="warm"`) is defined by the theme, or by the site's `tints` map in `refrakt.config.json` — see [Sites](/docs/configuration/sites). A theme that defines no tints ignores tint colors, and the rune keeps the page's colors. How a theme defines tints is covered in [theme authoring → tint cascade](/extend/theme-authoring/tint-cascade#named-tints-and-the-css-bridge).
 
 ## Attributes
 

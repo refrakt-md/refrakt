@@ -21,14 +21,14 @@ This makes the `refrakt` command available in your project scripts and via `npx 
 | [reference](/docs/cli/reference) | Emit rune syntax reference for human contributors and AI agents |
 | [write](/docs/cli/write) | Generate Markdown content using AI |
 | [extract](/runes/docs/cli) | Generate API reference docs from TypeScript or Python source (via `@refrakt-md/docs` plugin) |
-| [contracts](/docs/cli/theme-tools#refrakt-contracts) | Generate and validate structure contracts |
-| [scaffold-css](/docs/cli/theme-tools#refrakt-scaffold-css) | Generate CSS stub files for a new theme |
-| [validate](/docs/cli/theme-tools#refrakt-validate) | Validate your project's sites — config resolution, then content |
+| [contracts](/extend/theme-authoring/tooling#refrakt-contracts) | Generate and validate structure contracts |
+| [scaffold-css](/extend/theme-authoring/tooling#refrakt-scaffold-css) | Generate CSS stub files for a new theme |
+| [validate](/docs/cli/validate) | Validate your project's sites — config resolution, then content |
 | [format](/docs/cli/format) | Indent nested runes by the indentation rule — `--check` for CI |
 | `stale` | Rank documentation references by commits to the target since the page last changed |
 | `migrate snippets` | Convert `lines=` snippet and file-ref invocations to anchors, verifying byte-identical output |
 | `snippet review` | Stamp and check review markers on embedded source — `--check` has its own exit code |
-| [theme](/docs/cli/theme-tools#refrakt-theme) | Install themes, show theme info, validate theme config and manifest, and report vocabulary coverage |
+| [theme](/extend/theme-authoring/tooling#refrakt-theme) | Install themes, show theme info, validate theme config and manifest, and report vocabulary coverage |
 | edit | Launch the browser-based content editor |
 | plugins list | List installed plugins and their commands |
 | plugins validate | Validate a plugin before publishing, with a report of its novel elements and token-only CSS |
@@ -74,6 +74,6 @@ Plugins can extend the CLI with additional subcommands. These are available when
 | Plugin | Command | Purpose |
 |--------|---------|---------|
 | [`@refrakt-md/docs`](/runes/docs) | [`refrakt docs extract`](/runes/docs/cli) | Generate API reference docs from TypeScript or Python source |
-| [`@refrakt-md/plan`](/runes/plan) | [`refrakt plan`](/runes/plan/cli) | Project planning — status, next item, update, create, next-id, validate, init, history, migrate |
+| [`@refrakt-md/plan`](/runes/plan) | [`refrakt plan`](/docs/cli/plan) | Project planning — status, next item, update, create, next-id, validate, init, history, migrate |
 
 Run `refrakt --help` to see all available commands and options.

@@ -17,20 +17,20 @@ Describe a location with sections for geography, features, or history.
 
 {% preview source=true %}
 
-	{% realm name="Rivendell" type="sanctuary" scale="settlement" parent="Eriador" media-position="start" %}
-	![Rivendell](https://assets.refrakt.md/realm-rivendell.png)
+	{% realm name="Hollowmere" type="sanctuary" scale="settlement" media-position="start" %}
+	![The terraced halls of Hollowmere above a river gorge](https://assets.refrakt.md/realm-rivendell.png)
 
-	The Last Homely House East of the Sea.
+	The last refuge of the scholars who fled the Ashen Spire.
 
 	## Geography
 
-	A hidden valley in the foothills of the Misty Mountains.
+	A hidden valley at the head of the Eastern March, reachable only by a single cliff road.
 
 	## Notable Features
 
-	- Hall of Fire
-	- Council chamber
-	- Extensive libraries
+	- The Lantern Hall
+	- A bridge of living stone
+	- Libraries carved into the gorge
 	{% /realm %}
 
 {% /preview %}
@@ -43,18 +43,18 @@ Describe a location with sections for geography, features, or history.
 | Paragraphs before the first heading | The description |
 | A heading | A named section; the content up to the next heading of that level is its body |
 
-## Realm types
+## Nest realms
 
-Use the `type` attribute to categorize your locations.
+`parent` names the realm a place sits inside, so a district can belong to its city and a city to its region. `type` and `scale` are free text — `city`, `forest`, `dungeon`; `room`, `district`, `region`, `world`.
 
 {% preview source=true %}
 
-	{% realm name="The Undercroft" type="dungeon" scale="complex" media-position="start" %}
-	![The Undercroft](https://assets.refrakt.md/realm-the-undercroft.png)
+	{% realm name="The Undercroft" type="dungeon" scale="district" parent="Thornwall" media-position="start" %}
+	![Flooded stone tunnels lit by a single lantern](https://assets.refrakt.md/realm-the-undercroft.png)
 
 	## Overview
 
-	A sprawling network of tunnels beneath the old city, home to smugglers and worse.
+	A sprawling network of tunnels beneath Thornwall, home to the Whispering Hand and worse.
 
 	## Dangers
 

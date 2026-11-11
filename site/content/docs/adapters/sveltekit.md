@@ -5,94 +5,70 @@ description: Using refrakt.md with SvelteKit for SSR, client-side navigation, an
 
 # SvelteKit Adapter
 
-The SvelteKit adapter connects refrakt.md to [SvelteKit](https://kit.svelte.dev) via two packages:
-
-- `@refrakt-md/svelte` — Svelte 5 Renderer component, ThemeShell, serialization, component registry, element overrides, and behaviors action
-- `@refrakt-md/sveltekit` — Vite plugin with virtual modules and content HMR
+The SvelteKit adapter connects refrakt.md to [SvelteKit](https://kit.svelte.dev) through two packages: `@refrakt-md/sveltekit`, a Vite plugin that serves virtual modules and reloads on content changes, and `@refrakt-md/svelte`, the Svelte 5 `Renderer`, `ThemeShell`, component registry, element overrides, and `behaviors` action. It is the only adapter that renders runes as a Svelte component tree, so any rune can be replaced by a Svelte component.
 
 ## Installation
 
 ```shell
-npm install @refrakt-md/svelte @refrakt-md/sveltekit @refrakt-md/content @refrakt-md/runes @refrakt-md/highlight @refrakt-md/types @markdoc/markdoc
+npx create-refrakt my-site --target sveltekit
 ```
 
-Or scaffold a complete project:
+Or add it to an existing SvelteKit project, alongside the [core packages](/docs/adapters/adapters-overview#dependencies):
 
 ```shell
-npx create-refrakt my-site
+npm install @refrakt-md/svelte @refrakt-md/sveltekit
 ```
+
+Peer dependencies: `@sveltejs/kit` 2+, `vite` 5+, and `svelte` 5.
 
 ## Configuration
 
-Set `target` to `"svelte"` in `refrakt.config.json`:
-
-```json
-{
-  "contentDir": "./content",
-  "theme": "@refrakt-md/lumina",
-  "target": "svelte",
-  "routeRules": [
-    { "pattern": "**", "layout": "default" }
-  ]
-}
-```
-
-## Vite Plugin
-
-Add the refrakt plugin to your `vite.config.ts` alongside the SvelteKit plugin:
+Add the refrakt plugin to `vite.config.ts` alongside the SvelteKit plugin:
 
 ```typescript
-import { sveltekit } from '@sveltejs/vite-plugin-svelte';
+import { sveltekit } from '@sveltejs/kit/vite';
 import { refrakt } from '@refrakt-md/sveltekit';
+import { defineConfig } from 'vite';
 
-export default {
-  plugins: [refrakt(), sveltekit()],
-};
+export default defineConfig({
+  plugins: [sveltekit(), refrakt()],
+});
 ```
 
-The plugin watches the content directory for changes and triggers page reloads during development.
+| Option | Type | Description |
+|--------|------|-------------|
+| `configPath` | `string` | Path to `refrakt.config.json`. Default: `'./refrakt.config.json'` |
+| `site` | `string` | Which site to use; required when the config declares several |
+| `noExternal` | `string[]` | Extra packages to add to `ssr.noExternal` |
+| `variables` | `Record<string, string>` | Markdoc variables for `{% $name %}`. Values are **JavaScript source expressions** embedded in the generated module (e.g. a Vite `define` global such as `'__REFRAKT_VERSION__'`), not runtime values |
+| `security` | `SecurityPolicy` | Policy for untrusted author content. Default `'trusted'`; pass `'strict'` for hosted-product use |
 
-### Virtual Modules
+The plugin watches the content directory (and the project's `runes/` directory) and reloads the page when a file changes.
 
-The Vite plugin provides three virtual modules that decouple your application from hardcoded theme references:
+### Virtual modules
 
-| Virtual Module | Provides |
-|---------------|----------|
-| `virtual:refrakt/theme` | The resolved theme object (component registry, layouts, manifest). Supports component overrides from `refrakt.config.json` |
-| `virtual:refrakt/tokens` | CSS import for the theme's design tokens. In production, includes only CSS for runes actually used |
-| `virtual:refrakt/content` | Content loading functions (`getSite`, `getTransform`, `getHighlightTransform`, `invalidateSite`). Handles config reading, plugin loading, theme assembly, and caching automatically |
-| `virtual:refrakt/config` | The project configuration as a JSON module |
+| Module | Provides |
+|--------|----------|
+| `virtual:refrakt/theme` | The assembled `SvelteTheme` — manifest (with `routeRules` and the site-level SEO fields), layouts, component registry including `overrides` from `refrakt.config.json`, and element overrides |
+| `virtual:refrakt/tokens` | The theme CSS plus your [site-level token overrides](/docs/adapters/adapters-overview#site-level-token-overrides). In production it imports only `base.css` and the per-rune CSS for runes the content uses |
+| `virtual:refrakt/content` | `getSite`, `getTransform`, `getHighlightTransform`, `invalidateSite` — a cached `createRefraktLoader()` for this site |
+| `virtual:refrakt/config` | The resolved site configuration as a JSON module |
 
-## SvelteTheme Interface
+## Minimal setup
 
-The SvelteKit adapter uses the `SvelteTheme` interface for theme objects:
-
-```typescript
-interface SvelteTheme {
-  manifest: ThemeManifest;
-  layouts: Record<string, LayoutConfig | Component>;
-  components: ComponentRegistry;
-  elements?: ElementOverrides;
-}
-```
-
-- `layouts` — maps layout names to `LayoutConfig` objects (or Svelte components)
-- `components` — maps rune `typeof` values to Svelte components for custom rendering
-- `elements` — maps HTML element names to Svelte component overrides
-
-## Route Structure
-
-A SvelteKit refrakt.md site uses a catch-all route with server-side content loading:
+A refrakt SvelteKit site is a catch-all route with server-side content loading:
 
 ```
-src/routes/
-├── +layout.svelte           # Imports theme tokens CSS
-└── [...slug]/
-    ├── +page.svelte         # ThemeShell + Renderer from virtual:refrakt/theme
-    └── +page.server.ts      # Loads page content via virtual:refrakt/content
+src/
+├── hooks.server.ts          # No-flash theme SSR
+└── routes/
+    ├── +layout.svelte       # Imports virtual:refrakt/tokens
+    └── [...slug]/
+        ├── +page.server.ts  # Loads the page via virtual:refrakt/content
+        └── +page.svelte     # ThemeShell + virtual:refrakt/theme
 ```
 
-The `+page.server.ts` imports from `virtual:refrakt/content` to load content, apply the identity transform, and add syntax highlighting:
+{% codegroup labels="src/routes/[...slug]/+page.server.ts, src/routes/[...slug]/+page.svelte, src/hooks.server.ts" %}
 
 ```typescript
 import { getSite, getTransform, getHighlightTransform } from 'virtual:refrakt/content';
@@ -109,22 +85,14 @@ export const load: PageServerLoad = async ({ params }) => {
     getHighlightTransform(),
   ]);
 
-  const slug = params.slug || '';
-  const url = '/' + slug;
+  const url = '/' + (params.slug || '');
   const page = site.pages.find(p => p.route.url === url);
-
-  if (!page || page.route.draft) {
-    error(404, 'Page not found');
-  }
-
-  const serialized = serializeTree(page.renderable);
-  const renderable = hl(transform(serialized));
+  if (!page || page.route.draft) error(404, 'Page not found');
 
   return {
     title: page.frontmatter.title ?? '',
     description: page.frontmatter.description ?? '',
-    frontmatter: page.frontmatter,
-    renderable,
+    renderable: hl(transform(serializeTree(page.renderable))),
     regions: Object.fromEntries(
       [...page.layout.regions.entries()].map(([name, region]) => [
         name,
@@ -133,7 +101,6 @@ export const load: PageServerLoad = async ({ params }) => {
     ),
     seo: page.seo,
     url,
-    headings: page.headings,
     highlightCss: hl.css,
   };
 };
@@ -142,77 +109,63 @@ export async function entries() {
   const site = await getSite();
   return site.pages
     .filter(p => !p.route.draft)
-    .map(p => ({ slug: p.route.url === '/' ? '' : p.route.url.slice(1) }));
+    .map(p => ({ slug: p.route.url.replace(/^\/+|\/+$/g, '') }));
 }
 ```
 
-The virtual module handles all config loading, plugin merging, theme assembly, and caching internally — no boilerplate needed.
-
-## Renderer Component
-
-The `Renderer.svelte` component recursively walks the serialized tag tree. For each node with a `typeof` attribute, it checks the component registry:
-
-- If a component is registered for that type, the component handles rendering
-- Otherwise, the node is rendered as a plain HTML element with its BEM classes
-
-This gives three tiers of rune rendering:
-
-1. **Component runes** — handled by registered Svelte components (Diagram, Chart, Nav, etc.)
-2. **Behavior-driven runes** — rendered as plain HTML, enhanced by `@refrakt-md/behaviors` (Tabs, Accordion, DataTable, etc.)
-3. **Static runes** — fully rendered by identity transform + CSS (Hero, Hint, Feature, etc.)
-
-## ThemeShell Component
-
-The `ThemeShell` component wraps the page and handles:
-
-- SEO injection into `<svelte:head>` (JSON-LD, Open Graph, title)
-- Theme context setup (component registry, element overrides, page data)
-- Behavior initialization after each render
-
 ```svelte
-<ThemeShell {theme} page={{ title, renderable, regions, pages, url }} />
+<script lang="ts">
+  import { ThemeShell } from '@refrakt-md/svelte';
+  import { theme } from 'virtual:refrakt/theme';
+
+  let { data } = $props();
+</script>
+
+<svelte:head>
+  {#if data.highlightCss}{@html `<style>${data.highlightCss}</style>`}{/if}
+</svelte:head>
+
+<ThemeShell
+  {theme}
+  page={{
+    title: data.title,
+    description: data.description,
+    renderable: data.renderable,
+    regions: data.regions,
+    pages: data.pages,
+    seo: data.seo,
+    url: data.url,
+  }}
+/>
 ```
-
-## Element Overrides
-
-Table wrapping and code block structure (scrollable containers, copy-to-clipboard buttons) are handled automatically by Markdoc node schemas in `@refrakt-md/runes`. This is framework-agnostic and SSR-correct — no adapter-specific element overrides are needed for these. The copy-to-clipboard button is progressively enhanced by `@refrakt-md/behaviors`.
-
-The element override system is still available for user-defined overrides. You can replace any HTML element with a custom Svelte component by registering it with `setElementOverrides()`. Element overrides receive `tag` and `children` props:
-
-```svelte
-<div class="custom-image-wrapper">
-  <img {...tag.attributes} />
-  {@render children()}
-</div>
-```
-
-## Component Registry
-
-The component registry maps rune type names (the `data-rune` attribute value) to Svelte components. The base registry is empty — all runes render through the identity transform + behaviors by default. Themes and projects can register components for runes that need custom rendering:
 
 ```typescript
-import { registry as baseRegistry } from '@refrakt-md/svelte';
-import MyCustomChart from './components/MyChart.svelte';
+import { createThemeHandle } from '@refrakt-md/sveltekit/hooks';
+import { getSite } from 'virtual:refrakt/content';
 
-export const registry = {
-  ...baseRegistry,
-  'Chart': MyCustomChart,
-};
+export const handle = createThemeHandle(getSite);
 ```
 
-The registry is provided to the Renderer via Svelte context. `ThemeShell` calls `setRegistry()` automatically; if you're rendering manually, call it in your layout:
+{% /codegroup %}
 
-```svelte
-<script>
-  import { setRegistry, setElementOverrides } from '@refrakt-md/svelte';
-  import { registry, elements } from './my-theme';
+`src/routes/+layout.svelte` only needs `import 'virtual:refrakt/tokens';` in its script to load the CSS. Unlike the other adapters, the tree must be **serialized** (`serializeTree` / `serialize`) before the identity transform: SvelteKit passes `load()` data across the server→client boundary, which needs plain objects rather than Markdoc `Tag` instances. `pages` (the page list for nav and search) comes from a `+layout.server.ts` load; the scaffold includes one.
 
-  setRegistry(registry);
-  setElementOverrides(elements);
-</script>
-```
+`createThemeHandle` (from the server-safe `@refrakt-md/sveltekit/hooks` entry) splices the no-flash theme chrome into each response — the tint `data-*` attributes on `<html>`, the `color-scheme` meta, and the pre-paint script. Compose it with other handles via SvelteKit's `sequence()`.
 
-Projects can also override components via `refrakt.config.json`:
+## ThemeShell
+
+`ThemeShell` wraps the page and:
+
+- selects the layout from `routeRules` and renders it through the `Renderer`
+- writes SEO into `<svelte:head>` — title, description, Open Graph, Twitter, canonical link, and JSON-LD — using the site-level fields that `virtual:refrakt/theme` puts on the manifest, so no SEO helper is needed
+- sets the component registry and element overrides in Svelte context
+- initializes [behaviors](/docs/adapters/adapters-overview#behaviors) after each render and re-runs them on client-side navigation
+
+## Renderer and component registry
+
+`Renderer.svelte` walks the serialized tag tree. A node whose `data-rune` matches a component in the registry renders through that component; any other node renders as a plain HTML element with its BEM classes. So a rune is either a **component rune** (a registered Svelte component), a **behavior-driven rune** (plain HTML enhanced by `@refrakt-md/behaviors`, such as Tabs or DataTable), or a **static rune** (identity transform + CSS, such as Hero or Hint).
+
+The base `registry` is empty — every rune renders through the identity transform and behaviors by default. Register components for runes that need custom rendering, either in `refrakt.config.json`:
 
 ```json
 {
@@ -222,14 +175,25 @@ Projects can also override components via `refrakt.config.json`:
 }
 ```
 
+or in code:
+
+```typescript
+import { registry as baseRegistry } from '@refrakt-md/svelte';
+import MyCustomChart from './components/MyChart.svelte';
+
+export const registry = { ...baseRegistry, Chart: MyCustomChart };
+```
+
+`ThemeShell` calls `setRegistry()` and `setElementOverrides()` for you; if you render with `Renderer` directly, call them yourself in a parent component.
+
 ### Component props
 
-When the Renderer encounters a node whose `data-rune` matches a registered component, it uses `extractComponentInterface()` to partition the node's children into properties, named refs, and anonymous content. The component receives:
+The Renderer uses `extractComponentInterface()` to split the node's children into properties, named refs, and anonymous content. A registered component receives:
 
 - **Extracted properties** as named props (e.g., `prepTime`, `difficulty`)
-- **Named refs** as Svelte 5 snippets — each ref is converted via `createRawSnippet()` so you render them with `{@render refName()}`
-- **`children`** — anonymous content as a Svelte 5 snippet (if any)
-- **`tag`** — the original serialized tag object for escape-hatch access
+- **Named refs** as Svelte 5 snippets, rendered with `{@render refName()}`
+- **`children`** — anonymous content as a snippet (if any)
+- **`tag`** — the original serialized tag, as an escape hatch
 
 ```svelte
 <!-- components/MyRecipe.svelte -->
@@ -237,13 +201,7 @@ When the Renderer encounters a node whose `data-rune` matches a registered compo
   import type { Snippet } from 'svelte';
   import type { SerializedTag } from '@refrakt-md/svelte';
 
-  let {
-    prepTime,
-    difficulty,
-    headline,   // Snippet — named ref
-    children,   // Snippet — anonymous content
-    tag,        // SerializedTag — escape hatch
-  }: {
+  let { prepTime, difficulty, headline, children, tag }: {
     prepTime?: string;
     difficulty?: string;
     headline?: Snippet;
@@ -263,11 +221,22 @@ When the Renderer encounters a node whose `data-rune` matches a registered compo
 </div>
 ```
 
-Named refs are pre-rendered to HTML and wrapped in `createRawSnippet()`, so they render as static markup. Anonymous children are wrapped the same way. This means component overrides work seamlessly with SSR — no client-side hydration is required for the ref content.
+Refs and children are pre-rendered to HTML and wrapped with `createRawSnippet()`, so they render as static markup and work with SSR without client-side hydration.
 
-## Behaviors Action
+## Element overrides
 
-The `behaviors` Svelte action from `@refrakt-md/svelte` initializes `@refrakt-md/behaviors` on a container element. It handles initialization on mount, re-initialization on updates, and cleanup on destroy:
+Table wrapping and code-block structure (scroll containers, copy buttons) come from framework-agnostic Markdoc node schemas in `@refrakt-md/runes`, so no element overrides are needed for them. You can still replace any HTML element with a Svelte component via `setElementOverrides()`. An element override receives `tag` and `children`:
+
+```svelte
+<div class="custom-image-wrapper">
+  <img {...tag.attributes} />
+  {@render children()}
+</div>
+```
+
+## Behaviors action
+
+`ThemeShell` already initializes behaviors. When you render content outside it, the `behaviors` action initializes `@refrakt-md/behaviors` on a container — on mount, again on update, with cleanup on destroy:
 
 ```svelte
 <script>
@@ -278,3 +247,13 @@ The `behaviors` Svelte action from `@refrakt-md/svelte` initializes `@refrakt-md
   <!-- Content with behavior-enhanced runes -->
 </div>
 ```
+
+## Shared setup
+
+These work the same way for every adapter; see the overview:
+
+- [CSS](/docs/adapters/adapters-overview#css) — here, `virtual:refrakt/tokens` loads it, tree-shaken in production
+- [Site-level token overrides](/docs/adapters/adapters-overview#site-level-token-overrides) — included in `virtual:refrakt/tokens`
+- [Behaviors](/docs/adapters/adapters-overview#behaviors) — `ThemeShell` or `use:behaviors`
+- [SEO and structured data](/docs/adapters/adapters-overview#seo-and-structured-data) — `ThemeShell`
+- [Dependencies](/docs/adapters/adapters-overview#dependencies)

@@ -12,7 +12,7 @@ import { RenderableNodeCursor } from '../lib/renderable.js';
 export const DRAWER_TITLE_AUTO_MARKER = 'data-drawer-title-auto';
 
 const drawerSides = ['right', 'left', 'top', 'bottom'] as const;
-const drawerSizes = ['sm', 'md', 'lg'] as const;
+const drawerSizes = ['sm', 'md', 'lg', 'full'] as const;
 
 function splitDrawerBodyZones(nodes: Node[]): { body: Node[]; footer: Node[] | null } {
 	const hrIndex = nodes.findIndex((n) => n.type === 'hr');
@@ -64,7 +64,7 @@ export const drawer = createContentModelSchema({
 			required: false,
 			matches: drawerSizes.slice(),
 			description:
-				'Panel size. "sm" / "md" (default) / "lg" — width for left/right sides, height for top/bottom.',
+				'Panel size: "sm", "md" (default), "lg" (wide enough for code), or "full" (the whole screen inside the gutter). Width for left/right sides, height for top/bottom.',
 		},
 	},
 	contentModel: bodyOnly(),

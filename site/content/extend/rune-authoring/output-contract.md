@@ -262,7 +262,7 @@ Sources:
 
 ### `structure`
 
-Injects structural elements that don't exist in the rune's output. Keyed by `data-name`:
+Deprecated: a new rune declares its metadata with `metaFields`, projects it with `blocks`, and places it with `layout` — see [Blocks & layout](/extend/theme-authoring/blocks-and-layout). The engine still applies `structure`, which injects structural elements that don't exist in the rune's output. Keyed by `data-name`:
 
 ```typescript
 structure: {
@@ -293,9 +293,7 @@ structure: {
 | `textPrefix` / `textSuffix` | Static text around metaText |
 | `label` | Emits `<span data-meta-label>` child for styled labels |
 | `labelHidden` | Makes label visually hidden (sr-only) but accessible |
-| `metaType` | Emits `data-meta-type`: `'status'`, `'category'`, `'quantity'`, `'temporal'`, `'tag'`, `'id'` |
-| `metaRank` | Emits `data-meta-rank`: `'primary'`, `'secondary'` |
-| `sentimentMap` | Maps modifier values to `data-meta-sentiment`: `'positive'`, `'negative'`, `'caution'`, `'neutral'` |
+| `metaType` / `sentimentMap` | Emit `data-meta-type` / `data-meta-sentiment`, as on a [`MetaField`](/extend/theme-authoring/blocks-and-layout#metafield-fields) |
 | `attrs` | Extra attributes, can reference modifiers |
 
 ### `contentWrapper`
@@ -424,7 +422,7 @@ Recipe: {
 | `sequence` | `data-sequence` | Ordered list style: `'numbered'`, `'connected'`, `'plain'` |
 | `sequenceDirection` | `data-sequence-direction` | Direction from modifier: `{ fromModifier: 'direction', default: 'vertical' }` |
 
-Metadata dimensions (`metaType`, `metaRank`, `sentimentMap`) are declared on individual `StructureEntry` children, not on the `RuneConfig`. See the [StructureEntry options](#structure) table above.
+The metadata dimensions (`data-meta-type`, `data-meta-sentiment`, `data-zone-layout`) come from the `metaFields` manifest and the `blocks` projected from it, not from these fields. See [Blocks & layout](/extend/theme-authoring/blocks-and-layout).
 
 ---
 

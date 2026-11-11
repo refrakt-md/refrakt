@@ -535,6 +535,8 @@ export const planPipelineHooks: PluginPipelineHooks = {
 		_scannerDependencies.clear();
 
 		for (const page of pages) {
+			// A draft page is not published, so its entities have no page to link to.
+			const sourceUrl = page.frontmatter?.draft === true ? undefined : page.url;
 			walkTags(page.renderable, (tag) => {
 				const runeType = tag.attributes['data-rune'] as string;
 				if (!PLAN_RUNE_TYPES.has(runeType)) return;
@@ -591,7 +593,7 @@ export const planPipelineHooks: PluginPipelineHooks = {
 				registry.register({
 					type: runeType,
 					id: entityId,
-					sourceUrl: page.url,
+					sourceUrl,
 					data,
 				});
 			});

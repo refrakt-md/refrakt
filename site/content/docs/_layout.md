@@ -16,17 +16,22 @@ tint-lock: false
 
 		- getting-started
 		- content
+		- manual-setup
+
+		## Concepts
+
+		- concepts/page-sections
+		- concepts/surfaces
+		- concepts/media-guests
+		- concepts/image-schemes
+		- concepts/motion
+		- concepts/tint
 
 		## Authoring
 
 		- authoring/frontmatter
 		- authoring/variables
 		- authoring/partials
-		- authoring/page-sections
-		- authoring/entities
-		- authoring/tint
-		- authoring/nav-slug-resolution
-		- authoring/rich-menubar-panels
 
 		## Configuration
 
@@ -34,12 +39,18 @@ tint-lock: false
 		- configuration/reference
 		- configuration/sites
 		- configuration/plugins
-		- configuration/entity-routes
 		- configuration/search
 		- configuration/i18n
 		- configuration/plan
 		- configuration/migration
 		- configuration/schema
+
+		## Advanced
+
+		- authoring/entities
+		- configuration/entity-routes
+		- authoring/nav-slug-resolution
+		- authoring/rich-menubar-panels
 
 		## CLI
 
@@ -48,7 +59,8 @@ tint-lock: false
 		- cli/reference
 		- cli/format
 		- cli/write
-		- cli/theme-tools
+		- cli/validate
+		- cli/plan
 
 		## Adapters
 

@@ -29,7 +29,7 @@ refrakt reference hint --no-example
 
 ### Universal attributes are reported per rune
 
-The output lists the [universal attributes](/runes/surfaces) *this* rune carries, followed by the axes it does not, each with its reason:
+The output lists the [universal attributes](/docs/concepts/surfaces) *this* rune carries, followed by the axes it does not, each with its reason:
 
 ```
 Universal attributes: tint, tint-mode, bg, width, spacing, inset, elevation, reveal, …

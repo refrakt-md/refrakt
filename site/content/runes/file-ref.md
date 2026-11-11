@@ -52,7 +52,7 @@ A line range is a coordinate into a file nobody promised to hold still, and a `f
 {% file-ref path="packages/types/src/config.ts" symbol="SiteConfig" preview="drawer" /%}
 ```
 
-The drawer body is resolved from the current file, so it follows the symbol as it moves and fails loudly if the symbol is gone. `match`, `extent`, `until`, `through`, `doc` and `reindent` all work as they do on [`snippet`](/runes/snippet#address-by-name-not-by-line-number).
+The drawer body is resolved from the current file, so it follows the symbol as it moves and fails loudly if the symbol is gone. `match`, `extent`, `until`, `through`, `doc` and `reindent` all work as they do on [`snippet`](/runes/snippet#embed-part-of-a-file-by-name).
 
 {% hint type="note" %}
 **The GitHub link loses its line fragment under an anchor.** The inline `<a>` is built before the file is read, so the resolved range is not yet known — an anchored `file-ref` links to the whole file, and the drawer shows the exact region. Keep `lines=` when the deep link matters more than drift resistance.

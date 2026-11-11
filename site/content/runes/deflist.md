@@ -38,7 +38,7 @@ A markdown list where each item starts with bold-text-plus-colon.
 
 ## Inline composition
 
-Inline runes inside the value (after `**Term:**`) compose naturally. Use `{% badge %}` for sentiment-coloured chips, `{% ref %}` for entity links, inline code for identifiers.
+Inline runes inside the value (after `**Term:**`) compose naturally. Use `{% badge %}` for sentiment-colored chips, `{% ref %}` for entity links, inline code for identifiers.
 
 {% preview source=true %}
 
@@ -57,8 +57,8 @@ If a list item doesn't start with `**Term:**`, the rune emits an empty `<dt>` pl
 {% preview source=true %}
 
 	{% deflist %}
-	- **Term:** With prefix renders as dt + dd.
-	- This item lacks a prefix — empty dt, full content as dd.
+	- **Owner:** Platform team
+	- Reviewed every quarter
 	{% /deflist %}
 
 {% /preview %}
@@ -69,11 +69,11 @@ The rune is also registered as `definitions` and `terms` for authoring preferenc
 
 ```markdoc
 {% definitions %}
-- **Foo:** bar
+- **Owner:** Platform team
 {% /definitions %}
 
 {% terms %}
-- **Foo:** bar
+- **Owner:** Platform team
 {% /terms %}
 ```
 

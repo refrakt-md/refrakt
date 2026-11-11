@@ -48,12 +48,12 @@ A few things worth knowing before you write your first rune:
 - **Read [Authoring overview](/extend/rune-authoring/authoring-overview) first.** It introduces `createContentModelSchema`, `createComponentRenderable`, and the identity-transform engine. Everything else in Extend assumes that mental model.
 - **Runes almost always belong in a plugin**, not in the core rune library. See the [community package rune checklist](/extend/rune-authoring/authoring-overview#community-package-rune).
 - **The author-facing rune reference catalog is at [`/runes`](/runes/rune-catalog).** Both audiences use it for different reasons — authors copy snippets, developers verify their own rune output.
-- **Know what your rune's users already have.** The [Authoring guide](/docs/authoring/entities) documents the surface content authors write against — [entities](/docs/authoring/entities), [content variables](/docs/authoring/variables), [page sections](/docs/authoring/page-sections), [partials](/docs/authoring/partials). A rune that fits those conventions needs far less documentation of its own.
+- **Know what your rune's users already have.** The [Authoring guide](/docs/authoring/entities) documents the surface content authors write against — [entities](/docs/authoring/entities), [content variables](/docs/authoring/variables), [page sections](/docs/concepts/page-sections), [partials](/docs/authoring/partials). A rune that fits those conventions needs far less documentation of its own.
 
 ## Useful CLI commands
 
 Even if your day-to-day is writing TypeScript and CSS, a few CLI commands are worth knowing:
 
 - [`refrakt inspect <rune>`](/docs/cli/inspect) — see the HTML the identity transform produces for any rune. Indispensable when wiring up BEM CSS or debugging modifier classes.
-- [`refrakt contracts`](/docs/cli/inspect) — generate the full structure contract (every BEM selector, data attribute, structural element) for the active rune set.
+- [`refrakt contracts`](/extend/theme-authoring/tooling#refrakt-contracts) — generate the full structure contract (every BEM selector, data attribute, structural element) for the active rune set.
 - [`refrakt reference dump`](/docs/cli/reference) — emit the full rune syntax reference for the active plugin set. Used to regenerate `AGENTS.md`.

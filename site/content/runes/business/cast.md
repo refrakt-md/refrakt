@@ -30,7 +30,7 @@ A people directory for team pages, speaker lineups and contributor lists. To des
 
 | You write | It becomes |
 |-----------|------------|
-| A short paragraph, then a heading and a paragraph, before the list | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A short paragraph, then a heading and a paragraph, before the list | The eyebrow, headline and blurb ([Page sections](/docs/concepts/page-sections)) |
 | A list item `Name - Role` | A member; the text after the dash is their role |
 | An image in a list item | That member's portrait |
 
@@ -59,11 +59,11 @@ Use `{% cast-member %}` tags for more control, including bios.
 
 	{% cast %}
 		{% cast-member name="Alice Johnson" role="CEO" %}
-		Alice founded the company in 2020.
+		Alice opened the first Acme café in 2015 and still cups every new roast.
 		{% /cast-member %}
 
 		{% cast-member name="Bob Smith" role="CTO" %}
-		Bob leads the engineering team.
+		Bob built the ordering app and runs the team behind the coffee subscription.
 		{% /cast-member %}
 	{% /cast %}
 

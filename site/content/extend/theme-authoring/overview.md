@@ -21,7 +21,7 @@ All runes are rendered through configuration and CSS. Runes that need client-sid
 
 ### Covering the vocabulary
 
-A theme renders a vocabulary and configures no rune. It cannot promise that a particular rune looks right. Instead it covers every value the runes speak: each meta type, sentiment, zone layout, section role, media kind and universal-axis value. A theme that does renders every rune, including runes written after it shipped. [`refrakt theme coverage`](/docs/cli/theme-tools#refrakt-theme-coverage) reports which values your CSS styles, which it leaves to the base stylesheet, and which nothing styles. Run it beside `refrakt contracts --check` as part of a theme's definition of done.
+A theme renders a vocabulary and configures no rune. It cannot promise that a particular rune looks right. Instead it covers every value the runes speak: each meta type, sentiment, zone layout, section role, media kind and universal-axis value. A theme that does renders every rune, including runes written after it shipped. [`refrakt theme coverage`](/extend/theme-authoring/tooling#refrakt-theme-coverage) reports which values your CSS styles, which it leaves to the base stylesheet, and which nothing styles. Run it beside `refrakt contracts --check` as part of a theme's definition of done.
 
 ## The two-layer system
 

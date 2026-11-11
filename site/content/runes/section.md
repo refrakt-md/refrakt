@@ -105,17 +105,17 @@ Give a section `media-position` and it splits on `---` the way [`card`](/runes/c
 {% preview source=true %}
 
 	{% section media-position="start" media-ratio="1/3" %}
-	![A harbour at dawn](placeholder:landscape)
+	![Mist over a river valley at dawn](https://assets.refrakt.md/media-text-valley.jpg)
 
 	---
 
 	Field notes
 
-	## The harbour at dawn
+	## The valley at dawn
 
-	Salt, rope and the first boats going out.
+	Mist on the river and the first light on the ridge.
 
-	The tide turns an hour after sunrise, and the market opens with it.
+	The mist lifts an hour after sunrise, and the trail opens with it.
 	{% /section %}
 
 {% /preview %}

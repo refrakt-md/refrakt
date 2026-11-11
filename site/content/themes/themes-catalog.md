@@ -1,22 +1,23 @@
 ---
 title: Themes
-description: Refrakt's flagship Lumina theme plus the curated lineup of syntax presets — Nord, Dracula, Solarized, Catppuccin, Tokyo Night, One Dark, Gruvbox, Niwaki.
+description: Choose a look for your refrakt site — the Lumina theme and its nine presets, Tideline, Niwaki, Nord, Dracula, Solarized, Catppuccin, Tokyo Night, One Dark and Gruvbox.
 ---
 
 # Themes
 
-Refrakt ships with **Lumina**, a complete theme covering chrome (page bg, surfaces, typography, primary, status), code-surface tokens, and syntax highlighting. Lumina is what every new `npm create refrakt` project sees out of the box.
+Every refrakt site is styled by **Lumina**, refrakt's flagship theme. It covers the whole page — background, surfaces, typography, links, status colors, code blocks and syntax highlighting — and on its own renders the quiet [neutral default](/themes/neutral-default). **Presets** restyle Lumina: each one is a set of token overrides you add to your config, and you can combine them.
 
-Layered on top of Lumina are **presets** — named `ThemeTokensConfig` modules that override a scope-eligible subset of the contract. Two kinds:
+To choose one, ask three questions:
 
-- **Theme presets** override chrome (typography, body bg, surfaces). They reshape the entire visual identity of a site. Layer one on Lumina via `theme.presets` in `refrakt.config.json`.
-- **Syntax presets** override syntax highlighting (and optionally code-surface canvas + chrome accents). They reshape how code reads, optionally with their own canvas. Two flavours: **scoped** presets like niwaki touch only the foreground; **integrated** presets like Nord ship chrome + canvas + foreground together. Layer alongside or instead of a chrome preset.
+- **Light, dark or both?** Most presets ship both modes and follow the reader's preference. Dracula and One Dark are dark-only.
+- **How much should code say?** Presets differ in how many syntax roles they color separately — types, parameters, numbers, regex, operators, tags, attributes. Tokyo Night, Catppuccin and Solarized split the most; Niwaki and Tideline keep to the nine base roles.
+- **Warm or cool?** Tideline (cream and navy) and Gruvbox (earthy retro) are warm; Nord, Tokyo Night and One Dark are cool; Niwaki recolors only code, so the page keeps whatever chrome is beneath it.
 
-Both can be opt-in as the **active** preset for a whole site, or registered as a named **tint** (`theme.tints[].extends`) for inline scoped use on a single section or code block. See [Tint and colour scheme](/docs/authoring/tint) for the scoping mechanics and [Theme authoring](/extend/theme-authoring/overview) if you're building your own.
+Each preset page shows its palette and a live code preview. To enable a preset, or combine two, see [Lumina](/themes/lumina#opt-in-to-a-preset).
 
 ## Lumina
 
-- [Lumina](/themes/lumina) — overview of the flagship theme
+- [Lumina](/themes/lumina) — opting in to presets, composing them, and authoring your own
 - [Neutral default](/themes/neutral-default) — the warm-neutral palette every fresh site sees
 
 ## Theme presets
@@ -29,7 +30,7 @@ Both can be opt-in as the **active** preset for a whole site, or registered as a
 
 ## Imported syntax presets
 
-A curated lineup of widely-recognised palettes, ported as integrated refrakt presets. Each one is opt-in as a site preset *or* as a scoped tint for inline showcases.
+A curated lineup of widely recognized palettes, ported as integrated refrakt presets. Each one is opt-in as a site preset *or* as a scoped tint for inline showcases.
 
 | Preset | Style | Modes | Notable role splits |
 |---|---|---|---|

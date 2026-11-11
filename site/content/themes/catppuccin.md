@@ -5,11 +5,7 @@ description: Soft pastel palette family — Latte (light) + Mocha (dark). Modern
 
 # Catppuccin
 
-Catppuccin is one of the most actively maintained palette projects in the modern editor era — a soft-pastel family with four flavours (Latte, Frappé, Macchiato, Mocha) and an unusually thorough published specification. Every hue has a name, a documented purpose, and a syntax-highlighting role.
-
-The preset ships the canonical pair: **Latte** as the light mode, **Mocha** as the dark mode. MIT licensed.
-
-This page is rendered on a site whose active preset is **niwaki**. The Catppuccin look you see in the palettes and the live preview below is scoped to those subtrees via `tint="catppuccin"` — the surrounding prose stays in niwaki.
+Catppuccin is a soft-pastel palette family with an unusually thorough syntax style guide: every hue has a name and a documented role. It is one of the few palettes to give **function parameters** their own hue (Maroon), and it colors six of the seven extended syntax roles distinctly. The preset ships the canonical pair — **Latte** for light, **Mocha** for dark; the Frappé and Macchiato flavors are not included.
 
 ## Opt in
 
@@ -24,11 +20,7 @@ This page is rendered on a site whose active preset is **niwaki**. The Catppucci
 }
 ```
 
-System preference or user toggle picks between Latte (light) and Mocha (dark). Both ship together.
-
-## The palette
-
-Catppuccin's syntax style guide is the most thorough of the lineup imports. Mauve carries declarations, Blue carries functions, Yellow carries types, Peach carries numbers, Pink carries regex, and Sky carries operators — each role gets a dedicated hue. Maroon is reserved for **function parameters**, which Catppuccin is one of the few palettes to call out as a distinct role.
+## Palette
 
 {% palette title="Catppuccin — Latte (light)" tint="catppuccin" tint-mode="light" showContrast=true showA11y=true %}
 - Base (canvas): #eff1f5
@@ -62,9 +54,7 @@ Catppuccin's syntax style guide is the most thorough of the lineup imports. Mauv
 - Lavender (primary-hover): #b4befe
 {% /palette %}
 
-## Live preview
-
-The shared TypeScript+JSX snippet rendered through Catppuccin. Watch for the **Maroon parameters** — Catppuccin is one of the few palettes to give function parameters a dedicated hue, so `id`, `name`, and the destructured `{ id }` argument all read distinctly from their surrounding context.
+## Preview
 
 {% codegroup tint="catppuccin" %}
 ```ts
@@ -86,30 +76,6 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Catppuccin gives **six of the seven** extended optional syntax roles distinct colours: `type` (Yellow), `parameter` (Maroon), `number` (Peach), `regex` (Pink), `operator` (Sky), `string-expression` (Pink). `attribute` and `tag` collapse with `type` and `keyword` respectively — Catppuccin's intent, not the contract's limitation.
-
-## Composing with tideline
-
-`presets: ["tideline", "catppuccin"]` gives tideline's IBM Plex typography with Catppuccin's Latte+Mocha chrome and syntax:
-
-```jsonc
-{
-  "theme": {
-    "package": "@refrakt-md/lumina",
-    "presets": [
-      "@refrakt-md/lumina/presets/tideline",
-      "@refrakt-md/lumina/presets/catppuccin"
-    ]
-  }
-}
-```
-
-Tideline's Plex Sans + Plex Mono survives the composition; Catppuccin's chrome and syntax take over in both modes.
-
-## Other flavours
-
-The preset ships only the Latte + Mocha canonical pair. Frappé and Macchiato — Catppuccin's mid-dark flavours, sometimes preferred over Mocha for less screen contrast — are not included. If you'd like them shipped as separate presets (`catppuccin-frappe`, `catppuccin-macchiato`), [open an issue](https://github.com/refrakt-md/refrakt/issues/new).
-
 ## Attribution
 
-Catppuccin is the work of [the Catppuccin organisation](https://github.com/catppuccin) — a community palette project led by Pocco81 and contributors. Released under the MIT licence. The refrakt preset module at `@refrakt-md/lumina/presets/catppuccin` is derived from the [official palette specification](https://catppuccin.com/palette/) and the [Catppuccin style guide for syntax highlighting](https://github.com/catppuccin/catppuccin#-style-guide). See [catppuccin.com](https://catppuccin.com/) for the canonical spec, the family of port integrations across editors and tools, and the design philosophy.
+Catppuccin is the work of [the Catppuccin organization](https://github.com/catppuccin) and contributors, MIT licensed. The preset is derived from the [official palette](https://catppuccin.com/palette/) and the [syntax style guide](https://github.com/catppuccin/catppuccin#-style-guide).

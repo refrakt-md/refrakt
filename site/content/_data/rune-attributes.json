@@ -1945,9 +1945,9 @@
 			"plugin": "core",
 			"scope": "own",
 			"name": "size",
-			"type": "\"sm\" | \"md\" | \"lg\"",
+			"type": "\"sm\" | \"md\" | \"lg\" | \"full\"",
 			"required": false,
-			"description": "Panel size. \"sm\" / \"md\" (default) / \"lg\" — width for left/right sides, height for top/bottom.",
+			"description": "Panel size: \"sm\", \"md\" (default), \"lg\" (wide enough for code), or \"full\" (the whole screen inside the gutter). Width for left/right sides, height for top/bottom.",
 			"page": "drawer"
 		},
 		{

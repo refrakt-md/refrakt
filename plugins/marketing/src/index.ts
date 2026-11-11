@@ -9,7 +9,7 @@ import { config } from './config.js';
 export const marketing: Plugin = {
 	name: 'marketing',
 	displayName: 'Marketing',
-	version: '0.48.0',
+	version: '0.49.0',
 	// SPEC-153 D2 — composed runes, one `<rune>.md` each. `hero`, `cta` and
 	// `testimonial` went live here from `site/staged-runes/` (SPEC-181 D5,
 	// WORK-702 to WORK-704).

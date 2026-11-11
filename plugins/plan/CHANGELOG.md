@@ -1,5 +1,22 @@
 # @refrakt-md/plan
 
+## 0.49.0
+
+### Patch Changes
+
+- a906331: **Unpublished pages are not linked to.** Plan entities on a `draft: true` page register without a URL, so a backlog, decision log or activity feed shows them unlinked rather than linking to a page that is not built. An inline `{% link %}` with an empty `href` now renders its content unlinked, as the block form already did, rather than as `<a href="">`.
+- Updated dependencies [862e41a]
+- Updated dependencies [dca7a2d]
+- Updated dependencies [a906331]
+- Updated dependencies [79fbe34]
+- Updated dependencies [b780b92]
+- Updated dependencies [26e923a]
+- Updated dependencies [1fff35b]
+  - @refrakt-md/transform@0.49.0
+  - @refrakt-md/runes@0.49.0
+  - @refrakt-md/content@0.49.0
+  - @refrakt-md/types@0.49.0
+
 ## 0.48.0
 
 ### Patch Changes

@@ -9,11 +9,11 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:bento"} /%}
 
-A grid of cells. Each cell is a small card living in a grid track. There are two ways to author one — **heading sugar** (each heading becomes a cell, its depth setting the tile size) or **explicit cells** (`{% bento-cell %}` for precise per-tile control). Bento is a grid primitive, not a page-section: it has no eyebrow/title/blurb header. To title a grid, wrap it in a `feature` or section.
+A magazine-style grid of tiles in different sizes. Write a heading for each cell and its level sets the tile's size, or write `{% bento-cell %}` tags to size each tile exactly. A bento has no headline of its own; to title a grid, wrap it in a [feature](/runes/marketing/feature) or [section](/runes/section).
 
-## Heading sugar
+## Basic usage
 
-Write a heading for each cell. The heading's level sets the tile's size, whatever else is in the grid, so `### Coral` is always a medium tile.
+Each heading starts a cell. Its level sets the tile's size, whatever else is in the grid, so `###` is always a medium tile.
 
 {% preview source=true %}
 
@@ -47,36 +47,36 @@ Write a heading for each cell. The heading's level sets the tile's size, whateve
 |-----------|------------|
 | A heading | A cell, titled with the heading; `#` makes a full tile, `##` large, `###` medium, `####` and deeper small |
 | The content under a heading, up to the next | The cell's body |
-| `---` inside a cell | Splits it into media and body; with two, the last part is a footer ([Media zones](#media-zones)) |
+| `---` inside a cell | Splits it into media and body; with two, the last part is a footer ([Add media to cells](#add-media-to-cells)) |
 | Content before the first heading | Loose content above the grid |
 
-## Cell sizes
+## Size cells by heading level
 
-The grid is **6 columns** by default. Size presets resolve as proportions of the column count, so a preset holds its ratio at any `columns`:
+The grid has 6 columns by default, and each size keeps its proportion at any `columns`:
 
-| Heading | Size | Span (at 6 cols) | Proportion |
-|---------|------|------------------|------------|
-| `#` (h1) | `full` | 6 cols × 1 row | full width |
-| `##` (h2) | `large` | 4 cols × 2 rows | ⅔ width, 2 rows |
-| `###` (h3) | `medium` | 3 cols × 1 row | ½ width |
-| `####`+ (h4+) | `small` | 2 cols × 1 row | ⅓ width |
+| Heading | Size | Footprint at 6 columns |
+|---------|------|------------------------|
+| `#` | `full` | full width, 1 row |
+| `##` | `large` | two-thirds width, 2 rows |
+| `###` | `medium` | half width, 1 row |
+| `####` and deeper | `small` | a third of the width, 1 row |
 
-Rows are uniform fixed-height tracks, so a `large` cell is genuinely twice as tall and a tall guest is bounded by its track rather than ballooning the row. Set the track height with `row-height` (`sm` · `md` · `lg` · `xl`), or theme the default via `--rf-bento-row-height`.
+Every row has the same height, so a `large` cell is twice as tall as its neighbors. Set that height with `row-height` (`sm`, `md`, `lg` or `xl`).
 
-## Custom ladders
+## Set your own sizes
 
-The tiered presets are a sensible default, but heading level can drive *any* footprint you like. Set `levels` to an explicit ladder — a comma-separated list of rungs indexed by heading level (rung 0 = `#`/h1, rung 1 = `##`/h2, rung 2 = `###`/h3, and so on). Each rung is either a **column count** `W` (one row tall) or a full **`WxH`** footprint:
+`levels` replaces the sizes above with your own, one per heading level starting at `#`. Each entry is a column count (one row tall) or a `WxH` footprint:
 
 {% preview source=true %}
 
 	{% bento columns=6 levels="6,3,2" collapse="sm" %}
 	# Launch
 
-	`#` lands on rung 0 — the full width.
+	`#` takes the first entry — the full width.
 
 	## Metrics
 
-	`##` lands on rung 1 — half-width, pairs with the next.
+	`##` takes the second — half the width, so it pairs with the next.
 
 	## Activity
 
@@ -84,7 +84,7 @@ The tiered presets are a sensible default, but heading level can drive *any* foo
 
 	### Alpha
 
-	`###` lands on rung 2 — a third.
+	`###` takes the third — a third of the width.
 
 	### Beta
 
@@ -97,27 +97,17 @@ The tiered presets are a sensible default, but heading level can drive *any* foo
 
 {% /preview %}
 
-Two recipes worth knowing:
+- Headings deeper than the list use its last entry, so write only as many entries as you have sizes.
+- Entries are column counts, not proportions: change `columns` and you need to revisit them.
+- `levels="6,5,4,3,2,1"` keeps every cell one row tall with width following the heading; `levels="6x1,6x2,6x3"` makes full-width cells that grow taller, for a timeline feel.
 
-- **Uniform height, width by depth** — `levels="6,5,4,3,2,1"`. Every cell is one row tall, so the grid keeps a flat, even rhythm while width still tracks heading importance.
-- **Varied-height feed** — `levels="6x1,6x2,6x3"`. Full-width cells that grow taller with depth, for a timeline or changelog feel.
+## Add media to cells
 
-A few rules:
-
-- Headings deeper than the ladder **clamp** to the last rung — write only as many rungs as you have distinct sizes (`levels="6,3,2"` covers `#`/`##`/`###`; `####` and deeper stay a third).
-- Rungs are **absolute** column counts measured against `columns`; if you change `columns`, revisit the ladder. (The tiered presets, by contrast, are proportional and scale automatically.)
-- A bento that doesn't use `#` can leave rung 0 as a placeholder — only the rungs matching headings you actually write are used.
-- `levels` only affects heading sugar — explicit `{% bento-cell %}` grids ignore it.
-
-## Media zones
-
-A cell's content splits on a top-level `---` into **media / body / footer** zones, exactly like `card`. The media zone clips and sizes its guest, so any visual rune (chart, map, gallery, mockup, `showcase`) drops in and adapts automatically.
-
-A media guest is **presentational** by default. In a cell with `href` (a stretched whole-tile link), an interactive guest — a `codegroup`, a live `map` — is demoted to its static fallback and made `pointer-events: none` so the whole cell links reliably (and a build warning fires); body/footer controls stay clickable. A non-linked cell hosts interactive guests normally. See the [interaction-posture contract](/extend/rune-authoring/composability#media-guest-interaction-posture).
+Split a cell on `---` into media, body and an optional footer, as on [card](/runes/card). Large and full cells put the media beside the body; smaller cells stack it on top. Set `media-position` on the `bento` to change every cell at once, and on a `bento-cell` to change one. `elevation` works the same way: set it on the `bento` to lift every cell.
 
 {% preview source=true %}
 
-	{% bento columns=6 %}
+	{% bento columns=6 elevation="raised" %}
 	# Coral reef
 
 	![A coral reef teeming with life](https://assets.refrakt.md/figure-coral-reef.jpg)
@@ -137,48 +127,11 @@ A media guest is **presentational** by default. In a cell with `href` (a stretch
 
 {% /preview %}
 
-The first zone is media, the last (when there are three) is the footer:
+Any visual rune works as cell media; see [Media guests](/docs/concepts/media-guests). In a cell with `href`, an interactive guest such as a `codegroup` or `map` shows its static form so the whole cell stays one link, and the build warns. The `frame-*` attributes go on a `bento-cell`, not on the `bento`.
 
-```markdoc
-{% bento-cell %}
-## Title
-![cover](cover.png)   <!-- media -->
----
-Body copy.            <!-- body -->
----
-Footer note.          <!-- footer -->
-{% /bento-cell %}
-```
+## Line up text across cells
 
-`media-position` controls where the media sits relative to the body (`top | bottom | start | end`), with a size-derived default — large/full cells place media **beside** the body, smaller cells stack it **on top**. Set it on the `bento` to default every cell at once (heading-sugar grids included); a cell's own `media-position` still wins.
-
-## Frame & elevation
-
-`elevation` lifts each cell off the page. Set on the `bento`, it applies to every cell, as `media-position` does; a cell's own value still wins. The grid itself never takes a shadow, so `{% bento elevation="raised" %}` lifts the cells, not the grid.
-
-`bento` does not take the `frame` attributes; set a cell's aspect with `media-ratio`.
-
-{% preview source=true %}
-
-	{% bento columns=6 elevation="raised" %}
-	# Coral reef
-	![A coral reef](https://assets.refrakt.md/figure-coral-reef.jpg)
-	---
-	Teeming with life beneath turquoise waters.
-	# Hot springs
-	![Volcanic hot springs](https://assets.refrakt.md/figure-hot-springs.jpg)
-	---
-	Steam rising from the Icelandic highlands.
-	{% /bento %}
-
-{% /preview %}
-
-## Aligning cells
-
-Two optional knobs keep a grid visually tidy. They act on perpendicular axes — a cell is either a *column* cell (media stacked top/bottom) or a *beside* cell (media start/end), so the two never overlap — and each can be set as a **grid-wide default** or **overridden per cell**. The grid default is the only lever heading-sugar grids have, since their cells are generated.
-
-- **`content-height`** (`sm` · `md` · `lg` · `xl`) pins the text area of column cells to a fixed height, so titles and body copy line up across the row no matter how much each cell says. The media zone absorbs whatever height is left in the track.
-- **`media-ratio`** (`1/3` · `2/5` · `1/2` · `3/5` · `2/3`) sets how much of a beside cell's width the media takes; the content gets the rest.
+`content-height` (`sm` to `xl`) gives the text of every stacked cell the same height, so captions line up however long they are; the media takes the rest of the row. For cells with the media beside the text, `media-ratio` sets the media's share of the width instead. Set either on the `bento` for the whole grid, or on a `bento-cell` for one; both relax once the grid stacks.
 
 {% preview source=true %}
 
@@ -202,22 +155,9 @@ Two optional knobs keep a grid visually tidy. They act on perpendicular axes —
 
 {% /preview %}
 
-Both cells pin their text to the same height, so the captions align even though one is longer. For a beside cell, reach for `media-ratio` instead:
+## Size each cell yourself
 
-```markdoc
-{% bento-cell size="large" media-ratio="1/3" %}
-## Spotlight
-![cover](cover.png)
----
-The image takes a third of the width; the copy fills the rest.
-{% /bento-cell %}
-```
-
-Set either on the `bento` to establish a grid-wide default, then override it on an individual `{% bento-cell %}`. Both revert to natural height / the default split on the mobile stack.
-
-## Explicit cells
-
-For full per-tile control (the dashboard case), author `{% bento-cell %}` tags directly. When a bento contains explicit cells, heading sugar is short-circuited — the cells are used as-is. Each cell accepts precise `cols` / `rows` spans, a `size` preset, `media-position`, and an `href` that turns the whole tile into a link.
+For a dashboard, write `{% bento-cell %}` tags and give each one exact `cols` and `rows`, or a `size` preset. A cell takes its own `media-position`, `tint`, and an `href` that makes the whole tile a link. Once a bento holds a `bento-cell`, loose headings are ignored, so don't mix the two.
 
 {% preview source=true %}
 
@@ -237,28 +177,18 @@ For full per-tile control (the dashboard case), author `{% bento-cell %}` tags d
 
 {% /preview %}
 
-Mixing headings and explicit cells in one grid is not a supported pattern — if any explicit cell is present, loose headings are ignored.
+## Choose when the grid stacks
 
-## Responsive collapse
+Above the `collapse` width the grid renders exactly as written; below it, the cells stack in a single column and size to their content. There is no step in between.
 
-Collapse is **binary**. Above the chosen breakpoint, the grid renders exactly as authored — your `columns` and per-cell `cols`/`rows` are honored without reflow. Below it, the grid drops to a single stacked column with auto row tracks (cells size to their content; nothing clips). The span auto-cap still applies, so a cell wider than `columns` is bounded to the grid even before collapse.
+| `collapse` | Stacks below |
+|------------|--------------|
+| `sm` (default) | 640px |
+| `md` | 768px |
+| `lg` | 1024px |
+| `never` | never stacks |
 
-```markdoc
-{% bento collapse="md" %}
-```
-
-| Value | Collapses to one column at |
-|-------|----------------------------|
-| `sm` *(default)* | 640px container width |
-| `md` | 768px container width |
-| `lg` | 1024px container width |
-| `never` | never collapses |
-
-Choose `collapse` to match the narrowest width your authored grid can comfortably hold. A 6-column grid with wide cells probably wants `md` or `lg`; a small grid of `small` cells can stay at `sm`. There is no intermediate column reduction by default — if the grid genuinely needs to fit a range of container widths, pick `columns` for the lowest acceptable width and let the wider container render the cells with extra breathing room.
-
-## Tint a cell
-
-A `tint` or `tint-mode` on a single `{% bento-cell %}` colours that cell alone, for a grid of many colours.
+Pick the narrowest width your grid holds comfortably: a 6-column grid with wide cells wants `md` or `lg`, a grid of small cells can stay at `sm`. The width is the grid's own container, not the window.
 
 ## Attributes
 

@@ -101,9 +101,22 @@ function renderRuneHtml(nodes: Markdoc.RenderableTreeNode[], depth = 0): string 
 	return lines.join('\n');
 }
 
+/**
+ * The index of the fence shown as the preview's source, or -1. A fence the
+ * author wrote is always the source. A snippet's fence is the source only
+ * beside other content (a sandbox, say); alone, it is the content.
+ */
+function sourceFenceIndex(nodes: Node[]): number {
+	return nodes.findIndex(
+		(node) =>
+			node.type === 'fence' &&
+			(node.attributes.snippet !== true || nodes.some((other) => other !== node)),
+	);
+}
+
 function extractFence(children: unknown[]): { fence: Node | undefined; rest: unknown[] } {
 	const nodes = children as Node[];
-	const fenceIdx = nodes.findIndex((c) => c.type === 'fence');
+	const fenceIdx = sourceFenceIndex(nodes);
 	if (fenceIdx === -1) return { fence: undefined, rest: nodes };
 	const fence = nodes[fenceIdx];
 	return { fence, rest: [...nodes.slice(0, fenceIdx), ...nodes.slice(fenceIdx + 1)] };
@@ -154,7 +167,7 @@ export const preview = createContentModelSchema({
 		const allChildren = asNodes(resolved.children);
 
 		let sourcePre: Markdoc.Tag<'pre'> | undefined;
-		const fenceIdx = allChildren.findIndex((c) => c.type === 'fence');
+		const fenceIdx = sourceFenceIndex(allChildren);
 		let contentChildren: Node[];
 		if (fenceIdx !== -1) {
 			const fence = allChildren[fenceIdx];

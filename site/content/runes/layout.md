@@ -13,28 +13,44 @@ Structural runes that define page layout. `{% layout %}` wraps the entire layout
 
 ## Defining regions
 
-A `_layout.md` file uses regions to place content into theme slots.
+A `_layout.md` file uses regions to place content into theme slots. A layout describes every page beneath it rather than rendering where it is written, so it is shown here as the file you write:
 
 ```markdoc
 {% layout %}
 	{% region name="header" %}
-	# Site Title
+	# Trail Guide
 	{% /region %}
 
 	{% region name="nav" %}
 		{% nav %}
-		- page-one
-		- page-two
+		- getting-started
+		- day-hikes
+		- overnight-routes
 		{% /nav %}
 	{% /region %}
 {% /layout %}
 ```
 
-Layouts are inherited from parent directories. A `_layout.md` in a subdirectory can override or extend regions from the parent layout using the `mode` attribute.
+Layouts are inherited from parent directories: a page gets every `_layout.md` from the content root down to its own directory, in that order. [Content & Routing → Layout cascade](/docs/content#layout-cascade) walks through the inheritance. A `_layout.md` in a subdirectory can override or extend regions from the parent layout using the `mode` attribute.
 
 ### Extending a parent layout
 
-A `{% region %}` names the region it fills (`header`, `nav`, `sidebar`, `footer`). By default it replaces the parent layout's region of that name; `mode="prepend"` or `mode="append"` adds to it instead. `extends` on the `{% layout %}` names the layout to build on, the parent directory's by default.
+A `{% region %}` names the region it fills (`header`, `nav`, `sidebar`, `footer`). The `mode` attribute decides how it combines with the parent layout's region of the same name:
+
+| Mode | Behavior |
+|------|----------|
+| `replace` | The child region replaces the parent's (default) |
+| `prepend` | The child content goes before the parent's |
+| `append` | The child content goes after the parent's |
+
+```markdoc
+{% region name="nav" mode="append" %}
+## Extra Section
+- new-page
+{% /region %}
+```
+
+This appends navigation items to the inherited nav region. `extends` on the `{% layout %}` names the layout to build on, the parent directory's by default.
 
 ## Attributes
 

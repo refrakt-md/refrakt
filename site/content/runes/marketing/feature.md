@@ -13,7 +13,7 @@ A set of features or benefits, each with a name and a short description, optiona
 
 ## Basic usage
 
-A feature grid with named items and descriptions.
+An eyebrow, a headline and a short blurb introduce a grid of named features.
 
 {% preview source=true responsive="mobile,tablet,desktop" %}
 
@@ -21,6 +21,8 @@ A feature grid with named items and descriptions.
 	what you get
 
 	## Structured data
+
+	Refrakt gives you the building blocks to ship structured content sites without fighting your framework.
 
 	- **Semantic runes**
 
@@ -41,39 +43,16 @@ A feature grid with named items and descriptions.
 
 | You write | It becomes |
 |-----------|------------|
-| A short paragraph, then a heading and a paragraph, before the list | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A short paragraph, then a heading and a paragraph, before the list | The eyebrow, headline and blurb ([Page sections](/docs/concepts/page-sections)) |
 | A list item | A feature |
 | Bold text in the item's first paragraph | The feature's name |
 | An image or icon beside the name | The feature's icon |
 | The paragraph after the name | The feature's description |
 | Media, then `---`, before the rest | A media column beside or above the features ([Place the media](#place-the-media)) |
 
-## With heading and description
+## Place the media
 
-Add a paragraph after the heading to introduce the feature set.
-
-{% preview source=true responsive="mobile,tablet,desktop" %}
-
-	{% feature %}
-	what you get
-	## Built for content teams
-
-	Refrakt gives you the building blocks to ship structured content sites without fighting your framework.
-
-	- **Semantic runes**
-
-	  Markdown primitives take on different meaning depending on the wrapping rune. Write Markdown — the rune decides what it means.
-
-	- **Type-safe output**
-
-	  Every rune produces typed, validated content that your theme components can rely on.
-	{% /feature %}
-
-{% /preview %}
-
-## Media on the right (`end`)
-
-Use `media-position="end"` to place definitions alongside a media column — an image, code block, or any other content. A horizontal rule (`---`) separates the **media** block (first) from the **content** block (second).
+Put an image, a code sample or other media first, then `---`, then the features. `media-position="end"` puts the media on the right and the features in a single column beside it; `start` puts it on the left, and `top` or `bottom` stack it with the features in a grid. `media-ratio`, `valign` and `collapse` tune the side-by-side split, as on [card](/runes/card#place-the-media); `collapse` also sets the width at which a grid of features drops to one column.
 
 {% preview source=true responsive="mobile,tablet,desktop" %}
 
@@ -114,58 +93,9 @@ Use `media-position="end"` to place definitions alongside a media column — an 
 
 {% /preview %}
 
-## Media on the left (`start`)
+## Arrange the features
 
-Use `media-position="start"` to swap the column order — media on the left, definitions on the right.
-
-{% preview source=true responsive="mobile,tablet,desktop" %}
-
-	{% feature media-position="start" %}
-		{% codegroup %}
-		```markdown title="content/index.md"
-		---
-		title: Welcome
-		---
-
-		{% hero %}
-		# Welcome
-		{% /hero %}
-		```
-
-		```shell title="Terminal"
-		npm run dev
-		```
-		{% /codegroup %}
-
-		---
-
-		three steps
-		## How it works
-
-		- **Write**
-
-		  Write Markdown, and reach for a rune where the content needs structure.
-
-		- **Preview**
-
-		  The dev server reloads the page as you type.
-
-		- **Publish**
-
-		  Build static pages and host them anywhere.
-	{% /feature %}
-
-{% /preview %}
-
-## Item arrangement (`layout`)
-
-The `layout` axis controls how feature-items are arranged, independently of where the media sits:
-
-- `layout="grid"` — items tile as a grid.
-- `layout="list"` — items stack in a single column.
-- `layout="carousel"` — items lay out on a horizontal scroll-snap track with prev/next nav (the shared [carousel layout mode](/extend/rune-authoring/patterns#the-carousel-contract)), at every viewport.
-
-When `layout` is unset it **derives from `media-position`** (stacked media → `grid`, beside media → `list`), so existing content is unchanged. Set it explicitly to override. For example, `layout="carousel"` lays the feature-items out on a horizontal scroll-snap track with prev/next nav, at every viewport:
+`layout` sets how the features are laid out, whatever the media does: `grid` tiles them, `list` stacks them in one column, and `carousel` puts them on a horizontal track that scrolls with previous and next buttons. Without `layout`, a feature with media beside it uses `list` and any other uses `grid`.
 
 {% preview source=true responsive="mobile,tablet,desktop" %}
 
@@ -194,9 +124,9 @@ When `layout` is unset it **derives from `media-position`** (stacked media → `
 
 {% /preview %}
 
-### Carousel on mobile only (`collapse-to`)
+### Switch to a carousel on small screens
 
-A `grid` is great when the feature has room, but cramped on a phone. Add `collapse-to="carousel"` to make the *collapsed* form a swipeable scroll-snap row instead of a stack — a grid on desktop, a carousel on mobile. The breakpoint is the feature's **own width** (a container query), so it also flips when the feature sits in a narrow column. Switch the viewport selector to `mobile` to see it flip:
+`collapse-to="carousel"` keeps a grid on wide screens and turns it into a swipeable row once the feature is narrow, instead of stacking it. The switch follows the feature's own width, so it also happens in a narrow column. Set the preview to `mobile` to see it:
 
 {% preview source=true responsive="mobile,tablet,desktop" %}
 
@@ -224,12 +154,6 @@ A `grid` is great when the feature has room, but cramped on a phone. Add `collap
 	{% /feature %}
 
 {% /preview %}
-
-## Place the media
-
-The body splits on `---` into **media → content** zones (media-first in source). `media-position` controls visual placement independently of source order. Item arrangement (grid vs. single column) is the separate [`layout`](#item-arrangement-layout) axis — when unset it derives from `media-position` (stacked → grid, beside → list), but the two are independently controllable.
-
-`media-ratio`, `valign` and `collapse` tune a side-by-side split, as on [card](/runes/card#place-the-media); `collapse` also sets where a grid of items reflows to one column.
 
 ## Attributes
 

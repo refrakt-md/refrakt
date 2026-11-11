@@ -9,54 +9,45 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:xref"} /%}
 
-The author provides an identifier — the system finds the page, constructs the link, and uses the entity's title as link text. Self-closing tag. `{% ref %}` is the same rune under another name, so `{% ref "WORK-9138" /%}` is documented here. To put the entity's content into the page instead of a link to it, use [expand](/runes/expand); to link a project file by its path, use [file-ref](/runes/file-ref); for a side panel that a reference opens, declare a [drawer](/runes/drawer).
+Link to a page, a character, a spec or any other entity by naming it: the build finds the page, builds the link and uses the entity's title as the link text. `{% ref %}` is the same rune under another name, so `{% ref "WORK-026" /%}` is documented here. To put the entity's content into the page instead of a link to it, use [expand](/runes/expand); to link a project file by its path, use [file-ref](/runes/file-ref); for a side panel that a reference opens, declare a [drawer](/runes/drawer).
 
-{% hint type="note" %}
-The `xref` rune requires the cross-page pipeline (Level 2). At Level 1 (static transform), references render as plain text.
-{% /hint %}
+## Basic usage
 
-## By ID
+Give the entity's ID. A page's ID is its URL:
 
-Reference an entity by its unique identifier. The registry resolves the URL and title automatically.
+{% preview source=true %}
 
-```markdoc
-Depends on {% xref "WORK-9138" /%}
-See {% xref "SPEC-9008" /%} for details.
-This implements {% xref "ADR-9007" /%}.
-```
+Shared files live in {% xref "/docs/authoring/partials" /%}; to place an entity's content on the page, use {% xref "/runes/expand" /%}.
 
-## By name
+{% /preview %}
 
-Reference an entity by its display name. Name lookup is case-insensitive and searches `name` and `title` fields across all registered entities.
+Other entities carry their own IDs: on a site that publishes its plan, `{% xref "WORK-9138" /%}` links to that work item and reads its title.
 
-```markdoc
-{% xref "Veshra" /%} never forgave the betrayal.
-The {% xref "authentication" /%} guide covers setup.
-```
+## Link by name
 
-## Custom label
+Entities with a name, such as characters and places, can be referenced by it. The match ignores case.
 
-Override the default link text with the `label` attribute. The link still points to the resolved entity.
+{% preview source=true %}
 
-```markdoc
-{% xref "WORK-9138" label="the base implementation" /%}
-{% xref "Veshra" label="the exile" /%}
-```
+{% xref "Veshra" /%} never forgave the betrayal, and never returned to {% xref "Hollowmere" /%}.
 
-## Type hint
+{% /preview %}
 
-When a name is ambiguous (multiple entities share the same name), the `type` attribute narrows the lookup to a specific entity type.
+When two entities share a name, add `type` to say which one you mean: `{% xref "Hollowmere" type="realm" /%}`. Without it, the first match wins and the build warns.
 
-```markdoc
-{% xref "Sanctuary" type="realm" /%}
-{% xref "Sanctuary" type="character" /%}
-```
+## Change the link text
 
-Without a type hint, ambiguous references use the first match and emit a build warning.
+`label` replaces the entity's title as the link text. The link still points to the entity.
+
+{% preview source=true %}
+
+{% xref "Veshra" label="The Bone Witch" /%} watched the gates of Hollowmere close behind her.
+
+{% /preview %}
 
 ## Preview drawer
 
-Set `preview="drawer"` to keep the inline link *and* hoist a drawer containing the entity's expanded body, opening on click. Same shape `{% file-ref %}` uses — one preview vocabulary across both reference runes.
+Set `preview="drawer"` to keep the inline link and open the entity's content in a [drawer](/runes/drawer) when it is clicked, without leaving the page.
 
 {% preview source=true %}
 
@@ -64,39 +55,28 @@ The plan behind {% ref "SPEC-078" preview="drawer" label="this preview drawer" /
 
 {% /preview %}
 
-When the reader clicks the inline link, a drawer slides in containing the entity's `{% expand %}`-equivalent content. The drawer's chrome footer links to the entity's resolved page URL (or hides silently when the entity has no `sourceUrl` — heading entities, drawer-target entities, plan content scanned without a route). The link itself reads like a normal xref in prose; the only visible difference is that clicking opens a drawer rather than navigating away.
+The drawer shows what [expand](/runes/expand) would place on the page, with a link to the entity's own page at the foot. Several references to the same entity share one drawer. To change what the drawer shows, write a `{% drawer %}` with the entity's ID yourself; the reference opens yours instead. [file-ref](/runes/file-ref) takes the same `preview` attribute for files.
 
-Per-page **dedup**: N mentions of the same entity collapse to one hoisted drawer.
+## What you can link to
 
-**Composition note.** The drawer body is just an expand-pending placeholder that the regular `{% expand %}` resolver substitutes downstream. So `{% ref "X" preview="drawer" /%}` is structurally identical to a manual `{% drawer id="X" %}{% expand "X" /%}{% /drawer %}` — the preview attribute is the ergonomic shortcut, not a different rendering path.
+Anything a rune or page registers as an entity:
 
-**Nested-preview caveat.** A `{% ref "X" preview="drawer" /%}` inside another drawer's body or footer still hoists, but it produces a drawer-from-within-a-drawer shape. Supported but discouraged; the build emits an info-level note when detected.
+| Source | Entity types | Example |
+|--------|-------------|---------|
+| Core | `page`, `heading` | `{% xref "/docs/getting-started" /%}` |
+| Frontmatter `type` | that type, such as `rune` | `{% xref "/runes/hint" /%}` |
+| @refrakt-md/storytelling | `character`, `realm`, `faction`, `lore`, `plot` | `{% xref "Veshra" /%}` |
+| @refrakt-md/plan | `spec`, `work`, `bug`, `decision`, `milestone` | `{% xref "SPEC-078" /%}` |
 
-See [file-ref](/runes/file-ref) for the path-based sibling that uses the same `preview` attribute over file content rather than registered entities.
+See [Entities](/docs/authoring/entities) for where entities come from.
 
-## Resolution order
+## Link to other systems
 
-Resolution splits entity lookup from URL resolution so the two can succeed independently:
-
-1. **Entity lookup** — exact ID match across all types (or the type-hinted one); falls through to case-insensitive `name`/`title` match. The matched entity supplies metadata (label, type) for the rendered anchor — whether or not the URL ends up coming from a configured pattern.
-2. **URL resolution** — if the matched entity has a usable `sourceUrl`, that's the href (`data-xref-source="registry"`). Otherwise the resolver iterates the patterns configured in `refrakt.config.json#/xrefs`; first regex that matches the ID wins (`data-xref-source="pattern"`).
-3. **Unresolved** — if neither the entity's `sourceUrl` nor any pattern produces a URL, the ref renders as a styled `rf-xref--unresolved` span with a build warning.
-
-This means a registered entity *without* a canonical URL — like plan content scanned outside any site's content tree — still resolves correctly: the registry provides label and type; a configured pattern provides the URL.
-
-## Configurable URL patterns
-
-Configure external-system URL templates in `refrakt.config.json`:
+IDs that no entity carries, such as issue numbers or RFCs, can still become links. Add patterns to `xrefs` in `refrakt.config.json`; the first pattern whose `match` fits the ID builds the URL:
 
 ```jsonc
 {
   "xrefs": [
-    {
-      "match": "^SPEC-\\d+$",
-      "template": "https://trace.refrakt.md/myuser/myrepo/specs/{id}",
-      "type": "spec",
-      "label": "{id}"
-    },
     {
       "match": "^GH-(?<num>\\d+)$",
       "template": "https://github.com/myuser/myrepo/issues/{num}",
@@ -106,81 +86,26 @@ Configure external-system URL templates in `refrakt.config.json`:
     {
       "match": "^RFC-(?<num>\\d+)$",
       "template": "https://datatracker.ietf.org/doc/html/rfc{num}",
-      "type": "rfc",
       "label": "RFC {num}"
-    },
-    {
-      "match": "^npm:(?<pkg>[a-z0-9-/@.]+)$",
-      "template": "https://www.npmjs.com/package/{pkg}",
-      "type": "npm",
-      "label": "{pkg}"
     }
   ]
 }
 ```
 
-### Pattern fields
+With these, `{% ref "GH-42" /%}` links to issue 42 and reads "GitHub #42".
 
 | Field | Required | Meaning |
 |-------|----------|---------|
-| `match` | yes | JavaScript regex matched against the ref ID. Anchored to whole-string match by default (`^` and `$` are auto-applied unless explicit anchors are present at both ends). Named groups (`(?<name>...)`) are addressable in `template` / `label` as `{name}`. |
-| `template` | yes | URL template. `{id}` is the full matched ID; `{name}` substitutes a named group. |
-| `type` | no | Maps to `rf-xref--{type}` CSS modifier. Default: `"external"`. The value `"unresolved"` is reserved. |
-| `label` | no | Link-text template using the same placeholder syntax. Default: `"{id}"`. Overridden by a per-ref `label=` attribute when set. |
+| `match` | yes | A regular expression, matched against the whole ID. A named group such as `(?<num>...)` can be used as `{num}` in `template` and `label`. |
+| `template` | yes | The URL. `{id}` is the whole ID. |
+| `type` | no | A name a theme can style the link by. Default: `external`. |
+| `label` | no | The link text, with the same placeholders. Default: `{id}`. A `label` on the reference overrides it. |
 
-### URL encoding
+A pattern also supplies the URL for an entity that has no page of its own, such as plan content outside the site; the entity still supplies the link text. See [configuration](/docs/configuration/overview) for the rest of the config file.
 
-Each substituted value is encoded per URL segment: split on `/`, encode each segment via `encodeURIComponent`, rejoin with `/`. This preserves slash structure in path-shaped captures — a `(?<path>[a-z0-9/-]+)` group capturing `guide/intro` renders as `.../guide/intro`, not `.../guide%2Fintro`. Reserved characters within a single segment are still encoded normally.
+## References that don't resolve
 
-### Pattern recipes
-
-```jsonc
-// External plan host (refrakt trace)
-{ "match": "^SPEC-\\d+$", "template": "https://trace.refrakt.md/user/repo/specs/{id}" }
-
-// Issue tracker (GitHub)
-{ "match": "^GH-(?<num>\\d+)$", "template": "https://github.com/user/repo/issues/{num}" }
-
-// Standards / RFCs
-{ "match": "^RFC-(?<num>\\d+)$", "template": "https://datatracker.ietf.org/doc/html/rfc{num}" }
-
-// Package registry
-{ "match": "^npm:(?<pkg>[a-z0-9-/@.]+)$", "template": "https://www.npmjs.com/package/{pkg}" }
-
-// Wikipedia
-{ "match": "^wiki:(?<title>.+)$", "template": "https://en.wikipedia.org/wiki/{title}" }
-```
-
-## Unresolved references
-
-When neither the registry nor any pattern produces a URL, the reference renders as a styled `rf-xref--unresolved` span with a build warning. The build continues — this allows referencing entities that don't exist yet or that resolve only in a future build (after content is added).
-
-## Entity types
-
-Every package that registers entities works with `xref` automatically. Common types:
-
-| Source | Entity types | Example |
-|--------|-------------|---------|
-| Core | `page`, `heading` | `{% xref "getting-started" /%}` |
-| @refrakt-md/storytelling | `character`, `realm`, `faction`, `lore`, `bond` | `{% xref "Veshra" /%}` |
-| @refrakt-md/learning | `term`, `lesson` | `{% xref "polymorphism" /%}` |
-| @refrakt-md/business | `person`, `organization` | `{% xref "Acme Corp" /%}` |
-| @refrakt-md/places | `event`, `location` | `{% xref "Launch Party" /%}` |
-
-## Theme styling
-
-Themes can style cross-references by entity type using BEM modifier classes:
-
-```css
-.rf-xref { /* base link styling */ }
-.rf-xref--character { /* person icon prefix */ }
-.rf-xref--page { /* plain link */ }
-.rf-xref--unresolved {
-  text-decoration: underline dashed;
-  color: var(--rf-color-muted);
-  cursor: help;
-}
-```
+A reference that matches no entity and no pattern renders as text marked unresolved rather than as a link, and the build warns. The build still succeeds, so you can reference something before it is written.
 
 ## Attributes
 

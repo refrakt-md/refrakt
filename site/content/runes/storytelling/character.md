@@ -37,30 +37,16 @@ Character profiles for worldbuilding and storytelling. For a place, use [realm](
 | Paragraphs before the first heading | The description |
 | A heading | A named section; the content up to the next heading of that level is its body |
 
-## Roles
+## Role and status
 
-The `role` attribute controls visual styling to distinguish character importance.
+`role` sets how prominent a character is in the story — `protagonist`, `antagonist`, `supporting` or `minor` — and `status` records where they stand now: `alive`, `dead`, `unknown` or `missing`. Both change the profile's styling.
 
 {% preview source=true %}
 
-	{% character name="Elena" role="protagonist" status="alive" %}
+	{% character name="Elena" role="protagonist" status="missing" %}
 	## Background
 
-	The hero of the story — a wandering scholar searching for lost texts.
-	{% /character %}
-
-{% /preview %}
-
-## Status tracking
-
-Track whether a character is alive, dead, unknown, or missing.
-
-{% preview source=true %}
-
-	{% character name="Lord Ashford" role="supporting" status="dead" %}
-	## Legacy
-
-	Once the warden of the Eastern March, Lord Ashford fell during the Siege of Thornwall.
+	A scholar of the Ashen Spire, raised in Thornwall by its warden, Lord Ashford. Last seen taking the cliff road out of Hollowmere.
 	{% /character %}
 
 {% /preview %}

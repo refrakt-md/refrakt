@@ -26,7 +26,7 @@ interface ThemeConfig {
 | `tokenPrefix` | Convention for CSS custom property naming. Used by documentation and tooling, not the engine itself |
 | `icons` | SVG strings organized by group and variant. Structural groups (e.g., `hint`) are used by `StructureEntry.icon` config to inject icons into rune headers. The `global` group is used by the `{% icon %}` content rune to resolve author-chosen icons by name |
 | `runes` | Maps each rune's `typeName` (PascalCase, e.g. `Hint`) to its transform configuration. The engine matches the kebab-cased key against the `data-rune` attribute on the tag |
-| `tints` / `backgrounds` / `frames` | Named preset registries — colour tints, `bg` layers, and `frame` media-surface chrome. All share the same `extends` resolution. See [Surface chrome](/extend/theme-authoring/surfaces) for `frames`. |
+| `tints` / `backgrounds` / `frames` | Named preset registries — color tints, `bg` layers, and `frame` media-surface chrome. All share the same `extends` resolution. See [Surface chrome](/extend/theme-authoring/surfaces) for `frames`. |
 
 ## RuneConfig
 
@@ -51,7 +51,7 @@ The guard is **path-granular**: a whole key where the whole key is identity, and
 
 `sequence` is the case that makes the rule concrete. On a playlist the number *is* the track number — an identifier a listener says out loud. A theme that restyled a playlist from `numbered` to `connected` would not change how it looks; **it would delete the track numbers**. So `numbered` vs `connected` encodes a fact about the content, and the rune owns it. `sequenceDirection` — the responsive collapse of the same list — is presentation, and stays the theme's.
 
-`metaFields.*.metaType` is the same split one level down: a theme may relabel a `status` field, recolour it with its own `sentimentMap`, or give it a value `transform`, but retyping it from `status` to `category` changes what the author declared their data to mean. A guarded sub-field is dropped while the rest of its entry merges, and an override entry that leaves `metaType` out keeps the declared one.
+`metaFields.*.metaType` is the same split one level down: a theme may relabel a `status` field, recolor it with its own `sentimentMap`, or give it a value `transform`, but retyping it from `status` to `category` changes what the author declared their data to mean. A guarded sub-field is dropped while the rest of its entry merges, and an override entry that leaves `metaType` out keeps the declared one.
 
 A `layout` wrapper's `attrs` may not write an attribute an identity field emits — `data-section` (`sections`), `data-media` (`mediaSlots`), `typeof` / `property` (`schema`), `data-sequence` (`sequence`), `data-meta-type` (`metaFields.*.metaType`), or `data-{name}` for a declared modifier. The refused attribute is dropped and reported; the wrapper's other attributes stand. Presentation attributes such as `data-zone-layout` or `data-color-scheme` are unaffected. This is checked once, when the config is assembled, and `refrakt plugin validate` reports it as an error.
 
@@ -145,42 +145,44 @@ FeaturedTier: { block: 'tier', staticModifiers: ['featured'] }
 
 ### metaFields
 
-A pure-data manifest of the rune's meta-bearing fields — domain semantics only (type, label, sentiment, optional rich rendering). Blocks reference these fields by name; the engine resolves them against modifier values and renders them. Use it instead of hand-built metadata in `structure`.
+A pure-data manifest of the rune's meta-bearing fields — what each field means (type, label, sentiment, optional rich rendering), with no placement. Blocks reference these fields by name. Use it instead of hand-built metadata in `structure`.
 
 ```typescript
-metaFields: {
-  difficulty: {
-    metaType: 'category',
-    label: 'Difficulty',
-    condition: 'difficulty',
-    sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' },
-  },
+metaFields?: Record<string, MetaField>;
+
+interface MetaField {
+  metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id' | 'code';
+  label?: string;
+  sentimentMap?: Record<string, 'positive' | 'negative' | 'caution' | 'neutral'>;
+  condition?: string;
+  renderWhenEmpty?: boolean;
+  href?: string;
+  rating?: { total?: string };
+  icon?: { group: string };
+  tag?: string;
+  splitOn?: string;
+  transform?: 'duration' | 'uppercase' | 'capitalize';
+  i18nKey?: string;
 }
 ```
 
-| Field | Description |
-|-------|-------------|
-| `metaType` | Visual shape — `'status'`/`'category'`/`'tag'` render as chips; `'id'`/`'quantity'`/`'temporal'`/`'code'` render bare. Also drives typography (monospace for `id`/`code`, tabular-nums for `quantity`/`temporal`). **Rune identity** — a theme override of it is dropped; the entry's other fields still merge |
-| `label` | Human-readable label — the `<dt>` in a def-list, the in-chip label in a bar |
-| `sentimentMap` | Maps the resolved value to a sentiment colour (`positive`/`negative`/`caution`/`neutral`) |
-| `condition` / `renderWhenEmpty` | Render only when the named modifier is truthy (or merely present) |
-| `href` / `rating` / `icon` | Rich renderings — link, rating widget, leading icon |
-| `splitOn` / `transform` / `tag` | Delimited collection → one chip per item; value transform (`duration`/`uppercase`/`capitalize`); element tag override |
-
-See [Blocks & layout](/extend/theme-authoring/blocks-and-layout) for the full field reference.
+`metaType` is **rune identity** — a theme override of it is dropped while the entry's other fields still merge (see [Guarded paths](#guarded-paths)). What each key does, and how a field renders, is in [Blocks & layout](/extend/theme-authoring/blocks-and-layout#metafields-manifest).
 
 ### blocks
 
-Named metadata blocks projected from `metaFields`. Each block is a flat list of fields rendered by a layout primitive — `bar` (horizontal flex row) or `definition-list` (`<dl>` of labelled pairs). Render shape (chip vs bare) is intrinsic to each field's `metaType`, not the block's layout.
+Named metadata blocks projected from `metaFields`, each a flat list of fields rendered by one layout primitive. A block becomes an addressable element (`.rf-{block}__{name}`) placed via `layout`.
 
 ```typescript
-blocks: {
-  metadata: { fields: ['prepTime', 'cookTime', 'servings', 'difficulty'], layout: 'definition-list' },
-  eyebrow: { fields: ['plotType', { field: 'structure', align: 'end' }], layout: 'bar' },
+blocks?: Record<string, BlockDef>;
+
+interface BlockDef {
+  fields: (string | { field: string; align?: 'start' | 'end' })[];
+  layout: 'bar' | 'definition-list' | 'lead';
+  wrap?: boolean;
 }
 ```
 
-A field may be given as `{ field, align }` to push it to the row end (`bar` only). A block becomes an addressable element (`.rf-{block}__{name}`) placed via `layout`.
+The primitives and the DOM each emits are in [Blocks & layout](/extend/theme-authoring/blocks-and-layout#blocks-projected-metadata-blocks).
 
 ### layout
 
@@ -772,29 +774,7 @@ Set `labelHidden: true` to make the label visually hidden but accessible to scre
 
 ### Metadata dimensions
 
-Two fields enable generic cross-rune badge styling. When present, the engine emits `data-meta-*` attributes on the generated element. Themes style these attributes generically instead of writing per-rune badge CSS.
-
-| Field | Attribute emitted | Description |
-|-------|-------------------|-------------|
-| `metaType` | `data-meta-type` | Visual shape — `'status'`, `'category'`, `'quantity'`, `'temporal'`, `'tag'`, `'id'` |
-| `sentimentMap` | `data-meta-sentiment` | Maps modifier values to colors — `'positive'`, `'negative'`, `'caution'`, `'neutral'` |
-
-```typescript
-{ tag: 'span', ref: 'badge', metaText: 'difficulty',
-  metaType: 'category',
-  sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' } }
-```
-
-When `difficulty="easy"`, the engine emits:
-
-```html
-<span data-meta-type="category"
-      data-meta-sentiment="positive" data-difficulty="easy">
-  easy
-</span>
-```
-
-See [Universal Theming Dimensions](/extend/theme-authoring/dimensions) for the full CSS system.
+`metaType` and `sentimentMap` on a `StructureEntry` emit `data-meta-type` and `data-meta-sentiment` on the generated element, exactly as the same keys do on a [`MetaField`](/extend/theme-authoring/blocks-and-layout#metafield-fields). See [Universal Theming Dimensions](/extend/theme-authoring/dimensions#metadata-dimensions) for the CSS a theme writes against them.
 
 ## mergeThemeConfig
 

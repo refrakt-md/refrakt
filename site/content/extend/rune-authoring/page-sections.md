@@ -1,4 +1,4 @@
 ---
 title: Moved
-redirect: /docs/authoring/page-sections
+redirect: /docs/concepts/page-sections
 ---

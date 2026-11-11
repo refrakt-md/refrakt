@@ -19,7 +19,7 @@ A **plugin** is an npm package that extends refrakt with extra runes, layouts, t
 | [`@refrakt-md/business`](/runes/business) | Organizational and team content | 3 runes — cast, organization, timeline |
 | [`@refrakt-md/places`](/runes/places) | Events, maps, and travel | 3 runes — event, map, itinerary |
 | [`@refrakt-md/media`](/runes/media) | Music and audio content | 3 runes — playlist, track, audio |
-| [`@refrakt-md/plan`](/runes/plan) | Spec-driven project planning | 9 runes, [8 CLI commands](/runes/plan/cli), cross-page pipeline |
+| [`@refrakt-md/plan`](/runes/plan) | Spec-driven project planning | 9 runes, [9 CLI commands](/docs/cli/plan), cross-page pipeline |
 
 Each plugin's rune index page (linked from the first column) documents every rune it ships, with worked examples.
 
@@ -57,6 +57,8 @@ When refrakt builds a site (or the CLI looks up a namespace like `refrakt plan n
 2. **`package.json` + `node_modules/@refrakt-md/`** — when no `plugins` field is set anywhere, refrakt scans the project's `dependencies` + `devDependencies` for `@refrakt-md/*` entries (and checks `node_modules/@refrakt-md/` directly to catch workspace-linked packages). Meta packages like `@refrakt-md/cli`, `@refrakt-md/types`, and `@refrakt-md/transform` are excluded — they don't contribute runes or commands.
 
 Either source produces the same result: a list of `DiscoveredPlugin` objects, each tagged with the source that found it.
+
+Migrating a flat config with `refrakt config migrate` fills in `site.plugins` from discovery when the field is absent; see [Migration](/docs/configuration/migration#auto-populating-plugins).
 
 ## Why declare `plugins` explicitly?
 
@@ -170,10 +172,6 @@ npx refrakt plugins list --format json
 ```
 
 The output includes the discovery `source` for each plugin (`"config"` or `"dependency-scan"`), so you can confirm the right resolution path is firing.
-
-## Auto-population during migration
-
-The `refrakt config migrate` command auto-populates `site.plugins` from the project's installed `@refrakt-md/*` packages on first migration if the field is absent. Discovery failures are non-blocking — the migration still applies the shape change.
 
 ## Want to build your own?
 

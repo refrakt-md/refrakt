@@ -50,7 +50,7 @@ A travel plan, day by day, with a time and a place for each stop.
 | A `##` heading | A day, labelled with the heading |
 | A heading inside a day, such as `### 9:00 AM — Narita Airport` | A stop: the text before the first dash is its time, the rest its place |
 | The content under a stop heading | The stop's description |
-| A short paragraph, then a `#` heading and a paragraph, before the first day | The eyebrow, headline and blurb ([Page sections](/docs/authoring/page-sections)) |
+| A short paragraph, then a `#` heading and a paragraph, before the first day | The eyebrow, headline and blurb ([Page sections](/docs/concepts/page-sections)) |
 
 ## Single-day itinerary
 

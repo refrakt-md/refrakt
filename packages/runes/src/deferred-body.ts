@@ -36,9 +36,26 @@ export function captureDeferredBodies(ast: Node, isDeferBody: (tagName: string) 
 	}
 	for (const node of targets) {
 		const doc = new Ast.Node('document', {}, node.children);
+		wrapBlockText(doc);
 		node.attributes[DEFERRED_BODY_ATTR] = Markdoc.format(doc);
 		node.children = [];
 	}
+}
+
+/**
+ * A line holding only an expression (`{% humanize($kind) %}`) parses as a bare
+ * `text` child of the block around it, and `Markdoc.format` writes a bare text
+ * child onto the previous line, which joins it to an opening tag. Wrapping it
+ * in a paragraph keeps it on its own line, and it parses back the same way.
+ */
+function wrapBlockText(node: Node): void {
+	if (node.type === 'inline' || node.inline) return;
+	node.children = node.children.map((child) =>
+		child.type === 'text'
+			? new Ast.Node('paragraph', {}, [new Ast.Node('inline', {}, [child])])
+			: child,
+	);
+	for (const child of node.children) wrapBlockText(child);
 }
 
 /** Read the stashed body source off a resolved attribute set, if present. */

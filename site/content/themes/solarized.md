@@ -5,11 +5,7 @@ description: Ethan Schoonover's iconic 16-hue palette with mode-symmetric accent
 
 # Solarized
 
-Solarized is Ethan Schoonover's 2011 palette, distinguished by a deliberate design constraint: **the eight accent hues (yellow, orange, red, magenta, violet, blue, cyan, green) are identical across light and dark modes**, with only the canvas / text family flipping. Light mode uses `base3` (`#fdf6e3`) on `base00`; dark mode uses `base03` (`#002b36`) on `base0`. The accent palette stays the same.
-
-That makes Solarized the lineup's unified-mode test case. Most palettes shift their accent hues between modes — Nord adjusts Frost for darker contrast, Catppuccin retunes Mauve from Latte to Mocha. Solarized is the exception that validates refrakt's preset shape handles the mode-symmetric case as cleanly as the mode-asymmetric one. MIT licensed.
-
-This page is rendered on a site whose active preset is **niwaki**. The Solarized look you see in the palettes and the live preview below is scoped to those subtrees via `tint="solarized"` — the surrounding prose stays in niwaki.
+Solarized is Ethan Schoonover's 2011 sixteen-hue palette, built on one constraint: **the eight accent hues are identical in light and dark mode** — only the base tones flip, from `base3` (`#fdf6e3`) cream to `base03` (`#002b36`) deep teal. It uses the extended syntax roles thoroughly: `type` (Yellow), `number` (Orange), `regex` (Green) and `operator` (Violet) all get their own hue.
 
 ## Opt in
 
@@ -24,11 +20,7 @@ This page is rendered on a site whose active preset is **niwaki**. The Solarized
 }
 ```
 
-Solarized ships both modes so the page renders coherently in either — system preference or user toggle picks which canvas the page renders against, with the accent palette unchanged.
-
-## The palette
-
-The Solarized 16-colour palette: eight base tones (the mode-flipped canvas / text family) plus eight accents (mode-symmetric).
+## Palette
 
 {% palette title="Solarized — light" tint="solarized" tint-mode="light" showContrast=true showA11y=true %}
 - base3 (canvas): #fdf6e3
@@ -66,11 +58,7 @@ The Solarized 16-colour palette: eight base tones (the mode-flipped canvas / tex
 - Green (regex): #859900
 {% /palette %}
 
-The dark palette is shorter because the accents are identical — only the base tones change between modes. Compare any accent row to its sibling above; the hex value is the same.
-
-## Live preview
-
-The shared TypeScript+JSX snippet rendered through Solarized. The accents look the same in light and dark mode — only the canvas around them changes.
+## Preview
 
 {% codegroup tint="solarized" %}
 ```ts
@@ -92,26 +80,6 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Solarized uses the extended syntax roles thoroughly: **types** (`User`) in Yellow, distinct from **functions** (`findUser`) in Blue; **numbers** (`42`) in Orange, distinct from **constants** (which would also use violet) — the split that Nord first proved is meaningful; **regex** (`/^\d+$/`) in Green, distinct from string Cyan; **operators** in Violet, distinct from punctuation; **tags** and **attributes** in Red and Blue respectively.
-
-## Composing with tideline
-
-`presets: ["tideline", "solarized"]` gives tideline's IBM Plex typography with Solarized's coordinated canvases and accent palette:
-
-```jsonc
-{
-  "theme": {
-    "package": "@refrakt-md/lumina",
-    "presets": [
-      "@refrakt-md/lumina/presets/tideline",
-      "@refrakt-md/lumina/presets/solarized"
-    ]
-  }
-}
-```
-
-Order matters — Solarized ships after tideline so its chrome wins. Tideline's Plex Sans + Plex Mono survives in both modes.
-
 ## Attribution
 
-Solarized is the work of [Ethan Schoonover](https://ethanschoonover.com/), released under the MIT licence. The refrakt preset module at `@refrakt-md/lumina/presets/solarized` is derived from the [official Solarized site](https://ethanschoonover.com/solarized/) and its [usage documentation](https://ethanschoonover.com/solarized/#usage-development). The canonical palette has powered dozens of editor, terminal, and tooling integrations since 2011.
+Solarized is the work of [Ethan Schoonover](https://ethanschoonover.com/), MIT licensed. The preset is derived from the [official Solarized site](https://ethanschoonover.com/solarized/).

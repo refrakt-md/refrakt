@@ -9,65 +9,49 @@ type: rune
 
 {% include file="rune-intro.md" variables={r: "rune:plan-history"} /%}
 
-Every status transition, priority change, criteria check-off, and resolution is extracted from consecutive commits — no separate activity log or event database required.
-## Per-entity timeline
+Show how a plan entity changed over time: every status change, priority change, checked criterion and resolution, read from the commits that touched its file. There is no activity log to keep.
 
-Show the full history for a single entity by passing its ID.
+## Basic usage
 
-```markdoc
-{% plan-history id="WORK-024" /%}
-```
+Pass an entity's ID for its full history:
 
-Each event in the timeline shows:
+{% preview source=true %}
 
-- **Date** and **commit hash** (linked to the repository when a remote is configured)
-- **Attribute changes** — `status: ready → done`, `priority: low → high`
-- **Criteria progress** — checked/unchecked acceptance criteria with ☑/☐ markers
-- **Resolution events** — when a `## Resolution` section is added
-- **Content edits** — body changes with no structured diff
+	{% plan-history id="WORK-716" /%}
 
-Events are displayed newest-first. When more than 3 criteria change in a single event, the list collapses with a "+N more criteria" summary.
+{% /preview %}
 
-### Visual language
+## Read the timeline
 
-- A filled circle (●) marks an event with changes; an open circle (○) marks the entity's creation.
-- A changed value shows the old value struck through and the new one beside it.
+Events run newest first. Each shows its date and commit (linked to the repository when a remote is configured), and what changed:
 
-## Global activity feed
+- **Attributes**, such as `status: ready → done`, with the old value struck through.
+- **Acceptance criteria** checked (☑) or unchecked (☐). More than three in one commit collapse into "+N more criteria".
+- **A resolution** added.
+- **Body edits** with no change to the above.
 
-Omit the `id` attribute for a project-wide feed grouped by commit.
+A filled circle (●) marks a change; an open circle (○) marks the commit that created the entity.
 
-```markdoc
-{% plan-history /%}
-{% plan-history limit=10 /%}
-{% plan-history type="work" /%}
-{% plan-history since="7d" /%}
-```
+## Show recent activity across the plan
 
-In global mode, events from the same commit are grouped together, showing the commit message and a compact summary for each affected entity. This makes atomic operations visible — when a spec is accepted and 5 work items are created in one commit, they appear as a single grouped entry.
+Leave out `id` for a project-wide feed, one entry per commit:
 
-Content-only events (body edits with no attribute/criteria/resolution change) are omitted from the global feed to reduce noise.
+{% preview source=true %}
 
-## Event types
+	{% plan-history type="spec" limit=5 /%}
 
-The history extractor classifies each commit into one of five event kinds:
+{% /preview %}
 
-| Kind | Meaning |
-|------|---------|
-| `created` | Entity file first appeared in git |
-| `attributes` | One or more tag attributes changed (status, priority, etc.) |
-| `criteria` | Acceptance criteria checkboxes were checked or unchecked |
-| `resolution` | A `## Resolution` section was added or modified |
-| `content` | File changed but no attribute/criteria/resolution diff detected |
+`limit` caps the number of commits, `type` keeps one entity type (`work`, `bug`, `spec`, `decision`), and `since` keeps recent activity only (`since="7d"`). A commit that touched several entities, such as accepting a spec and creating its work items, is one entry. Body-only edits are left out of the feed.
 
 ## Where the history comes from
 
-The timeline is read from git: every commit that changed an entity's file, compared with the one before. Nothing else needs to be kept. A file's history follows it when it is renamed within the plan directory. In a shallow clone, which CI often uses, the timeline starts at the oldest commit available. Results are cached in `.plan-history-cache.json`, which you can add to `.gitignore`.
-
-## CLI companion
-
-The [`refrakt plan history`](/runes/plan/cli#refrakt-plan-history) command provides the same history data in the terminal, with additional filtering options (`--author`, `--status`).
+The timeline is read from git: every commit that changed an entity's file, compared with the one before. A file's history follows it when it is renamed within the plan directory. In a shallow clone, which CI often uses, the timeline starts at the oldest commit available. Results are cached in `.plan-history-cache.json`, which you can add to `.gitignore`.
 
 ## Attributes
 
 {% include file="rune-attributes.md" variables={r: "rune:plan-history"} /%}
+
+## See also
+
+- [`refrakt plan history`](/docs/cli/plan#refrakt-plan-history) — the same history in the terminal, with `--author` and `--status` filters.

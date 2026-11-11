@@ -5,11 +5,7 @@ description: Neon-on-night palette by Enkia. Day + Storm canonical pair. The lin
 
 # Tokyo Night
 
-Tokyo Night is Enkia's blue-magenta-cyan palette, inspired by the neon-on-night aesthetic of the city it's named for. Three variants: **Storm** (the canonical dark), **Moon** (lighter dark), and **Day** (light). The preset ships the canonical pair — Storm + Day.
-
-Tokyo Night is the **role-split champion** of the lineup. It deliberately uses distinct hues for `type`, `function`, `parameter`, `keyword`, `number`, `tag`, and `attribute` — exactly the splits refrakt's extended syntax roles exist to carry. MIT licensed.
-
-This page is rendered on a site whose active preset is **niwaki**. The Tokyo Night look you see in the palettes and the live preview below is scoped to those subtrees via `tint="tokyo-night"` — the surrounding prose stays in niwaki.
+Tokyo Night is Enkia's blue-magenta-cyan palette, after the neon-on-night look of the city it's named for. It is the lineup's **role-split champion**: `type`, `function`, `parameter`, `keyword`, `number`, `tag` and `attribute` each get a distinct hue — pick it to show off the extended syntax roles. The preset ships **Storm** (dark) and **Day** (light); the Moon variant is not included.
 
 ## Opt in
 
@@ -24,9 +20,7 @@ This page is rendered on a site whose active preset is **niwaki**. The Tokyo Nig
 }
 ```
 
-Day and Storm ship together; user toggle or system preference picks between them.
-
-## The palette
+## Palette
 
 {% palette title="Tokyo Night — Day (light)" tint="tokyo-night" tint-mode="light" showContrast=true showA11y=true %}
 - Background (canvas): #e1e2e7
@@ -57,17 +51,7 @@ Day and Storm ship together; user toggle or system preference picks between them
 - Light cyan (regex): #b4f9f8
 {% /palette %}
 
-Storm carries Tokyo Night's signature look — the magenta keywords and lavender text on deep blue-black canvas. Day inverts the canvas axis while keeping the same role splits.
-
-## Live preview
-
-The shared TypeScript+JSX snippet rendered through Tokyo Night. Pay attention to:
-
-- **Type** (`User`) reads in cyan, distinct from **function** (`findUser`) in blue
-- **Parameters** (`id` in declaration position) read in yellow — Tokyo Night's distinct parameter hue
-- **JSX tags** (`<Button>`) in punchy red, distinct from keywords in magenta
-- **JSX attributes** (`onClick`, `variant`) in yellow — same as parameters by Tokyo Night's intent
-- **Numbers** (`42`) in orange, distinct from strings in green
+## Preview
 
 {% codegroup tint="tokyo-night" %}
 ```ts
@@ -89,30 +73,6 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Tokyo Night gives **6+ of the 7** extended optional syntax roles distinct colours in dark mode — the highest count in the catalog. If you want a palette that shows off the extended roles, this is the one.
-
-## Composing with tideline
-
-`presets: ["tideline", "tokyo-night"]` pairs tideline's IBM Plex typography with Tokyo Night's neon canvas:
-
-```jsonc
-{
-  "theme": {
-    "package": "@refrakt-md/lumina",
-    "presets": [
-      "@refrakt-md/lumina/presets/tideline",
-      "@refrakt-md/lumina/presets/tokyo-night"
-    ]
-  }
-}
-```
-
-Tideline's Plex Sans + Plex Mono survive; Tokyo Night's chrome and syntax win.
-
-## Other variants
-
-The preset ships only Storm + Day. Tokyo Night Moon — a slightly lighter dark variant some readers prefer — is not included. If you'd like Moon as a separate preset, [open an issue](https://github.com/refrakt-md/refrakt/issues/new).
-
 ## Attribution
 
-Tokyo Night is the work of [Enkia](https://github.com/enkia) and contributors, released under the MIT licence. The refrakt preset module at `@refrakt-md/lumina/presets/tokyo-night` is derived from the [Tokyo Night VS Code theme source](https://github.com/enkia/tokyo-night-vscode-theme), specifically the Storm and Day variants.
+Tokyo Night is the work of [Enkia](https://github.com/enkia) and contributors, MIT licensed. The preset is derived from the Storm and Day variants of the [Tokyo Night VS Code theme](https://github.com/enkia/tokyo-night-vscode-theme).

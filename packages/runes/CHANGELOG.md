@@ -1,5 +1,22 @@
 # @refrakt-md/runes
 
+## 0.49.0
+
+### Minor Changes
+
+- 79fbe34: **Drawer sizes.** `size="lg"` is now 64rem, wide enough for a 100-column line of code (it was 52rem); a narrower screen still caps it. A new `size="full"` takes the whole screen inside the gutter.
+- 26e923a: **Inline tint tokens fixed.** A `{% tint %}` child rune now reads the six tokens the tint axis applies — `bg`, `surface`, `text`, `muted`, `primary`, `border` — the same names a named tint in theme config uses. It used to read an older list, so `text` and `muted` were dropped and `background`, `secondary` and `accent` were emitted under names nothing applied. `background` still works as an alias of `bg`, with a warning; `secondary` and `accent` are ignored, so write `text` or `primary` instead. `TINT_TOKENS` from `@refrakt-md/runes` is now the same list, and `@refrakt-md/transform` exports it.
+
+### Patch Changes
+
+- dca7a2d: **Template bodies keep a function call on its own line.** In a `collection`, `aggregate` or `relationships` body, a line holding only a function call (`{% humanize($kind) %}`) at the start of a block tag such as `{% card %}` was joined to the tag's opening line when the body was captured, so the tag rendered as inline text and the content after it fell outside. It now stays on its own line.
+- a906331: **Unpublished pages are not linked to.** Plan entities on a `draft: true` page register without a URL, so a backlog, decision log or activity feed shows them unlinked rather than linking to a page that is not built. An inline `{% link %}` with an empty `href` now renders its content unlinked, as the block form already did, rather than as `<a href="">`.
+- 1fff35b: **A snippet in a preview is the content when it is alone, and the source beside other content.** `{% preview %}` takes its first code block as the source to show, and a `{% snippet %}` becomes a code block before the preview sees it, so a preview holding only a snippet rendered nothing and never showed the tag. The snippet's code block is now marked (`snippet` on the fence): on its own it renders as the preview's content, and `source=true` shows the `{% snippet %}` tag. Beside other content, such as a sandbox, it is still that content's source, read from the file.
+- Updated dependencies [862e41a]
+- Updated dependencies [26e923a]
+  - @refrakt-md/transform@0.49.0
+  - @refrakt-md/types@0.49.0
+
 ## 0.48.0
 
 ### Minor Changes

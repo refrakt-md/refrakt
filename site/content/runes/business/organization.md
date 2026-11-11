@@ -47,14 +47,14 @@ A corporation profile with structured data.
 {% preview source=true %}
 
 	{% organization type="Corporation" %}
-	# Acme Inc.
+	# Acme Coffee Roasters, Inc.
 
-	Enterprise solutions for the modern web.
+	Roasting and selling specialty coffee from Portland, through three cafés and an online subscription.
 
-	- **Founded:** 2018
-	- **Headquarters:** San Francisco, CA
-	- [Website](https://acme.example.com)
-	- [GitHub](https://github.com/acme)
+	- **Founded:** 2015
+	- **Headquarters:** Portland, OR
+	- [Website](https://acme.coffee)
+	- [GitHub](https://github.com/acme-coffee)
 	{% /organization %}
 
 {% /preview %}

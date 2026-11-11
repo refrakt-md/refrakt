@@ -1,6 +1,7 @@
 ---
 title: Example Plan Data
 description: Sample plan entities used to populate aggregation rune showcases
+draft: true
 ---
 
 # Example Plan Entities
@@ -168,7 +169,7 @@ Specification for the two-tier design token system: global tokens and component 
 
 ## Overview
 
-Global tokens define the colour palette, spacing scale, and typographic scale. Component tokens map global tokens to specific rune parts. Themes override global tokens; rune configs may override component tokens.
+Global tokens define the color palette, spacing scale, and typographic scale. Component tokens map global tokens to specific rune parts. Themes override global tokens; rune configs may override component tokens.
 
 ## Token Naming
 
