@@ -166,7 +166,7 @@ A note.
 		expect(code!.children[0]).toContain('<Button />');
 	});
 
-	it("renders a snippet's code block rather than taking it as the source", () => {
+	it("renders a snippet's code block when it is the preview's only content", () => {
 		// The snippet preprocessor marks the fence it produces with `snippet`.
 		const content = `{% preview source=true %}
 \`\`\`js {% snippet=true %}
@@ -186,6 +186,26 @@ let count = 0;
 				t.name === 'pre' && t.attributes['data-language'] === 'js' && !t.attributes['data-name'],
 		);
 		expect(rendered).toHaveLength(1);
+	});
+
+	it("takes a snippet's code block as the source when other content sits beside it", () => {
+		const content = `{% preview %}
+\`\`\`jsx {% snippet=true %}
+<Card />
+\`\`\`
+
+{% hint type="note" %}
+The rendered card.
+{% /hint %}
+{% /preview %}`;
+		const result = parse(content);
+		const preview = findTag(result as any, (t) => t.attributes['data-rune'] === 'preview');
+		const source = findTag(
+			preview!,
+			(t) => t.name === 'pre' && t.attributes['data-name'] === 'source',
+		);
+		expect(source!.attributes['data-language']).toBe('jsx');
+		expect(findTag(preview!, (t) => t.attributes['data-rune'] === 'hint')).toBeDefined();
 	});
 
 	it('should emit responsive meta property when set', () => {
