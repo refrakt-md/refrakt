@@ -17,10 +17,10 @@ template. Two things now want room in that body besides the template:
 This spec makes the body a set of top-level blocks, of which the template is one:
 
 - the template is always wrapped in `{% template %}` (D1);
-- a definition may carry named `{% example %}` blocks, which replace the fixture corpus as the
-  source every tool reads (D2, D6);
-- any named top-level block in a Markdoc file is addressable as `file#name`, which `include`
-  pastes and `snippet` quotes (D3), from file roots that packages contribute (D4);
+- a definition may carry `{% example %}` blocks, each with an `id`, which replace the fixture
+  corpus as the source every tool reads (D2, D6);
+- any block with an `id` in a Markdoc file is addressable as `file#id`, which `include` pastes and
+  `snippet` quotes (D3), from file roots that packages contribute (D4);
 - pasted content remembers which file it came from (D5).
 
 No rune is added. `include` and `snippet` gain an address form; `{% example %}` is syntax inside a
@@ -88,7 +88,7 @@ A definition's body holds only top-level blocks: `{% template %}`, `{% fragment 
 ### D2: `{% example %}` holds one demo, as live Markdoc
 
 ```md
-{% example name="all-types" title="All hint types" role="canonical" %}
+{% example #all-types title="All hint types" role="canonical" %}
 	{% hint type="note" %}
 	Exports include archived projects unless you clear **Include archived**.
 	{% /hint %}
@@ -101,7 +101,7 @@ A definition's body holds only top-level blocks: `{% template %}`, `{% fragment 
 
 | Attribute | Required | Meaning |
 |---|---|---|
-| `name` | yes | unique per definition; how pages, the CLI and tests address it |
+| `id` | yes | written `#all-types`, Markdoc's shorthand for `id="all-types"`; unique per file; how pages, the CLI and tests address it (D3) |
 | `title` | no | a short heading for listings: the gallery, the editor's picker, `reference` |
 | `role` | no, default `canonical` | `canonical`, `minimal`, `rich` or `edge-case`; decides which consumers use it (D6) |
 | `notes` | no | guidance for authors and the AI, not for readers |
@@ -118,24 +118,43 @@ A definition's body holds only top-level blocks: `{% template %}`, `{% fragment 
   any component a test binds.
 - **It is definition syntax, not a page rune.** `{% example %}` means nothing on a page.
 
-### D3: a named top-level block is addressable as `file#name`
+### D3: a block with an `id` is addressable as `file#id`
 
-Any top-level block tag with a `name` attribute in a Markdoc file can be addressed as
-`file#name`. Only top-level blocks: a slot or group inside a template also has a `name`, and
-addressing those would collide with the rune's own part names.
+Any block tag with an `id` in a Markdoc file can be addressed as `file#id`. Ids are unique per
+file; a duplicate reports `duplicate-block-id`.
 
+- **Why `id`, not `name`** (*decided 2026-11-11*):
+  - **`#` already means id.** In a URL, `page.html#x` is the element whose `id` is `x`. Pairing
+    `#` with `name` would give it a second meaning.
+  - **Markdoc has the shorthand.** Its tag syntax takes `#x` for `id="x"`, so an example is
+    written `{% example #all-types %}`.
+  - **It keeps refrakt's two words apart.** `name` is a part's role inside its owner, repeated in
+    every instance: a slot, a group, `data-name`. `id` is a unique identity something elsewhere
+    points at: plan entities (`id="SPEC-194"`, addressed by `{% ref %}`), `drawer id`, heading
+    anchors. An example is addressed from another file, so it is an identity.
+  - **Slots and groups cannot collide with it.** With `name`, addressing had to be limited to
+    top-level blocks, because a template's slots and groups also have names. With `id`, no limit
+    is needed.
 - **`include` pastes the block's content:** `{% include file="core:hint.md#all-types" /%}`. It
   resolves files as today, through `_partials/` and namespaced roots, plus the roots in D4.
 - **`snippet` quotes the block's source.** Markdoc joins the anchor table of
-  {% ref "SPEC-131" /%}: a symbol is a block tag with that `name`, and its extent is `paired`, up to
+  {% ref "SPEC-131" /%}: a symbol is a block tag with that `id`, and its extent is `paired`, up to
   the matching closing tag. `{% snippet path="…/hint.md" symbol="all-types" /%}` shows the demo
   as code.
 - **An address that resolves to nothing is an error**, as an unknown `include` file is today:
-  `include-unknown-block`, naming the file and listing the names it does have.
+  `include-unknown-block`, naming the file and listing the ids it does have.
+- **Pages are addressable too.** A block with an `id` on a page, such as a drawer or a plan
+  entity, can be included or quoted the same way. On a page its `id` is usually also the
+  rendered HTML `id`; inside a definition an example never renders, so nothing leaks. Addressing
+  a section by its heading anchor would fit the same syntax, and is left for later.
 - **This lands the syntax SPEC-168 reserved.** Its section on fragments defers "fragments from
   other files" with exactly `file="shapes/profile.md#body"`. This spec lets *pages* address
   blocks in other files. Whether a *template* may use another file's fragment stays deferred, for
   SPEC-168's reason: a definition should stay readable on its own.
+- **It amends SPEC-168 D8: fragments are declared with an `id`.** SPEC-168's draft declares
+  `{% fragment name="body" %}` and uses it as `{% partial file="#body" /%}`, the same mismatch
+  between `#` and `name`. It becomes `{% fragment #body %}`, so `#` means `id` whether the
+  address is in the same file or another.
 
 ### D4: packages contribute file roots
 
@@ -164,10 +183,10 @@ right file and lines for included content.
   | editor insertion and the rune picker | `minimal`, falling back to `canonical` |
   | AI write mode | `canonical` and `rich`, with `notes` |
   | `refrakt reference` and the gallery | `canonical` |
-  | rune pages | any named example the page includes, by choice; never `edge-case` by convention |
+  | rune pages | any example the page includes by id, by choice; never `edge-case` by convention |
   | tests | all |
 
-- **Rune pages keep their own prose, order and links.** They include examples by name, wrapped in
+- **Rune pages keep their own prose, order and links.** They include examples by id, wrapped in
   whatever shows them (SPEC-198's demo composition on refrakt's own site). Pages are not
   generated from definitions.
 - **The insertion `snippet` on `defineRune` stays separate.** Its tab stops (`${1:header}`) are not
@@ -188,15 +207,17 @@ added only when a consumer needs more than `description` and `notes`.
 - [ ] A definition's body accepts only top-level `template`, `fragment` and `example` blocks, and loose content reports `definition-loose-content`
 - [ ] A single template is written as `{% template %}` with no selecting attribute; a bare body loads with a deprecation warning for one release, and a codemod wraps the five existing ones
 - [ ] A definition with no template loads, and is drawn only by a component (ADR-049)
-- [ ] `{% example %}` accepts `name`, `title`, `role`, `notes` and `expect`; names are unique per definition; `role` accepts only its four values
+- [ ] `{% example %}` requires an `id` and accepts `title`, `role`, `notes` and `expect`; `role` accepts only its four values
+- [ ] Block ids are unique per file, and a duplicate reports `duplicate-block-id`
+- [ ] Fragments are declared with an `id` (`{% fragment #body %}`), amending SPEC-168 D8
 - [ ] Every example is validated against its rune's content model in tests, and findings not listed in `expect` fail
-- [ ] `include` resolves `file#name` to a named top-level block, and an unknown name reports `include-unknown-block` with the names the file has
-- [ ] `snippet` resolves a Markdoc `symbol` to a named block with a `paired` extent
+- [ ] `include` resolves `file#id` to the block with that id, and an unknown id reports `include-unknown-block` with the ids the file has
+- [ ] `snippet` resolves a Markdoc `symbol` to the block with that id, with a `paired` extent
 - [ ] Plugins expose their rune directory as a namespaced root, and core's definitions resolve under `core:`
 - [ ] Nodes pasted by `include` carry `location.file`
 - [ ] `RUNE_EXAMPLES` and `RUNE_FIXTURE_META` are generated from definitions where they exist, and a rune with both a fixture and examples fails a test
 - [ ] Editor, AI write mode, `reference`, gallery and CLI read examples by role as D6 lists
-- [ ] At least one rune page includes its examples by name instead of writing them inline
+- [ ] At least one rune page includes its examples by id instead of writing them inline
 
 ## Open questions
 
@@ -209,6 +230,10 @@ added only when a consumer needs more than `description` and `notes`.
    one may be better named `demo`.
 3. **Is `role` closed?** Four values cover today's uses. A new consumer may want its own.
 4. **`expect`'s grammar.** Error ids alone, or ids with a line or a count.
+5. **Verify the `#id` shorthand end to end.** Markdoc documents `#x` as shorthand for `id="x"`,
+   but nothing in the repository uses it yet. Check that `parse` from `@refrakt-md/runes` keeps
+   it, that the language server and `refrakt format` preserve it, and whether a rune must declare
+   `id` for Markdoc to accept it.
 
 ## References
 

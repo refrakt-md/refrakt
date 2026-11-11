@@ -205,6 +205,10 @@ decided. *Examined in {% ref "SPEC-169" /%}: `delimited` and `implicitSection` a
 
 ### D8 — within one definition, reuse is a fragment
 
+> **Amended by {% ref "SPEC-197" /%} D3 (2026-11-11):** a fragment is declared with an `id`,
+> `{% fragment #body %}`, not `name="body"`, so that `#` in `{% partial file="#body" /%}` means
+> `id` as it does in `file#id` addresses across files. The examples below still show `name`.
+
 Writing out a full `recipe` with two {% ref "SPEC-145" /%} D15 templates (`standard` and
 `cover`) showed the cost D15 accepted: the metadata list and the ingredients, method and tips
 blocks were written twice, about twenty lines each time. D6 defers sharing across runes; this
