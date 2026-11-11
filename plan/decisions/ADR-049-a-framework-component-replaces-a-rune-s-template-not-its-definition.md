@@ -113,7 +113,7 @@ The props are derived from the definition, not read back out of rendered output:
 | each declared attribute, camelCased | `attributes` | its declared type |
 | `computed` | `computes`, after `prepare` and expressions | an object, read-only |
 | each declared slot | the content model | one renderable; for an `each` slot, a list of items, each `{ content, …per-item values }` (the values `$each` exposes to a template) |
-| `dimensions` | the universal attributes the author set | an object, read-only (decision 5) |
+| `dimensions` | the universal attributes the author set | an object, read-only; added by refrakt's layer, not the rune node (decisions 5 and 8) |
 | `children` | none | not passed: everything has a name |
 
 - `computed` and `dimensions` get their own props, as `$computed` is its own scope in SPEC-194
@@ -185,6 +185,37 @@ Where each attribute lands, from the handlers in `packages/transform/src/facets/
   rune is then bound to a framework: an adapter with no component for it reports
   `rune-presentation-missing` and does not render it, rather than rendering nothing silently.
 - A first-party or plugin definition always has a template.
+- **A definition without a template still has a body worth keeping**: its examples
+  ({% ref "SPEC-197" /%}). Its templates are always wrapped in `{% template %}`, so having none is
+  visible rather than an empty body.
+
+### Decision 8: the renderer receives a rune node; dimensions are refrakt's layer on top
+
+Decision 3's props come from the definition, so the renderer needs the definition's resolved
+input, not rendered tags it has to read back. A rune drawn by a component reaches the renderer as
+a node that carries that input directly:
+
+```
+{ $$mdtype: 'Rune', name, attributes, computed, slots }
+```
+
+- **Plain data only**, so it survives the server-to-client boundary as serialized tags do today.
+- **It knows nothing of refrakt's vocabulary.** `dimensions`, the engine root and the background
+  layers are not in it. Refrakt adds them through two general hooks, which any host could use:
+  - **shared attributes:** a host declares attributes every definition accepts, and a rule for
+    which definitions accept which. Refrakt registers the universal attributes this way, gated by
+    declared structure as `resolveUniversalAttributes` does. The node carries them among
+    `attributes`;
+  - **a wrapper around a rune and around a slot:** refrakt's wrapper splits the universal
+    attributes out of `attributes`, draws the engine root and its layers (decision 2), passes the
+    component its `dimensions` prop, and applies part attributes to the slots they target
+    (decision 5).
+- **The test of the seam:** refrakt's renderer is the generic one plus these hooks, with no
+  refrakt-specific case inside it. If dimensions need special handling in the generic renderer,
+  the seam is in the wrong place.
+- **Why it matters beyond this decision:** the generic renderer and the rune node are what a
+  content-model core without refrakt's themes would ship. Keeping refrakt's layer separate now
+  keeps that option open without committing to it.
 
 ## Rationale
 
@@ -200,7 +231,7 @@ want: the root is the theme's surface, not the component's.
 
 - **ADR-008 is superseded.** Its goal stands; its interface (props and slots read from rendered
   output, root replaced, `tag` escape hatch) is replaced by decisions 2 and 3.
-- **`extractComponentInterface` is replaced** by an interface derived from the definition. It
+- **`extractComponentInterface` is replaced** by the rune node (decision 8). It
   stays only while native runes without a definition remain, then goes with SPEC-194 D9's removals.
 - **Every renderer changes:** it draws the root from engine output, places added layers, then
   calls the component with the derived props, and draws slot content recursively. The Svelte,
@@ -234,5 +265,7 @@ want: the root is the theme's surface, not the component's.
 - {% ref "SPEC-194" /%}: D3 (code by key), D4 (lookup), D5 (vocabulary), D8 (opaque parts)
 - {% ref "SPEC-196" /%}: data attributes are the contract; classes are the theme's
 - {% ref "SPEC-177" /%}: template lookup and checks
+- {% ref "SPEC-197" /%}: a definition's body is blocks, including examples
+- {% ref "SPEC-198" /%}: `output()` prints a component-bound rune's node
 
 {% /decision %}
