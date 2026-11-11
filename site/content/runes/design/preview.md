@@ -28,6 +28,8 @@ Wrap content in `{% preview %}` … `{% /preview %}` to give it a frame with a t
 | You write | It becomes |
 |-----------|------------|
 | The first fenced code block | The source shown in the code view; it is not rendered in the canvas |
+| A `{% snippet %}` beside other content | The source, read from the file |
+| A `{% snippet %}` on its own | The rendered content; with `source=true`, the code view shows the tag |
 | Everything else | The rendered content inside the frame |
 
 ## Theme modes
@@ -83,6 +85,8 @@ Add a fenced code block as a direct child for full control over what the code vi
 	{% sandbox src="profile-card" /%}
 
 {% /preview %}
+
+The source can also be read from a file: put a [`{% snippet %}`](/runes/snippet) where the fence would go, beside the content, and the code view shows the file as it is now. A snippet alone in a preview is the content instead, as on the snippet page.
 
 If both a fence and `source` are present, the fence takes priority.
 

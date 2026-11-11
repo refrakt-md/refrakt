@@ -42,6 +42,7 @@ function makeErrorFence(pathAttr: string, message: string): Node {
 		content: `snippet error: ${message}\n`,
 		language: 'text',
 		source: pathAttr || '(unresolved)',
+		snippet: true,
 		'data-snippet-error': message,
 	});
 }
@@ -145,6 +146,7 @@ function resolveSnippetToFence(
 		content,
 		language,
 		source: result.relativePath,
+		snippet: true,
 	};
 	if (lines) fenceAttrs.lines = lines;
 	else if (result.anchored && result.start !== undefined && result.end !== undefined) {
