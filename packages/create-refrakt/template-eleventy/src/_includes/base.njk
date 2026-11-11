@@ -3,16 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  {% if seo.title %}<title>{{ seo.title }}</title>{% endif %}
-  {{ seo.metaTags | safe }}
-  {{ seo.jsonLd | safe }}
+  {% if entry.seo.title %}<title>{{ entry.seo.title }}</title>{% endif %}
+  {{ entry.seo.metaTags | safe }}
+  {{ entry.seo.jsonLd | safe }}
   <link rel="stylesheet" href="/css/index.css">
   <link rel="stylesheet" href="/css/site-tokens.css">
+  {% if entry.highlightCss %}<style>{{ entry.highlightCss | safe }}</style>{% endif %}
 </head>
 <body>
-  {{ html | safe }}
-  <script type="application/json" id="rf-context">{{ contextJson | safe }}</script>
-  {% if hasInteractiveRunes %}
+  {{ content | safe }}
+  <script type="application/json" id="rf-context">{{ entry.contextJson | safe }}</script>
+  {% if entry.hasInteractiveRunes %}
   <script type="module">
     import { registerElements, RfContext, initRuneBehaviors, initLayoutBehaviors } from '/js/behaviors.js';
 

@@ -60,7 +60,7 @@ export default function (eleventyConfig) {
 |--------|------|---------|-------------|
 | `configPath` | `string` | `'./refrakt.config.json'` | Path to the refrakt config |
 | `site` | `string` | — | Which site to use from a multi-site config |
-| `cssFiles` | `string[]` | — | CSS files to passthrough-copy (typically from `node_modules`) |
+| `cssFiles` | `string[]` | — | CSS files to passthrough-copy (typically from `node_modules`). A package a file `@import`s by name, such as Lumina's `@refrakt-md/skeleton`, is copied beside it and the import pointed there, since a browser cannot resolve a package name |
 | `cssPrefix` | `string` | `'/css'` | Output location for the copied CSS |
 | `behaviorFile` | `string` | — | The behaviors bundle to passthrough-copy |
 | `jsPrefix` | `string` | `'/js'` | Output location for the copied bundle |
@@ -88,7 +88,7 @@ refrakt.config.json
 ```javascript
 import { createDataFile } from '@refrakt-md/eleventy';
 import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
-import manifest from '@refrakt-md/lumina/manifest';
+import manifest from '@refrakt-md/lumina/manifest' with { type: 'json' };
 import { layouts } from '@refrakt-md/lumina/layouts';
 import { resolve } from 'node:path';
 
@@ -96,7 +96,6 @@ const { site } = resolveSite(loadRefraktConfig(resolve('refrakt.config.json')));
 
 export default createDataFile({
   theme: { manifest, layouts },
-  contentDir: site.contentDir,
   seo: {
     siteName: site.siteName,
     baseUrl: site.baseUrl,
@@ -112,9 +111,10 @@ layout: base.njk
 pagination:
   data: refrakt
   size: 1
-  alias: page
-permalink: "{{ page.url }}{% if not page.url.endsWith('/') %}/{% endif %}"
+  alias: entry
+permalink: "{{ entry.url }}{% if not entry.url.endsWith('/') %}/{% endif %}"
 ---
+{{ entry.html | safe }}
 ```
 
 ```jinja
@@ -123,16 +123,17 @@ permalink: "{{ page.url }}{% if not page.url.endsWith('/') %}/{% endif %}"
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  {% if page.seo.title %}<title>{{ page.seo.title }}</title>{% endif %}
-  {{ page.seo.metaTags | safe }}
-  {{ page.seo.jsonLd | safe }}
+  {% if entry.seo.title %}<title>{{ entry.seo.title }}</title>{% endif %}
+  {{ entry.seo.metaTags | safe }}
+  {{ entry.seo.jsonLd | safe }}
   <link rel="stylesheet" href="/css/index.css">
   <link rel="stylesheet" href="/css/site-tokens.css">
+  {% if entry.highlightCss %}<style>{{ entry.highlightCss | safe }}</style>{% endif %}
 </head>
 <body>
-  {{ page.html | safe }}
-  <script type="application/json" id="rf-context">{{ page.contextJson | safe }}</script>
-  {% if page.hasInteractiveRunes %}
+  {{ content | safe }}
+  <script type="application/json" id="rf-context">{{ entry.contextJson | safe }}</script>
+  {% if entry.hasInteractiveRunes %}
   <script type="module">
     import { registerElements, RfContext, initRuneBehaviors, initLayoutBehaviors } from '/js/behaviors.js';
 
@@ -155,18 +156,18 @@ permalink: "{{ page.url }}{% if not page.url.endsWith('/') %}/{% endif %}"
 
 {% /codegroup %}
 
-Eleventy iterates over the `refrakt` data array and writes each item to `<url>/index.html`. Always use `| safe` on `page.html`, `page.seo.metaTags`, `page.seo.jsonLd`, and `page.contextJson`; without it Nunjucks escapes the HTML and the page shows raw markup. The behavior script is included only where `page.hasInteractiveRunes` is true, so static pages ship no JavaScript. A reference template ships in the package at `@refrakt-md/eleventy/templates/base.njk`.
+Eleventy iterates over the `refrakt` data array and writes each item to `<url>/index.html`. Name the pagination alias anything but `page`, which is Eleventy's own variable; the layout then reads the item as `entry`. Always use `| safe` on `entry.html`, `entry.seo.metaTags`, `entry.seo.jsonLd`, and `entry.contextJson`; without it Nunjucks escapes the HTML and the page shows raw markup. The behavior script is included only where `entry.hasInteractiveRunes` is true, so static pages ship no JavaScript. A reference template ships in the package at `@refrakt-md/eleventy/templates/base.njk`.
 
 ## createDataFile
 
-`createDataFile()` returns an Eleventy [global data](https://www.11ty.dev/docs/data-global/) function that loads all content, renders each page through its layout, and returns one object per page.
+`createDataFile()` returns an Eleventy [global data](https://www.11ty.dev/docs/data-global/) function that loads the site `refrakt.config.json` describes (its content directory, plugins and theme), applies the identity transform and syntax highlighting, renders each page through its layout, and returns one object per page.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `theme` | `EleventyTheme` | — | `{ manifest, layouts }` (required) |
-| `contentDir` | `string` | `'./content'` | The content directory |
+| `configPath` | `string` | `'./refrakt.config.json'` | The config to load; the content directory and plugins come from it |
+| `site` | `string` | — | The site to load, when the config declares several |
 | `basePath` | `string` | `'/'` | Base URL path for all pages |
-| `plugins` | `Plugin[]` | — | Loaded plugin objects to run in the content pipeline |
 | `seo` | `SeoToHtmlOptions` | — | The site-level SEO fields (`siteName`, `baseUrl`, `defaultImage`, `logo`), applied to every page's tags |
 | `security` | `SecurityPolicy` | `'trusted'` | Policy for untrusted author content; `'strict'` sanitizes author scripts |
 | `variables` | `Record<string, unknown>` | — | Markdoc variables for `{% $name %}` (real values) |
@@ -188,6 +189,7 @@ interface EleventyPageData {
   frontmatter: Record<string, unknown>;
   contextJson: string;            // Serialized { pages, currentUrl } for #rf-context
   hasInteractiveRunes: boolean;   // Whether the page needs the behaviors script
+  highlightCss: string;           // Syntax-highlight theme CSS for a <style>, when the theme needs one
 }
 ```
 

@@ -1,4 +1,6 @@
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { basename, dirname, join, resolve } from 'node:path';
 import type { RefraktEleventyOptions } from './types.js';
 
 /**
@@ -21,7 +23,12 @@ export function refraktPlugin(eleventyConfig: any, options: RefraktEleventyOptio
 	if (options.cssFiles) {
 		for (const cssFile of options.cssFiles) {
 			if (existsSync(cssFile)) {
-				eleventyConfig.addPassthroughCopy({ [cssFile]: cssPrefix });
+				eleventyConfig.addPassthroughCopy({
+					[localizeCssImports(cssFile, cssPrefix, eleventyConfig)]: join(
+						cssPrefix,
+						basename(cssFile),
+					),
+				});
 			}
 		}
 	}
@@ -43,4 +50,43 @@ export function refraktPlugin(eleventyConfig: any, options: RefraktEleventyOptio
 	if (examplesDir) {
 		eleventyConfig.addWatchTarget(examplesDir);
 	}
+}
+
+/**
+ * A browser cannot resolve a bare package `@import` (Lumina's index.css opens
+ * with `@import "@refrakt-md/skeleton"`), and a passthrough copy serves the file
+ * as written. Copy each imported package's CSS beside the stylesheet, under the
+ * package's own name, and point the import there. Returns the file to copy:
+ * the original when it has no bare imports, else a rewritten copy.
+ */
+export function localizeCssImports(
+	cssFile: string,
+	cssPrefix: string,
+	eleventyConfig: any,
+): string {
+	const css = readFileSync(cssFile, 'utf8');
+	const require = createRequire(resolve(cssFile));
+	const bare = /@import\s+(["'])([^"'./][^"']*)\1/g;
+	let changed = false;
+	const rewritten = css.replace(bare, (match, quote: string, pkg: string) => {
+		let entry: string;
+		try {
+			entry = require.resolve(pkg);
+		} catch {
+			return match;
+		}
+		if (!entry.endsWith('.css')) return match;
+		const dir = basename(pkg);
+		const target = join(cssPrefix, dir);
+		eleventyConfig.addPassthroughCopy({ [entry]: join(target, basename(entry)) });
+		const styles = join(dirname(entry), 'styles');
+		if (existsSync(styles)) eleventyConfig.addPassthroughCopy({ [styles]: join(target, 'styles') });
+		changed = true;
+		return `@import ${quote}./${dir}/${basename(entry)}${quote}`;
+	});
+	if (!changed) return cssFile;
+	const out = resolve('node_modules/.cache/refrakt-eleventy', basename(cssFile));
+	mkdirSync(dirname(out), { recursive: true });
+	writeFileSync(out, rewritten);
+	return out;
 }

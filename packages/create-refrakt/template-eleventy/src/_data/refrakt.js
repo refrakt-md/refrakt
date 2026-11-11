@@ -1,6 +1,6 @@
 import { createDataFile } from '@refrakt-md/eleventy';
 import { loadRefraktConfig, resolveSite } from '@refrakt-md/transform/node';
-import manifest from '@refrakt-md/lumina/manifest';
+import manifest from '@refrakt-md/lumina/manifest' with { type: 'json' };
 import { layouts } from '@refrakt-md/lumina/layouts';
 import { resolve } from 'node:path';
 
@@ -9,7 +9,6 @@ const { site } = resolveSite(config);
 
 export default createDataFile({
 	theme: { manifest, layouts },
-	contentDir: site.contentDir,
 	seo: {
 		siteName: site.siteName,
 		baseUrl: site.baseUrl,
