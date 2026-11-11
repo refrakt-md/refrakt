@@ -9,6 +9,15 @@
 	.rf-figure > :is(img, .rf-placeholder) {
 		border-radius: var(--rf-radius-media);
 	}
+	/* The body's own outer margins (a code block's, a table's) stop at the figure's
+	 * edges, as they do in a card; the caption sets its own gap. */
+	.rf-figure > :first-child {
+		margin-top: 0;
+	}
+	.rf-figure > :has(+ figcaption),
+	.rf-figure > :last-child {
+		margin-bottom: 0;
+	}
 	.rf-figure > figcaption {
 		margin-top: 0.625rem;
 		font-size: var(--rf-text-sm);
