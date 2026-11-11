@@ -1,5 +1,16 @@
 # @refrakt-md/transform
 
+## 0.49.0
+
+### Minor Changes
+
+- 862e41a: **Text stays readable over a background.** A `{% bg %}` with `overlay="dark"` or `overlay="light"` now switches the rune's text to light or dark to match, as a scrim already did, unless a tint has set the color scheme. Over a scrim or a dark or light wash, Lumina shows muted text (a blurb) at full strength, as it does on a cover, so it no longer fades into the photo.
+- 26e923a: **Inline tint tokens fixed.** A `{% tint %}` child rune now reads the six tokens the tint axis applies — `bg`, `surface`, `text`, `muted`, `primary`, `border` — the same names a named tint in theme config uses. It used to read an older list, so `text` and `muted` were dropped and `background`, `secondary` and `accent` were emitted under names nothing applied. `background` still works as an alias of `bg`, with a warning; `secondary` and `accent` are ignored, so write `text` or `primary` instead. `TINT_TOKENS` from `@refrakt-md/runes` is now the same list, and `@refrakt-md/transform` exports it.
+
+### Patch Changes
+
+- @refrakt-md/types@0.49.0
+
 ## 0.48.0
 
 ### Minor Changes

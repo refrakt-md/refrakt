@@ -6,7 +6,22 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.48.0 · Compositions go live
+## v0.49.0 · Rune docs, simplified
+
+Every rune reference page now has one shape: a generated intro, what the rune is for and when to use a neighbor instead, a basic example, a table of how it reads your Markdown, task-named sections with live previews, and one generated attribute table. Concept guides (surfaces, media guests, image schemes, motion, page sections, tint) have their own docs group, getting started is four steps, the adapter pages share one setup, and the docs cite no plan entities. Eleventy sites now render their runes. A `bg` overlay switches the text to match, drawers gain a `full` size, and a snippet inside a preview shows its tag as the source.
+
+{% hint type="warning" %}
+**Action needed:**
+
+- **Content:** a `{% bg %}` with `overlay="dark"` or `overlay="light"` now switches the rune's text to light or dark, as a scrim does. Check pages that set their own text color over an overlay.
+- **Content:** an inline `{% tint %}` reads the tokens `bg`, `surface`, `text`, `muted`, `primary` and `border`. `background` still works, with a warning; `secondary` and `accent` are now ignored, so write `text` or `primary` instead.
+- **Eleventy:** `createDataFile()` reads the content directory and plugins from `refrakt.config.json`; drop `contentDir` and `plugins` from your data file. If your templates paginate under `alias: page`, rename it (for example to `entry`): `page` is Eleventy's own variable, and the pages render blank.
+- **Themes:** a `size="lg"` drawer is now 64rem wide (it was 52rem).
+{% /hint %}
+
+[All 11 changes in v0.49.0 →](/releases/v0.49.0)
+
+## v0.48.0 · Compositions go live - November 4, 2026
 
 `hero`, `cta` and `testimonial` are now compositions: short Markdown definitions that place `section` and `actions` (and, for testimonial, `pullquote`), shipped in the marketing plugin in place of their own transforms and stylesheets. Every rune reference page opens with a generated header that names the rune's plugin, marks a composition, and shows the rune's source in a drawer. Any link to a drawer on the page now opens it, and pages can read `$site.name`.
 
