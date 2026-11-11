@@ -3,7 +3,7 @@ layout: base.njk
 pagination:
   data: refrakt
   size: 1
-  alias: page
-permalink: "{{ page.url | slug }}/"
+  alias: entry
+permalink: "{{ entry.url }}{% if not entry.url.endsWith('/') %}/{% endif %}"
 ---
-{{ page.html | safe }}
+{{ entry.html | safe }}

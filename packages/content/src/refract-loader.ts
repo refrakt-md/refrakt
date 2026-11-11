@@ -41,6 +41,8 @@ export interface RefraktLoaderOptions {
 	security?: SecurityPolicy;
 	/** Skip caching — re-read on every load(). Default: false. */
 	dev?: boolean;
+	/** Base URL path every page's route is under. Default: `'/'`. */
+	basePath?: string;
 	/** Sink for each load's pipeline diagnostics (SPEC-135 D5). Defaults to
 	 *  writing `formatPipelineSummary` to stderr, in both dev and build — this
 	 *  is what gives a dev session the diagnostics WORK-554 found it was
@@ -349,7 +351,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 
 			_siteLoaderOptions = {
 				dirPath: contentDir,
-				basePath: '/',
+				basePath: options?.basePath ?? '/',
 				icons: ctx.icons,
 				additionalTags: ctx.communityTags,
 				plugins: ctx.communityPackages,

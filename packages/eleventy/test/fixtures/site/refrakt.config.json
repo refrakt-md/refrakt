@@ -1,0 +1,10 @@
+{
+  "sites": {
+    "main": {
+      "contentDir": "./content",
+      "theme": "@refrakt-md/lumina",
+      "plugins": ["@refrakt-md/marketing"],
+      "routeRules": [{ "pattern": "**", "layout": "default" }]
+    }
+  }
+}

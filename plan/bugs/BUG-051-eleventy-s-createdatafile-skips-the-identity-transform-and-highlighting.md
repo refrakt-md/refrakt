@@ -1,4 +1,4 @@
-{% bug id="BUG-051" status="reported" severity="major" source="" tags="" milestone="v0.49.0" %}
+{% bug id="BUG-051" status="fixed" severity="major" source="" tags="" milestone="v0.49.0" pr="refrakt-md/refrakt#801" %}
 
 # Eleventy's createDataFile skips the identity transform and highlighting
 
@@ -19,5 +19,22 @@ Related, found at the same time:
 
 ## Environment
 - `@refrakt-md/eleventy` 0.48.x
+
+## Resolution
+
+Completed: 2026-11-11
+
+Branch: `claude/composition-usage-rune-pages-c87ar6`
+
+### What was done
+- Confirmed with a real build of the Eleventy scaffold: no identity transform or highlighting, plugins never loaded (`Undefined tag: 'cta'`), the manifest JSON import lacked `with { type: 'json' }` (no build at all on Node 22), pages paginated under Eleventy's reserved `page` rendered blank, the slug permalink flattened nested URLs, and Lumina's bare `@import "@refrakt-md/skeleton"` 404'd.
+- `packages/eleventy/src/data.ts`: `createDataFile` loads through `createRefraktLoader` (config's content dir, plugins, theme), applies the identity transform and highlighting to pages and regions; new `configPath`/`site`; `contentDir`/`plugins` ignored with a warning; `highlightCss` per page.
+- `packages/content/src/refract-loader.ts`: `basePath` option.
+- `packages/eleventy/src/plugin.ts`: `localizeCssImports` copies a bare-imported package beside the stylesheet and rewrites the import.
+- Scaffold template and `packages/eleventy/templates/base.njk` fixed (JSON import attribute, `alias: entry`, slash-preserving permalink, `{{ content }}`, highlight CSS); docs updated; tests added in `packages/eleventy/test/`.
+
+### Notes
+- Verified by building and serving a scaffolded Eleventy site: 0 errors, no failed requests, fully styled.
+- Found BUG-053 (HTML adapter never loads the skeleton layer), filed without a milestone.
 
 {% /bug %}
