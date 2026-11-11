@@ -949,7 +949,7 @@ call in a row template, `first($row.title, "Untitled")`, sees the literal its ar
 replaced with. That is the intended order ({% ref "SPEC-195" /%} D8). It does not hold today:
 both substitutions replace a variable only when it is a whole attribute value, not inside a
 function's parameters, so the call reads `undefined` and nothing reports it. That is
-{% ref "BUG-051" /%}, and it is fixed before any macro moves to a definition.
+{% ref "BUG-054" /%}, and it is fixed before any macro moves to a definition.
 
 **Order.** The three macros move after the composition migration and the first native
 definitions (D10), in the work item that gives the loader definition-declared `preprocess`.
@@ -1178,6 +1178,6 @@ That is the case where privacy (D3) costs nothing.
 - {% ref "SPEC-186" /%}, {% ref "SPEC-182" /%}: the content-model features D7 builds on.
 - {% ref "SPEC-195" /%}: the value vocabulary `computes` is written in.
 - {% ref "SPEC-141" /%}: the per-rune preprocess hook and the tree-order walk D15 keeps.
-- {% ref "BUG-051" /%}: paste-time bindings miss variables inside function calls (D15).
+- {% ref "BUG-054" /%}: paste-time bindings miss variables inside function calls (D15).
 
 {% /spec %}

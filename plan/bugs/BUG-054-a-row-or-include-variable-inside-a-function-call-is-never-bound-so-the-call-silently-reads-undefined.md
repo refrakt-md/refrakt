@@ -1,4 +1,4 @@
-{% bug id="BUG-051" status="confirmed" severity="major" source="SPEC-127" tags="data, include, preprocess, functions, variables" %}
+{% bug id="BUG-054" status="confirmed" severity="major" source="SPEC-127" tags="data, include, preprocess, functions, variables" %}
 
 # A $row or include variable inside a function call is never bound, so the call silently reads undefined
 

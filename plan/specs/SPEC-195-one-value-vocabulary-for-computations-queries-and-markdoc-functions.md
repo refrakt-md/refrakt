@@ -274,7 +274,7 @@ and "build a predicate" in a filter would confuse more than the second syntax co
   hold. A function cannot feed a preprocessor attribute (`{% data where=concat(…) %}`), because
   the call has not run when `data` reads it, and `data` already reports that as an error. Today
   the substitution misses a variable inside a function's parameters, so the call reads
-  `undefined` silently: {% ref "BUG-051" /%}, fixed before this vocabulary ships. See
+  `undefined` silently: {% ref "BUG-054" /%}, fixed before this vocabulary ships. See
   {% ref "SPEC-194" /%} D15.
 
 ### D9: guardrails
