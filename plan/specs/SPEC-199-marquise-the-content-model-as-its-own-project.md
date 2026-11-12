@@ -211,6 +211,39 @@ resolves to a fence whose content is never read as Markdoc again, so nothing in 
 it. In Marquise, refrakt's `_partials/` becomes one root a host configures, not a built-in
 convention.
 
+**How `@marquise/schema` works when a component draws the markup.** *Recorded 2026-11-12.*
+Refrakt's structured data has never depended on who draws the markup: the schema table stamps
+`typeof` and `property` on the rune's own output during the transform, and `collectJsonLd`
+(`seo.ts:80`) derives the JSON-LD from that tree, before the engine and the renderer run
+(`lib/schema-table.ts` explains why). In Marquise:
+
+- **JSON-LD is built from the rune node.** The node already carries the named values
+  (attributes, computed values, slots), and the table maps names to schema.org properties. That
+  is today's "rebuild from the bag" strategy as the only one; there is no stamping, and no
+  resolving a name across `data-name` and `data-field`.
+- **No RDFa in component markup.** RDFa means what the page's structure says: a `property`
+  belongs to the nearest enclosing `typeof`. A component decides that structure, so Marquise
+  cannot vouch for it, and a slot placed outside the root or two entities' parts interleaved
+  would publish something false. A component-drawn rune publishes JSON-LD only, the format search
+  engines recommend. Refrakt keeps RDFa for runes drawn by its own templates, where it controls
+  the markup.
+- **Entity boundaries are rune boundaries.** Each rune node may be one entity; a rune in another
+  rune's slot is a nested entity, linked by the property the parent's table names for that slot
+  (a recipe's steps as `recipeInstructions`, an FAQ's questions as `mainEntity`). Refrakt already
+  stops at a nested `data-rune` (`findAllByName`, SPEC-146 D1); on the rune node the nesting is
+  the data structure itself, so no component or theme can change it.
+- **Sources across a composition wait for `@marquise/compose`.** A template can place one rune's
+  content inside another's (a `character`'s portrait inside a `card`), which puts a property's
+  source on the far side of a boundary (SPEC-145 D19, the reason for `data-owner` and
+  `data-slot`). Without templates, 1.0 does not have that case.
+- **The host places the JSON-LD.** Marquise returns JSON-LD objects for each document; the host
+  writes the `<script type="application/ld+json">` into the head. Renderer packages may offer a
+  helper. Cross-page `@id` links and not republishing embedded content (BUG-045) need the whole
+  site, so they stay with the site layer.
+- **The baseline checks the switch.** The new path will differ from today's tree walk in places.
+  `contracts/seo-baseline/` records today's output, defects included, so every difference is
+  shown and then accepted or fixed (SPEC-130).
+
 **Out of scope: the block editor** (`packages/editor`). It stays with refrakt.
 
 ## What stays with refrakt
@@ -313,6 +346,7 @@ wastes nothing.
 - [ ] Each framework renderer has a generic half with no refrakt dependency beyond the model, and a refrakt half that adds the theme shell and the wrapper
 - [ ] `validate`, `reference`, `format`, `types` and the language server run on a project that has definitions but no refrakt config, theme or plugins
 - [ ] An example project renders definitions with React components using only the model and the generic React renderer
+- [ ] A component-drawn rune publishes JSON-LD built from its rune node and no RDFa, and the structured-data baseline shows every difference from today, each accepted or fixed
 - [ ] The decisions above are recorded, each with its outcome, before any package is published under the Marquise name
 
 ## References
@@ -324,5 +358,6 @@ wastes nothing.
 - {% ref "SPEC-170" /%}: indentation-tolerant parsing and formatting
 - {% ref "SPEC-131" /%}, {% ref "SPEC-134" /%}: snippet anchors and review markers
 - {% ref "SPEC-103" /%}, {% ref "SPEC-127" /%}, {% ref "SPEC-113" /%}: the data rune, per-row templates, project files
+- {% ref "SPEC-130" /%}, {% ref "SPEC-146" /%}: schema tables and the structured-data baseline, rune ownership
 
 {% /spec %}
