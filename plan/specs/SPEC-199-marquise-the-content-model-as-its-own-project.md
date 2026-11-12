@@ -53,6 +53,8 @@ general hooks that any other host could use too:
 | **File roots** contributed by packages | `core:`, `marketing:` for `include` and `snippet` (SPEC-197 D4) |
 | **Extra definition keys** a host declares and validates | `role`, `placedBy`, `metaFields`, `registers`, `blocks`, `defaults` (`schema` belongs to `@marquise/schema`) |
 | **Preprocess tags** registered by packages | `data`, `snippet`: tags that resolve to content before the transform, as `include` does |
+| **Host values**: named values a host supplies to every expression | `$page` and `$site` (SPEC-194 D12), which refrakt fills from its loader; Marquise defines no site model |
+| **Error presentation**: how a failure that must stay visible on the page is drawn | refrakt's `{% hint type="caution" %}` callout (`data-emit.ts:104` today). By default a failure is only a recorded finding |
 
 **The test of the boundary:** refrakt builds on Marquise using only these hooks. If refrakt
 needs a special case inside Marquise, the seam is in the wrong place.
@@ -68,6 +70,7 @@ needs a special case inside Marquise, the seam is in the wrong place.
 | The content-model resolver | `lib/resolver.ts` (1,104 lines), `types/src/content-model.ts` | already depends only on Markdoc and types |
 | Attribute validation | `attributes.ts` | findings with ids, as `refrakt validate` returns them |
 | The value vocabulary | `functions.ts`, SPEC-195's registry | `$attrs`, `$computed`, `$slots`; `first`, `split`, `item`, `text`, `source()` (SPEC-198). Not `output()`, which belongs to presentations |
+| The filter grammar | `field-match.ts` (147 lines) | the `field:value` language behind `where=`; SPEC-195 D5 makes it the one predicate language through `matches()`, so it sits with the value vocabulary. `@marquise/data` and refrakt's `collection` both use it |
 | `prepare` registry | SPEC-194 D1–D3 | packages register stages by key; a definition names one |
 | Preprocess and `include` | `lib/preprocess.ts`, `tags/include.ts` (SPEC-141) | plus `file#id` addressing and pasted content's origin (SPEC-197 D3, D5) |
 | The rune node and serialisation | ADR-049 decision 8; `transform/src/serialize.ts`, `helpers.ts` (`isTag`), `html.ts` (`renderToHtml`) | plain data, safe to send from server to client |
@@ -94,6 +97,7 @@ Not `ThemeShell`, layouts, route rules or behaviours.
 | Package | From | When | Why separate |
 |---|---|---|---|
 | `@marquise/schema` | `lib/schema-table.ts`, `seo.ts`, `schema-row.ts` | **with the first release** | schema.org rows work on input only and are independent of themes, so they fit the boundary cleanly, and published structured data is one of the strongest reasons to choose typed content over plain Markdown. Separate because not every user publishes structured data |
+| `@marquise/data` | `tags/data.ts`, `data-pipeline.ts`, `data-adapters.ts`, `data-projection.ts`, `data-emit.ts` (about 1,400 lines; SPEC-103, SPEC-127) | with the first release or right after | reads CSV, TSV, JSON and NDJSON from project files only (the `ProjectFiles` seam, SPEC-113), projects and types the rows, and resolves before the transform to a table or to its body once per row with `$row` bound. No registry, no pipeline. It extends the core idea rather than the tooling: a per-row body is ordinary Markdown, so definitions reinterpret generated content exactly as they do written content. Separate because not every site has tabular data |
 | `@marquise/snippet` | `tags/snippet.ts`, `lib/anchor.ts`, `mask.ts`, `languages.ts`, `invocation.ts`, `review-marker.ts` (SPEC-131, SPEC-134) | after the first release | quotes regions of any source file by name: documentation about code, not reading typed values out of Markdown. No definition, field or example depends on it (`source()` shows an example's source). About 2,000 lines with per-language keyword tables to maintain. Shipped as an ordinary package using the preprocess hook, which proves that hook for other packages |
 
 **Why `include` is core and `snippet` is not.** A content model reads a tag's parsed children,
@@ -115,7 +119,11 @@ convention.
   attributes and their facets; `config.ts`; vocabulary; Lumina; tokens; contracts.
 - **The rune library:** core runes in `packages/runes/src/tags` and all plugins.
 - **The site:** `packages/content` (loading, routing, layouts, the cross-page pipeline, the
-  entity registry), the data, collection, aggregate, xref and expand pipelines, `registers`.
+  entity registry), the collection, aggregate, relationships, xref and expand pipelines,
+  `registers`, and `data-resolve.ts`. Despite its name, that is the sandbox's data binding: it
+  runs after the pipeline and queries the entity registry. SPEC-194 D12's three data scopes split
+  the same way: data files go with `@marquise/data`, `$page` and `$site` are host values refrakt
+  fills, and the registry stays refrakt's.
 - **Adapters:** `sveltekit`, `next`, `nuxt`, `astro` (the site integration), `eleventy`, `html`.
 - **Refrakt-specific tooling:** `inspect`, `contracts`, `gallery`, the theme commands, `i18n`,
   `stale`, `plan`, `create-refrakt`, and the block editor.
@@ -167,8 +175,8 @@ Every step before 6 is useful to refrakt on its own, so stopping early wastes no
    `@refrakt-md/model` alone.
 5. **A proof outside refrakt:** a small example project on plain Markdoc and React, with no
    refrakt config, theme or engine. If it is not compelling, stop here.
-6. **Break-out:** own repository, `marquise` packages with `@marquise/schema`, a docs site (built
-   with refrakt), and refrakt switches its dependency.
+6. **Break-out:** own repository, `marquise` packages with `@marquise/schema` and
+   `@marquise/data`, a docs site (built with refrakt), and refrakt switches its dependency.
 7. **Add-ons:** `@marquise/snippet`, on the preprocess hook.
 
 ## Risks
@@ -198,5 +206,6 @@ Every step before 6 is useful to refrakt on its own, so stopping early wastes no
 - {% ref "SPEC-141" /%}: preprocess
 - {% ref "SPEC-170" /%}: indentation-tolerant parsing and formatting
 - {% ref "SPEC-131" /%}, {% ref "SPEC-134" /%}: snippet anchors and review markers
+- {% ref "SPEC-103" /%}, {% ref "SPEC-127" /%}, {% ref "SPEC-113" /%}: the data rune, per-row templates, project files
 
 {% /spec %}
