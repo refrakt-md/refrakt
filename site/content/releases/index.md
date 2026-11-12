@@ -6,7 +6,15 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.49.0 · Rune docs, simplified
+## v0.50.0 · Nothing reads a class
+
+Every fact the output carries is a data attribute, and nothing but a stylesheet reads a class.
+This is step 1 of ADR-048's implementation order: the parts of SPEC-196
+that depend on nothing else, done first because every later step relies on them.
+
+[All 3 changes in v0.50.0 →](/releases/v0.50.0)
+
+## v0.49.0 · Rune docs, simplified - November 11, 2026
 
 Every rune reference page now has one shape: a generated intro, what the rune is for and when to use a neighbor instead, a basic example, a table of how it reads your Markdown, task-named sections with live previews, and one generated attribute table. Concept guides (surfaces, media guests, image schemes, motion, page sections, tint) have their own docs group, getting started is four steps, the adapter pages share one setup, and the docs cite no plan entities. Eleventy sites now render their runes. A `bg` overlay switches the text to match, drawers gain a `full` size, and a snippet inside a preview shows its tag as the source.
 
