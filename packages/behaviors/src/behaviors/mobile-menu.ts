@@ -15,18 +15,18 @@ import { bstr } from '../i18n.js';
  *
  * Panels are toggled via [data-open] attribute. Triggers reflect state via
  * `aria-expanded` and a matching `aria-label`. CSS should use:
- *   .rf-mobile-panel { display: none; }
- *   .rf-mobile-panel[data-open] { display: block; }
+ *   [data-mobile-panel] { display: none; }
+ *   [data-mobile-panel][data-open] { display: block; }
  */
 export function mobileMenuBehavior(container: HTMLElement | Document): CleanupFn {
 	const cleanups: Array<() => void> = [];
 	const root = container instanceof Document ? container.documentElement : container;
 
-	const panels = root.querySelectorAll<HTMLElement>('.rf-mobile-panel');
+	const panels = root.querySelectorAll<HTMLElement>('[data-mobile-panel]');
 	if (panels.length === 0) return () => {};
 
-	const mainPanel = root.querySelector<HTMLElement>('.rf-mobile-panel:not(.rf-mobile-panel--nav)');
-	const navPanel = root.querySelector<HTMLElement>('.rf-mobile-panel--nav');
+	const mainPanel = root.querySelector<HTMLElement>('[data-mobile-panel="menu"]');
+	const navPanel = root.querySelector<HTMLElement>('[data-mobile-panel="nav"]');
 	const menuToggles = root.querySelectorAll<HTMLElement>(
 		'[data-mobile-menu-toggle], [data-mobile-menu-open]',
 	);

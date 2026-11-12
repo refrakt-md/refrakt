@@ -17,7 +17,7 @@ function createCodeBlock(code: string): HTMLElement {
 
 function createWrappedCodeBlock(code: string): HTMLElement {
 	const container = document.createElement('div');
-	container.innerHTML = `<div class="rf-codeblock"><pre><code>${code}</code></pre></div>`;
+	container.innerHTML = `<div class="rf-codeblock" data-wrapper="code"><pre><code>${code}</code></pre></div>`;
 	document.body.appendChild(container);
 	return container;
 }
@@ -28,32 +28,32 @@ describe('copyBehavior', () => {
 
 		copyBehavior(container);
 
-		const btn = container.querySelector('.rf-codeblock__copy');
+		const btn = container.querySelector('[data-copy-button]');
 		expect(btn).not.toBeNull();
 		expect(btn?.querySelector('svg')).not.toBeNull();
 		expect(btn?.getAttribute('aria-label')).toBe('Copy code');
 	});
 
-	it('wraps bare pre in a .rf-codeblock div', () => {
+	it('wraps bare pre in a code wrapper', () => {
 		const container = createCodeBlock('hello');
 
 		copyBehavior(container);
 
-		const wrapper = container.querySelector('.rf-codeblock');
+		const wrapper = container.querySelector('[data-wrapper="code"]');
 		expect(wrapper).not.toBeNull();
 		expect(wrapper?.querySelector('pre')).not.toBeNull();
-		expect(wrapper?.querySelector('.rf-codeblock__copy')).not.toBeNull();
+		expect(wrapper?.querySelector('[data-copy-button]')).not.toBeNull();
 	});
 
-	it('adds button to existing .rf-codeblock wrapper', () => {
+	it('adds button to existing code wrapper', () => {
 		const container = createWrappedCodeBlock('hello');
 
 		copyBehavior(container);
 
 		// Should not create a nested wrapper
-		const wrappers = container.querySelectorAll('.rf-codeblock');
+		const wrappers = container.querySelectorAll('[data-wrapper="code"]');
 		expect(wrappers).toHaveLength(1);
-		expect(wrappers[0].querySelector('.rf-codeblock__copy')).not.toBeNull();
+		expect(wrappers[0].querySelector('[data-copy-button]')).not.toBeNull();
 	});
 
 	it('copies text content to clipboard on click', async () => {
@@ -63,7 +63,7 @@ describe('copyBehavior', () => {
 		const container = createCodeBlock('const y = 2;');
 		copyBehavior(container);
 
-		const btn = container.querySelector<HTMLButtonElement>('.rf-codeblock__copy')!;
+		const btn = container.querySelector<HTMLButtonElement>('[data-copy-button]')!;
 		btn.click();
 
 		expect(writeText).toHaveBeenCalledWith('const y = 2;');
@@ -76,7 +76,7 @@ describe('copyBehavior', () => {
 		const container = createCodeBlock('code');
 		copyBehavior(container);
 
-		const btn = container.querySelector<HTMLButtonElement>('.rf-codeblock__copy')!;
+		const btn = container.querySelector<HTMLButtonElement>('[data-copy-button]')!;
 		const initialSvg = btn.querySelector('svg')!.innerHTML;
 		btn.click();
 
@@ -93,7 +93,7 @@ describe('copyBehavior', () => {
 		copyBehavior(container);
 		copyBehavior(container);
 
-		const buttons = container.querySelectorAll('.rf-codeblock__copy');
+		const buttons = container.querySelectorAll('[data-copy-button]');
 		expect(buttons).toHaveLength(1);
 	});
 
@@ -103,7 +103,7 @@ describe('copyBehavior', () => {
 		copyBehavior(container);
 		copyBehavior(container);
 
-		const buttons = container.querySelectorAll('.rf-codeblock__copy');
+		const buttons = container.querySelectorAll('[data-copy-button]');
 		expect(buttons).toHaveLength(1);
 	});
 
@@ -117,7 +117,7 @@ describe('copyBehavior', () => {
 
 		copyBehavior(container);
 
-		const buttons = container.querySelectorAll('.rf-codeblock__copy');
+		const buttons = container.querySelectorAll('[data-copy-button]');
 		expect(buttons).toHaveLength(2);
 	});
 
@@ -142,28 +142,28 @@ describe('copyBehavior', () => {
 
 		copyBehavior(container);
 
-		const btn = container.querySelector<HTMLButtonElement>('.rf-codeblock__copy')!;
+		const btn = container.querySelector<HTMLButtonElement>('[data-copy-button]')!;
 		btn.click();
 
 		expect(writeText).toHaveBeenCalledWith('const x = 1;\nconst y = 2;');
 	});
 
-	it('adds rf-codeblock__copy--copied class after click', async () => {
+	it('sets data-state="copied" after click', async () => {
 		const writeText = vi.fn().mockResolvedValue(undefined);
 		Object.assign(navigator, { clipboard: { writeText } });
 
 		const container = createCodeBlock('code');
 		copyBehavior(container);
 
-		const btn = container.querySelector<HTMLButtonElement>('.rf-codeblock__copy')!;
+		const btn = container.querySelector<HTMLButtonElement>('[data-copy-button]')!;
 		btn.click();
 
 		await vi.waitFor(() => {
-			expect(btn.classList.contains('rf-codeblock__copy--copied')).toBe(true);
+			expect(btn.getAttribute('data-state')).toBe('copied');
 		});
 	});
 
-	it('removes rf-codeblock__copy--copied class after timeout', async () => {
+	it('clears data-state after timeout', async () => {
 		vi.useFakeTimers();
 		const writeText = vi.fn().mockResolvedValue(undefined);
 		Object.assign(navigator, { clipboard: { writeText } });
@@ -171,14 +171,14 @@ describe('copyBehavior', () => {
 		const container = createCodeBlock('code');
 		copyBehavior(container);
 
-		const btn = container.querySelector<HTMLButtonElement>('.rf-codeblock__copy')!;
+		const btn = container.querySelector<HTMLButtonElement>('[data-copy-button]')!;
 		btn.click();
 
 		await vi.advanceTimersByTimeAsync(0); // resolve clipboard promise
-		expect(btn.classList.contains('rf-codeblock__copy--copied')).toBe(true);
+		expect(btn.getAttribute('data-state')).toBe('copied');
 
 		vi.advanceTimersByTime(2000);
-		expect(btn.classList.contains('rf-codeblock__copy--copied')).toBe(false);
+		expect(btn.hasAttribute('data-state')).toBe(false);
 
 		vi.useRealTimers();
 	});
@@ -187,13 +187,13 @@ describe('copyBehavior', () => {
 		const container = createCodeBlock('code');
 
 		const cleanup = copyBehavior(container);
-		expect(container.querySelector('.rf-codeblock__copy')).not.toBeNull();
+		expect(container.querySelector('[data-copy-button]')).not.toBeNull();
 
 		cleanup();
 
-		expect(container.querySelector('.rf-codeblock__copy')).toBeNull();
+		expect(container.querySelector('[data-copy-button]')).toBeNull();
 		// Bare pre was wrapped by behavior, so cleanup unwraps it
-		expect(container.querySelector('.rf-codeblock')).toBeNull();
+		expect(container.querySelector('[data-wrapper="code"]')).toBeNull();
 		expect(container.querySelector('pre')).not.toBeNull();
 	});
 
@@ -201,13 +201,13 @@ describe('copyBehavior', () => {
 		const container = createWrappedCodeBlock('code');
 
 		const cleanup = copyBehavior(container);
-		expect(container.querySelector('.rf-codeblock__copy')).not.toBeNull();
+		expect(container.querySelector('[data-copy-button]')).not.toBeNull();
 
 		cleanup();
 
-		expect(container.querySelector('.rf-codeblock__copy')).toBeNull();
+		expect(container.querySelector('[data-copy-button]')).toBeNull();
 		// Existing wrapper should be preserved
-		expect(container.querySelector('.rf-codeblock')).not.toBeNull();
+		expect(container.querySelector('[data-wrapper="code"]')).not.toBeNull();
 		expect(container.querySelector('pre')).not.toBeNull();
 	});
 });

@@ -247,6 +247,24 @@ skimmed):
   group is skipped. It was confirmed by reading, not run, and there is no menubar behaviour test.
   The swap to `[data-name="panel"]` fixes it. Filed as {% ref "BUG-048" /%}, to be fixed on its
   own, ahead of this spec.
+- **The names chosen** (*implemented 2026-11-12*, {% ref "WORK-723" /%} and {% ref "WORK-724" /%}):
+
+  | Element | Attribute |
+  |---|---|
+  | the fence wrapper (`nodes.ts`) | `data-wrapper="code"` |
+  | the table wrapper (`nodes.ts`) | `data-wrapper="table"` |
+  | the mobile panels (`layouts.ts`) | `data-mobile-panel="menu"` and `"nav"` |
+  | the docs, plan and blog sidebars | `data-sidebar="docs"`, `"plan"`, `"blog"` |
+  | the search trigger's key hint | `data-name="search-kbd"`, which every chrome entry already gets from its `ref` |
+  | `copy`'s button | `data-copy-button`, and `data-state="copied"` |
+  | a reveal the behaviour runs | `data-enhanced` on its root: steps are `data-state="closed"` in the server output, so the stylesheet hides a closed step only inside an enhanced reveal |
+  | `<html>` while a drawer is open | `data-drawer-open` |
+  | tabs, playlist tracks, audio chapters | `data-state="active"` / `"inactive"` |
+
+  *Not* `data-codeblock` for the fence wrapper: that name already tells every renderer that an
+  element's children are raw highlighted HTML, so it would have left the wrapper's children
+  unescaped. The search trigger's key hint is not rendered by any built-in layout today
+  ({% ref "BUG-055" /%}).
 
 ### D7: contracts in two layers
 

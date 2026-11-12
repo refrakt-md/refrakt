@@ -146,7 +146,10 @@ export const fence: Schema = {
 		const pre = new Tag('pre', preAttrs, [
 			new Tag('code', codeAttrs, [unescapeFenceContent(node.attributes.content)]),
 		]);
-		return new Tag('div', { class: 'rf-codeblock' }, [pre]);
+		// `data-wrapper` is the class's attribute twin (SPEC-196 D6): behaviours
+		// and rune transforms find the wrapper by it. Not `data-codeblock`, which
+		// already means "raw highlighted HTML children" to every renderer.
+		return new Tag('div', { class: 'rf-codeblock', 'data-wrapper': 'code' }, [pre]);
 	},
 };
 
@@ -429,7 +432,8 @@ export const table: Schema = {
 			node.transformAttributes(config),
 			node.transformChildren(config),
 		);
-		return new Tag('div', { class: 'rf-table-wrapper' }, [tableTag]);
+		// `data-wrapper` is the class's attribute twin (SPEC-196 D6).
+		return new Tag('div', { class: 'rf-table-wrapper', 'data-wrapper': 'table' }, [tableTag]);
 	},
 };
 

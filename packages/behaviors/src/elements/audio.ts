@@ -86,6 +86,7 @@ export class RfAudio extends SafeHTMLElement {
 			if (this.trackClickHandlers[i]) {
 				this.playlistTrackItems[i].removeEventListener('click', this.trackClickHandlers[i]);
 			}
+			this.playlistTrackItems[i].removeAttribute('data-state');
 		}
 		this.playlistTrackItems = [];
 		this.trackClickHandlers = [];
@@ -104,7 +105,7 @@ export class RfAudio extends SafeHTMLElement {
 
 	private init() {
 		// Idempotency guard — don't rebuild if already initialized
-		if (this.querySelector('.rf-audio-player')) return;
+		if (this.querySelector('[data-name="player"]')) return;
 
 		this.tracks = this.extractTrackData();
 
@@ -189,7 +190,10 @@ export class RfAudio extends SafeHTMLElement {
 
 	private updateActivePlaylistTrack() {
 		for (let i = 0; i < this.playlistTrackItems.length; i++) {
-			this.playlistTrackItems[i].classList.toggle('rf-track--active', i === this.currentTrackIndex);
+			this.playlistTrackItems[i].setAttribute(
+				'data-state',
+				i === this.currentTrackIndex ? 'active' : 'inactive',
+			);
 		}
 	}
 
@@ -199,6 +203,7 @@ export class RfAudio extends SafeHTMLElement {
 
 		const player = document.createElement('div');
 		player.className = 'rf-audio-player';
+		player.setAttribute('data-name', 'player');
 
 		// Track info
 		if (track.name || track.artist) {
@@ -305,6 +310,7 @@ export class RfAudio extends SafeHTMLElement {
 				const li = document.createElement('li');
 				const btn = document.createElement('button');
 				btn.className = 'rf-audio-player__chapter';
+				btn.setAttribute('data-name', 'chapter');
 				btn.type = 'button';
 				btn.dataset.time = String(ch.time);
 				btn.addEventListener('click', () => {
@@ -530,9 +536,9 @@ export class RfAudio extends SafeHTMLElement {
 			}
 		}
 
-		const buttons = this.chapterListEl.querySelectorAll('.rf-audio-player__chapter');
+		const buttons = this.chapterListEl.querySelectorAll('[data-name="chapter"]');
 		for (let i = 0; i < buttons.length; i++) {
-			buttons[i].classList.toggle('rf-audio-player__chapter--active', i === activeIndex);
+			buttons[i].setAttribute('data-state', i === activeIndex ? 'active' : 'inactive');
 		}
 	}
 

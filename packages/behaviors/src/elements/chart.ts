@@ -353,7 +353,7 @@ export class RfChart extends SafeHTMLElement {
 	connectedCallback() {
 		// Idempotent: connectedCallback fires on every (re)connection (hydration,
 		// reparenting). Only enhance once — otherwise the svg/title/legend stack up.
-		if (this.querySelector('.rf-chart__rendered')) return;
+		if (this.querySelector('[data-name="rendered"]')) return;
 
 		const table = this.querySelector('table');
 		if (!table) return;
@@ -377,6 +377,7 @@ export class RfChart extends SafeHTMLElement {
 
 		const rendered = document.createElement('div');
 		rendered.className = 'rf-chart__rendered';
+		rendered.setAttribute('data-name', 'rendered');
 
 		if (title) {
 			const cap = document.createElement('figcaption');

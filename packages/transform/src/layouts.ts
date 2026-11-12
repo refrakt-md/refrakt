@@ -153,7 +153,7 @@ export const defaultLayout: LayoutConfig = {
 			tag: 'div',
 			class: 'rf-mobile-panel',
 			conditionalRegion: 'header',
-			attrs: { role: 'dialog', 'aria-label': 'Navigation menu' },
+			attrs: { role: 'dialog', 'aria-label': 'Navigation menu', 'data-mobile-panel': 'menu' },
 			children: [
 				{
 					tag: 'nav',
@@ -235,7 +235,7 @@ export const docsLayout: LayoutConfig = {
 			tag: 'div',
 			class: 'rf-mobile-panel',
 			conditionalRegion: 'header',
-			attrs: { role: 'dialog', 'aria-label': 'Navigation menu' },
+			attrs: { role: 'dialog', 'aria-label': 'Navigation menu', 'data-mobile-panel': 'menu' },
 			children: [
 				{
 					tag: 'nav',
@@ -260,7 +260,7 @@ export const docsLayout: LayoutConfig = {
 			tag: 'div',
 			class: 'rf-mobile-panel rf-mobile-panel--nav',
 			conditionalRegion: 'nav',
-			attrs: { role: 'dialog', 'aria-label': 'Page navigation' },
+			attrs: { role: 'dialog', 'aria-label': 'Page navigation', 'data-mobile-panel': 'nav' },
 			children: [
 				{
 					tag: 'div',
@@ -278,6 +278,7 @@ export const docsLayout: LayoutConfig = {
 					class: 'rf-docs-sidebar',
 					source: 'region:nav',
 					conditional: true,
+					attrs: { 'data-sidebar': 'docs' },
 				},
 				{
 					tag: 'main',
@@ -394,7 +395,7 @@ export const planLayout: LayoutConfig = {
 			tag: 'div',
 			class: 'rf-mobile-panel rf-mobile-panel--nav',
 			conditionalRegion: 'nav',
-			attrs: { role: 'dialog', 'aria-label': 'Plan navigation' },
+			attrs: { role: 'dialog', 'aria-label': 'Plan navigation', 'data-mobile-panel': 'nav' },
 			children: [
 				{
 					tag: 'div',
@@ -408,6 +409,7 @@ export const planLayout: LayoutConfig = {
 			class: 'rf-plan-sidebar',
 			source: 'region:nav',
 			conditional: true,
+			attrs: { 'data-sidebar': 'plan' },
 		},
 		main: {
 			tag: 'main',
@@ -507,7 +509,7 @@ export const blogArticleLayout: LayoutConfig = {
 			tag: 'div',
 			class: 'rf-mobile-panel',
 			conditionalRegion: 'header',
-			attrs: { role: 'dialog', 'aria-label': 'Navigation menu' },
+			attrs: { role: 'dialog', 'aria-label': 'Navigation menu', 'data-mobile-panel': 'menu' },
 			children: [
 				{
 					tag: 'nav',
@@ -540,6 +542,7 @@ export const blogArticleLayout: LayoutConfig = {
 					class: 'rf-blog-sidebar',
 					source: 'region:sidebar',
 					conditional: true,
+					attrs: { 'data-sidebar': 'blog' },
 				},
 			],
 		},

@@ -124,10 +124,10 @@
 		outline: 2px solid var(--rf-color-primary);
 		outline-offset: -2px;
 	}
-	.rf-audio-player__chapter--active {
+	.rf-audio-player__chapter:where([data-state="active"]) {
 		background: color-mix(in srgb, var(--rf-color-primary) 8%, transparent);
 	}
-	.rf-audio-player__chapter--active .rf-audio-player__chapter-name {
+	.rf-audio-player__chapter:where([data-state="active"]) .rf-audio-player__chapter-name {
 		color: var(--rf-color-primary);
 	}
 	.rf-audio-player__chapter-name {
@@ -142,11 +142,12 @@
 	}
 
 	/* Active track highlight when connected to audio player */
-	.rf-track--active {
+	/* `data-state`, set by the audio player on the playlist's tracks (SPEC-196 D6). */
+	.rf-track:where([data-state="active"]) {
 		background: color-mix(in srgb, var(--rf-color-primary) 6%, transparent);
 		border-radius: var(--rf-radius-sm, 4px);
 	}
-	.rf-track--active .rf-track__track-name {
+	.rf-track:where([data-state="active"]) .rf-track__track-name {
 		color: var(--rf-color-primary);
 	}
 }

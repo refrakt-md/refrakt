@@ -3,7 +3,7 @@
  *
  * Turns the projected + typed table into a Markdoc `table` AST node — the same
  * shape `Markdoc.parse` produces for a pipe table — so `chart` (`findTable`) and
- * `datatable` (its table/`rf-table-wrapper` lookup) consume it with no
+ * `datatable` (its table/`[data-wrapper="table"]` lookup) consume it with no
  * structural edits, and it renders as a normal table standalone. Typed-numeric
  * value cells carry a normalized `data-value` (forwarded by the `td` node).
  *

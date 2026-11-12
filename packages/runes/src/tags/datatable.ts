@@ -45,7 +45,7 @@ export const datatable = createContentModelSchema({
 		} else {
 			const wrapper = children
 				.toArray()
-				.find((n) => Tag.isTag(n) && n.name === 'div' && n.attributes.class === 'rf-table-wrapper');
+				.find((n) => Tag.isTag(n) && n.name === 'div' && n.attributes['data-wrapper'] === 'table');
 			const inner =
 				wrapper && Tag.isTag(wrapper)
 					? wrapper.children.find((c: any) => Tag.isTag(c) && c.name === 'table')

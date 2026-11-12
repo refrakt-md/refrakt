@@ -59,7 +59,7 @@ function getRegistry(doc: Document): Map<string, DrawerRecord> {
  *  code should rely on the cleanup function returned by `drawerBehavior`. */
 export function __resetDrawerState(): void {
 	for (const doc of drawerRegistry.keys()) {
-		doc.documentElement.classList.remove('rf-drawer-open');
+		doc.documentElement.removeAttribute('data-drawer-open');
 	}
 	drawerRegistry.clear();
 }
@@ -139,7 +139,7 @@ export function drawerBehavior(el: HTMLElement): CleanupFn {
 
 	// Reveal the close button — schema marks it hidden so the no-JS
 	// rendering doesn't show a non-functional control.
-	const closeBtn = dialog.querySelector<HTMLButtonElement>('.rf-drawer__close');
+	const closeBtn = dialog.querySelector<HTMLButtonElement>('[data-name="close"]');
 	if (closeBtn) closeBtn.hidden = false;
 
 	const shortcutAttr = dialog.getAttribute('data-shortcut') ?? undefined;
@@ -352,19 +352,19 @@ function closeDrawer(dialog: HTMLDialogElement): void {
  *  add additional rules (e.g. preserving scrollbar gutter) by extending
  *  the selector. */
 function applyBodyScrollLock(doc: Document): void {
-	doc.documentElement.classList.add('rf-drawer-open');
+	doc.documentElement.setAttribute('data-drawer-open', '');
 }
 
 function releaseBodyScrollLockIfIdle(doc: Document): void {
 	const registry = drawerRegistry.get(doc);
 	if (!registry) {
-		doc.documentElement.classList.remove('rf-drawer-open');
+		doc.documentElement.removeAttribute('data-drawer-open');
 		return;
 	}
 	for (const record of registry.values()) {
 		if (record.dialog.open) return;
 	}
-	doc.documentElement.classList.remove('rf-drawer-open');
+	doc.documentElement.removeAttribute('data-drawer-open');
 }
 
 function describeShortcut(s: ParsedShortcut): string {

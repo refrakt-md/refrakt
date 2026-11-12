@@ -7,7 +7,9 @@
 	display: flex;
 	flex-direction: column;
 }
-.rf-reveal-step--hidden {
+/* Hidden only once the reveal behaviour has enhanced the rune: every step is
+ * `data-state="closed"` in the server output (SPEC-196 D6). */
+:where(.rf-reveal[data-enhanced]) .rf-reveal-step:where([data-state="closed"]) {
 	height: 0;
 	overflow: hidden;
 }

@@ -14,7 +14,7 @@ function createReveal(opts?: { stepCount?: number }): HTMLElement {
 	const steps = Array.from(
 		{ length: count },
 		(_, i) => `
-		<div class="rf-reveal-step" typeof="RevealStep" data-rune="reveal-step">
+		<div class="rf-reveal-step" typeof="RevealStep" data-rune="reveal-step" data-state="closed">
 			<div class="rf-reveal-step__content">Step ${i + 1} content</div>
 		</div>
 	`,
@@ -35,9 +35,9 @@ describe('revealBehavior', () => {
 			revealBehavior(el);
 
 			const steps = el.querySelectorAll('[data-rune="reveal-step"]');
-			expect(steps[0].classList.contains('rf-reveal-step--visible')).toBe(true);
-			expect(steps[1].classList.contains('rf-reveal-step--hidden')).toBe(true);
-			expect(steps[2].classList.contains('rf-reveal-step--hidden')).toBe(true);
+			expect(steps[0].getAttribute('data-state')).toBe('open');
+			expect(steps[1].getAttribute('data-state')).toBe('closed');
+			expect(steps[2].getAttribute('data-state')).toBe('closed');
 		});
 
 		it('shows Continue button initially', () => {
@@ -58,9 +58,9 @@ describe('revealBehavior', () => {
 			nextBtn.click();
 
 			const steps = el.querySelectorAll('[data-rune="reveal-step"]');
-			expect(steps[0].classList.contains('rf-reveal-step--visible')).toBe(true);
-			expect(steps[1].classList.contains('rf-reveal-step--visible')).toBe(true);
-			expect(steps[2].classList.contains('rf-reveal-step--hidden')).toBe(true);
+			expect(steps[0].getAttribute('data-state')).toBe('open');
+			expect(steps[1].getAttribute('data-state')).toBe('open');
+			expect(steps[2].getAttribute('data-state')).toBe('closed');
 		});
 
 		it('clicking Continue until all visible shows Start Over', () => {
@@ -91,9 +91,9 @@ describe('revealBehavior', () => {
 			resetBtn.click();
 
 			const steps = el.querySelectorAll('[data-rune="reveal-step"]');
-			expect(steps[0].classList.contains('rf-reveal-step--visible')).toBe(true);
-			expect(steps[1].classList.contains('rf-reveal-step--hidden')).toBe(true);
-			expect(steps[2].classList.contains('rf-reveal-step--hidden')).toBe(true);
+			expect(steps[0].getAttribute('data-state')).toBe('open');
+			expect(steps[1].getAttribute('data-state')).toBe('closed');
+			expect(steps[2].getAttribute('data-state')).toBe('closed');
 
 			// Continue button is back
 			expect(el.querySelector('.rf-reveal__next')).not.toBeNull();
@@ -115,24 +115,25 @@ describe('revealBehavior', () => {
 			revealBehavior(el);
 
 			const steps = el.querySelectorAll('[data-rune="reveal-step"]');
-			expect(steps[0].classList.contains('rf-reveal-step--visible')).toBe(true);
+			expect(steps[0].getAttribute('data-state')).toBe('open');
 		});
 	});
 
 	describe('cleanup', () => {
-		it('removes buttons and visibility classes', () => {
+		it('removes buttons and restores the server state', () => {
 			const el = createReveal();
 			const cleanup = revealBehavior(el);
+			expect(el.hasAttribute('data-enhanced')).toBe(true);
 
 			cleanup();
+			expect(el.hasAttribute('data-enhanced')).toBe(false);
 
 			expect(el.querySelector('.rf-reveal__next')).toBeNull();
 			expect(el.querySelector('.rf-reveal__reset')).toBeNull();
 
 			const steps = el.querySelectorAll('[data-rune="reveal-step"]');
 			for (const step of steps) {
-				expect(step.classList.contains('rf-reveal-step--visible')).toBe(false);
-				expect(step.classList.contains('rf-reveal-step--hidden')).toBe(false);
+				expect(step.getAttribute('data-state')).toBe('closed');
 			}
 		});
 	});
@@ -143,6 +144,16 @@ describe('revealBehavior', () => {
 		document.body.appendChild(el);
 
 		const cleanup = revealBehavior(el);
+		cleanup();
+	});
+
+	it('writes no class on a step (SPEC-196 D6)', () => {
+		const el = createReveal();
+		const steps = [...el.querySelectorAll('[data-rune="reveal-step"]')];
+		const before = steps.map((st) => st.className);
+		const cleanup = revealBehavior(el);
+		(el.querySelector('.rf-reveal__next') as HTMLButtonElement).click();
+		expect(steps.map((st) => st.className)).toEqual(before);
 		cleanup();
 	});
 });

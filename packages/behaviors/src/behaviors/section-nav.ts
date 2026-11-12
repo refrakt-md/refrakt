@@ -13,7 +13,6 @@ import { bstr } from '../i18n.js';
  * Heading discovery strategy:
  * 1. Prefer [data-known-section] headings (work, bug, decision runes)
  * 2. Fall back to all H2 headings with IDs (specs, milestones)
- * 3. Additionally include the Relationships section if present
  *
  * The dropdown is injected next to the toggle button in the toolbar.
  */
@@ -42,29 +41,10 @@ export function sectionNavBehavior(container: HTMLElement | Document): CleanupFn
 		// 2. Fall back to all H2 headings with IDs (for specs, milestones, etc.)
 		const allH2s = root.querySelectorAll<HTMLElement>('h2[id]');
 		for (const heading of allH2s) {
-			// Skip the relationships heading — we add it separately below
-			if (heading.closest('.rf-plan-relationships')) continue;
 			entries.push({
 				label: heading.textContent?.trim() || '',
 				id: heading.id,
 				element: heading,
-			});
-		}
-	}
-
-	// 3. Always include the Relationships section if present
-	const relSection = root.querySelector<HTMLElement>('.rf-plan-relationships');
-	if (relSection) {
-		const relHeading = relSection.querySelector<HTMLElement>('h2');
-		if (relHeading) {
-			// Ensure the heading has an ID for scroll targeting
-			if (!relHeading.id) {
-				relHeading.id = 'relationships';
-			}
-			entries.push({
-				label: 'Relationships',
-				id: relHeading.id,
-				element: relHeading,
 			});
 		}
 	}

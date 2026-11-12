@@ -49,7 +49,7 @@ export const compare = createContentModelSchema({
 			} else if (
 				Tag.isTag(node) &&
 				node.name === 'div' &&
-				node.attributes.class === 'rf-codeblock'
+				node.attributes['data-wrapper'] === 'code'
 			) {
 				const inner = node.children.find((c: any) => Tag.isTag(c) && c.name === 'pre');
 				if (inner) preNode = inner as typeof node;

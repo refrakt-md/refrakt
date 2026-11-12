@@ -86,7 +86,7 @@ export class RfDiagram extends SafeHTMLElement {
 	private tryRender(attempt = 0) {
 		this.language = this.dataset.language || 'mermaid';
 		this.source = readHiddenContent(this, 'source');
-		this.container = this.querySelector<HTMLElement>('.rf-diagram__container');
+		this.container = this.querySelector<HTMLElement>('[data-name="container"]');
 		if (!this.container) return;
 		if (!this.source) {
 			// Children not in yet — retry on the next frame. A couple of

@@ -44,9 +44,12 @@ function getCopyText(pre: HTMLElement): string {
  * Copy-to-clipboard behavior for code blocks.
  *
  * Finds all `<pre>` elements within the container and injects a copy button.
- * If the `<pre>` is already inside an `.rf-codeblock` wrapper (from the Markdoc
- * node schema), the button is added to the existing wrapper. Otherwise a new
- * `.rf-codeblock` wrapper is created around the `<pre>`.
+ * If the `<pre>` is already inside a `[data-wrapper="code"]` wrapper (from the
+ * Markdoc fence node), the button is added to the existing wrapper. Otherwise a
+ * new wrapper is created around the `<pre>`.
+ *
+ * The wrapper and the button are found by attribute, never by class
+ * (SPEC-196 D6), and the copied state is `data-state="copied"` on the button.
  */
 export function copyBehavior(container: HTMLElement | Document): CleanupFn {
 	const pres = container.querySelectorAll<HTMLElement>('pre');
@@ -55,14 +58,12 @@ export function copyBehavior(container: HTMLElement | Document): CleanupFn {
 	for (const pre of pres) {
 		// Skip if a copy button was already injected in this pre's wrapper
 		const parent = pre.parentElement;
-		if (
-			parent?.classList.contains('rf-codeblock') &&
-			parent.querySelector(':scope > .rf-codeblock__copy')
-		)
-			continue;
+		const wrapped = parent?.getAttribute('data-wrapper') === 'code';
+		if (wrapped && parent?.querySelector(':scope > [data-copy-button]')) continue;
 
 		const btn = document.createElement('button');
 		btn.className = 'rf-codeblock__copy';
+		btn.setAttribute('data-copy-button', '');
 		btn.type = 'button';
 		const copyLabel = elStr(pre, 'data-i18n-copy', 'behavior.copy.copy');
 		const copiedLabel = elStr(pre, 'data-i18n-copied', 'behavior.copy.copied');
@@ -77,22 +78,20 @@ export function copyBehavior(container: HTMLElement | Document): CleanupFn {
 				btn.innerHTML = '';
 				btn.appendChild(createIcon(CHECK_ICON));
 				btn.setAttribute('aria-label', copiedLabel);
-				btn.classList.add('rf-codeblock__copy--copied');
+				btn.setAttribute('data-state', 'copied');
 				if (timeout) clearTimeout(timeout);
 				timeout = setTimeout(() => {
 					btn.innerHTML = '';
 					btn.appendChild(createIcon(COPY_ICON));
 					btn.setAttribute('aria-label', copyLabel);
-					btn.classList.remove('rf-codeblock__copy--copied');
+					btn.removeAttribute('data-state');
 				}, 2000);
 			});
 		};
 
 		btn.addEventListener('click', handler);
 
-		const existingWrapper = pre.parentElement?.classList.contains('rf-codeblock')
-			? pre.parentElement
-			: null;
+		const existingWrapper = wrapped ? parent : null;
 
 		if (existingWrapper) {
 			// Add button to the existing SSR wrapper
@@ -107,6 +106,7 @@ export function copyBehavior(container: HTMLElement | Document): CleanupFn {
 			// Wrap pre in a new container
 			const wrapper = document.createElement('div');
 			wrapper.className = 'rf-codeblock';
+			wrapper.setAttribute('data-wrapper', 'code');
 			pre.parentNode?.insertBefore(wrapper, pre);
 			wrapper.appendChild(pre);
 			wrapper.appendChild(btn);

@@ -44,9 +44,6 @@ export function tabsBehavior(el: HTMLElement): CleanupFn {
 		if (tabIds[i]) panelItems[i].setAttribute('aria-labelledby', tabIds[i]);
 	}
 
-	// Derive the active modifier class from the first button's BEM class
-	const buttonClass = buttons[0].className.split(' ')[0] || '';
-
 	let activeIndex = 0;
 
 	function setActive(index: number) {
@@ -55,7 +52,6 @@ export function tabsBehavior(el: HTMLElement): CleanupFn {
 			const isActive = i === activeIndex;
 			buttons[i].setAttribute('aria-selected', String(isActive));
 			buttons[i].setAttribute('data-state', isActive ? 'active' : 'inactive');
-			if (buttonClass) buttons[i].classList.toggle(`${buttonClass}--active`, isActive);
 		}
 		for (let i = 0; i < panelItems.length; i++) {
 			const isActive = i === activeIndex;
@@ -120,7 +116,6 @@ export function tabsBehavior(el: HTMLElement): CleanupFn {
 			btn.removeAttribute('aria-controls');
 			btn.removeAttribute('aria-selected');
 			btn.removeAttribute('data-state');
-			if (buttonClass) btn.classList.remove(`${buttonClass}--active`);
 		}
 		for (const panel of panelItems) {
 			panel.hidden = false;

@@ -156,15 +156,13 @@ export class RfMap extends SafeHTMLElement {
 			if (validPins.length === 0) return;
 
 			// Create map container
-			let container = this.querySelector<HTMLElement>('.rf-map__container');
+			let container = this.querySelector<HTMLElement>('[data-name="container"]');
 			if (!container) {
 				container = document.createElement('div');
 				container.className = 'rf-map__container';
+				container.setAttribute('data-name', 'container');
 				this.prepend(container);
 			}
-			// Clear fallback content inside the container
-			const fallback = container.querySelector('.rf-map__fallback');
-			if (fallback) fallback.remove();
 
 			// Determine center
 			let mapCenter: [number, number];

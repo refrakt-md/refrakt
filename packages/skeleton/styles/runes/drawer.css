@@ -15,7 +15,7 @@
 /* Page-scroll lock while any drawer is open. Only the root is locked: also
  * toggling `overflow` on <body> leaves iOS Safari scrolling the page with a
  * sticky header that trails behind until reload (BUG-044). */
-html.rf-drawer-open {
+html[data-drawer-open] {
 	overflow: hidden;
 }
 

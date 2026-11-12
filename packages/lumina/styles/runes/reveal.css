@@ -26,11 +26,15 @@
 			opacity 0.3s ease,
 			transform 0.3s ease;
 	}
-	.rf-reveal-step--visible {
+	/* Step state is `data-state`, set by the reveal behaviour (SPEC-196 D6).
+	 * Every step is `closed` in the server output, so a closed step is hidden
+	 * only inside a reveal the behaviour has enhanced. `:where()` keeps the
+	 * old single-class specificity. */
+	.rf-reveal-step:where([data-state="open"]) {
 		opacity: 1;
 		transform: translateY(0);
 	}
-	.rf-reveal-step--hidden {
+	:where(.rf-reveal[data-enhanced]) .rf-reveal-step:where([data-state="closed"]) {
 		opacity: 0;
 		margin: 0;
 		transform: translateY(0.5rem);
