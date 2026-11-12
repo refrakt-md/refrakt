@@ -24,6 +24,9 @@ fields:
   body:     { match: heading|paragraph, optional: true, greedy: true }   # as: block, the default
 ```
 
+Two smaller changes to list items' structured values come with it: an item field may read another
+item field's node (D9), and each item record keeps the content the author wrote (D10).
+
 It lands in refrakt first and graduates to Marquise ({% ref "SPEC-199" /%}), where it decides
 whether a component's prop is the author's element, its inline content or a string.
 
@@ -132,7 +135,60 @@ is used.
 
 The change is additive: a new optional key with an unchanged default. It joins Marquise 1.0 if
 it lands in refrakt before the cut ({% ref "SPEC-199" /%}, "What 1.0 contains"), and otherwise
-arrives as a minor release.
+arrives as a minor release. D9 and D10 are additive in the same way.
+
+### D9: an item field may read another item field's node (`from`)
+
+*Added 2026-11-12*, from writing a hero's actions as `{ label, href }` (SPEC-199's worked example).
+
+`resolveListItems` (`packages/runes/src/lib/resolver.ts:842`) **consumes** the node a field matches
+directly. So two fields cannot read one link: in
+
+```yaml
+itemModel:
+  fields:
+    - { name: label, match: link }
+    - { name: href,  match: link, extract: href }
+```
+
+`label` takes the link and `href` finds none left, so every item arrives without its URL.
+
+**An item field names the field whose node it reads:**
+
+```yaml
+itemModel:
+  fields:
+    - { name: label, match: link }
+    - { name: href,  from: label, extract: href }
+```
+
+- `from` names an earlier item field in the same `itemModel`; the field reads that field's node,
+  consuming nothing. It takes `extract`, or reads the node's text without it.
+- It is explicit where an implicit rule ("a field with `extract` does not consume") would make
+  field order matter and could not say which of two links an item means.
+- The same form serves images (`src`, then `alt` `from: src`) and any inline node with
+  attributes.
+- `from` with `match`, or naming an unknown or later field, is a definition error:
+  `item-field-from-invalid`. If the named field matched nothing, this one is missing too.
+- The word is not new: {% ref "SPEC-143" /%}'s slot declarations use `from` for "where this comes
+  from".
+
+### D10: an item record carries its source content
+
+Today an item list with an `itemModel` becomes records of strings, and the list items the author
+wrote are gone. Each record also carries the item's own content, under the reserved key
+`content`, as written:
+
+```json
+{ "label": "Get started", "href": "/docs", "content": [ /* the list item's nodes */ ] }
+```
+
+- A presentation can use the data (a component building its own buttons) or the content (a
+  template, or Marquise's plain presentation, rendering the list as the author wrote it).
+- `content` is reserved: an item field named `content` is a definition error,
+  `item-field-name-reserved`.
+- For a component, `content` is the framework's renderable (ADR-049); generated types include
+  it.
 
 ## Acceptance criteria
 
@@ -144,11 +200,14 @@ arrives as a minor release.
 - [ ] The block editor edits `inline` and `text` fields as one line, and a contradicting `editHints` entry is reported
 - [ ] `refrakt reference`, the AI prompt and the language server state each field's declaration
 - [ ] `hero` and `cta` declare `eyebrow`, `headline` and `blurb` as D6 lists, with contract and baseline differences accepted or fixed
+- [ ] An item field with `from` reads the named field's node without consuming it, so `label` and `href` both come from one link; an invalid `from` reports `item-field-from-invalid`
+- [ ] Every item record carries `content`, the list item as written, and an item field named `content` reports `item-field-name-reserved`
 
 ## Open questions
 
-1. **`as: inline` on `itemModel` fields.** Item fields return strings today. A link label with
-   emphasis would need `inline` there too.
+1. **`as: inline` on `itemModel` fields.** *Deferred 2026-11-12.* Item fields return strings.
+   A link label with emphasis would need `inline` there too; until a rune needs it, D10's
+   `content` gives a presentation the formatted item when it wants one.
 2. **The key's name.** `as` reads naturally and SPEC-143's use is temporary (D7); `form` would
    avoid the overlap entirely.
 3. **Exposing a heading's level beside `inline`.** A presentation could want the author's level

@@ -312,10 +312,37 @@ Refrakt's structured data has never depended on who draws the markup: the schema
    (SPEC-194 D11: elements come only from primitives). In Marquise a template places only
    definitions, so a user's own definitions are its primitives, and refrakt adds its vocabulary
    through the template-tag hook. The first release ships components and the plain presentation.
-3. **The plain presentation.** What a definition renders as with no component: an error, or the
-   definition's `tag:` element with each slot in order and attributes as `data-*`. Recommended:
-   the second, so content is never silently lost and a definition is useful before its component
-   exists.
+3. **The plain presentation.** *Decided 2026-11-12:* a shape with no component bound renders
+   plainly, so content is never silently lost and a shape is useful before its component exists.
+   Once it ships the markup is a public format, so it is kept as small as possible:
+
+   ```html
+   <section data-shape="hero" data-align="start" data-media-position="bottom">
+     <div data-slot="media"><img src="/img/dashboard.png" alt="The dashboard"></div>
+     <div data-slot="eyebrow">New in 2.0</div>
+     <div data-slot="headline">Ship docs your team will actually read</div>
+     <div data-slot="blurb">From Markdown to a polished site in minutes.</div>
+     <ul data-slot="actions">
+       <li><a href="/docs">Get started</a></li>
+       <li><a href="https://github.com/acme/docs">View on GitHub</a></li>
+     </ul>
+   </section>
+   ```
+
+   - **The root** is the shape's `tag:` (default `div`), with `data-shape` and one `data-*`
+     attribute per attribute: kebab-case, defaults included.
+   - **One `data-slot` wrapper per non-empty field, in content order.** A `block` field holds its
+     nodes as written, an `inline` or `text` field its content ({% ref "SPEC-200" /%} D1). An item
+     list renders from each item's `content` (SPEC-200 D10), so the list appears as the author
+     wrote it.
+   - **Nested shapes in a slot** render recursively: through their component if one is bound,
+     plainly otherwise.
+   - **No classes.** Classes are a theme's ({% ref "SPEC-196" /%}); the attributes are what a
+     developer styles against.
+   - **`data-slot`** keeps the meaning refrakt gives it: a composed rune's slot names are its
+     published names (SPEC-145 D10c). `data-shape` follows decision 1.
+   - **An unbound shape is reported:** `marquise validate` warns `shape-unbound`, so a forgotten
+     component is noticed; a strict project makes it an error.
 4. **Repository.** Incubate inside this monorepo as `@refrakt-md/model` and the generic renderer
    packages, then move to its own repository once the seams hold. The move is the cheap part if
    the seams are right.
@@ -325,6 +352,19 @@ Refrakt's structured data has never depended on who draws the markup: the schema
 7. **Names to secure early.** On 2026-11-12, `marquise`, `marquise-md` and `marquisejs` were free
    on npm. The `@marquise` npm scope, the GitHub organisation and the `marquise.md` domain still
    need checking by hand.
+8. **Attribute and field names.** *Decided 2026-11-12:* kebab-case in shapes, camelCase in
+   props, by one fixed rule.
+   - **Authors see attributes the way HTML spells them** (`media-position`), as refrakt
+     does for nearly everything.
+   - **Developers see JavaScript names** (`mediaPosition`). ADR-008's renderers already convert
+     this way (`fromKebabCase`), and Vue makes the same conversion between templates and scripts.
+   - **Field names follow the same rule** (`avatar-after` becomes `avatarAfter`).
+   - **Generated types document both spellings**, for example
+     `/** \`media-position\` in Markdown. Default "bottom". */`.
+   - **Two names that collide after conversion** in one shape are a shape error,
+     `name-collision`.
+   - **A camelCase attribute name in a shape is reported**, so the rule stays one-directional.
+     Refrakt itself is not consistent today (its `datatable` example writes `pageSize=10`).
 
 ## Order
 
@@ -360,6 +400,173 @@ wastes nothing.
   The first page has to show it: Markdown in, typed props out.
 - **Two sources of truth during incubation.** Refrakt must not grow a private path around a hook
   while the seam is being cut.
+
+## Worked example: a hero in React
+
+*Recorded 2026-11-12.* A `hero` shape adapted from refrakt's own (`plugins/marketing/runes/hero.md`),
+in Next.js with React. The content-model keys are the ones refrakt's resolver supports today,
+plus SPEC-200's `as` and `from`; the shape node, generated types and the React API are this
+spec's proposal. Decision 3 shows the same content rendered with no component bound.
+
+**`shapes/hero.md`.** Refrakt's design attributes (`valign`, `collapse`, `height`, `aspect`,
+`content-place`) and its universal-attribute defaults are gone: in Marquise the component owns
+the layout, and a developer adds only the attributes authors should control. The body is empty,
+as 1.0 requires.
+
+```md
+---
+tag: section
+description: Full-width introduction at the top of a landing page
+attributes:
+  align:          { type: string, matches: [start, center, end], default: center, description: "Alignment of the text and actions" }
+  media-position: { type: string, matches: [top, bottom, start, end], default: bottom, description: "Where the media sits" }
+content:
+  type: delimited
+  delimiter: hr
+  zones:
+    - name: media
+      fields:
+        media: { match: image, optional: true }
+    - name: content
+      primary: true
+      fields:
+        eyebrow:  { match: paragraph, optional: true, as: text }
+        headline: { match: heading, as: inline }
+        blurb:    { match: paragraph, optional: true, as: inline }
+        actions:
+          match: list
+          optional: true
+          itemModel:
+            fields:
+              - { name: label, match: link }
+              - { name: href,  from: label, extract: href }
+---
+```
+
+**`content/home.md`**, what an author writes. "New in 2.0" is the eyebrow because it is a
+paragraph before the heading; the sentence after the heading is the blurb.
+
+```md
+{% hero align="start" %}
+![The dashboard](/img/dashboard.png)
+
+---
+
+New in 2.0
+
+# Ship docs your team will actually read
+
+From Markdown to a polished site in minutes.
+
+- [Get started](/docs)
+- [View on GitHub](https://github.com/acme/docs)
+{% /hero %}
+```
+
+**Generated types** (`npx marquise types`). The type parameter keeps them framework-neutral;
+`@marquise/react` fills it with `ReactNode`. An attribute with a default is never optional; a
+`text` field is a `string`.
+
+```ts
+/** Full-width introduction at the top of a landing page */
+export interface HeroShape<R> {
+  /** `align` in Markdown. Default "center". */
+  align: 'start' | 'center' | 'end';
+  /** `media-position` in Markdown. Default "bottom". */
+  mediaPosition: 'top' | 'bottom' | 'start' | 'end';
+  media?: R;
+  eyebrow?: string;
+  headline: R;
+  blurb?: R;
+  actions?: { label: string; href: string; content: R }[];
+}
+
+// from @marquise/react
+export type HeroProps = HeroShape<React.ReactNode>;
+```
+
+**The shape node** that reaches the renderer: plain data, safe from server to client.
+
+```json
+{
+  "$$mdtype": "Shape",
+  "name": "hero",
+  "attributes": { "align": "start", "mediaPosition": "bottom" },
+  "computed": {},
+  "slots": {
+    "media":    [{ "$$mdtype": "Tag", "name": "img", "attributes": { "src": "/img/dashboard.png", "alt": "The dashboard" }, "children": [] }],
+    "eyebrow":  "New in 2.0",
+    "headline": ["Ship docs your team will actually read"],
+    "blurb":    ["From Markdown to a polished site in minutes."],
+    "actions":  [
+      { "label": "Get started",    "href": "/docs",                        "content": ["…the list item as written…"] },
+      { "label": "View on GitHub", "href": "https://github.com/acme/docs", "content": ["…"] }
+    ]
+  }
+}
+```
+
+**`components/Hero.tsx`.** The component picks the heading element, makes the first action the
+primary button and routes links through Next's `<Link>`; the author still wrote a plain list.
+
+```tsx
+import Link from 'next/link';
+import type { HeroProps } from '@/.marquise/shapes';
+
+export function Hero({ align, mediaPosition, media, eyebrow, headline, blurb, actions }: HeroProps) {
+  return (
+    <section className="hero" data-align={align} data-media={mediaPosition}>
+      <div className="hero__content">
+        {eyebrow && <p className="hero__eyebrow">{eyebrow}</p>}
+        <h1 className="hero__headline">{headline}</h1>
+        {blurb && <p className="hero__blurb">{blurb}</p>}
+        {actions && (
+          <div className="hero__actions">
+            {actions.map((action, i) => (
+              <Link key={action.href} href={action.href} className={i === 0 ? 'button button--primary' : 'button'}>
+                {action.label}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+      {media && <div className="hero__media">{media}</div>}
+    </section>
+  );
+}
+```
+
+**`app/page.tsx`.** Written out so every step shows; a Next.js plugin could hide the reading and
+transforming.
+
+```tsx
+import { readFile } from 'node:fs/promises';
+import { loadShapes, transform } from 'marquise';
+import { Content } from '@marquise/react';
+import { Hero } from '@/components/Hero';
+
+const shapes = await loadShapes('shapes');
+
+export default async function Home() {
+  const source = await readFile('content/home.md', 'utf8');
+  const { tree, findings } = transform(source, { shapes });
+  if (findings.some((f) => f.severity === 'error')) throw new Error(findings[0].message);
+
+  return <Content tree={tree} components={{ hero: Hero }} />;
+}
+```
+
+**When the author gets it wrong** (no heading, `align="left"`), `npx marquise validate` reports
+with refrakt's existing error ids, in the editor too, and as data an AI can fix from:
+
+```
+content/home.md:1  error  attribute-type-invalid  hero: align must be one of start, center, end (got "left")
+content/home.md:1  error  content-missing         hero: needs a headline (a heading); found a paragraph and a list
+```
+
+**What writing it out settled:** a field's element versus its content (SPEC-200 D1), two item
+fields reading one link (SPEC-200 D9), keeping the list as written (SPEC-200 D10), attribute
+names (decision 8) and the plain presentation's markup (decision 3).
 
 ## Acceptance criteria
 
