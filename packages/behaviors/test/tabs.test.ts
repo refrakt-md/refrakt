@@ -106,13 +106,15 @@ describe('tabsBehavior', () => {
 			expect(buttons[1].getAttribute('aria-selected')).toBe('false');
 		});
 
-		it('adds --active class to first tab button', () => {
+		it('marks the active tab with data-state and writes no class (SPEC-196 D6)', () => {
 			const el = createCodeGroup();
+			const before = [...el.querySelectorAll('[role="tab"]')].map((b) => b.className);
 			tabsBehavior(el);
 
 			const buttons = el.querySelectorAll('[role="tab"]');
-			expect(buttons[0].classList.contains('rf-codegroup__tab--active')).toBe(true);
-			expect(buttons[1].classList.contains('rf-codegroup__tab--active')).toBe(false);
+			expect(buttons[0].getAttribute('data-state')).toBe('active');
+			expect(buttons[1].getAttribute('data-state')).toBe('inactive');
+			expect([...buttons].map((b) => b.className)).toEqual(before);
 		});
 	});
 
@@ -249,7 +251,7 @@ describe('tabsBehavior', () => {
 			}
 		});
 
-		it('removes active class on cleanup', () => {
+		it('clears the active state on cleanup', () => {
 			const el = createCodeGroup();
 			const cleanup = tabsBehavior(el);
 
@@ -257,7 +259,7 @@ describe('tabsBehavior', () => {
 
 			const buttons = el.querySelectorAll('[role="tab"]');
 			for (const btn of buttons) {
-				expect(btn.classList.contains('rf-codegroup__tab--active')).toBe(false);
+				expect(btn.hasAttribute('data-state')).toBe(false);
 			}
 		});
 	});

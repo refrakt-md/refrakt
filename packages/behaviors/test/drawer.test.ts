@@ -71,6 +71,7 @@ function createDrawerSection(opts: {
 	}
 	const close = document.createElement('button');
 	close.className = 'rf-drawer__close';
+	close.setAttribute('data-name', 'close');
 	close.type = 'button';
 	close.setAttribute('aria-label', 'Close');
 	close.hidden = true;
@@ -116,7 +117,7 @@ describe('drawerBehavior', () => {
 		it('reveals the close button on enhancement', () => {
 			const section = createDrawerSection({ id: 'auth', title: 'Auth' });
 			drawerBehavior(section);
-			const close = document.querySelector('.rf-drawer__close') as HTMLButtonElement;
+			const close = document.querySelector('[data-name="close"]') as HTMLButtonElement;
 			expect(close.hidden).toBe(false);
 		});
 
@@ -165,7 +166,7 @@ describe('drawerBehavior', () => {
 			drawerBehavior(section);
 			trigger.click();
 			const dialog = document.querySelector('dialog.rf-drawer') as HTMLDialogElement;
-			const close = dialog.querySelector('.rf-drawer__close') as HTMLButtonElement;
+			const close = dialog.querySelector('[data-name="close"]') as HTMLButtonElement;
 			close.click();
 			// Immediately after click, the dialog is in the closing phase but
 			// still open — CSS is running its slide-out animation.
@@ -219,7 +220,7 @@ describe('drawerBehavior', () => {
 			drawerBehavior(section);
 			trigger.click();
 			const dialog = document.querySelector('dialog.rf-drawer') as HTMLDialogElement;
-			(dialog.querySelector('.rf-drawer__close') as HTMLButtonElement).click();
+			(dialog.querySelector('[data-name="close"]') as HTMLButtonElement).click();
 			finishCloseAnimation(dialog);
 			expect(window.location.hash).toBe('');
 		});
@@ -294,23 +295,23 @@ describe('drawerBehavior', () => {
 	});
 
 	describe('body-scroll lock', () => {
-		it('adds .rf-drawer-open to <html> when the drawer opens', () => {
+		it('sets data-drawer-open on <html> when the drawer opens', () => {
 			const section = createDrawerSection({ id: 'auth', title: 'Auth' });
 			const trigger = createTrigger('auth');
 			drawerBehavior(section);
 			trigger.click();
-			expect(document.documentElement.classList.contains('rf-drawer-open')).toBe(true);
+			expect(document.documentElement.hasAttribute('data-drawer-open')).toBe(true);
 		});
 
-		it('removes .rf-drawer-open when the last open drawer closes', () => {
+		it('removes data-drawer-open when the last open drawer closes', () => {
 			const section = createDrawerSection({ id: 'auth', title: 'Auth' });
 			const trigger = createTrigger('auth');
 			drawerBehavior(section);
 			trigger.click();
 			const dialog = document.querySelector('dialog.rf-drawer') as HTMLDialogElement;
-			(dialog.querySelector('.rf-drawer__close') as HTMLButtonElement).click();
+			(dialog.querySelector('[data-name="close"]') as HTMLButtonElement).click();
 			finishCloseAnimation(dialog);
-			expect(document.documentElement.classList.contains('rf-drawer-open')).toBe(false);
+			expect(document.documentElement.hasAttribute('data-drawer-open')).toBe(false);
 		});
 
 		it('keeps the lock while another drawer is still open', () => {
@@ -323,7 +324,7 @@ describe('drawerBehavior', () => {
 			triggerA.click();
 			triggerB.click();
 			// triggerB closed A and opened B — lock still applies.
-			expect(document.documentElement.classList.contains('rf-drawer-open')).toBe(true);
+			expect(document.documentElement.hasAttribute('data-drawer-open')).toBe(true);
 		});
 	});
 

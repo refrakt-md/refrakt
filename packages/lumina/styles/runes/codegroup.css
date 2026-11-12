@@ -95,7 +95,7 @@
 	.rf-codegroup button[data-state="inactive"]:hover {
 		color: var(--rf-color-code-text);
 	}
-	.rf-codegroup__tab--active,
+	.rf-codegroup__tab:where([data-state="active"]),
 	.rf-codegroup button[data-state="active"] {
 		color: var(--rf-color-code-text);
 		border-bottom-color: var(--rf-color-primary);

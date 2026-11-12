@@ -5,7 +5,11 @@ import { elStr } from '../i18n.js';
  * Reveal behavior for `[data-rune="reveal"]`.
  *
  * Shows steps one at a time with Continue/Start Over controls.
- * Steps are shown/hidden via `rf-reveal-step--visible` / `rf-reveal-step--hidden` classes.
+ * Each step's state is `data-state="open"` or `"closed"`. The server output
+ * already marks every step `closed`, so the root also gets `data-enhanced`
+ * while the behaviour runs: stylesheets hide a closed step only inside an
+ * enhanced reveal, and a page without JavaScript shows every step. No class
+ * is written (SPEC-196 D6).
  */
 export function revealBehavior(el: HTMLElement): CleanupFn {
 	// Find steps — look in data-name="steps" container or direct children
@@ -15,6 +19,7 @@ export function revealBehavior(el: HTMLElement): CleanupFn {
 	);
 
 	if (steps.length === 0) return () => {};
+	el.setAttribute('data-enhanced', '');
 
 	let visibleCount = 1;
 
@@ -31,8 +36,6 @@ export function revealBehavior(el: HTMLElement): CleanupFn {
 	function render() {
 		for (let i = 0; i < steps.length; i++) {
 			const visible = i < visibleCount;
-			steps[i].classList.toggle('rf-reveal-step--visible', visible);
-			steps[i].classList.toggle('rf-reveal-step--hidden', !visible);
 			steps[i].setAttribute('data-state', visible ? 'open' : 'closed');
 		}
 
@@ -74,10 +77,8 @@ export function revealBehavior(el: HTMLElement): CleanupFn {
 		nextBtn.remove();
 		resetBtn.remove();
 
-		// Remove visibility classes and data-state
-		for (const step of steps) {
-			step.classList.remove('rf-reveal-step--visible', 'rf-reveal-step--hidden');
-			step.removeAttribute('data-state');
-		}
+		// Restore the server state: every step closed, nothing hidden.
+		el.removeAttribute('data-enhanced');
+		for (const step of steps) step.setAttribute('data-state', 'closed');
 	};
 }

@@ -254,20 +254,22 @@ The `behaviors` array on `LayoutConfig` specifies which behaviors to attach. The
 
 ### `mobile-menu`
 
-The mobile menu behavior handles panel toggling for responsive layouts. It uses data attributes to discover trigger elements:
+The mobile menu behavior handles panel toggling for responsive layouts. It finds panels and triggers by data attribute, never by class, so a theme may name or drop the classes freely:
 
 | Data attribute | Purpose |
 |----------------|---------|
-| `data-mobile-menu-toggle` | Toggles the header menu panel (the first `.rf-mobile-panel` that isn't `--nav`). The behavior keeps `aria-expanded` in sync with panel state. |
+| `data-mobile-panel="menu"` | Marks the header menu panel. |
+| `data-mobile-panel="nav"` | Marks the nav panel. |
+| `data-mobile-menu-toggle` | Toggles the menu panel. The behavior keeps `aria-expanded` in sync with panel state. |
 | `data-mobile-menu-open` | Deprecated alias of `data-mobile-menu-toggle`; use that instead. |
 | `data-mobile-menu-close` | Closes all open panels (still wired for themes that include an explicit close button). |
-| `data-mobile-nav-toggle` | Toggles the nav panel (`.rf-mobile-panel--nav`). |
+| `data-mobile-nav-toggle` | Toggles the nav panel. |
 
 Panels are toggled via the `[data-open]` attribute. CSS uses this for visibility:
 
 ```css
-.rf-mobile-panel { display: none; }
-.rf-mobile-panel[data-open] { display: block; }
+[data-mobile-panel] { display: none; }
+[data-mobile-panel][data-open] { display: block; }
 ```
 
 The behavior also handles:
@@ -319,7 +321,7 @@ export const docsLayout: LayoutConfig = {
       tag: 'div',
       class: 'rf-mobile-panel',
       conditionalRegion: 'header',
-      attrs: { role: 'dialog', 'aria-label': 'Navigation menu' },
+      attrs: { role: 'dialog', 'aria-label': 'Navigation menu', 'data-mobile-panel': 'menu' },
       children: [
         { tag: 'nav', class: 'rf-mobile-panel__nav',
           source: 'clone:region:header' },
@@ -343,6 +345,7 @@ export const docsLayout: LayoutConfig = {
       class: 'rf-docs-sidebar',
       source: 'region:nav',
       conditional: true,
+      attrs: { 'data-sidebar': 'docs' },
     },
 
     // Main content area with optional TOC

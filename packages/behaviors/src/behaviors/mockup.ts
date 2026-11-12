@@ -27,7 +27,7 @@ export function mockupBehavior(el: HTMLElement): CleanupFn {
 	if (!el.parentElement?.matches('[data-section="media"]')) return () => {};
 	if (el.getAttribute('data-fit') === 'none') return () => {};
 
-	const frame = el.querySelector<HTMLElement>('.rf-mockup__frame');
+	const frame = el.querySelector<HTMLElement>('[data-name="frame"]');
 	if (!frame) return () => {};
 
 	const update = () => {

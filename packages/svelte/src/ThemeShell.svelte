@@ -73,7 +73,7 @@
 	// Also save sidebar scroll position before the DOM is destroyed.
 	let savedSidebarScroll = 0;
 	$effect.pre(() => {
-		const sidebar = document.querySelector('.rf-docs-sidebar');
+		const sidebar = document.querySelector('[data-sidebar="docs"]');
 		if (sidebar) savedSidebarScroll = sidebar.scrollTop;
 		RfContext.pages = page.pages;
 		RfContext.currentUrl = page.url;
@@ -92,7 +92,7 @@
 			if (active) {
 				cleanupRunes = initRuneBehaviors();
 				cleanupLayout = initLayoutBehaviors();
-				const sidebar = document.querySelector('.rf-docs-sidebar');
+				const sidebar = document.querySelector('[data-sidebar="docs"]');
 				if (sidebar) sidebar.scrollTop = savedSidebarScroll;
 			}
 		});

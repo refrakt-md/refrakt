@@ -214,6 +214,7 @@ function setupToggle(el: HTMLElement): CleanupFn {
 	const buttons: HTMLButtonElement[] = panels.map((panel, i) => {
 		const btn = document.createElement('button');
 		btn.className = 'rf-juxtapose__toggle-btn';
+		btn.setAttribute('data-name', 'toggle');
 		btn.setAttribute('role', 'radio');
 		btn.textContent = getPanelLabel(panel) || bstr('behavior.juxtapose.panel', i + 1);
 		toggleBar.appendChild(btn);
@@ -243,9 +244,7 @@ function setupToggle(el: HTMLElement): CleanupFn {
 	}
 
 	const onClick = (e: Event) => {
-		const btn = (e.target as HTMLElement).closest('.rf-juxtapose__toggle-btn');
-		if (!btn) return;
-		const idx = buttons.indexOf(btn as HTMLButtonElement);
+		const idx = buttons.findIndex((b) => b.contains(e.target as Node));
 		if (idx >= 0) {
 			activeIndex = idx;
 			render();

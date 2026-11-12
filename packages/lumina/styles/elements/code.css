@@ -41,7 +41,9 @@
 		background: rgba(255, 255, 255, 0.1);
 	}
 
-	.rf-codeblock__copy--copied {
+	/* The copied state is `data-state`, set by the copy behaviour (SPEC-196 D6).
+	 * `:where()` keeps the old single-class specificity. */
+	.rf-codeblock__copy:where([data-state="copied"]) {
 		opacity: 1 !important;
 		color: var(--rf-color-success, #4ade80);
 	}

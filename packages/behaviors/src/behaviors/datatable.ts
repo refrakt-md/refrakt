@@ -31,7 +31,7 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 
 	// The transform wraps the table in a scroll container; fall back to the
 	// table itself for backwards compat with older renders.
-	const anchor: Element = table.closest('.rf-datatable__scroll') ?? table;
+	const anchor: Element = table.closest('[data-name="scroll"]') ?? table;
 
 	// Read configuration from data attributes
 	const searchable = el.getAttribute('data-searchable') === 'true';
@@ -222,7 +222,7 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 		// Update sort indicators on headers
 		for (const th of thEls) {
 			const name = th.textContent?.replace(/[▲▼]/g, '').trim() || '';
-			const indicator = th.querySelector('.rf-datatable__sort-indicator');
+			const indicator = th.querySelector('[data-name="sort-indicator"]');
 			if (sortable.includes(name)) {
 				if (sortColumn === name) {
 					if (indicator) {
@@ -230,6 +230,7 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 					} else {
 						const span = document.createElement('span');
 						span.className = 'rf-datatable__sort-indicator';
+						span.setAttribute('data-name', 'sort-indicator');
 						span.textContent = sortDirection === 'asc' ? ' ▲' : ' ▼';
 						th.appendChild(span);
 					}
@@ -265,7 +266,7 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 
 		// Remove sort indicators
 		for (const th of thEls) {
-			th.querySelector('.rf-datatable__sort-indicator')?.remove();
+			th.querySelector('[data-name="sort-indicator"]')?.remove();
 		}
 
 		// Restore original row order and visibility

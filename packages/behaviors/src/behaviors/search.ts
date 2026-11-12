@@ -28,7 +28,7 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 
 	// Set shortcut text in trigger kbd elements
 	triggers.forEach((trigger) => {
-		const kbd = trigger.querySelector('.rf-search-trigger__kbd');
+		const kbd = trigger.querySelector('[data-name="search-kbd"]');
 		if (kbd && !kbd.textContent) {
 			kbd.textContent = shortcutLabel;
 		}
@@ -50,12 +50,12 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 		d.innerHTML = `
 			<div class="rf-search-dialog__header">
 				<svg class="rf-search-dialog__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-				<input type="search" class="rf-search-dialog__input" placeholder="${escapeAttr(bstr('behavior.search.placeholder'))}" autocomplete="off" spellcheck="false" />
+				<input type="search" class="rf-search-dialog__input" data-name="input" placeholder="${escapeAttr(bstr('behavior.search.placeholder'))}" autocomplete="off" spellcheck="false" />
 				<kbd class="rf-search-dialog__esc">${escapeHtml(bstr('behavior.search.esc'))}</kbd>
 			</div>
 			<div class="rf-search-dialog__body">
-				<div class="rf-search-dialog__results"></div>
-				<div class="rf-search-dialog__empty" hidden>${escapeHtml(bstr('behavior.search.noResults'))}</div>
+				<div class="rf-search-dialog__results" data-name="results"></div>
+				<div class="rf-search-dialog__empty" data-name="empty" hidden>${escapeHtml(bstr('behavior.search.noResults'))}</div>
 			</div>
 			<div class="rf-search-dialog__footer">
 				<span class="rf-search-dialog__footer-nav">
@@ -69,8 +69,8 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 
 		document.body.appendChild(d);
 
-		input = d.querySelector('.rf-search-dialog__input');
-		resultsContainer = d.querySelector('.rf-search-dialog__results');
+		input = d.querySelector('[data-name="input"]');
+		resultsContainer = d.querySelector('[data-name="results"]');
 
 		// Handle input
 		let debounceTimer: ReturnType<typeof setTimeout>;
@@ -141,7 +141,7 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 	async function performSearch(query: string) {
 		if (!resultsContainer) return;
 
-		const emptyEl = dialog?.querySelector('.rf-search-dialog__empty') as HTMLElement | null;
+		const emptyEl = dialog?.querySelector('[data-name="empty"]') as HTMLElement | null;
 
 		if (!query.trim()) {
 			resultsContainer.innerHTML = '';
@@ -183,7 +183,7 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 			resultsContainer.innerHTML = results
 				.map((r: any) => {
 					const url = r.url.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
-					return `<a class="rf-search-result" href="${escapeAttr(url)}">
+					return `<a class="rf-search-result" data-name="result" href="${escapeAttr(url)}">
 					<span class="rf-search-result__title">${escapeHtml(r.meta?.title ?? url)}</span>
 					<span class="rf-search-result__excerpt">${r.excerpt ?? ''}</span>
 				</a>`;
@@ -200,7 +200,7 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 
 	function navigateResults(direction: number) {
 		if (!resultsContainer) return;
-		const items = resultsContainer.querySelectorAll<HTMLElement>('.rf-search-result');
+		const items = resultsContainer.querySelectorAll<HTMLElement>('[data-name="result"]');
 		if (items.length === 0) return;
 
 		// Remove previous active
@@ -218,7 +218,7 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 
 	function selectResult() {
 		if (!resultsContainer || activeIndex < 0) return;
-		const items = resultsContainer.querySelectorAll<HTMLAnchorElement>('.rf-search-result');
+		const items = resultsContainer.querySelectorAll<HTMLAnchorElement>('[data-name="result"]');
 		if (activeIndex < items.length) {
 			dialog?.close();
 			const url = items[activeIndex].getAttribute('href');

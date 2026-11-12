@@ -46,7 +46,9 @@
 	.rf-tab:hover {
 		color: var(--rf-color-text);
 	}
-	.rf-tab--active {
+	/* The active tab is `data-state="active"`, set by the tabs behaviour
+	 * (SPEC-196 D6). `:where()` keeps the old single-class specificity. */
+	.rf-tab:where([data-state="active"]) {
 		color: var(--rf-color-primary);
 		border-bottom-color: var(--rf-color-primary);
 		font-weight: var(--rf-weight-semibold);

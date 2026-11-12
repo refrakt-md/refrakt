@@ -15,7 +15,7 @@
  *    `@starting-style` to interpolate from off-screen on open.
  *
  * Page-scroll lock is applied as a class on `<html>` by the behavior
- * (`html.rf-drawer-open` → `overflow: hidden` on the root only, never on
+ * (`html[data-drawer-open]` → `overflow: hidden` on the root only, never on
  * `<body>`, see BUG-044) so mobile Safari doesn't scroll the page
  * underneath the open dialog.
  */
