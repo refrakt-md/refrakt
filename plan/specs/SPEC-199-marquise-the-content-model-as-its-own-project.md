@@ -110,6 +110,7 @@ reach. Marquise is not only a smaller package: it is where stability lives.
 | `validate`, `reference`, `format`, `types`, the language server | exist, to be split from refrakt |
 | `@marquise/schema` | SPEC-130, shipped |
 | `@marquise/data` | SPEC-103, shipped |
+| *If it lands in refrakt first:* a field declares `as: block \| inline \| text` | {% ref "SPEC-200" /%}, draft. Additive (default `block`), so it can also come after 1.0 as a minor release. It decides whether a component's prop is the author's element, its inline content or a `string` |
 
 **A definition's body is reserved in 1.0:** it must be empty. That keeps SPEC-197's body blocks
 (examples, then templates) additive when they arrive.
@@ -118,6 +119,7 @@ reach. Marquise is not only a smaller package: it is where stability lives.
 
 | Feature | Waits for |
 |---|---|
+| `as: block \| inline \| text` on fields, if not in 1.0 | {% ref "SPEC-200" /%} implemented in refrakt |
 | `computes`, `prepare`, the value vocabulary, `matches()` | SPEC-194, SPEC-195 implemented in refrakt |
 | `{% example %}`, `file#id`, examples in tooling | SPEC-197 |
 | `source()` | SPEC-198 |
