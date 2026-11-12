@@ -1,4 +1,4 @@
-{% work id="WORK-722" status="ready" priority="high" complexity="moderate" source="SPEC-196" tags="transform, engine, attributes, lumina, css, contracts" milestone="v0.50.0" %}
+{% work id="WORK-722" status="done" priority="high" complexity="moderate" source="SPEC-196" tags="transform, engine, attributes, lumina, css, contracts" milestone="v0.50.0" pr="refrakt-md/refrakt#789" %}
 
 # Every fact a class carries is also an attribute, and the CSS reads the attribute
 
@@ -25,15 +25,15 @@ Two more class-only facts need no new attribute:
 
 ## Acceptance Criteria
 
-- [ ] The context-modifier facet sets `data-in="<parent rune>"` on every element it gives a context-modifier class, and keeps the class
-- [ ] The tint facet sets `data-tinted=""` wherever it adds `--tinted`, and keeps the class
-- [ ] The 31 context-modifier selectors in Lumina and the skeleton select `[data-in="…"]` instead of the class
-- [ ] The 14 static-modifier selectors select the attributes that already say the same fact
-- [ ] `staticModifiers` is marked deprecated in `packages/transform/src/types.ts`, pointing at SPEC-196 D5
-- [ ] Engine tests cover `data-in` (including a rune nested in a parent it does not declare, which gets none) and `data-tinted` (set, and absent for `tint="custom"` with no tokens)
-- [ ] Both contract copies (`contracts/structures.json`, `packages/lumina/contracts/structures.json`) are regenerated and record the new attributes
-- [ ] The CSS coverage test passes, with its expectations updated for selectors that moved to attributes
-- [ ] `npm run seo:baseline:check` passes, or the baseline is regenerated and its diff shows only the new attributes
+- [x] The context-modifier facet sets `data-in="<parent rune>"` on every element it gives a context-modifier class, and keeps the class
+- [x] The tint facet sets `data-tinted=""` wherever it adds `--tinted`, and keeps the class
+- [x] The 31 context-modifier selectors in Lumina and the skeleton select `[data-in="…"]` instead of the class
+- [x] The 14 static-modifier selectors select the attributes that already say the same fact
+- [x] `staticModifiers` is marked deprecated in `packages/transform/src/types.ts`, pointing at SPEC-196 D5
+- [x] Engine tests cover `data-in` (including a rune nested in a parent it does not declare, which gets none) and `data-tinted` (set, and absent for `tint="custom"` with no tokens)
+- [x] Both contract copies (`contracts/structures.json`, `packages/lumina/contracts/structures.json`) are regenerated and record the new attributes
+- [x] The CSS coverage test passes, with its expectations updated for selectors that moved to attributes
+- [x] `npm run seo:baseline:check` passes, or the baseline is regenerated and its diff shows only the new attributes
 
 ## Approach
 
@@ -54,5 +54,26 @@ Two more class-only facts need no new attribute:
 - {% ref "SPEC-196" /%} D5, and "What exists, measured".
 - {% ref "SPEC-194" /%} D5: the config fields kept and deprecated.
 - {% ref "ADR-048" /%}: implementation order, step 1.
+
+## Resolution
+
+Completed: 2026-11-09
+
+Branch: `claude/rune-composition-layout-convention-hkqrzx`
+
+### What was done
+- `packages/transform/src/facets/modifiers.ts`: the context-modifiers facet sets `data-in="<parent>"` beside the `--in-<parent>` class, only for the declared parent. Its contract description gains `attributeSelector`; the static-modifiers facet is documented as deprecated.
+- `packages/transform/src/facets/tint.ts`: `data-tinted=""` wherever `--tinted` is added; the axis contract lists it.
+- `packages/transform/src/types.ts`: `staticModifiers` marked `@deprecated` (SPEC-196 D5 / SPEC-194 D5); `contextModifiers` doc points at `data-in`. `contracts.ts` and `facets/describe.ts` carry `attributeSelector`.
+- Lumina and skeleton CSS: 31 context-modifier selectors now select `[data-in]`, 14 static-modifier selectors select `data-rune="featured-tier"` / `data-media-position="cover"`.
+- `packages/lumina/test/css-coverage.test.ts`: context modifiers count as covered by `.block[data-in="parent"]` (bare or `:where()`), plus new tests that fail on CSS selecting a context- or static-modifier class (variant deltas included). `vocabulary-coverage.test.ts` records `[data-tinted]` as intentionally unstyled.
+- `packages/cli`: `inspect --audit` expects `[data-in="parent"]` and no static-modifier classes; `scaffold-css` writes the attribute form and no static stubs.
+- `packages/transform/test/context-modifiers.test.ts`: `data-in` and `data-tinted` tests.
+- Contracts regenerated (both copies). Docs updated: `css.md`, `config-api.md`, `output-contract.md`, `composability.md`, `theme-authoring/overview.md`, `runes/actions.md`. Changeset: transform minor, lumina/skeleton/cli patch.
+
+### Notes
+- Every retargeted selector wraps the new attribute in `:where()` so specificity is unchanged. Two places depend on it: the frost scrim (`lumina/styles/dimensions/cover.css`) beats the section band scrim by exactly one attribute, and `.rf-tier:hover` must keep beating the featured tier's shadow. A plain `.rf-x[data-in]` would have tied or reversed both.
+- The contract field is named `attributeSelector`, not `dataAttribute`, because elsewhere in the contract `dataAttribute` holds an attribute name, not a selector.
+- The SEO baseline did not change: no fixture nests a context-modified rune or resolves a tint.
 
 {% /work %}

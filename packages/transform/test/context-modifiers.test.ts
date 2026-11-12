@@ -159,3 +159,103 @@ describe('context-aware BEM modifiers', () => {
 		expect(cta.attributes.class).toContain('rf-cta--in-hero');
 	});
 });
+
+describe('data-in carries the context modifier as an attribute (SPEC-196 D5)', () => {
+	it('a rune in a declared parent gets data-in beside the class', () => {
+		const hero = makeTag('section', { 'data-rune': 'hero' }, [
+			makeTag('section', { 'data-rune': 'hint' }, [
+				makeTag('meta', { 'data-field': 'hint-type', content: 'note' }, []),
+				'A note inside hero',
+			]),
+		]);
+		const hint = findByTypeof(transform(hero), 'Hint')!;
+		expect(hint.attributes['data-in']).toBe('hero');
+		expect(hint.attributes.class).toContain('rf-hint--in-hero');
+	});
+
+	it('names the immediate declared parent only', () => {
+		const hero = makeTag('section', { 'data-rune': 'hero' }, [
+			makeTag('section', { 'data-rune': 'grid' }, [
+				makeTag('section', { 'data-rune': 'hint' }, [
+					makeTag('meta', { 'data-field': 'hint-type', content: 'note' }, []),
+					'Deep hint',
+				]),
+			]),
+		]);
+		const hint = findByTypeof(transform(hero), 'Hint')!;
+		expect(hint.attributes['data-in']).toBe('grid');
+	});
+
+	it('a rune in a parent it does not declare gets no data-in', () => {
+		const grid = makeTag('section', { 'data-rune': 'grid' }, [
+			makeTag('section', { 'data-rune': 'call-to-action' }, ['CTA inside grid']),
+		]);
+		const cta = findByTypeof(transform(grid), 'CallToAction')!;
+		expect(cta.attributes['data-in']).toBeUndefined();
+	});
+
+	it('a standalone rune, and a rune with no contextModifiers, get no data-in', () => {
+		const hint = asTag(
+			transform(
+				makeTag('section', { 'data-rune': 'hint' }, [
+					makeTag('meta', { 'data-field': 'hint-type', content: 'note' }, []),
+					'Alone',
+				]),
+			),
+		);
+		expect(hint.attributes['data-in']).toBeUndefined();
+
+		const hero = makeTag('section', { 'data-rune': 'hero' }, [
+			makeTag('section', { 'data-rune': 'plain' }, ['Plain rune inside hero']),
+		]);
+		const plain = findByTypeof(transform(hero), 'Plain')!;
+		expect(plain.attributes['data-in']).toBeUndefined();
+	});
+});
+
+describe('data-tinted carries the --tinted fact as an attribute (SPEC-196 D5)', () => {
+	const tintTransform = createTransform({
+		...testConfig,
+		tints: { forest: { light: { bg: '#e8f0e8' } } },
+		runes: { Card: { block: 'card' } },
+	});
+	const card = (...metas: Array<[string, string]>) =>
+		asTag(
+			tintTransform(
+				makeTag(
+					'section',
+					{ 'data-rune': 'card' },
+					metas.map(([field, content]) => makeTag('meta', { 'data-field': field, content }, [])),
+				),
+			),
+		);
+
+	it('a named tint that resolves sets data-tinted beside the class', () => {
+		const out = card(['tint', 'forest']);
+		expect(out.attributes['data-tinted']).toBe('');
+		expect(out.attributes.class).toContain('rf-card--tinted');
+	});
+
+	it('inline tokens set it too', () => {
+		const out = card(['tint', 'custom'], ['tint-bg', '#fff']);
+		expect(out.attributes['data-tinted']).toBe('');
+	});
+
+	it('tint="custom" with no tokens does not, though it has data-tint', () => {
+		const out = card(['tint', 'custom']);
+		expect(out.attributes['data-tint']).toBe('custom');
+		expect(out.attributes['data-tinted']).toBeUndefined();
+		expect(out.attributes.class ?? '').not.toContain('--tinted');
+	});
+
+	it('an unknown tint name does not', () => {
+		const out = card(['tint', 'nonexistent']);
+		expect(out.attributes['data-tint']).toBe('nonexistent');
+		expect(out.attributes['data-tinted']).toBeUndefined();
+	});
+
+	it('a bare tint-mode does not', () => {
+		const out = card(['tint-mode', 'dark']);
+		expect(out.attributes['data-tinted']).toBeUndefined();
+	});
+});

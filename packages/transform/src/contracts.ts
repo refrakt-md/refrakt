@@ -47,6 +47,8 @@ export interface RuneContract {
 		{
 			suffix: string;
 			selector: string;
+			/** SPEC-196 D5: the attribute selector carrying the same fact. */
+			attributeSelector: string;
 		}
 	>;
 	staticModifiers?: Array<{

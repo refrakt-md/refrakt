@@ -103,19 +103,18 @@ export function collectAllSelectors(
 		for (const s of selectors) allSelectors.add(s);
 	}
 
-	// Add synthetic context modifier selectors
+	// Add synthetic context modifier selectors. SPEC-196 D5: a context modifier
+	// is emitted as `data-in="<parent>"` beside the class, and stylesheets
+	// select the attribute, so the attribute is what coverage looks for.
 	if (contextModifiers) {
-		for (const suffix of Object.values(contextModifiers)) {
-			allSelectors.add(`.${prefix}-${block}--${suffix}`);
+		for (const parent of Object.keys(contextModifiers)) {
+			allSelectors.add(`[data-in="${parent}"]`);
 		}
 	}
 
-	// Add synthetic static modifier selectors
-	if (staticModifiers) {
-		for (const suffix of staticModifiers) {
-			allSelectors.add(`.${prefix}-${block}--${suffix}`);
-		}
-	}
+	// Static modifiers add nothing: the field is deprecated (SPEC-196 D5), and
+	// the fact it carries is said by an attribute the variant run already emits.
+	void staticModifiers;
 
 	return [...allSelectors].sort(selectorSort);
 }

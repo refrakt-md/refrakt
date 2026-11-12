@@ -134,25 +134,26 @@ describe('collectAllSelectors', () => {
 		expect(selectors).toContain('.rf-hint__body');
 	});
 
-	it('adds context modifier selectors synthetically', () => {
+	it('adds context modifier attribute selectors synthetically (SPEC-196 D5)', () => {
 		const selectors = collectAllSelectors(
 			'hint',
 			'hint',
 			'rf',
 			{},
-			{ Hero: 'in-hero', Feature: 'in-feature' },
+			{ hero: 'in-hero', feature: 'in-feature' },
 			undefined,
 			() => ['.rf-hint', '.rf-hint__body'],
 		);
-		expect(selectors).toContain('.rf-hint--in-hero');
-		expect(selectors).toContain('.rf-hint--in-feature');
+		expect(selectors).toContain('[data-in="hero"]');
+		expect(selectors).toContain('[data-in="feature"]');
+		expect(selectors).not.toContain('.rf-hint--in-hero');
 	});
 
-	it('adds static modifier selectors synthetically', () => {
+	it('adds no static modifier selectors: the field is deprecated (SPEC-196 D5)', () => {
 		const selectors = collectAllSelectors('tier', 'tier', 'rf', {}, undefined, ['featured'], () => [
 			'.rf-tier',
 		]);
-		expect(selectors).toContain('.rf-tier--featured');
+		expect(selectors).not.toContain('.rf-tier--featured');
 	});
 
 	it('deduplicates and sorts selectors', () => {

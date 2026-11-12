@@ -69,6 +69,12 @@ export const tintFacet: Facet = {
 		if (resolvedMode && resolvedMode !== 'auto') dataAttrs['data-color-scheme'] = resolvedMode;
 		if (Object.keys(darkTokens).length > 0) dataAttrs['data-tint-dark'] = '';
 
+		// Only when colour tokens actually resolve — a bare `tint-mode` locks the
+		// scheme without tinting anything, and should not read as tinted. The
+		// presence flag carries the `--tinted` fact without a class (SPEC-196 D5).
+		const tinted = hasTokens || Boolean(definition);
+		if (tinted) dataAttrs['data-tinted'] = '';
+
 		const styles: FacetStyle[] = [];
 		for (const [token, value] of Object.entries(lightTokens))
 			styles.push([`--tint-${token}`, value]);
@@ -79,9 +85,7 @@ export const tintFacet: Facet = {
 			consumes,
 			dataAttrs,
 			styles,
-			// Only when colour tokens actually resolved — a bare `tint-mode` locks
-			// the scheme without tinting anything, and should not read as tinted.
-			...(hasTokens || definition ? { classes: [`${ctx.block}--tinted`] } : {}),
+			...(tinted ? { classes: [`${ctx.block}--tinted`] } : {}),
 			...(dataAttrs['data-color-scheme']
 				? { state: { 'color-scheme': dataAttrs['data-color-scheme'] } }
 				: {}),
@@ -101,10 +105,10 @@ export const tintAxis: UniversalAxisFacet = {
 		inputs: ['tint', 'tint-mode', 'tint-{token}', 'tint-dark-{token}'],
 		tokens: TINT_TOKENS,
 		selectors: ['.{block}--tinted'],
-		dataAttributes: ['data-tint', 'data-color-scheme', 'data-tint-dark'],
+		dataAttributes: ['data-tint', 'data-color-scheme', 'data-tint-dark', 'data-tinted'],
 		customProperties: ['--tint-{token}', '--tint-dark-{token}'],
 		condition:
-			'the `--tinted` class only when colour tokens actually resolve — a bare `tint-mode` locks the colour scheme without tinting anything',
+			'the `--tinted` class and `data-tinted` only when colour tokens actually resolve — a bare `tint-mode` locks the colour scheme without tinting anything',
 	},
 	describeForRune: (_config, block) => ({ selectors: [`.${block}--tinted`] }),
 };

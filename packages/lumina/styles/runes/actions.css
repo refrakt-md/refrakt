@@ -76,16 +76,16 @@
  * than buttons and clearly not prose. Compact, at the badges' height; tonal
  * rather than filled, a primary included, since rank in a metadata strip is
  * not a call to action; an icon before the label sits at the text's size. */
-	.rf-actions--in-bar {
+	.rf-actions:where([data-in="bar"]) {
 		--action-padding: 0.1rem 0.5rem;
 		--action-font-size: var(--rf-text-xs);
 	}
-	.rf-actions--in-bar,
-	.rf-actions--in-bar .rf-actions__list {
+	.rf-actions:where([data-in="bar"]),
+	.rf-actions:where([data-in="bar"]) .rf-actions__list {
 		gap: 0.375rem;
 	}
-	.rf-actions--in-bar .rf-actions__action > a,
-	.rf-actions--in-bar .rf-actions__action[data-rank] > a {
+	.rf-actions:where([data-in="bar"]) .rf-actions__action > a,
+	.rf-actions:where([data-in="bar"]) .rf-actions__action[data-rank] > a {
 		gap: 0.35em;
 		background: transparent;
 		color: var(--rf-color-muted);
@@ -94,15 +94,15 @@
 		font-weight: var(--rf-weight-medium);
 		line-height: 1.25;
 	}
-	.rf-actions--in-bar .rf-actions__action > a:hover,
-	.rf-actions--in-bar .rf-actions__action[data-rank] > a:hover {
+	.rf-actions:where([data-in="bar"]) .rf-actions__action > a:hover,
+	.rf-actions:where([data-in="bar"]) .rf-actions__action[data-rank] > a:hover {
 		background: var(--rf-color-surface-hover);
 		color: var(--rf-color-text);
 		border-color: var(--rf-color-surface-active);
 		box-shadow: none;
 		transform: none;
 	}
-	.rf-actions--in-bar .rf-actions__action > a svg {
+	.rf-actions:where([data-in="bar"]) .rf-actions__action > a svg {
 		width: 1em;
 		height: 1em;
 		flex: none;

@@ -86,15 +86,15 @@
 	}
 
 	/* Context-aware: feature inside a hero — no top padding, tighter spacing */
-	.rf-feature--in-hero {
+	.rf-feature:where([data-in="hero"]) {
 		padding-top: 0;
 	}
-	.rf-feature--in-hero .rf-feature__feature-item {
+	.rf-feature:where([data-in="hero"]) .rf-feature__feature-item {
 		background: transparent;
 	}
 
 	/* Context-aware: feature inside a grid — remove outer padding */
-	.rf-feature--in-grid {
+	.rf-feature:where([data-in="grid"]) {
 		padding: 0;
 	}
 }

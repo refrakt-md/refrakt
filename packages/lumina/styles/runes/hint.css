@@ -47,18 +47,18 @@
 	}
 
 	/* Context-aware: compact hint when nested inside a hero */
-	.rf-hint--in-hero {
+	.rf-hint:where([data-in="hero"]) {
 		margin: var(--rf-spacing-cozy) 0 0;
 		padding: var(--rf-spacing-sm) var(--rf-spacing-cozy);
 		border-radius: var(--rf-radius-sm);
 		font-size: var(--rf-text-sm);
 	}
-	.rf-hint--in-hero .rf-hint__header {
+	.rf-hint:where([data-in="hero"]) .rf-hint__header {
 		margin-bottom: var(--rf-spacing-xs);
 	}
 
 	/* Context-aware: hint inside a feature block */
-	.rf-hint--in-feature {
+	.rf-hint:where([data-in="feature"]) {
 		margin: var(--rf-spacing-snug) 0 0;
 		padding: var(--rf-spacing-sm) var(--rf-spacing-snug);
 		font-size: var(--rf-text-sm);

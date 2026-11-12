@@ -26,13 +26,14 @@
 			"dataAttributes": [
 				"data-tint",
 				"data-color-scheme",
-				"data-tint-dark"
+				"data-tint-dark",
+				"data-tinted"
 			],
 			"customProperties": [
 				"--tint-{token}",
 				"--tint-dark-{token}"
 			],
-			"condition": "the `--tinted` class only when colour tokens actually resolve — a bare `tint-mode` locks the colour scheme without tinting anything"
+			"condition": "the `--tinted` class and `data-tinted` only when colour tokens actually resolve — a bare `tint-mode` locks the colour scheme without tinting anything"
 		},
 		"width": {
 			"description": "The track a block rune occupies.",
@@ -1686,11 +1687,13 @@
 			"contextModifiers": {
 				"hero": {
 					"suffix": "in-hero",
-					"selector": ".rf-hint--in-hero"
+					"selector": ".rf-hint--in-hero",
+					"attributeSelector": "[data-in=\"hero\"]"
 				},
 				"feature": {
 					"suffix": "in-feature",
-					"selector": ".rf-hint--in-feature"
+					"selector": ".rf-hint--in-feature",
+					"attributeSelector": "[data-in=\"feature\"]"
 				}
 			},
 			"universalAxes": {
@@ -2544,7 +2547,8 @@
 			"contextModifiers": {
 				"bento-cell": {
 					"suffix": "in-bento-cell",
-					"selector": ".rf-showcase--in-bento-cell"
+					"selector": ".rf-showcase--in-bento-cell",
+					"attributeSelector": "[data-in=\"bento-cell\"]"
 				}
 			},
 			"universalAxes": {
@@ -2977,7 +2981,8 @@
 			"contextModifiers": {
 				"bar": {
 					"suffix": "in-bar",
-					"selector": ".rf-actions--in-bar"
+					"selector": ".rf-actions--in-bar",
+					"attributeSelector": "[data-in=\"bar\"]"
 				}
 			},
 			"universalAxes": {
@@ -3645,11 +3650,13 @@
 			"contextModifiers": {
 				"hero": {
 					"suffix": "in-hero",
-					"selector": ".rf-feature--in-hero"
+					"selector": ".rf-feature--in-hero",
+					"attributeSelector": "[data-in=\"hero\"]"
 				},
 				"grid": {
 					"suffix": "in-grid",
-					"selector": ".rf-feature--in-grid"
+					"selector": ".rf-feature--in-grid",
+					"attributeSelector": "[data-in=\"grid\"]"
 				}
 			},
 			"universalAxes": {
@@ -6688,7 +6695,8 @@
 			"contextModifiers": {
 				"design-context": {
 					"suffix": "in-design-context",
-					"selector": ".rf-palette--in-design-context"
+					"selector": ".rf-palette--in-design-context",
+					"attributeSelector": "[data-in=\"design-context\"]"
 				}
 			},
 			"universalAxes": {
@@ -6751,7 +6759,8 @@
 			"contextModifiers": {
 				"design-context": {
 					"suffix": "in-design-context",
-					"selector": ".rf-typography--in-design-context"
+					"selector": ".rf-typography--in-design-context",
+					"attributeSelector": "[data-in=\"design-context\"]"
 				}
 			},
 			"universalAxes": {
@@ -6799,7 +6808,8 @@
 			"contextModifiers": {
 				"design-context": {
 					"suffix": "in-design-context",
-					"selector": ".rf-spacing--in-design-context"
+					"selector": ".rf-spacing--in-design-context",
+					"attributeSelector": "[data-in=\"design-context\"]"
 				}
 			},
 			"universalAxes": {
@@ -6900,7 +6910,8 @@
 			"contextModifiers": {
 				"feature": {
 					"suffix": "in-feature",
-					"selector": ".rf-preview--in-feature"
+					"selector": ".rf-preview--in-feature",
+					"attributeSelector": "[data-in=\"feature\"]"
 				}
 			},
 			"universalAxes": {

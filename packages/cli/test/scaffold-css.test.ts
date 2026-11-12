@@ -74,7 +74,8 @@ describe('scaffoldCssCommand', () => {
 		scaffoldCssCommand({ outputDir, force: false });
 
 		const hintCss = readFileSync(join(outputDir, 'hint.css'), 'utf-8');
-		expect(hintCss).toContain('.rf-hint--in-hero {');
+		expect(hintCss).toContain('.rf-hint[data-in="hero"] {');
+		expect(hintCss).not.toContain('.rf-hint--in-hero');
 	});
 
 	it('includes comment annotations', () => {

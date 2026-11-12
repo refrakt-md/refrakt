@@ -40,7 +40,10 @@
 	.rf-tier:hover {
 		box-shadow: var(--rf-shadow-md);
 	}
-	.rf-tier--featured {
+	/* The featured tier is selected by its `data-rune`, not the `--featured`
+	 * static modifier (SPEC-196 D5). `:where()` keeps the old specificity, so
+	 * `.rf-tier:hover` still wins on hover as it did. */
+	.rf-tier:where([data-rune="featured-tier"]) {
 		border-color: var(--rf-color-primary);
 		box-shadow: var(--rf-shadow-lg);
 	}
@@ -85,20 +88,20 @@
 			box-shadow 200ms ease,
 			transform 200ms ease;
 	}
-	.rf-tier:not(.rf-tier--featured) a {
+	.rf-tier:not([data-rune="featured-tier"]) a {
 		background: var(--rf-color-surface);
 		color: var(--rf-color-text);
 		border: 1px solid var(--rf-color-border);
 	}
-	.rf-tier:not(.rf-tier--featured) a:hover {
+	.rf-tier:not([data-rune="featured-tier"]) a:hover {
 		background: var(--rf-color-surface-hover);
 		text-decoration: none;
 	}
-	.rf-tier--featured a {
+	.rf-tier:where([data-rune="featured-tier"]) a {
 		background: var(--rf-color-primary);
 		color: white;
 	}
-	.rf-tier--featured a:hover {
+	.rf-tier:where([data-rune="featured-tier"]) a:hover {
 		background: var(--rf-color-primary-hover);
 		box-shadow: var(--rf-shadow-sm);
 		transform: translateY(-1px);

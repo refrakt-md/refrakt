@@ -76,17 +76,27 @@ export const modifiersFacet: Facet = {
 };
 
 /** `context-modifiers` — a BEM modifier added when a rune is nested inside a
- *  matching parent rune. Keyed by the parent's kebab-case `data-rune`. */
+ *  matching parent rune. Keyed by the parent's kebab-case `data-rune`.
+ *
+ *  The same fact is also emitted as `data-in="<parent>"` (SPEC-196 D5), so it
+ *  survives a theme that applies no classes. Only a declared parent gets it:
+ *  the attribute says what the class said and no more. */
 export const contextModifiersFacet: Facet = {
 	name: 'context-modifiers',
 
 	resolve(ctx) {
-		const suffix = ctx.parentRune ? ctx.config.contextModifiers?.[ctx.parentRune] : undefined;
-		return suffix ? { classes: [`${ctx.block}--${suffix}`] } : null;
+		const parent = ctx.parentRune;
+		const suffix = parent ? ctx.config.contextModifiers?.[parent] : undefined;
+		return parent && suffix
+			? { classes: [`${ctx.block}--${suffix}`], dataAttrs: { 'data-in': parent } }
+			: null;
 	},
 };
 
-/** `static-modifiers` — BEM modifier suffixes a rune always carries. */
+/** `static-modifiers` — BEM modifier suffixes a rune always carries.
+ *
+ *  Deprecated (SPEC-196 D5, SPEC-194 D5): in every first-party use the fact is
+ *  already said by an attribute, and stylesheets select that instead. */
 export const staticModifiersFacet: Facet = {
 	name: 'static-modifiers',
 
@@ -131,7 +141,11 @@ export const contextModifiersDescribe: DescribableFacet = {
 		if (!config.contextModifiers || Object.keys(config.contextModifiers).length === 0) return null;
 		const contextModifiers: NonNullable<FacetContract['contextModifiers']> = {};
 		for (const [parent, suffix] of Object.entries(config.contextModifiers)) {
-			contextModifiers[parent] = { suffix, selector: `.${block}--${suffix}` };
+			contextModifiers[parent] = {
+				suffix,
+				selector: `.${block}--${suffix}`,
+				attributeSelector: `[data-in="${parent}"]`,
+			};
 		}
 		return { contextModifiers };
 	},

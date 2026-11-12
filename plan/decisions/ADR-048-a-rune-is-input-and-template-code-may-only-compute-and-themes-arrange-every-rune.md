@@ -76,6 +76,12 @@ most runes and a sentence for these fourteen.
 - **"Native" means written in TypeScript today.** Once a rune moves, it is a definition like any
   composition; one that needs code names a `prepare` stage. "The first native runes to move"
   (SPEC-194 D14) means runes that are TypeScript now.
+- **Macros are the one kind with no template** (*added 2026-11-10*, {% ref "SPEC-194" /%} D15).
+  `include`, `snippet` and `data` replace themselves with authored Markdoc before the transform,
+  so no part of them reaches the output for a theme to arrange. Their definitions declare the
+  input as every rune does, and name a registered `preprocess` stage
+  ({% ref "SPEC-141" /%}) instead of a template. "Every rune is input + template" means every
+  rune with output.
 - **Decision 3 came later.** While settling which runes keep classes ({% ref "SPEC-196" /%}), it
   became clear that converting a rune had been aiming at parity with its current look, and that
   this kept rune-specific CSS alive under another name. ADR-044 already states the end the

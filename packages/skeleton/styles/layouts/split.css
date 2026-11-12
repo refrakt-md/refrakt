@@ -158,7 +158,7 @@
 [data-section="media"]:is(
 	:has(> [data-rune="preview"]),
 	:has(> [data-rune="juxtapose"]),
-	:has(> .rf-showcase[data-displace]:not(.rf-showcase--in-bento-cell))
+	:has(> .rf-showcase[data-displace]:not([data-in="bento-cell"]))
 ) {
 	overflow: visible;
 	container-type: normal;
@@ -168,7 +168,7 @@
 [data-section="media"]:is(
 	:has(> [data-rune="preview"]),
 	:has(> [data-rune="juxtapose"]),
-	:has(> .rf-showcase[data-displace]:not(.rf-showcase--in-bento-cell))
+	:has(> .rf-showcase[data-displace]:not([data-in="bento-cell"]))
 ) > * {
 	width: auto;
 	max-height: none;
