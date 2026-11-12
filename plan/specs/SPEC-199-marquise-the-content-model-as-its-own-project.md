@@ -280,9 +280,31 @@ Refrakt's structured data has never depended on who draws the markup: the schema
 
 ## Decisions to make
 
-1. **What a tag is called.** "Rune" is established in refrakt, but Svelte 5 also calls `$state`
-   and `$derived` "runes", and Marquise ships a Svelte renderer. Candidates: "definition",
-   "block", "shape", or keep "rune" and own the collision.
+1. **What a tag is called.** *Decided 2026-11-12: authors write **tags**; developers define
+   **shapes**.*
+
+   > Define a `recipe` shape in `shapes/recipe.md`. Authors write `{% recipe %}` in plain
+   > Markdown. Your `Recipe` component receives typed props.
+
+   - **Why not "rune".** Svelte 5 calls `$state` and `$derived` "runes", and Marquise ships a
+     Svelte renderer; the word also tells a newcomer nothing. Refrakt keeps "rune" as part of its
+     character.
+   - **Two things, two words.** What an author writes in a page is a **tag**, Markdoc's own word,
+     so authors learn nothing new. What a developer defines (attributes, content model, computed
+     values) is a **shape**: it says what the definition is, the shape content takes, and
+     developers already speak of "the shape of the data". It is distinct and searchable.
+   - **It fits refrakt's own use.** {% ref "SPEC-168" /%} D6 already calls reusable content
+     structure a "shared shape" (`file="shapes/profile.md#body"`).
+   - **The ladder in one sentence:** every refrakt rune is a Marquise shape plus refrakt's extras
+     (templates, a theme presentation, the design vocabulary).
+   - **Considered:** "block" (the audience's own word, but inline tags are not blocks, Markdown
+     already splits block from inline, and SPEC-197 uses "blocks" for a definition's body);
+     "definition" (accurate for the file, clumsy for everything else); "component" (the very
+     thing a shape maps to); gem-themed words (unclear; kept for the name and tools instead).
+   - **Knock-ons:** the directory convention is `shapes/`; error ids and docs use "shape" and
+     "tag"; frontmatter keys (`attributes`, `content`, `computes`) are already neutral and do not
+     change. The rest of this spec says "definition" and "rune node" for refrakt's side; Marquise's
+     own docs and APIs use "shape" (and a "shape node" where this spec says rune node).
 2. **Templates.** *Revised 2026-11-12.* Not in the first release; later as `@marquise/compose`.
    The template language is generic; what is refrakt's is the vocabulary it places
    (SPEC-194 D11: elements come only from primitives). In Marquise a template places only
