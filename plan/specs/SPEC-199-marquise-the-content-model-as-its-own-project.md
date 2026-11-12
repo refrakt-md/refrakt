@@ -51,7 +51,8 @@ general hooks that any other host could use too:
 | **Presentations**: something other than a component that draws a definition | templates, the identity transform and themes |
 | **`prepare` stages** registered by packages | native runes' computations (SPEC-194 D3) |
 | **File roots** contributed by packages | `core:`, `marketing:` for `include` and `snippet` (SPEC-197 D4) |
-| **Extra definition keys** a host declares and validates | `role`, `placedBy`, `schema`, `metaFields`, `registers`, `blocks`, `defaults` |
+| **Extra definition keys** a host declares and validates | `role`, `placedBy`, `metaFields`, `registers`, `blocks`, `defaults` (`schema` belongs to `@marquise/schema`) |
+| **Preprocess tags** registered by packages | `data`, `snippet`: tags that resolve to content before the transform, as `include` does |
 
 **The test of the boundary:** refrakt builds on Marquise using only these hooks. If refrakt
 needs a special case inside Marquise, the seam is in the wrong place.
@@ -88,13 +89,23 @@ Not `ThemeShell`, layouts, route rules or behaviours.
 | `@marquise/ai` | `packages/ai` (prompt building, write mode) | prompts from the grammar and examples, filtered by `role` |
 | `@marquise/mcp` | `packages/mcp`, slimmed | validate, reference, format, types, examples |
 
-### Optional add-ons, after the first release
+### Add-ons
 
-| Package | From | Why later |
-|---|---|---|
-| `@marquise/snippet` | `tags/snippet.ts`, `lib/anchor.ts`, `mask.ts`, `languages.ts`, `invocation.ts`, `review-marker.ts` (SPEC-131, SPEC-134) | general docs tooling, about 2,000 lines; useful, not essential |
-| `@marquise/schema` | `lib/schema-table.ts`, `seo.ts`, `schema-row.ts` | schema.org rows are input-side and theme-independent, but a large surface to support |
-| `@marquise/editor` | `packages/editor` | forms come from the content model and `editHints`, but its preview uses refrakt's content, highlighting and rendering |
+| Package | From | When | Why separate |
+|---|---|---|---|
+| `@marquise/schema` | `lib/schema-table.ts`, `seo.ts`, `schema-row.ts` | **with the first release** | schema.org rows work on input only and are independent of themes, so they fit the boundary cleanly, and published structured data is one of the strongest reasons to choose typed content over plain Markdown. Separate because not every user publishes structured data |
+| `@marquise/snippet` | `tags/snippet.ts`, `lib/anchor.ts`, `mask.ts`, `languages.ts`, `invocation.ts`, `review-marker.ts` (SPEC-131, SPEC-134) | after the first release | quotes regions of any source file by name: documentation about code, not reading typed values out of Markdown. No definition, field or example depends on it (`source()` shows an example's source). About 2,000 lines with per-language keyword tables to maintain. Shipped as an ordinary package using the preprocess hook, which proves that hook for other packages |
+
+**Why `include` is core and `snippet` is not.** A content model reads a tag's parsed children,
+so anything that should count as a tag's content must be in place before the model reads it.
+Markdoc's own `partial` resolves at transform time, after that, so an included file could never
+fill a rune's fields. `include` pastes parsed content first (SPEC-141), which makes it part of the
+content model, and SPEC-197's examples and `file#id` addressing run through it. `snippet`
+resolves to a fence whose content is never read as Markdoc again, so nothing in the model needs
+it. In Marquise, refrakt's `_partials/` becomes one root a host configures, not a built-in
+convention.
+
+**Out of scope: the block editor** (`packages/editor`). It stays with refrakt.
 
 ## What stays with refrakt
 
@@ -107,7 +118,7 @@ Not `ThemeShell`, layouts, route rules or behaviours.
   entity registry), the data, collection, aggregate, xref and expand pipelines, `registers`.
 - **Adapters:** `sveltekit`, `next`, `nuxt`, `astro` (the site integration), `eleventy`, `html`.
 - **Refrakt-specific tooling:** `inspect`, `contracts`, `gallery`, the theme commands, `i18n`,
-  `stale`, `plan`, `create-refrakt`.
+  `stale`, `plan`, `create-refrakt`, and the block editor.
 
 ## What has to be split first
 
@@ -156,9 +167,9 @@ Every step before 6 is useful to refrakt on its own, so stopping early wastes no
    `@refrakt-md/model` alone.
 5. **A proof outside refrakt:** a small example project on plain Markdoc and React, with no
    refrakt config, theme or engine. If it is not compelling, stop here.
-6. **Break-out:** own repository, `marquise` packages, a docs site (built with refrakt), and
-   refrakt switches its dependency.
-7. **Add-ons:** snippet, schema, editor.
+6. **Break-out:** own repository, `marquise` packages with `@marquise/schema`, a docs site (built
+   with refrakt), and refrakt switches its dependency.
+7. **Add-ons:** `@marquise/snippet`, on the preprocess hook.
 
 ## Risks
 
