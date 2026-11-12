@@ -1,5 +1,14 @@
 # @refrakt-md/places
 
+## 0.50.0
+
+### Patch Changes
+
+- Updated dependencies [7b411ef]
+  - @refrakt-md/transform@0.50.0
+  - @refrakt-md/runes@0.50.0
+  - @refrakt-md/types@0.50.0
+
 ## 0.49.0
 
 ### Patch Changes
