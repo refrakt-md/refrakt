@@ -19,8 +19,14 @@ type the frontmatter, not the body.
   component;
 - examples live in the definition and are tested against it.
 
-Refrakt becomes Marquise's largest user: Marquise, plus templates, the engine and themes, the
-rune library, and the site pipeline.
+Refrakt becomes Marquise's largest user: Marquise, plus its design vocabulary, the engine and
+themes, the rune library, and the site pipeline.
+
+**Marquise works on one document at a time.** It types the content inside a document and knows
+nothing of sites: routes, URLs, navigation, or how pages refer to each other. That is the job of a
+site layer, whether the framework's own (Astro content collections, Next, Nuxt Content) or
+refrakt, which adds the whole site. Marquise cooperates with a site layer through hooks (host
+values, deferred definitions) and never contains one.
 
 This spec is the breakdown: what goes, what stays, what has to be split first, the decisions to
 make, and an order that keeps every step useful to refrakt even if the break-out never happens.
@@ -48,7 +54,9 @@ general hooks that any other host could use too:
 |---|---|
 | **Shared attributes**: attributes every definition accepts, with a rule for which | the universal attributes (`width`, `tint`, `reveal`…), gated by declared structure |
 | **A wrapper around a rune and around a slot** in the renderers | the engine root, background layers, the `dimensions` prop, part attributes (ADR-049 decision 8) |
-| **Presentations**: something other than a component that draws a definition | templates, the identity transform and themes |
+| **Presentations**: something other than a component that draws a definition | the identity transform and themes; templates, until `@marquise/compose` exists |
+| **Template tags and placeable definitions** a host adds to the template language, once `@marquise/compose` exists | refrakt's primitives (`section`, `attribution`, `frame`, `codeblock`), `group` with its layouts, `metablock`, and SPEC-177's theme and site template lookup |
+| **Deferred definitions**: a definition left as a placeholder holding its source, expanded later when the host supplies values | runes whose data reads the entity registry, expanded after the cross-page pipeline (SPEC-194 D12.4); today's capture and re-parse in `deferred-body.ts` |
 | **`prepare` stages** registered by packages | native runes' computations (SPEC-194 D3) |
 | **File roots** contributed by packages | `core:`, `marketing:` for `include` and `snippet` (SPEC-197 D4) |
 | **Extra definition keys** a host declares and validates | `role`, `placedBy`, `metaFields`, `registers`, `blocks`, `defaults` (`schema` belongs to `@marquise/schema`) |
@@ -97,6 +105,7 @@ Not `ThemeShell`, layouts, route rules or behaviours.
 | Package | From | When | Why separate |
 |---|---|---|---|
 | `@marquise/schema` | `lib/schema-table.ts`, `seo.ts`, `schema-row.ts` | **with the first release** | schema.org rows work on input only and are independent of themes, so they fit the boundary cleanly, and published structured data is one of the strongest reasons to choose typed content over plain Markdown. Separate because not every user publishes structured data |
+| `@marquise/compose` | the template half of `lib/composition.ts`, `composition-placement.ts`, `slot-markers.ts` (SPEC-145, SPEC-168) | after the first release | the template language without refrakt's vocabulary: `{% slot %}`, `each`, `{% if %}`, variants, `{% fragment %}`, values, and **placing other definitions**. A template places only definitions, which are drawn by their components, their own templates or the plain presentation, so SPEC-194 D11's rule holds with the user's definitions as the primitives. A component can still replace a composed definition's template (ADR-049), and the renderer sees nested rune nodes. Later because it is the least settled part (SPEC-168, SPEC-177 are drafts), the largest (about 3,000 lines), and tangled with schema rows that cross rune boundaries (SPEC-145 D19), which go to `@marquise/schema` first |
 | `@marquise/data` | `tags/data.ts`, `data-pipeline.ts`, `data-adapters.ts`, `data-projection.ts`, `data-emit.ts` (about 1,400 lines; SPEC-103, SPEC-127) | with the first release or right after | reads CSV, TSV, JSON and NDJSON from project files only (the `ProjectFiles` seam, SPEC-113), projects and types the rows, and resolves before the transform to a table or to its body once per row with `$row` bound. No registry, no pipeline. It extends the core idea rather than the tooling: a per-row body is ordinary Markdown, so definitions reinterpret generated content exactly as they do written content. Separate because not every site has tabular data |
 | `@marquise/snippet` | `tags/snippet.ts`, `lib/anchor.ts`, `mask.ts`, `languages.ts`, `invocation.ts`, `review-marker.ts` (SPEC-131, SPEC-134) | after the first release | quotes regions of any source file by name: documentation about code, not reading typed values out of Markdown. No definition, field or example depends on it (`source()` shows an example's source). About 2,000 lines with per-language keyword tables to maintain. Shipped as an ordinary package using the preprocess hook, which proves that hook for other packages |
 
@@ -113,8 +122,10 @@ convention.
 
 ## What stays with refrakt
 
-- **Presentation:** the template language and its checks (`lib/composition.ts`'s template half,
-  `composition-placement.ts`, `slot-markers.ts`, SPEC-168, SPEC-177), primitives, `output()`.
+- **The design vocabulary:** primitives (`section`, `attribution`, `frame`, `codeblock`), `group`
+  and its layouts, `metablock`, `output()`, SPEC-177's theme and site template lookup and the
+  per-theme structure contracts. The template language itself moves later, as
+  `@marquise/compose`; until then it stays here.
 - **The engine and themes:** `packages/transform` except the helpers listed above; universal
   attributes and their facets; `config.ts`; vocabulary; Lumina; tokens; contracts.
 - **The rune library:** core runes in `packages/runes/src/tags` and all plugins.
@@ -133,7 +144,8 @@ convention.
 | Module | Goes to Marquise | Stays with refrakt |
 |---|---|---|
 | `lib/index.ts` (the schema builder, 1,270 lines) | building a schema from attributes and a content model | universal attributes, schema tables, header roles, slot markers, composition wiring |
-| `lib/composition.ts` (2,673 lines) | reading a definition's input: attributes, content, `computes`, defaults | template expansion and placement |
+| `lib/composition.ts` (2,673 lines) | now: reading a definition's input (attributes, content, `computes`, defaults). Later, as `@marquise/compose`: template expansion and placement | the design vocabulary's tags and placement rules, reached only through the template-tag hook. Until the move, templates must not call refrakt's vocabulary directly, or extracting them becomes a rewrite |
+| `deferred-body.ts` | capturing a tag's source as a placeholder and expanding it later | when to defer (the registry), and the values supplied |
 | `reference.ts` | a definition's grammar | universal attributes, vocabulary, schema rows (as a host extension to the output) |
 | `plugins.ts` | definition packages: definitions, `prepare` stages, file roots | theme config, pipeline hooks, layouts, CLI plugins |
 | `packages/types` | `content-model.ts`, `serialized.ts`, the definition-package part of `package.ts` | theme, tokens, pipeline, config |
@@ -145,9 +157,11 @@ convention.
 1. **What a tag is called.** "Rune" is established in refrakt, but Svelte 5 also calls `$state`
    and `$derived` "runes", and Marquise ships a Svelte renderer. Candidates: "definition",
    "block", "shape", or keep "rune" and own the collision.
-2. **Templates in Marquise or not.** Recommended: not in the first release. Templates need a
-   design vocabulary (SPEC-194 D11: elements come only from primitives), which is refrakt's.
-   Marquise ships components and a plain presentation; refrakt adds templates as a presentation.
+2. **Templates.** *Revised 2026-11-12.* Not in the first release; later as `@marquise/compose`.
+   The template language is generic; what is refrakt's is the vocabulary it places
+   (SPEC-194 D11: elements come only from primitives). In Marquise a template places only
+   definitions, so a user's own definitions are its primitives, and refrakt adds its vocabulary
+   through the template-tag hook. The first release ships components and the plain presentation.
 3. **The plain presentation.** What a definition renders as with no component: an error, or the
    definition's `tag:` element with each slot in order and attributes as `data-*`. Recommended:
    the second, so content is never silently lost and a definition is useful before its component
@@ -177,7 +191,9 @@ Every step before 6 is useful to refrakt on its own, so stopping early wastes no
    refrakt config, theme or engine. If it is not compelling, stop here.
 6. **Break-out:** own repository, `marquise` packages with `@marquise/schema` and
    `@marquise/data`, a docs site (built with refrakt), and refrakt switches its dependency.
-7. **Add-ons:** `@marquise/snippet`, on the preprocess hook.
+7. **Add-ons:** `@marquise/snippet`, on the preprocess hook; then `@marquise/compose`, once
+   SPEC-168 and SPEC-177 are accepted and refrakt's vocabulary reaches templates only through the
+   template-tag hook.
 
 ## Risks
 
@@ -204,6 +220,7 @@ Every step before 6 is useful to refrakt on its own, so stopping early wastes no
 - {% ref "ADR-048" /%}, {% ref "ADR-049" /%}
 - {% ref "SPEC-194" /%}, {% ref "SPEC-195" /%}, {% ref "SPEC-197" /%}, {% ref "SPEC-198" /%}
 - {% ref "SPEC-141" /%}: preprocess
+- {% ref "SPEC-145" /%}, {% ref "SPEC-168" /%}, {% ref "SPEC-177" /%}: composition, templates and fragments, template lookup
 - {% ref "SPEC-170" /%}: indentation-tolerant parsing and formatting
 - {% ref "SPEC-131" /%}, {% ref "SPEC-134" /%}: snippet anchors and review markers
 - {% ref "SPEC-103" /%}, {% ref "SPEC-127" /%}, {% ref "SPEC-113" /%}: the data rune, per-row templates, project files
