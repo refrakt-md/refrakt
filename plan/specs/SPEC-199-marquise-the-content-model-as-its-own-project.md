@@ -32,6 +32,99 @@ This spec is the breakdown: what goes, what stays, what has to be split first, t
 make, and an order that keeps every step useful to refrakt even if the break-out never happens.
 The name comes from the marquise gem cut, which also starts like Markdoc.
 
+## Who it is for
+
+**Tagline: "Markdown in, typed props out."** The line under it: "Your Markdown already has
+structure. Marquise reads it."
+
+Every alternative makes a team choose between content that reads as prose and content that is
+structured. Marquise gives both: authors write plain Markdown, developers receive typed data.
+
+**Primary audience: framework teams whose content is written by someone else.** A React, Vue,
+Svelte or Astro site with its own design system, whose pages are built from content blocks (hero,
+pricing, FAQ, recipe, product), written by marketers, writers or an AI. The authors never touch
+JSX; the developers' own components receive validated, typed values.
+
+**Secondary audiences:**
+
+- **Teams generating content with AI.** A model writes Markdown far more reliably than JSX or
+  nested JSON. Marquise gives it a grammar and examples, then validates what it wrote with error
+  ids it can act on: write, validate, fix.
+- **Docs and design-system teams:** component docs and API sections, with examples tested against
+  their definitions.
+- **Teams keeping content in git** rather than a headless CMS, who still want structure and
+  schema.org output.
+
+**Not for:** a whole site with themes and no frontend work (refrakt); relational data such as
+inventories (a database or CMS); unstructured blogs (plain Markdown).
+
+| Alternative | What it gives | What Marquise adds |
+|---|---|---|
+| MDX | components inside Markdown | authors never write JSX; content stays prose; the body is validated; content cannot run code, which matters when non-developers or an AI write it |
+| Markdoc alone | tags with validated attributes | typed bodies (content models), definitions in `.md`, generated types, tested examples, editor tooling |
+| Content collections (Astro, Velite, Contentlayer) | typed frontmatter | typed body content; complementary, since Marquise works on one document and they handle the site |
+| Headless CMS | structure, an editing UI | plain files in git, readable diffs, no service to run |
+
+**Marquise or refrakt.** Choose Marquise when you already have a site (framework, routing,
+design system, components) and want typed content in it with nothing else imposed. Choose refrakt
+when you want the site: themes, a design language, a rune library, navigation, cross-page
+features. They are **a ladder, not a fork**: the same definitions and content work in both, so a
+team can start with Marquise and add refrakt's runes, templates or themes later without rewriting
+content, and a refrakt site can use Marquise components for app-specific parts (ADR-049).
+
+The audience mostly uses MDX, not Markdoc, so the story is "move from MDX and keep your
+components". The first page shows it rather than describing it: Markdown on one side, typed
+props on the other.
+
+## Marquise is the stable product; refrakt is the lab
+
+*Recorded 2026-11-12.* Refrakt has grown in many directions at once (themes, a design language,
+a large rune library, plan tooling, site features, editor), which is why a 1.0 has been hard to
+reach. Marquise is not only a smaller package: it is where stability lives.
+
+- **Refrakt stays the lab.** New ideas are tried there first, on real content, and may stay `0.x`
+  for as long as that is useful.
+- **Marquise ships 1.0 from what is already built and settled**, not from what is planned. It
+  does not wait for refrakt's specs to settle; it freezes a small core that already has.
+- **Ideas graduate one way.** A feature moves into Marquise only when its spec is implemented in
+  refrakt, has been used on real content, and can arrive as an additive change. Marquise has no
+  experimental flags: what is in it is stable.
+- **Semver from 1.0.** A breaking change waits for a major release and comes with a codemod.
+  Marquise versions independently; refrakt pins a range and adapts to Marquise, never the reverse.
+- **Every hook is public API.** 1.0 ships only the hooks refrakt needs at that point. The rest
+  arrive with the features that need them.
+- **Saying no is the point.** A request that needs a site, a theme or a design vocabulary belongs
+  in refrakt, or in the user's own site layer.
+
+### What 1.0 contains
+
+| In 1.0 | Status today |
+|---|---|
+| Indentation-tolerant parsing | SPEC-170, shipped |
+| Content models: `sequence`, `delimited`, `sections` (not `custom`) | the resolver, in use by every rune |
+| Definitions: frontmatter `attributes`, `content`, `description` | SPEC-145, accepted; five definitions live |
+| Attribute and content validation, with error ids | in use (`refrakt validate`) |
+| Preprocess and `include` | SPEC-141, shipped |
+| The rune node, the generic renderers, components | ADR-049, proposed: **the one new piece**, and the product itself |
+| The plain presentation | new, small |
+| `validate`, `reference`, `format`, `types`, the language server | exist, to be split from refrakt |
+| `@marquise/schema` | SPEC-130, shipped |
+| `@marquise/data` | SPEC-103, shipped |
+
+**A definition's body is reserved in 1.0:** it must be empty. That keeps SPEC-197's body blocks
+(examples, then templates) additive when they arrive.
+
+### After 1.0, each as a minor release once it graduates
+
+| Feature | Waits for |
+|---|---|
+| `computes`, `prepare`, the value vocabulary, `matches()` | SPEC-194, SPEC-195 implemented in refrakt |
+| `{% example %}`, `file#id`, examples in tooling | SPEC-197 |
+| `source()` | SPEC-198 |
+| deferred definitions | refrakt's pipeline using the model's version |
+| `@marquise/snippet` | moving onto the preprocess hook |
+| `@marquise/compose` | SPEC-168, SPEC-177 accepted and implemented |
+
 ## Prerequisites
 
 | Needs | From | State on 2026-11-12 |
@@ -178,29 +271,34 @@ convention.
 
 ## Order
 
-Every step before 6 is useful to refrakt on its own, so stopping early wastes nothing.
+*Revised 2026-11-12:* 1.0 is cut from what exists ("What 1.0 contains"), so nothing here waits
+for refrakt's open specs. Every step before 5 is useful to refrakt on its own, so stopping early
+wastes nothing.
 
-1. **Seams inside the monorepo.** Pull the parser, resolver, definition input and value
-   vocabulary into `@refrakt-md/model`; `runes` depends on it. A refactor with no new promises.
+1. **Seams inside the monorepo.** Pull the parser, resolver, definition input and validation into
+   `@refrakt-md/model`; `runes` depends on it. A refactor with no new promises.
 2. **The rune node and generic renderers** (ADR-049): split each renderer into its generic and
    refrakt halves; add the wrapper and shared-attribute hooks.
-3. **Examples and addressing** (SPEC-197), and `source()` (SPEC-198).
-4. **Tooling split:** grammar, `types`, example tests and the language server work from
-   `@refrakt-md/model` alone.
-5. **A proof outside refrakt:** a small example project on plain Markdoc and React, with no
+3. **Tooling split:** `validate`, `reference`, `format`, `types` and the language server work
+   from `@refrakt-md/model` alone. Schema and data move onto the model as add-ons.
+4. **A proof outside refrakt:** a small example project on plain Markdoc and React, with no
    refrakt config, theme or engine. If it is not compelling, stop here.
-6. **Break-out:** own repository, `marquise` packages with `@marquise/schema` and
+5. **Marquise 1.0:** own repository, the core, the renderers, the tooling, `@marquise/schema` and
    `@marquise/data`, a docs site (built with refrakt), and refrakt switches its dependency.
-7. **Add-ons:** `@marquise/snippet`, on the preprocess hook; then `@marquise/compose`, once
-   SPEC-168 and SPEC-177 are accepted and refrakt's vocabulary reaches templates only through the
-   template-tag hook.
+6. **Minor releases as features graduate** from refrakt, in the order of the table under "After
+   1.0".
 
 ## Risks
 
 - **Focus.** A second project needs its own docs, issues and releases.
 - **Freezing the core.** Once others depend on Marquise, the definition format and resolver stop
-  being free to change, while SPEC-194, SPEC-195 and SPEC-197 are still moving them. Step 6 should
-  wait until they settle.
+  being free to change. Cutting 1.0 from what is already settled, reserving the definition body,
+  and adding everything else as minor releases is what makes the freeze affordable.
+- **Marquise becoming a second refrakt.** The pull to add "just one more" feature is what made
+  refrakt hard to finish. The graduation rule and the "not for" list are the defence; the number
+  of hooks is the early warning.
+- **The lab drifting from the product.** Refrakt must build on the released Marquise, not on a
+  private fork of it, or graduation turns into a port.
 - **Explaining the idea.** Reinterpreting Markdown is obvious once used and unfamiliar before.
   The first page has to show it: Markdown in, typed props out.
 - **Two sources of truth during incubation.** Refrakt must not grow a private path around a hook
@@ -208,7 +306,9 @@ Every step before 6 is useful to refrakt on its own, so stopping early wastes no
 
 ## Acceptance criteria
 
-- [ ] `@refrakt-md/model` exists in the monorepo with the parser, resolver, definition input and value vocabulary, and depends on nothing in refrakt but `types`
+- [ ] `@refrakt-md/model` exists in the monorepo with the parser, resolver, definition input and validation, and depends on nothing in refrakt but `types`
+- [ ] Marquise 1.0 contains exactly the table under "What 1.0 contains", and a definition with a non-empty body is rejected
+- [ ] Every later feature arrives as a minor release, after its spec is implemented in refrakt
 - [ ] `@refrakt-md/runes` builds on `@refrakt-md/model` through the hooks listed under "The boundary", with no special case for refrakt inside the model
 - [ ] Each framework renderer has a generic half with no refrakt dependency beyond the model, and a refrakt half that adds the theme shell and the wrapper
 - [ ] `validate`, `reference`, `format`, `types` and the language server run on a project that has definitions but no refrakt config, theme or plugins
