@@ -1186,6 +1186,89 @@ being explicit when you need to.
 experimental slot syntax (its AST nodes carry a `slots` property); to confirm, with a
 Marquise-provided tag as the fallback.
 
+#### Compositions (2026-11-13)
+
+**Three kinds of composition:**
+
+| Kind | Who | Where | Example |
+|---|---|---|---|
+| Nesting in content | content authors | the page | a `::grid` of `::card`s; a `::hero` containing `::actions` |
+| Template composition (`@marquise/compose`) | whoever defines shapes, often not a developer (a site owner, a content designer, a kit author) | a shape's definition file | a `pricing-plan` whose template places `section`, `price` and `feature-list` |
+| Component composition | developers | framework code | a React `PricingPlan` rendering `<Section>`, `<Price>`, `<FeatureList>` |
+
+Nesting works on Comark natively, and Marquise resolves nested shapes like any field. Template
+composition is a new shape built from existing ones, in Markdown instead of code.
+
+**Why template composition, when components can compose themselves:**
+
+1. no code: someone who cannot write React can still define a shape from existing ones;
+2. **it works with every framework and kit at once:** a composed `pricing-plan` renders through
+   whatever the active kit provides for its parts; a component-composed one exists in one framework,
+   and every kit needs its own copy. The strongest argument, and it grows with kits: a kit supplies
+   the parts, compositions build richer shapes without another component;
+3. themes rearrange it by overriding the template, without touching content or the definition
+   (ADR-045, ADR-048);
+4. tooling sees inside it: contracts, structured data, the editor and validation see the parts; a
+   component's internals are opaque;
+5. content stays portable.
+
+Many teams will just write a component, which is fine; that is why `@marquise/compose` comes after
+1.0, and compositions matter most once kits exist.
+
+**On Comark** it works the same way, arguably more simply: expansion happens in Marquise's plugin on
+Comark's tree (plain data); on Markdoc, on the AST before the transform. The output is the same
+explicit Comark nodes. Order: expand the template, then resolve the content models of the shapes it
+placed, then render each through its own component. A template is in effect a pre-written explicit
+composition filled with the outer shape's fields, so inference, explicit slots and templates all end
+in the same form. On Comark a template would naturally use Comark syntax and binding:
+
+```mdc
+::section{:align="attrs.align"}
+:slot{name="eyebrow"}
+:slot{name="headline"}
+
+::actions
+:slot{name="actions"}
+::
+::
+```
+
+**Template syntax, and the cost of two syntaxes** (*added 2026-11-13*). A first thought was that a
+project picks one syntax up front, shapes conform to it, and sharing shapes across projects needs a
+migration CLI. But both front ends produce the same tree, and expansion works on trees, so a
+template written in Markdoc can be loaded into a Comark project as is, parsed by its own syntax
+(known from its extension or frontmatter). **If Marquise ships both parsers, sharing is free; if it
+ships one, sharing across syntaxes needs a migration CLI.** The extension can also decide the syntax
+per file (`.md` for Comark, `.mdoc` for Markdoc, as Astro does), so a project can migrate gradually.
+
+What a second syntax costs:
+
+| Piece | Cost per syntax | Notes |
+|---|---|---|
+| Parser front end | small: about 100–300 lines | the spike: Comark ~300 (adapter, plugin), Markdoc ~100 (tag schemas, converter) |
+| Resolver, validation, shapes, types, plain presentation, renderers | none | shared: everything after parsing sees one tree |
+| Explicit slots | small | native in Comark; Markdoc's experimental syntax or a Marquise tag |
+| Conditionals and variables | medium | different semantics and timing need equivalent behaviour and tests |
+| Source positions | medium | native in Markdoc; token mapping in Comark (gap 2) |
+| Formatter | medium | refrakt's is Markdoc's; Comark's `renderMarkdown` normalises |
+| Language server | large | completions, hovers and diagnostics depend on recognising each syntax; refrakt's is Markdoc-only |
+| Docs and examples | large, ongoing | every example twice, or tabbed |
+| Tests | medium, ongoing | every feature against both |
+| Migration CLI | medium | needed anyway if one syntax is dropped; tags convert mechanically, Markdoc's logic only partly |
+
+**The runtime is cheap; tooling and docs are expensive.** Options:
+
+1. one syntax plus a one-way migration CLI: cheapest; loses one ecosystem's users;
+2. **a primary syntax with full tooling, the other accepted as input** (parsed, validated, rendered;
+   no language server, formatter or docs of its own beyond one page), a migration CLI into the
+   primary, shapes and templates shared freely: moderate cost, the runtime already proven;
+3. both equal: only if both ecosystems prove to matter equally after 1.0.
+
+*Leaning: option 2*, choosing the primary now and raising the secondary only on real demand. It keeps
+the ladder between refrakt (Markdoc) and Marquise whichever is primary, and is reversible. Which is
+primary depends on the conversation with Comark's maintainers and on whether Astro's Markdoc users
+or the Nuxt and Comark ecosystem matter more.
+
 
 **Z2. Content outlives shapes.** Content lives for years; shapes change (a field renamed, a content
 model reorganised, a value retired). Vocabulary versioning covers dimensions, not shapes changing
@@ -1354,6 +1437,12 @@ time.
 - Z1g. Should validation hint when explicit slots match exactly what inference would produce?
   Probably not: noise, and explicit is not wrong.
 - Z1h. Markdoc's slot syntax: usable, or a Marquise tag in its place?
+- Z1i. Which syntax is primary (leaning: a primary plus the other as accepted input, section 16,
+  "Compositions")?
+- Z1j. Template variables: Comark's binding (`attrs.align`, `props.x`) or SPEC-195's `$attrs`?
+  Decide together with Z1e, so `computes` and templates share one style.
+- Z1k. Who may define compositions: the site's `shapes/` and kits only, or also content files (a
+  one-off composition inline on a page)? Powerful, but it blurs where shapes are defined.
 - Z1c. Formatting components (`date`, `number`, `currency`): shipped by Marquise, or by kits and
   hosts? They need the locale, which suggests kits and hosts.
 - Z1d. Comark's `data` namespace is render-time; should the host values Marquise uses at transform
