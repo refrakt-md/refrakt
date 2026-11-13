@@ -787,7 +787,79 @@ components from different frameworks in one project, and the binding format shou
 core, or they drift apart as refrakt's adapters did, SPEC-058); every first-party package needs a
 real user, so Nuxt, Next and SvelteKit come one at a time, driven by demand.
 
-## 15. Open questions
+## 15. The HTML renderer
+
+*Added 2026-11-13.* Without refrakt's engine, a bare HTML renderer would output only the plain
+presentation: styleable with CSS, but with a fixed structure. It need not stay that limited, and
+no plugin API per templating engine is needed; it is enough to decide what a "component" is with
+no UI framework.
+
+**Components are functions that return HTML:**
+
+```ts
+import { html, defineHtmlRenderer } from '@marquise/html';
+
+const Hero = ({ headline, blurb, actions, eyebrow }) => html`
+  <section class="hero">
+    ${eyebrow && html`<p class="hero__eyebrow">${eyebrow}</p>`}
+    <h1>${headline}</h1>
+    ${blurb && html`<p>${blurb}</p>`}
+    <div class="hero__actions">
+      ${actions?.map((a, i) => html`<a class=${i === 0 ? 'button primary' : 'button'} href=${a.href}>${a.label}</a>`)}
+    </div>
+  </section>`;
+
+export default defineHtmlRenderer({ components: { hero: Hero } });
+```
+
+- **The `html` tagged template escapes by default.** A `text` field (`eyebrow`) is a string and is
+  escaped; slot content arrives as already-rendered, trusted HTML and is inserted as is. This
+  contract is what keeps content from becoming an XSS hole.
+- **Any templating library fits inside the function** (Handlebars, Nunjucks, Liquid, Eta, EJS):
+  compile, then call with the props. "A function that returns HTML" is the common denominator, so
+  no per-library plugin. It suits Eleventy users, who already write Nunjucks or Liquid; an Eleventy
+  integration could register those templates as shape components.
+
+  ```ts
+  const tpl = nunjucks.compile(readFileSync('hero.njk', 'utf8'));
+  const Hero = (props) => html.raw(tpl.render(props));   // the template must escape its own output
+  ```
+
+- **JSX without a framework** fits the same contract, through libraries that render JSX to
+  strings.
+
+**Custom elements as a binding target.** Shape slots map almost one to one onto native web
+component slots:
+
+```ts
+callout: {
+  element: 'wa-callout',
+  attributes: { variant: { from: 'tone', map: { danger: 'danger' } } },
+  slots: { icon: 'icon', default: 'body' },   // <span slot="icon">…</span>
+}
+```
+
+The renderer writes `<wa-callout variant="warning"><span slot="icon">…</span>…</wa-callout>`, and
+the browser does the rest. That opens framework-free component libraries (Shoelace or Web Awesome,
+a team's own Lit components) as kits, as Nuxt UI is for Vue, interactive without a hydration step
+because custom elements upgrade themselves. Refrakt is halfway there: its chart, map, diagram and
+sandbox runes render as custom elements (`rf-chart`, `rf-map`…). (`wa-callout` and its attributes
+are illustrative, from memory.)
+
+**What this settles:**
+
+- the plain presentation is what `@marquise/html` renders for a shape with no component bound
+  (answers N3);
+- refrakt's engine becomes a presentation plugged into `@marquise/html`, and into other renderers
+  through `render` middleware: one more way to render shapes, not something Marquise imitates;
+- `@marquise/compose` templates are the Markdoc-native option, later.
+
+So the HTML renderer offers four ways to draw a shape, simplest to richest: the plain presentation,
+functions (any templating library inside), custom elements, and later Markdoc templates. Behaviour
+for the first three comes from custom elements or the plain-DOM binding of the headless interaction
+logic (section 8).
+
+## 16. Open questions
 
 **Stack**
 
@@ -879,15 +951,26 @@ real user, so Nuxt, Next and SvelteKit come one at a time, driven by demand.
   (the largest audience)?
 - N2. Nuxt Content: can Marquise plug in as a file type, or does it conflict with MDC? Check its
   current docs.
-- N3. Does `@marquise/html` replace the plain presentation, or render it? Probably the same thing:
-  the plain presentation is what `@marquise/html` produces for unbound shapes.
+- N3. *Answered 2026-11-13:* the plain presentation is what `@marquise/html` renders for unbound
+  shapes (section 15).
 - N4. Next without Vite: a separate small plugin, or a loader that needs no build integration
   (transform at request time)?
 
-## 16. Next topics
+**The HTML renderer**
+
+- R1. Sync or async components? Async allows fetching inside a component but complicates streaming
+  and caching; the shape node is already resolved, so sync may be enough, and async can be added
+  later without breaking anything.
+- R2. Escaping guarantees for library templates: with `html.raw` the template engine owns escaping.
+  Refuse unescaped output by default, with an explicit opt-in per component?
+- R3. Custom-element attribute types: strings map cleanly; booleans, numbers and item lists need
+  conventions (boolean attributes, JSON in an attribute, child elements per item).
+- R4. Server-side rendering of web components: content inside shadow DOM is not in the initial
+  HTML. Light-DOM slots avoid that for content, which suits Marquise; recommend it to kits.
+
+## 17. Next topics
 
 - The Astro spike (section 14).
-- `@marquise/html` and what it can output (N3).
 - How kits combine when two overlap (K4).
 - The tokens contract (P2).
 - Interaction contracts as tests (K5, B1).
