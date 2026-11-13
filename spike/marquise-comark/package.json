@@ -6,10 +6,12 @@
     "resolve": "tsx src/run.ts content/home.md content/broken.md content/explicit.md",
     "types": "tsx src/types-gen.ts",
     "render": "tsx src/render.tsx",
-    "stream": "tsx src/stream.ts"
+    "stream": "tsx src/stream.ts",
+    "markdoc": "tsx src/markdoc-front.tsx"
   },
   "dependencies": {
     "@comark/react": "0.9.2",
+    "@markdoc/markdoc": "0.5.10",
     "comark": "0.9.2",
     "react": "19.3.1",
     "react-dom": "19.3.1",

@@ -23,6 +23,7 @@ npm run types               # shapes/*.md → generated/shapes.d.ts (React prop 
 npm run resolve             # content/*.md → findings and the explicit Comark form
 npm run render              # content/home.md → HTML through @comark/react
 npm run stream              # validation on partially streamed content
+npm run markdoc             # content/home.mdoc → Markdoc → a Comark document → @comark/react
 ```
 
 ## What is here
@@ -36,6 +37,9 @@ npm run stream              # validation on partially streamed content
 | `src/plugin.ts` | the Comark `post` plugin: attribute validation, content-model resolution, findings with lines, rewrite into explicit form |
 | `src/types-gen.ts` | React prop types from shape files, following Comark's conventions |
 | `src/render.tsx` | renders through `@comark/react`, with the plain presentation for unbound shapes |
+| `src/plain.ts` | the plain presentation as a React component |
+| `src/markdoc-front.tsx` | a Markdoc front end: shapes as Markdoc tag schemas, output converted into a Comark document |
+| `content/home.mdoc` | the same page in Markdoc syntax, with a variable and an `if` inside the hero |
 | `components/Hero.tsx` | a component typed by the generated props |
 
 ## Results
@@ -78,8 +82,35 @@ npm run stream              # validation on partially streamed content
 6. **Prop types are per renderer.** React receives named slots as `slot{Name}` props; Vue receives
    named slots. The type generator needs one output per renderer.
 
+## Markdoc through Comark's renderers
+
+*Added 2026-11-13.* Can Markdoc content use Comark's renderers? **Yes.** Comark's renderers consume
+its document format, not its syntax, so a Markdoc front end only has to produce that document:
+
+```
+Markdoc source → Markdoc parse + transform (shapes, variables, if) → a Comark document → @comark/react
+```
+
+- **Shapes become Markdoc tag schemas** whose `transform` runs the same resolver directly on
+  Markdoc's AST (no adapter needed on this side) and returns Comark's explicit form: a tag with
+  props, every slot a `template` child.
+- **The conversion is about 15 lines:** Markdoc's renderable `Tag { name, attributes, children }` is
+  almost Comark's `[name, attributes, ...children]` already; non-string attributes become Comark's
+  `:`-prefixed JSON.
+- **The output is the same page:** the same `Hero` component and the same plain `callout` rendered
+  `content/home.mdoc` exactly as they rendered `content/home.md`, with `{% $user.name %}` resolved
+  to "Ada" in the headline.
+- **`{% if %}` inside a shape must be evaluated before the content model.** With
+  `showActions: false` the actions were left out as intended. Without evaluating `if` first, the
+  resolver saw an `if` tag instead of a list and **the actions disappeared silently**, even with
+  `showActions: true` (an optional field, so nothing was reported). `expandConditionals` resolves
+  the condition with Markdoc's own `node.resolve(config)` and keeps the branch that applies. In
+  refrakt, only templates handle `if` (SPEC-145 D30, `packages/runes/src/lib/composition.ts:825`);
+  an author's `if` inside a rune's content looks like it has the same gap, worth checking.
+
 ## Not tested
 
 The Vue, Svelte and Angular renderers; the Nuxt module; nested shapes inside slots (the plugin
-recurses, but no content exercised it); performance; a language server on Comark syntax; Markdoc
-logic (`if`, variables) on this path.
+recurses, but no content exercised it); performance; a language server on Comark syntax;
+Markdoc functions on the Markdoc path; validation findings on the Markdoc path (only missing
+fields are collected there).
