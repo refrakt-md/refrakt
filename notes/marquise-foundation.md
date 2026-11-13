@@ -1277,6 +1277,54 @@ migration that rewrites Markdown mechanically, run with something like `marquise
 has thought about this (SPEC-189: a migration as a composition; codemods); for third-party shape
 libraries, migrations must be a published part of a release.
 
+*Explored 2026-11-13.*
+
+**What refrakt learned** (SPEC-189, draft, "Why"): every codemod was hand-written and alike
+(`refrakt migrate` has three: `elevation` value renames, `hero` `align="left/right"` to `start/end`,
+`cta` renaming `call-to-action`); the runtime side repeats the same facts (a rename written as a
+codemod, again as a runtime alias through `DeprecationRule`, and a third time as a warning, or
+never); and "removed in a future minor" never happens (aliases from v0.20 and v0.23 still there at
+v0.48). SPEC-189's answer: **one migration file, four uses.** Its frontmatter describes the old form,
+its body is a template in the new form, and one expansion gives runtime acceptance (old content keeps
+building), a codemod (the new form written back), a warning per instance, and an expiry (a test fails
+once the migration outlives `removeAfter`). Renames and value maps are frontmatter only.
+
+**Adapted for Marquise** (*leaning*):
+
+1. **Two levels**, to fit the 1.0 scope: frontmatter-only migrations (renaming an attribute or field,
+   mapping values) need no template language and can ship with 1.0; structural migrations need a
+   template body and wait for `@marquise/compose`, with a small API for hand-written ones meanwhile.
+2. **Shape libraries and kits ship their own migrations.** A breaking change is a major version of the
+   library, with its migrations in the package. A site upgrades, keeps building with warnings, runs
+   `marquise migrate`. `removeAfter` counts the library's own versions.
+3. **No version stamps in content.** A migration applies when content matches the old form and not
+   the new one (SPEC-189 D6), so content stays clean and content of unknown age still migrates.
+4. **Dimension aliases are migrations.** `aliases` with `deprecated: true` (section 6) are
+   attribute-value migrations under another name: one mechanism, one warning, codemod and expiry.
+5. **Examples double as migration tests:** old example in, new example out (SPEC-197).
+
+**Breaking, for content and for components separately:**
+
+| Change | Breaks content? | Breaks components? |
+|---|---|---|
+| New optional field or attribute | no | no |
+| Field or attribute renamed or removed | yes (migration) | yes (prop renamed) |
+| Allowed values narrowed | yes | the type narrows, usually fine |
+| Optional field made required | yes | the type changes |
+| Content model reordered | maybe | no |
+| A field's `as` changed (`block` to `text`) | no | yes: a slot becomes a string prop |
+| New allowed value | no | maybe: an exhaustive `switch` misses it |
+
+Migrations fix content; component breaks show up as TypeScript errors from the generated types.
+**`marquise diff`** would compare two versions of a shape library and classify every change as
+additive, content-breaking or prop-breaking, so an author knows whether a release is major and which
+migrations it needs.
+
+**The tie to Z1:** the codemod must write only what changed (SPEC-189 D7), which needs positions.
+Markdoc has them; Comark has component lines (enough for attribute changes) but no ranges inside a
+component, and `renderMarkdown` rewrites formatting (spike gap 5). Structural codemods are harder on
+Comark today: one more reason positions belong in the conversation with its maintainers.
+
 **Z3. The trust boundary.** "Content cannot run code" is a core argument against MDX, especially
 with non-developer or AI authors, and only holds if every extension point respects it:
 
@@ -1449,10 +1497,17 @@ time.
   time use the same names, so `data.user` means one thing in both places?
 - Z1e. `computes` expressions: borrow Comark's dot-path style (`attrs.title`) for consistency with
   content, or keep SPEC-195's function syntax?
+- Z2a. Old content inside fenced code: refrakt's regex codemods rewrote fenced examples too,
+  sometimes wrongly. Should codemods touch fences at all? Probably only `example` blocks, never
+  arbitrary code.
+- Z2b. `removeAfter` for third-party libraries: Marquise enforces expiry in its own tests, but a
+  kit's is the kit's choice. Is a warning to the kit author enough?
+- Z2c. Moving between kits with different shapes: a migration too (a mapping file between kits), or
+  out of scope?
 
 ## 18. Next topics
 
-- The seams Z1–Z6, starting with Z1 (Markdoc, and other formats).
+- The seams Z1–Z6: Z1 and Z2 explored; Z3 (the trust boundary) next.
 - The Astro spike (section 14).
 - How kits combine when two overlap (K4).
 - The tokens contract (P2).
