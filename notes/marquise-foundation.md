@@ -471,8 +471,7 @@ app.use(marquise, {
   bindings,
   translate: (key, fallback, params) => i18n.t(key, params) ?? fallback,
   icon: (name) => h(UIcon, { name }),
-  wrapShape: undefined,
-  wrapSlot: undefined,
+  middleware: [],
 });
 ```
 
@@ -481,7 +480,7 @@ app.use(marquise, {
 | `components`, `bindings` | shape name to component, or to a binding onto a library component | the plain presentation |
 | `translate(key, fallback, params)` | resolves translate lookups; what components call | the fallback, params filled in |
 | `icon(name)` | resolves icon lookups to the framework's renderable | nothing, reporting `icon-unresolved` |
-| `wrapShape`, `wrapSlot` | wrap a shape's or slot's output (section 12) | no wrapper |
+| `middleware` | process each shape node before rendering, and intercept its rendering (section 12) | none |
 | element overrides | replace an HTML element everywhere (`table`, `pre`) | none |
 | context API | `useMarquise()` (Vue, React), `getMarquise()` (Svelte): `translate`, `icon`, `locale`, the current shape | always provided |
 
@@ -502,14 +501,114 @@ filesystem policy beyond bounding reads to declared roots.
 | shared attributes, extra definition keys | declarations |
 | preprocess tags, `prepare` stages, presentations, template tags | registries |
 | file roots, host values, error presentation | callbacks (`files`, `values`, `presentFinding`) |
-| wrapper around a rune or slot | render-time options (`wrapShape`, `wrapSlot`) |
+| wrapper around a rune or slot | middleware (section 12) |
 | deferred definitions | an API (`transform` returns placeholders; the host calls `expand`) |
 
 Two callbacks are new: `translate` and `icon`.
 
-## 12. Wrappers (to discuss)
+## 12. Middleware
 
-`wrapShape` and `wrapSlot`: what they are for, next.
+*Added 2026-11-13*, replacing the earlier `wrapShape` and `wrapSlot` sketch.
+
+**What the wrappers were for, and what is left.** They came from four problems; two are now
+solved another way.
+
+| Problem | Where it came from | Still needs it? |
+|---|---|---|
+| Dimensions reach the output even if a component ignores them | ADR-049 decision 2: the engine draws the root | no: dimensions are in the shape node, bindings map them, coverage reports gaps (`dimension-unsupported`) |
+| Refrakt's engine root and background layers | `bg` builds its own layers inside the root | yes, but only refrakt |
+| Dimensions aimed at a part (`frame` on media) | the engine applies them to the slot | no: the node says where a part dimension goes (below) |
+| A library cannot express a dimension (`width`) | K3 | sometimes, as a binding's own option (below) |
+
+What remains is cross-cutting work on every shape, whatever draws it: editor hints, source line
+numbers, error boundaries, hydration boundaries, instrumentation, refrakt's engine root. Most of it
+adds no element, so "wrapper" was the wrong word: it is **middleware**.
+
+**One concept, two hook points**, as a Vite plugin implements whichever hooks it needs:
+
+| Hook | Receives | Changes children? | Framework-specific? | Examples |
+|---|---|---|---|---|
+| `node` | the shape node (data), before rendering | yes, freely | no | edit hints, source lines, lazy-loading images, dropping draft content in production |
+| `render` | the node and `next()`, during rendering | only by passing a changed node to `next()` | yes | error boundaries, hydration islands, instrumentation, refrakt's engine root |
+
+```ts
+const sourceLines = defineMiddleware({
+  name: 'source-lines',
+  node: (node, ctx) => annotate(node, { 'source-line': node.source.line }),
+});
+
+const errorBoundary = defineMiddleware({
+  name: 'error-boundary',
+  render: (node, next, ctx) => <ErrorBoundary fallback={<Plain node={node} />}>{next(node)}</ErrorBoundary>,
+});
+```
+
+Changing children belongs in `node`: plain data, testable, the same in every renderer including
+the HTML one. Changing rendered output after the fact (React elements, Vue VNodes) is fragile and
+per framework, so `render` is kept for what only a framework can do. The name `middleware` fits
+because it processes what passes through, as Express middleware may change a request and call
+`next`; "around" suggested wrapping only.
+
+**Context decides which middleware runs.** Marquise puts a `mode` in the context, with
+conventional values `production`, `development`, `editor`, `preview` (hosts may add their own):
+
+```ts
+middleware: [
+  sourceLines({ when: ['development', 'editor'] }),
+  editHints({ when: 'editor' }),
+  errorBoundary(),
+],
+```
+
+`node` middleware runs at render time, not transform time, so one transformed tree serves every
+mode, and the cached shape node never holds editor or dev annotations.
+
+**How `node` middleware walks the tree:**
+
+- called once per shape node, parents before children, so a parent can pass information down;
+- inside a shape it may change anything that is not a nested shape: attributes, slot content,
+  plain elements; nested shapes get their own call;
+- it may visit plain elements across the tree with a selector, as a rehype plugin does:
+  `visit: { img: (el) => ({ ...el, attributes: { ...el.attributes, loading: 'lazy' } }) }`,
+  generalising today's render-time element overrides;
+- it may not change a shape's contract: no undeclared slots or attributes, so a component never
+  receives props its types do not mention.
+
+**Annotations** are what middleware adds that is not a shape attribute (edit hints, line numbers):
+a separate field on the node, written out as `data-*`. Reaching a component's DOM differs per
+framework:
+
+- **Vue** passes undeclared attributes through to a single-root component's root element, so
+  annotations just work;
+- **React and Svelte** have no fallthrough: the component spreads `rootProps` from `useMarquise()`
+  on its root, or the renderer adds a `display: contents` wrapper, acceptable in editor and dev
+  modes since it never runs in production;
+- the plain presentation writes them on its root.
+
+**Part dimensions travel in the node** instead of through a slot wrapper:
+
+```json
+"dimensions": { "tone": "warning", "frame": { "value": "polaroid", "on": "media" } }
+```
+
+A binding maps `frame` onto whatever draws the media, a component applies it itself, and the plain
+presentation writes `data-frame` on the `media` slot wrapper.
+
+**A library that cannot express a dimension** gets a wrapper from its binding, for that shape
+only, declared and visible in coverage:
+
+```ts
+hero: { component: UPageHero, props: { /* … */ }, wrapper: { dimensions: ['width', 'spacing'] } }
+```
+
+**Rules:** `render` middleware calls `next()` exactly once; adding an element is an explicit choice,
+never a default (extra elements break grid and flex children, child selectors and `ul > li`); the
+site's middleware runs outermost, then kits in config order; output is the same on server and
+client, or hydration fails.
+
+**What this replaces:** `wrapShape` becomes `render` middleware; `wrapSlot` disappears (slot changes
+are `node` middleware); element overrides stay, but plain element changes can move to `node`
+middleware; refrakt's engine root is `render` middleware refrakt registers.
 
 ## 13. Open questions
 
@@ -571,6 +670,17 @@ Two callbacks are new: `translate` and `icon`.
   inside an attribute value needs support in each renderer.
 - H3. Lookups in structured data: JSON-LD is built at transform time, so a translated label there
   needs transform-time translation, or structured data stays in the source language.
+
+**Middleware**
+
+- W1. What `node.source` holds: a line, a range, or a file and range. It matters for SPEC-198's
+  `source()` too, and for included content, whose file is not the page.
+- W2. Typed annotations (`edit-hint`, `source-line`) so the editor knows what it reads, or free-form
+  `data-*` names with conventions?
+- W3. The React and Svelte fallthrough gap: tell kits to spread `rootProps` on every component as a
+  rule, with `marquise check` warning when one does not?
+- W4. Can middleware add whole shapes (an editor's "add block here" between shapes)? A structural
+  change, which may need its own deliberate API.
 
 ## 14. Next topics
 
