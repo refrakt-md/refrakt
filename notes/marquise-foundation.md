@@ -610,7 +610,82 @@ client, or hydration fails.
 are `node` middleware); element overrides stay, but plain element changes can move to `node`
 middleware; refrakt's engine root is `render` middleware refrakt registers.
 
-## 13. Open questions
+## 13. Islands and images
+
+*Added 2026-11-13.* Both are solved and opinionated, so the principle holds: Marquise provides the
+plug points, the host's framework does the work. Each splits into facts that belong to the content
+and facts that belong to the presentation.
+
+**What refrakt does today:** an `asset:` scheme that indirects image sources through project config
+(SPEC-115) and custom image schemes (`placeholder`, `icon`; `lib/image-schemes.ts`), but no
+resizing, `srcset` or format conversion; and an Astro adapter that includes the behaviours script
+only on pages with interactive runes (`packages/astro/src/behaviors.ts`), island thinking at page
+level.
+
+**Hydration islands.** Astro renders every component to HTML and hydrates only components marked
+with a `client:` directive (`load`, `idle`, `visible`, `media`, `only`). Next has React Server
+Components with `'use client'` boundaries; recent Vue and Nuxt have lazy hydration strategies;
+Svelte has no built-in partial hydration as far as known.
+
+- **Whether something hydrates is a fact about the component, not the shape.** One theme's hero
+  is a carousel, another's is static. So it belongs to the component or binding:
+
+  ```ts
+  calculator: { component: PriceCalculator, hydrate: 'visible' },
+  hero:       { component: Hero },
+  ```
+
+- Marquise provides a `hydrate` option (`load`, `idle`, `visible`, `none`; absent means the
+  framework's default); each renderer translates it into its framework's mechanism, and says so
+  where there is none.
+- The shape node is already right for islands: props must serialise from server to client, and the
+  node is plain data for that reason (ADR-049 decision 8).
+- Shapes with no component render as plain HTML, so a page of content alone ships no JavaScript.
+- Refrakt's behaviours are the plain-DOM version: load a behaviour's script only when its shape is
+  present.
+
+**Images.** Astro's `astro:assets` (`<Image>`, `getImage()`), `next/image` and Nuxt Image
+(`<NuxtImg>`) resize to several widths with `srcset` and `sizes`, convert to WebP or AVIF, set
+`width` and `height` against layout shift, and lazy-load with priority for the main image.
+Marquise builds none of it, but sorts the facts by who knows them:
+
+| Fact | Who knows it | Where it lives |
+|---|---|---|
+| The image, alt text, caption, credit | the author | the content: `![alt](src)` |
+| Focal point (what stays visible when cropped) | the author: it is about what the photo shows | an attribute on the image; refrakt has `anchor` on frame presets |
+| Width, height, available formats | the asset pipeline | resolved at transform time, carried in the node |
+| `sizes` (displayed width per breakpoint) | the presentation: a hero's media is full width, an avatar 64px | the component or binding |
+| Priority (eager loading for the main image) | the presentation and the page position | the binding, or middleware that knows the first shape |
+| Output formats, quality | the host | the host's image tool configuration |
+
+Marquise's plug points:
+
+1. **An asset callback at transform time**, `resolveAsset(src, ctx) => { src, width, height, … }`,
+   filled by the host (an Astro integration calls `getImage()`; a Vite setup imports the file).
+   It sits beside `files`; refrakt's `asset:` scheme is a candidate to graduate into it.
+2. **An image element override per renderer**, delegating to the host's component (`<Image>`,
+   `<NuxtImg>`, `next/image`).
+3. **Presentation hints in bindings and components**, for example
+   `slots: { media: { images: { sizes: '(min-width: 1024px) 50vw, 100vw', priority: true } } }`,
+   reaching the image override through render context: the component placing a slot knows its
+   size; the images inside it do not.
+4. **Default policies as middleware**: lazy loading everywhere except images in the first shape on
+   a page, `node` middleware with tree position (section 12).
+
+And one finding for core: **`image-alt-missing`**. Alt text is the author's job and part of the
+content's meaning.
+
+**Astro is a natural home** (*agreed 2026-11-13*). It is content-first, renders React, Vue, Svelte
+and Solid components side by side, has islands, an image pipeline, content collections (a corpus
+layer in this document's terms), and **official Markdoc support** (`@astrojs/markdoc`), so its users
+already know the format and stand to gain most from typed shapes. Marquise stays framework-neutral,
+but Astro gets extra consideration:
+
+- *Decided:* **the Marquise docs site is built with Astro** (SPEC-199's order said "built with
+  refrakt"; updated there);
+- Astro is a strong candidate for the proof project in SPEC-199's order, alongside the Nuxt UI kit
+  idea;
+- how Marquise relates to `@astrojs/markdoc` is open (I5).
 
 **Stack**
 
@@ -682,8 +757,24 @@ middleware; refrakt's engine root is `render` middleware refrakt registers.
 - W4. Can middleware add whole shapes (an editor's "add block here" between shapes)? A structural
   change, which may need its own deliberate API.
 
-## 14. Next topics
+**Islands and images**
 
+- I1. Author-level image attributes: Markdown has no place for a focal point. Markdoc annotations
+  on images (`{% focus="top" %}`) may work if Markdoc supports annotating image nodes (to check);
+  otherwise the image goes inside a small shape.
+- I2. Should authors override `hydrate` per instance (`{% calculator hydrate="load" %}`)? Probably
+  not, as it is a performance decision, but a calculator at the top of a page might want it eager.
+- I3. Images inside slots a component places: does render context reliably reach them in every
+  framework, or do some renderers need hints passed down explicitly?
+- I4. Other media (video, audio, embeds) have similar facts (poster, captions file, preload):
+  same pattern, or later?
+- I5. Marquise and `@astrojs/markdoc`: build on its config (`markdoc.config.mjs` with tags and
+  nodes), so existing Astro Markdoc users adopt incrementally, or ship a separate Astro
+  integration that replaces it? Incremental adoption argues for the first.
+
+## 15. Next topics
+
+- The Astro integration and `@astrojs/markdoc` (I5).
 - How kits combine when two overlap (K4).
 - The tokens contract (P2).
 - Interaction contracts as tests (K5, B1).

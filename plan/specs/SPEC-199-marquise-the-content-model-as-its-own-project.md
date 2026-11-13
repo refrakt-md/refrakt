@@ -381,7 +381,8 @@ wastes nothing.
 4. **A proof outside refrakt:** a small example project on plain Markdoc and React, with no
    refrakt config, theme or engine. If it is not compelling, stop here.
 5. **Marquise 1.0:** own repository, the core, the renderers, the tooling, `@marquise/schema` and
-   `@marquise/data`, a docs site (built with refrakt), and refrakt switches its dependency.
+   `@marquise/data`, a docs site (built with Astro, *decided 2026-11-13*), and refrakt switches its
+   dependency.
 6. **Minor releases as features graduate** from refrakt, in the order of the table under "After
    1.0".
 
