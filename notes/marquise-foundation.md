@@ -871,6 +871,64 @@ Markdoc an implementation detail: Marquise exposes its own types (the shape node
 findings), never Markdoc's, so a fork or patched parser stays possible. Markdoc's recent release
 activity is worth checking.
 
+*Explored 2026-11-13: other formats, and Comark.*
+
+**The family.** Several formats express "a named block, with attributes, containing Markdown":
+
+| Format | Block | Inline | Named parts | Attribute types | Logic | Ecosystem |
+|---|---|---|---|---|---|---|
+| Markdoc | `{% callout type="warning" %}…{% /callout %}` | `{% badge %}New{% /badge %}` | none; Marquise infers them | typed literals | `if`, variables, functions | markdown-it; Astro's official integration |
+| MDC / Comark | `::callout{type="warning"}…::` | `:badge[New]{color="green"}` | explicit: `#title` | strings, plus `:prop` for JSON values | none known | Nuxt Content, Nuxt UI prose components; Comark is framework-neutral |
+| Generic directives (`remark-directive`, a CommonMark proposal) | `:::callout{type=warning}…:::` | `:abbr[HTML]{title="…"}` | none | strings | none | remark / unified; Docusaurus's `:::tip` |
+| Pandoc fenced divs, Djot | `::: {.callout type=warning}` | `[text]{.class}` | none | strings | none | Pandoc, Djot |
+| MyST | a fenced `{note}` directive with options | `{role}` text | options and body | typed options | none | Jupyter Book, Sphinx |
+| MDX | `<Callout type="warning">…</Callout>` | JSX | props, children | JavaScript | full JavaScript | React, Astro, Next |
+
+Shortcodes (Hugo, Jekyll's Liquid) and fixed-vocabulary alerts (GitHub's `> [!NOTE]`, Obsidian's
+callouts) are relatives, less relevant. (MDC, directive and MyST details are from memory except
+where the Comark notes below cite a source.)
+
+**MDC is being replaced by Comark.** The `nuxt-content/mdc` README now opens: "`@nuxtjs/mdc` is
+being deprecated in favor of Comark. Comark is the successor to MDC — it is faster, AI-friendly,
+and no longer bound to Vue or Nuxt"; existing MDC files stay compatible. From Comark's README (npm
+registry; comark.dev was not reachable): "an open-source Markdown parser and renderer with
+components, attributes and plugins. It streams AI output to React, Vue, Svelte, Angular, HTML and
+the terminal"; version 0.9.2 published 2026-11-12, MIT; parses into "a compact, serializable
+document" (`['tag', props, ...children]`), "parse once on the server, send the serializable
+document to the client, render without re-parsing"; packages `comark`, `@comark/vue` (with a Nuxt
+module), `@comark/react` (Next.js, Server Components), `@comark/svelte`, `@comark/angular`,
+`@comark/html`, `@comark/ansi`; built on markdown-exit (a TypeScript rewrite of markdown-it);
+closes unfinished syntax while AI output streams; plugins (Shiki, KaTeX, Mermaid). The README shows
+no content models, typed shapes, validation of a component's content or generated types.
+
+**What this means for the seam.** Marquise's core (content models, shapes, validation, dimensions,
+kits, the shape node) works on "a named block with attributes and Markdown children" and does not
+depend on syntax. So: **a syntax front end produces Marquise's own document tree, and everything
+after it is syntax-neutral.** Markdoc is the first front end. Differences to reconcile if there are
+more:
+
+- explicit named parts (`#title`) versus inferred ones: map them onto fields as an explicit
+  alternative to matching, possibly useful for Marquise in any syntax (Z1b);
+- attribute types: shapes' declared types convert values from strings, so validation is unchanged;
+- logic: only Markdoc has `if`, variables and functions; features relying on them work only through
+  the Markdoc front end, or through Marquise's own expressions;
+- dialect details: CommonMark and GFM differences, indentation rules (the MDC README warns that
+  indentation inside a component can break slot detection).
+
+**How Comark relates.** It overlaps on rendering (a serializable tree, renderers for React, Vue,
+Svelte, Angular and HTML, plus things not planned for Marquise: a terminal renderer, streaming AI
+output). It does not appear to have what is distinctive about Marquise (content models, typed
+shapes, validation, kits, schema.org), so Marquise could be the typed layer working with Comark's
+syntax and renderers rather than building its own. Nuxt UI's prose components use MDC syntax, so a
+Nuxt UI kit for a Markdoc-only Marquise would ask Nuxt users to change syntax; Astro's world uses
+Markdoc, Nuxt's is moving to Comark, and two front ends would cover both.
+
+**Suggested:** not several syntaxes in 1.0 (the scope growth that slowed refrakt), but Z1 designed
+for it: Marquise's own tree and shape node, Markdoc as the first front end, nothing after parsing
+that knows about Markdoc. Look at Comark seriously before building renderers (deep dive below);
+perhaps contact its maintainers, as the projects look complementary. Caveat: Comark is at 0.9,
+released the day before this was written, and only its README had been read at this point.
+
 **Z2. Content outlives shapes.** Content lives for years; shapes change (a field renamed, a content
 model reorganised, a value retired). Vocabulary versioning covers dimensions, not shapes changing
 under existing content. Shapes carry a version, and a breaking change ships with a content
@@ -1027,6 +1085,11 @@ to get right from the start than to retrofit.
 
 **Seams not yet discussed** (section 16): Z1–Z6, each still open; to be walked through one at a
 time.
+
+- Z1a. Build on Comark (syntax, tree, renderers) as well as, or instead of, Markdoc? To be settled
+  before renderers are built.
+- Z1b. Should explicit named parts (MDC's `#title`) become part of Marquise's content model in any
+  syntax, as an alternative to inferring a field?
 
 ## 18. Next topics
 
