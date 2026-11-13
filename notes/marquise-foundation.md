@@ -1030,10 +1030,53 @@ Comark is younger and moving fast.
 
 - talk to Comark's maintainers: interest in a schema layer built on Comark, plugin API stability,
   plans for source positions;
-- a deeper B spike: shapes declared as files producing the `post` plugin; validation findings with
-  positions; generated prop types following Comark's conventions (React's `slot{Name}` props);
-  the language server on Comark syntax;
+- ~~a deeper B spike~~ *done 2026-11-13* (below);
 - check Markdoc's formatter and position support, so A is weighed on the same terms.
+
+#### The deeper B spike (2026-11-13)
+
+`spike/marquise-comark/` (`FINDINGS.md` there has the details and how to run it). About 550 lines.
+
+**Works:**
+
+- **Refrakt's resolver runs unchanged** on Comark's tree through an adapter of about 100 lines
+  (Comark tuples to Markdoc-shaped nodes and back); the spike imports the real
+  `packages/runes/src/lib/resolver.ts`.
+- **Shapes declared as files drive one generic Comark `post` plugin**; nothing is written per
+  shape.
+- **Its output is Comark's explicit form:** props (`align`, `mediaPosition`, `eyebrow`, `:actions`
+  as JSON) and named slots (`#media`, `#headline`, `#blurb`, `#actions`); `renderMarkdown` prints
+  valid Comark.
+- **SPEC-200 works on this path:** `as: text` became a string prop, `as: inline` a slot of inline
+  content, `from` filled each `href`.
+- **Explicit slots mix with inference** (Z1b): an author's `#headline` filled the field directly.
+- **Findings with lines:** `attribute-type-invalid`, `attribute-unknown`, `content-missing`,
+  `content-unmatched`, `field-text-formatting-dropped` at `content/broken.md:3`.
+- **Generated React prop types** follow Comark's conventions (`slotHeadline: ReactNode`, unions
+  from `matches`, item arrays).
+- **`@comark/react` renders** the bound component with typed props, and the plain presentation for
+  an unbound shape.
+- **Streaming:** with `autoClose`, slots and props fill in as content arrives.
+
+**Gaps:**
+
+1. an unregistered component loses its content in Comark (a bare `<hero>` element, slots gone,
+   `[object Object]` attributes), so the plain presentation and `shape-unbound` are necessary;
+2. positions exist only for components and only in the markdown-it tokens (`mdc_block_open` line
+   maps); finer positions need a token-to-node mapping or positions in Comark's tree;
+3. Comark props are JSON and renderables travel only as slots, so SPEC-200 D10's per-item
+   `content` became one slot holding the whole list beside the data prop;
+4. validation needs a streaming mode: a body not yet arrived was reported as `content-missing`;
+5. printing the resolved tree rewrites the author's file into the explicit form, so a write path
+   must edit the source form;
+6. prop types are per renderer (React's `slot{Name}` props, Vue's named slots).
+
+**Not tested:** Vue, Svelte and Angular renderers, the Nuxt module, nested shapes, performance, a
+language server on Comark syntax, Markdoc logic on this path.
+
+**What it settles:** option B is technically sound, and it keeps refrakt's resolver rather than
+replacing it. What remains open is not feasibility but direction: Comark's maturity and pace,
+positions (gap 2), and the conversation with its maintainers.
 
 **Z2. Content outlives shapes.** Content lives for years; shapes change (a field renamed, a content
 model reorganised, a value retired). Vocabulary versioning covers dimensions, not shapes changing
