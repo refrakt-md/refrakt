@@ -1452,12 +1452,66 @@ an invisible root shape, resolved by the Marquise plugin and rendered through a 
 components map. On Markdoc, the same on the document's root node. A document gets its shape from
 frontmatter (`shape: article`) or a host mapping by folder or collection, probably both with
 frontmatter winning.
+
 **Z5. A published schema, and a write path.** CMS editors (Decap, Tina, Keystatic), AI tools and
 form builders need to know what a shape accepts. Export shapes and dimensions as a documented,
 machine-readable schema (perhaps close to JSON Schema) as public API, so tools build on it, not on
 internals. Tools that change content (an editor, an AI applying a fix, a codemod) need to edit a
 document by address ("set the hero's `headline`") and write Markdown back without disturbing
 anything else; source positions (W1) make it possible. Everything designed so far only reads.
+
+*Explored 2026-11-13.* Refrakt's precedents: four internal readers of rune metadata (`refrakt
+reference`, the editor's rune data in `packages/editor/src/server.ts`, the language server's registry,
+the AI prompt), each reading internals its own way; a published JSON Schema for config
+(`refrakt.config.schema.json`, the configuration reference generated from it, SPEC-126); and a write
+path for one domain, `plan update`, editing with line-by-line regular expressions
+(`plugins/plan/src/commands/update.ts`; a checkbox is ticked by finding a line that includes the
+criterion's text), the brittle string surgery a general write path should replace.
+
+**Two schemas** (*leaning*):
+
+| View | Describes | For |
+|---|---|---|
+| Input grammar | what an author may write: attributes with types and values, the content model (fields, `match`, order, optional, repeated, `as`), explicit slot names, applicable dimensions, examples | editors and CMS forms, the language server, AI prompts, `reference` docs |
+| Output props | what a component receives once resolved: props, slots, items | type generation, form builders, frontmatter schemas (Z4b), validation elsewhere |
+
+JSON Schema fits the output (props are JSON) and fits the input poorly ("a heading, then an optional
+paragraph, then a list of links" is a grammar over Markdown nodes). So Marquise publishes its own
+versioned schema document for the input, and JSON Schema for the output, from which others derive
+validators (Zod) or form definitions.
+
+- **Contents:** shapes, document shapes with frontmatter, dimensions and presets with where they
+  apply, directives' attributes, and the catalogue of finding ids, so an AI or CI knows every
+  possible error and its meaning.
+- **Delivery:** `marquise schema`, a programmatic API, MCP resources (as refrakt's `refrakt://…`);
+  the project's schema merged from its kits and the site's shapes.
+- **Marquise's own tools read only the published schema** (language server, type generator, AI
+  prompt builder, `reference`), which keeps it complete and replaces refrakt's four readers with one.
+- CMS-specific adapters (Decap, Tina, Keystatic configurations) are community or kit projects.
+
+**A write path, by address** (*leaning*). Needed by language-server quick fixes, an AI applying a
+fix through an MCP tool, migration codemods (Z2), editors and CMS forms, and refactors (renaming a
+shape across content).
+
+- **an address** names a document, a shape instance (by position or `#id`) and a part (an attribute,
+  a field, an item);
+- **operations:** set an attribute, set a field's content, insert or remove a shape, rename a shape,
+  switch between explicit and inferred form, apply a migration;
+- **the result is a list of text edits** against a known document version, in the language server
+  protocol's form; untouched text stays byte for byte identical (unlike printing the tree back,
+  spike gap 5); only the changed part is serialised, with each syntax's own printer;
+- **every edit is validated**, and returns its findings, so a fix that creates a new problem is
+  caught at once;
+- **a missing field is inserted where inference will find it** (the content model knows the order:
+  an eyebrow goes before the heading); where the position is ambiguous it **falls back to an
+  explicit slot** (`#eyebrow`), so explicit slots are the write path's safety net too;
+- **tests:** for every operation, parse, edit, parse again; the tree as expected and every byte
+  outside the edit unchanged.
+
+**The tie to Z1:** precise edits need precise positions. Markdoc nodes carry their location; Comark
+gives line ranges for components through its tokens, nothing at column level, so changing one
+attribute inside `{…}` or one field's span needs more. With validation findings and codemods, the
+third item pointing at positions as the main thing to raise with Comark.
 
 **Z6. An inventory of public contracts.** Several things became public API along the way: the
 shape node format, finding ids (relied on by AI fix loops and CI), the plain presentation markup
@@ -1625,10 +1679,18 @@ time.
   need the corpus layer?
 - Z4d. Documents without a shape stay untyped, with no validation of the body. Should a project be
   able to require one?
+- Z5a. The input schema's format: Marquise's own, or JSON Schema with custom keywords for content
+  models (partly usable by JSON Schema tooling, at the cost of only looking standard)?
+- Z5b. Editor hints (multi-line editing, a widget for a value) in the schema, or left to editors?
+  Refrakt's `editHints` are partly covered by SPEC-200's `as`.
+- Z5c. Edit operations and migrations: a migration is a batch of edits defined by a file; one engine
+  for both?
+- Z5d. Collaborative editing: text edits against a version work for one editor at a time; in scope
+  at all? Leaning no.
 
 ## 18. Next topics
 
-- The seams Z1–Z6: Z1 to Z4 explored; Z5 (a published schema, and a write path) next.
+- The seams Z1–Z6: Z1 to Z5 explored; Z6 (an inventory of public contracts) next.
 - The Astro spike (section 14).
 - How kits combine when two overlap (K4).
 - The tokens contract (P2).
