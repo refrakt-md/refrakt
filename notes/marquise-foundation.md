@@ -340,7 +340,70 @@ export default defineBindings({
   **adopt the library's vocabulary as the language** (zero friction, less portable). Both are
   possible; kits choose.
 
-## 10. Open questions
+## 10. Tags that are not shapes
+
+*Added 2026-11-13.* Refrakt's non-shape tags fall into a few kinds, and most fit the same
+pattern: vocabulary declared as content, implementation as code registered under a name.
+
+| Kind | Examples in refrakt | What it does | Who writes it |
+|---|---|---|---|
+| Directives | `include`, `data`, `snippet` | resolve to content before the transform | content authors |
+| Template structure | `slot`, `fragment`, `template`; Markdoc's `if` / `else` | describe how a template is built; no output of their own | template authors |
+| Primitives | `group` (`layout="bar"`, `"ladder"`), `metablock`, `section` | arrangement and design vocabulary placed by templates | template authors |
+| Lookups | `t` (SPEC-145 D29), `field`, `icon` | a value from somewhere other than the content: a dictionary, the shape's values, an icon set | template authors, sometimes content authors |
+| Site tags | `layout`, `region` | page structure | site authors |
+| Cross-document | `ref`, `xref` | point at another document's entity | content authors |
+
+Markdoc's own built-ins (`if`, `else`, `partial`, variables, functions) stay Markdoc's.
+
+**Primitives are shapes too** (SPEC-194 D13 already says "a primitive is a definition too"):
+
+- `group` is a shape whose content is whatever is placed inside it, with a flag that only
+  templates may place it (something like `placeableBy: templates`), so content authors never see
+  it in completions;
+- its `layout` is a dimension: an arrangement vocabulary (`bar`, `ladder`, `stack`, `grid`…)
+  declared as content;
+- it is provided by the design language, not by Marquise or `@marquise/compose`, which provides
+  only the template language itself (`slot`, `fragment`, `template`);
+- kits implement it like any shape: a CSS theme styles `[data-layout="bar"]`, a Nuxt UI kit binds
+  it to a stack component, and the template is unchanged;
+- the same holds for `metablock` and `section`.
+- **The test:** if it renders something, it is a shape, possibly one only templates may place. If
+  it only describes how a template is built, it belongs to the template language.
+
+**Lookups are backed by registries.** `t` is not content and not a shape: it asks for the string
+for a key in the current locale, with a fallback. Refrakt already has the parts (SPEC-145 D29):
+one dictionary per site (core bundle, plugin bundles, then the site's `strings`),
+`resolveLocaleString` with English fallback, plural maps through `Intl.PluralRules`, and
+`i18n-extract` for translators. Generalised:
+
+- Marquise defines the lookup tag's contract: a key, inline fallback text, an optional plural
+  count, precedence (kits, then the site); a missing key reports `string-missing` for that locale;
+- dictionaries are files: a kit ships `strings/en.yaml`, `strings/sv.yaml` for its shapes, and a
+  site overrides individual keys;
+- a translation hook lets the host take over: the default reads the dictionary files, a Nuxt kit
+  could bridge to the site's own Nuxt i18n so translations live in one place;
+- components get the same lookup: the renderer provides a `t()` through context, backed by the
+  same registry, so a bound library's labels translate too.
+
+`icon` fits the same pattern: a lookup into an **icon set** a kit provides as files, with names
+validated and completed. `field` is a lookup into the shape's own values and belongs to the
+template language.
+
+**Directives get a declaration file too**, mirroring shapes with `prepare` (SPEC-194 D1): `data.md`
+declares its attributes (`src`, `where`, `sort`…) for validation, completions and docs, and names
+its registered code with `preprocess: data`. Tooling then treats every tag the same way.
+
+| Tag kind | Contract defined by | Declared as | Implemented by | Provided by |
+|---|---|---|---|---|
+| Shapes, including primitives | Marquise | shape file | components, templates, plain presentation | shape libraries, design languages, kits |
+| Dimensions (including `layout`) | Marquise | dimension file | themes and kits | design languages, kits |
+| Directives | Marquise (preprocess hook) | file with attributes and `preprocess: <key>` | registered code | Marquise core (`include`), add-ons (`data`, `snippet`), anyone |
+| Template structure | `@marquise/compose` | built in | `@marquise/compose` | `@marquise/compose` |
+| Lookups (`t`, `icon`) | Marquise | dictionary and icon-set files | the registry, or a host bridge | kits, sites |
+| Site and cross-document tags | site layer, corpus layer | their own | their own | refrakt, other site layers |
+
+## 11. Open questions
 
 **Stack**
 
@@ -381,7 +444,19 @@ export default defineBindings({
 
 - B1. Write the headless logic, or build on an existing headless library?
 
-## 11. Next topics
+**Tags that are not shapes**
+
+- T1. Should content authors use `t` at all? Content is usually translated as a whole document;
+  limiting `t` to templates keeps content simple, though UI-ish content (a shared footer partial)
+  might want it.
+- T2. Is the host-i18n bridge worth having from the start? Without it, kits for i18n-heavy
+  frameworks duplicate dictionaries.
+- T3. Placement rules for primitives: "only templates may place this" is the first; refrakt also
+  has `requiresParent` ("only inside X"). Do placement rules belong on shapes generally?
+- T4. Icon sets: a lookup tag, or an open dimension with presets? An icon name behaves much like a
+  preset value: named, provided by kits, overridable by sites.
+
+## 12. Next topics
 
 - How kits combine when two overlap (K4).
 - The tokens contract (P2).
