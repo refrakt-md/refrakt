@@ -24,6 +24,7 @@ npm run resolve             # content/*.md → findings and the explicit Comark 
 npm run render              # content/home.md → HTML through @comark/react
 npm run stream              # validation on partially streamed content
 npm run markdoc             # content/home.mdoc → Markdoc → a Comark document → @comark/react
+npm run hostile             # hostile content through both renderers, with and without security
 ```
 
 ## What is here
@@ -107,6 +108,24 @@ Markdoc source → Markdoc parse + transform (shapes, variables, if) → a Comar
   the condition with Markdoc's own `node.resolve(config)` and keeps the branch that applies. In
   refrakt, only templates handle `if` (SPEC-145 D30, `packages/runes/src/lib/composition.ts:825`);
   an author's `if` inside a rune's content looks like it has the same gap, worth checking.
+
+## Hostile content
+
+*Added 2026-11-13* (`src/hostile.tsx`). Hostile content through `@comark/react` and `@comark/html`,
+with and without Comark's security plugin, at its default options:
+
+| Input | Without the security plugin | With it, default options |
+|---|---|---|
+| `<script>alert(…)</script>` | **passes through both renderers**; React's server output contains the `<script>` tag verbatim | **still passes through** |
+| `<img onerror="alert(…)">` | the HTML renderer **keeps `onerror`**; React drops it with a warning | removed |
+| `[click me](javascript:alert(…))` | not made a link: markdown-it refuses `javascript:` links and leaves the text | same |
+| a `javascript:` link in a hero's actions list | same: no link, so the extracted `href` is empty | same |
+
+- **Comark parses raw HTML by default** (its docs: the HTML plugin "is enabled by default").
+- **The security plugin is a toolkit, not a policy:** its documented defaults are `blockedTags: []`
+  and `allowedProtocols: ['*']`, so it protects only when configured, as in its docs' examples with
+  `blockedTags: ['script', 'iframe', …]`.
+- Markdoc does not parse raw HTML at all, so it is safer by default.
 
 ## Not tested
 

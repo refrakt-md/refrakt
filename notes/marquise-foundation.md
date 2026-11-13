@@ -1337,6 +1337,51 @@ with non-developer or AI authors, and only holds if every extension point respec
 State the boundary as a guarantee, and test it: hostile content (script tags, `javascript:` links,
 attribute injection) through every renderer, none of it executing.
 
+*Explored 2026-11-13.*
+
+**Measured** (`spike/marquise-comark/`, `npm run hostile`; Comark 0.9.2, default settings):
+
+| Input | Without Comark's security plugin | With it, default options |
+|---|---|---|
+| `<script>alert(…)</script>` | passes through both renderers; React's server output contains the tag verbatim, so it runs on load | still passes through |
+| `<img onerror="alert(…)">` | the HTML renderer keeps `onerror`; React drops it with a warning | removed |
+| `[click me](javascript:alert(…))` | not made a link (markdown-it refuses `javascript:` links) | same |
+| a `javascript:` link in a hero's actions | same: no link, so the extracted `href` is empty | same |
+
+Comark parses raw HTML by default, and its security plugin is a toolkit, not a policy: its documented
+defaults are `blockedTags: []` and `allowedProtocols: ['*']`. Markdoc does not parse raw HTML, so it is
+safer by default. Refrakt adds raw HTML only for specific runes (`sandbox`), under its security policy:
+`trusted` by default, `strict` for hosted products (`packages/types/src/security.ts`).
+
+**Proposal** (*leaning*):
+
+1. **The boundary.** Trusted, treated as code and reviewed: shapes, kits, components, bindings,
+   config, and the host values the host chooses to expose. Untrusted: content (authors, AI output, CMS
+   entries, streamed text) and data files read by directives. Bindings such as `data.user` reach
+   whatever the host passes, so the host passes only what content may see.
+2. **Default to untrusted**, the reverse of refrakt's default, because of Marquise's audience
+   (non-developers, AI, runtime content); `trusted` is an explicit opt-in for single-author sites.
+3. **In untrusted mode Marquise configures the parser strictly:** raw HTML off, or a short allowlist;
+   Comark's security plugin blocking `script`, `iframe`, `object`, `embed`, `style`, `link`, `base` and
+   `meta`, allowing only `http`, `https`, `mailto`, `tel` and relative URLs, stripping event handlers.
+   On the Markdoc path HTML is not parsed, and Marquise applies the same URL rules itself.
+4. **Guarantees Marquise adds because it knows the shapes:**
+   - only declared attributes reach a component: Comark passes any attribute through, so content could
+     otherwise try `style` or `onClick`; `attribute-unknown` closes that for every shape;
+   - typed attributes and fields: `type: url` is checked against the protocol allowlist, and so are
+     values extracted from content (`extract: href`); React blocks `javascript:` links itself, but not
+     every renderer does, and the HTML renderer does not;
+   - bindings take dot paths only, refusing `__proto__`, `constructor` and `prototype`;
+   - directives read only under declared roots, and fetch nothing remote unless allowlisted;
+   - capabilities: a shape or directive that needs trust (raw HTML, a sandbox, remote data) declares
+     `requires: trusted` and is disabled with a finding in untrusted mode, generalising refrakt's
+     sandbox policy;
+   - limits for runtime content (size, nesting depth, item count): content-model patterns are trusted
+     but run on untrusted text, and a badly written one could be made very slow;
+   - `@marquise/schema` escapes `<` in JSON-LD, so a title containing `</script>` cannot break out.
+5. **Tested:** a hostile-content fixture through every renderer, in both modes; `marquise check` runs
+   it through a kit's bindings too.
+
 **Z4. Links, and the document itself.**
 
 - `[Pricing](./pricing.md)` must become a site URL, and only the host knows its routes: a
@@ -1504,10 +1549,18 @@ time.
   kit's is the kit's choice. Is a warning to the kit author enough?
 - Z2c. Moving between kits with different shapes: a migration too (a mapping file between kits), or
   out of scope?
+- Z3a. Raw HTML in untrusted mode: off entirely, or a small allowlist (`kbd`, `sup`, `sub`,
+  `details`)?
+- Z3b. One default everywhere (untrusted), or by context (trusted for build-time sites, untrusted for
+  runtime parsing)? One default is simpler to explain.
+- Z3c. Own sanitisation or Comark's plugin? The Markdoc path needs Marquise's own URL and attribute
+  rules anyway; Marquise could own those for both paths and use Comark's plugin for HTML tags only.
+- Z3d. Raise with Comark's maintainers: a strict preset for the security plugin. Its defaults are
+  documented, so not a bug, but `security()` without options looks protective and is not.
 
 ## 18. Next topics
 
-- The seams Z1–Z6: Z1 and Z2 explored; Z3 (the trust boundary) next.
+- The seams Z1–Z6: Z1, Z2 and Z3 explored; Z4 (links, and the document itself) next.
 - The Astro spike (section 14).
 - How kits combine when two overlap (K4).
 - The tokens contract (P2).

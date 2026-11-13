@@ -7,9 +7,11 @@
     "types": "tsx src/types-gen.ts",
     "render": "tsx src/render.tsx",
     "stream": "tsx src/stream.ts",
-    "markdoc": "tsx src/markdoc-front.tsx"
+    "markdoc": "tsx src/markdoc-front.tsx",
+    "hostile": "tsx src/hostile.tsx"
   },
   "dependencies": {
+    "@comark/html": "0.9.2",
     "@comark/react": "0.9.2",
     "@markdoc/markdoc": "0.5.10",
     "comark": "0.9.2",
