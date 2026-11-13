@@ -216,7 +216,17 @@ declares capabilities, sets defaults and may opt out:
 provides: [surface, media, body]
 defaults: { elevation: flush, tone: neutral }
 dimensions: { exclude: [tint] }
+plain: { tag: section }
 ```
+
+**A shape does not own its element** (*leaning, 2026-11-13*). The element is presentation: a
+component, binding or template chooses it. Marquise core has no wrapper; refrakt's `tag:` stays a
+refrakt-specific key because its engine builds the root from it (ADR-049 decision 2). The plain
+presentation still needs an element, so the only element setting is scoped to it:
+`plain: { tag: section }`, used only when nothing else draws the shape, `div` without it.
+Semantics that SPEC-194 D11 tied to elements have better homes here: structured data is JSON-LD
+from the shape node, and landmarks are interaction-contract territory (section 8), testable
+against whatever a component renders.
 
 **In the shape node**, dimensions travel separately and already resolved (aliases mapped,
 defaults applied, inherited values filled in):
@@ -371,23 +381,28 @@ Markdoc's own built-ins (`if`, `else`, `partial`, variables, functions) stay Mar
 - **The test:** if it renders something, it is a shape, possibly one only templates may place. If
   it only describes how a template is built, it belongs to the template language.
 
-**Lookups are backed by registries.** `t` is not content and not a shape: it asks for the string
-for a key in the current locale, with a fallback. Refrakt already has the parts (SPEC-145 D29):
-one dictionary per site (core bundle, plugin bundles, then the site's `strings`),
-`resolveLocaleString` with English fallback, plural maps through `Intl.PluralRules`, and
-`i18n-extract` for translators. Generalised:
+**Lookups are hooks the host fills, not engines Marquise ships** (*leaning, 2026-11-13*). `t` is
+not content and not a shape: it asks for the string for a key in the current locale, with a
+fallback. Refrakt has a full engine for it (SPEC-145 D29: one dictionary per site, English
+fallback, plural maps, `i18n-extract`). Marquise should not:
 
-- Marquise defines the lookup tag's contract: a key, inline fallback text, an optional plural
-  count, precedence (kits, then the site); a missing key reports `string-missing` for that locale;
-- dictionaries are files: a kit ships `strings/en.yaml`, `strings/sv.yaml` for its shapes, and a
-  site overrides individual keys;
-- a translation hook lets the host take over: the default reads the dictionary files, a Nuxt kit
-  could bridge to the site's own Nuxt i18n so translations live in one place;
-- components get the same lookup: the renderer provides a `t()` through context, backed by the
-  same registry, so a bound library's labels translate too.
+- i18n is large, solved and opinionated (vue-i18n, Nuxt i18n, i18next, next-intl, FormatJS),
+  with different message syntaxes, plural rules and locale negotiation; an engine would compete
+  with what every framework user already has;
+- a dictionary format with precedence rules is the kind of vocabulary Marquise does not ship;
+- content is translated as whole documents, so content authors do not need `t` (answers T1);
+- components already use their framework's i18n.
 
-`icon` fits the same pattern: a lookup into an **icon set** a kit provides as files, with names
-validated and completed. `field` is a lookup into the shape's own values and belongs to the
+What Marquise provides instead (detailed in section 11): a `translate(key, fallback, params)`
+callback the host supplies, a lookup node so templates and components resolve strings the same
+way, a `$locale` host value for `Intl` formatting, and a kit manifest field listing message files
+it does not interpret. Recommending one format (ICU message syntax in JSON is the closest to a
+standard) would help kits interoperate. The host bridge is the only mechanism (answers T2).
+Refrakt keeps its own `t`, dictionaries and `i18n-extract`, built on the same callback.
+
+`icon` follows the same reasoning (leaning on T4): icon systems are also solved (Iconify, Nuxt
+Icon, lucide), so Marquise defines an `icon(name)` callback and a manifest field for kits that ship
+sets, not an icon registry. `field` is a lookup into the shape's own values and belongs to the
 template language.
 
 **Directives get a declaration file too**, mirroring shapes with `prepare` (SPEC-194 D1): `data.md`
@@ -400,10 +415,103 @@ its registered code with `preprocess: data`. Tooling then treats every tag the s
 | Dimensions (including `layout`) | Marquise | dimension file | themes and kits | design languages, kits |
 | Directives | Marquise (preprocess hook) | file with attributes and `preprocess: <key>` | registered code | Marquise core (`include`), add-ons (`data`, `snippet`), anyone |
 | Template structure | `@marquise/compose` | built in | `@marquise/compose` | `@marquise/compose` |
-| Lookups (`t`, `icon`) | Marquise | dictionary and icon-set files | the registry, or a host bridge | kits, sites |
+| Lookups (`t`, `icon`) | Marquise (signature and lookup node only) | message files and icon sets listed in kit manifests | the host's callbacks | hosts, kits |
 | Site and cross-document tags | site layer, corpus layer | their own | their own | refrakt, other site layers |
 
-## 11. Open questions
+## 11. Extension points
+
+*Added 2026-11-13.* What SPEC-199 calls "hooks" are three different things; only the third is
+functions the host passes in.
+
+| Kind | What it is | Examples |
+|---|---|---|
+| Declarations | files Marquise reads; no code | shapes, dimensions, presets, kit manifests |
+| Registries | code registered under a name, which declarations refer to | directives (`preprocess: data`), `prepare` stages, components and bindings, presentations |
+| Callbacks | functions the host supplies for what only the host knows | values, files, translate, icons, findings |
+
+**Transform time, passed to `marquise`:**
+
+```ts
+// marquise.config.ts
+export default defineConfig({
+  kits: [nuxtUi()],
+  shapes: 'shapes/',
+  values: ({ document }) => ({ locale: document.frontmatter.lang ?? 'en' }),
+  files: nodeFiles({ root: '.', roots: { partials: '_partials/' } }),
+  onFinding: (finding) => console.warn(finding),
+  presentFinding: (finding) => null,
+});
+```
+
+| Callback | Signature | Used by | Default |
+|---|---|---|---|
+| `values` | `(ctx) => Record<string, unknown>` | `$locale`, `$page`, `$site` and other host values in expressions and conditions | `{}` |
+| `files` | `{ read(path), resolve(root, path) }`, bounded to declared roots | `include`, `data`, anything reading files (refrakt's `ProjectFiles`, SPEC-113) | Node's filesystem, bounded to the project root |
+| `onFinding` | `(finding) => void` | every validation finding | collected into the `findings` result |
+| `presentFinding` | `(finding) => node \| null` | failures that should stay visible on the page | `null`; refrakt returns its `hint` callout |
+
+Deferred definitions are an API, not a callback: `transform()` returns placeholders, and the host
+calls `expand(placeholder, values)` once it has the values.
+
+**Lookups resolve at render time.** A `t` in a template becomes a node, not a string:
+
+```json
+{ "$$mdtype": "Lookup", "kind": "translate", "key": "recipe.servings", "fallback": "Serves", "params": {} }
+```
+
+The shape node stays independent of locale (cacheable, served in every language); it matches how
+framework i18n resolves reactively; templates and components share one path.
+
+**Render time, given to each renderer package:**
+
+```ts
+// @marquise/vue, installed by the host or a kit's Nuxt module
+app.use(marquise, {
+  components: { callout: UAlert /* … */ },
+  bindings,
+  translate: (key, fallback, params) => i18n.t(key, params) ?? fallback,
+  icon: (name) => h(UIcon, { name }),
+  wrapShape: undefined,
+  wrapSlot: undefined,
+});
+```
+
+| Provided | What it does | Default |
+|---|---|---|
+| `components`, `bindings` | shape name to component, or to a binding onto a library component | the plain presentation |
+| `translate(key, fallback, params)` | resolves translate lookups; what components call | the fallback, params filled in |
+| `icon(name)` | resolves icon lookups to the framework's renderable | nothing, reporting `icon-unresolved` |
+| `wrapShape`, `wrapSlot` | wrap a shape's or slot's output (section 12) | no wrapper |
+| element overrides | replace an HTML element everywhere (`table`, `pre`) | none |
+| context API | `useMarquise()` (Vue, React), `getMarquise()` (Svelte): `translate`, `icon`, `locale`, the current shape | always provided |
+
+`translate` and `icon` have **fixed signatures** so kits interoperate; anyone can register more
+lookup kinds under their own names.
+
+**Order:** kits may supply defaults (a Nuxt UI kit's module plugging `translate` into Nuxt i18n and
+`icon` into Nuxt Icon); the site's config wins over any kit; two kits registering the same name
+is an error unless config chooses.
+
+**Not provided:** a translation engine, message format or locale negotiation; an icon set; any
+filesystem policy beyond bounding reads to declared roots.
+
+**SPEC-199's hooks, regrouped:**
+
+| SPEC-199 hook | Becomes |
+|---|---|
+| shared attributes, extra definition keys | declarations |
+| preprocess tags, `prepare` stages, presentations, template tags | registries |
+| file roots, host values, error presentation | callbacks (`files`, `values`, `presentFinding`) |
+| wrapper around a rune or slot | render-time options (`wrapShape`, `wrapSlot`) |
+| deferred definitions | an API (`transform` returns placeholders; the host calls `expand`) |
+
+Two callbacks are new: `translate` and `icon`.
+
+## 12. Wrappers (to discuss)
+
+`wrapShape` and `wrapSlot`: what they are for, next.
+
+## 13. Open questions
 
 **Stack**
 
@@ -446,17 +554,25 @@ its registered code with `preprocess: data`. Tooling then treats every tag the s
 
 **Tags that are not shapes**
 
-- T1. Should content authors use `t` at all? Content is usually translated as a whole document;
-  limiting `t` to templates keeps content simple, though UI-ish content (a shared footer partial)
-  might want it.
-- T2. Is the host-i18n bridge worth having from the start? Without it, kits for i18n-heavy
-  frameworks duplicate dictionaries.
+- T1. *Answered 2026-11-13:* no `t` for content authors; content is translated as whole
+  documents (section 10).
+- T2. *Answered 2026-11-13:* the host bridge is the only mechanism; Marquise ships no engine
+  (sections 10, 11).
 - T3. Placement rules for primitives: "only templates may place this" is the first; refrakt also
   has `requiresParent` ("only inside X"). Do placement rules belong on shapes generally?
-- T4. Icon sets: a lookup tag, or an open dimension with presets? An icon name behaves much like a
-  preset value: named, provided by kits, overridable by sites.
+- T4. Icon sets: a lookup tag, or an open dimension with presets? *Leaning 2026-11-13:* a lookup
+  callback (`icon`), plus a manifest field for kits that ship sets.
 
-## 12. Next topics
+**Extension points**
+
+- H1. Lookups that must resolve without a framework (static HTML export, the plain presentation):
+  the HTML renderer calls the same `translate`; confirm for every output path.
+- H2. Translated attribute values (an `aria-label`, a `summary` a template sets): a lookup node
+  inside an attribute value needs support in each renderer.
+- H3. Lookups in structured data: JSON-LD is built at transform time, so a translated label there
+  needs transform-time translation, or structured data stays in the source language.
+
+## 14. Next topics
 
 - How kits combine when two overlap (K4).
 - The tokens contract (P2).
