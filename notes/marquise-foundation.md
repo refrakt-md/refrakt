@@ -685,9 +685,109 @@ but Astro gets extra consideration:
   refrakt"; updated there);
 - Astro is a strong candidate for the proof project in SPEC-199's order, alongside the Nuxt UI kit
   idea;
-- how Marquise relates to `@astrojs/markdoc` is open (I5).
+- how Marquise relates to `@astrojs/markdoc` is open (I5): see section 14.
 
-## 14. Open questions
+## 14. Integration packages
+
+*Added 2026-11-13.*
+
+### The Astro integration and `@astrojs/markdoc` (I5)
+
+Read from the docs source on GitHub (`withastro/docs`,
+`src/content/docs/en/guides/integrations-guide/markdoc.mdx`), since the live docs site was not
+reachable from the session; `@astrojs/markdoc` 2.1.4.
+
+**What it offers:** a `markdoc.config.mjs` with `defineMarkdocConfig({ tags, nodes, functions,
+variables, extends })`, accepting "all Markdoc configuration options"; presets through `extends`
+(as `shiki()` and `prism()` ship); tags rendering `.astro` components via
+`render: component('./src/components/Aside.astro')`, attributes as props and **children in the
+default slot only**; framework components only through a hand-written `.astro` wrapper with a
+`client:` directive ("Tags and nodes are restricted to `.astro` files"); an overridable `image`
+node receiving Astro's `ImageMetadata` for local images; Markdoc's own `{% partial %}`; variables
+on `<Content />` or in config; `ignoreIndentation` (refrakt's SPEC-170 equivalent); `.mdoc` files
+in content collections only. **Not documented:** a hook over the AST before the transform, or tag
+schemas with their own `transform`.
+
+| Marquise needs | On `@astrojs/markdoc` |
+|---|---|
+| Shapes resolving their content model | probably: a tag's `transform` receives the AST children, as refrakt's `createContentModelSchema` does; undocumented, so a spike confirms it |
+| Named slots | not directly (default slot only), but see the host component below |
+| Hydrated framework components | needs `.astro` wrappers, which can be generated |
+| Images | already solved: `resolveAsset` is Astro's |
+| Indentation-tolerant parsing | already there (`ignoreIndentation`) |
+| `include` and `data` before the transform | missing: no pre-transform hook, and `partial` resolves too late for content models |
+| Findings in the build | unclear; Marquise's CLI and language server work regardless |
+
+**Two tricks:**
+
+- **One host component for every shape.** Each shape's transform returns the shape node as one
+  prop to a generic component, `component('@marquise/astro/components', 'Shape')`, which runs
+  Marquise's Astro renderer: bindings, named slots (`<Fragment slot="headline">`), middleware,
+  nested shapes. The default-slot limit stops mattering; the node being plain data makes it work.
+- **Generated wrappers for hydration.** Astro needs static `client:` directives; Marquise knows each
+  component's `hydrate` option from the bindings, so the integration generates the wrappers at
+  build time into a cache directory. `hydrate: 'visible'` just works, an improvement over plain
+  `@astrojs/markdoc`.
+
+**Options:** (A) a preset for `@astrojs/markdoc` (`extends: [marquise()]`): users keep `.mdoc`,
+content collections, `render()` and `<Content />`, and adopt one shape at a time, but `include` and
+`data` inside shapes fall short; (B) a separate integration replacing `@astrojs/markdoc`: full
+control, but a migration and two Markdoc configurations; (C) **A first, then propose a small
+pre-transform AST hook upstream**, with B as the fallback if it is not accepted. *Leaning C*
+(2026-11-13). The Astro-built docs site is the first real user.
+
+**Spike before committing:**
+
+1. a tag schema with its own `transform` runs in `@astrojs/markdoc` and receives the AST children;
+2. a shape node passed as a prop reaches the host component intact, and named slots render from it;
+3. generated wrappers in a cache directory are picked up by the build, with working hydration;
+4. how Markdoc validation errors from tags surface in `astro build` and `astro dev`.
+
+### Renderers and integrations
+
+Refrakt already splits renderer packages (`react`, `vue`, `svelte`) from adapters (`sveltekit`,
+`next`, `nuxt`, `astro`, `eleventy`, `html`). For Marquise the second kind is much thinner: no
+routing, no layouts.
+
+| Kind | Does | Depends on | Example |
+|---|---|---|---|
+| Renderer | turns a shape node into one UI framework's output: bindings, components, context, `render` middleware, element overrides | the UI framework | `@marquise/vue`, for any Vue app: Vite, VitePress, Nuxt |
+| Integration | wires Marquise into a meta-framework: config and kits, build transform, reload on shape changes, types in dev, and the framework's images, hydration and i18n plugged into Marquise's callbacks | the meta-framework, plus a renderer | `@marquise/nuxt`: components registered, `resolveAsset` to Nuxt Image, `translate` to Nuxt i18n, `hydrate` to Vue's lazy hydration |
+
+So Vue and Nuxt get a package each: `@marquise/vue` for any Vue project, `@marquise/nuxt` a small
+module on top.
+
+**A shared base, `@marquise/vite`:** most meta-frameworks are Vite-based (Astro, Nuxt, SvelteKit,
+React Router, SolidStart, plain Vite); Next is the main exception. The plugin loads shapes,
+dimensions and kits as a virtual module, reloads on change and regenerates types; integrations add
+only what is framework-specific. Refrakt has done similar work (`site-tokens-vite.ts`,
+`content-hmr.ts`).
+
+**Content sources differ:** Astro has content collections and `@astrojs/markdoc`; Nuxt has Nuxt
+Content with its own MDC syntax (not Markdoc, as far as known), so Nuxt users are not yet Markdoc
+users; Next and SvelteKit have no content layer, so the integration offers a minimal loader or
+works beside libraries such as Velite.
+
+**Astro is different:** one page can mix frameworks. `@marquise/astro` hosts the UI renderers
+rather than replacing them (the generated wrappers import `@marquise/react`, `vue` or `svelte` per
+binding); static shapes render through the `.astro` host without hydration; bindings may point at
+components from different frameworks in one project, and the binding format should allow it.
+
+| Tier | Packages | When |
+|---|---|---|
+| Core | `marquise`, `@marquise/cli`, `@marquise/language-server` and VS Code extension, `@marquise/test` | 1.0 |
+| Renderers | `@marquise/html`, `@marquise/react`, `@marquise/vue`, `@marquise/svelte` | 1.0 (refrakt has the last three) |
+| Build base | `@marquise/vite` | 1.0 |
+| Integrations | `@marquise/astro` | 1.0 (docs site, proof project) |
+| | `@marquise/nuxt`, `@marquise/next`, `@marquise/sveltekit` | after 1.0, thin, one at a time |
+| Add-ons | `@marquise/schema`, `@marquise/data`, later `snippet`, `compose` | as SPEC-199 plans |
+| Not first-party | kits, Solid, Preact, Qwik, Eleventy, the editor | community, or later |
+
+**Guards:** integrations stay thin (anything not framework-specific belongs in `@marquise/vite` or
+core, or they drift apart as refrakt's adapters did, SPEC-058); every first-party package needs a
+real user, so Nuxt, Next and SvelteKit come one at a time, driven by demand.
+
+## 15. Open questions
 
 **Stack**
 
@@ -770,13 +870,24 @@ but Astro gets extra consideration:
   framework, or do some renderers need hints passed down explicitly?
 - I4. Other media (video, audio, embeds) have similar facts (poster, captions file, preload):
   same pattern, or later?
-- I5. Marquise and `@astrojs/markdoc`: build on its config (`markdoc.config.mjs` with tags and
-  nodes), so existing Astro Markdoc users adopt incrementally, or ship a separate Astro
-  integration that replaces it? Incremental adoption argues for the first.
+- I5. Marquise and `@astrojs/markdoc`. *Leaning 2026-11-13:* a preset first, a pre-transform hook
+  proposed upstream, a separate integration as fallback (section 14), after a spike.
 
-## 15. Next topics
+**Integration packages**
 
-- The Astro integration and `@astrojs/markdoc` (I5).
+- N1. Which integration comes second after Astro: Nuxt (matching the Nuxt UI kit idea) or Next
+  (the largest audience)?
+- N2. Nuxt Content: can Marquise plug in as a file type, or does it conflict with MDC? Check its
+  current docs.
+- N3. Does `@marquise/html` replace the plain presentation, or render it? Probably the same thing:
+  the plain presentation is what `@marquise/html` produces for unbound shapes.
+- N4. Next without Vite: a separate small plugin, or a loader that needs no build integration
+  (transform at request time)?
+
+## 16. Next topics
+
+- The Astro spike (section 14).
+- `@marquise/html` and what it can output (N3).
 - How kits combine when two overlap (K4).
 - The tokens contract (P2).
 - Interaction contracts as tests (K5, B1).
