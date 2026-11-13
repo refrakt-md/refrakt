@@ -929,6 +929,112 @@ that knows about Markdoc. Look at Comark seriously before building renderers (de
 perhaps contact its maintainers, as the projects look complementary. Caveat: Comark is at 0.9,
 released the day before this was written, and only its README had been read at this point.
 
+#### Deep dive: Comark (2026-11-13)
+
+**Sources:** Comark's repository (`comarkdown/comark`, cloned at its 2026-11-13 head), its docs
+source (`docs/content/`), the npm registry, and a spike running `comark@0.9.2` on sample content
+(scripts kept outside the repository).
+
+**Maturity and backing.**
+
+| | Markdoc | Comark |
+|---|---|---|
+| Version | 0.5.12 (2026-11-10) | 0.9.2 (2026-11-12) |
+| Release activity | steady through 2026: 0.5.5 (March) … 0.5.12 (November) | first published 2026-02-13; 21 versions; 0.7 → 0.9 between September and November |
+| Backing | Stripe | NuxtLabs people among recent committers (Farnabaz, Sébastien Chopin, Daniel Roe); MDC's successor |
+| Licence | MIT | MIT |
+
+Both are pre-1.0, so neither promises a stable API yet. Markdoc is not abandoned.
+
+**Comark's own comparison** (`docs/content/11.compare/4.comark-vs-markdoc.md`) is candid:
+
+- shared philosophy: "Markdown is data, components are declared in plain text"; both reject MDX's
+  "compiling content into code";
+- **"Schema validation of tags: No, components validate their own props"**; "Comark has no schema
+  layer"; "A schema layer like Markdoc's is not currently provided"; "For large documentation teams
+  that need to enforce content structure editorially, Markdoc's validation layer is a genuine
+  advantage";
+- variables: bindings via `:prop` and `{{ path }}`; partials "handled in application code";
+- syntax lineage: the CommonMark generic directives proposal, and five years of MDC.
+
+**What Comark is, from its docs:**
+
+- **Document:** `{ frontmatter, meta, nodes }`, nodes as tuples `[tag, attributes, ...children]`,
+  strings for text; HTML-like tag names (`h1`, `p`, `ul`, `img`), components by name; an optional
+  `$` field with parser metadata. Serialisable: parse on the server, render anywhere.
+- **Syntax:** block `::name{…}…::`, nesting with more colons, inline `:name[content]{…}`, attributes
+  `{prop="v" bool #id .class}`, JSON values via `:prop='…'`, YAML props blocks inside a component
+  (`---` or a `yaml [props]` fence) with real types, named slots `#name` (parsed into
+  `['template', { name }, …]`).
+- **Plugins:** `pre(state)` on the raw string and **`post(state)` on the built tree**, typed
+  contributions to `meta`; markdown-it plugins accepted; a `visit()` AST utility.
+- **Data binding:** `:prop` values are JSON, or dot paths into `frontmatter`, `meta`, `data`,
+  `props` (paths, not arbitrary JavaScript); `{{ path }}` interpolation; conditionals as an
+  `::if{:value="…" gte="18"}` component with an `#else` slot.
+- **Security plugin:** blocks event handlers, dangerous attributes and protocols, tag allow and
+  block lists, image and link prefixes.
+- **Renderers:** Vue (with a Nuxt module), React (Next, Server Components), Svelte, Angular, HTML,
+  ANSI; a `components` map; React gets named slots as `slot{Name}` props, Vue as named slots; a
+  `transformNode` hook to change an element's tag or props at render time; examples for Astro (with
+  the React renderer and content collections), Next, Nuxt, SvelteKit, VitePress.
+- **Round trip:** `renderMarkdown(document)` serialises a tree back to Comark Markdown.
+- **Streaming:** `autoCloseMarkdown` completes unfinished syntax for AI output.
+- **Source positions:** limited; the `$` field carries a line for some nodes, not ranges.
+
+**Spike results** (running `comark@0.9.2`):
+
+1. **Refrakt's hero content parses with everything a content model needs.**
+   `::hero{align="start"}` with image, `---`, eyebrow, heading, blurb and list became
+   `["hero",{"align":"start"},["p",{},["img",…]],["hr",{}],["p",{},"New in 2.0"],["h1",…],["p",…],["ul",…]]`.
+   Matchers map directly: heading → `h1`–`h6`, paragraph → `p`, list → `ul`/`ol`, image → `img`
+   inside `p` (as refrakt's `imageInParagraph`), `hr` → the delimiter, a component → its name.
+2. **Indented nested components parse** (`:::card` indented inside `::grid`).
+3. **Markdoc syntax is not understood, and its tag lines vanish silently**: `{% hint type="note" %}
+   Hello {% /hint %}` parsed to `["p",{},"\nHello\n"]`. Moving Markdoc content needs a conversion.
+4. **Named slots** parse to `template` nodes, and `renderMarkdown` writes them back.
+5. **A Marquise content model fits as a `post` plugin.** A toy `hero` plugin (about 20 lines)
+   turned the inferred fields into Comark's explicit form: props `eyebrow="New in 2.0"` and
+   `:actions='[{"label":"Get started","href":"/docs"},…]'`, slots `#media`, `#headline`, `#blurb`.
+   `renderMarkdown` printed it as valid explicit Comark. Any Comark renderer then hands a component
+   typed props and named slots, so **on Comark, Marquise would need no renderers of its own**: its
+   output is Comark's explicit form.
+
+**Questions this settles or sharpens:**
+
+| Question | Markdoc | Comark |
+|---|---|---|
+| Does Marquise's niche exist? | partly: Markdoc validates attributes and children, but has no content models | **clearly**: Comark says it has no schema layer; content models, shapes, validation and types are exactly what is missing |
+| Renderers | Marquise builds and maintains its own (react, vue, svelte, html) | **already exist**, more of them (Angular, ANSI), with streaming |
+| Logic in content | `if`, variables, functions, partials | dot-path bindings and an `if` component; no arbitrary code, which suits the trust boundary (Z3) |
+| Source positions | line ranges on nodes | limited; matters for `source()` (SPEC-198), the editor and the write path |
+| Write path (Z5) | a formatter exists in Markdoc (from memory; to confirm) | `renderMarkdown` round-trips trees |
+| Ecosystems | Astro's official integration | Nuxt (MDC's successor), with examples for Astro, Next, SvelteKit, VitePress |
+| Refrakt's content | native | needs conversion; Markdoc logic does not convert |
+
+**Options:**
+
+- **A. Markdoc first** (the current plan), Comark later as a second front end.
+- **B. Comark first:** Marquise is the typed content-model layer as a Comark plugin, plus tooling
+  (validation, types, language server, kits); no Marquise renderers. Refrakt stays on Markdoc as
+  the lab, or migrates later.
+- **C. Both from day one**, with Marquise's renderers for Markdoc and Comark's for Comark: two front
+  ends and two rendering paths, the scope growth to avoid.
+
+**Leaning:** none recorded yet. B is attractive for Marquise's stated goals (stable, small, the
+framework renderers already exist, the AI-streaming audience, a natural fit for a Nuxt UI kit),
+with its costs: Astro's official Markdoc integration matters less (Comark runs in Astro through its
+React renderer), Markdoc's logic and positions are given up, refrakt's content is Markdoc, and
+Comark is younger and moving fast.
+
+**To settle before choosing:**
+
+- talk to Comark's maintainers: interest in a schema layer built on Comark, plugin API stability,
+  plans for source positions;
+- a deeper B spike: shapes declared as files producing the `post` plugin; validation findings with
+  positions; generated prop types following Comark's conventions (React's `slot{Name}` props);
+  the language server on Comark syntax;
+- check Markdoc's formatter and position support, so A is weighed on the same terms.
+
 **Z2. Content outlives shapes.** Content lives for years; shapes change (a field renamed, a content
 model reorganised, a value retired). Vocabulary versioning covers dimensions, not shapes changing
 under existing content. Shapes carry a version, and a breaking change ships with a content
@@ -1086,7 +1192,8 @@ to get right from the start than to retrofit.
 **Seams not yet discussed** (section 16): Z1–Z6, each still open; to be walked through one at a
 time.
 
-- Z1a. Build on Comark (syntax, tree, renderers) as well as, or instead of, Markdoc? To be settled
+- Z1a. Build on Comark (syntax, tree, renderers) as well as, or instead of, Markdoc? Options A, B, C
+  and what to settle first are in section 16 (deep dive). To be settled
   before renderers are built.
 - Z1b. Should explicit named parts (MDC's `#title`) become part of Marquise's content model in any
   syntax, as an alternative to inferring a field?
