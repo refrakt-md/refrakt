@@ -687,6 +687,8 @@ but Astro gets extra consideration:
   idea;
 - how Marquise relates to `@astrojs/markdoc` is open (I5).
 
+## 14. Open questions
+
 **Stack**
 
 - S1. Corpus layer branding: part of Marquise's family (`@marquise/corpus`), or its own package?
