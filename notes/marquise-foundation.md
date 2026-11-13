@@ -1148,6 +1148,45 @@ handle `if`, SPEC-145 D30).
 own expressions, content barely needs logic, and row templates can be covered by either. What is
 left is positions, maturity and which ecosystem matters more.
 
+#### Explicit slots (2026-11-13)
+
+Comark's named slots (`#title`) overlap with what Marquise's content models infer. **Keep them, as
+the explicit form of what inference does.** Marquise's output already is explicit slots (the spike
+turned inferred fields into `#media`, `#headline`, `#blurb`), so inference is the friendly surface
+and explicit slots are what it compiles to, and the way to say it directly.
+
+**Where explicit slots earn their place:**
+
+1. **disambiguation:** an author wants a blurb but no eyebrow and writes it before the heading;
+   inference would make it the eyebrow, `#blurb` says it outright;
+2. **an unexpected order:** inference follows the model's sequence; a slot places a field anywhere;
+3. **parts that cannot be inferred reliably** (a free-form footer region); such fields could be
+   explicit-only;
+4. **existing content and components:** MDC content and Nuxt UI's prose components already use
+   slots; that content validates against shapes as written, so migration is gradual;
+5. **machines writing content:** an editor, an AI or a codemod writing explicit form is unambiguous
+   and survives round trips; streamed output is sturdier when each part announces itself.
+
+**Rules:**
+
+- a slot name must be a declared field, otherwise `slot-unknown` (catches `#headlin`);
+- `#default` means "infer the rest": explicit slots fill their fields, default content goes through
+  the content model for the remaining ones (as the spike did with `content/explicit.md`);
+- explicit content is validated by what the field delivers (SPEC-200): for `inline` and `text`
+  fields any single paragraph or heading is fine, since the element is declared meaningless; for
+  `block` fields it must match the field's `match`, otherwise `slot-content-mismatch`;
+- a field filled both explicitly and by inference is `slot-filled-twice`;
+- neither form is canonical in source: `marquise format` never rewrites one into the other; the
+  language server offers both directions as quick fixes.
+
+**In the docs,** lead with inference ("your Markdown already has structure"), and present slots as
+being explicit when you need to.
+
+**On the Markdoc side,** the front end needs explicit slots too. Markdoc has, from memory, an
+experimental slot syntax (its AST nodes carry a `slots` property); to confirm, with a
+Marquise-provided tag as the fallback.
+
+
 **Z2. Content outlives shapes.** Content lives for years; shapes change (a field renamed, a content
 model reorganised, a value retired). Vocabulary versioning covers dimensions, not shapes changing
 under existing content. Shapes carry a version, and a breaking change ships with a content
@@ -1308,8 +1347,13 @@ time.
 - Z1a. Build on Comark (syntax, tree, renderers) as well as, or instead of, Markdoc? Options A, B, C
   and what to settle first are in section 16 (deep dive). To be settled
   before renderers are built.
-- Z1b. Should explicit named parts (MDC's `#title`) become part of Marquise's content model in any
-  syntax, as an alternative to inferring a field?
+- Z1b. *Answered 2026-11-13:* yes, in both syntaxes, as the explicit form of what inference does
+  (section 16, "Explicit slots").
+- Z1f. Explicit-only fields: a per-field flag (`infer: false`), or a kind of field (like refrakt's
+  `region`)?
+- Z1g. Should validation hint when explicit slots match exactly what inference would produce?
+  Probably not: noise, and explicit is not wrong.
+- Z1h. Markdoc's slot syntax: usable, or a Marquise tag in its place?
 - Z1c. Formatting components (`date`, `number`, `currency`): shipped by Marquise, or by kits and
   hosts? They need the locale, which suggests kits and hosts.
 - Z1d. Comark's `data` namespace is render-time; should the host values Marquise uses at transform
