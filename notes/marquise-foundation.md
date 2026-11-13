@@ -1392,6 +1392,66 @@ safer by default. Refrakt adds raw HTML only for specific runes (`sandbox`), und
   entities are a shape wrapping a whole file. A **document shape** is a natural extension; decide
   whether Marquise or the content layer owns frontmatter.
 
+*Explored 2026-11-13.* Refrakt's precedents: its loader maps files to routes (`<path>.md` and
+`<path>/index.md` both resolve, `packages/content/src/edges/index.ts:122`); entity references go
+through `ref` and `xref`; one fixed set of frontmatter fields serves every page (title, description,
+slug, draft…, `site/content/_data/frontmatter-fields.json`); plan entities wrap a whole file in a
+tag (`{% work … %}`).
+
+**Links.** Four kinds appear in content:
+
+| Kind | Example | Who resolves it |
+|---|---|---|
+| Absolute URL | `https://…` | nobody; checked against the protocol allowlist (Z3) |
+| Site route | `/docs/install` | the host (whether it exists) |
+| Relative file link | `[Pricing](./pricing.md)`, `../guide.mdoc#setup` | the host, which maps files to URLs |
+| Entity reference | `{% ref "SPEC-1" %}` | the corpus layer (parked) |
+
+*Leaning:* a `resolveLink(href, ctx)` callback beside `resolveAsset`, at transform time.
+
+- the host maps files to URLs (Astro its collection entries, Nuxt Content its paths) and returns the
+  URL or reports the target missing: `link-unresolved`, broken-link checking without a corpus;
+- anchors within the same document Marquise checks itself, knowing the document's heading ids:
+  `link-anchor-missing`; anchors in other documents need the host;
+- links inside shapes go through it too: an extracted `href` and any `type: url` attribute, so
+  `- [Pricing](./pricing.md)` reaches a component as `/pricing` (item extraction must use the
+  resolved link);
+- included content resolves relative to its own file, not the including page (SPEC-197 D5);
+- with no host, links stay unchanged, so Marquise works standalone.
+
+**The document itself.** Frontmatter: where the host has schemas (Astro's content collections),
+Marquise defers to them; where it does not (Next, plain projects), a document shape can declare
+frontmatter; if both exist, one is generated from the other rather than both written by hand.
+
+A **document shape** is a shape for a whole document:
+
+```md
+---
+description: A blog article
+frontmatter:
+  title:  { type: string }
+  date:   { type: date, required: true }
+content:
+  type: sequence
+  fields:
+    headline: { match: heading:1, as: inline, fills: { title: $text } }
+    summary:  { match: paragraph, as: inline }
+    body:     { match: any, greedy: true }
+---
+```
+
+- validation of the whole page ("an article starts with a heading, then a summary paragraph");
+- typed page components: a blog layout bound to `article` receives `title`, `slotSummary`, `slotBody`
+  with generated types, where a layout today gets untyped content;
+- refrakt's "title falls back to the first heading" becomes declarative through `fills` (SPEC-182 D2);
+- plan entities lose their wrapper tag: attributes in frontmatter, the body the document shape;
+- structured data per page (an `Article` row) from the same place as every shape's.
+
+On Comark a document is `{ frontmatter, nodes }`; a document shape treats the nodes as the children of
+an invisible root shape, resolved by the Marquise plugin and rendered through a component in the
+components map. On Markdoc, the same on the document's root node. A document gets its shape from
+frontmatter (`shape: article`) or a host mapping by folder or collection, probably both with
+frontmatter winning.
 **Z5. A published schema, and a write path.** CMS editors (Decap, Tina, Keystatic), AI tools and
 form builders need to know what a shape accepts. Export shapes and dimensions as a documented,
 machine-readable schema (perhaps close to JSON Schema) as public API, so tools build on it, not on
@@ -1557,10 +1617,18 @@ time.
   rules anyway; Marquise could own those for both paths and use Comark's plugin for HTML tags only.
 - Z3d. Raise with Comark's maintainers: a strict preset for the security plugin. Its defaults are
   documented, so not a bug, but `security()` without options looks protective and is not.
+- Z4a. How a document gets its shape: frontmatter (`shape: article`), a host mapping by folder or
+  collection, or both?
+- Z4b. Frontmatter with a host schema (Astro): generate the host's schema from the shape (through the
+  published schema, Z5), or the reverse? From the shape keeps Marquise the source.
+- Z4c. Broken links: is the host reporting missing targets enough, or do anchors in other documents
+  need the corpus layer?
+- Z4d. Documents without a shape stay untyped, with no validation of the body. Should a project be
+  able to require one?
 
 ## 18. Next topics
 
-- The seams Z1–Z6: Z1, Z2 and Z3 explored; Z4 (links, and the document itself) next.
+- The seams Z1–Z6: Z1 to Z4 explored; Z5 (a published schema, and a write path) next.
 - The Astro spike (section 14).
 - How kits combine when two overlap (K4).
 - The tokens contract (P2).
