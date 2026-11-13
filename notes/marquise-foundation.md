@@ -1078,6 +1078,76 @@ language server on Comark syntax, Markdoc logic on this path.
 replacing it. What remains open is not feasibility but direction: Comark's maturity and pace,
 positions (gap 2), and the conversation with its maintainers.
 
+#### Markdoc through Comark's renderers (2026-11-13)
+
+Also in `spike/marquise-comark/` (`npm run markdoc`). **Markdoc content can use Comark's renderers:**
+Comark's docs call its document "the shared boundary between parsing and rendering", and its
+renderers draw a document without running its parser. Shapes become Markdoc tag schemas whose
+`transform` runs the same resolver on Markdoc's AST and returns Comark's explicit form; Markdoc's
+renderable tree (`Tag { name, attributes, children }`) converts to Comark's tuples in about 15
+lines. The same `Hero` component and plain `callout` rendered `content/home.mdoc` exactly as they
+rendered the Comark version, with `{% $user.name %}` resolved.
+
+That makes **two front ends, one tree, one set of renderers** plausible: Comark's document as
+Marquise's tree (Z1's "own tree"), Comark's renderers, and Markdoc or Comark syntax in front. The
+costly part (renderers) is shared and maintained by Comark; refrakt (Markdoc) and Marquise stay on
+one tree, so graduation and the ladder survive. Caveats: Comark's document format becomes a
+contract Marquise depends on, and Comark is pre-1.0; Comark features that run while parsing
+(markdown-it plugins: highlighting, table of contents) do not reach Markdoc content; writing back
+(`renderMarkdown`) produces Comark syntax; typed props use Comark's `:`-prefixed JSON.
+
+**If Comark were chosen, the plan otherwise mostly stands.** Unchanged: shapes, content models,
+SPEC-200, validation, types, tooling, dimensions, presets, kits, schema, data, the trust boundary,
+the stability rules. Changed: the syntax of examples (`::example{#id}`); the shape node becomes a
+Comark component node in explicit form (dimensions need a convention, such as one `:dimensions`
+prop); renderers become Comark's plus Marquise's plain presentation, bindings and per-renderer types;
+`node` middleware maps onto Comark's `transformNode`, `render` middleware onto wrapper components;
+lookups become inline components; `include` and `data` become plugins running before Marquise's;
+positions get harder (gaps 2, 5); `@astrojs/markdoc` matters less; a Nuxt UI kit gets more natural;
+streaming, the security plugin and more renderers come free.
+
+#### Functions and variables (2026-11-13)
+
+**What refrakt's content uses** (counted in `site/content`): variables are almost all loop variables
+bound by row templates (`$row` 93, `$item` 29; `$page` 4, `$frontmatter` 2, build info 3); `if`
+appears 42 times, many inside code examples, the real ones mostly `{% if $row.required %}` in
+data-row templates; functions are formatting and comparison (`humanize` 4, `date` 3, `equals` 2,
+`currency` 2, `number`, `join`; registered in `packages/runes/src/functions.ts`). So in refrakt
+they serve **data-driven templating, not prose**.
+
+**What Comark has:** `{{ path }}` interpolation and `:prop="path"`, dot paths into `frontmatter`,
+`meta`, `data` (the renderer's runtime values) and `props` (the enclosing component's), never
+arbitrary JavaScript; conditionals as `::if{:value="…" neq="guest"}` with comparison props and an
+`#else` slot; **no functions**. Markdoc resolves variables while transforming, so values are baked
+into the output; Comark resolves them **while rendering**, so the tree stays generic.
+
+**Do we need functions?**
+
+| Where | Needed? | How |
+|---|---|---|
+| Content written by authors | no general functions; authors should not compute, and the trust boundary (Z3) is simpler | formatting moves to components (`:date{:value="row.published"}`, or a typed prop formatted with the locale the component knows); comparisons are `if`'s props |
+| Shape definitions (`computes`, SPEC-195) | yes, Marquise's own expression vocabulary in shape files | independent of Markdoc or Comark: it never appears in content syntax |
+| Row templates (`@marquise/data`) and later templates (`@marquise/compose`) | loop variables and formatting, yes | Comark's binding covers loop variables (`row` passed as data); formatting through components; `if` with comparison props covers `$row.required` |
+
+**Variables, by effect:**
+
+- values that only display (`{{ user.name }}`, a version, a row's title) resolve **at render time**,
+  as Comark does: the tree stays cacheable and personalisation works per request (the same choice as
+  for lookups, H1–H3);
+- values that change structure (an `if` around content inside a shape) must resolve **before the
+  content model**. The spike showed the gap on Markdoc: without evaluating `if` first, `if`-wrapped
+  actions disappeared silently. It is worse on Comark, whose `if` is evaluated at render time.
+
+**Conditionals inside shapes, leaning:** conditionals outside shapes are free and resolve at render
+time; inside a shape they are evaluated at transform time with host values (the `values` callback),
+and an error is reported if a value is not available then (`conditional-in-shape`). Refrakt needs
+the same check: its rune content appears to drop `if`-wrapped content silently today (only templates
+handle `if`, SPEC-145 D30).
+
+**For the Markdoc-or-Comark choice,** neither syntax's logic is decisive: definitions use Marquise's
+own expressions, content barely needs logic, and row templates can be covered by either. What is
+left is positions, maturity and which ecosystem matters more.
+
 **Z2. Content outlives shapes.** Content lives for years; shapes change (a field renamed, a content
 model reorganised, a value retired). Vocabulary versioning covers dimensions, not shapes changing
 under existing content. Shapes carry a version, and a breaking change ships with a content
@@ -1240,6 +1310,12 @@ time.
   before renderers are built.
 - Z1b. Should explicit named parts (MDC's `#title`) become part of Marquise's content model in any
   syntax, as an alternative to inferring a field?
+- Z1c. Formatting components (`date`, `number`, `currency`): shipped by Marquise, or by kits and
+  hosts? They need the locale, which suggests kits and hosts.
+- Z1d. Comark's `data` namespace is render-time; should the host values Marquise uses at transform
+  time use the same names, so `data.user` means one thing in both places?
+- Z1e. `computes` expressions: borrow Comark's dot-path style (`attrs.title`) for consistency with
+  content, or keep SPEC-195's function syntax?
 
 ## 18. Next topics
 
