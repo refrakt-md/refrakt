@@ -859,7 +859,64 @@ functions (any templating library inside), custom elements, and later Markdoc te
 for the first three comes from custom elements or the plain-DOM binding of the headless interaction
 logic (section 8).
 
-## 16. Open questions
+## 16. Seams not yet discussed
+
+*Added 2026-11-13*, to walk through one at a time. The first three matter before 1.0; the last
+three are smaller but easy to get wrong.
+
+**Z1. Markdoc itself.** Marquise is built on Markdoc's parser, AST and transform. Refrakt already
+wraps parsing (`parse`, SPEC-170), but Markdoc's types (`Node`, `Tag`, schemas, `Config`) leak
+everywhere, so Marquise's public API would inherit Markdoc's release pace and decisions. Keep
+Markdoc an implementation detail: Marquise exposes its own types (the shape node, a document type,
+findings), never Markdoc's, so a fork or patched parser stays possible. Markdoc's recent release
+activity is worth checking.
+
+**Z2. Content outlives shapes.** Content lives for years; shapes change (a field renamed, a content
+model reorganised, a value retired). Vocabulary versioning covers dimensions, not shapes changing
+under existing content. Shapes carry a version, and a breaking change ships with a content
+migration that rewrites Markdown mechanically, run with something like `marquise migrate`. Refrakt
+has thought about this (SPEC-189: a migration as a composition; codemods); for third-party shape
+libraries, migrations must be a published part of a release.
+
+**Z3. The trust boundary.** "Content cannot run code" is a core argument against MDX, especially
+with non-developer or AI authors, and only holds if every extension point respects it:
+
+- content is untrusted: it may call registered functions and directives, never define code; raw
+  HTML in content is off by default;
+- directives reading files are bounded to declared roots; remote data needs an explicit allowlist;
+- kits and shape libraries are code, trusted like any npm dependency, said plainly;
+- escaping (`html.raw`, templating-library output, R2) is where the guarantee can quietly break.
+
+State the boundary as a guarantee, and test it: hostile content (script tags, `javascript:` links,
+attribute injection) through every renderer, none of it executing.
+
+**Z4. Links, and the document itself.**
+
+- `[Pricing](./pricing.md)` must become a site URL, and only the host knows its routes: a
+  `resolveLink(href, ctx)` callback beside `resolveAsset`. Checking for broken links needs the
+  corpus; rewriting them does not.
+- Frontmatter is typed by content collections today (Astro uses schemas). A document's body could
+  have a shape too ("an article starts with a heading, then a summary paragraph"); refrakt's plan
+  entities are a shape wrapping a whole file. A **document shape** is a natural extension; decide
+  whether Marquise or the content layer owns frontmatter.
+
+**Z5. A published schema, and a write path.** CMS editors (Decap, Tina, Keystatic), AI tools and
+form builders need to know what a shape accepts. Export shapes and dimensions as a documented,
+machine-readable schema (perhaps close to JSON Schema) as public API, so tools build on it, not on
+internals. Tools that change content (an editor, an AI applying a fix, a codemod) need to edit a
+document by address ("set the hero's `headline`") and write Markdown back without disturbing
+anything else; source positions (W1) make it possible. Everything designed so far only reads.
+
+**Z6. An inventory of public contracts.** Several things became public API along the way: the
+shape node format, finding ids (relied on by AI fix loops and CI), the plain presentation markup
+(SPEC-199 decision 3), the binding format and kit manifest, cache keys (what invalidates a cached
+shape node). Keep one list in SPEC-199, each with its versioning rule; semver protects only what is
+listed.
+
+Z1 and Z3 should become explicit points in SPEC-199 when Marquise moves forward: both are cheaper
+to get right from the start than to retrofit.
+
+## 17. Open questions
 
 **Stack**
 
@@ -968,8 +1025,12 @@ logic (section 8).
 - R4. Server-side rendering of web components: content inside shadow DOM is not in the initial
   HTML. Light-DOM slots avoid that for content, which suits Marquise; recommend it to kits.
 
-## 17. Next topics
+**Seams not yet discussed** (section 16): Z1–Z6, each still open; to be walked through one at a
+time.
 
+## 18. Next topics
+
+- The seams Z1–Z6, starting with Z1 (Markdoc, and other formats).
 - The Astro spike (section 14).
 - How kits combine when two overlap (K4).
 - The tokens contract (P2).
