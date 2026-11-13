@@ -1519,6 +1519,29 @@ shape node format, finding ids (relied on by AI fix loops and CI), the plain pre
 shape node). Keep one list in SPEC-199, each with its versioning rule; semver protects only what is
 listed.
 
+*Explored 2026-11-13; the list now lives in SPEC-199, "Public contracts".* Grouped by who depends on
+it: **content authors** (the syntax and Marquise's conventions, a library's shapes, a design
+language's dimensions); **shape and kit authors** (the shape, dimension, preset, kit-manifest,
+migration and binding formats; the template language later); **developers** (the shape node, generated
+types, host callbacks, middleware, the context API, the lookup node, the registries, each renderer's
+component contract); **machines** (finding ids, the published schema documents, edit operations, CLI
+commands and JSON output, MCP tools and resources); **browsers, stylesheets and search engines** (the
+plain presentation markup, JSON-LD structure); and two behavioural promises (determinism, which also
+defines cache keys; the trust boundary). Not contracts: internal module paths, message wording,
+dev and editor annotations, finding order, anything refrakt-specific.
+
+**Rules:** semver across Marquise's packages, breaking a listed contract means a major with a codemod
+or upgrade guide; formats read by outside tools carry a format version; finding ids are never reused;
+markup and output change additively; tightening untrusted mode counts as breaking for content; no
+experimental flags. **Enforcement** follows refrakt's committed-and-checked pattern
+(`contracts/structures.json`, the structured-data baseline): a public API report diffed per pull
+request, snapshots of the finding catalogue, schema formats and plain markup, a JSON-LD baseline, the
+hostile-content suite (Z3) and round-trip edit tests (Z5). **Under option B** Marquise also depends on
+contracts it does not control (Comark's document format, plugin API and renderer conventions): pin
+ranges, run a contract test against Comark on every upgrade, track it as a risk.
+
+**With Z6, the six seams have each been explored once.**
+
 Z1 and Z3 should become explicit points in SPEC-199 when Marquise moves forward: both are cheaper
 to get right from the start than to retrofit.
 
@@ -1687,10 +1710,15 @@ time.
   for both?
 - Z5d. Collaborative editing: text edits against a version work for one editor at a time; in scope
   at all? Leaning no.
+- Z6a. Where the list lives: SPEC-199 (where it is now), or its own document every package links to?
+- Z6b. Kits have contracts of their own (their shapes and dimensions): give them a checklist or
+  tooling (`marquise diff`, Z2)?
+- Z6c. Deprecation periods for finding-id and markup aliases: counted in releases or in time?
+- Z6d. Before 1.0: are the rules followed from the first 0.x release, or only from 1.0?
 
 ## 18. Next topics
 
-- The seams Z1–Z6: Z1 to Z5 explored; Z6 (an inventory of public contracts) next.
+- The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 17).
 - The Astro spike (section 14).
 - How kits combine when two overlap (K4).
 - The tokens contract (P2).

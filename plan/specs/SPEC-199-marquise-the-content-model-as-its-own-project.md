@@ -366,6 +366,46 @@ Refrakt's structured data has never depended on who draws the markup: the schema
    - **A camelCase attribute name in a shape is reported**, so the rule stays one-directional.
      Refrakt itself is not consistent today (its `datatable` example writes `pageSize=10`).
 
+## Public contracts
+
+*Added 2026-11-13* from the brainstorm (`notes/marquise-foundation.md`, section 16, Z6). Semver
+protects only what is listed here.
+
+| Who depends on it | Contracts |
+|---|---|
+| Content authors | the content syntax and Marquise's conventions (explicit slots `#name` and `#default`, `file#id`, `example` blocks); a library's shape vocabulary (the library's); a design language's dimensions (the kit's) |
+| Shape and kit authors | the shape file format; dimension and preset formats; the kit manifest; the migration format (after SPEC-189); the binding format; the template language, with `@marquise/compose` |
+| Developers | the shape node (prop naming, slots, item records, the dimensions convention); generated type names and structure; host callbacks (`values`, `files`, `resolveAsset`, `resolveLink`, `translate`, `icon`, `onFinding`, `presentFinding`); middleware and the context API; the lookup node; the directive and `prepare` registries; each renderer's component contract |
+| Machines | finding ids, severities and message parameters; the published schema documents; edit operations; CLI commands, flags, exit codes and JSON output; MCP tools and resources |
+| Browsers, stylesheets, search engines | the plain presentation markup (decision 3); the structure of JSON-LD output |
+| Everyone (behavioural) | determinism: the same content, shapes, kit versions and host values give the same output, which also defines cache keys; the trust boundary of untrusted mode |
+
+**Not contracts:** internal module paths; message wording (the id and parameters are); annotations
+added in development or editor modes; the order of findings; anything refrakt-specific.
+
+**Rules:**
+
+1. Semver across Marquise's packages; breaking a listed contract means a major release, with a codemod
+   for content or an upgrade guide for code.
+2. Formats read by outside tools carry a format version: the published schema documents, the kit
+   manifest, JSON output. Shape files do not; Marquise's major version implies it.
+3. Finding ids are never reused; a renamed id keeps an alias for a deprecation period.
+4. Markup and output change additively: a new `data-*` attribute is fine; renaming or removing one is
+   breaking.
+5. Tightening untrusted mode can break content that passed before, so it is announced and treated as
+   breaking; loosening is never silent.
+6. No experimental flags: anything public is on this list; anything not ready is not exported.
+
+**Enforcement**, after refrakt's committed-and-checked pattern (`contracts/structures.json` with
+`refrakt contracts --check`, the structured-data baseline): a public TypeScript API report diffed on
+every pull request; snapshots of the finding catalogue, the schema formats and the plain presentation
+markup; a JSON-LD baseline; the hostile-content suite; round-trip edit tests.
+
+**Contracts Marquise depends on.** If Marquise builds on Comark, it consumes Comark's document format,
+plugin API (`post`, `state.tokens`) and renderer conventions (`:`-prefixed JSON props, `template`
+slots, React's `slot{Name}` props), which it does not control and which are pre-1.0: pin version
+ranges, run a contract test against Comark on every upgrade, and track it as a risk.
+
 ## Order
 
 *Revised 2026-11-12:* 1.0 is cut from what exists ("What 1.0 contains"), so nothing here waits
