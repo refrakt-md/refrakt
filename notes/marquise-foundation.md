@@ -1626,7 +1626,115 @@ ranges, run a contract test against Comark on every upgrade, track it as a risk.
 Z1 and Z3 should become explicit points in SPEC-199 when Marquise moves forward: both are cheaper
 to get right from the start than to retrofit.
 
-## 17. Open questions
+## 17. The content model, with fresh eyes
+
+*Added 2026-11-14.* The content model grew by accretion as needs arrived. Read from
+`packages/types/src/content-model.ts` (357 lines) and counted across refrakt's 103 rune and
+definition files:
+
+| Feature | Files | Notes |
+|---|---|---|
+| `sequence` | ~59 | the workhorse |
+| `sections` (split by headings) | ~13 | `sectionHeading: 'heading'` auto-detects the level (9 of 14); 5 use a fixed `heading:2` |
+| `delimited` (split by a delimiter node, `hr` in practice) | ~8 | named `zones`, or `dynamicZones` with a repeated `zoneModel` |
+| `custom` (code) | 12 | budget, conversation, form, nav, tabs, preview, symbol, bento, comparison, feature, map, storyboard; sorted by SPEC-194 D6, with D7's four extensions to replace them |
+| conditional models (`when`) | 3 | SPEC-169 D2 later ruled a content model never depends on attribute values |
+| `optional`, `greedy` | ~40 | |
+| `itemModel`, with `extract`, `pattern`, `prefix` | 7–21 | regular expressions for text |
+| `headingExtract` | 2 | text and regular expressions only |
+| `emitTag`, `emitAttributes` | 9–10 | turn items or sections into child tags |
+| `group`, `position: last`, nested `model` | 4–9 | SPEC-186 |
+| `fills` | 1 | SPEC-182 |
+
+The `match` vocabulary is mostly `any` (34), `paragraph` (27), `text` (14), `heading` (11), plus
+pipes such as `heading|paragraph|image`.
+
+**Keep the core idea:** match block nodes in order, bind named fields, optional and repeated
+fields, split content into groups, read structured values out of items. It has proven itself across
+100 runes.
+
+**What to change** (*leaning*):
+
+1. **One matching vocabulary instead of three.** Block fields use `match` strings (`heading:2`,
+   `list:ordered`, `tag:card`, pipes); item fields use inline types with `pattern` and `extract`;
+   `headingExtract` takes only text and regular expressions (D7.3 already wants the item vocabulary
+   there). One vocabulary for block, inline and heading level, and one way to pull values out
+   (`extract`, `as`, `from`).
+2. **A small set of combinators instead of named patterns.** `delimited` and `sections` are one idea,
+   splitting by a marker node, differing in the marker and whether it stays in its group (D7.1
+   proposes splitting on any node):
+
+   | Combinator | Today | Means |
+   |---|---|---|
+   | `sequence` | `sequence` | fields in order |
+   | `split` | `delimited`, `sections`, D7.1 | divide by a marker node; named zones or repeated groups; the marker kept or dropped |
+   | `choice` | pipes in `match`; `when` | one of several alternatives |
+   | `repeat` | `greedy`; D7.4 | many, in order, tagged |
+   | `group` | SPEC-186 `group` | several fields matched as one |
+   | positions | `position: last`; D7.2 `position: any` | where a field may sit |
+
+   Existing models translate mechanically.
+3. **Content models describe input only.** `emitTag` and `emitAttributes` arrange output inside the
+   input description; with shape nodes, item records, slots and templates they have no job left in
+   Marquise. Refrakt keeps them until its runes convert.
+4. **No content models that depend on attribute values** (as SPEC-169 D2 concluded). Variation by
+   attribute belongs to templates; where content itself takes different forms, a structural `choice`
+   between models replaces `when`, and the generated type is a union.
+5. **Plain matching preferred over regular expressions.** `pattern` and `prefix` are opaque to
+   editors and to an AI reading the schema, and a slowdown risk on untrusted text (Z3). Most uses are a
+   leading dash, a separator or a suffix: literal options for those, regular expressions as the escape
+   hatch.
+6. **Everything serialisable,** for the published schema (Z5): `custom`'s functions go (as SPEC-194
+   plans), patterns become strings.
+
+**What is missing:**
+
+1. **Typed values from content.** "$29", "45 min", "4/5" and "2026-11-14" need `computes` or code
+   today. Extending SPEC-200's `as` with value types (`number`, `date`, `duration`, `url`, perhaps
+   `money`) gives validation ("price must be a number") and real types (`price: number`): squarely
+   the "typed props" pitch.
+2. **How many:** `min` and `max` ("at most two actions", "at least two tabs"), for validation and
+   types.
+3. **Child shapes as data:** `as: data` on a shape match delivers child shapes as resolved props
+   (`CardProps[]`), for tabs or an accordion that build their own markup.
+4. **Explicit-only fields:** `infer: false` (Z1f).
+5. **A policy for leftover content:** an error, a warning, or a catch-all field, declared by the model.
+6. **Inline shapes with content models,** in the same vocabulary as item models (a `badge`, a
+   citation).
+7. **Diagnostics from the grammar:** "expected a heading after the paragraph at line 4, for
+   `headline`", and what is allowed next, for completions.
+
+**A sketch:**
+
+```yaml
+content:
+  split: { by: hr, keep: false }
+  zones:
+    - name: media
+      sequence:
+        media: { match: image, optional: true }
+    - name: content
+      primary: true
+      sequence:
+        eyebrow:  { match: paragraph, optional: true, as: text }
+        headline: { match: heading, as: inline }
+        price:    { match: paragraph, optional: true, as: money }
+        actions:
+          match: list
+          optional: true
+          max: 2
+          items:
+            label: { match: link }
+            href:  { from: label, extract: href, as: url }
+  leftover: warn
+```
+
+**Timing:** the shape file format is Marquise's core public contract (Z6), so its surface is much
+cheaper to fix before 1.0 than after. The new surface can compile down to the structures refrakt's
+resolver understands, with new features added on top; the spike showed that resolver running
+unchanged on both syntaxes, and it should stay that way.
+
+## 18. Open questions
 
 **Stack**
 
@@ -1805,9 +1913,21 @@ time.
 - Z6c. Deprecation periods for finding-id and markup aliases: counted in releases or in time?
 - Z6d. Before 1.0: are the rules followed from the first 0.x release, or only from 1.0?
 
-## 18. Next topics
+**The content model** (section 17)
 
-- The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 17).
+- C1. Which value types belong in core (`number`, `date`, `url`, `boolean`) and which in kits
+  (`money`, `duration`)?
+- C2. Does the combinator surface replace the named patterns, or sit beside them as an advanced form?
+  Replacing is cleaner; beside eases migration.
+- C3. Is `as: data` for child shapes compatible with explicit slots and templates, or a second way
+  to compose?
+- C4. A spec now (a content-model revision for Marquise 1.0, refrakt's runes migrated by codemod), or
+  after the syntax decision (Z1i)?
+
+## 19. Next topics
+
+- The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 18).
+- The content model's revision (section 17, C4).
 - The Astro spike (section 14).
 - How kits combine when two overlap (K4).
 - The tokens contract (P2).
