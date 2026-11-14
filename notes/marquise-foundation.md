@@ -3,7 +3,7 @@
 **Status: brainstorm.** Nothing here is decided unless marked *decided*, and nothing here is a
 promise to build. When an idea is decided it moves into a spec, and this document links to it.
 
-**Started:** 2026-11-12. **Last updated:** 2026-11-13.
+**Started:** 2026-11-12. **Last updated:** 2026-11-14.
 
 **Related, already written as specs:**
 
@@ -1453,6 +1453,87 @@ components map. On Markdoc, the same on the document's root node. A document get
 frontmatter (`shape: article`) or a host mapping by folder or collection, probably both with
 frontmatter winning.
 
+**Documents and dimensions** (*explored 2026-11-14*). Refrakt already does this for one dimension:
+its frontmatter `tint` is "named tint preset for this page, or for the whole subtree when set in a
+`_layout.md`", with `tint-mode` and `tint-lock` beside it, and `type` registers a page as an entity,
+a document shape in all but name.
+
+- **Frontmatter is a document's attributes.** Whatever works on a tag's attributes works on
+  frontmatter: validation, defaults, generated types for the page component, and dimensions.
+
+  ```md
+  ---
+  shape: article
+  title: Shipping docs your team will read
+  date: 2026-11-14
+  tint: ocean
+  density: comfortable
+  ---
+  ```
+
+- **Documents are a dimension target.** `appliesTo` gains documents: `appliesTo: all` covers shapes
+  and documents; `appliesTo: { documents: true }` is document-only. Two kinds: dimensions for both
+  (`tint`, `density`), setting a page-wide value on a document; and document-only ones (a page layout
+  variant, a reading register for the whole page, refrakt's `tint-mode` and `tint-lock`).
+
+  ```yaml
+  # dimensions/page-layout.md
+  dimension: page-layout
+  appliesTo: { documents: true }
+  values:
+    article: { description: "A single readable column" }
+    docs:    { description: "Content beside navigation" }
+    landing: { description: "Full-width sections" }
+  ```
+
+- **Inheritance flows from the page into its shapes.** With `inherit: true`, a document's
+  `tint: ocean` is the default for every shape on the page unless a shape sets its own; refrakt's
+  tint cascade, generalised. Marquise resolves it into each shape node, so a component library gets
+  `tint: 'ocean'` as a prop with no CSS cascade; a CSS theme can still cascade from the root.
+
+  ```
+  host default for the folder or collection    (blog/ is "warm")
+    └ document frontmatter                      (this article is "ocean")
+        └ a shape on the page                    (inherits "ocean")
+            └ a shape with its own value         (tint="neutral" wins for itself and its children)
+  ```
+
+- **The folder or collection level is the host's.** Marquise works on one document at a time, so
+  the host supplies document defaults (an Astro collection, a Nuxt Content path); refrakt's
+  `_layout.md` becomes its implementation of that hook.
+
+- **Precedence** (*leaning*): (1) a value on the shape itself; (2) on an enclosing shape; (3) the
+  document's frontmatter; (4) the host's default for the folder or collection; (5) the shape's own
+  `defaults`; (6) the dimension's `default`. In words: anything an author wrote, anywhere above,
+  beats a designer's default; a page with `tint: ocean` makes its hero ocean despite the hero's
+  defaults. A shape that should never inherit a dimension opts out (`dimensions: { exclude: [tint] }`),
+  as a code block keeping its own colours would.
+
+- **The page component** (often the layout in simple projects) receives frontmatter as typed props,
+  resolved dimensions, and fields as slots:
+
+  ```ts
+  export interface ArticleProps {
+    title: string;
+    date: string;
+    tint?: string;
+    density: 'compact' | 'comfortable' | 'airy';
+    pageLayout: 'article' | 'docs' | 'landing';
+    slotSummary?: ReactNode;
+    slotBody: ReactNode;
+  }
+  ```
+
+  The plain presentation writes them on the document's root:
+  `<article data-shape="article" data-tint="ocean" data-density="comfortable">`.
+
+- **Documents as entities.** If a document shape can declare what it registers, as tag shapes can,
+  `shape: work` both shapes the page and makes it a `work` entity, one concept for refrakt's `type`
+  and the shape.
+
+- **The site layer stays separate.** A document shape types the page's content; the site's chrome
+  (navigation, header, footer, regions) stays the site layer's.
+
 **Z5. A published schema, and a write path.** CMS editors (Decap, Tina, Keystatic), AI tools and
 form builders need to know what a shape accepts. Export shapes and dimensions as a documented,
 machine-readable schema (perhaps close to JSON Schema) as public API, so tools build on it, not on
@@ -1702,6 +1783,14 @@ time.
   need the corpus layer?
 - Z4d. Documents without a shape stay untyped, with no validation of the body. Should a project be
   able to require one?
+- Z4e. Precedence: does "an author's value anywhere above beats a designer's default" hold for every
+  dimension, or should a dimension declare which way it goes?
+- Z4f. Documents without a shape: dimensions still apply through a generic document target, so
+  `tint: ocean` works on any page? Leaning yes.
+- Z4g. Name collisions: frontmatter fields and dimensions share one namespace on a document, so a
+  shape cannot declare a frontmatter field named after a dimension (`name-collision`, as for
+  attributes).
+- Z4h. The host-default hook: a dedicated `documentDefaults(path)` callback, or part of `values`?
 - Z5a. The input schema's format: Marquise's own, or JSON Schema with custom keywords for content
   models (partly usable by JSON Schema tooling, at the cost of only looking standard)?
 - Z5b. Editor hints (multi-line editing, a widget for a value) in the schema, or left to editors?
