@@ -1734,6 +1734,79 @@ cheaper to fix before 1.0 than after. The new surface can compile down to the st
 resolver understands, with new features added on top; the spike showed that resolver running
 unchanged on both syntaxes, and it should stay that way.
 
+### Compact forms instead of `emitTag` (2026-11-14)
+
+**Why `emitTag` exists.** Playlist accepts both forms (`match: 'list|tag:track'`,
+`plugins/media/src/tags/playlist.ts:154`): a list item read by an `itemModel` (bold name, link for the
+source, italic artist, duration and date from text patterns, nested cue points), then **track nodes
+built in code** (`'data-rune': 'track'`, line 254), so a compact item and an explicit `{% track %}`
+reach the theme as one thing. Nine more runes do the same through `emitTag`: `accordion`
+(accordion-item), `timeline` (timeline-entry), `cast` (cast-member), `itinerary` (itinerary-day,
+itinerary-stop), `reveal` (reveal-step), `plot` (beat), and `character`, `faction`, `realm` (their
+sections).
+
+**The problem is still valid:** one child entity, two ways to write it (its own tag, or compactly as a
+list item or a section), and everything downstream (templates, components, structured data,
+registration) should see one thing. What was wrong is where the mechanism lives: in the parent's
+content model, emitting tags (output); with the compact syntax defined per parent (a track in a
+playlist and in an album would each need their own `emitAttributes` table); producing AST tags, so the
+child's own validation and types never apply to compact items.
+
+**The child shape owns its compact forms** (*leaning*). It mirrors inferred versus explicit slots, one
+level up:
+
+| | Explicit | Compact |
+|---|---|---|
+| A part of a shape | `#headline` slot | inferred from plain Markdown |
+| A child shape | `::track{…}` or `{% track %}` | a list item or a section, read as a track |
+
+```yaml
+# shapes/track.md
+attributes:
+  name:     { type: string, required: true }
+  src:      { type: url }
+  artist:   { type: string }
+  duration: { type: duration }
+content:
+  sequence:
+    description: { match: paragraph, repeat: true, optional: true }
+compact:
+  item:                                        # one list item, read as a track
+    name:        { match: strong }
+    src:         { match: link, extract: href }
+    artist:      { match: em, optional: true }
+    duration:    { match: text, pattern: "(\\d+:\\d+)", optional: true }
+    description: { match: paragraph, repeat: true, optional: true }
+```
+
+```yaml
+# shapes/playlist.md
+content:
+  sequence:
+    title:  { match: heading, as: inline }
+    tracks: { match: track, repeat: true }    # a track tag, or a list whose items read as tracks
+```
+
+Meeting `match: track`, the resolver accepts an explicit track tag, or a list whose items it reads
+with track's compact form; either way it produces **a track shape node**, resolved, validated against
+track's own attributes, rendered by track's component (or delivered as data, `as: data`).
+
+- a compact form's fields must be the shape's own attributes or fields, checked when the shape loads:
+  no mapping table, names match by construction;
+- compact forms come in a few kinds: `item` (a list item), `section` (a heading and what follows, for
+  accordion, timeline or a character's sections), perhaps `paragraph` (a byline);
+- a parent may limit which forms it accepts (`forms: [explicit, item]`), never redefine them.
+
+**What it gives:** compact forms defined once and reused (playlist, album, podcast); the child's
+validation and types applying to compact items (an unparseable duration gets the same finding either
+way); uniform structured data and registration; editor conversions in both directions, like the slot
+quick fixes; and content models that describe input only, with `emitTag` and `emitAttributes` gone.
+
+**Two small needs it exposes:** defaults from the parent (playlist falls back to the playlist's artist,
+`track.artist ?? artistValue`, so a child attribute defaulting to the enclosing shape's, such as
+`defaults: { artist: $parent.artist }`, the attribute counterpart of dimension inheritance); and
+position (track and step numbers), through the `$index` templates already use.
+
 ## 18. Open questions
 
 **Stack**
@@ -1923,6 +1996,12 @@ time.
   to compose?
 - C4. A spec now (a content-model revision for Marquise 1.0, refrakt's runes migrated by codemod), or
   after the syntax decision (Z1i)?
+- C5. Compact forms in the shape file: a `compact` key as sketched, or named alternative content models
+  (`forms: { item: …, section: … }`)?
+- C6. Parent defaults: a general `$parent` reference in `defaults`, or inheritance declared on the
+  attribute, like a dimension's `inherit`?
+- C7. Mixing forms in one list: compact items and explicit tracks together, in order (as today's
+  `list|tag:track` allows)? The resolver must then keep order across both forms.
 
 ## 19. Next topics
 
