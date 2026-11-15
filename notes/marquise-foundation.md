@@ -1807,7 +1807,64 @@ quick fixes; and content models that describe input only, with `emitTag` and `em
 `defaults: { artist: $parent.artist }`, the attribute counterpart of dimension inheritance); and
 position (track and step numbers), through the `$index` templates already use.
 
-## 18. Open questions
+## 18. Marquise as a data store
+
+*Added 2026-11-15.* "A schema layer for Markdown" need not mean only a mapping for rendering. A
+resolved shape node is plain data before any renderer sees it (the spike's output was a JSON tree;
+JSON-LD is already extraction to data), so rendering is one consumer of three:
+
+| Consumer | What it does with typed content | Built on |
+|---|---|---|
+| Render | draws it with components | the shape node, renderers |
+| Extract | turns documents into typed records: JSON, an API, a search index, a feed | the same shape node, serialised |
+| Write | creates and changes records by address, keeping the Markdown intact | the write path (Z5) |
+
+Extract plus write is **Markdown as a data store**: readable files, reviewable diffs, git history, no
+service to run, and a schema guaranteeing the data's shape.
+
+**Refrakt already proved it with plan:** specs, work items and decisions stored as Markdown, read and
+written by a CLI and an MCP server, with status, criteria and dependencies as data. It also shows the
+pain without a general mechanism: a bespoke scanner, and writes as line-by-line regular expressions
+(Z5). With shapes, a corpus and the write path, something like plan becomes mostly declarations.
+
+**Use cases:** structured records people want to read and write as prose (recipes, product listings,
+events, job posts, glossaries, FAQs, changelogs and release notes, runbooks, test cases, decision
+records); content as an API, typed JSON per document from a git repository; search indexes and feeds
+with real fields (a recipe's `totalTime`, an event's `date`); AI agents reading and writing project
+knowledge safely (a schema says what a record must contain, findings say what is wrong, the write path
+keeps edits surgical); data-quality gates in CI.
+
+**Where it stands out:** other tools type the frontmatter (content collections, Velite and similar);
+Obsidian's Dataview plugin, as remembered, invented inline `key:: value` fields in the body to get
+structured data out of notes, suggesting real demand. Marquise types the body itself, with authors
+writing natural prose.
+
+**What it changes in the design:**
+
+1. typed values (C1) become essential: a data consumer wants `date: 2026-11-15` and `price: 29`;
+2. rich-text fields need a data representation: for a `block` field, its Markdown source (lossless,
+   re-renderable; SPEC-198's `source()`), plain text, HTML or the tree, probably Markdown source by
+   default;
+3. the output schema (Z5) becomes the primary contract for data consumers, not only a source of prop
+   types;
+4. document shapes (Z4) become central: a document is a record, frontmatter and body fields its
+   columns;
+5. stable identity matters (record ids, typed references between documents), which revives the
+   parked corpus layer: querying across documents is the "database" part;
+6. migrations (Z2) matter more: data outlives code longer than presentation does;
+7. round-trip writes become critical: one more reason positions matter in the Markdoc-or-Comark
+   choice.
+
+**Where to draw the line** (*leaning*): in Marquise core, extraction per document (`marquise extract`,
+typed JSON records) and the write path; in the corpus layer, indexing, references and queries across
+documents; never indexes, transactions or a query language. Git is the storage, the files are the
+truth.
+
+**Positioning:** "Markdown in, typed props out" undersells this; **"Markdown in, typed data out"**
+covers rendering and storage in one line, props being one shape typed data takes (SPEC-199 updated
+with it as a candidate).
+
+## 19. Open questions
 
 **Stack**
 
@@ -2003,10 +2060,21 @@ time.
 - C7. Mixing forms in one list: compact items and explicit tracks together, in order (as today's
   `list|tag:track` allows)? The resolver must then keep order across both forms.
 
-## 19. Next topics
+**Marquise as a data store** (section 18)
 
-- The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 18).
+- D1s. Rich-text fields in extracted data: Markdown source, plain text, HTML or tree, by default and
+  per field?
+- D2s. Extraction in core for 1.0, or an add-on (`@marquise/extract`)? It is small, since the shape
+  node is already data, which argues for core.
+- D3s. Record identity: ids and typed references in Marquise core, or waiting for the corpus layer?
+- D4s. Creating records: should the write path scaffold a new document from a shape
+  (`marquise new article`), with required fields as placeholders?
+
+## 20. Next topics
+
+- The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 19).
 - The content model's revision (section 17, C4).
+- Marquise as a data store (section 18).
 - The Astro spike (section 14).
 - How kits combine when two overlap (K4).
 - The tokens contract (P2).

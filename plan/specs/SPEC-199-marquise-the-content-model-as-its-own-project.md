@@ -58,6 +58,18 @@ JSX; the developers' own components receive validated, typed values.
 **Not for:** a whole site with themes and no frontend work (refrakt); relational data such as
 inventories (a database or CMS); unstructured blogs (plain Markdown).
 
+**Beyond rendering: Markdown as a data store** (*explored 2026-11-15*,
+`notes/marquise-foundation.md` section 18). A resolved shape node is plain data before any renderer
+sees it, so rendering is one consumer of three: render, extract (typed records as JSON, an API, a
+search index, a feed) and write (changing records by address, keeping the Markdown intact). Extract
+plus write makes Markdown a data store: readable files, reviewable diffs, git history, no service, and
+a schema guaranteeing the data's shape. Refrakt's plan files already work this way. Use cases include
+structured records people write as prose (recipes, events, changelogs, decision records), content as
+an API from git, search indexes with real fields, AI agents maintaining structured project knowledge,
+and data-quality gates in CI. The line: extraction per document and the write path in core;
+cross-document queries in the corpus layer; no database features, git being the storage.
+**Tagline candidate covering both: "Markdown in, typed data out."**
+
 | Alternative | What it gives | What Marquise adds |
 |---|---|---|
 | MDX | components inside Markdown | authors never write JSX; content stays prose; the body is validated; content cannot run code, which matters when non-developers or an AI write it |
