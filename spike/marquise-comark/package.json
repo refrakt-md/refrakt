@@ -8,7 +8,8 @@
     "render": "tsx src/render.tsx",
     "stream": "tsx src/stream.ts",
     "markdoc": "tsx src/markdoc-front.tsx",
-    "hostile": "tsx src/hostile.tsx"
+    "hostile": "tsx src/hostile.tsx",
+    "slots": "tsx src/slots-test.ts && tsx src/slots-template.ts"
   },
   "dependencies": {
     "@comark/html": "0.9.2",

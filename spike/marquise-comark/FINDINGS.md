@@ -25,6 +25,7 @@ npm run render              # content/home.md → HTML through @comark/react
 npm run stream              # validation on partially streamed content
 npm run markdoc             # content/home.mdoc → Markdoc → a Comark document → @comark/react
 npm run hostile             # hostile content through both renderers, with and without security
+npm run slots               # explicit slots: zone markers, Markdoc's native slots, template slot tags
 ```
 
 ## What is here
@@ -126,6 +127,25 @@ with and without Comark's security plugin, at its default options:
   and `allowedProtocols: ['*']`, so it protects only when configured, as in its docs' examples with
   `blockedTags: ['script', 'iframe', …]`.
 - Markdoc does not parse raw HTML at all, so it is safer by default.
+
+## Explicit slots in both syntaxes
+
+*Added 2026-11-15* (`src/slots-test.ts`, `src/slots-template.ts`):
+
+- **Comark slot markers can name zones as well as fields:** `#media` and `#content` both parsed as
+  `template` nodes; what a name means is Marquise's to define.
+- **A component starting with `---`** followed by a blank line parsed as a delimiter (`["hr",{}]`),
+  not as Comark's YAML props block; lines looking like `key: value` straight after it could be read
+  as props.
+- **Markdoc has native slots:** with `Markdoc.parse(source, { slots: true })`,
+  `{% slot "headline" %}…{% /slot %}` inside a tag lands in the node's `slots` and the rest stays in its
+  children: explicit slot plus inferred rest, with no Marquise tag needed.
+- **A `#name` line in Markdoc is plain text:** `#headline` followed by `Ship docs` on the next line
+  became one paragraph, so a Comark-style marker shim over Markdoc would have to split paragraphs.
+- **Refrakt's template slot tags are unaffected by turning slots on:** Markdoc only captures `slot`
+  tags with a primary string argument; refrakt's templates use the named form
+  (`{% slot name="eyebrow" /%}`), which stayed in the children with slots on and off. The primary form
+  (`{% slot "eyebrow" %}`) is captured.
 
 ## Not tested
 

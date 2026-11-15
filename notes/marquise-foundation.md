@@ -1211,6 +1211,37 @@ being explicit when you need to.
 experimental slot syntax (its AST nodes carry a `slots` property); to confirm, with a
 Marquise-provided tag as the fallback.
 
+*Tested 2026-11-15* (`spike/marquise-comark/`, `npm run slots`; Comark 0.9.2, Markdoc 0.5.10):
+
+- **Slot markers and delimited zones.** Comark parsed `#media` and `#content` as named `template`
+  nodes; the meaning is Marquise's. Two levels: a **field marker** (`#headline`) fills a field, and
+  since field names are unique across zones it implies its zone, so `---` is not needed when every part
+  is explicit; a **zone marker** (`#content`) marks a whole zone whose content is inferred by that
+  zone's own model. Zone and field names share one namespace, except a zone whose only field has its
+  name (hero's `media`), where both mean the same. Content outside any marker, or under `#default`, is
+  matched against the zones not already filled, in order, so `---` is optional whenever the result is
+  unambiguous.
+- **Edge case:** Comark reads `---` at the very start of a component as a YAML props block's opening.
+  Followed by a blank line it parsed as a delimiter, but `key: value` lines straight after it could be
+  read as props; validation could warn when a delimited shape's first zone is empty and suggest a zone
+  marker.
+- **Markdoc has native slots:** `{% slot "headline" %}…{% /slot %}` inside a tag, with
+  `Markdoc.parse(source, { slots: true })`, lands in the node's `slots`, the rest staying in its
+  children (answers Z1h). Each front end maps its native form (Comark `#name`, Markdoc `{% slot %}`)
+  onto the same tree. A `#name` shim over Markdoc is possible but unwise: `#headline` and the line after
+  it became one paragraph, so it would mean splitting paragraphs, colliding with hashtags, and showing
+  as text in Markdoc's tooling.
+- **The overlap with templates.** Turning Markdoc's slots on does not break refrakt's templates: only
+  `slot` tags with a primary argument are captured, and refrakt's 21 template uses are all the named
+  form (`{% slot name="eyebrow" /%}`), which stayed in place with slots on. But the same tag would mean
+  opposite things: in a template, `{% slot name="x" /%}` **places** a field; in content,
+  `{% slot "x" %}` **fills** one, told apart only by the argument's form. In the Markdown world both
+  syntaxes say a slot is filling (Markdoc's `slot`; Comark's docs call `#name` "slots"); only framework
+  components (`<slot>` in Vue or Svelte) use it for placement. *Leaning:* rename the template's
+  placement tag (for example `{% place "headline" /%}`), a codemod over refrakt's 21 uses and the specs
+  showing it; until then, validation rejects the primary form in templates and the named form in
+  content.
+
 #### Compositions (2026-11-13)
 
 **Three kinds of composition:**
@@ -2046,7 +2077,13 @@ time.
   `region`)?
 - Z1g. Should validation hint when explicit slots match exactly what inference would produce?
   Probably not: noise, and explicit is not wrong.
-- Z1h. Markdoc's slot syntax: usable, or a Marquise tag in its place?
+- Z1h. *Answered 2026-11-15:* Markdoc's native slots are usable (`{% slot "name" %}` with
+  `slots: true`); no Marquise tag needed. Their status in Markdoc (stable or experimental) still to
+  confirm.
+- Z1l. With a delimited shape, does `#default` mean "infer across all remaining zones", or only the
+  primary zone?
+- Z1m. The template placement tag's new name (`place`, or another), and whether it also absorbs
+  refrakt's `{% field %}` for values.
 - Z1i. Which syntax is primary (leaning: a primary plus the other as accepted input, section 16,
   "Compositions")?
 - Z1j. Template variables: Comark's binding (`attrs.align`, `props.x`) or SPEC-195's `$attrs`?
