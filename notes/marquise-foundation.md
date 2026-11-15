@@ -1430,7 +1430,7 @@ tag (`{% work … %}`).
 | Absolute URL | `https://…` | nobody; checked against the protocol allowlist (Z3) |
 | Site route | `/docs/install` | the host (whether it exists) |
 | Relative file link | `[Pricing](./pricing.md)`, `../guide.mdoc#setup` | the host, which maps files to URLs |
-| Entity reference | `{% ref "SPEC-1" %}` | the corpus layer (parked) |
+| Entity reference | `{% ref "SPEC-1" %}` | the corpus layer (section 3) |
 
 *Leaning:* a `resolveLink(href, ctx)` callback beside `resolveAsset`, at transform time.
 
