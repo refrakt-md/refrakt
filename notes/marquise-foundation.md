@@ -3,7 +3,7 @@
 **Status: brainstorm.** Nothing here is decided unless marked *decided*, and nothing here is a
 promise to build. When an idea is decided it moves into a spec, and this document links to it.
 
-**Started:** 2026-11-12. **Last updated:** 2026-11-14.
+**Started:** 2026-11-12. **Last updated:** 2026-11-15.
 
 **Related, already written as specs:**
 
@@ -1956,7 +1956,73 @@ misapplied; the output is text edits, untouched bytes identical; operations acro
 a shape everywhere, moving a document and updating links to it) are batches of per-document edits
 orchestrated from above, with no cross-document atomicity.
 
-## 19. Open questions
+## 19. The programmatic API
+
+*Added 2026-11-15.* Refrakt grew outward from its tools rather than from an API, and Marquise should
+not repeat that:
+
+- plan's logic lives in `plugins/plan/src/commands/*.ts` (`runUpdate(options)`), factored afterwards so
+  MCP could call it; `mcp-bindings.ts` calls itself "an additive surface", and the runners still
+  return CLI-shaped results (`EXIT_NOT_FOUND = 2`);
+- the exported surface is accidental: 111 exports from `@refrakt-md/runes`, 49 from `transform`, 19
+  from `content`, mostly whatever a sibling package needed;
+- getting typed data for one file means going through a site-shaped entry point (`loadContent`,
+  `runPipeline`);
+- outputs were not plain data: Markdoc's `Tag` instances needed `serialize()` before SvelteKit could
+  pass them from server to client.
+
+**The principle:** the library is the product. The CLI, MCP server, language server, Vite and Astro
+integrations and renderers are thin clients of it, with no private API. Every CLI command is one API
+function; its `--json` output is that function's return value serialised; MCP tools are generated
+from the same table of operations.
+
+**Decided (2026-11-15): the document handle is the centre.** One loaded document holds the parse and
+answers every question about it; free functions can wrap it for one-off use.
+
+```ts
+import { createMarquise } from '@marquise/core';
+
+const mq = createMarquise({ shapes, kits, values, files }); // a config file is one way to build this
+
+const doc = await mq.load(source, { path: 'recipes/pancakes.md' }); // the only async step
+doc.findings;   // validation
+doc.tree;       // shape nodes, ready to render
+doc.records();  // typed extraction: [{ shape: 'recipe', id, fields }]
+doc.schema;     // what the output looks like
+
+const next = doc.edit([
+  { op: 'set', at: 'recipe/servings', value: 4 },
+  { op: 'add', at: 'recipe/ingredients', value: { name: 'Salt', amount: '1 pinch' } },
+]);
+next.ok ? next.source : next.findings; // new source plus text edits, or a refusal with findings
+```
+
+`@marquise/node` adds what the core must not contain: loading shapes and config from disk, finding
+documents, writing files, `extractAll` over a directory.
+
+**Design points** (*leaning*):
+
+1. **A pure core:** no `node:` imports, so the same core runs in a browser (editor, playground), on
+   the edge and in Node; the filesystem only through the `files` host callback (section 11).
+2. **Async only at the edges:** `load` is async (syntax, includes, data); validation, resolution,
+   extraction and edits on a loaded document are synchronous, which a language server needs on every
+   keystroke.
+3. **Documents are immutable values:** `edit` returns a new document plus text edits, never mutating;
+   this fits the version check on edits (section 18) and makes caching by content hash trivial.
+4. **One address for everything:** findings, extracted fields and edit targets point at the same
+   place (`hero/actions/1/href`, or `#pricing/tiers/0` when a shape has an id; ids preferred, since
+   indexes shift). An AI fix loop is then "read a finding, edit at its address", with no translation.
+   Findings carry the address as well as a line.
+5. **Content problems never throw:** bad content, a refused edit and a broken shape file all come back
+   as findings; exceptions only for programming errors.
+6. **Plain JSON throughout:** every result (tree, findings, records, edit results) is serialisable,
+   extending the shape node's rule; no `serialize()` step.
+7. **Typed per shape:** the type generator also writes record types and a typed facade
+   (`mq.shapes.recipe.extract(doc): RecipeRecord[]`), so data consumers get what components get.
+8. **Small on purpose:** a short list of exports, guarded by the API report (SPEC-199, Public
+   contracts); the resolver, the adapters and the front ends stay internal.
+
+## 20. Open questions
 
 **Stack**
 
@@ -2176,9 +2242,19 @@ time.
 - M8. Queries: reuse refrakt's filter grammar (`field:value`, SPEC-195's `matches()`), or something
   richer? The "no query language" line argues for reuse.
 
-## 20. Next topics
+**The programmatic API** (section 19)
 
-- The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 19).
+- A1. The address syntax: a path string, JSON Pointer (`/hero/0/actions/1`), or structured objects
+  with a string form? One form everywhere matters more than which.
+- A2. Cross-document reads in 1.0: `extractAll` over a directory is cheap and useful; resolving
+  references between documents starts to be the corpus layer (M3, M7).
+- A3. Incremental reparsing for the language server, or whole-document reloads cached by hash?
+- A4. The table of operations: one declaration per operation (input schema, result schema, function)
+  from which the CLI, MCP tools and docs are generated, as plan's bindings do by hand today?
+
+## 21. Next topics
+
+- The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 20).
 - The content model's revision (section 17, C4).
 - Marquise as a data store (section 18).
 - The Astro spike (section 14).
