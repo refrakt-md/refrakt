@@ -55,7 +55,9 @@ Terms used below follow SPEC-199 decision 1: authors write **tags**, developers 
   on a higher layer, or across layers that should stay independent. Each violation becomes a
   concrete work item.
 
-## 3. Corpus layer (parked)
+## 3. Corpus layer
+
+*Parked on 2026-11-13; given a clearer job on 2026-11-15 (below, and section 18).*
 
 Two engines index documents today: the site's entity registry and plan's scanner. Ideas, kept
 for when this comes back into focus:
@@ -68,6 +70,29 @@ for when this comes back into focus:
 - history (git) is a pluggable, opt-in source;
 - incremental updates, so the language server and builds share one engine;
 - a generic MCP surface over any corpus.
+
+**Refrakt's cross-page pipeline is two layers interleaved** (*2026-11-15*): a data layer and a site
+layer. The corpus layer is the data layer separated from the site, the "database layer" a
+data-store Marquise would sit under (section 18).
+
+| Refrakt today | What it does | Belongs to |
+|---|---|---|
+| Phase 2, register | plugins index entities into the entity registry | corpus, declaratively: shapes say what they register |
+| Phase 3, aggregate: `pageTree`, `breadcrumbPaths`, `pagesByUrl` | the site's structure | site |
+| Phase 3, aggregate: `headingIndex` | where every heading is | corpus (link anchors, Z4) |
+| Phase 3, plugin aggregates (plan relationships, counts) | cross-entity indexes | corpus, as queries |
+| Phase 4, post-process: `collection`, `aggregate` | lists and counts from the registry | corpus queries filling deferred definitions (SPEC-194 D12) |
+| Post-process: `xref` | resolving a reference to an entity | corpus finds it; site gives its URL |
+| Post-process: `breadcrumb auto` | the path to this page | site |
+
+SPEC-194 D12 already separates them: `$page` and `$site` come from the site, and only registry reads
+make a rune wait. The stack: (1) Marquise, one document: read, write, validate; (2) the corpus, many
+documents: entities, references, indexes, queries, and **writes across documents** (refrakt's
+`plan migrate ids`, renumbering an entity and every reference to it, the problem behind BUG-026 and
+BUG-040, is a corpus-level write built on per-document edits); (3) the site: routes, URLs, page tree,
+breadcrumbs, navigation, layouts, using the corpus without being part of it. The corpus serves more
+than sites: a CLI, an MCP server and agents query and update the same content with no site involved,
+as refrakt's plan tools do today.
 
 ## 4. The theme contract
 
@@ -1864,6 +1889,42 @@ truth.
 covers rendering and storage in one line, props being one shape typed data takes (SPEC-199 updated
 with it as a candidate).
 
+### Write operations (2026-11-15)
+
+Marquise does basic read (extract), write and validation; the database is the next layer (section 3).
+
+| Level | Operations |
+|---|---|
+| Attribute or dimension | set, unset |
+| Field | set, clear; the value's form follows the field's `as` (a string for `text`, inline Markdown for `inline`, Markdown blocks for `block`) |
+| Item in a list field | add, remove, move, set one of its values (a track's `duration`) |
+| Shape | insert, remove, move, rename, wrap content in a new shape, unwrap |
+| Form | inferred to explicit slot and back; compact to explicit child and back |
+| Document | create from a shape (scaffold), set frontmatter, apply a migration |
+
+Operations batch atomically per document (all or none); no transactions across documents, which git
+covers and which is where "not a database" draws the line.
+
+**Extraction must be reversible.** Typed values need a formatter as well as a parser (a `date` back as
+`2026-11-15`, a `duration` as `3:45`, `money` as `$29`), so each value type (C1) is defined in both
+directions. Regular-expression extraction generally cannot be reversed (writing a new date into
+`— November 2026` needs the surrounding text rebuilt, which a pattern does not say): a much stronger
+argument for structured matchers (a literal prefix, separator or suffix) than readability. A field
+extracted only by a regular expression is **read-only** to the write path, and the schema says so.
+`from` and `extract` are reversible: setting an item's `href` rewrites its link.
+
+**The round-trip rule:** after the edit, resolving the document again gives the new value in the
+intended field and every other field unchanged. Inference makes this subtle (setting an eyebrow
+inserts a paragraph before the heading, which another optional paragraph field might then claim). An
+edit that cannot satisfy the rule in inferred form falls back to an explicit slot (`#eyebrow`), which
+always can; if even that fails, it is refused with a finding. The rule is also the test: every
+operation on every example in a shape library keeps it.
+
+**Also:** edits target a known version (a content hash), so a stale edit is refused rather than
+misapplied; the output is text edits, untouched bytes identical; operations across documents (renaming
+a shape everywhere, moving a document and updating links to it) are batches of per-document edits
+orchestrated from above, with no cross-document atomicity.
+
 ## 19. Open questions
 
 **Stack**
@@ -2069,6 +2130,14 @@ time.
 - M3. Record identity: ids and typed references in Marquise core, or waiting for the corpus layer?
 - M4. Creating records: should the write path scaffold a new document from a shape
   (`marquise new article`), with required fields as placeholders?
+- M5. Read-only fields: is a field extracted only by a regular expression acceptable as read-only, or
+  should the schema require a formatter for every extracted field?
+- M6. Where scaffolding lives: creating a document from a shape is per document (Marquise), but its
+  file name and location are site or corpus policy.
+- M7. The corpus layer's owner (S1), now with a clearer job: a Marquise add-on, its own project, or
+  refrakt's?
+- M8. Queries: reuse refrakt's filter grammar (`field:value`, SPEC-195's `matches()`), or something
+  richer? The "no query language" line argues for reuse.
 
 ## 20. Next topics
 
