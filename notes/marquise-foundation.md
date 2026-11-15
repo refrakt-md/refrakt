@@ -2062,12 +2062,12 @@ time.
 
 **Marquise as a data store** (section 18)
 
-- D1s. Rich-text fields in extracted data: Markdown source, plain text, HTML or tree, by default and
+- M1. Rich-text fields in extracted data: Markdown source, plain text, HTML or tree, by default and
   per field?
-- D2s. Extraction in core for 1.0, or an add-on (`@marquise/extract`)? It is small, since the shape
+- M2. Extraction in core for 1.0, or an add-on (`@marquise/extract`)? It is small, since the shape
   node is already data, which argues for core.
-- D3s. Record identity: ids and typed references in Marquise core, or waiting for the corpus layer?
-- D4s. Creating records: should the write path scaffold a new document from a shape
+- M3. Record identity: ids and typed references in Marquise core, or waiting for the corpus layer?
+- M4. Creating records: should the write path scaffold a new document from a shape
   (`marquise new article`), with required fields as placeholders?
 
 ## 20. Next topics
