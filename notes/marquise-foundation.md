@@ -2703,15 +2703,6 @@ SPEC-199 updated (2026-11-17): the 1.0 table, the core module table and "Satelli
 
 **The HTML renderer**
 
-- R1. Sync or async components? Async allows fetching inside a component but complicates streaming
-  and caching; the shape node is already resolved, so sync may be enough, and async can be added
-  later without breaking anything.
-- R2. Escaping guarantees for library templates: with `html.raw` the template engine owns escaping.
-  Refuse unescaped output by default, with an explicit opt-in per component?
-- R3. Custom-element attribute types: strings map cleanly; booleans, numbers and item lists need
-  conventions (boolean attributes, JSON in an attribute, child elements per item).
-- R4. Server-side rendering of web components: content inside shadow DOM is not in the initial
-  HTML. Light-DOM slots avoid that for content, which suits Marquise; recommend it to kits.
 
 **Seams not yet discussed** (section 16): Z1–Z6, each still open; to be walked through one at a
 time.
@@ -2826,6 +2817,25 @@ time.
   refrakt's? *2026-11-17:* leaning its own project (Rivière), in the Marquise organisation, built only
   on the public API, after Marquise 1.0.
 - M11. Plan rebuilt on Rivière as its explicit acceptance test (section 3)?
+- M8. Queries: reuse refrakt's filter grammar (`field:value`, SPEC-195's `matches()`), or something
+  richer? The "no query language" line argues for reuse.
+  *Leaning 2026-11-17:* reuse, extended with typed capabilities (section 3, Rivière's queries).
+- M9. A store as a source (shape nodes from JSON, no Markdown): allowed in 1.0, or later? Either way
+  Marquise ships no connector (decided 2026-11-17).
+- M10. The rich-text hook: one converter interface (`toRichText`, `fromRichText`) per format, applied
+  to every `block` field, or per field?
+
+**Rivière** (section 3)
+
+- R1. Sync or async components? Async allows fetching inside a component but complicates streaming
+  and caching; the shape node is already resolved, so sync may be enough, and async can be added
+  later without breaking anything.
+- R2. Escaping guarantees for library templates: with `html.raw` the template engine owns escaping.
+  Refuse unescaped output by default, with an explicit opt-in per component?
+- R3. Custom-element attribute types: strings map cleanly; booleans, numbers and item lists need
+  conventions (boolean attributes, JSON in an attribute, child elements per item).
+- R4. Server-side rendering of web components: content inside shadow DOM is not in the initial
+  HTML. Light-DOM slots avoid that for content, which suits Marquise; recommend it to kits.
 - R1. The corpus snapshot as Rivière's centre, mirroring Marquise's document handle?
 - R2. Collections in Rivière's config (*leaning*: one shape can live in two collections, and file layout
   is the project's) or on document shapes (`path`, `id` in the shape file)?
@@ -2834,12 +2844,6 @@ time.
 - R4. Saved views: worth having, or a step towards a query language?
 - R5. Ids unique per collection (the general case, `get` needing the collection) or across the corpus
   (plan's prefixes in practice)?
-- M8. Queries: reuse refrakt's filter grammar (`field:value`, SPEC-195's `matches()`), or something
-  richer? The "no query language" line argues for reuse.
-- M9. A store as a source (shape nodes from JSON, no Markdown): allowed in 1.0, or later? Either way
-  Marquise ships no connector (decided 2026-11-17).
-- M10. The rich-text hook: one converter interface (`toRichText`, `fromRichText`) per format, applied
-  to every `block` field, or per field?
 - R6. Which extensions go in the built-in grammar: negation, comparison, existence, nested fields,
   paths through references; OR across fields in or out?
 - R7. The engine seam in Rivière only (*leaning*), or also in Marquise core, where the grammar lives
