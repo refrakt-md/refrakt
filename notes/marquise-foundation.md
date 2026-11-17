@@ -1176,6 +1176,61 @@ components from different frameworks in one project, and the binding format shou
 core, or they drift apart as refrakt's adapters did, SPEC-058); every first-party package needs a
 real user, so Nuxt, Next and SvelteKit come one at a time, driven by demand.
 
+### Framework integrations beyond Astro (2026-11-17)
+
+Rendering adapters are one of about eight things an integration needs; Astro's Content Layer hid most
+of the rest. Nuxt checked against `@nuxt/content@3.17.0`'s published types.
+
+**Two kinds of framework:** with a content system of their own (Astro's Content Layer, Nuxt Content,
+VitePress's data loaders, Eleventy's collections), integrate into it (SPEC-199's never-own-the-chain
+rule); without one (Next.js, SvelteKit, React Router, TanStack Start), Rivière's API is the content
+layer, called from server code through a shared snapshot.
+
+**Nuxt, from its types** (answers N2): a custom source is `{ getKeys(), getItem(path) }` returning raw
+strings that Nuxt Content parses with its own pipeline (`@nuxtjs/mdc`, Comark's predecessor), so
+Rivière cannot hand it typed entries as in Astro. The hook `content:file:afterParse` receives the
+parsed content and may change it: Marquise resolves shapes there, in MDC's tree, close to Comark's (the
+spike's adapter mostly applies), and adds record fields. Schemas are Standard Schema
+(`ContentStandardSchemaV1`), not Zod. Each integration is genuinely different work; only the checklist
+is shared.
+
+**The integration contract:** the questions every integration answers, ours or third-party:
+
+| # | Need | Astro | Nuxt (Content) | Next, SvelteKit, others | Covered so far |
+|---|---|---|---|---|---|
+| 1 | Where content enters | content loader | `afterParse` hook, Standard Schema | Rivière's API in server code | partly |
+| 2 | Rendering | Marquise's Astro renderer | Vue renderer, or Comark's | React or Svelte renderer | yes |
+| 3 | A validation schema the framework understands | Zod | Standard Schema | none needed | no |
+| 4 | Dev invalidation and errors | watcher, logger | Nuxt hooks, its overlay | Vite's module graph and overlay; Next has no Vite (N4) | partly |
+| 5 | Generated types in the framework's type step | `createSchema` types | `nuxt prepare` | `.svelte-kit/types`, Next's TypeScript plugin | no |
+| 6 | Links and images | URL policy, `imageImports` | `NuxtLink`, Nuxt Image | `next/link`, `next/image`, enhanced images | partly (section 13) |
+| 7 | Server and client boundary | islands | lazy hydration | React Server Components; SvelteKit hydrates fully | partly (section 13) |
+| 8 | Runtimes without a filesystem | Astro's data store | Nuxt Content's database | ours to solve | no |
+
+**Four gaps that are core requirements, not integration work** (*leaning*):
+
+1. **A Standard Schema validator generated from shapes.** Standard Schema is the interop point (Nuxt
+   Content, TanStack, tRPC and others); one validator covers them all, Zod covering Astro. It is the one
+   exporter integrations themselves need, so arguably Marquise's rather than a third party's (unlike
+   section 18's exporters).
+2. **A serialisable snapshot:** edge and serverless runtimes often have no filesystem; Astro and Nuxt
+   have their own stores, Next and SvelteKit do not. Rivière writes its snapshot during the build
+   (`snapshot.toJSON()`) and loads it at runtime (`loadSnapshot(json)`), so queries and the live loader
+   work anywhere. Cheap under the plain-JSON rule, but designed in.
+3. **React Server Components:** section 11's context API (`useMarquise()`) relies on React context,
+   which does not exist in server components, so today's design would fail quietly in Next's App Router.
+   The React renderer works as a server component: `translate`, `icon` and the current shape passed as
+   props or held per request (React's `cache()`); only bound interactive components are client
+   components, each behind `'use client'`.
+4. **Dev invalidation as a contract:** Rivière knows its dependencies (documents, included files, the
+   queries expansions ran); each integration maps them onto its framework's invalidation;
+   `@marquise-md/vite` covers Vite-based frameworks; Next needs a `withRiviere()` wrapper or its own
+   watching; findings go to each framework's error overlay, not only the terminal.
+
+**Proposal:** the eight questions written down as the integration contract; Astro the reference
+integration; the others when someone needs them (Marquise builds no integrations beyond the reference);
+the four gaps required before 1.0.
+
 ## 15. The HTML renderer
 
 *Added 2026-11-13.* Without refrakt's engine, a bare HTML renderer would output only the plain
@@ -2846,11 +2901,19 @@ SPEC-199 updated (2026-11-17): the 1.0 table, the core module table and "Satelli
 - N1. Which integration comes second after Astro: Nuxt (matching the Nuxt UI kit idea) or Next
   (the largest audience)?
 - N2. Nuxt Content: can Marquise plug in as a file type, or does it conflict with MDC? Check its
-  current docs.
+  current docs. *Answered 2026-11-17* (section 14): through the `content:file:afterParse` hook, on
+  MDC's tree; custom sources supply raw files only.
 - N3. *Answered 2026-11-13:* the plain presentation is what `@marquise-md/html` renders for unbound
   shapes (section 15).
 - N4. Next without Vite: a separate small plugin, or a loader that needs no build integration
   (transform at request time)?
+- N5. The Standard Schema validator: in Marquise core, as the one exporter integrations need, or a
+  satellite?
+- N6. A React renderer that works as a server component (no context, per-request state): a 1.0
+  requirement?
+- N7. The serialisable snapshot in Rivière's core?
+- N8. The integration contract (the eight questions): into SPEC-199 now, or in the notes until Rivière
+  has a spec of its own?
 
 **The HTML renderer**
 
