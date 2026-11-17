@@ -438,7 +438,7 @@ its registered code with `preprocess: data`. Tooling then treats every tag the s
 |---|---|---|---|---|
 | Shapes, including primitives | Marquise | shape file | components, templates, plain presentation | shape libraries, design languages, kits |
 | Dimensions (including `layout`) | Marquise | dimension file | themes and kits | design languages, kits |
-| Directives | Marquise (preprocess hook) | file with attributes and `preprocess: <key>` | registered code | Marquise core (`include`), add-ons (`data`, `snippet`), anyone |
+| Directives | Marquise (preprocess hook) | file with attributes and `preprocess: <key>` | registered code | the `include` satellite, refrakt (`data`, `snippet`), anyone (section 20) |
 | Template structure | `@marquise/compose` | built in | `@marquise/compose` | `@marquise/compose` |
 | Lookups (`t`, `icon`) | Marquise (signature and lookup node only) | message files and icon sets listed in kit manifests | the host's callbacks | hosts, kits |
 | Site and cross-document tags | site layer, corpus layer | their own | their own | refrakt, other site layers |
@@ -805,7 +805,7 @@ components from different frameworks in one project, and the binding format shou
 | Build base | `@marquise/vite` | 1.0 |
 | Integrations | `@marquise/astro` | 1.0 (docs site, proof project) |
 | | `@marquise/nuxt`, `@marquise/next`, `@marquise/sveltekit` | after 1.0, thin, one at a time |
-| Add-ons | `@marquise/schema`, `@marquise/data`, later `snippet`, `compose` | as SPEC-199 plans |
+| Satellites (own repositories, section 20) | `@marquise/schema`, `@marquise/include`, later perhaps `compose` | as SPEC-199 plans; `data` and `snippet` stay in refrakt |
 | Not first-party | kits, Solid, Preact, Qwik, Eleventy, the editor | community, or later |
 
 **Guards:** integrations stay thin (anything not framework-specific belongs in `@marquise/vite` or
@@ -2324,13 +2324,76 @@ unchecked line containing the string), fragile but what a person or an AI actual
   operation. Writers building a batch from one read never compute shifted indexes, as JSON Patch's
   sequential model would make them; sequential behaviour is several batches.
 
-## 20. Open questions
+## 20. Satellites and scope
+
+*Added 2026-11-17.* Directives (`include`, `data`, `snippet`) and tools like refrakt's diff algorithm:
+useful, but are they Marquise's? Refrakt shows how creep happens: `lib/line-diff.ts` (83 lines, an
+LCS diff) was pulled out of the `diff` rune into the core rune package so `snippet review` could share
+it (WORK-592). Nobody decided it belonged there; the monorepo made it the easiest place.
+
+**Marquise owns the seams, not the tools:**
+
+| Seam | What plugs in | Refrakt examples |
+|---|---|---|
+| Preprocess (directives) | content in place before the content model reads it | `include`, `data`, `snippet` |
+| Computed (`prepare`) | values derived from resolved fields | diff hunks from two fences; perhaps highlighting |
+| Render middleware (section 12) | presentation only | lazy images, edit hints |
+
+Marquise's job is making them complete: **provenance** (included or generated content remembers its
+origin, so findings point at the right file and the write path redirects or refuses edits),
+**bounded file access** (the `files` callback), **declared dependencies** (a directive names the files
+it read, for caching, hot reload and determinism) and **typed outputs** (a computed value appears in
+the published schema and in records: a diff's hunks are data too).
+
+**The cases:**
+
+- **Diff:** the algorithm is not Marquise's, or even refrakt's to own (mature libraries exist, jsdiff
+  for one). A `diff` shape in someone's library declares two fence fields and a computed `hunks` field
+  calling a library; Marquise's part is the computed seam with typed output. A test case for the seam.
+- **`data` and `snippet`:** not Marquise's at all. Refrakt keeps them, using the public preprocess hook
+  from outside, which tests the hook better than anything Marquise builds itself.
+- **`include`** (*decided 2026-11-17*): moves to a satellite. SPEC-199 kept it in core because it runs
+  before the content model, but that argument proves the *hook* belongs in core, not the directive;
+  what core needs is provenance, which every directive needs. `include` (182 lines) becomes the
+  reference directive, optional, proving the hook on day one.
+- **`schema` and `compose`:** satellites too. Compose is the hardest test: a template places other
+  shapes, so if it cannot be built from public contracts alone, the contracts are missing something.
+
+**The scope rule for core:** a piece belongs in core only if the content model, validation, records or
+the write path cannot be correct without it, or every user needs it. Everything else sits behind a
+public seam; an add-on needing a private import gets a new seam, not a deep import.
+
+**Separate repositories** (*leaning*), because they **enforce the public contract**: in a monorepo a
+sibling can import anything (how refrakt's `runes` reached 111 exports); in its own repository a
+satellite has only the published API. The friction is the point: a change needing core and an add-on
+together forces "is this a seam?". Costs for one maintainer: slower cross-repository changes, a
+compatibility matrix, duplicated CI and release setup. Mitigations: one template repository for
+satellites; a contract-test harness from core (`@marquise/test`) each satellite runs against core's
+current and next versions; satellites depend only on published packages. The alternative, one
+repository with enforced boundaries (exports maps, a dependency-cruiser rule), is cheaper and can be
+bypassed. Refrakt's creep came less from monorepo mechanics than from saying yes to directions, so the
+written rule matters most; separate repositories make it hard to ignore.
+
+| Where | What |
+|---|---|
+| Marquise core repository | content model, shapes, validation, records, write path, API, CLI, language server, renderers, the three seams |
+| First-party satellites | only those proving a seam: `include` (preprocess), `schema` (output); perhaps `compose` later |
+| Refrakt (the lab) | `data`, `snippet`, diff, everything else, through Marquise's public seams |
+| Third parties | anything else |
+
+SPEC-199 updated (2026-11-17): the 1.0 table, the core module table and "Satellites" replacing
+"Add-ons".
+
+## 21. Open questions
 
 **Stack**
 
 - S1. Corpus layer branding: part of Marquise's family (`@marquise/corpus`), or its own package?
 - S2. Should a design language be a separate package from any theme, so Lumina is one
   implementation among several?
+- S3. First-party satellites at 1.0: `include` and `schema` only, or `compose` too (section 20)?
+- S4. Separate repositories in a Marquise GitHub organisation (*leaning*), or one repository with
+  enforced boundaries?
 
 **Kits and bindings**
 
@@ -2581,9 +2644,9 @@ time.
 - A8. Address types: literal checking only, or the value type at each address too (only if typed
   `doc.set` is wanted)?
 
-## 21. Next topics
+## 22. Next topics
 
-- The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 20).
+- The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 21).
 - The content model's revision (section 17, C4).
 - Marquise as a data store (section 18).
 - The Astro spike (section 14).
