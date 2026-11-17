@@ -3,7 +3,7 @@
 **Status: brainstorm.** Nothing here is decided unless marked *decided*, and nothing here is a
 promise to build. When an idea is decided it moves into a spec, and this document links to it.
 
-**Started:** 2026-11-12. **Last updated:** 2026-11-15.
+**Started:** 2026-11-12. **Last updated:** 2026-11-17.
 
 **Related, already written as specs:**
 
@@ -1956,6 +1956,80 @@ misapplied; the output is text edits, untouched bytes identical; operations acro
 a shape everywhere, moving a document and updating links to it) are batches of per-document edits
 orchestrated from above, with no cross-document atomicity.
 
+### Writing forms (2026-11-17)
+
+A child shape can be written compactly or explicitly (section 17), a part of a shape inferred or as
+an explicit slot. **The address is the same either way** (`playlist.tracks[2].duration`): callers say
+what to change; which form gets written is the write path's decision.
+
+1. **An existing item keeps its form** when the new value can be written in it. Explicit is never
+   turned into compact automatically, even without loss; the author chose it. Changing form is the
+   `convert` operation.
+2. **The round-trip rule decides what "can be written" means:** render the item in its form, resolve
+   it again, compare. Otherwise fall back, step by step: compact, then explicit with content
+   inferred, then explicit with explicit slots, then refused with a finding. A promotion is reported
+   in the edit result (`form-promoted`), never silent.
+3. **A new item follows its neighbours:** their form, compact if every value fits. With no neighbours,
+   compact when everything fits, unless the shape says `prefer: explicit`.
+4. **One explicit item in a compact list splits the list** (list, tag, list): fewest bytes touched,
+   order confirmed by the round-trip rule (depends on C7). A parent that does not accept mixed forms
+   (`forms: [item]`) refuses the edit; converting the whole list is an explicit `convert`.
+5. **Callers can choose:** `form: 'auto' | 'compact' | 'explicit'` on each operation, `auto` by
+   default.
+
+**Values with no place in a compact form:** a field read only by a regular expression is read-only
+(above), so writing it promotes the item; ids, universal attributes and dimensions usually have no
+place either, so giving an item an id promotes it (one more reason for declared item keys, section
+19). The same rule (keep the form found, new content follows its neighbours, fall back to more
+explicit) covers inferred and explicit slots, Markdoc's `#id` shorthand and `id="…"`, and Comark's
+YAML props block and inline attributes.
+
+**Compact forms need a write template.** Matchers are enough to read, not to write (a new track's
+link has no label to take from anywhere, nor do matchers say how parts are separated). Of three
+options (build lines from matcher kinds; a declared template; write by example, copying a neighbour),
+a **declared template, checked when the shape loads**: rendered with sample values and resolved, so
+a template that does not read back fails at load, not on someone's first edit.
+
+**It belongs in the body,** like examples (SPEC-197): it is Markdown, so it is written as Markdown,
+highlighted and formatted, and parsed into a tree rather than matched as a string. A fourth kind of
+top-level block beside `template`, `fragment` and `example`:
+
+```
+{% form "item" %}
+- **{% $name %}**{% if $artist %} *{% $artist %}*{% /if %} [listen]($src)
+{% /form %}
+
+{% form "section" %}
+## {% $name %}
+
+{% $description %}
+{% /form %}
+```
+
+**Built-in Markdoc only, no template syntax of its own:** variables for values, `if` for optional
+parts, and a `$field` sentinel where Markdown keeps a plain string (link and image destinations, alt
+text, link titles), since tags do not parse there (`spike/marquise-comark/`, `npm run forms`). An
+output template places rendered nodes (`place`, the renamed placement tag, section 16, Z1); a write
+template interpolates source text, which is what variables are, so the two notations differ because
+the two things do. A custom syntax was rejected: its brackets and braces compete with Markdown's own
+(a `[ … ]` optional part next to a link is ambiguous), and it needs escaping rules, a second parser,
+documentation and tooling, twice if there are two front ends. `if` repeats a field's name; an
+`optional` shorthand only if real forms prove noisy.
+
+**One template, four uses:** the write path (values through their type's formatter, escaped per
+position); snippets and completion (variables become tab stops, `matches` become choices); editor
+insertion (placeholder text); the load-time check. Placeholder text and sample values come from the
+same examples. **Snippets become generated:** an explicit form's from the schema; a parent's composed
+from its own and its children's forms (playlist's with two tracks from track's form), replacing
+refrakt's hand-written ones (`plugins/media/src/index.ts:26` already holds a compact track with
+placeholders, per parent), now read by VS Code, the language server and the editor's palette.
+
+**The template defines the form** (*leaning*): a variable in `strong` is `match: strong`, an `if`
+makes a part optional, `$src` as a link destination is `extract: href`. Frontmatter matchers only
+where reading must be more tolerant than writing (several ways to write a duration, another order,
+alternative markers). Derived reading is strict, in template order; whether that is tolerant enough
+needs trying on refrakt's ten compact-form runes first.
+
 ## 19. The programmatic API
 
 *Added 2026-11-15.* Refrakt grew outward from its tools rather than from an API, and Marquise should
@@ -1991,8 +2065,8 @@ doc.records();  // typed extraction: [{ shape: 'recipe', id, fields }]
 doc.schema;     // what the output looks like
 
 const next = doc.edit([
-  { op: 'set', at: 'recipe/servings', value: 4 },
-  { op: 'add', at: 'recipe/ingredients', value: { name: 'Salt', amount: '1 pinch' } },
+  { op: 'set', at: 'recipe.servings', value: 4 },
+  { op: 'add', at: 'recipe.ingredients', value: { name: 'Salt', amount: '1 pinch' } },
 ]);
 next.ok ? next.source : next.findings; // new source plus text edits, or a refusal with findings
 ```
@@ -2010,8 +2084,8 @@ documents, writing files, `extractAll` over a directory.
 3. **Documents are immutable values:** `edit` returns a new document plus text edits, never mutating;
    this fits the version check on edits (section 18) and makes caching by content hash trivial.
 4. **One address for everything:** findings, extracted fields and edit targets point at the same
-   place (`hero/actions/1/href`, or `#pricing/tiers/0` when a shape has an id; ids preferred, since
-   indexes shift). An AI fix loop is then "read a finding, edit at its address", with no translation.
+   place (`hero.actions[1].href`, or `#pricing.tiers[0]` when a shape has an id; ids preferred,
+   since indexes shift; see Addresses). An AI fix loop is then "read a finding, edit at its address", with no translation.
    Findings carry the address as well as a line.
 5. **Content problems never throw:** bad content, a refused edit and a broken shape file all come back
    as findings; exceptions only for programming errors.
@@ -2021,6 +2095,43 @@ documents, writing files, `extractAll` over a directory.
    (`mq.shapes.recipe.extract(doc): RecipeRecord[]`), so data consumers get what components get.
 8. **Small on purpose:** a short list of exports, guarded by the API report (SPEC-199, Public
    contracts); the resolver, the adapters and the front ends stay internal.
+
+### Addresses (2026-11-17)
+
+Refrakt has three unrelated ways to point at things: findings at `file:line`, includes at `file#id`
+(SPEC-168), and plan's `--check` by text (`plugins/plan/src/commands/update.ts:175`, the first
+unchecked line containing the string), fragile but what a person or an AI actually knows.
+
+**Decided (2026-11-17), answering A1:**
+
+- **Dots, with brackets for indexes and key matches,** as in JavaScript: `hero.headline`,
+  `hero[1].align`, `#pricing.tiers[2].price`, `recipe.ingredients[name="Salt"].amount`,
+  `section.body.callout.title`, and across files SPEC-168's form extended: `docs/guide.md#install.steps[3]`.
+  It is what developers write against records and props (lodash `get`, form libraries, Zod's printed
+  paths), it gives one index form, and it keeps folders (before `#`) apart from fields. Slash was
+  considered (a neutral "go down", JSON Pointer's form); the cost of dots is that `#pricing.tiers`
+  resembles Markdoc's `#id .class` shorthand, only where an address starts with an id. Ids may not
+  contain dots; key values are always quoted.
+- **Two forms:** structured (an array of steps) inside the API, the string for findings, the CLI, MCP
+  and people, converted both ways; `toPointer()` for generic JSON tools.
+- **camelCase is canonical**, matching records and props (decision 8); kebab-case accepted on input
+  and normalised, since names are unique within a shape. A finding's message uses the source name,
+  its address the data name.
+- **No sigils:** attributes, fields and dimensions share one namespace already, since they become one
+  flat props object; the schema knows which a name is, and inside a block field a name is a shape.
+- **Indexes from 0,** with the line beside the address in findings.
+- **Item keys are declared** (`itemModel: { key: name }`), optional: stable identity in records (M3),
+  the shorthand `ingredients["Salt"]`, duplicates reported. Without one, items are addressed by index,
+  and `[field="value"]` works on any field (plan's text match made explicit).
+- **An absent field has an address:** `content-missing` reports `hero.headline`, where `set` would
+  put it. Content no field claimed reports the shape's address plus a source range.
+- **Addresses check against the schema without a document,** for MCP inputs and typed addresses
+  (`Address<'recipe'>`).
+- **Findings and records report the most stable address:** id, then key, then index.
+- **A batch resolves every address against the version it targets,** before any operation applies;
+  overlapping targets are refused, several `add`s to one list apply in batch order, `move` is its own
+  operation. Writers building a batch from one read never compute shifted indexes, as JSON Patch's
+  sequential model would make them; sequential behaviour is several batches.
 
 ## 20. Open questions
 
@@ -2218,7 +2329,8 @@ time.
 - C4. A spec now (a content-model revision for Marquise 1.0, refrakt's runes migrated by codemod), or
   after the syntax decision (Z1i)?
 - C5. Compact forms in the shape file: a `compact` key as sketched, or named alternative content models
-  (`forms: { item: …, section: … }`)?
+  (`forms: { item: …, section: … }`)? *Leaning 2026-11-17:* `{% form %}` blocks in the body, the
+  template defining the form, frontmatter matchers only for tolerance (section 18, Writing forms).
 - C6. Parent defaults: a general `$parent` reference in `defaults`, or inheritance declared on the
   attribute, like a dimension's `inherit`?
 - C7. Mixing forms in one list: compact items and explicit tracks together, in order (as today's
@@ -2242,10 +2354,20 @@ time.
 - M8. Queries: reuse refrakt's filter grammar (`field:value`, SPEC-195's `matches()`), or something
   richer? The "no query language" line argues for reuse.
 
+**Writing forms** (section 18)
+
+- F1. Is reading derived from a write template tolerant enough for real authors? To try on refrakt's
+  ten compact-form runes (playlist, accordion, timeline, cast, itinerary, reveal, plot, character,
+  faction, realm).
+- F2. Which optional parts a generated snippet includes: required fields only, plus parts marked
+  `snippet: true`?
+- F3. The block's name: `form`, or another?
+- F4. Comark's equivalent of Markdoc variables and `if` for write templates (untested).
+
 **The programmatic API** (section 19)
 
-- A1. The address syntax: a path string, JSON Pointer (`/hero/0/actions/1`), or structured objects
-  with a string form? One form everywhere matters more than which.
+- A1. *Answered 2026-11-17* (section 19, Addresses): dots and brackets, camelCase, indexes from 0,
+  declared item keys, batches resolved against the version they target.
 - A2. Cross-document reads in 1.0: `extractAll` over a directory is cheap and useful; resolving
   references between documents starts to be the corpus layer (M3, M7).
 - A3. Incremental reparsing for the language server, or whole-document reloads cached by hash?

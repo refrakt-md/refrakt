@@ -26,6 +26,7 @@ npm run stream              # validation on partially streamed content
 npm run markdoc             # content/home.mdoc → Markdoc → a Comark document → @comark/react
 npm run hostile             # hostile content through both renderers, with and without security
 npm run slots               # explicit slots: zone markers, Markdoc's native slots, template slot tags
+npm run forms               # write templates for compact forms: what Markdoc parses where
 ```
 
 ## What is here
@@ -146,6 +147,23 @@ with and without Comark's security plugin, at its default options:
   tags with a primary string argument; refrakt's templates use the named form
   (`{% slot name="eyebrow" /%}`), which stayed in the children with slots on and off. The primary form
   (`{% slot "eyebrow" %}`) is captured.
+
+## Write templates for compact forms
+
+*Added 2026-11-17* (`src/write-template.ts`, Markdoc 0.5.10). A compact form's write template in a
+shape file's body (notes, section 18, "Writing forms"):
+
+- **Tags and variables work inline:** inside `**…**` and `*…*`, and an `if` wrapper keeps its leading
+  space and punctuation as children, so an optional part disappears with them.
+- **Not inside a link destination:** `[listen]({% place "src" /%})` and `[listen]({% $src %})` are no
+  longer links (they fall apart into text); `<{% $src %}>` becomes a URL-encoded string.
+- **A `$field` sentinel works there:** `[listen]($src)` is a link with `href: "$src"`; `![…]($image)` an
+  image with `src: "$image"`.
+- **Alt text is a raw string:** a tag inside it stays the literal text `{% place "alt" /%}`, so alt
+  text takes the sentinel too.
+- **A template in built-in Markdoc only** (`- **{% $name %}**{% if $artist %} *{% $artist %}*{% /if %}
+  [listen]($src)`) parses into exactly what matchers would declare: a variable in `strong`, an
+  optional `em`, a link whose `href` is a field.
 
 ## Not tested
 
