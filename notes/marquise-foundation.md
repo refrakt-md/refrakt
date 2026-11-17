@@ -333,6 +333,75 @@ Rivière    many documents: entities, references, queries, writes across documen
 refrakt    the opinionated whole: runes, themes, layouts as content, the site
 ```
 
+### An Astro content loader for Rivière (2026-11-17)
+
+**The principle it shows:** Marquise and Rivière are layers that frameworks stack on, where refrakt
+takes control of the whole chain (its own loader, router, layouts, adapters). Here Astro keeps routing,
+pages, images, islands and its build; Rivière supplies typed entries; Marquise supplies rendering.
+
+*Grounded in `astro@7.4.12`'s published type definitions* (`dist/content/loaders/types.d.ts`,
+`data-store.d.ts`, `loaders/glob.js`); docs.astro.build was not reachable from the session.
+
+**What Astro offers:** a build-time `Loader` is `{ name, load(context) }` plus `schema` (Zod 4) or
+`createSchema()` returning `{ schema, types }` (a Zod schema and a TypeScript type string). The context
+holds `collection`, `store`, `meta` (a key-value store for sync tokens), `logger`, `config`,
+`parseData`, `renderMarkdown`, `generateDigest`, `watcher` (dev only) and `refreshContextData`. An entry
+has `id` (unique per collection), `data`, `filePath`, `body`, `digest`, `rendered: { html, metadata }`
+(metadata with `headings`, `imagePaths`, `frontmatter` and any other keys), `deferredRender`,
+`assetImports` and `imageImports` (paths in `data` to image fields, resolved to image metadata). Live
+collections are built in (`defineLiveCollection`, a `LiveLoader` with `loadEntry` and `loadCollection`
+taking a typed `filter`); `reference(collection)` resolves to `{ collection, id }`.
+
+```ts
+// src/content.config.ts
+import { defineCollection } from 'astro:content';
+import { riviere } from '@riviere-md/astro';
+
+const rv = riviere({ config: './riviere.config.ts' });   // one snapshot shared by every collection
+
+export const collections = {
+  work: defineCollection({ loader: rv.loader('work') }),
+  spec: defineCollection({ loader: rv.loader('spec') }),
+};
+```
+
+| Astro | From Rivière and Marquise |
+|---|---|
+| `id` | the entity's id; Astro's ids are unique per collection, which settles V5 for the general case |
+| `data` | the record, each `Ref` converted to `{ collection, id }` so `getEntry(work.data.source)` works |
+| `createSchema()` | a Zod schema and the type string Marquise's generator produces from the shape |
+| `filePath`, `body` | the document's path and source |
+| `digest` | Marquise's content hash: unchanged entries skipped |
+| `rendered.metadata.headings` | Marquise's headings, for Astro's tables of contents |
+| `imageImports` | paths of image fields, so Astro's image optimisation applies (section 13's `resolveAsset`) |
+| `logger` | findings as `file:line` warnings and errors; error findings can fail the build |
+| `watcher`, `meta` | in dev, a changed file reloads one document and rewrites only changed entities; the snapshot hash in `meta` |
+
+One snapshot serves every collection, so cross-collection references are checked once, before Astro
+sees them.
+
+**Rendering, the one real question.** `render(entry)` draws `rendered.html` (a string), or, with
+`deferredRender`, a module for the entry's file through the content entry type registered for its
+extension (how `@astrojs/markdoc` gets components into `.mdoc`). Options: (a) `rendered.html` from
+Marquise's HTML renderer, static, no components or islands; (b) `deferredRender` with a content entry
+type registered by `@marquise-md/astro`, so `render(entry)` draws real components and islands, but in
+`glob.js` deferred rendering depends on a registered entry type for the file's extension, so whether a
+custom loader can rely on it, and how it coexists with Astro's own `.md`, needs a spike; (c) both: the
+resolved tree stored in `rendered.metadata.marquise` beside the HTML, `<Content />` giving static HTML and
+`<Marquise entry={entry} />` drawing components and islands, at the cost of storing each entry twice.
+*Leaning:* (c) first, on what the types guarantee; spike (b) as the end state.
+
+**Pages and URLs:** Astro owns routing (`[id].astro`, `getStaticPaths()` over `getCollection('work')`);
+links inside content need URLs, so the integration takes the URL policy
+(`riviere({ urls: { work: '/work/{id}/' } })`), answering V10. **A live loader** (`rv.liveLoader('work')`,
+`filter` as Rivière's filter string) serves server-rendered sites per request: content that changes
+without a rebuild, a store as a source (M9), a corpus edited through MCP. **Writes do not go through
+Astro:** the CLI, MCP and editors write, the dev watcher picks changes up.
+
+**What it tests:** per-collection ids, generated types reused by `createSchema`, typed references as
+`reference()`, content hashes as digests, snapshots plus a watcher as incremental updates, images through
+`imageImports`; no private seam needed. The unknown is deferred rendering.
+
 **Package names** (checked on npm, 2026-11-17): the unscoped `riviere` is taken (an HTTP traffic
 logger, last changed 2022), and **so are the scopes `@riviere` and `@marquise`**: both exist with no
 public packages (the registry answers `{}` where an unknown scope gives "Scope not found"). The
@@ -2882,8 +2951,14 @@ time.
   for queries within one document?
 - V8. The query catalogue as the first piece of work, before any grammar change?
 - V9. SPEC-138 (draft): continue it in refrakt, the lab, or treat it as superseded by Rivière's design?
-- V10. The URL policy: an optional part of Rivière, or in each framework integration?
-- V11. An Astro content loader as Rivière's first integration?
+- V10. The URL policy: an optional part of Rivière, or in each framework integration? *Leaning
+  2026-11-17:* in the integration (the Astro loader takes `urls`).
+- V11. An Astro content loader as Rivière's first integration? *2026-11-17:* sketched (section 3); it
+  needs no private seam.
+- V12. Rendering in Astro: (c) static HTML plus the stored tree first, (b) deferred rendering through a
+  Marquise content entry type as the end state?
+- V13. Spike: can a custom loader use `deferredRender`, and how does a Marquise entry type coexist with
+  Astro's own `.md` handling?
 
 **Writing forms** (section 18)
 
