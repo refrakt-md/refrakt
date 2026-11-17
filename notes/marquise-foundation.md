@@ -2030,6 +2030,40 @@ where reading must be more tolerant than writing (several ways to write a durati
 alternative markers). Derived reading is strict, in template order; whether that is tolerant enough
 needs trying on refrakt's ten compact-form runes first.
 
+**A shape's own content is the other way round** (2026-11-17). Refrakt's hero
+(`plugins/marketing/runes/hero.md`) reads `media` with `match: any`, `body` as `heading|paragraph`,
+`actions` as `list|fence`, greedy runs, any heading level, and a `---` that may be left out: the model
+is mostly tolerance. Deriving it from a write template would make a shape accept only what it writes,
+defeating inference.
+
+| | Compact form, item model | A shape's content |
+|---|---|---|
+| Size | two to five parts, a line or a section | a whole block with zones |
+| Reading | close to one-to-one, a fixed pattern | deliberately loose, many inputs to one record |
+| Which is declared | the template; the reader is derived | the content model; the writer is generated |
+
+**The writer is generated from the content model** (*leaning*): walk it in declared order (sequence
+order, zone order), write each present field in its matched form, `---` between zones only when both
+sides have content, absent optional fields left out. For hero: media, `---` if there was media,
+eyebrow, headline, blurb, body, actions with each item written by its item model. Where the model
+leaves a choice, a **write hint** on the field rather than a template:
+
+| Choice | Default | Hint |
+|---|---|---|
+| heading level of an `as: inline` heading | the level found when editing; for a new one, the level in the shape's first example | `write: { level: 1 }` |
+| an alternative (`list\|fence`) | the form found; for a new value, the first alternative | the alternatives' order |
+| list and emphasis markers | the document's, else `-` and `*` | the formatter's settings |
+
+**Snippets come from the same walk:** required fields as tab stops, placeholder text from examples.
+Refrakt's `hero.md` has no snippet; bento's hand-written one (`plugins/marketing/src/index.ts:21`) is
+what a sections-model walk would produce.
+
+**Item models are anonymous compact forms:** small, close to one-to-one, declared per field instead
+of owned by a child shape. They could take the same template (`{% form "actions" %}- [{% $label %}]($href){% /form %}`),
+leaving one mechanism at the bottom: small templates where structure is fixed, generated writing
+where it is inferred. A `{% form %}` for a whole shape (a house style) could be an override; left out
+until something needs it.
+
 ## 19. The programmatic API
 
 *Added 2026-11-15.* Refrakt grew outward from its tools rather than from an API, and Marquise should
@@ -2363,6 +2397,10 @@ time.
   `snippet: true`?
 - F3. The block's name: `form`, or another?
 - F4. Comark's equivalent of Markdoc variables and `if` for write templates (untested).
+- F5. Do item models become write templates (`{% form "<field>" %}`), with matchers derived as for
+  compact forms?
+- F6. The set of write hints on content-model fields: heading level, the alternatives' order, anything
+  else a generated writer cannot decide?
 
 **The programmatic API** (section 19)
 
