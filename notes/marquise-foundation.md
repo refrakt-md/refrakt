@@ -2703,6 +2703,15 @@ SPEC-199 updated (2026-11-17): the 1.0 table, the core module table and "Satelli
 
 **The HTML renderer**
 
+- R1. Sync or async components? Async allows fetching inside a component but complicates streaming
+  and caching; the shape node is already resolved, so sync may be enough, and async can be added
+  later without breaking anything.
+- R2. Escaping guarantees for library templates: with `html.raw` the template engine owns escaping.
+  Refuse unescaped output by default, with an explicit opt-in per component?
+- R3. Custom-element attribute types: strings map cleanly; booleans, numbers and item lists need
+  conventions (boolean attributes, JSON in an attribute, child elements per item).
+- R4. Server-side rendering of web components: content inside shadow DOM is not in the initial
+  HTML. Light-DOM slots avoid that for content, which suits Marquise; recommend it to kits.
 
 **Seams not yet discussed** (section 16): Z1–Z6, each still open; to be walked through one at a
 time.
@@ -2827,29 +2836,20 @@ time.
 
 **Rivière** (section 3)
 
-- R1. Sync or async components? Async allows fetching inside a component but complicates streaming
-  and caching; the shape node is already resolved, so sync may be enough, and async can be added
-  later without breaking anything.
-- R2. Escaping guarantees for library templates: with `html.raw` the template engine owns escaping.
-  Refuse unescaped output by default, with an explicit opt-in per component?
-- R3. Custom-element attribute types: strings map cleanly; booleans, numbers and item lists need
-  conventions (boolean attributes, JSON in an attribute, child elements per item).
-- R4. Server-side rendering of web components: content inside shadow DOM is not in the initial
-  HTML. Light-DOM slots avoid that for content, which suits Marquise; recommend it to kits.
-- R1. The corpus snapshot as Rivière's centre, mirroring Marquise's document handle?
-- R2. Collections in Rivière's config (*leaning*: one shape can live in two collections, and file layout
+- V1. The corpus snapshot as Rivière's centre, mirroring Marquise's document handle?
+- V2. Collections in Rivière's config (*leaning*: one shape can live in two collections, and file layout
   is the project's) or on document shapes (`path`, `id` in the shape file)?
-- R3. CLI writes: apply by default with `--dry-run`, or dry by default with `--apply` as `plan migrate`
+- V3. CLI writes: apply by default with `--dry-run`, or dry by default with `--apply` as `plan migrate`
   does?
-- R4. Saved views: worth having, or a step towards a query language?
-- R5. Ids unique per collection (the general case, `get` needing the collection) or across the corpus
+- V4. Saved views: worth having, or a step towards a query language?
+- V5. Ids unique per collection (the general case, `get` needing the collection) or across the corpus
   (plan's prefixes in practice)?
-- R6. Which extensions go in the built-in grammar: negation, comparison, existence, nested fields,
+- V6. Which extensions go in the built-in grammar: negation, comparison, existence, nested fields,
   paths through references; OR across fields in or out?
-- R7. The engine seam in Rivière only (*leaning*), or also in Marquise core, where the grammar lives
+- V7. The engine seam in Rivière only (*leaning*), or also in Marquise core, where the grammar lives
   for queries within one document?
-- R8. The query catalogue as the first piece of work, before any grammar change?
-- R9. SPEC-138 (draft): continue it in refrakt, the lab, or treat it as superseded by Rivière's design?
+- V8. The query catalogue as the first piece of work, before any grammar change?
+- V9. SPEC-138 (draft): continue it in refrakt, the lab, or treat it as superseded by Rivière's design?
 
 **Writing forms** (section 18)
 
