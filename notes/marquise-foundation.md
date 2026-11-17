@@ -57,7 +57,8 @@ Terms used below follow SPEC-199 decision 1: authors write **tags**, developers 
 
 ## 3. Corpus layer
 
-*Parked on 2026-11-13; given a clearer job on 2026-11-15 (below, and section 18).*
+*Parked on 2026-11-13; given a clearer job on 2026-11-15 (below, and section 18); designed against
+Marquise's decisions and named **Rivière** on 2026-11-17 (end of this section).*
 
 Two engines index documents today: the site's entity registry and plan's scanner. Ideas, kept
 for when this comes back into focus:
@@ -93,6 +94,77 @@ BUG-040, is a corpus-level write built on per-document edits); (3) the site: rou
 breadcrumbs, navigation, layouts, using the corpus without being part of it. The corpus serves more
 than sites: a CLI, an MCP server and agents query and update the same content with no site involved,
 as refrakt's plan tools do today.
+
+### Rivière: the corpus layer, designed against Marquise (2026-11-17)
+
+**Working name: Rivière** (`riviere` in code): a strand of stones, often graded, each set in its place
+in an ordered whole; French for "river", fitting an engine that content flows through. It pairs with
+Marquise, a single cut stone. Alternatives considered: Parure (a matched set of jewellery made to be
+worn together, the most exact meaning), Geode (the earlier placeholder), Druse (the crust of crystals
+lining a geode), Lattice, Pavé, Facet, Vug.
+
+**What Marquise's decisions settle for it:**
+
+1. **Records are the rows.** Refrakt has two indexing engines (the site registry filled by plugins'
+   `register()` hooks, and plan's scanner); Rivière indexes `doc.records()`, every shape instance
+   already a typed record with a shape name, an id or key and an address. Refrakt's `registers` key
+   reduces to a declaration on the shape.
+2. **Identity is the address, not a URL.** Refrakt's `EntityRegistration` is keyed by `sourceUrl`, with
+   `scope: 'page' | 'site'` and "the last one wins" on collisions (`packages/types/src/pipeline.ts:40`);
+   plan content outside any site already strains it (`sourceUrl` may be `undefined`). In Rivière,
+   `file#id` is the key (A1), a duplicate is a finding, and URLs are the site's.
+3. **References are a value type,** splitting M3 (*leaning*): **Marquise core declares** identity and
+   reference types and checks them within one document
+   (`source: { type: ref, to: [spec, decision] }`); **Rivière resolves** them (dangling ends, cycles
+   with `acyclic: true`, cardinality). Typed references have exact addresses, so Rivière knows every
+   place an id is referenced, which `plan migrate ids` had to approximate.
+4. **Writes across documents are batches of per-document edits** (rename an id and every reference,
+   move a document and its links), with no atomicity across documents; plan's rule generalises:
+   refuse when it cannot be proved what a reference meant.
+5. **Incremental by construction:** immutable documents and content hashes (section 19) make the index
+   a map from file to `{ hash, records, refs }`; a changed file replaces one document's rows, and
+   directives' declared dependencies (section 20) say what an included file invalidates. The language
+   server and builds share one engine.
+6. **Rendering with corpus data uses an existing seam:** a `collection`-style shape is a deferred
+   definition; Marquise returns a placeholder, Rivière answers the query, `expand(placeholder, values)`
+   finishes it. Refrakt's phases 2 to 4 without the site: load every document, index, expand deferred
+   shapes, hand to the site.
+7. **`resolveLink` is already a host callback:** Rivière answers whether `other.md#install` exists; the
+   site maps it to a URL.
+8. **Typed and data-only:** the type registry extends (`riviere.find('work', 'status:ready')` gives
+   `WorkRecord[]`; a reference is `Ref<'spec' | 'decision'>` with `.resolve()`); records are the input,
+   so a store as a source (M9) or git history can be a member too.
+
+**What it contains:**
+
+| Part | What it does |
+|---|---|
+| Sources | files by glob; pluggable sources (a store, git history for plan's `history`) |
+| Index | records by shape and id; the reference graph and backlinks; headings and anchors for link checks |
+| Cross-document validation | duplicate ids, dangling references, cycles, cardinality; findings at the reference's address |
+| Queries | the shared filter grammar (`matches()`, M8), sorting, graph traversal (transitive `Blocked by`); no query language |
+| Cross-document writes | rename an id, move a document, update references; refuse when ambiguous |
+| Engine | incremental updates, watch mode, a cache keyed by content hash |
+| Deferred expansion | supplies query results to Marquise's deferred definitions |
+| Surfaces | a generic CLI and MCP (`find`, `get`, `edit`, `validate`) over any corpus |
+
+**Not in it:** URLs, routes, the page tree, navigation, breadcrumbs, layouts (the site); storage other
+than files; transactions; authentication.
+
+**The proof is plan rebuilt on it** (*proposed*): its entities are shapes; `source` and `Blocked by` are
+typed references; `status`, `next` and the rollups are queries plus a graph traversal; `migrate ids` is
+a cross-document write; its MCP tools become the generic ones. If plan becomes mostly declarations,
+the layer is right. Refrakt's site layer then sits on top (collections, `xref`, breadcrumbs).
+
+**What it asks of Marquise before 1.0,** so Rivière never needs a private seam: `ref` and identity as
+value types; addresses with a file part (decided); deferred definitions; declared dependencies;
+`resolveLink`; records and findings carrying addresses. All but `ref` are already in the design.
+
+**Package names** (checked on npm, 2026-11-17): the unscoped `riviere` is taken (an HTTP traffic
+logger, last changed 2022), and **so are the scopes `@riviere` and `@marquise`**: both exist with no
+public packages (the registry answers `{}` where an unknown scope gives "Scope not found"). The
+unscoped `marquise` is free, as are the scopes `@marquise-md`, `@riviere-md`, `@marquisemd`,
+`@rivieremd`, `@marquise-dev` and `@riviere-dev`. Domains and trademarks not checked.
 
 ## 4. The theme contract
 
@@ -2389,6 +2461,10 @@ SPEC-199 updated (2026-11-17): the 1.0 table, the core module table and "Satelli
 **Stack**
 
 - S1. Corpus layer branding: part of Marquise's family (`@marquise/corpus`), or its own package?
+  *2026-11-17:* its own project, named Rivière (section 3); its scope is S5.
+- S5. npm scopes, since `@marquise` and `@riviere` are taken: `@marquise-md` and `@riviere-md`,
+  following `@refrakt-md`, with the unscoped `marquise` for core? Ask the owners of the taken scopes
+  first? SPEC-199 still says `@marquise/*` throughout.
 - S2. Should a design language be a separate package from any theme, so Lumina is one
   implementation among several?
 - S3. First-party satellites at 1.0: `include` and `schema` only, or `compose` too (section 20)?
@@ -2597,6 +2673,8 @@ time.
 - M2. Extraction in core for 1.0, or an add-on (`@marquise/extract`)? It is small, since the shape
   node is already data, which argues for core.
 - M3. Record identity: ids and typed references in Marquise core, or waiting for the corpus layer?
+  *Leaning 2026-11-17:* core declares identity and `ref` types and checks them per document; Rivière
+  resolves them across documents (section 3).
 - M4. Creating records: should the write path scaffold a new document from a shape
   (`marquise new article`), with required fields as placeholders?
 - M5. Read-only fields: is a field extracted only by a regular expression acceptable as read-only, or
@@ -2604,7 +2682,9 @@ time.
 - M6. Where scaffolding lives: creating a document from a shape is per document (Marquise), but its
   file name and location are site or corpus policy.
 - M7. The corpus layer's owner (S1), now with a clearer job: a Marquise add-on, its own project, or
-  refrakt's?
+  refrakt's? *2026-11-17:* leaning its own project (Rivière), in the Marquise organisation, built only
+  on the public API, after Marquise 1.0.
+- M11. Plan rebuilt on Rivière as its explicit acceptance test (section 3)?
 - M8. Queries: reuse refrakt's filter grammar (`field:value`, SPEC-195's `matches()`), or something
   richer? The "no query language" line argues for reuse.
 - M9. A store as a source (shape nodes from JSON, no Markdown): allowed in 1.0, or later? Either way
