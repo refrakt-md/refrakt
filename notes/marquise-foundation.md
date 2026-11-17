@@ -301,6 +301,38 @@ filters) and queries for section 18's use cases (recipes, events, job posts, cha
 each written in the extended grammar. What does not fit is a missing capability (core) or vocabulary
 (a reason for an engine). The catalogue becomes Rivière's test suite.
 
+### Above Rivière: the site (2026-11-17)
+
+What a site layer does, from refrakt's `packages/content` and the split above: routes and URLs;
+structure (page tree, navigation, breadcrumbs, sitemap, feeds); layouts (refrakt's `_layout.md`
+regions); page context (`$page`, `$site`, SEO metadata); build and serve (dev server, hot reload,
+adapters). **Most of it is solved elsewhere:** Astro (with Starlight), Nuxt Content, VitePress and
+Docusaurus are site layers already, and refrakt's six adapters and their drift (SPEC-058) show the cost
+of rebuilding them.
+
+**What is left that needs Rivière,** as functions and integrations, not a framework:
+
+| Need | Small form |
+|---|---|
+| URLs for entities and references | a URL pattern per collection (`url: '/work/{id}/'`), so a reference or `resolveLink` becomes a link |
+| A page per entity | SPEC-069's entity routes: one page per record, from a collection |
+| Structure from the corpus | navigation, breadcrumbs, backlinks, collection pages as functions over a snapshot |
+| Link checking across the site | Rivière's dangling-reference findings plus the URL pattern |
+
+**An integration per site framework, Astro first:** Astro's Content Layer takes custom loaders, and
+Rivière's entities and typed references map onto its entries and `reference()` (below).
+
+**What remains is refrakt itself:** layouts written as content, the page tree from folders, themes, the
+design language and the runes, the opinionated whole. *Leaning:* no general site layer is built; the
+thin integration layer is.
+
+```
+Marquise   one document: shapes, validation, records, writing
+Rivière    many documents: entities, references, queries, writes across documents
+(thin)     URL policy and framework integrations: Astro first
+refrakt    the opinionated whole: runes, themes, layouts as content, the site
+```
+
 **Package names** (checked on npm, 2026-11-17): the unscoped `riviere` is taken (an HTTP traffic
 logger, last changed 2022), and **so are the scopes `@riviere` and `@marquise`**: both exist with no
 public packages (the registry answers `{}` where an unknown scope gives "Scope not found"). The
@@ -2850,6 +2882,8 @@ time.
   for queries within one document?
 - V8. The query catalogue as the first piece of work, before any grammar change?
 - V9. SPEC-138 (draft): continue it in refrakt, the lab, or treat it as superseded by Rivière's design?
+- V10. The URL policy: an optional part of Rivière, or in each framework integration?
+- V11. An Astro content loader as Rivière's first integration?
 
 **Writing forms** (section 18)
 
