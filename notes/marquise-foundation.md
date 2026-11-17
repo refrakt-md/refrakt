@@ -470,7 +470,7 @@ Markdoc's own built-ins (`if`, `else`, `partial`, variables, functions) stay Mar
   it in completions;
 - its `layout` is a dimension: an arrangement vocabulary (`bar`, `ladder`, `stack`, `grid`…)
   declared as content;
-- it is provided by the design language, not by Marquise or `@marquise/compose`, which provides
+- it is provided by the design language, not by Marquise or `@marquise-md/compose`, which provides
   only the template language itself (`slot`, `fragment`, `template`);
 - kits implement it like any shape: a CSS theme styles `[data-layout="bar"]`, a Nuxt UI kit binds
   it to a stack component, and the template is unchanged;
@@ -511,7 +511,7 @@ its registered code with `preprocess: data`. Tooling then treats every tag the s
 | Shapes, including primitives | Marquise | shape file | components, templates, plain presentation | shape libraries, design languages, kits |
 | Dimensions (including `layout`) | Marquise | dimension file | themes and kits | design languages, kits |
 | Directives | Marquise (preprocess hook) | file with attributes and `preprocess: <key>` | registered code | the `include` satellite, refrakt (`data`, `snippet`), anyone (section 20) |
-| Template structure | `@marquise/compose` | built in | `@marquise/compose` | `@marquise/compose` |
+| Template structure | `@marquise-md/compose` | built in | `@marquise-md/compose` | `@marquise-md/compose` |
 | Lookups (`t`, `icon`) | Marquise (signature and lookup node only) | message files and icon sets listed in kit manifests | the host's callbacks | hosts, kits |
 | Site and cross-document tags | site layer, corpus layer | their own | their own | refrakt, other site layers |
 
@@ -562,7 +562,7 @@ framework i18n resolves reactively; templates and components share one path.
 **Render time, given to each renderer package:**
 
 ```ts
-// @marquise/vue, installed by the host or a kit's Nuxt module
+// @marquise-md/vue, installed by the host or a kit's Nuxt module
 app.use(marquise, {
   components: { callout: UAlert /* … */ },
   bindings,
@@ -818,7 +818,7 @@ schemas with their own `transform`.
 **Two tricks:**
 
 - **One host component for every shape.** Each shape's transform returns the shape node as one
-  prop to a generic component, `component('@marquise/astro/components', 'Shape')`, which runs
+  prop to a generic component, `component('@marquise-md/astro/components', 'Shape')`, which runs
   Marquise's Astro renderer: bindings, named slots (`<Fragment slot="headline">`), middleware,
   nested shapes. The default-slot limit stops mattering; the node being plain data makes it work.
 - **Generated wrappers for hydration.** Astro needs static `client:` directives; Marquise knows each
@@ -848,13 +848,13 @@ routing, no layouts.
 
 | Kind | Does | Depends on | Example |
 |---|---|---|---|
-| Renderer | turns a shape node into one UI framework's output: bindings, components, context, `render` middleware, element overrides | the UI framework | `@marquise/vue`, for any Vue app: Vite, VitePress, Nuxt |
-| Integration | wires Marquise into a meta-framework: config and kits, build transform, reload on shape changes, types in dev, and the framework's images, hydration and i18n plugged into Marquise's callbacks | the meta-framework, plus a renderer | `@marquise/nuxt`: components registered, `resolveAsset` to Nuxt Image, `translate` to Nuxt i18n, `hydrate` to Vue's lazy hydration |
+| Renderer | turns a shape node into one UI framework's output: bindings, components, context, `render` middleware, element overrides | the UI framework | `@marquise-md/vue`, for any Vue app: Vite, VitePress, Nuxt |
+| Integration | wires Marquise into a meta-framework: config and kits, build transform, reload on shape changes, types in dev, and the framework's images, hydration and i18n plugged into Marquise's callbacks | the meta-framework, plus a renderer | `@marquise-md/nuxt`: components registered, `resolveAsset` to Nuxt Image, `translate` to Nuxt i18n, `hydrate` to Vue's lazy hydration |
 
-So Vue and Nuxt get a package each: `@marquise/vue` for any Vue project, `@marquise/nuxt` a small
+So Vue and Nuxt get a package each: `@marquise-md/vue` for any Vue project, `@marquise-md/nuxt` a small
 module on top.
 
-**A shared base, `@marquise/vite`:** most meta-frameworks are Vite-based (Astro, Nuxt, SvelteKit,
+**A shared base, `@marquise-md/vite`:** most meta-frameworks are Vite-based (Astro, Nuxt, SvelteKit,
 React Router, SolidStart, plain Vite); Next is the main exception. The plugin loads shapes,
 dimensions and kits as a virtual module, reloads on change and regenerates types; integrations add
 only what is framework-specific. Refrakt has done similar work (`site-tokens-vite.ts`,
@@ -865,22 +865,22 @@ Content with its own MDC syntax (not Markdoc, as far as known), so Nuxt users ar
 users; Next and SvelteKit have no content layer, so the integration offers a minimal loader or
 works beside libraries such as Velite.
 
-**Astro is different:** one page can mix frameworks. `@marquise/astro` hosts the UI renderers
-rather than replacing them (the generated wrappers import `@marquise/react`, `vue` or `svelte` per
+**Astro is different:** one page can mix frameworks. `@marquise-md/astro` hosts the UI renderers
+rather than replacing them (the generated wrappers import `@marquise-md/react`, `vue` or `svelte` per
 binding); static shapes render through the `.astro` host without hydration; bindings may point at
 components from different frameworks in one project, and the binding format should allow it.
 
 | Tier | Packages | When |
 |---|---|---|
-| Core | `marquise`, `@marquise/cli`, `@marquise/language-server` and VS Code extension, `@marquise/test` | 1.0 |
-| Renderers | `@marquise/html`, `@marquise/react`, `@marquise/vue`, `@marquise/svelte` | 1.0 (refrakt has the last three) |
-| Build base | `@marquise/vite` | 1.0 |
-| Integrations | `@marquise/astro` | 1.0 (docs site, proof project) |
-| | `@marquise/nuxt`, `@marquise/next`, `@marquise/sveltekit` | after 1.0, thin, one at a time |
-| Satellites (own repositories, section 20) | `@marquise/schema`, `@marquise/include`, later perhaps `compose` | as SPEC-199 plans; `data` and `snippet` stay in refrakt |
+| Core | `marquise`, `@marquise-md/cli`, `@marquise-md/language-server` and VS Code extension, `@marquise-md/test` | 1.0 |
+| Renderers | `@marquise-md/html`, `@marquise-md/react`, `@marquise-md/vue`, `@marquise-md/svelte` | 1.0 (refrakt has the last three) |
+| Build base | `@marquise-md/vite` | 1.0 |
+| Integrations | `@marquise-md/astro` | 1.0 (docs site, proof project) |
+| | `@marquise-md/nuxt`, `@marquise-md/next`, `@marquise-md/sveltekit` | after 1.0, thin, one at a time |
+| Satellites (own repositories, section 20) | `@marquise-md/schema`, `@marquise-md/include`, later perhaps `compose` | as SPEC-199 plans; `data` and `snippet` stay in refrakt |
 | Not first-party | kits, Solid, Preact, Qwik, Eleventy, the editor | community, or later |
 
-**Guards:** integrations stay thin (anything not framework-specific belongs in `@marquise/vite` or
+**Guards:** integrations stay thin (anything not framework-specific belongs in `@marquise-md/vite` or
 core, or they drift apart as refrakt's adapters did, SPEC-058); every first-party package needs a
 real user, so Nuxt, Next and SvelteKit come one at a time, driven by demand.
 
@@ -894,7 +894,7 @@ no UI framework.
 **Components are functions that return HTML:**
 
 ```ts
-import { html, defineHtmlRenderer } from '@marquise/html';
+import { html, defineHtmlRenderer } from '@marquise-md/html';
 
 const Hero = ({ headline, blurb, actions, eyebrow }) => html`
   <section class="hero">
@@ -945,11 +945,11 @@ are illustrative, from memory.)
 
 **What this settles:**
 
-- the plain presentation is what `@marquise/html` renders for a shape with no component bound
+- the plain presentation is what `@marquise-md/html` renders for a shape with no component bound
   (answers N3);
-- refrakt's engine becomes a presentation plugged into `@marquise/html`, and into other renderers
+- refrakt's engine becomes a presentation plugged into `@marquise-md/html`, and into other renderers
   through `render` middleware: one more way to render shapes, not something Marquise imitates;
-- `@marquise/compose` templates are the Markdoc-native option, later.
+- `@marquise-md/compose` templates are the Markdoc-native option, later.
 
 So the HTML renderer offers four ways to draw a shape, simplest to richest: the plain presentation,
 functions (any templating library inside), custom elements, and later Markdoc templates. Behaviour
@@ -1224,7 +1224,7 @@ into the output; Comark resolves them **while rendering**, so the tree stays gen
 |---|---|---|
 | Content written by authors | no general functions; authors should not compute, and the trust boundary (Z3) is simpler | formatting moves to components (`:date{:value="row.published"}`, or a typed prop formatted with the locale the component knows); comparisons are `if`'s props |
 | Shape definitions (`computes`, SPEC-195) | yes, Marquise's own expression vocabulary in shape files | independent of Markdoc or Comark: it never appears in content syntax |
-| Row templates (`@marquise/data`) and later templates (`@marquise/compose`) | loop variables and formatting, yes | Comark's binding covers loop variables (`row` passed as data); formatting through components; `if` with comparison props covers `$row.required` |
+| Row templates (`@marquise-md/data`) and later templates (`@marquise-md/compose`) | loop variables and formatting, yes | Comark's binding covers loop variables (`row` passed as data); formatting through components; `if` with comparison props covers `$row.required` |
 
 **Variables, by effect:**
 
@@ -1321,7 +1321,7 @@ Marquise-provided tag as the fallback.
 | Kind | Who | Where | Example |
 |---|---|---|---|
 | Nesting in content | content authors | the page | a `::grid` of `::card`s; a `::hero` containing `::actions` |
-| Template composition (`@marquise/compose`) | whoever defines shapes, often not a developer (a site owner, a content designer, a kit author) | a shape's definition file | a `pricing-plan` whose template places `section`, `price` and `feature-list` |
+| Template composition (`@marquise-md/compose`) | whoever defines shapes, often not a developer (a site owner, a content designer, a kit author) | a shape's definition file | a `pricing-plan` whose template places `section`, `price` and `feature-list` |
 | Component composition | developers | framework code | a React `PricingPlan` rendering `<Section>`, `<Price>`, `<FeatureList>` |
 
 Nesting works on Comark natively, and Marquise resolves nested shapes like any field. Template
@@ -1340,7 +1340,7 @@ composition is a new shape built from existing ones, in Markdown instead of code
    component's internals are opaque;
 5. content stays portable.
 
-Many teams will just write a component, which is fine; that is why `@marquise/compose` comes after
+Many teams will just write a component, which is fine; that is why `@marquise-md/compose` comes after
 1.0, and compositions matter most once kits exist.
 
 **On Comark** it works the same way, arguably more simply: expansion happens in Marquise's plugin on
@@ -1421,7 +1421,7 @@ once the migration outlives `removeAfter`). Renames and value maps are frontmatt
 
 1. **Two levels**, to fit the 1.0 scope: frontmatter-only migrations (renaming an attribute or field,
    mapping values) need no template language and can ship with 1.0; structural migrations need a
-   template body and wait for `@marquise/compose`, with a small API for hand-written ones meanwhile.
+   template body and wait for `@marquise-md/compose`, with a small API for hand-written ones meanwhile.
 2. **Shape libraries and kits ship their own migrations.** A breaking change is a major version of the
    library, with its migrations in the package. A site upgrades, keeps building with warnings, runs
    `marquise migrate`. `removeAfter` counts the library's own versions.
@@ -1506,7 +1506,7 @@ safer by default. Refrakt adds raw HTML only for specific runes (`sandbox`), und
      sandbox policy;
    - limits for runtime content (size, nesting depth, item count): content-model patterns are trusted
      but run on untrusted text, and a badly written one could be made very slow;
-   - `@marquise/schema` escapes `<` in JSON-LD, so a title containing `</script>` cannot break out.
+   - `@marquise-md/schema` escapes `<` in JSON-LD, so a title containing `</script>` cannot break out.
 5. **Tested:** a hostile-content fixture through every renderer, in both modes; `marquise check` runs
    it through a kit's bindings too.
 
@@ -2222,7 +2222,7 @@ from the same table of operations.
 answers every question about it; free functions can wrap it for one-off use.
 
 ```ts
-import { createMarquise } from '@marquise/core';
+import { createMarquise } from '@marquise-md/core';
 
 const mq = createMarquise({ shapes, kits, values, files }); // a config file is one way to build this
 
@@ -2239,7 +2239,7 @@ const next = doc.edit([
 next.ok ? next.source : next.findings; // new source plus text edits, or a refusal with findings
 ```
 
-`@marquise/node` adds what the core must not contain: loading shapes and config from disk, finding
+`@marquise-md/node` adds what the core must not contain: loading shapes and config from disk, finding
 documents, writing files, `extractAll` over a directory.
 
 **Design points** (*leaning*):
@@ -2329,7 +2329,7 @@ file plugs types into it by declaration merging (TanStack Router's `Register`, V
 
 ```ts
 // generated: .marquise/types.d.ts
-declare module '@marquise/core' {
+declare module '@marquise-md/core' {
   interface ShapeRegistry {
     recipe: { record: RecipeRecord; input: RecipeInput; address: RecipeAddress };
   }
@@ -2440,7 +2440,7 @@ sibling can import anything (how refrakt's `runes` reached 111 exports); in its 
 satellite has only the published API. The friction is the point: a change needing core and an add-on
 together forces "is this a seam?". Costs for one maintainer: slower cross-repository changes, a
 compatibility matrix, duplicated CI and release setup. Mitigations: one template repository for
-satellites; a contract-test harness from core (`@marquise/test`) each satellite runs against core's
+satellites; a contract-test harness from core (`@marquise-md/test`) each satellite runs against core's
 current and next versions; satellites depend only on published packages. The alternative, one
 repository with enforced boundaries (exports maps, a dependency-cruiser rule), is cheaper and can be
 bypassed. Refrakt's creep came less from monorepo mechanics than from saying yes to directions, so the
@@ -2460,11 +2460,11 @@ SPEC-199 updated (2026-11-17): the 1.0 table, the core module table and "Satelli
 
 **Stack**
 
-- S1. Corpus layer branding: part of Marquise's family (`@marquise/corpus`), or its own package?
+- S1. Corpus layer branding: part of Marquise's family (`@marquise-md/corpus`), or its own package?
   *2026-11-17:* its own project, named Rivière (section 3); its scope is S5.
-- S5. npm scopes, since `@marquise` and `@riviere` are taken: `@marquise-md` and `@riviere-md`,
-  following `@refrakt-md`, with the unscoped `marquise` for core? Ask the owners of the taken scopes
-  first? SPEC-199 still says `@marquise/*` throughout.
+- S5. *Answered 2026-11-17:* the unscoped `marquise` for core, `@marquise-md` for everything else
+  (SPEC-199 updated); Rivière under `@riviere-md`. Still to do: claim both npm organisations, and
+  perhaps ask the owners of `@marquise` and `@riviere`.
 - S2. Should a design language be a separate package from any theme, so Lumina is one
   implementation among several?
 - S3. First-party satellites at 1.0: `include` and `schema` only, or `compose` too (section 20)?
@@ -2555,7 +2555,7 @@ SPEC-199 updated (2026-11-17): the 1.0 table, the core module table and "Satelli
   (the largest audience)?
 - N2. Nuxt Content: can Marquise plug in as a file type, or does it conflict with MDC? Check its
   current docs.
-- N3. *Answered 2026-11-13:* the plain presentation is what `@marquise/html` renders for unbound
+- N3. *Answered 2026-11-13:* the plain presentation is what `@marquise-md/html` renders for unbound
   shapes (section 15).
 - N4. Next without Vite: a separate small plugin, or a loader that needs no build integration
   (transform at request time)?
@@ -2670,7 +2670,7 @@ time.
 
 - M1. Rich-text fields in extracted data: Markdown source, plain text, HTML or tree, by default and
   per field?
-- M2. Extraction in core for 1.0, or an add-on (`@marquise/extract`)? It is small, since the shape
+- M2. Extraction in core for 1.0, or an add-on (`@marquise-md/extract`)? It is small, since the shape
   node is already data, which argues for core.
 - M3. Record identity: ids and typed references in Marquise core, or waiting for the corpus layer?
   *Leaning 2026-11-17:* core declares identity and `ref` types and checks them per document; Rivière

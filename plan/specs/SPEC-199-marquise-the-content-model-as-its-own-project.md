@@ -120,7 +120,7 @@ reach. Marquise is not only a smaller package: it is where stability lives.
 | The rune node, the generic renderers, components | ADR-049, proposed: **the one new piece**, and the product itself |
 | The plain presentation | new, small |
 | `validate`, `reference`, `format`, `types`, the language server | exist, to be split from refrakt |
-| `@marquise/schema` and `@marquise/include`, first-party satellites in their own repositories | SPEC-130, SPEC-141, shipped |
+| `@marquise-md/schema` and `@marquise-md/include`, first-party satellites in their own repositories | SPEC-130, SPEC-141, shipped |
 | *If it lands in refrakt first:* a field declares `as: block \| inline \| text` | {% ref "SPEC-200" /%}, draft. Additive (default `block`), so it can also come after 1.0 as a minor release. It decides whether a component's prop is the author's element, its inline content or a `string` |
 
 **A definition's body is reserved in 1.0:** it must be empty. That keeps SPEC-197's body blocks
@@ -135,7 +135,7 @@ reach. Marquise is not only a smaller package: it is where stability lives.
 | `{% example %}`, `file#id`, examples in tooling | SPEC-197 |
 | `source()` | SPEC-198 |
 | deferred definitions | refrakt's pipeline using the model's version |
-| `@marquise/compose` | SPEC-168, SPEC-177 accepted and implemented |
+| `@marquise-md/compose` | SPEC-168, SPEC-177 accepted and implemented |
 
 ## Prerequisites
 
@@ -159,12 +159,12 @@ general hooks that any other host could use too:
 |---|---|
 | **Shared attributes**: attributes every definition accepts, with a rule for which | the universal attributes (`width`, `tint`, `reveal`…), gated by declared structure |
 | **A wrapper around a rune and around a slot** in the renderers | the engine root, background layers, the `dimensions` prop, part attributes (ADR-049 decision 8) |
-| **Presentations**: something other than a component that draws a definition | the identity transform and themes; templates, until `@marquise/compose` exists |
-| **Template tags and placeable definitions** a host adds to the template language, once `@marquise/compose` exists | refrakt's primitives (`section`, `attribution`, `frame`, `codeblock`), `group` with its layouts, `metablock`, and SPEC-177's theme and site template lookup |
+| **Presentations**: something other than a component that draws a definition | the identity transform and themes; templates, until `@marquise-md/compose` exists |
+| **Template tags and placeable definitions** a host adds to the template language, once `@marquise-md/compose` exists | refrakt's primitives (`section`, `attribution`, `frame`, `codeblock`), `group` with its layouts, `metablock`, and SPEC-177's theme and site template lookup |
 | **Deferred definitions**: a definition left as a placeholder holding its source, expanded later when the host supplies values | runes whose data reads the entity registry, expanded after the cross-page pipeline (SPEC-194 D12.4); today's capture and re-parse in `deferred-body.ts` |
 | **`prepare` stages** registered by packages | native runes' computations (SPEC-194 D3) |
 | **File roots** contributed by packages | `core:`, `marketing:` for `include` and `snippet` (SPEC-197 D4) |
-| **Extra definition keys** a host declares and validates | `role`, `placedBy`, `metaFields`, `registers`, `blocks`, `defaults` (`schema` belongs to `@marquise/schema`) |
+| **Extra definition keys** a host declares and validates | `role`, `placedBy`, `metaFields`, `registers`, `blocks`, `defaults` (`schema` belongs to `@marquise-md/schema`) |
 | **Preprocess tags** registered by packages | `data`, `snippet`: tags that resolve to content before the transform, as the `include` satellite does |
 | **Host values**: named values a host supplies to every expression | `$page` and `$site` (SPEC-194 D12), which refrakt fills from its loader; Marquise defines no site model |
 | **Error presentation**: how a failure that must stay visible on the page is drawn | refrakt's `{% hint type="caution" %}` callout (`data-emit.ts:104` today). By default a failure is only a recorded finding |
@@ -189,7 +189,7 @@ needs a special case inside Marquise, the seam is in the wrong place.
 | The rune node and serialisation | ADR-049 decision 8; `transform/src/serialize.ts`, `helpers.ts` (`isTag`), `html.ts` (`renderToHtml`) | plain data, safe to send from server to client |
 | A plain presentation | new | how a definition renders with no component bound (open question 3) |
 
-### Renderers: `@marquise/react`, `@marquise/vue`, `@marquise/svelte`, `@marquise/astro`
+### Renderers: `@marquise-md/react`, `@marquise-md/vue`, `@marquise-md/svelte`, `@marquise-md/astro`
 
 The generic halves of `packages/{react,vue,svelte,astro}`: drawing the tree, element overrides,
 the component registry, rune-node dispatch, typed props, recursive slots, and the wrapper hook.
@@ -199,11 +199,11 @@ Not `ThemeShell`, layouts, route rules or behaviours.
 
 | Package | From | Contents |
 |---|---|---|
-| `@marquise/cli` | `packages/cli/src/commands` | `validate`, `reference` (the grammar), `format` (SPEC-170 indentation), `types` (prop interfaces from definitions), `examples` (list and test) |
-| `@marquise/language-server` + VS Code extension | `packages/language-server`, `packages/vscode` | completion, hover, diagnostics, go-to-definition, formatting; not `inspector.ts` |
-| `@marquise/test` | new, from the example checks in SPEC-197 D2 | validate every example against its definition, compare `expect`, render through a bound component |
-| `@marquise/ai` | `packages/ai` (prompt building, write mode) | prompts from the grammar and examples, filtered by `role` |
-| `@marquise/mcp` | `packages/mcp`, slimmed | validate, reference, format, types, examples |
+| `@marquise-md/cli` | `packages/cli/src/commands` | `validate`, `reference` (the grammar), `format` (SPEC-170 indentation), `types` (prop interfaces from definitions), `examples` (list and test) |
+| `@marquise-md/language-server` + VS Code extension | `packages/language-server`, `packages/vscode` | completion, hover, diagnostics, go-to-definition, formatting; not `inspector.ts` |
+| `@marquise-md/test` | new, from the example checks in SPEC-197 D2 | validate every example against its definition, compare `expect`, render through a bound component |
+| `@marquise-md/ai` | `packages/ai` (prompt building, write mode) | prompts from the grammar and examples, filtered by `role` |
+| `@marquise-md/mcp` | `packages/mcp`, slimmed | validate, reference, format, types, examples |
 
 ### Satellites
 
@@ -221,15 +221,15 @@ public seam.
 
 | Package | From | When | Why |
 |---|---|---|---|
-| `@marquise/schema` | `lib/schema-table.ts`, `seo.ts`, `schema-row.ts` | **with the first release** | schema.org rows work on input only and are independent of themes, so they fit the boundary cleanly, and published structured data is one of the strongest reasons to choose typed content over plain Markdown. Separate because not every user publishes structured data |
-| `@marquise/include` | `tags/include.ts` (182 lines, SPEC-141) | with the first release | the reference directive: proves the preprocess hook, with provenance and declared dependencies, on day one. Optional, since not every project assembles content from files |
-| `@marquise/compose` | the template half of `lib/composition.ts`, `composition-placement.ts`, `slot-markers.ts` (SPEC-145, SPEC-168) | after the first release | the template language without refrakt's vocabulary: `{% slot %}`, `each`, `{% if %}`, variants, `{% fragment %}`, values, and **placing other definitions**. A template places only definitions, which are drawn by their components, their own templates or the plain presentation, so SPEC-194 D11's rule holds with the user's definitions as the primitives. A component can still replace a composed definition's template (ADR-049), and the renderer sees nested rune nodes. Later because it is the least settled part (SPEC-168, SPEC-177 are drafts), the largest (about 3,000 lines), and tangled with schema rows that cross rune boundaries (SPEC-145 D19), which go to `@marquise/schema` first |
+| `@marquise-md/schema` | `lib/schema-table.ts`, `seo.ts`, `schema-row.ts` | **with the first release** | schema.org rows work on input only and are independent of themes, so they fit the boundary cleanly, and published structured data is one of the strongest reasons to choose typed content over plain Markdown. Separate because not every user publishes structured data |
+| `@marquise-md/include` | `tags/include.ts` (182 lines, SPEC-141) | with the first release | the reference directive: proves the preprocess hook, with provenance and declared dependencies, on day one. Optional, since not every project assembles content from files |
+| `@marquise-md/compose` | the template half of `lib/composition.ts`, `composition-placement.ts`, `slot-markers.ts` (SPEC-145, SPEC-168) | after the first release | the template language without refrakt's vocabulary: `{% slot %}`, `each`, `{% if %}`, variants, `{% fragment %}`, values, and **placing other definitions**. A template places only definitions, which are drawn by their components, their own templates or the plain presentation, so SPEC-194 D11's rule holds with the user's definitions as the primitives. A component can still replace a composed definition's template (ADR-049), and the renderer sees nested rune nodes. Later because it is the least settled part (SPEC-168, SPEC-177 are drafts), the largest (about 3,000 lines), and tangled with schema rows that cross rune boundaries (SPEC-145 D19), which go to `@marquise-md/schema` first |
 
 **Not Marquise's:** `data` (`tags/data.ts`, `data-pipeline.ts`, `data-adapters.ts`, `data-projection.ts`,
 `data-emit.ts`, SPEC-103, SPEC-127), `snippet` (`tags/snippet.ts`, `anchor.ts`, `mask.ts`,
 `languages.ts`, `invocation.ts`, `review-marker.ts`, SPEC-131, SPEC-134) and the `diff` rune's algorithm
 (`lib/line-diff.ts`) stay in refrakt, which uses Marquise's public hooks for them from outside: the
-best test those hooks get. Earlier drafts planned `@marquise/data` and `@marquise/snippet`.
+best test those hooks get. Earlier drafts planned `@marquise-md/data` and `@marquise-md/snippet`.
 
 **Why the preprocess hook is core and `include` is not.** A content model reads a tag's parsed
 children, so anything that should count as a tag's content must be in place before the model reads
@@ -241,7 +241,7 @@ determinism). `include` is one user of the hook, 182 lines, and not needed by ev
 *Earlier (2026-11-12) this paragraph kept `include` in core;* the hook was what the argument proved.
 In Marquise, refrakt's `_partials/` becomes one root a host configures, not a built-in convention.
 
-**How `@marquise/schema` works when a component draws the markup.** *Recorded 2026-11-12.*
+**How `@marquise-md/schema` works when a component draws the markup.** *Recorded 2026-11-12.*
 Refrakt's structured data has never depended on who draws the markup: the schema table stamps
 `typeof` and `property` on the rune's own output during the transform, and `collectJsonLd`
 (`seo.ts:80`) derives the JSON-LD from that tree, before the engine and the renderer run
@@ -262,7 +262,7 @@ Refrakt's structured data has never depended on who draws the markup: the schema
   (a recipe's steps as `recipeInstructions`, an FAQ's questions as `mainEntity`). Refrakt already
   stops at a nested `data-rune` (`findAllByName`, SPEC-146 D1); on the rune node the nesting is
   the data structure itself, so no component or theme can change it.
-- **Sources across a composition wait for `@marquise/compose`.** A template can place one rune's
+- **Sources across a composition wait for `@marquise-md/compose`.** A template can place one rune's
   content inside another's (a `character`'s portrait inside a `card`), which puts a property's
   source on the far side of a boundary (SPEC-145 D19, the reason for `data-owner` and
   `data-slot`). Without templates, 1.0 does not have that case.
@@ -281,7 +281,7 @@ Refrakt's structured data has never depended on who draws the markup: the schema
 - **The design vocabulary:** primitives (`section`, `attribution`, `frame`, `codeblock`), `group`
   and its layouts, `metablock`, `output()`, SPEC-177's theme and site template lookup and the
   per-theme structure contracts. The template language itself moves later, as
-  `@marquise/compose`; until then it stays here.
+  `@marquise-md/compose`; until then it stays here.
 - **The engine and themes:** `packages/transform` except the helpers listed above; universal
   attributes and their facets; `config.ts`; vocabulary; Lumina; tokens; contracts.
 - **The rune library:** core runes in `packages/runes/src/tags` and all plugins.
@@ -300,7 +300,7 @@ Refrakt's structured data has never depended on who draws the markup: the schema
 | Module | Goes to Marquise | Stays with refrakt |
 |---|---|---|
 | `lib/index.ts` (the schema builder, 1,270 lines) | building a schema from attributes and a content model | universal attributes, schema tables, header roles, slot markers, composition wiring |
-| `lib/composition.ts` (2,673 lines) | now: reading a definition's input (attributes, content, `computes`, defaults). Later, as `@marquise/compose`: template expansion and placement | the design vocabulary's tags and placement rules, reached only through the template-tag hook. Until the move, templates must not call refrakt's vocabulary directly, or extracting them becomes a rewrite |
+| `lib/composition.ts` (2,673 lines) | now: reading a definition's input (attributes, content, `computes`, defaults). Later, as `@marquise-md/compose`: template expansion and placement | the design vocabulary's tags and placement rules, reached only through the template-tag hook. Until the move, templates must not call refrakt's vocabulary directly, or extracting them becomes a rewrite |
 | `deferred-body.ts` | capturing a tag's source as a placeholder and expanding it later | when to defer (the registry), and the values supplied |
 | `reference.ts` | a definition's grammar | universal attributes, vocabulary, schema rows (as a host extension to the output) |
 | `plugins.ts` | definition packages: definitions, `prepare` stages, file roots | theme config, pipeline hooks, layouts, CLI plugins |
@@ -335,7 +335,7 @@ Refrakt's structured data has never depended on who draws the markup: the schema
      "tag"; frontmatter keys (`attributes`, `content`, `computes`) are already neutral and do not
      change. The rest of this spec says "definition" and "rune node" for refrakt's side; Marquise's
      own docs and APIs use "shape" (and a "shape node" where this spec says rune node).
-2. **Templates.** *Revised 2026-11-12.* Not in the first release; later as `@marquise/compose`.
+2. **Templates.** *Revised 2026-11-12.* Not in the first release; later as `@marquise-md/compose`.
    The template language is generic; what is refrakt's is the vocabulary it places
    (SPEC-194 D11: elements come only from primitives). In Marquise a template places only
    definitions, so a user's own definitions are its primitives, and refrakt adds its vocabulary
@@ -394,6 +394,14 @@ Refrakt's structured data has never depended on who draws the markup: the schema
    - **A camelCase attribute name in a shape is reported**, so the rule stays one-directional.
      Refrakt itself is not consistent today (its `datatable` example writes `pageSize=10`).
 
+## Package names
+
+*Decided 2026-11-17* (`notes/marquise-foundation.md`, section 3). The npm scope `@marquise` exists
+with no public packages, so it is not available. Core is the unscoped **`marquise`** (free), and every
+other package is under **`@marquise-md`**, following `@refrakt-md` and the `marquise.md` domain:
+`@marquise-md/react`, `@marquise-md/cli`, `@marquise-md/schema`, `@marquise-md/include`, and so on.
+The corpus layer, Rivière, is its own project under `@riviere-md`.
+
 ## Public contracts
 
 *Added 2026-11-13* from the brainstorm (`notes/marquise-foundation.md`, section 16, Z6). Semver
@@ -402,7 +410,7 @@ protects only what is listed here.
 | Who depends on it | Contracts |
 |---|---|
 | Content authors | the content syntax and Marquise's conventions (explicit slots `#name` and `#default`, `file#id`, `example` blocks); a library's shape vocabulary (the library's); a design language's dimensions (the kit's) |
-| Shape and kit authors | the shape file format; dimension and preset formats; the kit manifest; the migration format (after SPEC-189); the binding format; the template language, with `@marquise/compose` |
+| Shape and kit authors | the shape file format; dimension and preset formats; the kit manifest; the migration format (after SPEC-189); the binding format; the template language, with `@marquise-md/compose` |
 | Developers | the shape node (prop naming, slots, item records, the dimensions convention); generated type names and structure; host callbacks (`values`, `files`, `resolveAsset`, `resolveLink`, `translate`, `icon`, `onFinding`, `presentFinding`); middleware and the context API; the lookup node; the directive and `prepare` registries; each renderer's component contract |
 | Machines | finding ids, severities and message parameters; the published schema documents; edit operations; CLI commands, flags, exit codes and JSON output; MCP tools and resources |
 | Browsers, stylesheets, search engines | the plain presentation markup (decision 3); the structure of JSON-LD output |
@@ -448,8 +456,8 @@ wastes nothing.
    from `@refrakt-md/model` alone. Schema and include move onto the model as satellites.
 4. **A proof outside refrakt:** a small example project on plain Markdoc and React, with no
    refrakt config, theme or engine. If it is not compelling, stop here.
-5. **Marquise 1.0:** own repository, the core, the renderers, the tooling, the `@marquise/schema` and
-   `@marquise/include` satellites, a docs site (built with Astro, *decided 2026-11-13*), and refrakt switches its
+5. **Marquise 1.0:** own repository, the core, the renderers, the tooling, the `@marquise-md/schema` and
+   `@marquise-md/include` satellites, a docs site (built with Astro, *decided 2026-11-13*), and refrakt switches its
    dependency.
 6. **Minor releases as features graduate** from refrakt, in the order of the table under "After
    1.0".
@@ -533,7 +541,7 @@ From Markdown to a polished site in minutes.
 ```
 
 **Generated types** (`npx marquise types`). The type parameter keeps them framework-neutral;
-`@marquise/react` fills it with `ReactNode`. An attribute with a default is never optional; a
+`@marquise-md/react` fills it with `ReactNode`. An attribute with a default is never optional; a
 `text` field is a `string`.
 
 ```ts
@@ -550,7 +558,7 @@ export interface HeroShape<R> {
   actions?: { label: string; href: string; content: R }[];
 }
 
-// from @marquise/react
+// from @marquise-md/react
 export type HeroProps = HeroShape<React.ReactNode>;
 ```
 
@@ -611,7 +619,7 @@ transforming.
 ```tsx
 import { readFile } from 'node:fs/promises';
 import { loadShapes, transform } from 'marquise';
-import { Content } from '@marquise/react';
+import { Content } from '@marquise-md/react';
 import { Hero } from '@/components/Hero';
 
 const shapes = await loadShapes('shapes');
