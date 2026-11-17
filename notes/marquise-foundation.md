@@ -2064,6 +2064,68 @@ leaving one mechanism at the bottom: small templates where structure is fixed, g
 where it is inferred. A `{% form %}` for a whole shape (a house style) could be an override; left out
 until something needs it.
 
+### Integrations (2026-11-17)
+
+**Decided: Marquise builds no integrations.** They are still designed for: each scenario below is a
+test that the foundation lets others build things we did not anticipate. Refrakt planned connectors
+itself (SPEC-069: `@refrakt-md/sanity` mapping Portable Text to Markdoc pages, Notion, Contentful,
+Strapi, Payload, Airtable), one direction, at build time.
+
+One shape has three representations: the **source** (the author's Markdown), the **record** (typed
+JSON, `doc.records()`) and the **schema** (the published schema documents). An integration converts
+records and schema to and from another system's model; Marquise never talks to that system.
+
+**Schema export,** a shape as another system's type (MongoDB's `$jsonSchema`, Sanity schema types,
+Contentful content types, Payload collections, GraphQL, Zod): mechanical and one way, a small exporter
+per target on the one published schema. Targets have dialects (Mongo's `$jsonSchema` has no `$ref`),
+and value types (C1) map per target (a `date` as a BSON `Date`, as Sanity's `date`).
+
+**Data conversion:** out (Markdown to a store) is `insertMany(doc.records())`, MongoDB storing the
+JSON as it is. In (a store to Markdown) needs a writer, which is everything in "Writing forms":
+generated writers, templates for compact forms, the round-trip rule and its explicit fallback.
+
+**The hard part is rich text, not structure.** A `block` field is Markdown source by default (M1);
+Mongo takes a string, Sanity wants Portable Text, Contentful its rich-text JSON, Notion blocks: a
+connector is mostly a rich-text converter. Sanity fits unusually well: Portable Text holds custom
+block types inside rich text (`{ _type: 'callout', tone: 'warning' }`), which is a shape nested in a
+block field, so writers in git and editors in Sanity Studio could share one vocabulary and one set of
+components.
+
+**Sync edits, never regenerates:** a stored record against the current one gives a diff, a batch of
+edit operations at addresses, and surgical text edits, keeping the author's formatting, comments and
+forms. That needs stable identity, `file#id` plus the address as the foreign key in the store, so
+record identity (M3) is a prerequisite for two-way integration; without it, only whole documents can
+be replaced. The version hash on edits gives optimistic concurrency per document; merging concurrent
+edits is the connector's problem.
+
+**A store as a source, without Markdown:** renderers consume shape nodes, so a Sanity document with
+`_type: 'hero'`, validated against the hero shape's output schema, could render through the same
+component and bindings. Cheap to allow; the content model stays the product.
+
+**What is lossy:** fields written with conditions or variables (the record is one evaluation; writes
+refused with a finding); included content (writes go to the included file, or are refused); content
+no field claimed (a finding, or dropped, by the connector's choice); formatting choices, kept only
+because sync edits.
+
+**What this asks of the foundation** (the checklist the scenarios give):
+
+- the published schema complete enough to export without reading shape files: value types, keys,
+  which fields are read-only (regular expression, conditions, includes), rich-text fields marked;
+- records with stable identity and addresses;
+- the write path usable from data alone: records in, edit operations out;
+- the rich-text representation behind a hook, so a converter swaps Markdown source for its format in
+  both directions;
+- JSON input validated against the output schema;
+- no connector-shaped special cases in core: if one is needed, the foundation is missing something.
+
+| Who | What |
+|---|---|
+| Marquise | published schema, records, write path, addresses, the rich-text hook, validation of JSON input |
+| Third parties | every connector: schema exporters, rich-text converters, sync |
+| The corpus layer | collections: identity across documents, references, `extractAll`, syncing a directory |
+
+A reference connector, if any, belongs in the lab (refrakt), as SPEC-069 imagined.
+
 ## 19. The programmatic API
 
 *Added 2026-11-15.* Refrakt grew outward from its tools rather than from an API, and Marquise should
@@ -2387,6 +2449,10 @@ time.
   refrakt's?
 - M8. Queries: reuse refrakt's filter grammar (`field:value`, SPEC-195's `matches()`), or something
   richer? The "no query language" line argues for reuse.
+- M9. A store as a source (shape nodes from JSON, no Markdown): allowed in 1.0, or later? Either way
+  Marquise ships no connector (decided 2026-11-17).
+- M10. The rich-text hook: one converter interface (`toRichText`, `fromRichText`) per format, applied
+  to every `block` field, or per field?
 
 **Writing forms** (section 18)
 
