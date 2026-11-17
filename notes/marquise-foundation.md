@@ -402,6 +402,56 @@ Astro:** the CLI, MCP and editors write, the dev watcher picks changes up.
 `reference()`, content hashes as digests, snapshots plus a watcher as incremental updates, images through
 `imageImports`; no private seam needed. The unknown is deferred rendering.
 
+### Rivière's shapes (2026-11-17)
+
+Refrakt has five core runes that read the corpus: `collection`, `aggregate`, `relationships`, `xref`
+and `expand` (an entity's content substituted inline, with `xref`'s lookup). **They belong with
+Rivière, split: Rivière ships what they mean, not how they look** (*leaning*).
+
+**They are Rivière's read API in authoring form, and nothing more:**
+
+| Refrakt rune | What it asks | Rivière API |
+|---|---|---|
+| `collection` | the entities matching a filter | `c.find()` |
+| `aggregate` | counts, grouped | `c.count({ by })` |
+| `relationships` | what this entity points at, and what points at it | `c.refs()`, `c.backrefs()` |
+| `xref` (as `ref`) | one entity, as a link | `c.get()` plus the URL policy |
+| `expand` | one entity's content, inline | `c.get()` and its document |
+
+Developers call the API; authors use the shapes. Domain views stay out: plan's `backlog`,
+`plan-progress` and `decision-log` are presentations of queries (saved views plus components, in plan
+or a kit). They pass the never-own-the-chain rule: in Astro a developer lists entities with
+`getCollection` in a page; the shapes give **authors** that power inside content, which no host
+framework offers.
+
+**How they work:** each is a deferred definition, a placeholder Marquise leaves and Rivière expands
+(`c.expand(doc)`, which the Astro loader calls). The resolved node carries data, not markup:
+`collection` typed records as `items` (`collection="work"` gives `items: WorkRecord[]`), `aggregate`
+measure rows, `ref` the target entity and its URL. The look is the host's: plain presentations (a list
+of links, a small table, a link), components bound by kits or sites; per-item templates written in
+content (refrakt's `$item` bodies) wait for the `compose` satellite.
+
+**What it asks for:**
+
+1. **Expansion records what it read,** the queries as well as the entities, so a new matching entity
+   invalidates a page with a `collection`; the same idea as directives' declared files, and what the dev
+   watcher needs to refresh pages.
+2. **Prose references are mentions, not edges** (refrakt's plan rule, generalised): typed fields form
+   Rivière's graph; a `ref` in prose is indexed as a mention, feeding backlinks and link checking, never
+   `Blocked by`. So Rivière must index `ref`, not only expand it: `ref` belongs with Rivière's core.
+3. **`relationships` needs the page's entity:** a document shape with an id (Z4), or `of=` given
+   explicitly.
+4. **Limits in untrusted content:** the filter grammar is safe, engines are not run on untrusted content
+   (V7), `limit` has a ceiling.
+
+| Package | Contents |
+|---|---|
+| `@riviere-md/core` | the API, and the `ref` shape (mentions are part of the index) |
+| `@riviere-md/shapes`, or folded into core | `collection`, `aggregate`, `relationships`, `expand`: definitions, expansion, plain presentations |
+
+`expand` overlaps the `include` satellite (content transcluded inline) by entity rather than file; it
+goes through the same preprocess hook, so provenance and write redirection behave the same.
+
 **Package names** (checked on npm, 2026-11-17): the unscoped `riviere` is taken (an HTTP traffic
 logger, last changed 2022), and **so are the scopes `@riviere` and `@marquise`**: both exist with no
 public packages (the registry answers `{}` where an unknown scope gives "Scope not found"). The
@@ -2959,6 +3009,12 @@ time.
   Marquise content entry type as the end state?
 - V13. Spike: can a custom loader use `deferredRender`, and how does a Marquise entry type coexist with
   Astro's own `.md` handling?
+- V14. Rivière's query shapes (`collection`, `aggregate`, `relationships`, `expand`): in Rivière core, or
+  an optional `@riviere-md/shapes`?
+- V15. `ref` in Rivière's core, since prose mentions are indexed?
+- V16. `relationships` defaulting to the document's own entity, which needs document shapes with ids?
+- V17. Per-item templates before `compose`: components only, or a simple per-item `{% form %}`-style
+  block in the meantime?
 
 **Writing forms** (section 18)
 
