@@ -160,6 +160,93 @@ the layer is right. Refrakt's site layer then sits on top (collections, `xref`, 
 value types; addresses with a file part (decided); deferred definitions; declared dependencies;
 `resolveLink`; records and findings carrying addresses. All but `ref` are already in the design.
 
+### Rivière's API and CLI (2026-11-17)
+
+**The centre is an immutable corpus snapshot,** Marquise's document handle one level up: queries on a
+snapshot are synchronous and consistent; a live engine produces new snapshots as files change.
+
+```ts
+import { createMarquise } from 'marquise';
+import { createRiviere } from '@riviere-md/core';
+
+const rv = createRiviere({
+  marquise: createMarquise({ shapes: 'shapes/' }),
+  collections: {
+    work: { shape: 'work', include: 'plan/work/*.md', path: 'plan/work/{id}-{slug}.md', id: 'WORK-{n}' },
+    spec: { shape: 'spec', include: 'plan/specs/*.md', path: 'plan/specs/{id}-{slug}.md', id: 'SPEC-{n}' },
+  },
+});
+const c = await rv.load();   // a snapshot: the only async step
+```
+
+**Collections** are what Rivière adds to a shape: which files hold it, where new ones go, how ids are
+made; a document's file name and location are corpus policy, not Marquise's (answers M6).
+
+**Reading:**
+
+```ts
+c.get('work', 'WORK-123');                      // Entity<WorkRecord> | undefined
+c.find('work', 'status:ready priority:high', { sort: '-priority', limit: 10 });
+c.find('work', (w) => w.status === 'ready');    // a predicate, for code
+c.count('work', { by: 'status' });
+c.refs(entity);                                 // outgoing: [{ to, field, at }]
+c.backrefs(entity);                             // incoming, each with the referring address
+c.walk(entity, 'blockedBy', { transitive: true });
+c.order('work', 'blockedBy');                   // topological; cycles reported as findings
+c.findings;                                     // per-document and cross-document
+c.resolveLink('../specs/SPEC-199.md#package-names');
+```
+
+An **entity** is `{ collection, id, address, record, document }`: Marquise's typed record and document
+handle one step away, the address (`plan/work/WORK-123-….md#WORK-123`) its identity. Typed through the
+same registry (`Entity<WorkRecord>`, `Ref<'spec' | 'decision'>`).
+
+**Writing returns changesets,** applied separately; nothing touches disk:
+
+```ts
+const cs = c.update('work', 'WORK-123', (w) => { w.status = 'done'; });  // Marquise's draft
+c.create('work', { title: 'Typed refs', priority: 'high' });            // id and path from the collection
+c.rename('work', 'WORK-123', 'WORK-130');     // the id and every typed reference
+c.move('plan/work/a.md', 'plan/work/b.md');   // the file and every link to it
+c.delete('work', 'WORK-123');                 // refused while backrefs exist, unless { force: true }
+cs.ok ? cs.changes : cs.findings;             // [{ path, expectedHash, source, edits }]
+await rv.apply(cs, { git: true });            // the Node layer writes, optionally staging with git
+```
+
+Refusals generalise `plan migrate ids` (findings naming each blocking reference); `expectedHash` per
+file refuses a file changed since the snapshot; changesets are plain JSON, so an agent or a review UI
+can show one before it is applied.
+
+**Live:** `rv.watch((next, diff) => …)` gives a new snapshot and the entities added, changed and
+removed; `rv.overlay(path, source)` holds unsaved editor buffers for the language server. `c.expand(doc)`
+fills deferred, collection-style shapes from queries for a site layer; Rivière never produces pages.
+
+**The CLI** (`@riviere-md/cli`, binary `riviere`), generic over collections:
+
+```bash
+riviere find work 'status:ready' --sort -priority --limit 5
+riviere get WORK-123 --format json
+riviere refs WORK-123 --back --transitive
+riviere validate --against origin/main
+riviere create work --set title="Typed refs" --set priority=high
+riviere set WORK-123 status=done
+riviere set 'WORK-123.criteria[text="Docs updated"].done' true
+riviere rename WORK-123 WORK-130 --git
+riviere move plan/work/a.md plan/work/b.md
+riviere next-id work
+riviere count work --by status
+riviere graph work --edge blockedBy --format mermaid
+riviere history WORK-123        # with the git source
+```
+
+Plan's `--check "criterion text"` becomes an address with a key match. Every command has
+`--format json` (the API's return value); writes accept `--dry-run` (the changeset as a diff); exit
+codes 0 success, 1 error findings, 2 not found, 3 refused write; `@riviere-md/mcp` exposes the same
+table of operations (A4). **Saved views** cover what plan's own commands add
+(`views: { next: { collection: 'work', filter: 'status:ready', unblocked: 'blockedBy', sort: '-priority', limit: 1 } }`
+makes `riviere next` stored arguments, not a command); anything a view cannot express is a script
+against the API, not a plugin. Plan becomes shapes, collections and a few views.
+
 **Package names** (checked on npm, 2026-11-17): the unscoped `riviere` is taken (an HTTP traffic
 logger, last changed 2022), and **so are the scopes `@riviere` and `@marquise`**: both exist with no
 public packages (the registry answers `{}` where an unknown scope gives "Scope not found"). The
@@ -2685,6 +2772,14 @@ time.
   refrakt's? *2026-11-17:* leaning its own project (Rivière), in the Marquise organisation, built only
   on the public API, after Marquise 1.0.
 - M11. Plan rebuilt on Rivière as its explicit acceptance test (section 3)?
+- R1. The corpus snapshot as Rivière's centre, mirroring Marquise's document handle?
+- R2. Collections in Rivière's config (*leaning*: one shape can live in two collections, and file layout
+  is the project's) or on document shapes (`path`, `id` in the shape file)?
+- R3. CLI writes: apply by default with `--dry-run`, or dry by default with `--apply` as `plan migrate`
+  does?
+- R4. Saved views: worth having, or a step towards a query language?
+- R5. Ids unique per collection (the general case, `get` needing the collection) or across the corpus
+  (plan's prefixes in practice)?
 - M8. Queries: reuse refrakt's filter grammar (`field:value`, SPEC-195's `matches()`), or something
   richer? The "no query language" line argues for reuse.
 - M9. A store as a source (shape nodes from JSON, no Markdown): allowed in 1.0, or later? Either way
