@@ -247,6 +247,60 @@ table of operations (A4). **Saved views** cover what plan's own commands add
 makes `riviere next` stored arguments, not a command); anything a view cannot express is a script
 against the API, not a plugin. Plan becomes shapes, collections and a few views.
 
+### Rivière's queries (2026-11-17)
+
+Refrakt has done half this analysis: **SPEC-138** (draft, pluggable query engines for the
+`field:value` grammar) measured the grammar's limits (no numeric or date comparison, no OR across
+different fields, no nested fields, no AND over array members, no existence, no cross-field comparison,
+negation only through a regular-expression trick); the cost shows in `plan-history`'s own
+`since="7d"` attribute, there only because the grammar cannot compare dates. Its spike ruled liqe out
+(substring matching: `tags:data` returned 31 rows where 12 were right) and gave the criterion for any
+engine: **a selector must be exact and deterministic, unlike a search box**. Its design: a string goes
+to the built-in grammar, an object to a registered engine; core owns the result contract; **capability
+gaps are fixed in core, language gaps belong to plugins** (`aggregate` only counts, so sum and average
+go in core).
+
+**What Marquise changes:**
+
+1. **In code there is nothing to plug in.** Records are plain JSON and Rivière takes predicates
+   (`c.find('work', (w) => w.points > 3 && …)`); any JSON library works on them as they are
+   (`mingo.find(c.records('work'), { points: { $gt: 3 } })`). Every SPEC-138 limit disappears in
+   TypeScript, typed.
+2. **The question is only about declarative positions:** queries in content (a collection shape's
+   `filter`), config (views), the CLI and MCP, which cannot hold code (content is untrusted).
+3. **Typed records turn most gaps into cheap core capabilities,** since most came from "everything is a
+   string" (*leaning*):
+
+```
+status:ready priority:high       # AND across fields (today)
+status:ready,in-progress         # OR within a field (today)
+-status:done                     # negation
+date:>=2026-01-01 points:<5      # comparison, now that values are typed
+has:pr   -has:pr                 # existence
+criteria.done:false              # nested fields, by the address syntax (A1)
+source.status:accepted           # through a typed reference: a join without a join language
+```
+
+4. **Left out:** arbitrary expressions, comparing fields with each other, reshaping, aggregation
+   pipelines (SPEC-138's language gaps). OR across different fields (`(a:x OR b:y)`) is the boundary,
+   needing a real parser: out until the catalogue asks for it.
+
+**A plug-in engine, scoped as SPEC-138 designed it** (*leaning*): engines registered by name, used from
+declarative positions (`{ engine: 'mingo', query: … }`, or by the query's shape); Rivière owns the
+result contract (`find` gets entities, ordered, identity kept; grouped results are measure rows);
+engines pure and deterministic, operators curated (`$where`, `$function`, `$eval` never; `$sample`
+banned, results would vary between runs); never run on untrusted content unless the host allows it;
+**Rivière ships none** (a mingo adapter belongs in the lab or with a third party). That answers the
+MongoDB-clone worry: Rivière owns a small exact selector language plus capabilities (comparison,
+references, counting with grouping, sum, average); more vocabulary is an engine someone brings. No
+indexes or query planner: a few thousand records scan in milliseconds.
+
+**"Powerful enough" is judged by a query catalogue,** not intuition, as SPEC-138's spike did with six
+queries: every query refrakt runs (collections, aggregates, plan's commands and rollups, site
+filters) and queries for section 18's use cases (recipes, events, job posts, changelogs, glossaries),
+each written in the extended grammar. What does not fit is a missing capability (core) or vocabulary
+(a reason for an engine). The catalogue becomes Rivière's test suite.
+
 **Package names** (checked on npm, 2026-11-17): the unscoped `riviere` is taken (an HTTP traffic
 logger, last changed 2022), and **so are the scopes `@riviere` and `@marquise`**: both exist with no
 public packages (the registry answers `{}` where an unknown scope gives "Scope not found"). The
@@ -2786,6 +2840,12 @@ time.
   Marquise ships no connector (decided 2026-11-17).
 - M10. The rich-text hook: one converter interface (`toRichText`, `fromRichText`) per format, applied
   to every `block` field, or per field?
+- R6. Which extensions go in the built-in grammar: negation, comparison, existence, nested fields,
+  paths through references; OR across fields in or out?
+- R7. The engine seam in Rivière only (*leaning*), or also in Marquise core, where the grammar lives
+  for queries within one document?
+- R8. The query catalogue as the first piece of work, before any grammar change?
+- R9. SPEC-138 (draft): continue it in refrakt, the lab, or treat it as superseded by Rivière's design?
 
 **Writing forms** (section 18)
 
