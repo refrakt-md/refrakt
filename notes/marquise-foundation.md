@@ -335,8 +335,8 @@ refrakt    the opinionated whole: runes, themes, layouts as content, the site
 
 ### An Astro content loader for Rivière (2026-11-17)
 
-**The principle it shows:** Marquise and Rivière are layers that frameworks stack on, where refrakt
-takes control of the whole chain (its own loader, router, layouts, adapters). Here Astro keeps routing,
+**The principle it shows** (*recorded in SPEC-199 as a design rule, 2026-11-17*): Marquise and Rivière are
+layers that frameworks stack on, where refrakt takes control of the whole chain (its own loader, router, layouts, adapters). Here Astro keeps routing,
 pages, images, islands and its build; Rivière supplies typed entries; Marquise supplies rendering.
 
 *Grounded in `astro@7.4.12`'s published type definitions* (`dist/content/loaders/types.d.ts`,

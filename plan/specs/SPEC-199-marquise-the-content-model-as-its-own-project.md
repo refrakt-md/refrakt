@@ -172,6 +172,15 @@ general hooks that any other host could use too:
 **The test of the boundary:** refrakt builds on Marquise using only these hooks. If refrakt
 needs a special case inside Marquise, the seam is in the wrong place.
 
+**Marquise is a layer frameworks stack on; it never owns the chain.** *Decided 2026-11-17*
+(`notes/marquise-foundation.md`, section 3, "An Astro content loader for Rivière"). Refrakt owns the
+whole chain (its own loader, router, layouts and adapters), so every framework has to be adapted to
+it. Marquise, and Rivière above it, supply only what a host framework lacks (typed, validated,
+writable content, and relations between documents) and leave the rest to the host: routing, pages,
+layouts, images, islands, the build. The test for a new feature, beside the scope rule for core
+(section 20 of the notes): **does it take over something the host framework already does?** If so, it
+belongs in the host, an integration, or refrakt.
+
 ## What goes to Marquise
 
 ### `marquise` (core)
