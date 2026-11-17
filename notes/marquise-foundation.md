@@ -2192,6 +2192,101 @@ documents, writing files, `extractAll` over a directory.
 8. **Small on purpose:** a short list of exports, guarded by the API report (SPEC-199, Public
    contracts); the resolver, the adapters and the front ends stay internal.
 
+### Typed access (2026-11-17)
+
+Point 7 above in depth. The spike generates one family already (`src/types-gen.ts`, React props); a
+data store needs four, each different on purpose:
+
+```ts
+// generated from shapes/recipe.md
+export interface RecipeRecord {          // what reading gives
+  readonly shape: 'recipe';
+  readonly id?: string;
+  title: string;
+  servings: number;                      // default filled in, so required
+  readonly totalTime?: IsoDuration;      // read-only: extracted by a regular expression
+  ingredients: IngredientItem[];         // item model, keyed by `name`
+  method: Markdown;                      // a block field
+}
+
+export interface RecipeInput {           // what creating accepts
+  title: string;
+  servings?: number;                     // the default applies
+  ingredients?: IngredientItem[];
+  method?: Markdown;                     // no totalTime: it cannot be written
+}
+
+export type RecipeAddress =              // what addresses can name
+  | 'title' | 'servings' | 'totalTime' | 'method'
+  | 'ingredients' | `ingredients[${number}]` | `ingredients["${string}"]`
+  | `ingredients[${number}].${keyof IngredientItem}` | `ingredients["${string}"].${keyof IngredientItem}`;
+
+export interface RecipeProps { /* per renderer, as in the spike */ }
+```
+
+- Records fill in defaults; inputs do not require them.
+- **Read-only fields are `readonly` in records and absent from inputs** (fields read only by a regular
+  expression, written with conditions or variables, or included), so the write path's rules become
+  compile errors.
+- Forms appear nowhere: a compact and an explicit track have one type, as they have one address.
+
+**Three ways to write:** (a) typed string addresses (`doc.set('recipe.servings', 4)`), matching
+findings, the CLI and MCP, but checking the value against the address takes type-level path parsing,
+slow and with poor errors; (b) generated accessors (`doc.recipe.ingredients.byKey('Salt').amount.set(…)`),
+excellent completion but generated runtime code the size of the schema, Prisma's model; (c) **drafts**:
+
+```ts
+const next = doc.update('recipe', (r) => {
+  r.servings = 4;
+  r.ingredients.push({ name: 'Salt', amount: '1 pinch' });
+  r.totalTime = …;            // compile error: read-only
+});
+next.ok ? next.source : next.findings;
+```
+
+The draft is a `RecipeRecord`, so the types come free; a proxy records the changes and turns them into
+the same batch of operations at addresses (Immer's `produceWithPatches` does this). **Sync with a store
+is the same machinery** (section 18, Integrations): a diff of two records gives operations, and
+declared item keys let it recognise a move as a move. *Leaning:* (c) for application code, string
+addresses as the serialisable protocol underneath (CLI, MCP, AI agents, connectors), address types
+checking only that a literal names something real; (b) adds nothing (c) does not give.
+
+**Generated types, no generated runtime code:** the core API stays generic and small, and the generated
+file plugs types into it by declaration merging (TanStack Router's `Register`, Vue's
+`GlobalComponents`, Astro's content collections):
+
+```ts
+// generated: .marquise/types.d.ts
+declare module '@marquise/core' {
+  interface ShapeRegistry {
+    recipe: { record: RecipeRecord; input: RecipeInput; address: RecipeAddress };
+  }
+}
+```
+
+`doc.records('recipe')` then returns `RecipeRecord[]`, `doc.update('recipe', …)` passes a typed draft,
+`mq.create('recipe', input)` checks its input. `marquise generate` writes the file, as `astro sync`
+does; the Vite and Astro integrations and the language server regenerate it when a shape is saved. A
+shape library on npm ships its generated types and a project's registry merges them (generated types
+are a public contract, SPEC-199). Document shapes (Z4) type whole documents the same way:
+`mq.load<'article'>(…)` gives a typed `doc.record`, frontmatter and body fields together.
+
+**Value types need JSON forms** (records are plain JSON, point 6), each with one TypeScript type:
+
+| Value type | JSON | TypeScript |
+|---|---|---|
+| `date` | `"2026-11-17"` | `IsoDate`, a branded string |
+| `duration` | `"PT3M45S"` | `IsoDuration`, a branded string |
+| `money` | `{ "amount": 29, "currency": "USD" }` | an object |
+| a `block` field | Markdown source | `Markdown`, a branded string |
+
+Branded strings stop a plain string standing in for a date and cost nothing at runtime; helpers convert
+(`toDate()`, `toSeconds()`); the formatter writes `PT3M45S` back as the author's `3:45`.
+
+**Compile time and runtime from one source:** types promise things about code; data on disk was
+written by people and is validated when loaded against the same shapes, records arriving with
+findings. The guarantee Zod gives, without anyone writing Zod.
+
 ### Addresses (2026-11-17)
 
 Refrakt has three unrelated ways to point at things: findings at `file:line`, includes at `file#id`
@@ -2477,6 +2572,14 @@ time.
 - A3. Incremental reparsing for the language server, or whole-document reloads cached by hash?
 - A4. The table of operations: one declaration per operation (input schema, result schema, function)
   from which the CLI, MCP tools and docs are generated, as plan's bindings do by hand today?
+- A5. Drafts (`doc.update`) as the typed way to write, with string addresses as the protocol, or typed
+  string addresses (`doc.set`) as well?
+- A6. Value types as branded strings in JSON forms (ISO dates and durations), or richer runtime
+  objects, which would break the plain-JSON rule?
+- A7. Shapes inside a block field: reached through their own records and addresses with the field
+  typed `Markdown`, or a typed union of the shapes allowed there? Depends on M1.
+- A8. Address types: literal checking only, or the value type at each address too (only if typed
+  `doc.set` is wanted)?
 
 ## 21. Next topics
 
