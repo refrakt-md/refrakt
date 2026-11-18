@@ -3,7 +3,7 @@
 **Status: brainstorm.** Nothing here is decided unless marked *decided*, and nothing here is a
 promise to build. When an idea is decided it moves into a spec, and this document links to it.
 
-**Started:** 2026-11-12. **Last updated:** 2026-11-17.
+**Started:** 2026-11-12. **Last updated:** 2026-11-18.
 
 **Related, already written as specs:**
 
@@ -3042,7 +3042,56 @@ written rule matters most; separate repositories make it hard to ignore.
 SPEC-199 updated (2026-11-17): the 1.0 table, the core module table and "Satellites" replacing
 "Add-ons".
 
-## 21. Open questions
+## 21. An outside review of the concept docs (2026-11-18)
+
+The README and concept docs were written into `marquise-md/marquise` and `marquise-md/riviere`, then
+reviewed by another agent: a cold read of the docs first, then a check against SPEC-199 and these notes.
+The full report is kept in `notes/marquise-review-2026-11-18.md` (its line numbers refer to the
+repositories as they were before the fixes).
+
+**Fixed in the docs the same day:** a "Scope of 1.0" page restoring SPEC-199's table; markers that
+overstated decisions (the write path's batch rules, satellites in their own repositories, the decided API
+example, Rivière's engine seam, "no general site layer"); missing definitions (identity and `ref`,
+deferred shapes as a seam, directives, the full address rules, the slot namespace rule); examples that broke
+the docs' own rules (`label` without `as: text`, the hero's plain tag, `blockedBy` in a shape file,
+id-rooted addresses without `#`, `acyclic` outside Rivière's namespace, `to` naming collections).
+
+**The design challenges, to discuss one at a time** (questions X1–X12 in section 22):
+
+1. **1.0 is not small, and its scope was missing.** Cut 1.0 to the read path: shapes, content models,
+   validation, typed props, records with JSON Schema, the plain presentation, one syntax, `validate`,
+   `types`; the write path, kits, dimensions, middleware, migrations and a second syntax after.
+2. **Build plan's rebuild on a pre-1.0 Marquise,** since Rivière needs identity, `ref`, deferred shapes,
+   task-list items, heading-bound sections and list-valued references, and finding gaps after 1.0 means
+   majors.
+3. **Deterministic content models** (XML Schema's unique particle attribution): an ambiguous model fails
+   at load; writes become predictable, completions and streaming validation come almost free; the
+   matching algorithm is specified normatively.
+4. **The write path as lens laws,** adding "writing back the value just read produces zero edits".
+5. **Positions decide the parser:** byte-exact writes need inline ranges; recalled that markdown-it (under
+   Markdoc) lacks them; micromark and mdast have them, and `remark-directive` implements the syntax Comark
+   descends from. One spike changing an inline value in each settles it.
+6. **Identity is `(collection, id)`,** not the address, so a move does not change identity.
+7. **Block fields as structured values** (`{ markdown, text, shapes }`), so records do not depend on the
+   syntax and addresses do not point into strings.
+8. **Value types keep the author's text** (`{ value, source }`); money as a decimal or minor units, never a
+   float, never an inferred currency; perhaps only `number`, `date`, `url`, `boolean` in core.
+9. **Security gaps:** untrusted `{% collection %}` and `{% expand %}` can read any collection (a per-collection
+   "readable from untrusted content" flag, off by default); frontmatter choosing a looser shape than the
+   host's; forgeable context-bundle delimiters; the trust boundary marked only a leaning.
+10. **Concurrency claims are too strong:** the hash check holds within one working tree; claims across
+    clones need a conflicting write (an assignee) or a pushed ref; `apply` should verify every hash, write
+    temporary files, then rename, with rollback.
+11. **Borrow formats rather than invent them:** the language server protocol's `WorkspaceEdit` for
+    changesets (file renames and deletes included); SARIF for findings, with suggested fixes; CEL or
+    JSONata for `computes`; an export to SQLite or DuckDB instead of a query-engine seam.
+12. **Smaller points:** generic MCP tools by default (clients degrade as tool counts grow); a strict
+    JSON Schema profile for model APIs' structured output; `createMarquise<Shapes>()` beside the global
+    type registry; accessibility of the plain presentation (heading fields rendered as headings);
+    identity and addresses across locales; pinning YAML 1.2 for shape files; prior art worth reading
+    (Keystatic, TinaCMS, Sphinx-Needs, Doorstop, Obsidian's Dataview and Bases, SHACL's "shapes").
+
+## 22. Open questions
 
 **Stack**
 
@@ -3289,6 +3338,23 @@ time.
 - M10. The rich-text hook: one converter interface (`toRichText`, `fromRichText`) per format, applied
   to every `block` field, or per field?
 
+**The outside review** (section 21)
+
+- X1. 1.0 limited to the read path (records included), the write path and the rest after?
+- X2. Plan's rebuild prototyped on a pre-1.0 Marquise, to test Rivière's seams before they are frozen?
+- X3. Deterministic content models, rejected at load when ambiguous, with a normative matching algorithm?
+- X4. The write path stated as lens laws, with "write back what was read gives zero edits"?
+- X5. A spike changing one inline value through Markdoc, Comark and micromark/mdast, before choosing?
+- X6. Identity as `(collection, id)` rather than the address?
+- X7. Block fields as structured values in records?
+- X8. Value types keeping the author's text; money's representation; which value types are core?
+- X9. The security gaps: untrusted reads through query shapes, frontmatter choosing shapes, forgeable
+  bundle delimiters, the trust boundary's marker?
+- X10. Concurrency: the scope of the hash check, claims across clones, recoverable multi-file applies?
+- X11. Borrowed formats: `WorkspaceEdit`, SARIF with fixes, CEL or JSONata, an SQL export?
+- X12. The smaller points (generic MCP tools, a strict schema profile, typed instances, accessibility,
+  locales, YAML 1.2)?
+
 **Rivière** (section 3)
 
 *All decided 2026-11-18:*
@@ -3364,9 +3430,11 @@ time.
 - A8. Address types: literal checking only, or the value type at each address too (only if typed
   `doc.set` is wanted)?
 
-## 22. Next topics
+## 23. Next topics
 
-- The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 21).
+- The outside review's design challenges, one at a time (section 21, X1–X12), starting with 1.0's scope
+  (X1) and the order of plan's rebuild (X2).
+- The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 22).
 - The content model's revision (section 17, C4).
 - Marquise as a data store (section 18).
 - The Astro spike (section 14).
