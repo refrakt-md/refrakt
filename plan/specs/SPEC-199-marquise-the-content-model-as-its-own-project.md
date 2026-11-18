@@ -164,10 +164,24 @@ general hooks that any other host could use too:
 | **Deferred definitions**: a definition left as a placeholder holding its source, expanded later when the host supplies values | runes whose data reads the entity registry, expanded after the cross-page pipeline (SPEC-194 D12.4); today's capture and re-parse in `deferred-body.ts` |
 | **`prepare` stages** registered by packages | native runes' computations (SPEC-194 D3) |
 | **File roots** contributed by packages | `core:`, `marketing:` for `include` and `snippet` (SPEC-197 D4) |
-| **Extra definition keys** a host declares and validates | `role`, `placedBy`, `metaFields`, `registers`, `blocks`, `defaults` (`schema` belongs to `@marquise-md/schema`) |
+| **Extension namespaces** in definitions: each extension owns one key, its name, at the levels it declares (shape, attribute, field, item model), with a schema Marquise validates | `refrakt:` holding `role`, `placedBy`, `metaFields`, `registers`, `blocks`, `defaults` (moved by codemod); `schema:` belongs to `@marquise-md/schema`, `riviere:` to Rivière |
 | **Preprocess tags** registered by packages | `data`, `snippet`: tags that resolve to content before the transform, as the `include` satellite does |
 | **Host values**: named values a host supplies to every expression | `$page` and `$site` (SPEC-194 D12), which refrakt fills from its loader; Marquise defines no site model |
 | **Error presentation**: how a failure that must stay visible on the page is drawn | refrakt's `{% hint type="caution" %}` callout (`data-emit.ts:104` today). By default a failure is only a recorded finding |
+
+**Extension namespaces.** *Decided 2026-11-18* (`notes/marquise-foundation.md`, section 11,
+"Extensions in shape files"). An extension owns exactly one key in a definition, its name, at every
+level where it registers one, and puts everything it needs inside. Two packages claiming one name is a
+loading error. An unknown key in core or inside a known namespace is an error finding; a key that is
+neither core nor a registered namespace is an info finding ("not installed") and passed through
+untouched, so a shape library carrying hints for an extension still loads without it, while typos are
+still caught. Marquise validates each namespace against the schema its extension registers, composes
+those schemas into the shape-file schema the language server uses, never interprets the data
+(extensions read `shape.extensions.<name>`), and publishes it as vendor keywords (`x-<name>`). A key
+graduates into core by migration when more than one consumer needs it; the **summary projection**
+(`summary: [title, status]`) is core from the start. Authors never write namespaces: shared attributes
+on tags keep plain names, and a collision between two extensions' shared attributes is a configuration
+error.
 
 **The test of the boundary:** refrakt builds on Marquise using only these hooks. If refrakt
 needs a special case inside Marquise, the seam is in the wrong place.
@@ -419,7 +433,7 @@ protects only what is listed here.
 | Who depends on it | Contracts |
 |---|---|
 | Content authors | the content syntax and Marquise's conventions (explicit slots `#name` and `#default`, `file#id`, `example` blocks); a library's shape vocabulary (the library's); a design language's dimensions (the kit's) |
-| Shape and kit authors | the shape file format; dimension and preset formats; the kit manifest; the migration format (after SPEC-189); the binding format; the template language, with `@marquise-md/compose` |
+| Shape and kit authors | the shape file format, including extension namespaces and the info finding for one not installed; dimension and preset formats; the kit manifest; the migration format (after SPEC-189); the binding format; the template language, with `@marquise-md/compose` |
 | Developers | the shape node (prop naming, slots, item records, the dimensions convention); generated type names and structure; host callbacks (`values`, `files`, `resolveAsset`, `resolveLink`, `translate`, `icon`, `onFinding`, `presentFinding`); middleware and the context API; the lookup node; the directive and `prepare` registries; each renderer's component contract |
 | Machines | finding ids, severities and message parameters; the published schema documents; edit operations; CLI commands, flags, exit codes and JSON output; MCP tools and resources |
 | Browsers, stylesheets, search engines | the plain presentation markup (decision 3); the structure of JSON-LD output |

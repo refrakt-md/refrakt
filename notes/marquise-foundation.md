@@ -532,11 +532,13 @@ overrides per project, flags per call (*leaning*):
 ```yaml
 # shapes/work.md
 attributes:
-  source:    { type: ref, to: [spec, decision], context: full }
-  blockedBy: { type: ref, to: [work, bug], repeat: true, context: summary }
-context:
-  back: [mentions]          # incoming references worth seeing: off unless declared
+  source:    { type: ref, to: [spec, decision], riviere: { context: full } }
+  blockedBy: { type: ref, to: [work, bug], repeat: true, riviere: { context: summary } }
+riviere:
+  context: { back: [mentions] }   # incoming references worth seeing: off unless declared
 ```
+
+(Under Rivière's namespace, section 11, "Extensions in shape files".)
 
 Typed references on the seed are followed; incoming ones only where declared; prose mentions not
 followed (noisy), at most a list of titles. Depth 2 by default: a work item, its spec, the spec's
@@ -1031,6 +1033,64 @@ filesystem policy beyond bounding reads to declared roots.
 | deferred definitions | an API (`transform` returns placeholders; the host calls `expand`) |
 
 Two callbacks are new: `translate` and `icon`.
+
+### Extensions in shape files (2026-11-18)
+
+SPEC-199 lists the hook ("extra definition keys a host declares and validates"), and refrakt uses it
+(`hero.md`'s top-level `defaults:`), but there were no rules for several extensions sharing a shape
+file. The problems: collisions (Rivière's `context` and another tool's); typos versus extensions
+(Marquise must catch `optinal: true`); extensions not installed (a library published with Rivière hints,
+used without Rivière); placement (shape, attribute, field, item model); tooling (completion and checks in
+the language server); graduation (a key that later belongs in core).
+
+**Decided: one namespace per extension.** Each extension owns exactly one key, its name, at every level
+it is allowed, with everything it needs inside:
+
+```yaml
+# shapes/work.md
+description: A unit of work
+attributes:
+  source:
+    type: ref
+    to: [spec, decision]
+    riviere: { context: full }        # Rivière's key, on an attribute
+summary: [title, status, priority]    # core
+riviere:
+  context: { back: [mentions] }       # Rivière's key, on the shape
+schema:                               # the @marquise-md/schema satellite's namespace
+  type: CreativeWork
+```
+
+- **No collisions:** each extension registers its name once; two packages claiming one is a loading
+  error.
+- **Typos caught:** an unknown key in core, or inside a known namespace, is an error finding.
+- **Extensions not installed are tolerated:** a key that is neither core nor a registered namespace is an
+  info finding ("`riviere` is not installed; its keys are ignored") and passed through untouched. A
+  namespace can be told apart from a typo, which flat keys cannot do; that distinction is why flat keys
+  with a registry were rejected, though slightly nicer to write.
+- **Placement declared:** an extension registers a schema for its namespace and the levels where it may
+  appear (`shape`, `attribute`, `field`, `itemModel`); Marquise validates it, with the same findings as
+  core keys.
+- **Tooling for free:** the JSON Schema for shape files is composed from core plus each registered
+  extension's schema, so the language server completes and checks `riviere.context` without knowing
+  Rivière.
+- **Passed through, never interpreted:** extensions read their data from the loaded shape
+  (`shape.extensions.riviere`); published schema documents carry it as vendor keywords (`x-riviere`),
+  which other consumers ignore.
+
+**Refrakt's keys** (`role`, `placedBy`, `metaFields`, `registers`, `blocks`, `defaults`) move under
+`refrakt:`, a mechanical codemod and a first use of the migration format (SPEC-189), making visible which
+parts of a shape file only refrakt understands.
+
+**Graduation:** a key graduates into core when more than one consumer needs it, by migration
+(`riviere.summary` becomes `summary`, run over shape libraries). **The summary projection is core from
+the start** (it describes a record: Marquise's extraction, an editor's outline and any list of records
+want it); **context hints stay in Rivière's namespace** (only something with references between
+documents uses them).
+
+**On the content side** plain names stay right: authors write refrakt's universal attributes (`width`,
+`tint`) through the shared-attributes hook, never namespaces; two extensions' shared attributes
+colliding is a configuration error the host resolves, never a guess.
 
 ## 12. Middleware
 
@@ -3049,6 +3109,9 @@ SPEC-199 updated (2026-11-17): the 1.0 table, the core module table and "Satelli
   inside an attribute value needs support in each renderer.
 - H3. Lookups in structured data: JSON-LD is built at transform time, so a translated label there
   needs transform-time translation, or structured data stays in the source language.
+- H4. *Decided 2026-11-18* (section 11): extensions in shape files use one namespace each; a namespace
+  not installed is an info finding and passed through; the summary projection is core, context hints
+  Rivière's; refrakt's keys move under `refrakt:` as a first use of the migration format.
 
 **Middleware**
 
@@ -3262,10 +3325,10 @@ time.
 - V19. Generated MCP tools: one set per collection (`find_work`, `create_work`), or generic tools with a
   `collection` argument whose schema is a union? Many collections mean many tools.
 - V20. Changeset metadata: which fields (author, agent, reason, source finding), and how they reach git?
-- V21. Defaults for what a bundle follows: on the shape's reference fields, overridable in config
-  (*leaning*), or in config only?
-- V22. The summary projection as a shape-level declaration, reused by bundles, CLI tables, MCP lists
-  and `collection` items?
+- V21. Defaults for what a bundle follows: on the shape's reference fields under `riviere:`,
+  overridable in config (*leaning*), or in config only?
+- V22. *Decided 2026-11-18:* the summary projection is a core shape-level declaration (section 11),
+  reused by bundles, CLI tables, MCP lists and `collection` items.
 - V23. Deferred shapes in bundles: not expanded, expanded as summaries, or in full?
 - V24. The budget: required in the API with a CLI default (8,000?), or unlimited when not given?
 
