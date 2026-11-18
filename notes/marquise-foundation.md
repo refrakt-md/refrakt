@@ -1227,6 +1227,48 @@ is shared.
    `@marquise-md/vite` covers Vite-based frameworks; Next needs a `withRiviere()` wrapper or its own
    watching; findings go to each framework's error overlay, not only the terminal.
 
+**Standard Schema, in detail** (2026-11-18; read from `@standard-schema/spec@1.1.0` and
+`zod@4.6.7`). **It is an interface, not a schema language:** it describes no fields or types, only one
+property schema objects of any library (Zod, Valibot, ArkType and others) carry, so a framework can
+accept any of them without depending on one:
+
+```ts
+interface StandardSchemaV1<Input, Output> {
+  readonly '~standard': {
+    version: 1;
+    vendor: string;                                   // 'zod', 'valibot', 'marquise' …
+    validate(value: unknown): Result<Output> | Promise<Result<Output>>;
+    types?: { input: Input; output: Output };         // TypeScript inference only
+  };
+}
+// Result: { value } on success, or { issues: [{ message, path? }] } on failure
+```
+
+Version 1.1 adds **`StandardJSONSchemaV1`**: `jsonSchema.input(options)` and `jsonSchema.output(options)`
+return a JSON Schema for a target (`draft-2020-12`, `draft-07`, `openapi-3.0`), so a schema can also say
+what it looks like.
+
+**Zod and Standard Schema:** a Zod 4 schema *is* a Standard Schema (it implements `~standard`, with the
+JSON Schema companion), so nothing is generated in that direction. The reverse is impossible in general:
+a plain Standard Schema is opaque, a function with no structure to read; only through JSON Schema, when
+the companion is implemented (`z.fromJSONSchema()`, and `z.toJSONSchema()` the other way). JSON Schema
+is the shared structural format; Standard Schema the shared validation interface.
+
+**For Marquise, one object per shape implementing both, with no dependencies** (*decided 2026-11-18*,
+answering N5): `validate` runs Marquise's own validation on a record, each finding an issue whose `path`
+is the finding's address (`ingredients[2].amount` as `['ingredients', 2, 'amount']`, A1's decisions
+mapping onto Standard Schema's path segments); `jsonSchema` returns the published schema document
+(SPEC-199); `types` points at the generated record types. That covers every framework accepting
+Standard Schema. **Astro requires Zod** (`z.$ZodType`), handled in the Astro integration, not core:
+`z.fromJSONSchema(schema.jsonSchema.output(…))` for structure, or the Standard validator wrapped in
+`z.custom()` for Marquise's exact validation; the type string from Marquise's generator either way.
+Zod is a dependency of one integration, never of Marquise.
+
+**Limits:** validation is pass or fail with no severity, so only error findings become issues (warnings
+reach the framework through its logger); it validates data, not Markdown: in a loader it rechecks
+records cheaply, and its real value is JSON that never was Markdown (a store as a source, M9, data sent
+to an API).
+
 **Proposal:** the eight questions written down as the integration contract; Astro the reference
 integration; the others when someone needs them (Marquise builds no integrations beyond the reference);
 the four gaps required before 1.0.
@@ -2907,8 +2949,9 @@ SPEC-199 updated (2026-11-17): the 1.0 table, the core module table and "Satelli
   shapes (section 15).
 - N4. Next without Vite: a separate small plugin, or a loader that needs no build integration
   (transform at request time)?
-- N5. The Standard Schema validator: in Marquise core, as the one exporter integrations need, or a
-  satellite?
+- N5. *Answered 2026-11-18* (section 14): the Standard Schema validator is in Marquise core, one object
+  per shape implementing `StandardSchemaV1` and `StandardJSONSchemaV1`, no dependencies; Zod only in
+  the Astro integration.
 - N6. A React renderer that works as a server component (no context, per-request state): a 1.0
   requirement?
 - N7. The serialisable snapshot in Rivière's core?
