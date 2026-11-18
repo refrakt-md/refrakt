@@ -12,6 +12,14 @@ adds a **seam** under the grammar so a plugin can contribute a richer engine,
 without core growing a second vocabulary and without the default changing for
 anyone who does not opt in.
 
+> **Narrowed 2026-11-18.** Marquise's corpus layer, Rivière (`notes/marquise-foundation.md`, section
+> 3, "Rivière's queries"), takes this spec's diagnosis and its rule (capability gaps in core, language
+> gaps in plugins) and leans the other way on priority: typed records make most of the gaps below cheap
+> core capabilities (negation, comparison, existence, nested fields, paths through references), and
+> code needs no engine because records are plain JSON. In refrakt, the lab, this spec is narrowed to the
+> **query catalogue** (every query refrakt runs, written out) and those **typed extensions**, tried here
+> to graduate to Rivière. **The engine seam is deferred.**
+
 ## Problem
 
 The grammar's semantics are fixed by `packages/runes/src/field-match.ts`: clauses

@@ -151,7 +151,7 @@ lining a geode), Lattice, Pavé, Facet, Vug.
 **Not in it:** URLs, routes, the page tree, navigation, breadcrumbs, layouts (the site); storage other
 than files; transactions; authentication.
 
-**The proof is plan rebuilt on it** (*proposed*): its entities are shapes; `source` and `Blocked by` are
+**The proof is plan rebuilt on it** (*decided 2026-11-18*): its entities are shapes; `source` and `Blocked by` are
 typed references; `status`, `next` and the rollups are queries plus a graph traversal; `migrate ids` is
 a cross-document write; its MCP tools become the generic ones. If plan becomes mostly declarations,
 the layer is right. Refrakt's site layer then sits on top (collections, `xref`, breadcrumbs).
@@ -406,7 +406,7 @@ Astro:** the CLI, MCP and editors write, the dev watcher picks changes up.
 
 Refrakt has five core runes that read the corpus: `collection`, `aggregate`, `relationships`, `xref`
 and `expand` (an entity's content substituted inline, with `xref`'s lookup). **They belong with
-Rivière, split: Rivière ships what they mean, not how they look** (*leaning*).
+Rivière, split: Rivière ships what they mean, not how they look** (*decided 2026-11-18*, V14–V17).
 
 **They are Rivière's read API in authoring form, and nothing more:**
 
@@ -2954,7 +2954,7 @@ SPEC-199 updated (2026-11-17): the 1.0 table, the core module table and "Satelli
   the Astro integration.
 - N6. A React renderer that works as a server component (no context, per-request state): a 1.0
   requirement?
-- N7. The serialisable snapshot in Rivière's core?
+- N7. *Decided 2026-11-18:* the serialisable snapshot is in Rivière's core.
 - N8. The integration contract (the eight questions): into SPEC-199 now, or in the notes until Rivière
   has a spec of its own?
 
@@ -3070,19 +3070,17 @@ time.
   per field?
 - M2. Extraction in core for 1.0, or an add-on (`@marquise-md/extract`)? It is small, since the shape
   node is already data, which argues for core.
-- M3. Record identity: ids and typed references in Marquise core, or waiting for the corpus layer?
-  *Leaning 2026-11-17:* core declares identity and `ref` types and checks them per document; Rivière
-  resolves them across documents (section 3).
+- M3. *Decided 2026-11-18:* Marquise core declares identity and `ref` types and checks them per
+  document; Rivière resolves them across documents (section 3).
 - M4. Creating records: should the write path scaffold a new document from a shape
   (`marquise new article`), with required fields as placeholders?
 - M5. Read-only fields: is a field extracted only by a regular expression acceptable as read-only, or
   should the schema require a formatter for every extracted field?
 - M6. Where scaffolding lives: creating a document from a shape is per document (Marquise), but its
   file name and location are site or corpus policy.
-- M7. The corpus layer's owner (S1), now with a clearer job: a Marquise add-on, its own project, or
-  refrakt's? *2026-11-17:* leaning its own project (Rivière), in the Marquise organisation, built only
-  on the public API, after Marquise 1.0.
-- M11. Plan rebuilt on Rivière as its explicit acceptance test (section 3)?
+- M7. *Decided 2026-11-18:* the corpus layer is its own project, Rivière, in the Marquise
+  organisation, built only on the public API, after Marquise 1.0.
+- M11. *Decided 2026-11-18:* plan rebuilt on Rivière is its acceptance test (section 3).
 - M8. Queries: reuse refrakt's filter grammar (`field:value`, SPEC-195's `matches()`), or something
   richer? The "no query language" line argues for reuse.
   *Leaning 2026-11-17:* reuse, extended with typed capabilities (section 3, Rivière's queries).
@@ -3093,34 +3091,36 @@ time.
 
 **Rivière** (section 3)
 
-- V1. The corpus snapshot as Rivière's centre, mirroring Marquise's document handle?
-- V2. Collections in Rivière's config (*leaning*: one shape can live in two collections, and file layout
-  is the project's) or on document shapes (`path`, `id` in the shape file)?
-- V3. CLI writes: apply by default with `--dry-run`, or dry by default with `--apply` as `plan migrate`
-  does?
-- V4. Saved views: worth having, or a step towards a query language?
-- V5. Ids unique per collection (the general case, `get` needing the collection) or across the corpus
-  (plan's prefixes in practice)?
-- V6. Which extensions go in the built-in grammar: negation, comparison, existence, nested fields,
-  paths through references; OR across fields in or out?
-- V7. The engine seam in Rivière only (*leaning*), or also in Marquise core, where the grammar lives
-  for queries within one document?
-- V8. The query catalogue as the first piece of work, before any grammar change?
-- V9. SPEC-138 (draft): continue it in refrakt, the lab, or treat it as superseded by Rivière's design?
-- V10. The URL policy: an optional part of Rivière, or in each framework integration? *Leaning
-  2026-11-17:* in the integration (the Astro loader takes `urls`).
-- V11. An Astro content loader as Rivière's first integration? *2026-11-17:* sketched (section 3); it
-  needs no private seam.
+*All decided 2026-11-18:*
+
+- V1. The corpus snapshot is Rivière's centre, mirroring Marquise's document handle.
+- V2. Collections are declared in Rivière's config: file layout is the project's, and one shape can
+  live in two collections.
+- V3. CLI writes default by how many files they touch: a changeset within one document applies by
+  default (`--dry-run` available: `set`, `create`, `update`); one spanning several documents is shown
+  and needs `--apply` (`rename`, `move`, `delete --force`), as `plan update` and `plan migrate` do today.
+- V4. Saved views, as stored arguments to `find` or `count` only: no parameters, no views built from
+  views; logic makes a script.
+- V5. Ids unique per collection (Astro agrees); the CLI accepts a bare id when only one collection has
+  it and reports ambiguity otherwise.
+- V6. The built-in grammar gains negation, comparison, existence, nested fields and paths through
+  references; OR across different fields stays out until the catalogue asks for it.
+- V7. The engine seam lives in Rivière only.
+- V8. The query catalogue comes first, before any grammar change.
+- V9. SPEC-138 is narrowed in refrakt, the lab: its catalogue and the typed extensions are tried there to
+  graduate to Rivière; the engine seam is deferred (note added to SPEC-138).
+- V10. The URL policy lives in each integration (the Astro loader takes `urls`).
+- V11. Astro is Rivière's first integration; the loader needs no private seam.
 - V12. Rendering in Astro: (c) static HTML plus the stored tree first, (b) deferred rendering through a
-  Marquise content entry type as the end state?
-- V13. Spike: can a custom loader use `deferredRender`, and how does a Marquise entry type coexist with
-  Astro's own `.md` handling?
-- V14. Rivière's query shapes (`collection`, `aggregate`, `relationships`, `expand`): in Rivière core, or
-  an optional `@riviere-md/shapes`?
-- V15. `ref` in Rivière's core, since prose mentions are indexed?
-- V16. `relationships` defaulting to the document's own entity, which needs document shapes with ids?
-- V17. Per-item templates before `compose`: components only, or a simple per-item `{% form %}`-style
-  block in the meantime?
+  Marquise content entry type as the end state.
+- V13. Became a task (section 22): the deferred-rendering spike.
+- V14. The query shapes (`collection`, `aggregate`, `relationships`, `expand`) live in Rivière's core:
+  small, the API's authoring form rather than a vocabulary, one package fewer.
+- V15. `ref` is in Rivière's core: prose mentions are indexed.
+- V16. `relationships` defaults to the page's own entity when the document is one (a document shape with
+  an id); otherwise `of=` is required, and leaving it out is a finding.
+- V17. Per-item templates before `compose`: components and the plain presentation only; no temporary
+  template mechanism.
 
 **Writing forms** (section 18)
 
@@ -3163,3 +3163,6 @@ time.
 - How kits combine when two overlap (K4).
 - The tokens contract (P2).
 - Interaction contracts as tests (K5, B1).
+- When Rivière's work starts: the deferred-rendering spike (can a custom Astro loader use
+  `deferredRender`, and how does a Marquise entry type coexist with Astro's own `.md`?), then the query
+  catalogue (V8).
