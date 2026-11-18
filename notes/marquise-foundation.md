@@ -452,6 +452,69 @@ content (refrakt's `$item` bodies) wait for the `compose` satellite.
 `expand` overlaps the `include` satellite (content transcluded inline) by entity rather than file; it
 goes through the same preprocess hook, so provenance and write redirection behave the same.
 
+### Use cases beyond plan and rendering (2026-11-18)
+
+The features that make Rivière more than a renderer (typed records, references, findings with
+addresses, reviewable changesets, MCP, git history) are the ones AI workflows need.
+
+**Agents reading: context, not chunks.**
+
+- **Context bundles** (*of most interest*): gather context by structure rather than by chunking text:
+  `riviere context WORK-123 --follow source,blockedBy --depth 2 --budget 8000` gives the work item, its
+  spec, the decisions the spec cites and its blockers, within a token budget, nearest first. Retrieval
+  through references, no embeddings, every piece exact, typed and addressable; what every agent in this
+  repository does by hand when CLAUDE.md tells it to read a work item's referenced specs.
+- **Filtered retrieval:** `status:accepted tags:auth` narrows what an agent sees before any similarity
+  search. Semantic search stays outside (not deterministic, needs indexes); a third party can embed
+  records' text fields keyed by their addresses.
+- **Code and docs drift:** refrakt's `stale` answers "which pages document this file?"; in Rivière a
+  reference to a source path is a typed reference, and the question a backlinks query an agent runs
+  before editing code.
+
+**Agents writing: structured authoring with a fix loop.**
+
+- **Structured output in, idiomatic Markdown out:** Marquise publishes JSON Schema per shape (the
+  Standard JSON Schema companion), which model APIs accept for structured output and tool inputs; the
+  model emits a record as JSON, `c.create()` writes natural Markdown, findings come back. The model never
+  writes Markdown that must parse; people still review prose.
+- **The fix loop with addresses** (section 19): read a finding, edit at its address, revalidate.
+- **Extraction from unstructured sources:** transcripts to decision records and work items, emails to
+  bug reports, papers to claims with citations; Rivière validates the references, a person reviews the
+  changeset.
+
+**Agents coordinating: a shared, reviewable work surface.**
+
+- **A task queue for several agents:** work items with optimistic concurrency (claiming carries an
+  `expectedHash`, so a second agent's claim is refused); parallel sessions pull from `riviere next`
+  without collisions, git as the audit log.
+- **Changesets as the review boundary:** agents propose, people approve (a pull request or a review UI),
+  seeing every per-file edit before anything is written.
+- **Typed MCP tools generated per collection** (*of most interest*): every corpus becomes an MCP server
+  whose tools are typed from its shapes (`find_recipes(filter)`, `create_event(input: EventInput)`,
+  `update_work(id, patch)`), tool input schemas from the same JSON Schema, no hand-written definitions.
+  Plan's MCP tools (`plan.update`, `plan.next`) are the hand-made version.
+- **Agent knowledge as records:** conventions, decisions, lessons, skill files, prompt libraries, typed
+  and validated so they do not rot quietly (a lesson citing a deleted decision is a dangling reference).
+- **Evals as a corpus:** prompts, cases (input, expected output, rubric) and results with references;
+  "which cases fail on the current prompt version?" is a query; datasets reviewed as prose, versioned by
+  git.
+- **Gardening agents:** a scheduled `riviere validate`, then fixes or reports: dangling references,
+  items stuck in progress for 30 days (git history), specs whose work items are all done still marked
+  `accepted`.
+
+**Beyond AI:** requirements traceability in regulated industries (requirements, tests, results as
+references; "every requirement has a test" as a graph check; git as the audit trail); service catalogues
+and runbooks (Backstage's catalogue in Markdown); course design (a prerequisite graph with cycles
+checked, learning paths as queries); worldbuilding and game design (refrakt's storytelling plugin,
+generalised); research notes (an unsupported claim is a finding); small-business content edited by
+non-developers through Astro; typed personal notes (Dataview's use case, in prose).
+
+**What it suggests for the design:** (1) `riviere context`, gathering through references within a token
+budget; (2) MCP tools generated per collection, typed from shapes; (3) changeset metadata (who proposed
+it, a person or which agent, and why) carried into commit trailers; (4) JSON Schema for structured
+output as a documented use; (5) optimistic concurrency documented as the coordination mechanism, not
+leases or locks.
+
 **Package names** (checked on npm, 2026-11-17): the unscoped `riviere` is taken (an HTTP traffic
 logger, last changed 2022), and **so are the scopes `@riviere` and `@marquise`**: both exist with no
 public packages (the registry answers `{}` where an unknown scope gives "Scope not found"). The
@@ -3121,6 +3184,11 @@ time.
   an id); otherwise `of=` is required, and leaving it out is a finding.
 - V17. Per-item templates before `compose`: components and the plain presentation only; no temporary
   template mechanism.
+- V18. Context bundles: which references to follow by default, how depth and budget trade off, and the
+  bundle's format (Markdown with addresses, or JSON)?
+- V19. Generated MCP tools: one set per collection (`find_work`, `create_work`), or generic tools with a
+  `collection` argument whose schema is a union? Many collections mean many tools.
+- V20. Changeset metadata: which fields (author, agent, reason, source finding), and how they reach git?
 
 **Writing forms** (section 18)
 
