@@ -515,6 +515,80 @@ it, a person or which agent, and why) carried into commit trailers; (4) JSON Sch
 output as a documented use; (5) optimistic concurrency documented as the coordination mechanism, not
 leases or locks.
 
+### Context bundles (2026-11-18)
+
+**Retrieval picks the starting points; Rivière expands from them through structure, within a budget,
+never cutting silently.**
+
+**Seeds:** entities (`WORK-123`), an address (`WORK-123.criteria`), a query (`work 'status:ready'`), a
+document path, or a source file (`--touching packages/runes/src/config.ts` seeds with every document
+referencing it: refrakt's `stale` question as context for an edit). Seeds can come from outside: a
+third-party semantic search picks the five most relevant entities, Rivière adds what is structurally
+related; the two complement each other and Rivière stays deterministic.
+
+**What is followed:** the shape declares defaults, since it knows which relations matter; config
+overrides per project, flags per call (*leaning*):
+
+```yaml
+# shapes/work.md
+attributes:
+  source:    { type: ref, to: [spec, decision], context: full }
+  blockedBy: { type: ref, to: [work, bug], repeat: true, context: summary }
+context:
+  back: [mentions]          # incoming references worth seeing: off unless declared
+```
+
+Typed references on the seed are followed; incoming ones only where declared; prose mentions not
+followed (noisy), at most a list of titles. Depth 2 by default: a work item, its spec, the spec's
+decisions.
+
+**Four levels, degrading before dropping:** `full` (the whole Markdown source), `fields` (selected
+fields, long block fields shortened to their first paragraph plus their address), `summary` (the shape's
+**summary projection**: id, title, status and similar), `ref` (id and title). The summary projection,
+declared once on the shape (`summary: [title, status, priority]`), serves well beyond bundles: CLI
+tables, MCP list results, backlinks panels, `collection` items.
+
+**The budget:** seeds `full`; depth 1 `full` if declared, else `fields`; depth 2 `summary`. Over budget,
+the farthest entities are demoted a level at a time, and only then dropped. **Nothing is cut silently:**
+every dropped entity is listed under "Omitted" with its address and how to fetch it. Tokens are counted
+approximately (characters divided by four) with a `tokenize` callback for the host. **Deterministic:**
+the same snapshot and arguments give the same bundle (ties by distance, declared field order, id), so
+bundles cache and test.
+
+**The format:** Markdown by default, since models read it natively and the source is Markdown:
+
+```markdown
+<!-- riviere:context seeds=WORK-123 budget=8000 used=6120 snapshot=3f2a… -->
+
+## WORK-123 · work · seed · full
+address: plan/work/WORK-123-typed-refs.md#WORK-123
+
+…the work item's Markdown source…
+
+## SPEC-199 · spec · via source · fields
+address: plan/specs/SPEC-199-….md#SPEC-199
+status: accepted · title: Marquise, the content model as its own project
+
+…its summary paragraph… (full text: `riviere get SPEC-199`)
+
+## Omitted (over budget)
+- ADR-049 (via SPEC-199 → source): `riviere get ADR-049`
+```
+
+JSON on request (`{ snapshot, budget, used, entries: [{ address, collection, id, via, level, content }],
+omitted }`); the MCP tool returns both, Markdown as text and JSON as structured content. **Source, not
+rendered output:** agents edit source, and its addresses are what edits target; included content is
+labelled with its origin; deferred shapes (a `{% collection %}`) optionally expanded into summaries.
+
+**Safe to edit from:** a bundle carries its snapshot hash; edits proposed from it carry each file's
+expected hash, so a file changed since the agent read it refuses the edit. **Provenance against prompt
+injection:** Rivière cannot solve it, but each entity is delimited and labelled with address and origin,
+so an agent framework can treat everything inside as content, never instructions.
+
+**Where it appears:** `c.context(seeds, options)` (synchronous on a snapshot), `riviere context`, an MCP
+`context` tool. CLAUDE.md's "read the work item's referenced specs, related decisions and dependency work
+items" becomes one call.
+
 **Package names** (checked on npm, 2026-11-17): the unscoped `riviere` is taken (an HTTP traffic
 logger, last changed 2022), and **so are the scopes `@riviere` and `@marquise`**: both exist with no
 public packages (the registry answers `{}` where an unknown scope gives "Scope not found"). The
@@ -3184,11 +3258,16 @@ time.
   an id); otherwise `of=` is required, and leaving it out is a finding.
 - V17. Per-item templates before `compose`: components and the plain presentation only; no temporary
   template mechanism.
-- V18. Context bundles: which references to follow by default, how depth and budget trade off, and the
-  bundle's format (Markdown with addresses, or JSON)?
+- V18. Context bundles: designed 2026-11-18 (section 3); its open parts are V21 to V24.
 - V19. Generated MCP tools: one set per collection (`find_work`, `create_work`), or generic tools with a
   `collection` argument whose schema is a union? Many collections mean many tools.
 - V20. Changeset metadata: which fields (author, agent, reason, source finding), and how they reach git?
+- V21. Defaults for what a bundle follows: on the shape's reference fields, overridable in config
+  (*leaning*), or in config only?
+- V22. The summary projection as a shape-level declaration, reused by bundles, CLI tables, MCP lists
+  and `collection` items?
+- V23. Deferred shapes in bundles: not expanded, expanded as summaries, or in full?
+- V24. The budget: required in the API with a CLI default (8,000?), or unlimited when not given?
 
 **Writing forms** (section 18)
 
