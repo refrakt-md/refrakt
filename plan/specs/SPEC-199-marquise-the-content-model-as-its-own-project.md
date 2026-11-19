@@ -110,31 +110,38 @@ reach. Marquise is not only a smaller package: it is where stability lives.
 
 ### What 1.0 contains
 
+*Revised 2026-11-19* (`notes/marquise-foundation.md`, X1): **1.0 is the read path, records included,**
+with the content-model revision built in refrakt first, so 1.0 ships the revised format.
+
 | In 1.0 | Status today |
 |---|---|
-| Indentation-tolerant parsing | SPEC-170, shipped |
-| Content models: `sequence`, `delimited`, `sections` (not `custom`) | the resolver, in use by every rune |
-| Definitions: frontmatter `attributes`, `content`, `description` | SPEC-145, accepted; five definitions live |
-| Attribute and content validation, with error ids | in use (`refrakt validate`) |
+| Indentation-tolerant parsing; one syntax, Markdoc | SPEC-170, shipped |
+| Shape files: frontmatter `attributes`, `content`, `description`, `summary`, `plain` | SPEC-145, accepted; five definitions live |
+| The revised content model (notes, section 17): combinators, `as: block \| inline \| text` and value types, compact forms owned by child shapes (read with matchers declared in frontmatter) | to be built in refrakt first, compiling down to the existing resolver; {% ref "SPEC-200" /%}, draft |
+| Attribute and content validation, with finding ids and addresses | in use (`refrakt validate`); addresses new (notes, section 19) |
+| Records (extraction), JSON Schema, the Standard Schema validator, generated types | types exist; records and the validator new and small |
 | The preprocess hook, with provenance and declared dependencies | SPEC-141, shipped (the hook); `include` itself is a satellite (below) |
-| The rune node, the generic renderers, components | ADR-049, proposed: **the one new piece**, and the product itself |
+| The shape node, the generic renderers, components | ADR-049, proposed: **the one new piece**, and the product itself |
 | The plain presentation | new, small |
-| `validate`, `reference`, `format`, `types`, the language server | exist, to be split from refrakt |
-| `@marquise-md/schema` and `@marquise-md/include`, first-party satellites in their own repositories | SPEC-130, SPEC-141, shipped |
-| *If it lands in refrakt first:* a field declares `as: block \| inline \| text` | {% ref "SPEC-200" /%}, draft. Additive (default `block`), so it can also come after 1.0 as a minor release. It decides whether a component's prop is the author's element, its inline content or a `string` |
+| `validate`, `types`, `extract`, `format`, `reference`, the language server | exist except `extract`, to be split from refrakt |
+| `@marquise-md/schema` and `@marquise-md/include`, first-party satellites | SPEC-130, SPEC-141, shipped |
 
 **A definition's body is reserved in 1.0:** it must be empty. That keeps SPEC-197's body blocks
-(examples, then templates) additive when they arrive.
+(examples, write templates) additive when they arrive.
 
 ### After 1.0, each as a minor release once it graduates
 
 | Feature | Waits for |
 |---|---|
-| `as: block \| inline \| text` on fields, if not in 1.0 | {% ref "SPEC-200" /%} implemented in refrakt |
+| The write path: addresses for edits, edit operations, writing forms, write templates | the parser spike (notes X5); Rivière's plan rebuild as its first real user |
 | `computes`, `prepare`, the value vocabulary, `matches()` | SPEC-194, SPEC-195 implemented in refrakt |
 | `{% example %}`, `file#id`, examples in tooling | SPEC-197 |
 | `source()` | SPEC-198 |
-| deferred definitions | refrakt's pipeline using the model's version |
+| Document shapes, deferred shapes (definitions) | refrakt's pipeline and Rivière using them |
+| Kits, dimensions, presets, bindings, middleware | a design language built on them, refrakt's first |
+| Migrations | SPEC-189 |
+| MCP | the table of operations (notes A4) |
+| A second syntax (Comark) | the primary-syntax decision (notes Z1i) |
 | `@marquise-md/compose` | SPEC-168, SPEC-177 accepted and implemented |
 
 ## Prerequisites
