@@ -117,6 +117,7 @@ with the content-model revision built in refrakt first, so 1.0 ships the revised
 |---|---|
 | Indentation-tolerant parsing; one syntax, Markdoc | SPEC-170, shipped |
 | Shape files: frontmatter `attributes`, `content`, `description`, `summary`, `plain` | SPEC-145, accepted; five definitions live |
+| `{% example %}` blocks in a definition's body, `file#id` addressing, examples in tooling (notes Y5) | SPEC-197, draft: built and used during 0.x, replacing refrakt's fixtures |
 | Document shapes, minimal (notes Y4): a shape applied to a whole document; frontmatter as its attributes, undeclared keys passed to the host, `shape`, `id` and `lang` reserved | to be built and used during 0.x, through plan's rebuild |
 | The revised content model (notes, section 17): combinators, `as: block \| inline \| text` and value types, item models, `tag:` matches for explicit child shapes; matching and analysis per {% ref "SPEC-201" /%} | to be built in refrakt first, compiling down to the existing resolver; {% ref "SPEC-200" /%}, draft |
 | Attribute and content validation, with finding ids and addresses | in use (`refrakt validate`); addresses new (notes, section 19) |
@@ -127,8 +128,9 @@ with the content-model revision built in refrakt first, so 1.0 ships the revised
 | `validate`, `types`, `extract`, `format`, `reference`, the language server | exist except `extract`, to be split from refrakt |
 | `@marquise-md/schema` and `@marquise-md/include`, first-party satellites | SPEC-130, SPEC-141, shipped |
 
-**A definition's body is reserved in 1.0:** it must be empty. That keeps SPEC-197's body blocks
-(examples, write templates) additive when they arrive.
+**A definition's body holds only examples in 1.0** (*revised 2026-11-19*, notes Y5; earlier it had to be
+empty): `{% example %}` blocks, per SPEC-197 D2, built during 0.x by moving refrakt's fixtures into its
+definitions (SPEC-197 D6). Other body blocks (write templates) stay additive.
 
 ### After 1.0, each as a minor release once it graduates
 
@@ -137,7 +139,6 @@ with the content-model revision built in refrakt first, so 1.0 ships the revised
 | The write path: addresses for edits, edit operations, writing forms, write templates | the parser spike (notes X5); Rivière's plan rebuild as its first real user |
 | Compact forms owned by child shapes (a bare shape name matching every form), with write templates | being built in refrakt, which keeps `emitTag` in its own extension namespace meanwhile (notes Y2) |
 | `computes`, `prepare`, the value vocabulary, `matches()` | SPEC-194, SPEC-195 implemented in refrakt |
-| `{% example %}`, `file#id`, examples in tooling | SPEC-197 |
 | `source()` | SPEC-198 |
 | Deferred shapes (definitions); dimensions on documents, `fills`, folder defaults | refrakt's pipeline and Rivière using them |
 | Kits, dimensions, presets, bindings, middleware | a design language built on them, refrakt's first |
@@ -710,7 +711,7 @@ names (decision 8) and the plain presentation's markup (decision 3).
 
 - [ ] The content-model revision is built in refrakt and used by its runes, with the matching algorithm and a shape's analysis of {% ref "SPEC-201" /%}
 - [ ] Marquise 0.x exists in its own repository (`marquise-md/marquise`) with the parser, resolver, definition input, validation and records, and refrakt depends on its published versions
-- [ ] Marquise 1.0 contains exactly the table under "What 1.0 contains", and a definition with a non-empty body is rejected
+- [ ] Marquise 1.0 contains exactly the table under "What 1.0 contains", and a definition whose body holds anything but `{% example %}` blocks is rejected
 
 **When 1.0 is declared** (*decided 2026-11-19*, notes Y3): when every contract it freezes has survived its
 hardest real user. Each box below is ticked during 0.x.
@@ -723,6 +724,7 @@ hardest real user. Each box below is ticked during 0.x.
 - [ ] Finding catalogue: snapshot-tested, every id documented with an example that triggers it
 - [ ] Published schema: at least one outside consumer uses it (Astro's `createSchema`, or a Standard Schema consumer)
 - [ ] Trust boundary: the hostile-content suite passes through every 1.0 renderer, in both modes
+- [ ] Examples: refrakt's fixture files replaced by `{% example %}` blocks in its definitions, every one validated against its shape
 - [ ] Document shapes: plan's entities are document shapes, with no wrapper tags, in Rivière's prototype; the Astro loader maps a collection to a document shape
 - [ ] Generated types: used by refrakt and the proof project, with type-level tests
 - [ ] CLI and JSON output: snapshot-tested, exit codes included

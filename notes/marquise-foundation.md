@@ -3418,7 +3418,12 @@ time.
   `layout` and later dimensions such as `tint` stay valid); `shape`, `id` and `lang` are reserved now (a
   shape cannot declare them as attributes); later additions only add optional keys whose absence means what
   1.0 means. Answers Z4d (a document with no shape stays untyped: its tags resolve on their own).
-- Y5. Examples in 1.0, with the body reserved: sidecar files (`shapes/hero.examples.md`)?
+- Y5. *Decided 2026-11-19:* **examples in the shape's body in 1.0** (`{% example %}` blocks only, per
+  SPEC-197 D2; write templates still later), **with `file#id`** (SPEC-197 D3, read by the `include`
+  satellite). Built and used during 0.x by moving refrakt's fixture files into its definitions (SPEC-197
+  D6), an added exit test in Y3. Sidecar files were rejected: they match today's fixtures, but once body
+  examples came there would be two places forever. Y3's exit tests require examples (every finding id has
+  one), so 1.0 needed a home for them.
 - Y6. Ids unique across the corpus by default (prefixed ids already are), per-collection scoping opt-in?
 - Y7. A unified diff beside the `WorkspaceEdit` (`cs.toPatch()`), for people, pull requests, agents and
   `git apply`?
@@ -3668,7 +3673,7 @@ time.
 
 ## 23. Next topics
 
-- The second review's challenges, Y5 to Y16 (section 21; Y1 to Y4 decided).
+- The second review's challenges, Y6 to Y16 (section 21; Y1 to Y5 decided).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
   X7's sub-questions still open). Follow-up: a "Prior art" page in Marquise's docs, from reading Keystatic,
   TinaCMS, Sphinx-Needs, Doorstop, Obsidian's Dataview and Bases, SHACL, DITA and DocBook (X12.7).
