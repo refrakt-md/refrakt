@@ -3408,8 +3408,16 @@ time.
   without a breaking change while refrakt and the proof project depend on it. **During 0.x** (answers Z6d):
   breaking changes allowed in minors, each listed with migration notes and a codemod when content changes.
   Rivière's 1.0 follows the same pattern.
-- Y4. Document shapes' body model in 1.0 (the same resolver on a document's children; frontmatter left to
-  the host)?
+- Y4. *Decided 2026-11-19:* **document shapes in 1.0, minimal:** a shape applied to a whole document (by the
+  host's mapping, or frontmatter `shape:` under the trust rule), frontmatter as its attributes (declared
+  keys validated; where the host types frontmatter, the integration decides who owns it), the body read by
+  its content model, one record per document. Not built yet, so **built and used during 0.x through plan's
+  rebuild** (no wrapper tags), an added exit test in Y3. **After 1.0:** dimensions on documents and
+  inheritance, `fills`, folder defaults. **To avoid a later break:** frontmatter keys a shape does not
+  declare pass through to the host without a finding (they never reach components; host keys such as
+  `layout` and later dimensions such as `tint` stay valid); `shape`, `id` and `lang` are reserved now (a
+  shape cannot declare them as attributes); later additions only add optional keys whose absence means what
+  1.0 means. Answers Z4d (a document with no shape stays untyped: its tags resolve on their own).
 - Y5. Examples in 1.0, with the body reserved: sidecar files (`shapes/hero.examples.md`)?
 - Y6. Ids unique across the corpus by default (prefixed ids already are), per-collection scoping opt-in?
 - Y7. A unified diff beside the `WorkspaceEdit` (`cs.toPatch()`), for people, pull requests, agents and
@@ -3660,7 +3668,7 @@ time.
 
 ## 23. Next topics
 
-- The second review's challenges, Y4 to Y16 (section 21; Y1 to Y3 decided).
+- The second review's challenges, Y5 to Y16 (section 21; Y1 to Y4 decided).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
   X7's sub-questions still open). Follow-up: a "Prior art" page in Marquise's docs, from reading Keystatic,
   TinaCMS, Sphinx-Needs, Doorstop, Obsidian's Dataview and Bases, SHACL, DITA and DocBook (X12.7).

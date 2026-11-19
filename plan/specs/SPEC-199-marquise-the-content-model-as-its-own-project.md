@@ -117,6 +117,7 @@ with the content-model revision built in refrakt first, so 1.0 ships the revised
 |---|---|
 | Indentation-tolerant parsing; one syntax, Markdoc | SPEC-170, shipped |
 | Shape files: frontmatter `attributes`, `content`, `description`, `summary`, `plain` | SPEC-145, accepted; five definitions live |
+| Document shapes, minimal (notes Y4): a shape applied to a whole document; frontmatter as its attributes, undeclared keys passed to the host, `shape`, `id` and `lang` reserved | to be built and used during 0.x, through plan's rebuild |
 | The revised content model (notes, section 17): combinators, `as: block \| inline \| text` and value types, item models, `tag:` matches for explicit child shapes; matching and analysis per {% ref "SPEC-201" /%} | to be built in refrakt first, compiling down to the existing resolver; {% ref "SPEC-200" /%}, draft |
 | Attribute and content validation, with finding ids and addresses | in use (`refrakt validate`); addresses new (notes, section 19) |
 | Records (extraction), JSON Schema, the Standard Schema validator, generated types | types exist; records and the validator new and small |
@@ -138,7 +139,7 @@ with the content-model revision built in refrakt first, so 1.0 ships the revised
 | `computes`, `prepare`, the value vocabulary, `matches()` | SPEC-194, SPEC-195 implemented in refrakt |
 | `{% example %}`, `file#id`, examples in tooling | SPEC-197 |
 | `source()` | SPEC-198 |
-| Document shapes, deferred shapes (definitions) | refrakt's pipeline and Rivière using them |
+| Deferred shapes (definitions); dimensions on documents, `fills`, folder defaults | refrakt's pipeline and Rivière using them |
 | Kits, dimensions, presets, bindings, middleware | a design language built on them, refrakt's first |
 | Migrations | SPEC-189 |
 | MCP | the table of operations (notes A4) |
@@ -722,6 +723,7 @@ hardest real user. Each box below is ticked during 0.x.
 - [ ] Finding catalogue: snapshot-tested, every id documented with an example that triggers it
 - [ ] Published schema: at least one outside consumer uses it (Astro's `createSchema`, or a Standard Schema consumer)
 - [ ] Trust boundary: the hostile-content suite passes through every 1.0 renderer, in both modes
+- [ ] Document shapes: plan's entities are document shapes, with no wrapper tags, in Rivière's prototype; the Astro loader maps a collection to a document shape
 - [ ] Generated types: used by refrakt and the proof project, with type-level tests
 - [ ] CLI and JSON output: snapshot-tested, exit codes included
 - [ ] Enforcement in place: the public API report checked on every change, and snapshot tests of the catalogue, schemas and markup
