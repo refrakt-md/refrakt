@@ -3489,8 +3489,13 @@ time.
   translations, per-collection tools, the SQLite export, ref-based claims, an engine seam if ever. Exit
   tests: plan rebuilt with "Plan, as shapes" to-do list empty, the Astro loader on a real site, one consumer
   unlike plan, a stability period.
-- Y11. Rich text: an opt-in `nodes` member (the tree, for consumers rendering without Marquise), and its
-  size with nesting depth?
+- Y11. *Decided 2026-11-19* (Marquise's `records.md`, Rivière's `corpus.md`): **`nodes`, on request,** the
+  field's tree in the shape-node format (no new format), for consumers that cannot run Marquise and must
+  render rich text themselves, and which shows where nested shapes sit in the prose; **members chosen per
+  call,** defaults `markdown`, `syntax`, `text`, `shapes`; **Rivière's serialised snapshot stores sources and
+  the index, records computed on demand,** so nesting's repetition never reaches a snapshot; **defaults
+  revisited after measuring** record size on refrakt's content in 0.x (a Y3 exit test). Also settles X7's
+  sub-question on default members.
 - Y12. SPEC-201's open questions before the algorithm is normative: item-model order (order-free today)
   and the comment under the cursor (a defect)?
 - Y13. *Decided 2026-11-19* (Marquise's `content-models.md` and `records.md`; Rivière's new
@@ -3745,7 +3750,7 @@ time.
 
 ## 23. Next topics
 
-- The second review's challenges, Y11, Y12 and Y14 to Y16 (section 21; Y1 to Y10 and Y13 decided).
+- The second review's challenges, Y12 and Y14 to Y16 (section 21; Y1 to Y11 and Y13 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
