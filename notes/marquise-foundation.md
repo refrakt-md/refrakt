@@ -3434,8 +3434,13 @@ time.
   makes duplicates with other such collections a finding, **inferred** from id patterns with distinct
   literal prefixes (`WORK-{n}`, `SPEC-{n}`), so plan needs no declaration. **`#id` in an address** is local
   to the document in Marquise and resolved through the rule in Rivière (answers the reviewer's question 7).
-- Y7. A unified diff beside the `WorkspaceEdit` (`cs.toPatch()`), for people, pull requests, agents and
-  `git apply`?
+- Y7. *Decided 2026-11-19* (Rivière's `writing.md`, Marquise's `writing.md`): **a patch is a derived view**
+  of every changeset (`cs.toPatch()`, a unified diff with renames and creations) and of Marquise's
+  single-document edits; `--dry-run` prints it and MCP returns it beside each changeset, formalising the
+  CLI's earlier "the changeset as a diff". **The changeset stays the model; applying stays Rivière's
+  `apply`** (hashes, rebase by id or key, all-or-nothing with recovery), since `git apply` matches by text
+  context, not addresses and values; a patch is for reviewing, though git can apply it. **The journal
+  stays,** since `apply` must work without git and on trees with uncommitted changes.
 - Y8. Say the primary syntax is Markdoc (1.0 ships it with tooling under semver), with Comark narrowed to
   "accepted as input later" on one page?
 - Y9. Security: host values exposed per value, off in untrusted content (`{% $user.email %}`); confirmation
@@ -3682,7 +3687,7 @@ time.
 
 ## 23. Next topics
 
-- The second review's challenges, Y7 to Y16 (section 21; Y1 to Y6 decided).
+- The second review's challenges, Y8 to Y16 (section 21; Y1 to Y7 decided).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
   X7's sub-questions still open). Follow-up: a "Prior art" page in Marquise's docs, from reading Keystatic,
   TinaCMS, Sphinx-Needs, Doorstop, Obsidian's Dataview and Bases, SHACL, DITA and DocBook (X12.7).
