@@ -3464,8 +3464,19 @@ time.
   functions as CEL custom functions; JSONata only if transformation power is needed. (4) **Rivière exports**
   (`riviere export --jsonl` first, read by DuckDB and `jq`; SQLite later) instead of a query-engine seam,
   which stays deferred, perhaps for good (Rivière's `queries.md`).
-- X12. The smaller points (generic MCP tools, a strict schema profile, typed instances, accessibility,
-  locales, YAML 1.2)?
+- X12. *Decided 2026-11-19*, except where marked. (1) **Generic MCP tools by default** (`find`, `get`,
+  `create`, `update`, `context`, each taking `collection`; schemas as resources; per-collection tools as an
+  option), since agents choose worse among many tools (answers V19). (2) **A structured-output schema
+  profile** for model APIs' strict modes, the output still validated by Marquise. (3) **Typed instances,**
+  `createMarquise<Shapes>()`, beside the global registry. (4) **The plain presentation keeps the source's
+  semantics:** heading fields as headings at the author's level, lists as lists, alt text kept, the root
+  labelled by its heading (`aria-labelledby`); fixed before 1.0, since the markup is a contract. (5)
+  **Content hashes after normalising line endings to LF; text comparisons in NFC,** case-sensitive;
+  **translations as locale variants** of one identity (*leaning*, Rivière after 1.0: `lang` by frontmatter
+  or folder, references resolving to the reader's locale with fallback, keys per variant, per-locale
+  heading aliases). (6) **YAML 1.2** for shape, dimension and kit files. (7) **Prior art** (Keystatic,
+  TinaCMS, Sphinx-Needs, Doorstop, Obsidian's Dataview and Bases, SHACL, DITA, DocBook): a reading task
+  producing a "Prior art" page in Marquise's docs (section 23).
 
 **Rivière** (section 3)
 
@@ -3502,7 +3513,8 @@ time.
   template mechanism.
 - V18. Context bundles: designed 2026-11-18 (section 3); its open parts are V21 to V24.
 - V19. Generated MCP tools: one set per collection (`find_work`, `create_work`), or generic tools with a
-  `collection` argument whose schema is a union? Many collections mean many tools.
+  `collection` argument whose schema is a union? Many collections mean many tools. *Decided 2026-11-19
+  (X12):* generic by default, per-collection as an option.
 - V20. Changeset metadata: which fields (author, agent, reason, source finding), and how they reach git?
   *Partly answered 2026-11-19 (X11):* carried by `WorkspaceEdit` change annotations (label, description,
   `needsConfirmation`); the extra fields and the git trailer mapping remain open.
@@ -3549,7 +3561,9 @@ time.
 
 ## 23. Next topics
 
-- The outside review's design challenges, one at a time (section 21, X12; X1 to X4, X6, X8 to X11 decided, X5 run, X7 a leaning, 2026-11-19).
+- The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
+  X7's sub-questions still open). Follow-up: a "Prior art" page in Marquise's docs, from reading Keystatic,
+  TinaCMS, Sphinx-Needs, Doorstop, Obsidian's Dataview and Bases, SHACL, DITA and DocBook (X12.7).
 - The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 22).
 - The content model's revision (section 17, C4).
 - Marquise as a data store (section 18).
