@@ -3300,7 +3300,8 @@ time.
 **The content model** (section 17)
 
 - C1. Which value types belong in core (`number`, `date`, `url`, `boolean`) and which in kits
-  (`money`, `duration`)?
+  (`money`, `duration`)? *Decided 2026-11-19 (X8):* core in 1.0: `number`, `integer`, `boolean`, `date`,
+  `datetime`, `url`, `duration`; the rest, money included, through a value-type registry after 1.0.
 - C2. Does the combinator surface replace the named patterns, or sit beside them as an advanced form?
   Replacing is cleaner; beside eases migration.
 - C3. Is `as: data` for child shapes compatible with explicit slots and templates, or a second way
@@ -3414,7 +3415,18 @@ time.
   as overlapping targets (follows from A1). Not included: prose order around nested shapes (the tree through
   the API) and HTML (the host's, from rendering). Answers A7 and M1. Records are in 1.0, so this is a 1.0
   question.
-- X8. Value types keeping the author's text; money's representation; which value types are core?
+- X8. *Decided 2026-11-19* (Marquise's `docs/concepts/records.md`, "Value types"): **records hold plain
+  typed values**, not `{ value, source }`: the author's style is kept by the write path, which never touches
+  an unchanged value (GetPut) and, when a value changes, detects the style of the old text at the field's
+  location and reuses it (`3 min 45 s` stays in that style); a new value takes the field's declared style
+  (`format: clock`), the examples' style or the type's default; a consumer wanting the author's wording asks
+  by address. **Only unambiguous forms are parsed** (ISO dates, written-out months, plain numbers);
+  `11/12/2026` or `29,000` is `value-ambiguous` unless a format or locale (`lang`, `$locale`) is known.
+  **Core value types in 1.0:** `number`, `integer`, `boolean`, `date`, `datetime`, `url`, `duration`
+  (refrakt uses it; schema.org needs ISO 8601 durations). **After 1.0, a value-type registry** (parser,
+  style-detecting formatter, JSON form, JSON Schema, TypeScript type) for ratings, measurements, money.
+  **Money, when it comes:** a decimal string with an explicit currency, never a float, never a currency
+  inferred from an ambiguous symbol (`money-currency-unknown`).
 - X9. The security gaps: untrusted reads through query shapes, frontmatter choosing shapes, forgeable
   bundle delimiters, the trust boundary's marker?
 - X10. Concurrency: the scope of the hash check, claims across clones, recoverable multi-file applies?
@@ -3501,7 +3513,7 @@ time.
 
 ## 23. Next topics
 
-- The outside review's design challenges, one at a time (section 21, X8–X12; X1 to X4 and X6 decided, X5 run, X7 a leaning, 2026-11-19).
+- The outside review's design challenges, one at a time (section 21, X9–X12; X1 to X4, X6 and X8 decided, X5 run, X7 a leaning, 2026-11-19).
 - The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 22).
 - The content model's revision (section 17, C4).
 - Marquise as a data store (section 18).
