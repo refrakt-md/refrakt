@@ -3440,7 +3440,18 @@ time.
   content, declared attributes only, URL allowlist, readable collections only, frontmatter within the
   host's shapes); its details (allowlists, blocked elements, limits) stay a leaning. Also stated: content
   written by agents is untrusted content.
-- X10. Concurrency: the scope of the hash check, claims across clones, recoverable multi-file applies?
+- X10. *Decided 2026-11-19* (Rivière's `docs/concepts/writing.md`, "Concurrency"). (1) **Scoped
+  guarantees:** expected hashes give no lost updates within one working tree; a short exclusive lock
+  (`.riviere/lock`) closes the race between processes applying at once. (2) **Claims across clones conflict
+  in git:** identical edits merge silently, so a claim writes its claimant (`assignee: agent-7`); the
+  second push is rejected or its rebase stops, Rivière re-validates and refuses the second claim; **a claim
+  is final once pushed**; `riviere claim` writes, commits and pushes in one step; claiming by pushing a git
+  ref is a later option. (3) **Recoverable applies:** lock, verify every file, temporary files, a journal
+  with backups, atomic renames; restored on failure, and by the next command after a crash; no
+  transactions in the database sense. (4) **Rebase by value:** changesets keep operations and the values
+  expected at each target beside the compiled `WorkspaceEdit`; on a hash mismatch, if every target still
+  holds its expected value the edits are recomputed against the current version, otherwise refused naming
+  the target, so an unrelated typo fix elsewhere no longer blocks an agent.
 - X11. *Decided 2026-11-19:* borrow standard formats at the edges. (1) **Changesets are shaped as the
   language server protocol's `WorkspaceEdit`** (checked against `vscode-languageserver-types` 3.18.5):
   per-document text edits plus `create`, `rename` and `delete` file operations, and change annotations
@@ -3538,7 +3549,7 @@ time.
 
 ## 23. Next topics
 
-- The outside review's design challenges, one at a time (section 21, X10 and X12; X1 to X4, X6, X8, X9 and X11 decided, X5 run, X7 a leaning, 2026-11-19).
+- The outside review's design challenges, one at a time (section 21, X12; X1 to X4, X6, X8 to X11 decided, X5 run, X7 a leaning, 2026-11-19).
 - The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 22).
 - The content model's revision (section 17, C4).
 - Marquise as a data store (section 18).
