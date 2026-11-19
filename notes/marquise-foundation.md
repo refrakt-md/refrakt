@@ -113,6 +113,8 @@ lining a geode), Lattice, Pavé, Facet, Vug.
    `scope: 'page' | 'site'` and "the last one wins" on collisions (`packages/types/src/pipeline.ts:40`);
    plan content outside any site already strains it (`sourceUrl` may be `undefined`). In Rivière,
    `file#id` is the key (A1), a duplicate is a finding, and URLs are the site's.
+   *Revised 2026-11-19 (X6):* identity is `(collection, id)`; the address is the location, where the
+   entity currently is. The argument above was against URLs, not for file paths.
 3. **References are a value type,** splitting M3 (*leaning*): **Marquise core declares** identity and
    reference types and checks them within one document
    (`source: { type: ref, to: [spec, decision] }`); **Rivière resolves** them (dangling ends, cycles
@@ -3394,7 +3396,14 @@ time.
   verify-and-refuse, (b) a micromark extension for Markdoc's tag syntax, (c) the MDC/Comark syntax family
   through `remark-mdc`, or (d) inline positions contributed upstream to Markdoc or Comark. Open (X5a),
   and a data point for the primary-syntax question (Z1i).
-- X6. Identity as `(collection, id)` rather than the address?
+- X6. *Decided 2026-11-19* (Rivière's `docs/concepts/corpus.md`): **identity is `(collection, id)`**; the
+  address is the **location**, where an entity currently is; a **reference** points at an identity. So
+  moving a file rewrites only Markdown links to it, never typed references or mentions; only renaming an id
+  rewrites references. An entity is a shape instance with an id, in a collection; other instances are
+  addressable but not referenceable. A document's id comes from frontmatter, its tag or the collection's
+  file pattern, disagreement being a finding; entities from a store or history have identity without
+  location; the snapshot stays keyed by file, the entity index by identity; a qualified mention
+  (`spec:SPEC-12`) settles ambiguity. Open: a locale in identity (with X12).
 - X7. Block fields as structured values in records?
 - X8. Value types keeping the author's text; money's representation; which value types are core?
 - X9. The security gaps: untrusted reads through query shapes, frontmatter choosing shapes, forgeable
@@ -3481,7 +3490,7 @@ time.
 
 ## 23. Next topics
 
-- The outside review's design challenges, one at a time (section 21, X6–X12; X1 to X4 decided, X5 run, 2026-11-19).
+- The outside review's design challenges, one at a time (section 21, X7–X12; X1 to X4 and X6 decided, X5 run, 2026-11-19).
 - The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 22).
 - The content model's revision (section 17, C4).
 - Marquise as a data store (section 18).
