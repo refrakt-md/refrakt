@@ -3368,7 +3368,17 @@ time.
   serving shape authors, the write path, completions, streaming validation and the published schema. A
   **strict mode** (per shape or project) makes shadowing an error, guaranteeing everything is writable by
   inference alone.
-- X4. The write path stated as lens laws, with "write back what was read gives zero edits"?
+- X4. *Decided 2026-11-19* (Marquise's `docs/concepts/writing.md`, "The laws"): the write path is a
+  lens (get = resolve, put = edit; the source keeps the complement: formatting, comments, unclaimed
+  content, forms, the author's spelling of values) and keeps three laws. **PutGet** is the round-trip rule.
+  **GetPut**, new: writing back what was read gives zero edits, so operations come only from values that
+  changed, compared as typed values (`3:45` equals `PT3M45S`), and a changed value's formatter reuses the
+  existing text's style; needed for store syncs, agents resending whole records, unchanged drafts and empty
+  Rivière changesets. **PutPut** holds for values but not always for form: a promotion to explicit is
+  sticky, reverted only by `convert`. Tested as properties over every example in a shape library (values
+  generated from each field's JSON Schema; bytes outside a changed range identical); read-only fields
+  excluded from PutGet, still checked by GetPut. Goes into the write path's spec when it is written (after
+  Marquise 1.0).
 - X5. A spike changing one inline value through Markdoc, Comark and micromark/mdast, before choosing?
 - X6. Identity as `(collection, id)` rather than the address?
 - X7. Block fields as structured values in records?
@@ -3457,7 +3467,7 @@ time.
 
 ## 23. Next topics
 
-- The outside review's design challenges, one at a time (section 21, X4–X12; X1 to X3 decided
+- The outside review's design challenges, one at a time (section 21, X5–X12; X1 to X4 decided
   2026-11-19).
 - The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 22).
 - The content model's revision (section 17, C4).
