@@ -3272,7 +3272,8 @@ time.
 - Z1m. The template placement tag's new name (`place`, or another), and whether it also absorbs
   refrakt's `{% field %}` for values.
 - Z1i. Which syntax is primary (leaning: a primary plus the other as accepted input, section 16,
-  "Compositions")?
+  "Compositions")? *Decided 2026-11-19 (Y8):* Markdoc; Comark as input later, on demand; Comark's renderers
+  evaluated separately during 0.x.
 - Z1j. Template variables: Comark's binding (`attrs.align`, `props.x`) or SPEC-195's `$attrs`?
   Decide together with Z1e, so `computes` and templates share one style.
 - Z1k. Who may define compositions: the site's `shapes/` and kits only, or also content files (a
@@ -3441,8 +3442,20 @@ time.
   `apply`** (hashes, rebase by id or key, all-or-nothing with recovery), since `git apply` matches by text
   context, not addresses and values; a patch is for reviewing, though git can apply it. **The journal
   stays,** since `apply` must work without git and on trees with uncommitted changes.
-- Y8. Say the primary syntax is Markdoc (1.0 ships it with tooling under semver), with Comark narrowed to
-  "accepted as input later" on one page?
+- Y8. *Decided 2026-11-19, looked at fresh:* **syntax and renderers are separate decisions** (the first
+  spike rendered Markdoc content through Comark's React renderer unchanged), so "renderers for free" is no
+  reason to choose Comark's syntax. **Markdoc is Marquise's syntax:** everything in the lab is built on it
+  (resolver, parser, formatter, language server, content), it is stable and safe by default, Astro supports
+  it, and refrakt's content works unchanged; Comark is 0.9 and the MDC transition is under way, so freezing
+  Marquise's syntax on it would break "1.0 ships what is built". Comark's real strengths (lighter syntax,
+  `#name` slots, streaming, the Nuxt audience, `remark-mdc`'s positions) make it a candidate **input syntax
+  after 1.0, on demand**, without tooling of its own. **Comark's renderers are evaluated during 0.x** with
+  Markdoc as the syntax: shape nodes converted internally into Comark's document, Comark's packages
+  rendering (Angular included), Marquise's layer on top (plain presentation, bindings, middleware,
+  hydration), the shape node remaining Marquise's contract; decided after talking to Comark's maintainers
+  (format stability, a fallback keeping unbound content, positions, React Server Components); refrakt's
+  generic renderers the fallback. Marquise's docs rewritten (`syntax.md`, `rendering.md`, slot examples in
+  Markdoc); SPEC-199 updated. Answers Z1i.
 - Y9. Security: host values exposed per value, off in untrusted content (`{% $user.email %}`); confirmation
   policy set by the host, not by the proposer's `needsConfirmation`; a linear-time regular-expression
   engine or a step limit; YAML aliases and `__proto__` keys in frontmatter; `resolveAsset` on remote URLs?
@@ -3687,7 +3700,9 @@ time.
 
 ## 23. Next topics
 
-- The second review's challenges, Y8 to Y16 (section 21; Y1 to Y7 decided).
+- The second review's challenges, Y9 to Y16 (section 21; Y1 to Y8 decided).
+- Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
+  interest is their renderers and document format).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
   X7's sub-questions still open). Follow-up: a "Prior art" page in Marquise's docs, from reading Keystatic,
   TinaCMS, Sphinx-Needs, Doorstop, Obsidian's Dataview and Bases, SHACL, DITA and DocBook (X12.7).

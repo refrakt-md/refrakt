@@ -144,7 +144,7 @@ definitions (SPEC-197 D6). Other body blocks (write templates) stay additive.
 | Kits, dimensions, presets, bindings, middleware | a design language built on them, refrakt's first |
 | Migrations | SPEC-189 |
 | MCP | the table of operations (notes A4) |
-| A second syntax (Comark) | the primary-syntax decision (notes Z1i) |
+| Comark accepted as an input syntax (parsed, validated, rendered; no tooling of its own) | users asking for it (notes Y8: Markdoc is the syntax) |
 | `@marquise-md/compose` | SPEC-168, SPEC-177 accepted and implemented |
 
 ## Prerequisites
@@ -489,10 +489,13 @@ added in development or editor modes; the order of findings; anything refrakt-sp
 every pull request; snapshots of the finding catalogue, the schema formats and the plain presentation
 markup; a JSON-LD baseline; the hostile-content suite; round-trip edit tests.
 
-**Contracts Marquise depends on.** If Marquise builds on Comark, it consumes Comark's document format,
-plugin API (`post`, `state.tokens`) and renderer conventions (`:`-prefixed JSON props, `template`
-slots, React's `slot{Name}` props), which it does not control and which are pre-1.0: pin version
-ranges, run a contract test against Comark on every upgrade, and track it as a risk.
+**Contracts Marquise depends on.** *Revised 2026-11-19* (notes Y8): **Markdoc is Marquise's syntax**,
+so Marquise depends on Markdoc's parser and AST, kept an implementation detail behind Marquise's own types.
+**Whether Marquise's renderers are built on Comark's** (React, Vue, Svelte, Angular, HTML, which draw
+Comark's serialisable document, not its syntax) is evaluated during 0.x; if so, Marquise consumes Comark's
+document format and renderer conventions internally, never exposing them (the shape node stays Marquise's
+contract), pins version ranges, runs a contract test against Comark on every upgrade, and tracks it as a
+risk. The fallback is refrakt's generic renderers.
 
 ## Order
 
