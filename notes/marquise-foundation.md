@@ -3430,7 +3430,18 @@ time.
 - X9. The security gaps: untrusted reads through query shapes, frontmatter choosing shapes, forgeable
   bundle delimiters, the trust boundary's marker?
 - X10. Concurrency: the scope of the hash check, claims across clones, recoverable multi-file applies?
-- X11. Borrowed formats: `WorkspaceEdit`, SARIF with fixes, CEL or JSONata, an SQL export?
+- X11. *Decided 2026-11-19:* borrow standard formats at the edges. (1) **Changesets are shaped as the
+  language server protocol's `WorkspaceEdit`** (checked against `vscode-languageserver-types` 3.18.5):
+  per-document text edits plus `create`, `rename` and `delete` file operations, and change annotations
+  (`label`, `description`, `needsConfirmation`) carrying the changeset's metadata; Rivière adds content
+  hashes beside the format's integer `version`; positions converted exactly to its UTF-16 line and
+  character offsets; any editor previews, applies and undoes them (Rivière's `writing.md`). (2) **SARIF
+  export** (`marquise validate --format sarif`, read by GitHub's code scanning), and **suggested fixes on
+  findings** as edit operations where Marquise knows one (Marquise's `validation.md`). (3) **`computes`
+  evaluates CEL first** when it graduates (guaranteed to finish, typed, specified), refrakt's value
+  functions as CEL custom functions; JSONata only if transformation power is needed. (4) **Rivière exports**
+  (`riviere export --jsonl` first, read by DuckDB and `jq`; SQLite later) instead of a query-engine seam,
+  which stays deferred, perhaps for good (Rivière's `queries.md`).
 - X12. The smaller points (generic MCP tools, a strict schema profile, typed instances, accessibility,
   locales, YAML 1.2)?
 
@@ -3453,7 +3464,8 @@ time.
 - V7. The engine seam lives in Rivière only.
 - V8. The query catalogue comes first, before any grammar change.
 - V9. SPEC-138 is narrowed in refrakt, the lab: its catalogue and the typed extensions are tried there to
-  graduate to Rivière; the engine seam is deferred (note added to SPEC-138).
+  graduate to Rivière; the engine seam is deferred (note added to SPEC-138). *2026-11-19 (X11):* an export
+  (JSONL, later SQLite) serves queries beyond the selector language instead; the seam may never be needed.
 - V10. The URL policy lives in each integration (the Astro loader takes `urls`).
 - V11. Astro is Rivière's first integration; the loader needs no private seam.
 - V12. Rendering in Astro: (c) static HTML plus the stored tree first, (b) deferred rendering through a
@@ -3470,6 +3482,8 @@ time.
 - V19. Generated MCP tools: one set per collection (`find_work`, `create_work`), or generic tools with a
   `collection` argument whose schema is a union? Many collections mean many tools.
 - V20. Changeset metadata: which fields (author, agent, reason, source finding), and how they reach git?
+  *Partly answered 2026-11-19 (X11):* carried by `WorkspaceEdit` change annotations (label, description,
+  `needsConfirmation`); the extra fields and the git trailer mapping remain open.
 - V21. Defaults for what a bundle follows: on the shape's reference fields under `riviere:`,
   overridable in config (*leaning*), or in config only?
 - V22. *Decided 2026-11-18:* the summary projection is a core shape-level declaration (section 11),
@@ -3513,7 +3527,7 @@ time.
 
 ## 23. Next topics
 
-- The outside review's design challenges, one at a time (section 21, X9–X12; X1 to X4, X6 and X8 decided, X5 run, X7 a leaning, 2026-11-19).
+- The outside review's design challenges, one at a time (section 21, X9, X10, X12; X1 to X4, X6, X8 and X11 decided, X5 run, X7 a leaning, 2026-11-19).
 - The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 22).
 - The content model's revision (section 17, C4).
 - Marquise as a data store (section 18).
