@@ -3477,9 +3477,18 @@ time.
   `constructor` and `prototype` keys rejected; the same settings for shape and kit files. (5)
   **`resolveAsset` limited to project paths and allowlisted hosts** in untrusted mode, other remote URLs
   passed through unfetched. DOM ids were already prefixed (second review's fixes).
-- Y10. Cuts from Rivière's first release: `riviere claim` to plan (it brings `status` and `assignee`
-  vocabulary), context bundles as a satellite, translations, the git source, the live loader, per-collection
-  tools, the SQLite export?
+- Y10. *Decided 2026-11-19* (Rivière's new `scope.md`): the first release contains what the acceptance
+  test and the first two consumers need. **`claim` becomes a generic saved write** declared in config
+  (`writes: { claim: { require, set: { status, assignee: '$actor' }, push: true } }`), plan supplying the
+  vocabulary; **context bundles become the first-party satellite `@riviere-md/context`** (public API only);
+  **`--against` stays, the git history source comes later** (plan keeps its own `history` meanwhile). In:
+  the snapshot, identity and resolution, references and validation, selectors, `count`, saved views and
+  writes, changesets (`apply`, rebase, patches, confirmation policy), the five shapes with two-phase
+  loading, watching and overlays, the serialisable snapshot, the CLI, generic MCP tools, the JSONL export;
+  `@riviere-md/astro` (build-time loader) as a satellite. Later: the history source, the live loader,
+  translations, per-collection tools, the SQLite export, ref-based claims, an engine seam if ever. Exit
+  tests: plan rebuilt with "Plan, as shapes" to-do list empty, the Astro loader on a real site, one consumer
+  unlike plan, a stability period.
 - Y11. Rich text: an opt-in `nodes` member (the tree, for consumers rendering without Marquise), and its
   size with nesting depth?
 - Y12. SPEC-201's open questions before the algorithm is normative: item-model order (order-free today)
@@ -3736,7 +3745,7 @@ time.
 
 ## 23. Next topics
 
-- The second review's challenges, Y10 to Y12 and Y14 to Y16 (section 21; Y1 to Y9 and Y13 decided).
+- The second review's challenges, Y11, Y12 and Y14 to Y16 (section 21; Y1 to Y10 and Y13 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
