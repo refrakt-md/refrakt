@@ -3456,9 +3456,18 @@ time.
   (format stability, a fallback keeping unbound content, positions, React Server Components); refrakt's
   generic renderers the fallback. Marquise's docs rewritten (`syntax.md`, `rendering.md`, slot examples in
   Markdoc); SPEC-199 updated. Answers Z1i.
-- Y9. Security: host values exposed per value, off in untrusted content (`{% $user.email %}`); confirmation
-  policy set by the host, not by the proposer's `needsConfirmation`; a linear-time regular-expression
-  engine or a step limit; YAML aliases and `__proto__` keys in frontmatter; `resolveAsset` on remote URLs?
+- Y9. *Decided 2026-11-19*, as details of X9's boundary (Marquise's `trust.md`, Rivière's `writing.md`).
+  (1) **Content reads only the host values exposed to it** (`contentValues`); shapes, templates and
+  components see everything; an unexposed read is `value-not-exposed` and renders nothing; the same list
+  governs content functions; trusted mode exposes all. (2) **The host sets the confirmation policy**
+  (`confirm: { operations, collections, filesOver, agents }`); Rivière computes `needsConfirmation`, a
+  proposer can raise it but never lower it, and `apply` refuses without a person's approval when required,
+  a step an agent cannot perform over MCP. (3) **Patterns in the RE2 subset** (no backreferences or
+  lookaround, `pattern-unsupported` at load), run by a linear-time engine with a length cap. (4)
+  **Frontmatter parsed defensively:** aliases off, a size limit, prototype-free objects, `__proto__`,
+  `constructor` and `prototype` keys rejected; the same settings for shape and kit files. (5)
+  **`resolveAsset` limited to project paths and allowlisted hosts** in untrusted mode, other remote URLs
+  passed through unfetched. DOM ids were already prefixed (second review's fixes).
 - Y10. Cuts from Rivière's first release: `riviere claim` to plan (it brings `status` and `assignee`
   vocabulary), context bundles as a satellite, translations, the git source, the live loader, per-collection
   tools, the SQLite export?
@@ -3700,7 +3709,7 @@ time.
 
 ## 23. Next topics
 
-- The second review's challenges, Y9 to Y16 (section 21; Y1 to Y8 decided).
+- The second review's challenges, Y10 to Y16 (section 21; Y1 to Y9 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
