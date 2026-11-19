@@ -194,8 +194,9 @@ occurrences in declared order, reported as `field-shadowed` when the second is r
 ## Open questions
 
 1. **Section-level detection** looks at the first two headings and counts those at the second level, so
-   adding one heading can change how the whole content splits. Keep the heuristic as specified, report it
-   (`section-level-detected`, info), or require an explicit level in strict mode?
+   adding one heading can change how the whole content splits. *Partly answered 2026-11-19* (notes Y13):
+   not allowed in nested sections, and a finding in strict shapes; kept, reported, for a top-level split in
+   lenient shapes.
 2. **Item models are order-free** (D1.10) while write templates for compact forms read in template order
    (`notes/marquise-foundation.md`, section 18, "Writing forms"). Which should reading derived from a
    template follow?

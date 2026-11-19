@@ -3484,9 +3484,27 @@ time.
   size with nesting depth?
 - Y12. SPEC-201's open questions before the algorithm is normative: item-model order (order-free today)
   and the comment under the cursor (a defect)?
-- Y13. The acceptance test's missing pieces: task-list items with a `done` value, sections bound by
-  heading text with aliases, list-valued references, ids containing dots (milestones are `v1.0.0`); one
-  worked `work` and `milestone` shape in Rivière's docs?
+- Y13. *Decided 2026-11-19* (Marquise's `content-models.md` and `records.md`; Rivière's new
+  `plan-as-shapes.md`), all in 1.0 as part of the content-model revision, built and used through plan's
+  rebuild. (1) **A `task` matcher** for task-list items (`[ ]` false, `[x]` true), criteria keyed by their
+  text; ticking is a one-character edit at a fixed place on the line. (2) **Sections found by heading text**
+  with aliases (matched after slugifying; per-locale aliases already built in refrakt as `i18nAliases`),
+  any order, a section twice a finding, deprecated aliases a finding with a fix, unmatched sections kept
+  (`other: keep`); refrakt's `knownSections` is mostly this, built. **Sections nest** (a section's body is
+  any content model, another split one level deeper): specs' decisions (`### D3: …`, addressable as
+  `#SPEC-201.decisions["D3"]`), recipes' grouped ingredients, reference docs; each nested level splits at
+  an explicit deeper heading level (automatic level detection not allowed in nested sections, a finding in
+  strict shapes: answers SPEC-201's first open question for these cases); heading values read with a plain
+  pattern (`"{key}: {title}"`), replacing regular-expression `headingExtract`. (3) **Lists of references**
+  in attributes and frontmatter (`list: true`: a YAML array, or a comma-separated string on a tag) and in
+  content (a list whose items are `{% ref %}` tags or bare ids); **a `ref` tag in a field typed as a
+  reference is that field's value, an edge, and elsewhere a mention.** (4) **Ids may contain dots** (any
+  character but whitespace, quotes, `#` and brackets), quoted in addresses when not plain names
+  (`#"v1.0.0".status`), written as an attribute or in frontmatter, never with Markdoc's `#` shorthand
+  (which reads `#v1.0.0` as id `v1` and two classes). (5) **"Plan, as shapes"** in Rivière's docs: complete
+  `work`, `milestone` and nested `spec` shapes, collections and the `next` view, every plan command mapped,
+  and the prototype's to-do list (rules across fields and entities, `unblocked`'s meaning of finished,
+  claiming, the git source, the wrapper-tag codemod).
 - Y14. Query semantics: any or all over lists, quoting, ordering an enum by `-priority`, and `unblocked`
   as a path selector?
 - Y15. Smaller gaps: `shape-unbound` outside core findings; one table of commands and operations with a
@@ -3718,7 +3736,7 @@ time.
 
 ## 23. Next topics
 
-- The second review's challenges, Y10 to Y16 (section 21; Y1 to Y9 decided).
+- The second review's challenges, Y10 to Y12 and Y14 to Y16 (section 21; Y1 to Y9 and Y13 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
