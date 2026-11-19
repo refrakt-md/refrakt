@@ -117,7 +117,7 @@ with the content-model revision built in refrakt first, so 1.0 ships the revised
 |---|---|
 | Indentation-tolerant parsing; one syntax, Markdoc | SPEC-170, shipped |
 | Shape files: frontmatter `attributes`, `content`, `description`, `summary`, `plain` | SPEC-145, accepted; five definitions live |
-| The revised content model (notes, section 17): combinators, `as: block \| inline \| text` and value types, compact forms owned by child shapes (read with matchers declared in frontmatter) | to be built in refrakt first, compiling down to the existing resolver; {% ref "SPEC-200" /%}, draft |
+| The revised content model (notes, section 17): combinators, `as: block \| inline \| text` and value types, item models, `tag:` matches for explicit child shapes; matching and analysis per {% ref "SPEC-201" /%} | to be built in refrakt first, compiling down to the existing resolver; {% ref "SPEC-200" /%}, draft |
 | Attribute and content validation, with finding ids and addresses | in use (`refrakt validate`); addresses new (notes, section 19) |
 | Records (extraction), JSON Schema, the Standard Schema validator, generated types | types exist; records and the validator new and small |
 | The preprocess hook, with provenance and declared dependencies | SPEC-141, shipped (the hook); `include` itself is a satellite (below) |
@@ -134,6 +134,7 @@ with the content-model revision built in refrakt first, so 1.0 ships the revised
 | Feature | Waits for |
 |---|---|
 | The write path: addresses for edits, edit operations, writing forms, write templates | the parser spike (notes X5); Rivière's plan rebuild as its first real user |
+| Compact forms owned by child shapes (a bare shape name matching every form), with write templates | being built in refrakt, which keeps `emitTag` in its own extension namespace meanwhile (notes Y2) |
 | `computes`, `prepare`, the value vocabulary, `matches()` | SPEC-194, SPEC-195 implemented in refrakt |
 | `{% example %}`, `file#id`, examples in tooling | SPEC-197 |
 | `source()` | SPEC-198 |

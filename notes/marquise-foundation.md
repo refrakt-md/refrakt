@@ -3383,9 +3383,16 @@ time.
   `field-unreachable` always an error; `strict: false` per shape or project as the migration escape hatch.
   Refrakt starts lenient; SPEC-201's review turns kept overlaps into `shadows:` annotations, then refrakt
   turns strict on.
-- Y2. Reading compact forms in 1.0: show the frontmatter matcher syntax (the notes' `compact: item:`
-  sketch) and keep it, or move compact forms after 1.0, since templates are meant to replace frontmatter
-  matchers?
+- Y2. *Decided 2026-11-19:* **compact forms move after 1.0,** graduating together with write templates.
+  They are additive (a new key on the child shape; a parent's match accepting list items too), so nothing
+  written for 1.0 changes. Reasons: not built yet; their design is tied to write templates and the write
+  path, both after 1.0 (frontmatter matchers alone would freeze half of it); item-field order (Y12) is not
+  settled. **1.0 has item models** (a list read into records) **and `tag:` matches** for explicit child
+  shapes; a bare shape name (`match: track`) arrives with compact forms, meaning "any of its forms", which
+  also ends the `match: track` and `tag:card` inconsistency. **Refrakt keeps `emitTag`** for its ten
+  compact-form runes in its own extension namespace (`refrakt: { emitTag }`), run after Marquise resolves,
+  until compact forms graduate from the lab. Marquise's scope and content-models pages and SPEC-199's
+  tables updated.
 - Y3. Exit criteria for 0.x, for the four formats frozen at 1.0 before their hardest user: addresses (an
   attribute and a field edit through the hybrid parser), rich text (plan's records consumed by something
   not Marquise), the content-model syntax (refrakt's analysis run reviewed), the plain markup?
@@ -3641,8 +3648,7 @@ time.
 
 ## 23. Next topics
 
-- The second review's challenges, Y2 to Y16 (section 21; Y1 decided), next Y2 (compact forms in 1.0),
-  which affects the shape-file format.
+- The second review's challenges, Y3 to Y16 (section 21; Y1 and Y2 decided).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
   X7's sub-questions still open). Follow-up: a "Prior art" page in Marquise's docs, from reading Keystatic,
   TinaCMS, Sphinx-Needs, Doorstop, Obsidian's Dataview and Bases, SHACL, DITA and DocBook (X12.7).
