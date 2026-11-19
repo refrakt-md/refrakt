@@ -493,7 +493,7 @@ stability with real consumers.
 
 1. **The content-model revision, built in refrakt** (notes, section 17): combinators, `as`, value types,
    compact forms owned by child shapes, compiling down to the existing resolver and used by refrakt's
-   runes. Lab work: the shape file is Marquise's core public format, so it is built and used before it
+   runes, with the matching algorithm written down and a shape's analysis ({% ref "SPEC-201" /%}). Lab work: the shape file is Marquise's core public format, so it is built and used before it
    is frozen.
 2. **The read path extracted to `marquise-md/marquise` as 0.x:** parsing, shape files, the revised content
    model, validation with finding ids and addresses, records with JSON Schema and the Standard Schema

@@ -3359,7 +3359,15 @@ time.
   consumer besides refrakt (the proof project for Marquise, a consumer unlike plan for Rivière). Building
   and freezing differ: 0.x builds a lot while still allowed to break. SPEC-199's decision 4 and "Order"
   updated.
-- X3. Deterministic content models, rejected at load when ambiguous, with a normative matching algorithm?
+- X3. *Decided 2026-11-19,* written as SPEC-201: refrakt's resolver is already deterministic (ordered,
+  greedy, forward-only, no backtracking, as a PEG), and that algorithm becomes normative, unchanged.
+  XML Schema's unique particle attribution rule is not the default, since it would reject `hero`'s
+  intended "first paragraph is the blurb" shadowing; backtracking is rejected (unpredictable, exponential
+  on untrusted text, reassigns streamed fields, not invertible). A load-time analysis reports
+  `field-unreachable` (error) and `field-shadowed` (info; warning when the shadowed field is required),
+  serving shape authors, the write path, completions, streaming validation and the published schema. A
+  **strict mode** (per shape or project) makes shadowing an error, guaranteeing everything is writable by
+  inference alone.
 - X4. The write path stated as lens laws, with "write back what was read gives zero edits"?
 - X5. A spike changing one inline value through Markdoc, Comark and micromark/mdast, before choosing?
 - X6. Identity as `(collection, id)` rather than the address?
@@ -3449,7 +3457,7 @@ time.
 
 ## 23. Next topics
 
-- The outside review's design challenges, one at a time (section 21, X3–X12; X1 and X2 decided
+- The outside review's design challenges, one at a time (section 21, X4–X12; X1 to X3 decided
   2026-11-19).
 - The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 22).
 - The content model's revision (section 17, C4).
