@@ -3489,6 +3489,15 @@ time.
   translations, per-collection tools, the SQLite export, ref-based claims, an engine seam if ever. Exit
   tests: plan rebuilt with "Plan, as shapes" to-do list empty, the Astro loader on a real site, one consumer
   unlike plan, a stability period.
+- Y10a. *Decided 2026-11-19* (asked by the user: can Rivière run hosted?), Rivière's `corpus.md`, "Sources
+  and sinks": **Rivière's core uses no filesystem or git directly;** it talks to a **source** (lists
+  documents, returns content, hashes and optionally a version) and a **sink** (applies a changeset
+  atomically or refuses it). Local: files by glob and the git CLI, with the lock and journal. Hosted on
+  GitHub: the API's tree at a ref, and one commit (or a pull request) per changeset, which is atomic by
+  nature and gets server-side compare-and-swap, so claims across machines conflict at once; webhooks in
+  place of watching. Stores and in-memory sources through the same seams. `@riviere-md/node` in the first
+  release; `@riviere-md/github` later as a satellite (what a hosted product needs). Files stay the truth,
+  in a remote repository rather than on a disk.
 - Y11. *Decided 2026-11-19* (Marquise's `records.md`, Rivière's `corpus.md`): **`nodes`, on request,** the
   field's tree in the shape-node format (no new format), for consumers that cannot run Marquise and must
   render rich text themselves, and which shows where nested shapes sit in the prose; **members chosen per
