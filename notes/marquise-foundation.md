@@ -3427,8 +3427,19 @@ time.
   style-detecting formatter, JSON form, JSON Schema, TypeScript type) for ratings, measurements, money.
   **Money, when it comes:** a decimal string with an explicit currency, never a float, never a currency
   inferred from an ambiguous symbol (`money-currency-unknown`).
-- X9. The security gaps: untrusted reads through query shapes, frontmatter choosing shapes, forgeable
-  bundle delimiters, the trust boundary's marker?
+- X9. *Decided 2026-11-19.* (1) **Collections opt in to being read from content**
+  (`content: { read: true | [fields] }`), off by default in untrusted mode, on in trusted mode; a query on
+  an unreadable collection behaves as empty, with `collection-not-readable` for the author, and a `ref` to
+  an unreadable entity renders as plain text, so nothing reveals existence; the API, exports and MCP act
+  for the host and are unaffected (Rivière's `corpus.md`, `shapes.md`). (2) **In untrusted mode the host's
+  shape wins;** frontmatter may choose only among shapes the host allows for that folder or collection;
+  trusted mode keeps frontmatter winning (Marquise's `trust.md`, `shapes.md`). (3) **Bundle delimiters
+  carry a token derived from the bundle's hash** (content cannot contain the hash of the bundle containing
+  it), keeping bundles deterministic; only token lines are structure, and the JSON form cannot be forged
+  (Rivière's `context-bundles.md`). (4) **The trust guarantee is decided** (untrusted by default, no code in
+  content, declared attributes only, URL allowlist, readable collections only, frontmatter within the
+  host's shapes); its details (allowlists, blocked elements, limits) stay a leaning. Also stated: content
+  written by agents is untrusted content.
 - X10. Concurrency: the scope of the hash check, claims across clones, recoverable multi-file applies?
 - X11. *Decided 2026-11-19:* borrow standard formats at the edges. (1) **Changesets are shaped as the
   language server protocol's `WorkspaceEdit`** (checked against `vscode-languageserver-types` 3.18.5):
@@ -3527,7 +3538,7 @@ time.
 
 ## 23. Next topics
 
-- The outside review's design challenges, one at a time (section 21, X9, X10, X12; X1 to X4, X6, X8 and X11 decided, X5 run, X7 a leaning, 2026-11-19).
+- The outside review's design challenges, one at a time (section 21, X10 and X12; X1 to X4, X6, X8, X9 and X11 decided, X5 run, X7 a leaning, 2026-11-19).
 - The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 22).
 - The content model's revision (section 17, C4).
 - Marquise as a data store (section 18).
