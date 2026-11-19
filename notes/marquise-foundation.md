@@ -3,7 +3,7 @@
 **Status: brainstorm.** Nothing here is decided unless marked *decided*, and nothing here is a
 promise to build. When an idea is decided it moves into a spec, and this document links to it.
 
-**Started:** 2026-11-12. **Last updated:** 2026-11-18.
+**Started:** 2026-11-12. **Last updated:** 2026-11-19.
 
 **Related, already written as specs:**
 
@@ -3340,8 +3340,25 @@ time.
 
 **The outside review** (section 21)
 
-- X1. 1.0 limited to the read path (records included), the write path and the rest after?
-- X2. Plan's rebuild prototyped on a pre-1.0 Marquise, to test Rivière's seams before they are frozen?
+- X1. *Decided 2026-11-19:* Marquise 1.0 is the read path, records included: one syntax (Markdoc); shape
+  files with the revised content model, `as`, `description`, `summary`, `plain`; validation, finding ids,
+  addresses on findings; records, JSON Schema, the Standard Schema validator, generated types; the shape
+  node, the plain presentation, the renderers refrakt already has; `validate`, `types`, `extract`,
+  `format`, the language server. After 1.0: the write path and write templates, body blocks, `computes`
+  and `prepare`, document and deferred shapes, kits, dimensions, presets, bindings, middleware,
+  migrations, MCP, `compose`, a second syntax. Reading compact forms may be in 1.0 with matchers declared
+  in frontmatter. **The content-model revision is built in refrakt first,** so 1.0 ships the revised format
+  rather than a 2.0 following at once.
+- X2. *Decided 2026-11-19, revising SPEC-199 decision 4:* **extract early rather than incubate.** Building
+  both projects and plan's rebuild inside refrakt's monorepo would let refrakt-shaped seams grow with
+  nothing forcing a public API (how `runes` reached 111 exports), could not verify seams that only prove
+  themselves across a boundary, and would turn the move into a large, late migration. So: the
+  content-model revision in refrakt; Marquise extracted as 0.x to its own repository as soon as the read
+  path exists, with refrakt depending on it at once; Rivière in its own repository as 0.x, plan rebuilt
+  on it; the parser spike (X5) before anything writes; 1.0 for each after a period of stability with a
+  consumer besides refrakt (the proof project for Marquise, a consumer unlike plan for Rivière). Building
+  and freezing differ: 0.x builds a lot while still allowed to break. SPEC-199's decision 4 and "Order"
+  updated.
 - X3. Deterministic content models, rejected at load when ambiguous, with a normative matching algorithm?
 - X4. The write path stated as lens laws, with "write back what was read gives zero edits"?
 - X5. A spike changing one inline value through Markdoc, Comark and micromark/mdast, before choosing?
@@ -3432,8 +3449,8 @@ time.
 
 ## 23. Next topics
 
-- The outside review's design challenges, one at a time (section 21, X1–X12), starting with 1.0's scope
-  (X1) and the order of plan's rebuild (X2).
+- The outside review's design challenges, one at a time (section 21, X3–X12; X1 and X2 decided
+  2026-11-19).
 - The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 22).
 - The content model's revision (section 17, C4).
 - Marquise as a data store (section 18).

@@ -394,9 +394,22 @@ Refrakt's structured data has never depended on who draws the markup: the schema
      published names (SPEC-145 D10c). `data-shape` follows decision 1.
    - **An unbound shape is reported:** `marquise validate` warns `shape-unbound`, so a forgotten
      component is noticed; a strict project makes it an error.
-4. **Repository.** Incubate inside this monorepo as `@refrakt-md/model` and the generic renderer
-   packages, then move to its own repository once the seams hold. The move is the cheap part if
-   the seams are right.
+4. **Repository.** *Revised 2026-11-19* (`notes/marquise-foundation.md`, sections 21 and 22, X1 and
+   X2): **build the content-model revision in refrakt, then extract Marquise early, as 0.x, in its own
+   repository (`marquise-md/marquise`), with refrakt as its first consumer.** Rivière starts in its own
+   repository, and plan is rebuilt on it. 1.0 is declared for each after a period of stability with at
+   least one consumer besides refrakt.
+   - **Why not incubate until the seams hold** (the earlier decision): seams prove themselves only by
+     crossing a real boundary, so incubation cannot verify what it is meant to verify. Inside the
+     monorepo any package can import anything, which is how `@refrakt-md/runes` reached 111 exports;
+     and building everything first turns the move into a large, late migration that keeps slipping.
+   - **Building and freezing are different:** 0.x allows a lot to be built while breaking changes are
+     still allowed; semver from 1.0 means "we stopped breaking things", known only after living with it.
+   - **Development across repositories** uses local links (`npm link`, `file:` dependencies) for a fast
+     loop; refrakt's `main` pins released 0.x versions.
+   - **Not refrakt-shaped:** neither project reaches 1.0 with refrakt as its only user. Marquise needs the
+     proof outside refrakt (step 4 below); Rivière needs a consumer unlike plan, such as the Astro proof
+     project or a different domain.
 5. **Versioning.** Refrakt's packages are versioned together (Changesets fixed mode). Marquise
    needs its own versions, with refrakt pinning a range.
 6. **Licence.** Refrakt is MIT; Marquise stays MIT.
@@ -467,23 +480,32 @@ ranges, run a contract test against Comark on every upgrade, and track it as a r
 
 ## Order
 
-*Revised 2026-11-12:* 1.0 is cut from what exists ("What 1.0 contains"), so nothing here waits
-for refrakt's open specs. Every step before 5 is useful to refrakt on its own, so stopping early
-wastes nothing.
+*Revised 2026-11-19* (decision 4, and X1 and X2 in the notes). Earlier (2026-11-12) the order kept
+everything inside the monorepo until a 1.0 moved out; now Marquise leaves early as 0.x, and 1.0 waits for
+stability with real consumers.
 
-1. **Seams inside the monorepo.** Pull the parser, resolver, definition input and validation into
-   `@refrakt-md/model`; `runes` depends on it. A refactor with no new promises.
-2. **The rune node and generic renderers** (ADR-049): split each renderer into its generic and
-   refrakt halves; add the wrapper and shared-attribute hooks.
-3. **Tooling split:** `validate`, `reference`, `format`, `types` and the language server work
-   from `@refrakt-md/model` alone. Schema and include move onto the model as satellites.
-4. **A proof outside refrakt:** a small example project on plain Markdoc and React, with no
-   refrakt config, theme or engine. If it is not compelling, stop here.
-5. **Marquise 1.0:** own repository, the core, the renderers, the tooling, the `@marquise-md/schema` and
-   `@marquise-md/include` satellites, a docs site (built with Astro, *decided 2026-11-13*), and refrakt switches its
-   dependency.
-6. **Minor releases as features graduate** from refrakt, in the order of the table under "After
-   1.0".
+1. **The content-model revision, built in refrakt** (notes, section 17): combinators, `as`, value types,
+   compact forms owned by child shapes, compiling down to the existing resolver and used by refrakt's
+   runes. Lab work: the shape file is Marquise's core public format, so it is built and used before it
+   is frozen.
+2. **The read path extracted to `marquise-md/marquise` as 0.x:** parsing, shape files, the revised content
+   model, validation with finding ids and addresses, records with JSON Schema and the Standard Schema
+   validator, generated types, the shape node, the plain presentation, the generic renderers (ADR-049).
+   **Refrakt switches to depend on it** at once: its first consumer across a real boundary, and anything it
+   cannot reach through the public API is a missing seam.
+3. **Tooling on Marquise alone:** `validate`, `types`, `extract`, `format`, the language server.
+4. **A proof outside refrakt:** a small example project on plain Markdoc and a framework, with no refrakt
+   config, theme or engine. If it is not compelling, stop here.
+5. **A parser and positions spike** (notes X5) before anything writes: one inline value changed through
+   each candidate parser.
+6. **Rivière in its own repository, as 0.x, with plan rebuilt on it** in refrakt. Plan writes as much as it
+   reads, so this also designs the write path against a real user before it is frozen.
+7. **Marquise 1.0, the read path** (notes X1: records included; the write path, body blocks, kits,
+   dimensions, bindings, middleware, document and deferred shapes, migrations and a second syntax after),
+   once its API has been stable for refrakt and the proof project for a period. The docs site is built with
+   Astro (*decided 2026-11-13*).
+8. **Minor releases as features graduate,** including the write path; **Rivière 1.0** once it has a
+   consumer unlike plan.
 
 ## Risks
 
