@@ -3318,9 +3318,9 @@ time.
 **Marquise as a data store** (section 18)
 
 - M1. Rich-text fields in extracted data: Markdown source, plain text, HTML or tree, by default and
-  per field?
-- M2. Extraction in core for 1.0, or an add-on (`@marquise-md/extract`)? It is small, since the shape
-  node is already data, which argues for core.
+  per field? *Leaning 2026-11-19 (X7):* a structured value `{ markdown, syntax, text, shapes }`.
+- M2. *Decided 2026-11-19 (X1):* extraction is in core and in 1.0. (Was: extraction in core for 1.0, or an add-on (`@marquise-md/extract`)? It is small, since the shape
+  node is already data, which argues for core.)
 - M3. *Decided 2026-11-18:* Marquise core declares identity and `ref` types and checks them per
   document; Rivière resolves them across documents (section 3).
 - M4. Creating records: should the write path scaffold a new document from a shape
@@ -3404,7 +3404,16 @@ time.
   file pattern, disagreement being a finding; entities from a store or history have identity without
   location; the snapshot stays keyed by file, the entity index by identity; a qualified mention
   (`spec:SPEC-12`) settles ambiguity. Open: a locale in identity (with X12).
-- X7. Block fields as structured values in records?
+- X7. *Leaning 2026-11-19* (Marquise's `docs/concepts/records.md`, "Rich text"): a `block` or `inline`
+  field is `{ markdown, syntax, text, shapes }` in a record, not a Markdown string. `markdown` is the source
+  (round trips, re-rendering through Marquise; not safe HTML); `text` is derived and read-only (search,
+  embeddings); `shapes` holds nested shapes as full records with their addresses, so addresses through a
+  field resolve (`recipe.body.callout.title`), types are precise (`RichText<CalloutRecord | …>`), and
+  Rivière finds entities nested in prose. `as: text` stays a string. All members by default (leaning), with
+  an option to drop some for large exports. A batch changing both `markdown` and a nested shape is refused
+  as overlapping targets (follows from A1). Not included: prose order around nested shapes (the tree through
+  the API) and HTML (the host's, from rendering). Answers A7 and M1. Records are in 1.0, so this is a 1.0
+  question.
 - X8. Value types keeping the author's text; money's representation; which value types are core?
 - X9. The security gaps: untrusted reads through query shapes, frontmatter choosing shapes, forgeable
   bundle delimiters, the trust boundary's marker?
@@ -3484,13 +3493,15 @@ time.
 - A6. Value types as branded strings in JSON forms (ISO dates and durations), or richer runtime
   objects, which would break the plain-JSON rule?
 - A7. Shapes inside a block field: reached through their own records and addresses with the field
-  typed `Markdown`, or a typed union of the shapes allowed there? Depends on M1.
+  typed `Markdown`, or a typed union of the shapes allowed there? Depends on M1. *Leaning 2026-11-19
+  (X7):* both: the field is `RichText<…>` typed by the shapes it allows, and its `shapes` member holds them
+  as records with their own addresses.
 - A8. Address types: literal checking only, or the value type at each address too (only if typed
   `doc.set` is wanted)?
 
 ## 23. Next topics
 
-- The outside review's design challenges, one at a time (section 21, X7–X12; X1 to X4 and X6 decided, X5 run, 2026-11-19).
+- The outside review's design challenges, one at a time (section 21, X8–X12; X1 to X4 and X6 decided, X5 run, X7 a leaning, 2026-11-19).
 - The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 22).
 - The content model's revision (section 17, C4).
 - Marquise as a data store (section 18).
