@@ -3424,7 +3424,16 @@ time.
   D6), an added exit test in Y3. Sidecar files were rejected: they match today's fixtures, but once body
   examples came there would be two places forever. Y3's exit tests require examples (every finding id has
   one), so 1.0 needed a home for them.
-- Y6. Ids unique across the corpus by default (prefixed ids already are), per-collection scoping opt-in?
+- Y6. *Decided 2026-11-19* (Rivière's `corpus.md`): **ids stay unique per collection by default** (V5
+  kept): slug ids collide naturally across collections (a blog post and a docs page both `introduction`),
+  and corpus-unique by default would give ordinary sites findings on day one. The reviewer's real objection,
+  an ambiguity rule on every surface, is met by **one resolution rule for a bare id,** used by references,
+  mentions, the CLI, id-rooted addresses and bundles: qualified (`spec:SPEC-12`) wins; then a reference's
+  `to` constrains; then corpus-unique collections are searched together; otherwise one match resolves and
+  several are an ambiguity finding with the qualified form as its fix. **`ids: 'corpus'`** per collection
+  makes duplicates with other such collections a finding, **inferred** from id patterns with distinct
+  literal prefixes (`WORK-{n}`, `SPEC-{n}`), so plan needs no declaration. **`#id` in an address** is local
+  to the document in Marquise and resolved through the rule in Rivière (answers the reviewer's question 7).
 - Y7. A unified diff beside the `WorkspaceEdit` (`cs.toPatch()`), for people, pull requests, agents and
   `git apply`?
 - Y8. Say the primary syntax is Markdoc (1.0 ships it with tooling under semver), with Comark narrowed to
@@ -3673,7 +3682,7 @@ time.
 
 ## 23. Next topics
 
-- The second review's challenges, Y6 to Y16 (section 21; Y1 to Y5 decided).
+- The second review's challenges, Y7 to Y16 (section 21; Y1 to Y6 decided).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
   X7's sub-questions still open). Follow-up: a "Prior art" page in Marquise's docs, from reading Keystatic,
   TinaCMS, Sphinx-Needs, Doorstop, Obsidian's Dataview and Bases, SHACL, DITA and DocBook (X12.7).
