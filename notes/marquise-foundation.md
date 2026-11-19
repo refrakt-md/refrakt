@@ -3326,7 +3326,9 @@ time.
 - Z6b. Kits have contracts of their own (their shapes and dimensions): give them a checklist or
   tooling (`marquise diff`, Z2)?
 - Z6c. Deprecation periods for finding-id and markup aliases: counted in releases or in time?
-- Z6d. Before 1.0: are the rules followed from the first 0.x release, or only from 1.0?
+- Z6d. Before 1.0: are the rules followed from the first 0.x release, or only from 1.0? *Decided
+  2026-11-19 (Y3):* a lighter version: breaking changes allowed in 0.x minors, each listed with migration
+  notes and a codemod when it changes content.
 
 **The content model** (section 17)
 
@@ -3393,9 +3395,19 @@ time.
   compact-form runes in its own extension namespace (`refrakt: { emitTag }`), run after Marquise resolves,
   until compact forms graduate from the lab. Marquise's scope and content-models pages and SPEC-199's
   tables updated.
-- Y3. Exit criteria for 0.x, for the four formats frozen at 1.0 before their hardest user: addresses (an
-  attribute and a field edit through the hybrid parser), rich text (plan's records consumed by something
-  not Marquise), the content-model syntax (refrakt's analysis run reviewed), the plain markup?
+- Y3. *Decided 2026-11-19* (SPEC-199, acceptance criteria, "When 1.0 is declared"): **1.0 is declared when
+  every contract it freezes has survived its hardest real user,** not when features are done. One exit test
+  per contract: the content-model syntax (all covered refrakt runes in the revised format, SPEC-201's
+  analysis clean, refrakt strict, the proof project's shapes written from the docs alone); addresses (a
+  write-path prototype editing an attribute and a field through the chosen positions route; `toPointer()`
+  and Standard Schema paths agreeing); records and rich text (plan's records consumed outside Marquise; size
+  measured; Y11 decided); the plain markup (snapshots, an accessibility check over refrakt's site); the
+  shape node and renderers (two renderers, React as server components); the finding catalogue; the
+  published schema (one outside consumer); the trust boundary (the hostile suite); generated types; CLI
+  output; enforcement in place. **Stability:** two consecutive 0.x minors, at least eight weeks in all,
+  without a breaking change while refrakt and the proof project depend on it. **During 0.x** (answers Z6d):
+  breaking changes allowed in minors, each listed with migration notes and a codemod when content changes.
+  Rivière's 1.0 follows the same pattern.
 - Y4. Document shapes' body model in 1.0 (the same resolver on a document's children; frontmatter left to
   the host)?
 - Y5. Examples in 1.0, with the body reserved: sidecar files (`shapes/hero.examples.md`)?
@@ -3648,7 +3660,7 @@ time.
 
 ## 23. Next topics
 
-- The second review's challenges, Y3 to Y16 (section 21; Y1 and Y2 decided).
+- The second review's challenges, Y4 to Y16 (section 21; Y1 to Y3 decided).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
   X7's sub-questions still open). Follow-up: a "Prior art" page in Marquise's docs, from reading Keystatic,
   TinaCMS, Sphinx-Needs, Doorstop, Obsidian's Dataview and Bases, SHACL, DITA and DocBook (X12.7).

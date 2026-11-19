@@ -710,6 +710,26 @@ names (decision 8) and the plain presentation's markup (decision 3).
 - [ ] The content-model revision is built in refrakt and used by its runes, with the matching algorithm and a shape's analysis of {% ref "SPEC-201" /%}
 - [ ] Marquise 0.x exists in its own repository (`marquise-md/marquise`) with the parser, resolver, definition input, validation and records, and refrakt depends on its published versions
 - [ ] Marquise 1.0 contains exactly the table under "What 1.0 contains", and a definition with a non-empty body is rejected
+
+**When 1.0 is declared** (*decided 2026-11-19*, notes Y3): when every contract it freezes has survived its
+hardest real user. Each box below is ticked during 0.x.
+
+- [ ] Content-model syntax: every refrakt rune Marquise covers is expressed in the revised format; SPEC-201's analysis has run over all of them, every finding fixed or acknowledged; refrakt runs with strict on; the proof project's shapes were written by someone reading only the docs
+- [ ] Addresses: a write-path prototype (not shipped) edits one attribute and one field by address through the chosen positions route; `toPointer()` and Standard Schema paths agree on the same records
+- [ ] Records and rich text: plan's records are exported and consumed by something that is not Marquise (Rivière's prototype, a DuckDB query or the Astro loader); record size is measured on refrakt's content; an opt-in tree member (notes Y11) is decided
+- [ ] Plain markup: snapshot tests, and an automated accessibility check over refrakt's site rendered with the plain presentation only
+- [ ] Shape node and renderer contract: the proof project renders through at least two renderers, React as server components and one other
+- [ ] Finding catalogue: snapshot-tested, every id documented with an example that triggers it
+- [ ] Published schema: at least one outside consumer uses it (Astro's `createSchema`, or a Standard Schema consumer)
+- [ ] Trust boundary: the hostile-content suite passes through every 1.0 renderer, in both modes
+- [ ] Generated types: used by refrakt and the proof project, with type-level tests
+- [ ] CLI and JSON output: snapshot-tested, exit codes included
+- [ ] Enforcement in place: the public API report checked on every change, and snapshot tests of the catalogue, schemas and markup
+- [ ] Stability: two consecutive 0.x minor releases, at least eight weeks apart in total, with no breaking change while refrakt and the proof project depend on Marquise
+- [ ] During 0.x, every breaking change is listed in the changelog with migration notes, and comes with a codemod when it changes content
+
+Rivière's 1.0 follows the same pattern: plan's rebuild complete, one consumer unlike plan, the Astro loader
+working, and its own stability period.
 - [ ] Every later feature arrives as a minor release, after its spec is implemented in refrakt
 - [ ] `@refrakt-md/runes` builds on Marquise through the hooks listed under "The boundary", with no special case for refrakt inside Marquise
 - [ ] Each framework renderer has a generic half with no refrakt dependency beyond the model, and a refrakt half that adds the theme shell and the wrapper
