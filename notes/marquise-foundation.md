@@ -3093,6 +3093,37 @@ id-rooted addresses without `#`, `acyclic` outside Rivière's namespace, `to` na
     identity and addresses across locales; pinning YAML 1.2 for shape files; prior art worth reading
     (Keystatic, TinaCMS, Sphinx-Needs, Doorstop, Obsidian's Dataview and Bases, SHACL's "shapes").
 
+### The second review (2026-11-19)
+
+Run again after the decisions X1 to X12 were written into both repositories, with a third pass comparing
+against the first review. The full report is kept in `notes/marquise-review-2026-11-19.md`. Most of the
+first review's findings were resolved; the round of changes introduced about sixteen new inconsistencies.
+
+**Fixed the same day:** Rivière's timing (0.x on Marquise 0.x, 1.0 after Marquise's, in every place);
+the matching rules, a shape's analysis and strict shapes written into Marquise's content-models page,
+matching SPEC-201; stale and wrong statements (nested shapes "still open", an index address for a shape
+with an id, Comark's positions, identity marked a leaning in Marquise); the plain-presentation example
+(emphasis kept, paragraphs and lists inside wrappers, ids prefixed and numbered per page, `role="group"`
+for a `div` root), also in SPEC-199's decision 3; renderers in 1.0 stated, Comark's renderers a later
+question; suggested fixes described in 1.0 and applied with the write path after it; the structured-output
+profile built from the **input** schema; Marquise's and Rivière's writing rules joined (Marquise gives no
+atomicity across documents, Rivière's `apply` adds it; a stale batch is refused, and a caller may rebase);
+the changeset as `{ ok, operations, edit, expectedHashes, findings }`, with `edit` a strict
+`WorkspaceEdit` using file URIs; what `rename` touches (the id where written, the file name, references,
+mentions, links); **rebase by value only for operations addressed by id or key** (an index address could
+land on the wrong item silently); **two-phase loading** (index every document with Rivière's shapes as
+placeholders, then expand against the finished snapshot; corpus findings on the snapshot) and
+`expand-cycle`; an unreadable and a missing `ref` giving the same finding in untrusted mode, and field
+lists applying to filters, sorts and paths; bundle tokens of at least 128 bits, escaped token lines, JSON by
+default over MCP; MCP wording; SPEC-199's worked example in the revised content-model format, and its
+acceptance criteria rewritten for early extraction.
+
+**Still to discuss** (Y1 to Y16 in section 22): strict by default; compact forms in 1.0; 0.x exit
+criteria; document shapes' body in 1.0; examples in 1.0; corpus-unique ids; a unified diff beside the
+edit; saying the primary syntax is Markdoc; further security gaps; cuts from Rivière's first release; rich
+text's size and an opt-in tree; SPEC-201's open questions; the acceptance test's missing pieces; query
+semantics; smaller remaining gaps; opportunities and prior art.
+
 ## 22. Open questions
 
 **Stack**
@@ -3331,7 +3362,8 @@ time.
 - M6. Where scaffolding lives: creating a document from a shape is per document (Marquise), but its
   file name and location are site or corpus policy.
 - M7. *Decided 2026-11-18:* the corpus layer is its own project, Rivière, in the Marquise
-  organisation, built only on the public API, after Marquise 1.0.
+  organisation, built only on the public API, after Marquise 1.0. *Revised 2026-11-19 (X2):* Rivière starts
+  as 0.x on Marquise 0.x; Rivière 1.0 follows Marquise 1.0.
 - M11. *Decided 2026-11-18:* plan rebuilt on Rivière is its acceptance test (section 3).
 - M8. Queries: reuse refrakt's filter grammar (`field:value`, SPEC-195's `matches()`), or something
   richer? The "no query language" line argues for reuse.
@@ -3340,6 +3372,48 @@ time.
   Marquise ships no connector (decided 2026-11-17).
 - M10. The rich-text hook: one converter interface (`toRichText`, `fromRichText`) per format, applied
   to every `block` field, or per field?
+
+**The second review** (section 21, "The second review")
+
+- Y1. Strict content models by default in Marquise (`strict: false` the declared exception, refrakt's
+  project setting lenient), since Marquise's authors and models cannot see the shape?
+- Y2. Reading compact forms in 1.0: show the frontmatter matcher syntax (the notes' `compact: item:`
+  sketch) and keep it, or move compact forms after 1.0, since templates are meant to replace frontmatter
+  matchers?
+- Y3. Exit criteria for 0.x, for the four formats frozen at 1.0 before their hardest user: addresses (an
+  attribute and a field edit through the hybrid parser), rich text (plan's records consumed by something
+  not Marquise), the content-model syntax (refrakt's analysis run reviewed), the plain markup?
+- Y4. Document shapes' body model in 1.0 (the same resolver on a document's children; frontmatter left to
+  the host)?
+- Y5. Examples in 1.0, with the body reserved: sidecar files (`shapes/hero.examples.md`)?
+- Y6. Ids unique across the corpus by default (prefixed ids already are), per-collection scoping opt-in?
+- Y7. A unified diff beside the `WorkspaceEdit` (`cs.toPatch()`), for people, pull requests, agents and
+  `git apply`?
+- Y8. Say the primary syntax is Markdoc (1.0 ships it with tooling under semver), with Comark narrowed to
+  "accepted as input later" on one page?
+- Y9. Security: host values exposed per value, off in untrusted content (`{% $user.email %}`); confirmation
+  policy set by the host, not by the proposer's `needsConfirmation`; a linear-time regular-expression
+  engine or a step limit; YAML aliases and `__proto__` keys in frontmatter; `resolveAsset` on remote URLs?
+- Y10. Cuts from Rivière's first release: `riviere claim` to plan (it brings `status` and `assignee`
+  vocabulary), context bundles as a satellite, translations, the git source, the live loader, per-collection
+  tools, the SQLite export?
+- Y11. Rich text: an opt-in `nodes` member (the tree, for consumers rendering without Marquise), and its
+  size with nesting depth?
+- Y12. SPEC-201's open questions before the algorithm is normative: item-model order (order-free today)
+  and the comment under the cursor (a defect)?
+- Y13. The acceptance test's missing pieces: task-list items with a `done` value, sections bound by
+  heading text with aliases, list-valued references, ids containing dots (milestones are `v1.0.0`); one
+  worked `work` and `milestone` shape in Rivière's docs?
+- Y14. Query semantics: any or all over lists, quoting, ordering an enum by `-priority`, and `unblocked`
+  as a path selector?
+- Y15. Smaller gaps: `shape-unbound` outside core findings; one table of commands and operations with a
+  release column, `format` defined; a page on the published schema; a newcomer page (registering a
+  component, an MDX before-and-after, tags and documents with no shape); a glossary and renames for
+  overloaded words; reserved names (`shape`, `slot`); `3:45` against "unambiguous forms only"; locale data
+  for values and zones for datetimes; `plain` declaring a heading level?
+- Y16. Opportunities and prior art: `marquise explain` and inlay hints; a form editor and an OpenAPI export
+  generated from shapes; ProseMirror's content expressions, Augeas, Djot, Sphinx domains and MyST, GROQ,
+  org-ql, beads and git-bug, Datasette, shadcn's registry?
 
 **The outside review** (section 21)
 
@@ -3561,6 +3635,8 @@ time.
 
 ## 23. Next topics
 
+- The second review's challenges, Y1 to Y16 (section 21), starting with Y1 (strict by default) and Y2
+  (compact forms in 1.0), which affect the shape-file format.
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
   X7's sub-questions still open). Follow-up: a "Prior art" page in Marquise's docs, from reading Keystatic,
   TinaCMS, Sphinx-Needs, Doorstop, Obsidian's Dataview and Bases, SHACL, DITA and DocBook (X12.7).

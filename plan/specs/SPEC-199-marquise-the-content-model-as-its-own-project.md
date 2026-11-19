@@ -375,17 +375,23 @@ Refrakt's structured data has never depended on who draws the markup: the schema
    Once it ships the markup is a public format, so it is kept as small as possible:
 
    ```html
-   <section data-shape="hero" data-align="start" data-media-position="bottom">
+   <section data-shape="hero" data-align="start" data-media-position="bottom" aria-labelledby="mq-1-headline">
      <div data-slot="media"><img src="/img/dashboard.png" alt="The dashboard"></div>
-     <div data-slot="eyebrow">New in 2.0</div>
-     <div data-slot="headline">Ship docs your team will actually read</div>
-     <div data-slot="blurb">From Markdown to a polished site in minutes.</div>
-     <ul data-slot="actions">
-       <li><a href="/docs">Get started</a></li>
-       <li><a href="https://github.com/acme/docs">View on GitHub</a></li>
-     </ul>
+     <div data-slot="eyebrow"><p>New in 2.0</p></div>
+     <div data-slot="headline"><h1 id="mq-1-headline">Ship docs your team will actually read</h1></div>
+     <div data-slot="blurb"><p>From Markdown to a polished site in minutes.</p></div>
+     <div data-slot="actions">
+       <ul>
+         <li><a href="/docs">Get started</a></li>
+         <li><a href="https://github.com/acme/docs">View on GitHub</a></li>
+       </ul>
+     </div>
    </section>
    ```
+
+   *Updated 2026-11-19* (notes, X12.4): the plain presentation keeps the source's semantics (a heading
+   field as a heading at the author's level, paragraphs and lists inside their wrappers, the root labelled
+   by its heading, `role="group"` when the root is a `div`, generated ids prefixed and numbered per page).
 
    - **The root** is the shape's `tag:` (default `div`), with `data-shape` and one `data-*`
      attribute per attribute: kebab-case, defaults included.
@@ -537,6 +543,9 @@ in Next.js with React. The content-model keys are the ones refrakt's resolver su
 plus SPEC-200's `as` and `from`; the shape node, generated types and the React API are this
 spec's proposal. Decision 3 shows the same content rendered with no component bound.
 
+*Updated 2026-11-19:* the shape file below uses the revised content model (notes, section 17; the
+matching rules are SPEC-201's) and `plain: { tag }` in place of a top-level `tag:` (notes, section 6).
+
 **`shapes/hero.md`.** Refrakt's design attributes (`valign`, `collapse`, `height`, `aspect`,
 `content-place`) and its universal-attribute defaults are gone: in Marquise the component owns
 the layout, and a developer adds only the attributes authors should control. The body is empty,
@@ -544,31 +553,29 @@ as 1.0 requires.
 
 ```md
 ---
-tag: section
 description: Full-width introduction at the top of a landing page
+plain: { tag: section }
 attributes:
   align:          { type: string, matches: [start, center, end], default: center, description: "Alignment of the text and actions" }
   media-position: { type: string, matches: [top, bottom, start, end], default: bottom, description: "Where the media sits" }
 content:
-  type: delimited
-  delimiter: hr
+  split: { by: hr }
   zones:
     - name: media
-      fields:
+      sequence:
         media: { match: image, optional: true }
     - name: content
       primary: true
-      fields:
+      sequence:
         eyebrow:  { match: paragraph, optional: true, as: text }
         headline: { match: heading, as: inline }
         blurb:    { match: paragraph, optional: true, as: inline }
         actions:
           match: list
           optional: true
-          itemModel:
-            fields:
-              - { name: label, match: link }
-              - { name: href,  from: label, extract: href }
+          items:
+            label: { match: link, as: text }
+            href:  { from: label, extract: href, as: url }
 ---
 ```
 
@@ -699,10 +706,11 @@ names (decision 8) and the plain presentation's markup (decision 3).
 
 ## Acceptance criteria
 
-- [ ] `@refrakt-md/model` exists in the monorepo with the parser, resolver, definition input and validation, and depends on nothing in refrakt but `types`
+- [ ] The content-model revision is built in refrakt and used by its runes, with the matching algorithm and a shape's analysis of {% ref "SPEC-201" /%}
+- [ ] Marquise 0.x exists in its own repository (`marquise-md/marquise`) with the parser, resolver, definition input, validation and records, and refrakt depends on its published versions
 - [ ] Marquise 1.0 contains exactly the table under "What 1.0 contains", and a definition with a non-empty body is rejected
 - [ ] Every later feature arrives as a minor release, after its spec is implemented in refrakt
-- [ ] `@refrakt-md/runes` builds on `@refrakt-md/model` through the hooks listed under "The boundary", with no special case for refrakt inside the model
+- [ ] `@refrakt-md/runes` builds on Marquise through the hooks listed under "The boundary", with no special case for refrakt inside Marquise
 - [ ] Each framework renderer has a generic half with no refrakt dependency beyond the model, and a refrakt half that adds the theme shell and the wrapper
 - [ ] `validate`, `reference`, `format`, `types` and the language server run on a project that has definitions but no refrakt config, theme or plugins
 - [ ] An example project renders definitions with React components using only the model and the generic React renderer
