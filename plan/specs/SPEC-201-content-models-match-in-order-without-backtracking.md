@@ -91,7 +91,7 @@ content can be matched as it streams.
   backtracking would differ, so the shape's author can fix the model instead.
 - **XML Schema's unique particle attribution** (reject any model where a node could belong to two
   fields). Rejected as the default: it forbids shadowing that shapes use on purpose (D2). Kept as the
-  strict mode (D3).
+  strict default (D3).
 
 ### D2: a shape's analysis, run when it loads
 
@@ -102,7 +102,7 @@ without passing a required field. Two findings follow:
 | Finding | When | Severity |
 |---|---|---|
 | `field-unreachable` | no input can ever give the field a node, because earlier fields always take every node it could match (for example a repeated `any` before it in the same sequence) | error |
-| `field-shadowed` | an optional field's start set overlaps a later reachable field's, so content meant for the later field is taken by the earlier one whenever the earlier one is empty | info; **warning** when the later field is required, since content can then be rejected that a different model would accept |
+| `field-shadowed` | an optional field's start set overlaps a later reachable field's, so content meant for the later field is taken by the earlier one whenever the earlier one is empty | **error** by default (D3); **info** when the overlap is acknowledged with `shadows:` (D3); in a lenient shape or project, info, or **warning** when the later field is required, since content can then be rejected that a different model would accept |
 
 Each finding names both fields, the overlapping node types, and the consequence in words: "A paragraph
 after the headline always becomes `blurb`; a `body` that starts with a paragraph needs `blurb`, or an
@@ -114,26 +114,53 @@ everything; `image` overlaps `paragraph` (a paragraph holding only an image); `h
 
 **Worked example.** `intro?: paragraph`, `body?: any` (repeated), `outro?: paragraph`:
 
-- `intro` shadows `body` (info: a body starting with a paragraph needs an intro or an explicit slot);
+- `intro` shadows `body` (an error, unless `intro` declares `shadows: [body]`: a body starting with a
+  paragraph needs an intro or an explicit slot);
 - `outro` is unreachable (error: `body` takes every node after the intro, including the last paragraph).
 
 The fix is visible from the findings: make `outro` `position: last`, or narrow `body`.
 
-### D3: a strict mode
+### D3: strict by default, deliberate shadowing acknowledged
 
-A shape, or a whole project, can ask for strict models:
+*Revised 2026-11-19* (`notes/marquise-foundation.md`, Y1; first written as an opt-in strict mode).
+**Content models are strict by default:** `field-shadowed` is an error, so every node can be attributed to
+exactly one field whichever optional fields are present (XML Schema's rule). The guarantee: **everything a
+strict shape can hold can be written by inference alone,** so the write path never falls back to an
+explicit slot.
+
+**Deliberate shadowing is acknowledged per overlap,** on the earlier field:
 
 ```yaml
 content:
-  strict: true
-  sequence: …
+  sequence:
+    headline: { match: heading, as: inline }
+    blurb:    { match: paragraph, optional: true, as: inline, shadows: [body] }   # on purpose
+    body:     { match: any, repeat: true, optional: true }
 ```
 
-In strict mode `field-shadowed` is an **error**: every node must be attributable to exactly one field
-whichever optional fields are present (XML Schema's rule). The guarantee: **everything a strict shape can
-hold can be written by inference alone,** so the write path never falls back to an explicit slot. Suited to
-shapes written mostly by machines (records an agent maintains, forms, imports). A project setting makes
-strict the default, with `strict: false` on a shape as the declared exception.
+An acknowledged overlap is reported as **info**: still shown on hover, known to the write path (which
+predicts the explicit-slot fallback) and described in the published schema, so nothing is hidden; it is
+declared where a reader of the shape sees it. `shadows:` naming a field the analysis finds no overlap with
+is itself a finding, so acknowledgments do not go stale. `field-unreachable` stays an error always.
+
+**`strict: false`,** per shape or as a project setting, is the escape hatch for migrating existing content:
+`field-shadowed` becomes info (warning when the later field is required), as the analysis first reported
+it.
+
+**Why strict by default:**
+
+- **It keeps both directions open.** Relaxing strict later is additive; tightening lenient later makes
+  shapes that loaded fail, a major release and a migration for every shape library. The shape-file format
+  freezes at Marquise 1.0.
+- **Marquise's authors cannot see the shape.** Marketers, writers and models write against someone else's
+  shape; a shadowed field is what they trip over ("my body paragraph became the blurb").
+- **The write path's strongest guarantee,** and a quality bar for third-party shape libraries.
+- Shadowing that is good design (refrakt's hero: "the first paragraph after the headline is the blurb")
+  costs one declared `shadows:`, not turning checking off for a whole shape.
+
+**In refrakt:** the project starts with `strict: false`, so nothing breaks; the review this spec's
+acceptance criteria require turns each kept overlap into a `shadows:` annotation; then refrakt turns strict
+on.
 
 ### D4: what the analysis serves
 
@@ -156,11 +183,12 @@ occurrences in declared order, reported as `field-shadowed` when the second is r
 
 - [ ] A specification of the matching algorithm (D1) is written in the content-model docs, with an example for each rule, and the resolver's comments refer to it
 - [ ] The resolver's existing tests are checked against D1, and a test is added for each rule that no test covers
-- [ ] The analysis (D2) runs when a definition loads and reports `field-unreachable` (error) and `field-shadowed` (info; warning when the later field is required), naming both fields, the overlapping node types and the consequence
+- [ ] The analysis (D2) runs when a definition loads and reports `field-unreachable` (error) and `field-shadowed` (error by default; info when acknowledged; in a lenient shape or project, info, or warning when the later field is required), naming both fields, the overlapping node types and the consequence
 - [ ] Overlaps use the matcher relations: `any`, `image` and `paragraph`, `heading` and `heading:N`, `list` and its kinds, alternatives
 - [ ] The worked example in D2 produces exactly the two findings described
-- [ ] The analysis is run over every rune and definition in refrakt; every `field-unreachable` is fixed, and every `field-shadowed` is reviewed and either kept (and listed) or fixed
-- [ ] `strict: true` on a content model, and a project setting, make `field-shadowed` an error
+- [ ] The analysis is run over every rune and definition in refrakt, with the project set to `strict: false`; every `field-unreachable` is fixed, and every `field-shadowed` is reviewed and either acknowledged with `shadows:` or fixed; then refrakt's project turns strict on
+- [ ] `shadows: [field]` on the earlier field turns that overlap's finding into info; a `shadows:` naming a field with no overlap is reported
+- [ ] `strict: false`, per shape and as a project setting, turns unacknowledged `field-shadowed` into info (warning when the later field is required)
 - [ ] The language server shows each field's explanation on hover
 
 ## Open questions

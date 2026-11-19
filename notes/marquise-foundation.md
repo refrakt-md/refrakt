@@ -3375,8 +3375,14 @@ time.
 
 **The second review** (section 21, "The second review")
 
-- Y1. Strict content models by default in Marquise (`strict: false` the declared exception, refrakt's
-  project setting lenient), since Marquise's authors and models cannot see the shape?
+- Y1. *Decided 2026-11-19* (SPEC-201 D3 revised): **content models are strict by default** (an
+  unacknowledged `field-shadowed` is an error). Deciding argument: relaxing later is additive, tightening
+  later breaks shape libraries, and the format freezes at 1.0; also, Marquise's authors cannot see the
+  shape. **Deliberate shadowing is acknowledged per overlap** with `shadows: [field]` on the earlier field
+  (then info, still visible to hover, the write path and the schema; a stale `shadows:` is reported);
+  `field-unreachable` always an error; `strict: false` per shape or project as the migration escape hatch.
+  Refrakt starts lenient; SPEC-201's review turns kept overlaps into `shadows:` annotations, then refrakt
+  turns strict on.
 - Y2. Reading compact forms in 1.0: show the frontmatter matcher syntax (the notes' `compact: item:`
   sketch) and keep it, or move compact forms after 1.0, since templates are meant to replace frontmatter
   matchers?
@@ -3635,8 +3641,8 @@ time.
 
 ## 23. Next topics
 
-- The second review's challenges, Y1 to Y16 (section 21), starting with Y1 (strict by default) and Y2
-  (compact forms in 1.0), which affect the shape-file format.
+- The second review's challenges, Y2 to Y16 (section 21; Y1 decided), next Y2 (compact forms in 1.0),
+  which affects the shape-file format.
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
   X7's sub-questions still open). Follow-up: a "Prior art" page in Marquise's docs, from reading Keystatic,
   TinaCMS, Sphinx-Needs, Doorstop, Obsidian's Dataview and Bases, SHACL, DITA and DocBook (X12.7).
