@@ -211,7 +211,7 @@ belongs in the host, an integration, or refrakt.
 
 | Part | Today | Notes |
 |---|---|---|
-| Parsing | `packages/runes/src/parse.ts` (indentation-tolerant, SPEC-170) | small; Markdoc stays a peer dependency |
+| Parsing | `packages/runes/src/parse.ts` (indentation-tolerant, SPEC-170) | small; Markdoc is an internal module of core (an import rule in CI keeps the rest of core from using it) and an ordinary pinned dependency, not a peer dependency (notes Y8a); front-end packages only when a second syntax arrives |
 | The definition format and loader | `composed-rune.ts`, `rune-dir.ts`, `project-runes.ts`, the input half of `lib/composition.ts` | frontmatter: `attributes`, `content`, `computes`, `prepare`, `description`; body: examples (SPEC-197). Templates are a host extension |
 | The content-model resolver | `lib/resolver.ts` (1,104 lines), `types/src/content-model.ts` | already depends only on Markdoc and types |
 | Attribute validation | `attributes.ts` | findings with ids, as `refrakt validate` returns them |

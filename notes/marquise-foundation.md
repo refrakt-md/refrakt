@@ -3456,6 +3456,15 @@ time.
   (format stability, a fallback keeping unbound content, positions, React Server Components); refrakt's
   generic renderers the fallback. Marquise's docs rewritten (`syntax.md`, `rendering.md`, slot examples in
   Markdoc); SPEC-199 updated. Answers Z1i.
+- Y8a. *Decided 2026-11-19* (Marquise's `syntax.md`, "Markdoc inside core"): **no separate Markdoc package
+  in 1.0.** Every 1.0 user needs it (the scope rule), and a front end's interface is wide (positions, typed
+  attributes, evaluating `if` and variables, slots, `#id`, example blocks, insignificant nodes, later
+  printing for writes), so publishing it with one implementation would freeze an unproven contract.
+  Instead: one internal module in core, an import rule checked in CI keeping the rest of core
+  syntax-neutral, Marquise's public types free of Markdoc's, and Markdoc an ordinary pinned dependency
+  rather than a peer dependency (SPEC-199 updated). **When a second syntax arrives,** the interface is
+  designed against both and the front ends become packages (`@marquise-md/markdoc`,
+  `@marquise-md/comark`), `marquise` still depending on Markdoc's by default: non-breaking.
 - Y9. *Decided 2026-11-19*, as details of X9's boundary (Marquise's `trust.md`, Rivière's `writing.md`).
   (1) **Content reads only the host values exposed to it** (`contentValues`); shapes, templates and
   components see everything; an unexposed read is `value-not-exposed` and renders nothing; the same list
