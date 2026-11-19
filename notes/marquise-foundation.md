@@ -3379,7 +3379,21 @@ time.
   generated from each field's JSON Schema; bytes outside a changed range identical); read-only fields
   excluded from PutGet, still checked by GetPut. Goes into the write path's spec when it is written (after
   Marquise 1.0).
-- X5. A spike changing one inline value through Markdoc, Comark and micromark/mdast, before choosing?
+- X5. *Run 2026-11-19* (`spike/parser-positions/`, FINDINGS.md). **Markdoc** (0.5.13) gives line ranges,
+  inline nodes inheriting their block's lines, no columns; **Comark** (0.9.2) the same on its markdown-it
+  tokens (every block has a line map, correcting "only components"), its tree nothing; **mdast**
+  (micromark) exact offsets on every node, inline included. Finding a value by scanning a block's lines
+  **failed silently on ordinary content** (an `href` edit hit a look-alike inside a code span, corrupting
+  it); exact offsets found it inside the link's own span. A **hybrid** (Markdoc for structure, micromark
+  re-reading one block for inline positions, matched by order) worked, but needs verify-and-refuse, since
+  the two parsers must agree and Markdoc's inline tags are text to micromark. **No parser locates
+  attribute values**: a small tokenizer over the tag's opening is needed whichever is chosen. **The MDC
+  syntax already has a positioned parser,** `remark-mdc` (3.11.1, nuxt-content, updated July 2026), with
+  explicit slots. Implications: the read-path 1.0 on Markdoc is unaffected (line positions suffice for
+  findings); the write path (after 1.0) needs inline positions, through (a) the hybrid with
+  verify-and-refuse, (b) a micromark extension for Markdoc's tag syntax, (c) the MDC/Comark syntax family
+  through `remark-mdc`, or (d) inline positions contributed upstream to Markdoc or Comark. Open (X5a),
+  and a data point for the primary-syntax question (Z1i).
 - X6. Identity as `(collection, id)` rather than the address?
 - X7. Block fields as structured values in records?
 - X8. Value types keeping the author's text; money's representation; which value types are core?
@@ -3467,8 +3481,7 @@ time.
 
 ## 23. Next topics
 
-- The outside review's design challenges, one at a time (section 21, X5–X12; X1 to X4 decided
-  2026-11-19).
+- The outside review's design challenges, one at a time (section 21, X6–X12; X1 to X4 decided, X5 run, 2026-11-19).
 - The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 22).
 - The content model's revision (section 17, C4).
 - Marquise as a data store (section 18).
