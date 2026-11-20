@@ -3627,6 +3627,44 @@ time.
   `spec-status-lag`, `spec-status-ahead`, `spec-started-in-draft`, `milestone-complete-with-open-work`);
   none needs code. The exact set is settled during the rebuild against what `plan validate` reports.
 
+**Domains beyond plan** (2026-11-20: Rivière's design tried on requirements traceability, a docs site with a
+glossary, events for a small business, worldbuilding, research notes, a service catalogue, course design,
+and agent memory and evals, since plan alone hides what other domains need; gone through one by one)
+
+- G1. Many entities in one file (glossary terms, eval cases, changelog entries, menu items). *Decided
+  2026-11-20* (Rivière's `corpus.md`, `writing.md`, `queries.md`): **a collection collects every instance of
+  its shape in its files**; a document shape's instance is the document, so one-per-file collections are
+  that case, with no mode option. Ids **written** or **derived from a field** (`id: { from: 'term' }`) by one
+  fixed slug rule (NFC, lower case, non-alphanumeric runs to `-`), a written id winning and disagreement a
+  finding; renames of derived ids decided with G5. An instance without a derivable id in a collection's files
+  is `entity-id-missing`. **`into`** places new ones (end of a `file`, sorted by `order` when the file is
+  sorted, or another entity's field: `into: { container: '#suite.cases' }`); delete removes the tag, move is
+  delete plus insert. **Entities inside entities:** the container is an implicit edge, the built-in member
+  **`$container`**; built-ins start with `$` (`$collection`, `$file`, `$container`). **No document-scoped
+  ids** (refrakt's `scope: 'page'` ties identity to location); **one instance in at most one collection**
+  (`collection-overlap`). In the first release, tested with a glossary and an eval-suite fixture beside
+  plan. Refrakt's SPEC-144 `registers` (per-instance entities, `idFrom`, `aliases`, edge tags such as `bond`)
+  is the lab precedent.
+- G2. Links with data (traceability's "verifies", evidence with a stance, a cast's roles): an item model
+  with a ref field plus fields covers most; `backrefs()` over nested paths (`backrefs(paper.evidence.claim)`),
+  rules seeing sibling fields; or edge tags as entities (refrakt's `bond`)?
+- G3. Data files (YAML, JSON, CSV) as collections: a document shape with attributes and no body?
+- G4. Time in views and rules: `$today` and relative dates (`reviewed:<$today-6mo`), recurrence, time
+  zones; results then depend on the clock.
+- G5. Aliases and old ids, so a rename leaves a redirect (plan's published ids; derived ids from G1).
+- G6. Inverse and derived fields across entities (`children` as the inverse of `parent`): Rivière-level
+  `computes`.
+- G7. Transitive paths in selectors (`blockedBy*`, everything under a page).
+- G8. Transition rules (`from:`/`to:`), checked between a base and a head with `--against`.
+- G9. Git-derived fields (`created`, `lastModified`, `authors`) before the full history source.
+- G10. References outside the corpus: typed external ids (`doi:`, `github:org/repo#12`).
+- G11. Overlays: read-only fields from another source (progress, CI results) joined at query time.
+- G12. Baselines (a named snapshot, a diff between two) and suspect links (Doorstop).
+- G13. Bulk saved writes over a selection, with one preview.
+- G14. Generated regions: a file region kept in sync with a view, with a drift check.
+- G15. Write permissions per collection or field (CODEOWNERS-like), for agents.
+- G16. Several repositories as one corpus; scale (review question 13).
+
 **The outside review** (section 21)
 
 - X1. *Decided 2026-11-19:* Marquise 1.0 is the read path, records included: one syntax (Markdoc); shape
@@ -3847,6 +3885,8 @@ time.
 
 ## 23. Next topics
 
+- Rivière's design tried on other domains: gaps G2 to G16, one by one (section 22, "Domains beyond plan"); then
+  worked domain pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
