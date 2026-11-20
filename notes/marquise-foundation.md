@@ -3597,6 +3597,14 @@ time.
   designed for Datasette; missing-content fixes computed as ProseMirror's `fillBefore` does. `fields:` on
   views (GROQ's projections) stays open. (5) **Prior art pages** in both repositories, each entry saying what
   is taken and where the design differs, every claim checked against the project's own docs.
+  *Written 2026-11-20* (`prior-art.md` in both repositories, X12.7's list included). Checking corrected
+  four recollections: Djot's option is `sourcePositions`; Sphinx-Needs removed `needfilter` (4.0) and
+  configures links in `needs_links`; beads stores data in Dolt now, JSONL only an export; SHACL's rules are
+  a working-group note, not the Recommendation. Two consequences: the lens laws are cited to Boomerang,
+  since Augeas's docs do not state them; and JSON Forms and react-jsonschema-form default to draft-07 while
+  Marquise publishes 2020-12 (open in `schema.md`: the form test decides; a draft-07 profile if needed).
+  Doorstop's *suspect links* (a reference whose target changed since review) noted as an open idea for
+  Rivière. Unverified (sites unreachable): DITA 2.0's status, JSON Forms' list of drafts.
 - Y17. Rules across fields and entities (the last design item on "Plan, as shapes"' to-do list).
   *Decided 2026-11-20* (Marquise's `validation.md`, "Rules a shape declares"; Rivière's `references.md`,
   "Rules across entities", `queries.md`, `plan-as-shapes.md`, "Plan's checks, as rules"): (1) **a shape
@@ -3843,8 +3851,7 @@ time.
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
-  X7's sub-questions still open). Follow-up: a "Prior art" page in Marquise's docs, from reading Keystatic,
-  TinaCMS, Sphinx-Needs, Doorstop, Obsidian's Dataview and Bases, SHACL, DITA and DocBook (X12.7).
+  X7's sub-questions still open). The "Prior art" pages (X12.7) are written (Y16).
 - The seams Z1–Z6: all explored once (2026-11-13); their open questions remain (section 22).
 - The content model's revision (section 17, C4).
 - Marquise as a data store (section 18).
