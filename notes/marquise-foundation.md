@@ -3529,7 +3529,12 @@ time.
   and the prototype's to-do list (rules across fields and entities, `unblocked`'s meaning of finished,
   claiming, the git source, the wrapper-tag codemod).
 - Y14. Query semantics: any or all over lists, quoting, ordering an enum by `-priority`, and `unblocked`
-  as a path selector?
+  as a path selector? *Partly decided 2026-11-20* (Rivière's `queries.md`; the user spotted that
+  `unblocked: 'blockedBy'` was plan vocabulary, hiding plan's field name and its meaning of "finished"):
+  **a path through a list means any by default** (false for an empty list); **`all:` asks for every item**
+  (true for an empty list); **the `unblocked` view option is removed,** plan's `next` view written in plan's
+  own words: `status:ready all:blockedBy.status:done,cancelled,superseded`. Still open: quoting, ordering an
+  enum.
 - Y15. Smaller gaps: `shape-unbound` outside core findings; one table of commands and operations with a
   release column, `format` defined; a page on the published schema; a newcomer page (registering a
   component, an MDX before-and-after, tags and documents with no shape); a glossary and renames for
