@@ -3658,6 +3658,22 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   `$elemMatch`, in the first release's grammar. (4) **`at`** (where the link is written) in `c.refs()`, the
   exports' `refs` table and bundle "via" lines.
 - G3. Data files (YAML, JSON, CSV) as collections: a document shape with attributes and no body?
+  *Decided 2026-11-20* (Rivière's `corpus.md`, "Data files"; `queries.md`; `shapes.md`): (1) **a data file
+  holds a shape's input, written directly;** rich-text fields are Markdown strings read by the field's `as`.
+  (2) Collections include data files (YAML, JSON, NDJSON, CSV, TSV, by extension), many per file by G1's rule,
+  `at` naming the list, a map keyed by id (`orient: index`) giving the key as the id. (3) CSV and TSV cells
+  parsed by value types, as Markdown text is. (4) Writing keeps formatting and comments under the lens laws;
+  a format failing its round-trip tests is read-only. (5) Formats a seam (built in, others registered).
+  (6) Rivière's, not Marquise's. First release: all five read, YAML and JSON written once round trips pass.
+  **Implications from refrakt's `data` rune** (asked by the user): `data` does two jobs, tables for display
+  (stays a refrakt directive on Marquise's preprocess seam; data tables are not Marquise's satellites) and
+  records rendered per row (move to Rivière's `collection` over a data-file collection); its readers
+  (`root`, `orient`, NDJSON) are the implementation to extract; loose numeric detection stays for rows no
+  shape describes. **Grammar change, agreed:** comma for OR, **a repeated field for AND** (refrakt's
+  `collection` and `data` read a repeated field as OR today; a codemod during 0.x, `a:x a:y` to `a:x,y`).
+  The selector language becomes **one small package** shared by Rivière and corpus-free tools. **`$item`** is
+  the per-item variable (`$row` an alias in `data`). The `collection` shape takes **`fields`** (projections),
+  needed by refrakt's `collection` and `data` already; on saved views still open.
 - G4. Time in views and rules: `$today` and relative dates (`reviewed:<$today-6mo`), recurrence, time
   zones; results then depend on the clock.
 - G5. Aliases and old ids, so a rename leaves a redirect (plan's published ids; derived ids from G1).
@@ -3894,7 +3910,9 @@ and agent memory and evals, since plan alone hides what other domains need; gone
 
 ## 23. Next topics
 
-- Rivière's design tried on other domains: gaps G2 to G16, one by one (section 22, "Domains beyond plan"); then
+- In refrakt: migrate `collection` and `data` filters to comma-for-OR, repeated-field-for-AND, with a codemod
+  over `site/content` and `plan/` (G3).
+- Rivière's design tried on other domains: gaps G4 to G16, one by one (section 22, "Domains beyond plan"); then
   worked domain pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
