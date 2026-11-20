@@ -3515,8 +3515,18 @@ time.
   the index, records computed on demand,** so nesting's repetition never reaches a snapshot; **defaults
   revisited after measuring** record size on refrakt's content in 0.x (a Y3 exit test). Also settles X7's
   sub-question on default members.
-- Y12. SPEC-201's open questions before the algorithm is normative: item-model order (order-free today)
-  and the comment under the cursor (a defect)?
+- Y12. *Decided 2026-11-19* (SPEC-201 D1.1, D1.10, D6). **Item models read in any order** (reading more
+  tolerant than writing): edits change a field in place and keep the author's order, write templates
+  order only new items, reading derived from templates is order-free too. **The comment defect, tested**
+  against Markdoc 0.5.13 with refrakt's resolver: Markdoc makes `comment` nodes only when its *tokenizer*
+  has `allowComments: true` (`parse` ignores the option), and refrakt's parser does not enable it. Comments
+  off: `<!-- draft -->` is a text paragraph, taken as the hero's eyebrow and rendered visibly, the headline
+  then reported missing. Comments on: the cursor does not skip the `comment` node, so the eyebrow is
+  skipped, the headline reported missing and the real paragraph and heading unmatched; one comment breaks
+  the whole tag. **Fix:** comments enabled, the cursor skips insignificant nodes, comments never reach
+  records or rendering and writes keep them; in refrakt a behaviour change for the changelog. Tracked as
+  SPEC-201 acceptance criteria with a test per failure (the plan CLI and MCP tools were not available in
+  the session to file a separate bug).
 - Y13. *Decided 2026-11-19* (Marquise's `content-models.md` and `records.md`; Rivière's new
   `plan-as-shapes.md`), all in 1.0 as part of the content-model revision, built and used through plan's
   rebuild. (1) **A `task` matcher** for task-list items (`[ ]` false, `[x]` true), criteria keyed by their
@@ -3774,7 +3784,7 @@ time.
 
 ## 23. Next topics
 
-- The second review's challenges, Y12 and Y14 to Y16 (section 21; Y1 to Y11 and Y13 decided).
+- The second review's challenges, Y14 (quoting, ordering enums) to Y16 (section 21; Y1 to Y13 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and

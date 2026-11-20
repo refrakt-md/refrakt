@@ -54,8 +54,9 @@ SPEC-199's order: refrakt builds against this algorithm, and Marquise ships it.
 The behaviour above is the specified behaviour, written as rules a second implementation can follow:
 
 1. **A sequence reads fields in declared order, with one cursor over the container's children,** after
-   special tags (`tint`, `bg`) are taken out. Insignificant nodes (soft breaks, comments, blank text) are
-   never reported as unmatched; whether the cursor skips them is open question 4.
+   special tags (`tint`, `bg`) are taken out. **The cursor skips insignificant nodes** (comments, soft
+   breaks, blank text) wherever they occur, so every rule below reads "the next significant node"; they are
+   never reported as unmatched, never reach a field, and are kept by writes (*decided 2026-11-19*, D6).
 2. **A field looks only at the node under the cursor.** If the node matches the field's `match`, and its
    content check (if any) passes, the field takes it and the cursor advances. Otherwise the field takes
    nothing and the cursor stays.
@@ -75,7 +76,10 @@ The behaviour above is the specified behaviour, written as rules a second implem
    unmatched. Section-level detection is part of the split and specified with it.
 10. **An item model** reads one list item's inline content: each field, in declared order, takes the first
     node of its type not yet taken; `text` fields then read the remaining text. Order of the inline nodes
-    does not matter, only their order among nodes of the same type.
+    does not matter, only their order among nodes of the same type. *Decided 2026-11-19:* this order-free
+    reading is normative, since reading should be more tolerant than writing; a write template (after
+    Marquise 1.0) orders only *new* items, edits to existing ones change a field in place and keep the
+    author's order, and reading derived from a template is order-free too.
 
 Consequences that follow and are intended: the same input always gives the same fields; matching is
 linear in the number of nodes, safe on untrusted content; one node of lookahead decides everything, so
@@ -179,10 +183,31 @@ on.
 They are matched by D1.10 and analysed by D2: two item fields whose types overlap take successive
 occurrences in declared order, reported as `field-shadowed` when the second is required.
 
+### D6: comments, and the defect they expose
+
+*Added 2026-11-19*, from a test of the resolver against Markdoc 0.5.13 (`notes/marquise-foundation.md`, Y12).
+Markdoc produces `comment` nodes only when its **tokenizer** is created with `allowComments: true` (the
+option passed to `parse` has no effect), and refrakt's parser (`packages/runes/src/parse.ts:17`) does not
+enable it. Two failures follow, in a `hero` holding an optional `eyebrow` paragraph and a `headline`:
+
+- **Comments off (refrakt today):** `<!-- draft -->` is plain text, a paragraph. It becomes the eyebrow and
+  is **rendered visibly**; "New in 2.0" has no field left; the headline is reported missing. (Markdoc has no
+  `{% comment %}` tag either: it is an undefined tag.)
+- **Comments on:** the comment is a `comment` node among the tag's children, and the cursor does not skip
+  it. The eyebrow tries it and is skipped, the headline tries it and is reported missing, and the real
+  paragraph and heading are both reported unmatched: **one comment breaks the whole tag.**
+
+**Decided:** comments are enabled (`<!-- … -->`), the cursor skips insignificant nodes (D1.1), and
+comments never reach records or rendering, while writes keep them (they are part of what the source holds
+beyond the record). In refrakt, enabling comments changes behaviour: a `<!-- -->` that rendered as visible
+text disappears, as its author meant; noted in the changelog.
+
 ## Acceptance criteria
 
 - [ ] A specification of the matching algorithm (D1) is written in the content-model docs, with an example for each rule, and the resolver's comments refer to it
 - [ ] The resolver's existing tests are checked against D1, and a test is added for each rule that no test covers
+- [ ] Refrakt's tokenizer enables comments; the resolver's cursor skips insignificant nodes; a test covers each failure in D6 (comments off and on), and the changelog notes that `<!-- -->` no longer renders as text
+- [ ] Item models read order-free (D1.10), with a test that two orders of the same item give the same record
 - [ ] The analysis (D2) runs when a definition loads and reports `field-unreachable` (error) and `field-shadowed` (error by default; info when acknowledged; in a lenient shape or project, info, or warning when the later field is required), naming both fields, the overlapping node types and the consequence
 - [ ] Overlaps use the matcher relations: `any`, `image` and `paragraph`, `heading` and `heading:N`, `list` and its kinds, alternatives
 - [ ] The worked example in D2 produces exactly the two findings described
@@ -197,15 +222,13 @@ occurrences in declared order, reported as `field-shadowed` when the second is r
    adding one heading can change how the whole content splits. *Partly answered 2026-11-19* (notes Y13):
    not allowed in nested sections, and a finding in strict shapes; kept, reported, for a top-level split in
    lenient shapes.
-2. **Item models are order-free** (D1.10) while write templates for compact forms read in template order
-   (`notes/marquise-foundation.md`, section 18, "Writing forms"). Which should reading derived from a
-   template follow?
+2. **Item models are order-free** (D1.10) while write templates for compact forms read in template order.
+   *Answered 2026-11-19 (D1.10):* reading stays order-free, also when derived from a template; templates
+   order only new items.
 3. **Content checks** (an item model's required fields on a paragraph) make a start set "may match". Is
    that precise enough for D2, or should content checks be part of the overlap computation?
-4. **Insignificant nodes under the cursor.** Today the cursor does not skip them (`isInsignificant` is
-   used only when reporting leftovers and for `position: last`), so a comment between two fields is
-   offered to the next field, fails to match, and makes an optional field absent. Skipping them, as the
-   reporting already assumes, looks like the intended rule; confirm and fix with a test.
+4. **Insignificant nodes under the cursor.** *Answered 2026-11-19 (D6):* a defect, confirmed by test; the
+   cursor skips them, and comments are enabled.
 
 ## References
 
