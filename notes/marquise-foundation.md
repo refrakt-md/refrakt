@@ -3674,6 +3674,14 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   The selector language becomes **one small package** shared by Rivière and corpus-free tools. **`$item`** is
   the per-item variable (`$row` an alias in `data`). The `collection` shape takes **`fields`** (projections),
   needed by refrakt's `collection` and `data` already; on saved views still open.
+- G17. Deferred children inside another shape's content (raised by `data` with a body inside `accordion`).
+  *Decided 2026-11-20* (SPEC-201 D7; Marquise's `extending.md`, `records.md`; Rivière's `shapes.md`):
+  deferred shapes declare what they yield (template's top-level tag, or the collection's shape); the matcher
+  treats a placeholder as zero or more of it inside a repeating field; `deferred-yield-mismatch` at load,
+  counts after filling; explicit tags only for deferred children (`deferred-yield-untyped`), placeholders only
+  where the matcher repeats unless `limit=1`; records keep the query (`Deferred<T>`), not results; filled
+  content is generated (edits redirected or refused). Refrakt's `group-display="accordion"` (hand-built
+  accordion markup) is the cost of not having it.
 - G4. Time in views and rules: `$today` and relative dates (`reviewed:<$today-6mo`), recurrence, time
   zones; results then depend on the clock.
 - G5. Aliases and old ids, so a rename leaves a redirect (plan's published ids; derived ids from G1).

@@ -202,6 +202,44 @@ comments never reach records or rendering, while writes keep them (they are part
 beyond the record). In refrakt, enabling comments changes behaviour: a `<!-- -->` that rendered as visible
 text disappears, as its author meant; noted in the changelog.
 
+### D7: deferred children match by what they yield
+
+A deferred shape (a corpus layer's `collection`, filled after every document is loaded) can stand inside
+another shape's content, where data's `{% data %}` stands today because it runs before reading:
+
+```markdoc
+{% accordion %}
+	{% accordion-item title="How do I reset my password?" %}…{% /accordion-item %}
+
+	{% collection "faq" filter="topic:billing" sort="order" %}
+		{% accordion-item title=$item.question %}
+		{% $item.answer %}
+		{% /accordion-item %}
+	{% /collection %}
+{% /accordion %}
+```
+
+1. **A deferred shape declares what it yields:** its template's top-level tag, or without a template the
+   collection's shape. It is known from the source, before any query runs.
+2. **The matcher treats a placeholder as zero or more of what it yields,** as a run inside a repeating
+   field, beside hand-written items. The parent resolves in the first phase like any shape.
+3. **A mismatch is a finding at load,** `deferred-yield-mismatch` ("yields `card`, `accordion` takes
+   `accordion-item`").
+4. **Filling substitutes in place,** in the same field, with nothing read again; checks that depend on how
+   many items there are (`min`, `content-missing`) run after filling, on the snapshot, at the placeholder's
+   address.
+5. **Restrictions:** a deferred shape inside another shape's content yields explicit tags, one top-level tag
+   per item (`deferred-yield-untyped` otherwise, with the fix of wrapping it in its tag; at a document's top
+   level any template is allowed); and a placeholder stands only where its matcher repeats, unless
+   `limit=1`, where it may fill one optional position.
+6. **A record keeps the query, not its results** (`Deferred<AccordionItemRecord>`): results depend on the
+   corpus, and records stay the entity's own data. Rendering uses the filled tree.
+7. **Filled content is generated,** so edits inside it are redirected to the source entity or refused.
+
+Additive for 1.0: without placeholders, matching is unchanged. Built with deferred shapes (after Marquise
+1.0; needed by Rivière 0.x). In refrakt it lets `collection` compose inside `accordion`, `tabs` and `bento`,
+replacing `group-display="accordion"`, which hand-builds accordion markup today.
+
 ## Acceptance criteria
 
 - [ ] A specification of the matching algorithm (D1) is written in the content-model docs, with an example for each rule, and the resolver's comments refer to it
@@ -215,6 +253,7 @@ text disappears, as its author meant; noted in the changelog.
 - [ ] `shadows: [field]` on the earlier field turns that overlap's finding into info; a `shadows:` naming a field with no overlap is reported
 - [ ] `strict: false`, per shape and as a project setting, turns unacknowledged `field-shadowed` into info (warning when the later field is required)
 - [ ] The language server shows each field's explanation on hover
+- [ ] D7 is specified in the content-model docs: a placeholder matches as zero or more of what it yields, with `deferred-yield-mismatch` and `deferred-yield-untyped`, and counts checked after filling; refrakt's `collection` composes inside `accordion` with a test
 - [ ] The resolver records a trace of its decisions (the nodes each field took and the rule that sent them there, and dropped nodes with their finding); `refrakt inspect --explain` (Marquise's `marquise explain`) prints it, and the language server shows it as inlay hints. The trace's JSON form is not a contract yet
 
 ## Open questions
