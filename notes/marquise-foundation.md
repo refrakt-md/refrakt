@@ -3553,8 +3553,14 @@ time.
   `unblocked: 'blockedBy'` was plan vocabulary, hiding plan's field name and its meaning of "finished"):
   **a path through a list means any by default** (false for an empty list); **`all:` asks for every item**
   (true for an empty list); **the `unblocked` view option is removed,** plan's `next` view written in plan's
-  own words: `status:ready all:blockedBy.status:done,cancelled,superseded`. Still open: quoting, ordering an
-  enum.
+  own words: `status:ready all:blockedBy.status:done,cancelled,superseded`. *Completed 2026-11-20:*
+  **quoting:** double quotes for values with whitespace, `,`, `:` or `"`, or starting with `-`, `<`, `>`;
+  literal inside (no glob), `\"` and `\\` escaped; unquoted values exact or a glob with `*`; regular
+  expressions only in the RE2 subset, run in linear time. **Sorting:** a field with allowed values sorts in
+  the shape's declared order (so plan's views sort by `priority`, not `-priority`, which every example had
+  wrong: alphabetical or reversed order never put `critical` first); numbers, dates and booleans by value;
+  text by Unicode code point after NFC (locale order a later host option); missing values last in both
+  directions; ties broken by collection, then id.
 - Y15. Smaller gaps: `shape-unbound` outside core findings; one table of commands and operations with a
   release column, `format` defined; a page on the published schema; a newcomer page (registering a
   component, an MDX before-and-after, tags and documents with no shape); a glossary and renames for
@@ -3784,7 +3790,7 @@ time.
 
 ## 23. Next topics
 
-- The second review's challenges, Y14 (quoting, ordering enums) to Y16 (section 21; Y1 to Y13 decided).
+- The second review's challenges, Y15 and Y16 (section 21; Y1 to Y14 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and
