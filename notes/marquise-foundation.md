@@ -3546,7 +3546,7 @@ time.
   (`#"v1.0.0".status`), written as an attribute or in frontmatter, never with Markdoc's `#` shorthand
   (which reads `#v1.0.0` as id `v1` and two classes). (5) **"Plan, as shapes"** in Rivière's docs: complete
   `work`, `milestone` and nested `spec` shapes, collections and the `next` view, every plan command mapped,
-  and the prototype's to-do list (rules across fields and entities, `unblocked`'s meaning of finished,
+  and the prototype's to-do list (rules across fields and entities, decided as Y17; `unblocked`'s meaning of finished,
   claiming, the git source, the wrapper-tag codemod).
 - Y14. Query semantics: any or all over lists, quoting, ordering an enum by `-priority`, and `unblocked`
   as a path selector? *Partly decided 2026-11-20* (Rivière's `queries.md`; the user spotted that
@@ -3584,6 +3584,27 @@ time.
 - Y16. Opportunities and prior art: `marquise explain` and inlay hints; a form editor and an OpenAPI export
   generated from shapes; ProseMirror's content expressions, Augeas, Djot, Sphinx domains and MyST, GROQ,
   org-ql, beads and git-bug, Datasette, shadcn's registry?
+- Y17. Rules across fields and entities (the last design item on "Plan, as shapes"' to-do list).
+  *Decided 2026-11-20* (Marquise's `validation.md`, "Rules a shape declares"; Rivière's `references.md`,
+  "Rules across entities", `queries.md`, `plan-as-shapes.md`, "Plan's checks, as rules"): (1) **a shape
+  declares `rules`, written with Rivière's selectors** (no new language): `when` (the condition), optional
+  `require` (without it, the state itself is the finding), `severity`, `message`; **the rule's name is its
+  finding id**, entering the published catalogue. Rules run after content is resolved, so they never change
+  matching. (2) **Rules across entities live in Rivière,** in the shape's `riviere: { rules }` namespace, in
+  the same form, with a new path step **`backrefs(collection.field)`** (entities whose named field
+  references this one; any/`all:` apply; mentions never count). Findings belong to the declaring entity, run
+  on the snapshot, and `--against` reports rules newly broken on a branch. (3) **An optional `fix`, in the
+  form of a saved write's `set`,** becomes the finding's suggested fix (applied with the write path, after
+  Marquise 1.0; in Rivière `riviere fix <rule>` applies it as one changeset). (4) **Selectors only;** what
+  they cannot express is a **registered check** (code under a name, like directives and `prepare` stages),
+  so `rules` never grows into a language. (5) **Timing:** within-document rules built and used during 0.x
+  through the plan rebuild, in Marquise 1.0 if they have proven themselves (additive otherwise);
+  cross-entity rules in Rivière's first release. Every `plan validate` check classifies as built in (unknown
+  values, missing sections, references, duplicate ids, cycles, deprecated aliases), a rule on one document
+  (`done-without-resolution`, `resolution-not-done`, `superseded-without-target`, `active-without-criteria`,
+  `shipped-without-release`, `release-without-shipped`), or a rule across entities (`stale-blocked`,
+  `spec-status-lag`, `spec-status-ahead`, `spec-started-in-draft`, `milestone-complete-with-open-work`);
+  none needs code. The exact set is settled during the rebuild against what `plan validate` reports.
 
 **The outside review** (section 21)
 
