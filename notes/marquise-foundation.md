@@ -3684,6 +3684,14 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   accordion markup) is the cost of not having it.
 - G4. Time in views and rules: `$today` and relative dates (`reviewed:<$today-6mo`), recurrence, time
   zones; results then depend on the clock.
+  *Decided 2026-11-20* (Rivière's `queries.md`, "Time"): (1) `$now` and `$today` in every selector, values of
+  the snapshot, not parameters; (2) relative dates with units (`min`, `h`, `d`, `w`, `mo`, `y`), calendar
+  months clamped, a date compared with a datetime as the start of its day; (3) the snapshot fixes its clock
+  (`rv.load({ now })`, `--now`); (4) one time zone per corpus, UTC by default, also the zone for zoneless
+  datetimes; (5) expansions record the clock among what they read; static sites show time-relative content as
+  of their last build; (6) `--against` evaluates both sides at one `now`, reporting only what the branch
+  introduced, so staleness shows in scheduled validation; (7) recurrence later, as a registered value type
+  (RRULE) with `computes`.
 - G5. Aliases and old ids, so a rename leaves a redirect (plan's published ids; derived ids from G1).
 - G6. Inverse and derived fields across entities (`children` as the inverse of `parent`): Rivière-level
   `computes`.
@@ -3920,7 +3928,7 @@ and agent memory and evals, since plan alone hides what other domains need; gone
 
 - In refrakt: migrate `collection` and `data` filters to comma-for-OR, repeated-field-for-AND, with a codemod
   over `site/content` and `plan/` (G3).
-- Rivière's design tried on other domains: gaps G4 to G16, one by one (section 22, "Domains beyond plan"); then
+- Rivière's design tried on other domains: gaps G5 to G16, one by one (section 22, "Domains beyond plan"); then
   worked domain pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
