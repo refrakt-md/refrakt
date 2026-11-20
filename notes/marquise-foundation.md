@@ -3648,6 +3648,15 @@ and agent memory and evals, since plan alone hides what other domains need; gone
 - G2. Links with data (traceability's "verifies", evidence with a stance, a cast's roles): an item model
   with a ref field plus fields covers most; `backrefs()` over nested paths (`backrefs(paper.evidence.claim)`),
   rules seeing sibling fields; or edge tags as entities (refrakt's `bond`)?
+  *Decided 2026-11-20* (Rivière's `references.md`, "Links with data"; `queries.md`): (1) **both forms**: data
+  beside the reference in an item model on the side that owns it, or the link as an entity of its own (a
+  collection with two reference fields, like `bond`) when it has its own prose or neither side owns it;
+  guidance in the docs. (2) **A reference step lands on whatever holds the reference field:** the entity for
+  a top-level field, the list item for a nested one, with the built-in **`$entity`**. (3) **Brackets scope
+  conditions to one item** (`evidence[stance:contradicts claim.status:accepted]`,
+  `backrefs(paper.evidence.claim)[stance:supports $entity.status:published]`, `all:criteria[done:true]`):
+  `$elemMatch`, in the first release's grammar. (4) **`at`** (where the link is written) in `c.refs()`, the
+  exports' `refs` table and bundle "via" lines.
 - G3. Data files (YAML, JSON, CSV) as collections: a document shape with attributes and no body?
 - G4. Time in views and rules: `$today` and relative dates (`reviewed:<$today-6mo`), recurrence, time
   zones; results then depend on the clock.
