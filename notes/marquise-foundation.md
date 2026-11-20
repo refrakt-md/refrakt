@@ -3498,6 +3498,16 @@ time.
   place of watching. Stores and in-memory sources through the same seams. `@riviere-md/node` in the first
   release; `@riviere-md/github` later as a satellite (what a hosted product needs). Files stay the truth,
   in a remote repository rather than on a disk.
+- Y10b. *Decided 2026-11-20* (asked by the user: does a saved write have consumers beyond plan?), Rivière's
+  `queries.md`: yes. "Saved writes" is our name; the concept exists as workflow transitions in issue
+  trackers (conditions and post-functions, the closest relative), stored procedures (but code), CQRS
+  commands and GraphQL mutations. Consumers: publishing (`publish`, `unpublish`, `archive`), docs
+  maintenance (`mark-reviewed`), requirements traceability (`approve`, `reject`, an audit trail in git), a
+  support compendium (`seen-again`, `resolve`), eval datasets, gardening agents (`mark-stale`), events
+  (`cancel`). Added from them: built-in `$now` and `$today` beside `$actor`, and **declared inputs**
+  (`input: { reason: { type, required } }`, passed as `--reason`, validated like any value); the confirmation
+  policy decides which writes need a person (`approve`). No new machinery: a condition, field values and an
+  optional push.
 - Y11. *Decided 2026-11-19* (Marquise's `records.md`, Rivière's `corpus.md`): **`nodes`, on request,** the
   field's tree in the shape-node format (no new format), for consumers that cannot run Marquise and must
   render rich text themselves, and which shows where nested shapes sit in the prose; **members chosen per
