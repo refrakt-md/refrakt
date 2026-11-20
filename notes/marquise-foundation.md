@@ -3561,11 +3561,26 @@ time.
   wrong: alphabetical or reversed order never put `critical` first); numbers, dates and booleans by value;
   text by Unicode code point after NFC (locale order a later host option); missing values last in both
   directions; ties broken by collection, then id.
-- Y15. Smaller gaps: `shape-unbound` outside core findings; one table of commands and operations with a
-  release column, `format` defined; a page on the published schema; a newcomer page (registering a
-  component, an MDX before-and-after, tags and documents with no shape); a glossary and renames for
-  overloaded words; reserved names (`shape`, `slot`); `3:45` against "unambiguous forms only"; locale data
-  for values and zones for datetimes; `plain` declaring a heading level?
+- Y15. *Decided 2026-11-20.* (1) **`shape-unbound` and `dimension-unsupported` come from the renderer or
+  integration and from `marquise check`, never from `doc.findings`** (core cannot know bindings). (2)
+  **Reserved names:** `shape`, `id`, `address`, `slot`, `lang`. (3) **Colon durations:** two parts are
+  minutes and seconds, three are hours, minutes and seconds; `format: 'h:mm'` for hours and minutes. (4)
+  **Written-out values** read with locale data for `lang` or `$locale`, English as fallback; **a zoneless
+  `datetime` is `value-ambiguous`** unless a zone is declared or given. (5) **`plain: { level }` per field**
+  fixes a heading's level in the plain presentation. (6) **Renames:** `plain: { tag }` to
+  `plain: { element }` ("tag" is the author's word); `c.expand(doc)` and Marquise's
+  `expand(placeholder, values)` to `fill`. **`data-slot` kept,** after the user asked whether refrakt's
+  markers were considered: refrakt has three, `data-name` (a rune's structural part, the BEM element),
+  `data-field` (a value-carrying property, the data channel) and `data-slot` (a composed rune's part placed
+  through a template, its published name, SPEC-145 D10c); the plain wrappers mark a shape's named part,
+  refrakt's `data-slot` meaning, and a stylesheet targeting `[data-slot]` then works on refrakt's composed
+  output and Marquise's plain output alike; `{% slot %}` (fill) and `data-slot` (mark) are input and output
+  of one concept; the real double meaning, refrakt's template placement tag, is to become `{% place %}`.
+  **Pages written:** "Getting started" (as proposed: shape, content, validate, types, a React server
+  component, records, an MDX comparison, untagged Markdown and `shape-unknown`), "Commands and
+  operations" (one table with releases; `format` defined: indents nested block tags only, checks the parsed
+  tree is unchanged, so safe before the write path), "The published schema" (input grammar and output JSON
+  Schema, contents, versioning, delivery), and a glossary in each repository.
 - Y16. Opportunities and prior art: `marquise explain` and inlay hints; a form editor and an OpenAPI export
   generated from shapes; ProseMirror's content expressions, Augeas, Djot, Sphinx domains and MyST, GROQ,
   org-ql, beads and git-bug, Datasette, shadcn's registry?
@@ -3790,7 +3805,7 @@ time.
 
 ## 23. Next topics
 
-- The second review's challenges, Y15 and Y16 (section 21; Y1 to Y14 decided).
+- The second review's last challenge, Y16, opportunities and prior art (section 21; Y1 to Y15 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and

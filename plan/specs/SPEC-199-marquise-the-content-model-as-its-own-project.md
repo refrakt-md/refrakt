@@ -550,7 +550,7 @@ plus SPEC-200's `as` and `from`; the shape node, generated types and the React A
 spec's proposal. Decision 3 shows the same content rendered with no component bound.
 
 *Updated 2026-11-19:* the shape file below uses the revised content model (notes, section 17; the
-matching rules are SPEC-201's) and `plain: { tag }` in place of a top-level `tag:` (notes, section 6).
+matching rules are SPEC-201's) and `plain: { element }` in place of a top-level `tag:` (notes, section 6).
 
 **`shapes/hero.md`.** Refrakt's design attributes (`valign`, `collapse`, `height`, `aspect`,
 `content-place`) and its universal-attribute defaults are gone: in Marquise the component owns
@@ -560,7 +560,7 @@ as 1.0 requires.
 ```md
 ---
 description: Full-width introduction at the top of a landing page
-plain: { tag: section }
+plain: { element: section }
 attributes:
   align:          { type: string, matches: [start, center, end], default: center, description: "Alignment of the text and actions" }
   media-position: { type: string, matches: [top, bottom, start, end], default: bottom, description: "Where the media sits" }
