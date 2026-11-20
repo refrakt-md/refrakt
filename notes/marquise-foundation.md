@@ -3583,7 +3583,20 @@ time.
   Schema, contents, versioning, delivery), and a glossary in each repository.
 - Y16. Opportunities and prior art: `marquise explain` and inlay hints; a form editor and an OpenAPI export
   generated from shapes; ProseMirror's content expressions, Augeas, Djot, Sphinx domains and MyST, GROQ,
-  org-ql, beads and git-bug, Datasette, shadcn's registry?
+  org-ql, beads and git-bug, Datasette, shadcn's registry? *Decided 2026-11-20:* (1) **`marquise explain
+  [file][#address]` and inlay hints in 1.0:** the resolver records each decision (nodes per field and why,
+  dropped nodes); the language server shows it as inlay hints and on hover; the JSON trace is not frozen in
+  1.0; built in refrakt with the SPEC-201 revision (an acceptance criterion there). (2) **No first-party form
+  editor:** generic JSON Schema form generators (JSON Forms, react-jsonschema-form) draw forms from the input
+  schema; one of them is the published schema's outside consumer in its 1.0 exit test. (3) **Static JSON
+  endpoints and an OpenAPI document are a recipe** in Rivière's integrations page, built from the JSONL export
+  and Marquise's JSON Schemas, not a package. (4) *Leanings, after the first releases:* `marquise add
+  <registry>/<shape>` copying shape files shadcn-style, with their source and version recorded, beside npm
+  kits for anything carrying code; hashed ids (`{hash6}`) in Rivière's id patterns for many concurrent
+  writers, after beads; an intersphinx-style inventory for references across corpora; the SQLite export
+  designed for Datasette; missing-content fixes computed as ProseMirror's `fillBefore` does. `fields:` on
+  views (GROQ's projections) stays open. (5) **Prior art pages** in both repositories, each entry saying what
+  is taken and where the design differs, every claim checked against the project's own docs.
 - Y17. Rules across fields and entities (the last design item on "Plan, as shapes"' to-do list).
   *Decided 2026-11-20* (Marquise's `validation.md`, "Rules a shape declares"; Rivière's `references.md`,
   "Rules across entities", `queries.md`, `plan-as-shapes.md`, "Plan's checks, as rules"): (1) **a shape
@@ -3826,7 +3839,7 @@ time.
 
 ## 23. Next topics
 
-- The second review's last challenge, Y16, opportunities and prior art (section 21; Y1 to Y15 decided).
+- The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
 - The outside review's design challenges: all taken (section 21; X5's parser route for the write path and

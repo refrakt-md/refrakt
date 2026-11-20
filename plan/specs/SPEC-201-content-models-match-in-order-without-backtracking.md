@@ -215,6 +215,7 @@ text disappears, as its author meant; noted in the changelog.
 - [ ] `shadows: [field]` on the earlier field turns that overlap's finding into info; a `shadows:` naming a field with no overlap is reported
 - [ ] `strict: false`, per shape and as a project setting, turns unacknowledged `field-shadowed` into info (warning when the later field is required)
 - [ ] The language server shows each field's explanation on hover
+- [ ] The resolver records a trace of its decisions (the nodes each field took and the rule that sent them there, and dropped nodes with their finding); `refrakt inspect --explain` (Marquise's `marquise explain`) prints it, and the language server shows it as inlay hints. The trace's JSON form is not a contract yet
 
 ## Open questions
 
