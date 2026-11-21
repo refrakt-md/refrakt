@@ -4044,7 +4044,16 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   `queries.md`, "Projections and grouping"): `fields` entries are selector paths (lists shown as lists), `as`
   labels, typed columns in the resolved node beside records; `group` by a path (sort order, a last group for
   missing values, fan-out for list values, one level); groups as data, `group-display` replaced by
-  composition; on views, the API, the CLI and regions; first release. Closes T3 and E5.
+  composition; on views, the API, the CLI and regions; first release. Closes T3 and E5. **(5) Writing without git, decided
+  2026-11-21** (Rivière's `corpus.md`, "Writing without git"; `writing.md`): hosted writes on the server
+  behind the host's sign-in, never a token in the browser; actors and groups from the host, commits by the app
+  with the editor in a trailer (names, no emails unless no-reply); the policy's `confirm` opens a pull request
+  through a hosted sink, `allow` commits directly; stale form edits rebased by value or refused with a finding
+  for the person; changesets gain binary file operations limited by the host's asset rules; no editing UI,
+  a recipe once `@riviere-md/github` exists. Closes E1 in design. **The recurring themes are done;** left on
+  the worked pages' to-do lists: T6 (negating a bracket), D1 (ids and parents from paths), D4 (mentions in
+  selectors), D5 (links as edges), D6 (a local resolver), D7 (versioned docs), E2 (comparing two fields), E3
+  (money), E6 (formats in path patterns), E7 (tickets as an overlay, designed).
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
