@@ -3744,6 +3744,12 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   left to the site or app; loaders are host code, content reads overlay fields only where allowed. After the
   first release; overlays on external nodes with resolvers.
 - G12. Baselines (a named snapshot, a diff between two) and suspect links (Doorstop).
+  *Decided 2026-11-21* (Rivière's `corpus.md`, "Baselines"; `references.md`, "Suspect links"): baselines are
+  git refs, `rv.load({ at })` read-only (first release, as `--against` already builds it); `riviere diff`
+  compares snapshots by identity (entities, fields at addresses, references, renames through former ids) and
+  named baselines in config, later; suspect links through recorded fingerprints (`fingerprint: [...]` on the
+  target shape, a `fingerprint` value on the link, `link-suspect` with a fix, unrecorded counts as suspect),
+  needing no history, later.
 - G13. Bulk saved writes over a selection, with one preview.
 - G14. Generated regions: a file region kept in sync with a view, with a drift check.
 - G15. Write permissions per collection or field (CODEOWNERS-like), for agents.
@@ -3971,7 +3977,7 @@ and agent memory and evals, since plan alone hides what other domains need; gone
 
 - In refrakt: migrate `collection` and `data` filters to comma-for-OR, repeated-field-for-AND, with a codemod
   over `site/content` and `plan/` (G3).
-- Rivière's design tried on other domains: gaps G12 to G16, one by one (section 22, "Domains beyond plan"); then
+- Rivière's design tried on other domains: gaps G13 to G16, one by one (section 22, "Domains beyond plan"); then
   worked domain pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
