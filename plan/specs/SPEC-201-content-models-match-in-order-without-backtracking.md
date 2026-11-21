@@ -240,6 +240,31 @@ Additive for 1.0: without placeholders, matching is unchanged. Built with deferr
 1.0; needed by Rivière 0.x). In refrakt it lets `collection` compose inside `accordion`, `tabs` and `bento`,
 replacing `group-display="accordion"`, which hand-builds accordion markup today.
 
+### D8: text templates read several fields from one node
+
+A heading already reads values with a template (`"{key}: {title}"`). Paragraphs and list items do the same,
+for links with data, glossary terms and dated entries:
+
+```yaml
+items:
+  text: "{req} ({coverage}[?, reviewed {reviewed}])"
+  req:      { as: ref, to: [requirement] }
+  coverage: { matches: [full, partial] }
+term: { match: paragraph, text: "**{term}.** {definition}" }
+```
+
+1. One key, `text:`, on headings, paragraphs and list items; a template, not a regular expression.
+2. Written in Markdown inline syntax and matched structurally (literal text, `**{x}**` as bold, a placeholder
+   capturing a `ref` tag or a link).
+3. Placeholders are fields, typed by their declaration and parsed by value types.
+4. Left to right without backtracking: a placeholder ends at the first occurrence of the next literal, the
+   last takes the rest; adjacent placeholders are `text-template-ambiguous`, a shape error.
+5. Optional groups `[? … ]`, nestable, taken when their first literal is found where they would start;
+   `\{` and `\[?` escape.
+6. A node that does not fit is `text-mismatch` and is kept; required fields it lacks are `content-missing`.
+7. The template is the node's write template: edits change one placeholder's span, new nodes fill it.
+8. A template or parts, never both, in one item model; the analysis checks templates at load.
+
 ## Acceptance criteria
 
 - [ ] A specification of the matching algorithm (D1) is written in the content-model docs, with an example for each rule, and the resolver's comments refer to it
@@ -253,6 +278,7 @@ replacing `group-display="accordion"`, which hand-builds accordion markup today.
 - [ ] `shadows: [field]` on the earlier field turns that overlap's finding into info; a `shadows:` naming a field with no overlap is reported
 - [ ] `strict: false`, per shape and as a project setting, turns unacknowledged `field-shadowed` into info (warning when the later field is required)
 - [ ] The language server shows each field's explanation on hover
+- [ ] D8's text templates read headings, paragraphs and list items, with a test for each rule (structural matching, typed placeholders, optional groups, `text-template-ambiguous`, `text-mismatch`), and the heading form uses the same implementation
 - [ ] D7 is specified in the content-model docs: a placeholder matches as zero or more of what it yields, with `deferred-yield-mismatch` and `deferred-yield-untyped`, and counts checked after filling; refrakt's `collection` composes inside `accordion` with a test
 - [ ] The resolver records a trace of its decisions (the nodes each field took and the rule that sent them there, and dropped nodes with their finding); `refrakt inspect --explain` (Marquise's `marquise explain`) prints it, and the language server shows it as inlay hints. The trace's JSON form is not a contract yet
 

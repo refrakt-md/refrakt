@@ -4016,6 +4016,13 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   (`{start:date}`); (E7) tickets as an overlay. **Across the three pages, the recurring themes:** patterns
   reading several fields from one list item or paragraph (T1, D3); ordering by the tree (T5, D2); `computes`
   (T2, T4, E4); projections and grouping in `collection` (T3, E5); a sink beyond the local checkout (E1).
+  Going through them in that order (user, 2026-11-21). **(1) Text templates, decided 2026-11-21** (SPEC-201
+  D8; Marquise's `content-models.md`, "Several fields from one run of text"): `text:` templates on headings,
+  paragraphs and list items, Markdown inline syntax matched structurally, typed placeholders, left to right
+  without backtracking (`text-template-ambiguous`), optional groups `[? … ]`, `text-mismatch` keeping the node,
+  the template doubling as the write template, a template or parts per item model; in 1.0. Closes T1 and D3;
+  the worked pages and external kinds (renamed `pattern` to `text`, since `pattern` means RE2 in shapes) use
+  them.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
