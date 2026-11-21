@@ -4053,7 +4053,13 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   a recipe once `@riviere-md/github` exists. Closes E1 in design. **The recurring themes are done;** left on
   the worked pages' to-do lists: T6 (negating a bracket), D1 (ids and parents from paths), D4 (mentions in
   selectors), D5 (links as edges), D6 (a local resolver), D7 (versioned docs), E2 (comparing two fields), E3
-  (money), E6 (formats in path patterns), E7 (tickets as an overlay, designed).
+  (money), E6 (formats in path patterns), E7 (tickets as an overlay, designed). **T6 and E2, decided 2026-11-21**
+  (Rivière's `queries.md`, "Negation", "Comparing two fields"): a leading `-` negates the whole clause (a table
+  in the docs; `-all:` and `[-…]` differ only on empty lists); two-valued logic, clauses about missing values
+  false so their negation true, `has:` the explicit check; `$this` (the record tested, the item in brackets)
+  and `$root` (the entity evaluated for) as right-hand values; right-hand paths give one value
+  (`selector-value-list`); comparable types checked against the shape; `±duration` the only arithmetic; first
+  release, in the shared selector package. Next: D1 with E6, then D4 to D6.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
