@@ -3124,6 +3124,18 @@ edit; saying the primary syntax is Markdoc; further security gaps; cuts from Riv
 text's size and an opt-in tree; SPEC-201's open questions; the acceptance test's missing pieces; query
 semantics; smaller remaining gaps; opportunities and prior art.
 
+### The third review (2026-11-21)
+
+Run after a day of design (rules, G1–G17, the worked domains, the five themes, T6/E2, D1–D6), by a reviewer
+who had not seen that discussion, cold on the concept docs, then against SPEC-201, SPEC-199 and the decision
+log. Saved as `notes/marquise-review-2026-11-21.md`. Its headline findings, to be worked through as Q1 onward
+in section 22: text templates break the path templates that use them (`{id}-{slug}` reads id `WORK`); none of
+the four worked pages loads as written (name collisions, unacknowledged shadowing, undefined keys); lists of
+references have two readings after the landing rule, and plan's selectors use the other one; the selector
+language needs a written grammar (quoting against `github:…#123`, `+` doing two jobs, reserved words); scope
+pages, READMEs and SPEC-199 lag the decisions, and Marquise's rules depend on a selector language no Marquise
+page defines.
+
 ## 22. Open questions
 
 **Stack**
