@@ -3819,6 +3819,17 @@ one by one, then the mechanical fixes in one pass)
   `fields`; `$actor` wherever there is one (`selector-no-actor` in content); **dates against datetimes at the
   coarser precision** (fixes docs-behind-code firing on review day); `has` and `all` reserved; no cross-field
   OR, with the reason; the review's tricky cases into the catalogue first. Where the grammar lives: Q4.
+- Q4. Who owns selectors (review S2, and Marquise 1.0 leaning on Rivière). *Decided 2026-11-21* (Marquise's new
+  `selectors.md`; `extending.md`, `commands.md`; Rivière's `queries.md`): (1) Marquise owns the language, in
+  `@marquise-md/selectors`, core depending on it; the grammar page moved to Marquise; (2) the grammar is
+  generic: registered step functions and `$` built-ins; Rivière adds vocabulary, never grammar; (3) evaluation
+  through a resolver, Marquise's for one record (references compared, not followed), Rivière's extending it;
+  `selector-unavailable` at load; (4) clock built-ins registered by the host; (5) in 1.0 with rules, the
+  catalogue as the exit test in both settings. **Added by the user:** (6) the vocabulary API is **public and
+  documented for any third party,** and Rivière uses it as one would: registrations declare name, typed
+  arguments and result; deterministic and bounded (no I/O, clock or randomness at evaluation); host code only;
+  names unique per host, collisions an error, third parties prefix (`acme.related()`); listed by
+  `marquise reference` and the language server; a row in the seams table.
 
 **The outside review** (section 21)
 
