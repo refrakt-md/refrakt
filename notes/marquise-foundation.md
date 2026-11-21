@@ -3830,6 +3830,18 @@ one by one, then the mechanical fixes in one pass)
   arguments and result; deterministic and bounded (no I/O, clock or randomness at evaluation); host code only;
   names unique per host, collisions an error, third parties prefix (`acme.related()`); listed by
   `marquise reference` and the language server; a row in the seams table.
+- Q5. The remaining design risks (review D3, D5–D11, F-T5; D1, D2, D4, D12 answered by Q1–Q4). *Decided
+  2026-11-21*: (1) CEL: `done * 100 / total`; the bridge renamed **`selects()`** (CEL's `matches` is its regex
+  function); **Marquise's values map onto CEL's native types** (`duration`, `timestamp`, dates as timestamps at
+  the start of the day, amounts as a custom type with functions), since CEL forbids operator overloading: a
+  true subset, conformance applying (corrects "own operators"); (2) a **size table** on each scope page;
+  `$created`/`$modified`/`$authors` registered by `@riviere-md/node`; (3) `history-unavailable` fails `validate`
+  unless `history: optional`, the date table keyed by HEAD; (4) CLI actors from `--actor`/`RIVIERE_ACTOR`,
+  otherwise `unknown` in a non-interactive shell, treated as `confirm`; traceability's claim softened; (5) MCP
+  gains `set`, `write`, `preview`, `apply`; (6) `links` holds everything not in the entity's own source,
+  exported beside the record; (7) data files read-only in the first release; regions for documents outside
+  collections; (8) `from`/`changed` rules per commit under `--against`, endpoints as info when shallow.
+  **The design questions are done; next, the mechanical fixes from the review in one pass.**
 
 **The outside review** (section 21)
 
