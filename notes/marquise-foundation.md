@@ -4003,8 +4003,13 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   `traceability-as-shapes.md`); its to-do list: (T1) item text patterns (`"{req} ({coverage}, reviewed
   {reviewed})"`), a content-model question for SPEC-201's revision; (T2) the latest result per test (a
   `latest` step or `computes`); (T3) paths in `fields` projections; (T4) coverage percentages (`computes`);
-  (T5) ordering by the tree (open from G7); (T6) negating a bracket clause, to state in the grammar. Next:
-  a docs site with a glossary, then events.
+  (T5) ordering by the tree (open from G7); (T6) negating a bracket clause, to state in the grammar. **A docs
+  site written 2026-11-21** (`docs-site-as-shapes.md`); its to-do list: (D1) ids and parents derived from
+  paths (`id: { from: 'path' }`, a parent from the folder); (D2) ordering by the tree, again (T5); (D3) a
+  paragraph read by a pattern (`"**{term}.** {definition}"`), the same question as T1; (D4) mentions in
+  selectors (`mentions()`); (D5) Markdown links as edges ("pages nobody links to"); (D6) a local resolver
+  (file exists) as safe in the first release, refrakt's `refrakt.stale` the precedent; (D7) versioned docs, as
+  variants like translations. Next: events.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
