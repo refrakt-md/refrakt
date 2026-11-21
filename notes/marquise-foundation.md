@@ -3762,6 +3762,12 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   clock-dependent queries; edits inside refused; only where no content model reads (`region-in-shape`);
   `content.read` applies. After the first release.
 - G15. Write permissions per collection or field (CODEOWNERS-like), for agents.
+  *Decided 2026-11-21* (Rivière's `writing.md`, "The write policy"): one ordered policy with `allow`,
+  `confirm` and `deny`, first match wins, replacing `confirm`, allowing by default; rules on actors,
+  collections, operations (saved writes by name, `write:claim`), field prefixes, file counts and `where` on the
+  entity before the write (`assignee:$actor`); `write-denied` naming the rule, skipped and listed in bulk
+  writes; actors supplied by the caller; documented as a guardrail, not access control (the forge's controls
+  are). First release; checking hand edits in CI later.
 - G16. Several repositories as one corpus; scale (review question 13).
 
 **The outside review** (section 21)
@@ -3986,7 +3992,7 @@ and agent memory and evals, since plan alone hides what other domains need; gone
 
 - In refrakt: migrate `collection` and `data` filters to comma-for-OR, repeated-field-for-AND, with a codemod
   over `site/content` and `plan/` (G3).
-- Rivière's design tried on other domains: gaps G15 to G16, one by one (section 22, "Domains beyond plan"); then
+- Rivière's design tried on other domains: gap G16, one by one (section 22, "Domains beyond plan"); then
   worked domain pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
