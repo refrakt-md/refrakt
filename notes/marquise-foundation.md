@@ -3859,6 +3859,19 @@ one by one, then the mechanical fixes in one pass)
   complete; **features not yet graduated live in their own 0.x packages beside Marquise 1.0** (keeping "no
   experimental flags"); READMEs generated from the concept indexes; SPEC-199's tables and stale details
   updated; several creates in one changeset allocate distinct ids. Glossaries filled.
+- Q7. Rivière's extension points (asked by the user, after the size assessment: Rivière's risk is breadth).
+  *Decided 2026-11-21* (Rivière's new `plugins.md`; `scope.md`): (1) **core is what every corpus needs and what
+  cannot be built on the public API** (snapshot, cache, clock; collections, identity, former ids; references,
+  inverses, `inverseOf`, symmetric, mentions; rules across entities, views, saved writes; changesets, sinks,
+  the write policy; the deferred shapes; YAML/JSON data files; JSONL); (2) **a plugin model**: config keys under
+  the plugin's name with a published schema, selector vocabulary through Marquise's API, **derived members
+  with declared dependencies**, checks over the snapshot and **over a change**, sources/sinks/formats/
+  resolvers/overlay loaders/id generators, CLI commands and MCP tools from one declaration, prefixed
+  findings; Marquise's constraints; (3) out of core: `tree`, `workflow` (transitions, `from`/`changed`),
+  `trace` (fingerprints, diff, baselines), `formats` (CSV, TSV, NDJSON), `regions`, `federation`, `sqlite`; git
+  in `@riviere-md/node`; (4) **`tree`, `workflow` and `formats` ship first-party in the first release,** plan's
+  rebuild depending on `workflow`; (5) **corpus definitions** (shapes, collections, views, writes, rules) as
+  publishable packages, plan's first (`@refrakt-md/plan-corpus`), the worked domains next.
 
 **The outside review** (section 21)
 
