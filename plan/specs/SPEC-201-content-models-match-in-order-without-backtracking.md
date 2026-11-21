@@ -79,7 +79,8 @@ The behaviour above is the specified behaviour, written as rules a second implem
     does not matter, only their order among nodes of the same type. *Decided 2026-11-19:* this order-free
     reading is normative, since reading should be more tolerant than writing; a write template (after
     Marquise 1.0) orders only *new* items, edits to existing ones change a field in place and keep the
-    author's order, and reading derived from a template is order-free too.
+    author's order, and reading a compact form derived from a `{% form %}` write template is order-free too.
+    An item model with a `template:` (D8) reads in the template's order instead.
 
 Consequences that follow and are intended: the same input always gives the same fields; matching is
 linear in the number of nodes, safe on untrusted content; one node of lookahead decides everything, so
@@ -240,30 +241,42 @@ Additive for 1.0: without placeholders, matching is unchanged. Built with deferr
 1.0; needed by Rivière 0.x). In refrakt it lets `collection` compose inside `accordion`, `tabs` and `bento`,
 replacing `group-display="accordion"`, which hand-builds accordion markup today.
 
-### D8: text templates read several fields from one node
+### D8: templates read several values from one node
 
 A heading already reads values with a template (`"{key}: {title}"`). Paragraphs and list items do the same,
 for links with data, glossary terms and dated entries:
 
 ```yaml
 items:
-  text: "{req} ({coverage}[?, reviewed {reviewed}])"
+  template: "{req} ({coverage}[?, reviewed {reviewed}])"
   req:      { as: ref, to: [requirement] }
   coverage: { matches: [full, partial] }
-term: { match: paragraph, text: "**{term}.** {definition}" }
+term: { match: paragraph, template: "**{name}.** {definition}", name: { as: text }, definition: { as: inline } }
 ```
 
-1. One key, `text:`, on headings, paragraphs and list items; a template, not a regular expression.
+1. One key, **`template:`**, on headings, paragraphs and list items; not a regular expression, and not
+   `text`, which is a matcher, an `as` value, a rich-text member and a common field name. *(Renamed from
+   `text:` 2026-11-21, third review.)*
 2. Written in Markdown inline syntax and matched structurally (literal text, `**{x}**` as bold, a placeholder
    capturing a `ref` tag or a link).
-3. Placeholders are fields, typed by their declaration and parsed by value types.
-4. Left to right without backtracking: a placeholder ends at the first occurrence of the next literal, the
-   last takes the rest; adjacent placeholders are `text-template-ambiguous`, a shape error.
+3. **Placeholders are members of what the template reads,** declared beside it and typed: a list item's
+   fields, a section's members, a paragraph field's members (`term.name`).
+4. **Each placeholder consumes by its type's grammar,** left to right, without backtracking: dates their ISO
+   form, numbers their digits, enums the longest allowed value, references and ids the id pattern of their
+   collections. Only untyped text runs up to the next literal. The following literal must match where a
+   placeholder stopped, else `text-mismatch`. **A literal that closes its container is matched from the end**
+   (`**{name}.**` reads "Node.js."). Two untyped placeholders with no literal between them are
+   `template-ambiguous`, a shape error. *(Revised 2026-11-21: first-literal splitting broke ids, dates and
+   paths.)*
 5. Optional groups `[? … ]`, nestable, taken when their first literal is found where they would start;
    `\{` and `\[?` escape.
-6. A node that does not fit is `text-mismatch` and is kept; required fields it lacks are `content-missing`.
+6. A node that does not fit is `text-mismatch` and is kept; required members it lacks are `content-missing`.
 7. The template is the node's write template: edits change one placeholder's span, new nodes fill it.
+   `{% form %}` write templates serve only compact forms of child shapes.
 8. A template or parts, never both, in one item model; the analysis checks templates at load.
+9. **The engine is public** in Marquise's API (parse, read, write), for Rivière's file paths and external ids.
+10. **Scope:** heading templates are built and in 1.0; paragraph and item templates are in 1.0 if proven during
+    0.x, otherwise additive.
 
 ## Acceptance criteria
 
@@ -278,7 +291,7 @@ term: { match: paragraph, text: "**{term}.** {definition}" }
 - [ ] `shadows: [field]` on the earlier field turns that overlap's finding into info; a `shadows:` naming a field with no overlap is reported
 - [ ] `strict: false`, per shape and as a project setting, turns unacknowledged `field-shadowed` into info (warning when the later field is required)
 - [ ] The language server shows each field's explanation on hover
-- [ ] D8's text templates read headings, paragraphs and list items, with a test for each rule (structural matching, typed placeholders, optional groups, `text-template-ambiguous`, `text-mismatch`), and the heading form uses the same implementation
+- [ ] D8's templates read headings, paragraphs and list items, with a test for each rule (structural matching, placeholders consuming by type, closing literals from the end, optional groups, `template-ambiguous`, `text-mismatch`), and the heading form uses the same implementation
 - [ ] D7 is specified in the content-model docs: a placeholder matches as zero or more of what it yields, with `deferred-yield-mismatch` and `deferred-yield-untyped`, and counts checked after filling; refrakt's `collection` composes inside `accordion` with a test
 - [ ] The resolver records a trace of its decisions (the nodes each field took and the rule that sent them there, and dropped nodes with their finding); `refrakt inspect --explain` (Marquise's `marquise explain`) prints it, and the language server shows it as inlay hints. The trace's JSON form is not a contract yet
 
@@ -289,8 +302,8 @@ term: { match: paragraph, text: "**{term}.** {definition}" }
    not allowed in nested sections, and a finding in strict shapes; kept, reported, for a top-level split in
    lenient shapes.
 2. **Item models are order-free** (D1.10) while write templates for compact forms read in template order.
-   *Answered 2026-11-19 (D1.10):* reading stays order-free, also when derived from a template; templates
-   order only new items.
+   *Answered 2026-11-19 (D1.10):* reading stays order-free, also when derived from a `{% form %}` write
+   template; such templates order only new items. (A `template:` on an item model, D8, reads in its order.)
 3. **Content checks** (an item model's required fields on a paragraph) make a start set "may match". Is
    that precise enough for D2, or should content checks be part of the overlap computation?
 4. **Insignificant nodes under the cursor.** *Answered 2026-11-19 (D6):* a defect, confirmed by test; the

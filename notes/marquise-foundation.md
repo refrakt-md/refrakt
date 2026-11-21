@@ -3788,6 +3788,20 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   shapes and Marquise's version; snapshots hold records and the index, trees on demand; a generated benchmark
   corpus in CI, targets set by the first measurement and held as a 1.0 exit test (first release).
 
+**The third review** (section 21, "The third review"; `notes/marquise-review-2026-11-21.md`; design questions
+one by one, then the mechanical fixes in one pass)
+
+- Q1. Templates that cannot find where their values end (review D1, F-D2, F-E4, C9, C10, S4, S5, the
+  overloaded `text`). *Decided 2026-11-21* (Marquise's `content-models.md`; Rivière's `corpus.md`; SPEC-201
+  D8 revised, D1.10 scoped): (1) typed placeholders consume by their type's grammar (dates ISO, numbers
+  digits, enums longest value, ids and references by their collections' id patterns); untyped text up to the
+  next literal; a closing literal matched from the end; (2) `:slug` is decoration, never compared; other path
+  values compared in the path's format; (3) id patterns are creation-time templates, opaque afterwards
+  (events: `id: '{start:date}-{title:slug}'`), continuously derived ids an option; (4) the key renamed
+  **`template:`**, placeholders as members of what the template reads (`term.name`); (5) `template:` writes
+  nodes and items, `{% form %}` only compact forms; (6) the engine public (`template()`); heading templates
+  in 1.0, paragraph and item templates in 1.0 if proven.
+
 **The outside review** (section 21)
 
 - X1. *Decided 2026-11-19:* Marquise 1.0 is the read path, records included: one syntax (Markdoc); shape
