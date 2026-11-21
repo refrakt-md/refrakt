@@ -3756,6 +3756,11 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   skipped and listed (refused under `--strict`); one all-or-nothing changeset, previewed by default, `--all`
   above a ceiling of 50 (configurable); the confirmation policy applies to agents unchanged; first release.
 - G14. Generated regions: a file region kept in sync with a view, with a drift check.
+  *Decided 2026-11-21* (Rivière's `shapes.md`, "Generated regions"): comment markers holding plain Markdown,
+  configured like the `collection` shape or by a saved view; tables and link lists until `compose`;
+  `riviere generate`, `--check` for CI, `region-stale` with a fix; deterministic bytes, `region-clock` for
+  clock-dependent queries; edits inside refused; only where no content model reads (`region-in-shape`);
+  `content.read` applies. After the first release.
 - G15. Write permissions per collection or field (CODEOWNERS-like), for agents.
 - G16. Several repositories as one corpus; scale (review question 13).
 
@@ -3981,7 +3986,7 @@ and agent memory and evals, since plan alone hides what other domains need; gone
 
 - In refrakt: migrate `collection` and `data` filters to comma-for-OR, repeated-field-for-AND, with a codemod
   over `site/content` and `plan/` (G3).
-- Rivière's design tried on other domains: gaps G14 to G16, one by one (section 22, "Domains beyond plan"); then
+- Rivière's design tried on other domains: gaps G15 to G16, one by one (section 22, "Domains beyond plan"); then
   worked domain pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
