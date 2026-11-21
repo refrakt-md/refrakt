@@ -3998,8 +3998,13 @@ and agent memory and evals, since plan alone hides what other domains need; gone
 
 - In refrakt: migrate `collection` and `data` filters to comma-for-OR, repeated-field-for-AND, with a codemod
   over `site/content` and `plan/` (G3).
-- Rivière's design tried on other domains: all gaps decided (G1 to G17, section 22). Next, worked domain
-  pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures, each with a to-do list.
+- Rivière's design tried on other domains: all gaps decided (G1 to G17, section 22). Worked domain pages
+  beside "Plan, as shapes", as test fixtures: **traceability written 2026-11-21** (Rivière's
+  `traceability-as-shapes.md`); its to-do list: (T1) item text patterns (`"{req} ({coverage}, reviewed
+  {reviewed})"`), a content-model question for SPEC-201's revision; (T2) the latest result per test (a
+  `latest` step or `computes`); (T3) paths in `fields` projections; (T4) coverage percentages (`computes`);
+  (T5) ordering by the tree (open from G7); (T6) negating a bracket clause, to state in the grammar. Next:
+  a docs site with a glossary, then events.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
