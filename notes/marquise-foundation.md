@@ -4040,7 +4040,11 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   computes**, bridged by `matches()`; **templates look up, they do not compute** (works in Markdoc and
   Comark); (5) a spike on both JS implementations before freezing, Kubernetes' `variables` as the evaluation
   model; (6) SPEC-195 D1 and D8 reopened, the rest kept. Rivière's computed values across entities in CEL,
-  in `links`, after the first release (T2, T4, E4 designed).
+  in `links`, after the first release (T2, T4, E4 designed). **(4) Projections and grouping, decided 2026-11-21** (Rivière's
+  `queries.md`, "Projections and grouping"): `fields` entries are selector paths (lists shown as lists), `as`
+  labels, typed columns in the resolved node beside records; `group` by a path (sort order, a last group for
+  missing values, fan-out for list values, one level); groups as data, `group-display` replaced by
+  composition; on views, the API, the CLI and regions; first release. Closes T3 and E5.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
