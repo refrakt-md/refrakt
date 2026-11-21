@@ -3738,6 +3738,11 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   kinds. First release without resolvers; plan's `pr` becomes `{ type: ref, to: [github] }` and its PR
   rollups a query.
 - G11. Overlays: read-only fields from another source (progress, CI results) joined at query time.
+  *Decided 2026-11-21* (Rivière's `corpus.md`, "Overlays"): typed, read-only fields from a registered loader,
+  keyed by identity, declared in config; in `links`, queryable like fields, collisions reported; loaded with
+  the snapshot and fixed for it, dependencies recorded; writes refused; per-viewer data (learner progress)
+  left to the site or app; loaders are host code, content reads overlay fields only where allowed. After the
+  first release; overlays on external nodes with resolvers.
 - G12. Baselines (a named snapshot, a diff between two) and suspect links (Doorstop).
 - G13. Bulk saved writes over a selection, with one preview.
 - G14. Generated regions: a file region kept in sync with a view, with a drift check.
@@ -3966,7 +3971,7 @@ and agent memory and evals, since plan alone hides what other domains need; gone
 
 - In refrakt: migrate `collection` and `data` filters to comma-for-OR, repeated-field-for-AND, with a codemod
   over `site/content` and `plan/` (G3).
-- Rivière's design tried on other domains: gaps G11 to G16, one by one (section 22, "Domains beyond plan"); then
+- Rivière's design tried on other domains: gaps G12 to G16, one by one (section 22, "Domains beyond plan"); then
   worked domain pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
