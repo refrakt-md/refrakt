@@ -4059,7 +4059,14 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   false so their negation true, `has:` the explicit check; `$this` (the record tested, the item in brackets)
   and `$root` (the entity evaluated for) as right-hand values; right-hand paths give one value
   (`selector-value-list`); comparable types checked against the shape; `±duration` the only arithmetic; first
-  release, in the shared selector package. Next: D1 with E6, then D4 to D6.
+  release, in the shared selector package. **D1 and E6, decided 2026-11-21** (Rivière's `corpus.md`, "Paths
+  are two-way templates"): a collection's `path` is read and written by the text-template engine (D8);
+  formats `{x:date}`, `{x:year}`, `{x:month}`, `{x:slug}`, `{id:path}` (may contain `/`); alternatives read in
+  order, written with the first (`docs/{id:path}/index.md`, then `docs/{id:path}.md`, as Astro's file ids),
+  `path-unmatched`; a path supplies a field the document does not state, written values win (`path-mismatch`,
+  fixed by a move); `tree: { parent: { from: 'folder' } }` a derived reference named `parent` in `links`,
+  nearest existing ancestor, writes `field-derived`; moving renames with former ids. First release. Next: D4
+  to D6.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
