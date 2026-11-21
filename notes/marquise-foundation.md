@@ -3717,6 +3717,12 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   graph checks; closures cached per snapshot, a ceiling in untrusted content. First release (plan's
   "transitively blocked"). Open: ordering by the tree, with the docs-site worked example.
 - G8. Transition rules (`from:`/`to:`), checked between a base and a head with `--against`.
+  *Decided 2026-11-21* (Rivière's `references.md`, "Transitions"): (1) `transitions` per field in `riviere:`,
+  a state machine with `$new` for creation, states without an entry terminal; (2) rules with `from` (selector
+  on the old version) and `changed` (fields that differ), beside `when`/`require`; (3) strict on Rivière's own
+  writes, **by reachability** under `--against` (endpoints only: `draft` to `done` in one branch passes), the
+  language server against the last commit; (4) saved writes checked against the map at config load; (5)
+  Rivière's, first release; deeper history later. Plan's maps (incl. `pending`) settled in the rebuild.
 - G9. Git-derived fields (`created`, `lastModified`, `authors`) before the full history source.
 - G10. References outside the corpus: typed external ids (`doi:`, `github:org/repo#12`).
 - G11. Overlays: read-only fields from another source (progress, CI results) joined at query time.
@@ -3948,7 +3954,7 @@ and agent memory and evals, since plan alone hides what other domains need; gone
 
 - In refrakt: migrate `collection` and `data` filters to comma-for-OR, repeated-field-for-AND, with a codemod
   over `site/content` and `plan/` (G3).
-- Rivière's design tried on other domains: gaps G8 to G16, one by one (section 22, "Domains beyond plan"); then
+- Rivière's design tried on other domains: gaps G9 to G16, one by one (section 22, "Domains beyond plan"); then
   worked domain pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
