@@ -3724,6 +3724,11 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   language server against the last commit; (4) saved writes checked against the map at config load; (5)
   Rivière's, first release; deeper history later. Plan's maps (incl. `pending`) settled in the rebuild.
 - G9. Git-derived fields (`created`, `lastModified`, `authors`) before the full history source.
+  *Decided 2026-11-21* (Rivière's `corpus.md`, "Dates and authors"): `$created`, `$modified`, `$authors` as
+  built-in members, provided by the source (absent when it cannot); per file in the first release, per entity
+  with the history source; one `git log` pass with rename detection; uncommitted files modified at the
+  snapshot's `now`; `history-unavailable` in shallow clones, never a guessed date; names only, readable from
+  content only when allowed; docs recommend an explicit review date for staleness.
 - G10. References outside the corpus: typed external ids (`doi:`, `github:org/repo#12`).
 - G11. Overlays: read-only fields from another source (progress, CI results) joined at query time.
 - G12. Baselines (a named snapshot, a diff between two) and suspect links (Doorstop).
@@ -3954,7 +3959,7 @@ and agent memory and evals, since plan alone hides what other domains need; gone
 
 - In refrakt: migrate `collection` and `data` filters to comma-for-OR, repeated-field-for-AND, with a codemod
   over `site/content` and `plan/` (G3).
-- Rivière's design tried on other domains: gaps G9 to G16, one by one (section 22, "Domains beyond plan"); then
+- Rivière's design tried on other domains: gaps G10 to G16, one by one (section 22, "Domains beyond plan"); then
   worked domain pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
