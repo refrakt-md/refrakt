@@ -3703,6 +3703,13 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   release: former ids (plan's renumbering); names later, their step reserved.
 - G6. Inverse and derived fields across entities (`children` as the inverse of `parent`): Rivière-level
   `computes`.
+  *Decided 2026-11-21* (Rivière's `references.md`, "Inverses and symmetric references"; `corpus.md`): (1)
+  inverses declared in the shape's `riviere:` namespace (`inverse: { work: { of: work.source } }`), usable in
+  selectors, bundles, the API and types, `backrefs()` for the rest; (2) **an entity is `{ record, links }`**,
+  inverses in `links`, never in the record; the Astro loader puts them in `data` as read-only references;
+  (3) writes to an inverse refused (`field-derived`), the fix editing the other side; (4) `symmetric: true`
+  on reference fields (refrakt's `bond` `bidirectional`); (5) values computed across entities wait for
+  `computes`, `count` and `aggregate` until then; (6) inverses and symmetric references in the first release.
 - G7. Transitive paths in selectors (`blockedBy*`, everything under a page).
 - G8. Transition rules (`from:`/`to:`), checked between a base and a head with `--against`.
 - G9. Git-derived fields (`created`, `lastModified`, `authors`) before the full history source.
@@ -3936,7 +3943,7 @@ and agent memory and evals, since plan alone hides what other domains need; gone
 
 - In refrakt: migrate `collection` and `data` filters to comma-for-OR, repeated-field-for-AND, with a codemod
   over `site/content` and `plan/` (G3).
-- Rivière's design tried on other domains: gaps G6 to G16, one by one (section 22, "Domains beyond plan"); then
+- Rivière's design tried on other domains: gaps G7 to G16, one by one (section 22, "Domains beyond plan"); then
   worked domain pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
