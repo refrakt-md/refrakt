@@ -3711,6 +3711,11 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   on reference fields (refrakt's `bond` `bidirectional`); (5) values computed across entities wait for
   `computes`, `count` and `aggregate` until then; (6) inverses and symmetric references in the first release.
 - G7. Transitive paths in selectors (`blockedBy*`, everything under a page).
+  *Decided 2026-11-21* (Rivière's `queries.md`, "Transitive paths"): `+` after a reference step, inverse or
+  `$container` means one or more steps (SPARQL's notation; no `*`, which is a glob in values); any, `all:`,
+  brackets and id comparison unchanged (`parent+:guides`); cycles terminate (visited once), reported by the
+  graph checks; closures cached per snapshot, a ceiling in untrusted content. First release (plan's
+  "transitively blocked"). Open: ordering by the tree, with the docs-site worked example.
 - G8. Transition rules (`from:`/`to:`), checked between a base and a head with `--against`.
 - G9. Git-derived fields (`created`, `lastModified`, `authors`) before the full history source.
 - G10. References outside the corpus: typed external ids (`doi:`, `github:org/repo#12`).
@@ -3943,7 +3948,7 @@ and agent memory and evals, since plan alone hides what other domains need; gone
 
 - In refrakt: migrate `collection` and `data` filters to comma-for-OR, repeated-field-for-AND, with a codemod
   over `site/content` and `plan/` (G3).
-- Rivière's design tried on other domains: gaps G7 to G16, one by one (section 22, "Domains beyond plan"); then
+- Rivière's design tried on other domains: gaps G8 to G16, one by one (section 22, "Domains beyond plan"); then
   worked domain pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
