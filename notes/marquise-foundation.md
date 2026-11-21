@@ -3801,6 +3801,15 @@ one by one, then the mechanical fixes in one pass)
   **`template:`**, placeholders as members of what the template reads (`term.name`); (5) `template:` writes
   nodes and items, `{% form %}` only compact forms; (6) the engine public (`template()`); heading templates
   in 1.0, paragraph and item templates in 1.0 if proven.
+- Q2. Lists of references read two ways after G2's landing rule; plan's `## Blocks` unused (review C1, F-P3,
+  F-P4, F-P1, F-T8). *Decided 2026-11-21* (Marquise's `content-models.md`, `records.md`; Rivière's
+  `references.md`, `queries.md`, `plan-as-shapes.md`): (1) `items:` with a single value declaration is a list
+  of values (`items: { as: ref, to: […] }` is `Ref[]`), whose steps reach the entities; items with named
+  members are records, whose steps land on the item; (2) an inverse over nested references holds items with
+  `$entity`, over a list of references the entities; (3) **`riviere: { inverseOf: blockedBy }`** joins two
+  written fields into one edge set for selectors, `next`, rules, walks, `+`, bundles and the cycle check,
+  each edge once, writes staying on the side they target; (4) plan's `criteria`, `blocked-by`, `blocks`
+  optional.
 
 **The outside review** (section 21)
 
