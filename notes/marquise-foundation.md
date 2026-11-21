@@ -3693,6 +3693,14 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   introduced, so staleness shows in scheduled validation; (7) recurrence later, as a registered value type
   (RRULE) with `computes`.
 - G5. Aliases and old ids, so a rename leaves a redirect (plan's published ids; derived ids from G1).
+  *Decided 2026-11-21* (Rivière's `corpus.md`, "Former ids and names"): two needs kept apart. **Former ids:**
+  a field the collection names (`formerIds: 'formerly'`, declared by the shape; no reserved key), written by
+  `rename`; references to them resolve with `ref-former-id` (info, fix to the current id); never reused
+  (`id-reused`, skipped by `next-id`, checked by `--against`); hand edits caught under `--against`
+  (`id-changed`, fix adds the former id), which keeps G1's derived ids safe; passed to integrations for
+  redirects. **Names:** opt-in `names: [...]` per collection, resolving last (id, then former id, then name),
+  exact after NFC, a shared name always ambiguous (unlike refrakt's first-owner `registers` aliases). First
+  release: former ids (plan's renumbering); names later, their step reserved.
 - G6. Inverse and derived fields across entities (`children` as the inverse of `parent`): Rivière-level
   `computes`.
 - G7. Transitive paths in selectors (`blockedBy*`, everything under a page).
@@ -3928,7 +3936,7 @@ and agent memory and evals, since plan alone hides what other domains need; gone
 
 - In refrakt: migrate `collection` and `data` filters to comma-for-OR, repeated-field-for-AND, with a codemod
   over `site/content` and `plan/` (G3).
-- Rivière's design tried on other domains: gaps G5 to G16, one by one (section 22, "Domains beyond plan"); then
+- Rivière's design tried on other domains: gaps G6 to G16, one by one (section 22, "Domains beyond plan"); then
   worked domain pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
