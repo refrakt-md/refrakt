@@ -3283,7 +3283,7 @@ time.
 - Z1d. Comark's `data` namespace is render-time; should the host values Marquise uses at transform
   time use the same names, so `data.user` means one thing in both places?
 - Z1e. `computes` expressions: borrow Comark's dot-path style (`attrs.title`) for consistency with
-  content, or keep SPEC-195's function syntax?
+  content, or keep SPEC-195's function syntax? *Answered 2026-11-21:* CEL, with plain dot paths.
 - Z2a. Old content inside fenced code: refrakt's regex codemods rewrote fenced examples too,
   sometimes wrongly. Should codemods touch fences at all? Probably only `example` blocks, never
   arbitrary code.
@@ -4026,7 +4026,21 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   `tree: { parent, order }` on a collection, one per collection; `sort: '$tree'` depth-first, siblings by the
   declared order, then title, then id; positions over the whole collection before filtering; `$depth`,
   `$position`, `$prev`, `$next` in `links` and the loader; `tree-cycle` placing the cycle at the root; derived
-  parents and `reorder` later; first release. Closes T5 and D2.
+  parents and `reorder` later; first release. Closes T5 and D2. **(3) Computes in CEL, decided 2026-11-21**
+  (Marquise's `syntax.md`, "Expressions in shape files: CEL"; Rivière's `references.md`): the user asked for
+  fresh eyes, since SPEC-195 chose Markdoc call syntax without comparing CEL, on a premise (one content
+  syntax) that Comark undoes. Researched: CEL's spec (linear time, cost model, type checker, Kubernetes
+  `variables` as computed values in YAML); JS implementations `@marcbachmann/cel-js` (light, public
+  checker, no conformance claim) and `@bufbuild/cel` (conformance-tested, beta, heavy, checker not public);
+  Comark has no expression language (path lookups, `::if` with comparison props). JSONata compared at the
+  user's request: tersest for paths, but Turing-complete, untyped, JSON-only, a query language; SPEC-138 had
+  it as a finalist for the dropped engine seam, not rejected on merit. Decided: (1) CEL as a defined profile
+  for `computes`; (2) plain dot paths (answers Z1e), Marquise's value types as CEL types; (3) SPEC-195's
+  vocabulary as CEL custom functions with its admission rule and guardrails; (4) **selectors choose, CEL
+  computes**, bridged by `matches()`; **templates look up, they do not compute** (works in Markdoc and
+  Comark); (5) a spike on both JS implementations before freezing, Kubernetes' `variables` as the evaluation
+  model; (6) SPEC-195 D1 and D8 reopened, the rest kept. Rivière's computed values across entities in CEL,
+  in `links`, after the first release (T2, T4, E4 designed).
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).

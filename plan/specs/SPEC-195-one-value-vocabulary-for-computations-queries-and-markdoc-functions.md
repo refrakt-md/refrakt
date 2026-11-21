@@ -69,6 +69,16 @@ reductions and comparisons (D4's value and reduction rows) need it.
 
 ### D1: one registry, written in three places
 
+> **Reopened 2026-11-21** (with D8), from the Marquise design (`notes/marquise-foundation.md`, "Computes in
+> CEL"). CEL was never compared when this was decided, and its premise, that refrakt has one content syntax
+> whose function syntax expressions should share, does not hold once Comark is an input syntax: Comark's
+> bindings are path lookups with no expressions. Marquise writes `computes` in CEL, as a defined profile,
+> with this spec's vocabulary as CEL custom functions. Kept from this spec: the vocabulary and its
+> admission rule (D4), "the place decides what the result is" (D2), `matches()` as the bridge to the filter
+> grammar (D5), the fan-out rule (D6), queries keeping their grammar (D7) and the guardrails (D9).
+> Markdoc functions stay for display in refrakt's templates and pages. Nothing of `computes` is built, so
+> refrakt follows when it builds it, after a spike on CEL's JavaScript implementations.
+
 Every operation is one registered function with one implementation:
 
 | Place | Who writes there | Form |
@@ -223,6 +233,10 @@ and "build a predicate" in a filter would confuse more than the second syntax co
   milestone partial above. Both move to the structured form together.
 
 ### D8: frontmatter expressions, and how they meet `prepare`
+
+> **Reopened 2026-11-21:** frontmatter expressions are CEL, not Markdoc call syntax (see D1's note). The
+> three forms of a `computes` entry, the scopes and `computes-cycle` carry over, with plain dot paths
+> (`prepTime`) in place of `$attrs.prepTime`.
 
 - **A frontmatter expression is a YAML string**, parsed with Markdoc's attribute-expression
   parser so it has exactly the grammar a template has. *Verified 2026-11-09:*
