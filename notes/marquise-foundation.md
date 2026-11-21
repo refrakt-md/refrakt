@@ -3810,6 +3810,15 @@ one by one, then the mechanical fixes in one pass)
   written fields into one edge set for selectors, `next`, rules, walks, `+`, bundles and the cycle check,
   each edge once, writes staying on the side they target; (4) plan's `criteria`, `blocked-by`, `blocks`
   optional.
+- Q3. The selector language had no written grammar (review section 4, C3, D6). *Decided 2026-11-21*
+  (Rivière's `queries.md`, "The grammar"; Marquise's `shapes.md`): an EBNF grammar, normative; only the first
+  `:` separates (colons later are the value's), quoting only for whitespace, `,`, `"` (and `]` in brackets) or a
+  leading `$`, `/`, `*`; quoting never changes a type; `+` closure after a step, arithmetic before a digit; a
+  bare bracketed path means `has:`, other bare words `selector-bare-word`; brackets filter at their step and
+  paths continue, quantifiers over what the whole path reaches; operators per value; top-level commas in
+  `fields`; `$actor` wherever there is one (`selector-no-actor` in content); **dates against datetimes at the
+  coarser precision** (fixes docs-behind-code firing on review day); `has` and `all` reserved; no cross-field
+  OR, with the reason; the review's tricky cases into the catalogue first. Where the grammar lives: Q4.
 
 **The outside review** (section 21)
 
