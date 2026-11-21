@@ -110,7 +110,7 @@ reach. Marquise is not only a smaller package: it is where stability lives.
 
 ### What 1.0 contains
 
-*Revised 2026-11-19* (`notes/marquise-foundation.md`, X1): **1.0 is the read path, records included,**
+*Revised 2026-11-19* (`notes/marquise-foundation.md`, X1); *updated 2026-11-21* from Marquise's `scope.md` after the third review: **1.0 is the read path, records included,**
 with the content-model revision built in refrakt first, so 1.0 ships the revised format.
 
 | In 1.0 | Status today |
@@ -119,13 +119,17 @@ with the content-model revision built in refrakt first, so 1.0 ships the revised
 | Shape files: frontmatter `attributes`, `content`, `description`, `summary`, `plain` | SPEC-145, accepted; five definitions live |
 | `{% example %}` blocks in a definition's body, `file#id` addressing, examples in tooling (notes Y5) | SPEC-197, draft: built and used during 0.x, replacing refrakt's fixtures |
 | Document shapes, minimal (notes Y4): a shape applied to a whole document; frontmatter as its attributes, undeclared keys passed to the host, `shape`, `id` and `lang` reserved | to be built and used during 0.x, through plan's rebuild |
-| The revised content model (notes, section 17): combinators, `as: block \| inline \| text` and value types, item models, `tag:` matches for explicit child shapes; matching and analysis per {% ref "SPEC-201" /%} | to be built in refrakt first, compiling down to the existing resolver; {% ref "SPEC-200" /%}, draft |
+| The revised content model (notes, section 17): groups and `position: last`, `as: block \| inline \| text` and value types, item models with task lists and inline matchers, sections found by heading (nested) with heading templates, lists of references (`items: { as: ref }`), counts, `tag:` matches for explicit child shapes; matching and analysis per {% ref "SPEC-201" /%} D1–D8 | to be built in refrakt first, compiling down to the existing resolver; {% ref "SPEC-200" /%}, draft |
+| Paragraph and item templates (`template:`, SPEC-201 D8), if proven during 0.x | to be built and used during 0.x; additive otherwise |
+| Rules a shape declares, with `@marquise-md/selectors` (the grammar and its public vocabulary API), if proven (notes Y17, Q3, Q4) | to be built and used during 0.x through plan's rebuild; additive otherwise |
+| `marquise explain` and inlay hints (notes Y16) | to be built with the content-model revision |
+| `marquise check`, `marquise schema`, the published finding catalogue | partly built (`refrakt validate`, `refrakt contracts`) |
 | Attribute and content validation, with finding ids and addresses | in use (`refrakt validate`); addresses new (notes, section 19) |
 | Records (extraction), JSON Schema, the Standard Schema validator, generated types | types exist; records and the validator new and small |
 | The preprocess hook, with provenance and declared dependencies | SPEC-141, shipped (the hook); `include` itself is a satellite (below) |
 | The shape node, the generic renderers, components | ADR-049, proposed: **the one new piece**, and the product itself |
 | The plain presentation | new, small |
-| `validate`, `types`, `extract`, `format`, `reference`, the language server | exist except `extract`, to be split from refrakt |
+| `validate`, `types`, `extract`, `format`, `reference`, the language server; the template engine in the public API | exist except `extract`, to be split from refrakt |
 | `@marquise-md/schema` and `@marquise-md/include`, first-party satellites | SPEC-130, SPEC-141, shipped |
 
 **A definition's body holds only examples in 1.0** (*revised 2026-11-19*, notes Y5; earlier it had to be
@@ -134,11 +138,14 @@ definitions (SPEC-197 D6). Other body blocks (write templates) stay additive.
 
 ### After 1.0, each as a minor release once it graduates
 
+Until it graduates, a feature here lives in its own 0.x package beside Marquise 1.0 (`@marquise-md/write`,
+`@marquise-md/deferred`), so core stays stable with no experimental flags (notes Q5/S6, 2026-11-21).
+
 | Feature | Waits for |
 |---|---|
 | The write path: addresses for edits, edit operations, writing forms, write templates | the parser spike (notes X5); Rivière's plan rebuild as its first real user |
 | Compact forms owned by child shapes (a bare shape name matching every form), with write templates | being built in refrakt, which keeps `emitTag` in its own extension namespace meanwhile (notes Y2) |
-| `computes`, `prepare`, the value vocabulary, `matches()` | SPEC-194, SPEC-195 implemented in refrakt |
+| `computes` in CEL (notes, "Computes in CEL"; SPEC-195 D1 and D8 reopened), `prepare`, the value vocabulary, `selects()` | a spike on CEL's JavaScript implementations; SPEC-194, SPEC-195's vocabulary implemented in refrakt |
 | `source()` | SPEC-198 |
 | Deferred shapes (definitions); dimensions on documents, `fills`, folder defaults | refrakt's pipeline and Rivière using them |
 | Kits, dimensions, presets, bindings, middleware | a design language built on them, refrakt's first |
@@ -156,6 +163,9 @@ definitions (SPEC-197 D6). Other body blocks (write templates) stay additive.
 | Components replace templates; the rune node | {% ref "ADR-049" /%} | proposed |
 | Definition bodies, examples, `file#id` | {% ref "SPEC-197" /%} | draft |
 | `source()` and `output()` | {% ref "SPEC-198" /%} | draft |
+
+> *Note 2026-11-21:* where this spec's details differ from Marquise's concept docs (the worked example's
+> imports, finding names, slot syntax), the concept docs are current.
 
 ## The boundary
 
@@ -215,8 +225,8 @@ belongs in the host, an integration, or refrakt.
 | The definition format and loader | `composed-rune.ts`, `rune-dir.ts`, `project-runes.ts`, the input half of `lib/composition.ts` | frontmatter: `attributes`, `content`, `computes`, `prepare`, `description`; body: examples (SPEC-197). Templates are a host extension |
 | The content-model resolver | `lib/resolver.ts` (1,104 lines), `types/src/content-model.ts` | already depends only on Markdoc and types |
 | Attribute validation | `attributes.ts` | findings with ids, as `refrakt validate` returns them |
-| The value vocabulary | `functions.ts`, SPEC-195's registry | `$attrs`, `$computed`, `$slots`; `first`, `split`, `item`, `text`, `source()` (SPEC-198). Not `output()`, which belongs to presentations |
-| The filter grammar | `field-match.ts` (147 lines) | the `field:value` language behind `where=`; SPEC-195 D5 makes it the one predicate language through `matches()`, so it sits with the value vocabulary. refrakt's `data` and `collection` both use it |
+| The value vocabulary | `functions.ts`, SPEC-195's registry | functions (`first`, `split`, `item`, `text`, `source()` from SPEC-198) for `computes`, which is written in CEL with plain dot paths (*revised 2026-11-21*: SPEC-195 D1 and D8 reopened). Not `output()`, which belongs to presentations |
+| The selector language | `field-match.ts` (147 lines) | `@marquise-md/selectors`, owned by Marquise (*decided 2026-11-21*, notes Q4): the grammar, Marquise's resolver for one record, and a public API for vocabulary that Rivière and third parties register; CEL reaches it through `selects()`. refrakt's `data` and `collection` both use it |
 | `prepare` registry | SPEC-194 D1–D3 | packages register stages by key; a definition names one |
 | The preprocess hook | `lib/preprocess.ts` (SPEC-141) | with provenance (pasted content's origin, SPEC-197 D5) and the files each directive read; `file#id` addressing stays in core as the address form. `tags/include.ts` moves to a satellite (*decided 2026-11-17*) |
 | The rune node and serialisation | ADR-049 decision 8; `transform/src/serialize.ts`, `helpers.ts` (`isTag`), `html.ts` (`renderToHtml`) | plain data, safe to send from server to client |
@@ -396,7 +406,7 @@ Refrakt's structured data has never depended on who draws the markup: the schema
    field as a heading at the author's level, paragraphs and lists inside their wrappers, the root labelled
    by its heading, `role="group"` when the root is a `div`, generated ids prefixed and numbered per page).
 
-   - **The root** is the shape's `tag:` (default `div`), with `data-shape` and one `data-*`
+   - **The root** is the element `plain: { element }` names (default `div`), with `data-shape` and one `data-*`
      attribute per attribute: kebab-case, defaults included.
    - **One `data-slot` wrapper per non-empty field, in content order.** A `block` field holds its
      nodes as written, an `inline` or `text` field its content ({% ref "SPEC-200" /%} D1). An item
@@ -461,7 +471,7 @@ protects only what is listed here.
 
 | Who depends on it | Contracts |
 |---|---|
-| Content authors | the content syntax and Marquise's conventions (explicit slots `#name` and `#default`, `file#id`, `example` blocks); a library's shape vocabulary (the library's); a design language's dimensions (the kit's) |
+| Content authors | the content syntax and Marquise's conventions (explicit slots `{% slot "name" %}`, `file#id`, `example` blocks); a library's shape vocabulary (the library's); a design language's dimensions (the kit's) |
 | Shape and kit authors | the shape file format, including extension namespaces and the info finding for one not installed; dimension and preset formats; the kit manifest; the migration format (after SPEC-189); the binding format; the template language, with `@marquise-md/compose` |
 | Developers | the shape node (prop naming, slots, item records, the dimensions convention); generated type names and structure; host callbacks (`values`, `files`, `resolveAsset`, `resolveLink`, `translate`, `icon`, `onFinding`, `presentFinding`); middleware and the context API; the lookup node; the directive and `prepare` registries; each renderer's component contract |
 | Machines | finding ids, severities and message parameters; the published schema documents; edit operations; CLI commands, flags, exit codes and JSON output; MCP tools and resources |
@@ -520,7 +530,8 @@ stability with real consumers.
 6. **Rivière in its own repository, as 0.x, with plan rebuilt on it** in refrakt. Plan writes as much as it
    reads, so this also designs the write path against a real user before it is frozen.
 7. **Marquise 1.0, the read path** (notes X1: records included; the write path, body blocks, kits,
-   dimensions, bindings, middleware, document and deferred shapes, migrations and a second syntax after),
+   dimensions, bindings, middleware, deferred shapes, migrations and a second syntax after; minimal document
+   shapes are in 1.0),
    once its API has been stable for refrakt and the proof project for a period. The docs site is built with
    Astro (*decided 2026-11-13*).
 8. **Minor releases as features graduate,** including the write path; **Rivière 1.0** once it has a
