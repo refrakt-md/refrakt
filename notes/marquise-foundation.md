@@ -3730,6 +3730,13 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   snapshot's `now`; `history-unavailable` in shallow clones, never a guessed date; names only, readable from
   content only when allowed; docs recommend an explicit review date for staleness.
 - G10. References outside the corpus: typed external ids (`doi:`, `github:org/repo#12`).
+  *Decided 2026-11-21* (Rivière's `references.md`, "References outside the corpus"): external kinds declared
+  in config (`pattern`, `normalise`, `url`), typed `to: [kind]`; **`namespace:value`** the one qualified
+  notation for collections and kinds, names never colliding; pattern checks always (`external-malformed`),
+  existence only through registered resolvers, opt-in, cached, never on untrusted content (later); edges to
+  nodes outside the corpus, in the graph and exports, queryable both ways, not entities; Rivière ships no
+  kinds. First release without resolvers; plan's `pr` becomes `{ type: ref, to: [github] }` and its PR
+  rollups a query.
 - G11. Overlays: read-only fields from another source (progress, CI results) joined at query time.
 - G12. Baselines (a named snapshot, a diff between two) and suspect links (Doorstop).
 - G13. Bulk saved writes over a selection, with one preview.
@@ -3959,7 +3966,7 @@ and agent memory and evals, since plan alone hides what other domains need; gone
 
 - In refrakt: migrate `collection` and `data` filters to comma-for-OR, repeated-field-for-AND, with a codemod
   over `site/content` and `plan/` (G3).
-- Rivière's design tried on other domains: gaps G10 to G16, one by one (section 22, "Domains beyond plan"); then
+- Rivière's design tried on other domains: gaps G11 to G16, one by one (section 22, "Domains beyond plan"); then
   worked domain pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
