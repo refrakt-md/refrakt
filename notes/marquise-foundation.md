@@ -4065,8 +4065,14 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   order, written with the first (`docs/{id:path}/index.md`, then `docs/{id:path}.md`, as Astro's file ids),
   `path-unmatched`; a path supplies a field the document does not state, written values win (`path-mismatch`,
   fixed by a move); `tree: { parent: { from: 'folder' } }` a derived reference named `parent` in `links`,
-  nearest existing ancestor, writes `field-derived`; moving renames with former ids. First release. Next: D4
-  to D6.
+  nearest existing ancestor, writes `field-derived`; moving renames with former ids. First release. **D4 to D6,
+  decided 2026-11-21** (Rivière's `references.md`): `mentionedBy(collection)` and `mentions(collection)` as
+  explicit steps, mentions kept out of ordering, cycles, `next`, `+` and default bundle paths; a Markdown link
+  resolving to an entity (or an entity's anchor) is a mention, external URLs only later through kinds' `url`
+  templates; a built-in `local-file` resolver, on by default (`external-missing`); repository files get
+  `$modified`, so docs-behind-code is a rule (refrakt's `refrakt.stale` as configuration). First release.
+  **Left on the worked pages:** D7 (versioned docs, like translations), E3 (money, value-type registry), E7
+  (tickets, an overlay): all placed after 1.0 or designed.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
