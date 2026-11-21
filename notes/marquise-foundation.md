@@ -4009,7 +4009,13 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   paragraph read by a pattern (`"**{term}.** {definition}"`), the same question as T1; (D4) mentions in
   selectors (`mentions()`); (D5) Markdown links as edges ("pages nobody links to"); (D6) a local resolver
   (file exists) as safe in the first release, refrakt's `refrakt.stale` the precedent; (D7) versioned docs, as
-  variants like translations. Next: events.
+  variants like translations. **Events written 2026-11-21** (`events-as-shapes.md`); its to-do list: (E1)
+  writing without git (forms from the input schema, an API sink, host identities for `editors`); (E2)
+  comparing two fields (`end:>start`); (E3) money as a value type; (E4) recurrence and opening hours; (E5)
+  grouping in the `collection` shape (refrakt's has `group`); (E6) formats in path patterns
+  (`{start:date}`); (E7) tickets as an overlay. **Across the three pages, the recurring themes:** patterns
+  reading several fields from one list item or paragraph (T1, D3); ordering by the tree (T5, D2); `computes`
+  (T2, T4, E4); projections and grouping in `collection` (T3, E5); a sink beyond the local checkout (E1).
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
