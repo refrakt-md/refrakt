@@ -3769,6 +3769,12 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   writes; actors supplied by the caller; documented as a guardrail, not access control (the forge's controls
   are). First release; checking hand edits in CI later.
 - G16. Several repositories as one corpus; scale (review question 13).
+  *Decided 2026-11-21* (Rivière's `integrations.md`, "Across corpora"; `corpus.md`, "Scale"): **a corpus is one
+  repository,** changesets never span repositories; other corpora linked through imported inventories
+  (`imports`, `infra.service:api-gateway`), checked not loaded, `riviere export --inventory` with former ids
+  (later); several repositories as one read-only graph later. Scale: a first-phase cache keyed by content,
+  shapes and Marquise's version; snapshots hold records and the index, trees on demand; a generated benchmark
+  corpus in CI, targets set by the first measurement and held as a 1.0 exit test (first release).
 
 **The outside review** (section 21)
 
@@ -3992,8 +3998,8 @@ and agent memory and evals, since plan alone hides what other domains need; gone
 
 - In refrakt: migrate `collection` and `data` filters to comma-for-OR, repeated-field-for-AND, with a codemod
   over `site/content` and `plan/` (G3).
-- Rivière's design tried on other domains: gap G16, one by one (section 22, "Domains beyond plan"); then
-  worked domain pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures.
+- Rivière's design tried on other domains: all gaps decided (G1 to G17, section 22). Next, worked domain
+  pages beside "Plan, as shapes" (traceability, a docs site, events) as test fixtures, each with a to-do list.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
