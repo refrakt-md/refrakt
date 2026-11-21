@@ -4022,7 +4022,11 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   without backtracking (`text-template-ambiguous`), optional groups `[? … ]`, `text-mismatch` keeping the node,
   the template doubling as the write template, a template or parts per item model; in 1.0. Closes T1 and D3;
   the worked pages and external kinds (renamed `pattern` to `text`, since `pattern` means RE2 in shapes) use
-  them.
+  them. **(2) Ordering by the tree, decided 2026-11-21** (Rivière's `queries.md`, "Ordering by the tree"):
+  `tree: { parent, order }` on a collection, one per collection; `sort: '$tree'` depth-first, siblings by the
+  declared order, then title, then id; positions over the whole collection before filtering; `$depth`,
+  `$position`, `$prev`, `$next` in `links` and the loader; `tree-cycle` placing the cycle at the root; derived
+  parents and `reorder` later; first release. Closes T5 and D2.
 - The second review: all taken (Y1 to Y17 decided).
 - Send the message to Comark's maintainers (draft revised 2026-11-19 for Y8: Markdoc is the syntax; the
   interest is their renderers and document format).
