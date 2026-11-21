@@ -3685,7 +3685,8 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   `collection` and `data` read a repeated field as OR today; a codemod during 0.x, `a:x a:y` to `a:x,y`).
   The selector language becomes **one small package** shared by Rivière and corpus-free tools. **`$item`** is
   the per-item variable (`$row` an alias in `data`). The `collection` shape takes **`fields`** (projections),
-  needed by refrakt's `collection` and `data` already; on saved views still open.
+  needed by refrakt's `collection` and `data` already; on saved views still open (*later:* decided for views,
+  the API and the CLI, theme 4).
 - G17. Deferred children inside another shape's content (raised by `data` with a body inside `accordion`).
   *Decided 2026-11-20* (SPEC-201 D7; Marquise's `extending.md`, `records.md`; Rivière's `shapes.md`):
   deferred shapes declare what they yield (template's top-level tag, or the collection's shape); the matcher
@@ -3743,7 +3744,7 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   content only when allowed; docs recommend an explicit review date for staleness.
 - G10. References outside the corpus: typed external ids (`doi:`, `github:org/repo#12`).
   *Decided 2026-11-21* (Rivière's `references.md`, "References outside the corpus"): external kinds declared
-  in config (`pattern`, `normalise`, `url`), typed `to: [kind]`; **`namespace:value`** the one qualified
+  in config (`pattern`, `normalise`, `url`; *later:* `pattern` became `template`, Q1), typed `to: [kind]`; **`namespace:value`** the one qualified
   notation for collections and kinds, names never colliding; pattern checks always (`external-malformed`),
   existence only through registered resolvers, opt-in, cached, never on untrusted content (later); edges to
   nodes outside the corpus, in the graph and exports, queryable both ways, not entities; Rivière ships no
@@ -3766,7 +3767,8 @@ and agent memory and evals, since plan alone hides what other domains need; gone
   *Decided 2026-11-21* (Rivière's `writing.md`, "Writes over a selection"): `--where` for saved writes and
   `set` (`where` in the API and MCP tools); each entity checked against `require` and transitions, failures
   skipped and listed (refused under `--strict`); one all-or-nothing changeset, previewed by default, `--all`
-  above a ceiling of 50 (configurable); the confirmation policy applies to agents unchanged; first release.
+  above a ceiling of 50 (configurable); the confirmation policy applies to agents unchanged (*later:* the write
+  policy, G15); first release.
 - G14. Generated regions: a file region kept in sync with a view, with a drift check.
   *Decided 2026-11-21* (Rivière's `shapes.md`, "Generated regions"): comment markers holding plain Markdown,
   configured like the `collection` shape or by a saved view; tables and link lists until `compose`;
@@ -3842,6 +3844,21 @@ one by one, then the mechanical fixes in one pass)
   exported beside the record; (7) data files read-only in the first release; regions for documents outside
   collections; (8) `from`/`changed` rules per commit under `--against`, endpoints as info when shallow.
   **The design questions are done; next, the mechanical fixes from the review in one pass.**
+- Q6. **The mechanical fixes, done 2026-11-21** in one pass over both repositories and SPEC-199: the four worked
+  pages load as written (title from the heading; `shadows:` acknowledged; all five plan shapes, bugs in
+  inverses and terminal lists; quoted keys; former ids; `riviere add` for lists; the glossary a page; kebab
+  names; `docs-behind-code` declared; grouping example); contradictions resolved (editor buffers renamed
+  `rv.buffer`; `rv.load({ now })`; navigation wording; what names shapes and what names collections;
+  `c.backrefs` marks edges and mentions; `symmetric` in `riviere:`; one exit-code table; `c.document()`);
+  **finding catalogues** in both repositories (`findings.md`), new ids for unnamed findings, **rule ids
+  scoped by shape** (`work/done-without-resolution`, `rule-id-reserved`); one table of every `$` name, CEL's
+  spellings reserved, `$$` for a literal; Marquise's content-model page marked decided where SPEC-201
+  decides, inline matchers, groups, `position: last`, counts, keys comparing text, a neutral template example;
+  attributes gain `pattern`, `positional`, `as: inline|block`; rule fixes as Marquise's `set`; selectors
+  accept both name spellings, `has:` present and non-empty, regular expressions search; both scope pages
+  complete; **features not yet graduated live in their own 0.x packages beside Marquise 1.0** (keeping "no
+  experimental flags"); READMEs generated from the concept indexes; SPEC-199's tables and stale details
+  updated; several creates in one changeset allocate distinct ids. Glossaries filled.
 
 **The outside review** (section 21)
 
@@ -4070,7 +4087,7 @@ one by one, then the mechanical fixes in one pass)
   `traceability-as-shapes.md`); its to-do list: (T1) item text patterns (`"{req} ({coverage}, reviewed
   {reviewed})"`), a content-model question for SPEC-201's revision; (T2) the latest result per test (a
   `latest` step or `computes`); (T3) paths in `fields` projections; (T4) coverage percentages (`computes`);
-  (T5) ordering by the tree (open from G7); (T6) negating a bracket clause, to state in the grammar. **A docs
+  (T5) ordering by the tree (open from G7; *later:* decided, theme 2); (T6) negating a bracket clause, to state in the grammar. **A docs
   site written 2026-11-21** (`docs-site-as-shapes.md`); its to-do list: (D1) ids and parents derived from
   paths (`id: { from: 'path' }`, a parent from the folder); (D2) ordering by the tree, again (T5); (D3) a
   paragraph read by a pattern (`"**{term}.** {definition}"`), the same question as T1; (D4) mentions in

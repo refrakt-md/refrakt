@@ -418,7 +418,7 @@ Refrakt's structured data has never depended on who draws the markup: the schema
      developer styles against.
    - **`data-slot`** keeps the meaning refrakt gives it: a composed rune's slot names are its
      published names (SPEC-145 D10c). `data-shape` follows decision 1.
-   - **An unbound shape is reported:** `marquise validate` warns `shape-unbound`, so a forgotten
+   - **An unbound shape is reported:** `marquise check` (the renderer or integration) reports `shape-unbound`, so a forgotten
      component is noticed; a strict project makes it an error.
 4. **Repository.** *Revised 2026-11-19* (`notes/marquise-foundation.md`, sections 21 and 22, X1 and
    X2): **build the content-model revision in refrakt, then extract Marquise early, as 0.x, in its own
