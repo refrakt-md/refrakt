@@ -140,7 +140,9 @@ forms are `template:` in frontmatter (notes Q8).
 ### After 1.0, each as a minor release once it graduates
 
 Until it graduates, a feature here lives in its own 0.x package beside Marquise 1.0 (`@marquise-md/write`,
-`@marquise-md/deferred`), so core stays stable with no experimental flags (notes Q5/S6, 2026-11-21).
+`@marquise-md/deferred`), so core stays stable with no experimental flags (notes Q5/S6, 2026-11-21). Heavy,
+optional ones (the write path, the CEL evaluator) stay separate packages after graduating, installed into an
+instance (`createMarquise({ writer, computes })`; notes Q10).
 
 | Feature | Waits for |
 |---|---|

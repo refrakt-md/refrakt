@@ -3904,6 +3904,22 @@ one by one, then the mechanical fixes in one pass)
   one parser later only after matching markdown-it's tolerance of malformed content. A dialect pre-pass
   (refrakt's `normaliseEach`, rewriting bare `each`/`chrome` to `=true`) needs a counterpart in the locator's
   grammar, or the locator refuses those tags' attributes.
+- Q10. Bundle size and the document handle (asked by the user: a playground rendering user content should not
+  carry the write path). *Decided 2026-11-22* (Marquise's `api.md`, `scope.md`, `commands.md`, `findings.md`):
+  (1) **optional capabilities installed into the instance,** `createMarquise({ writer, computes })`, core holding
+  only interfaces, so the handle keeps `doc.edit` (the user's wish) while read-only bundles have no path to the
+  write code; (2) **calling an uninstalled capability throws** with the fix in the message (a programming
+  error); a shape with `computes` and no evaluator is a finding (`computes-unavailable`); (3) **capability-aware
+  types:** documents have `edit` in their type only when a writer is installed; (4) **no import-time patching
+  or registration;** (5) heavy optional packages (`@marquise-md/write`, `@marquise-md/cel`) **stay separate after
+  graduating,** versioned in lockstep, narrowing "graduating moves it into core" to light, near-universal
+  features; core ESM with `sideEffects: false`, tooling outside the runtime; `marquise build-shapes`
+  (precompiled shapes) a leaning after 1.0; **a browser read-and-render size budget as a 1.0 exit test.**
+  (6) **Operations as plain JSON with schemas, no transport layer** (asked about MongoDB's client model):
+  every operation's input and result serialisable and declared once in the table of operations, from which
+  CLI and MCP are generated and a remote client could be; none built until a hosted product needs it, since
+  the read API is synchronous by design and transports freeze guesses. Answers A4 (the table is one
+  declaration per operation: input schema, result schema, function).
 
 **The outside review** (section 21)
 
