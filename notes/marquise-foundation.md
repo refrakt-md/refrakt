@@ -3901,8 +3901,9 @@ one by one, then the mechanical fixes in one pass)
   includes the fence escape (Markdoc processes tags in fences by default, and plain Markdoc renders the rest
   of a page inside the `<pre>` after an unclosed tag in a code example); frontmatter through `yaml`'s CST API,
   not its document API; the printer keeps the author's spelling (markdown-it percent-encodes destinations);
-  one parser later only after matching markdown-it's tolerance of malformed content. Refrakt content found
-  invalid: a bare `each` attribute in `site/staged-runes/steps.md` and the composed-storytelling fixtures.
+  one parser later only after matching markdown-it's tolerance of malformed content. A dialect pre-pass
+  (refrakt's `normaliseEach`, rewriting bare `each`/`chrome` to `=true`) needs a counterpart in the locator's
+  grammar, or the locator refuses those tags' attributes.
 
 **The outside review** (section 21)
 

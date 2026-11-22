@@ -54,9 +54,11 @@ Versions: `@markdoc/markdoc` 0.5.14, `mdast-util-from-markdown` 2.x with GFM tab
   same step**, and the locator, which never parses tags in fences, then agrees.
 - **Values can be spelt differently by the two parsers:** markdown-it percent-encodes a link destination
   (`/with%20space`), micromark keeps it. Spans agree; the printer must keep the author's form when writing.
-- **Refrakt content that is not valid Markdoc:** `{% slot name="sections" each %}` (a bare `each`, in
-  `site/staged-runes/steps.md` and the composed-storytelling fixtures) is a syntax error to Markdoc's grammar.
-  Both parsers report it identically.
+- **A dialect pre-pass:** `{% slot name="sections" each %}` (in `site/staged-runes/steps.md` and the
+  composed-storytelling fixtures) is not plain Markdoc; refrakt's `normaliseEach` rewrites bare `each` and
+  `chrome` to `=true` before parsing composition templates. Read without that pass, both parsers report the same
+  syntax error. **Lesson for the seam:** a reader pre-pass that rewrites text must have a counterpart in the
+  locator's grammar (here: accept bare flags), or the locator refuses those tags' attributes.
 
 ## The edit suite
 
