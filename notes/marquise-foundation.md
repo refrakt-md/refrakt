@@ -3954,6 +3954,18 @@ one by one, then the mechanical fixes in one pass)
   customers renaming fields in their blocks need migrations sooner than after 1.0; (S5) many sites per process:
   eviction and cross-instance invalidation; (S6) a helper for persisted drafts, open. Also aligned:
   `transitions` under the workflow plugin's `workflow:` key.
+- Q13. Configuration as plain data (S3). *Decided 2026-11-22* (new `configuration.md` in both repositories;
+  `api.md`, `commands.md`, `findings.md`): (1) **two layers:** configuration, what a project declares, as plain
+  JSON; host bindings, what a program provides, as code (callbacks, capabilities, sources and sinks, registered
+  plugins, resolvers, loaders, checks, formats, vocabulary); (2) **`marquise.config.json` and
+  `riviere.config.json`,** validated against published schemas, **never executed**, so every tool (and a hosted
+  service reading someone else's repository) reads them without running code; (3) **code by registered names
+  only,** `config-unregistered` otherwise, package names resolved by the node packages locally and registered
+  explicitly when hosted; (4) **`createMarquise(config, bindings)`, `createRiviere(config, bindings)`**, code
+  may produce configuration but never contain it; (5) **`extends`** reads corpus definitions as data packages,
+  keyed maps merged by key with the project winning, lists replaced; (6) no interpolation; Rivière's file names
+  Marquise's. Also answers S2: shapes may be paths, strings or (later) precompiled. Refrakt's own
+  `refrakt.config.json` was the precedent.
 
 **The outside review** (section 21)
 
