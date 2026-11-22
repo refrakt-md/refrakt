@@ -4127,7 +4127,7 @@ one by one, then the mechanical fixes in one pass)
   references between documents starts to be the corpus layer (M3, M7).
 - A3. Incremental reparsing for the language server, or whole-document reloads cached by hash?
 - A4. The table of operations: one declaration per operation (input schema, result schema, function)
-  from which the CLI, MCP tools and docs are generated, as plan's bindings do by hand today?
+  from which the CLI, MCP tools and docs are generated, as plan's bindings do by hand today? *Answered 2026-11-22 (Q10): yes.*
 - A5. Drafts (`doc.update`) as the typed way to write, with string addresses as the protocol, or typed
   string addresses (`doc.set`) as well?
 - A6. Value types as branded strings in JSON forms (ISO dates and durations), or richer runtime
