@@ -3920,6 +3920,22 @@ one by one, then the mechanical fixes in one pass)
   CLI and MCP are generated and a remote client could be; none built until a hosted product needs it, since
   the read API is synchronous by design and transports freeze guesses. Answers A4 (the table is one
   declaration per operation: input schema, result schema, function).
+- Q11. Sync or async (asked by the user, since it is costly to change later; Prettier 3's move to async the
+  cautionary precedent, unified's dual API the other). *Decided 2026-11-22* (Marquise's `api.md`,
+  `commands.md`; Rivière's `writing.md`, `corpus.md`, `scope.md`): (1) **producing is async, reading is
+  sync,** in both projects: `load`, `edit`, `update`, `fill`, `rebase`, Rivière's writes and `apply` async;
+  findings, tree, records, selectors, rules and queries sync; (2) host callbacks may be async and are called
+  only while producing (answers the review's "which callbacks may be async?"); (3) capabilities may be given
+  as loaders, resolved on first use; (4) no synchronous edit variant unless a real need appears. Use cases the
+  user asked for, beyond local and a GitHub app: hosted editor and agent sessions ending in one commit;
+  real-time collaboration, offline-first editing and store sync (edits against moved text); codemods and
+  gardening jobs on serverless runtimes (cancellation, progress); review bots and AI drafting (proposing,
+  streaming); browser, desktop and blob-store hosts. From them: (5) **a working copy in Rivière,**
+  `c.with(cs)`, later writes and queries seeing pending changes, applied once; **changesets compose**
+  (`cs.then`), checked against the session's starting hashes, ids allocated across the session; (6)
+  **`rebase(result, newSource)` in Marquise:** untouched spans move, changed ones re-resolved by address or
+  refused; (7) **`AbortSignal` on every producing operation,** progress for bulk ones; (8) **review
+  suggestions as a sink** in `@riviere-md/github`, later. Streaming validation stays open.
 
 **The outside review** (section 21)
 
