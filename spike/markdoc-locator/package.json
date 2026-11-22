@@ -1,0 +1,23 @@
+{
+  "name": "spike-markdoc-locator",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "agree": "tsx src/agree.ts",
+    "edit": "tsx src/edit.ts",
+    "bench": "tsx src/bench.ts"
+  },
+  "dependencies": {
+    "@markdoc/markdoc": "0.5.14",
+    "fast-glob": "^3.3.2",
+    "mdast-util-from-markdown": "^2.0.2",
+    "mdast-util-gfm-strikethrough": "^2.0.0",
+    "mdast-util-gfm-table": "^2.0.0",
+    "micromark-extension-gfm-strikethrough": "^2.1.0",
+    "micromark-extension-gfm-table": "^2.1.1",
+    "micromark-util-character": "^2.1.1",
+    "peggy": "^4.2.0",
+    "tsx": "^4.19.2",
+    "yaml": "^2.9.1"
+  }
+}
