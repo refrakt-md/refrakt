@@ -134,7 +134,8 @@ with the content-model revision built in refrakt first, so 1.0 ships the revised
 
 **A definition's body holds only examples in 1.0** (*revised 2026-11-19*, notes Y5; earlier it had to be
 empty): `{% example %}` blocks, per SPEC-197 D2, built during 0.x by moving refrakt's fixtures into its
-definitions (SPEC-197 D6). Other body blocks (write templates) stay additive.
+definitions (SPEC-197 D6). Other body blocks stay additive; write templates are not among them, since compact
+forms are `template:` in frontmatter (notes Q8).
 
 ### After 1.0, each as a minor release once it graduates
 
@@ -143,8 +144,8 @@ Until it graduates, a feature here lives in its own 0.x package beside Marquise 
 
 | Feature | Waits for |
 |---|---|
-| The write path: addresses for edits, edit operations, writing forms, write templates | the parser spike (notes X5); Rivière's plan rebuild as its first real user |
-| Compact forms owned by child shapes (a bare shape name matching every form), with write templates | being built in refrakt, which keeps `emitTag` in its own extension namespace meanwhile (notes Y2) |
+| The write path: addresses for edits, edit operations, writing forms, the two writers (notes Q8) | the parser spike (notes X5); Rivière's plan rebuild as its first real user |
+| Compact forms owned by child shapes (a bare shape name matching every form), declared as templates, with write templates | being built in refrakt, which keeps `emitTag` in its own extension namespace meanwhile (notes Y2) |
 | `computes` in CEL (notes, "Computes in CEL"; SPEC-195 D1 and D8 reopened), `prepare`, the value vocabulary, `selects()` | a spike on CEL's JavaScript implementations; SPEC-194, SPEC-195's vocabulary implemented in refrakt |
 | `source()` | SPEC-198 |
 | Deferred shapes (definitions); dimensions on documents, `fills`, folder defaults | refrakt's pipeline and Rivière using them |
@@ -592,7 +593,7 @@ content:
           optional: true
           items:
             label: { match: link, as: text }
-            href:  { from: label, extract: href, as: url }
+            href:  { as: url }                 # with template: "[{label}]({href})" (notes Q8)
 ---
 ```
 

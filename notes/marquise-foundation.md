@@ -3872,6 +3872,17 @@ one by one, then the mechanical fixes in one pass)
   in `@riviere-md/node`; (4) **`tree`, `workflow` and `formats` ship first-party in the first release,** plan's
   rebuild depending on `workflow`; (5) **corpus definitions** (shapes, collections, views, writes, rules) as
   publishable packages, plan's first (`@refrakt-md/plan-corpus`), the worked domains next.
+- Q8. The write path's many ways of reading and writing (asked by the user). *Decided 2026-11-22* (Marquise's
+  `writing.md`, "Two writers"; `content-models.md`; `shapes.md`; SPEC-201 D1.10, D8): (1) **`template:` replaces
+  `{% form %}`:** compact forms are templates in frontmatter (`compact: { item: { template } }`), matchers derived
+  from them, link destinations as placeholders in `(…)`, no Markdoc `if` or sentinel; (2) **part-based item
+  models are written in the fields' declared order,** each in its matcher's canonical markup; existing items
+  keep their order; (3) **`from`/`extract` removed,** a link's text and destination read by a template;
+  (4) **regular expressions only constrain values** (`pattern`), never extract fields; refrakt's `budget`
+  moves to a template; nothing is read-only for being regex-extracted; (5) **one write hint,** `write: { level }`,
+  only where the model leaves a choice; (6) **two writers** (the content-model writer, the template engine)
+  beside the attribute tokenizer and value formatters, tested by one round-trip property over every example.
+  Answers F4, F5 and F6. Not simplified: source positions, the next topic.
 
 **The outside review** (section 21)
 
@@ -4065,11 +4076,11 @@ one by one, then the mechanical fixes in one pass)
 - F2. Which optional parts a generated snippet includes: required fields only, plus parts marked
   `snippet: true`?
 - F3. The block's name: `form`, or another?
-- F4. Comark's equivalent of Markdoc variables and `if` for write templates (untested).
+- F4. Comark's equivalent of Markdoc variables and `if` for write templates (untested). *Answered 2026-11-22 (Q8).*
 - F5. Do item models become write templates (`{% form "<field>" %}`), with matchers derived as for
-  compact forms?
+  compact forms? *Answered 2026-11-22 (Q8).*
 - F6. The set of write hints on content-model fields: heading level, the alternatives' order, anything
-  else a generated writer cannot decide?
+  else a generated writer cannot decide? *Answered 2026-11-22 (Q8).*
 
 **The programmatic API** (section 19)
 

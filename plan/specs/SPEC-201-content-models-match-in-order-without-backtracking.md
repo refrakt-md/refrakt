@@ -79,8 +79,8 @@ The behaviour above is the specified behaviour, written as rules a second implem
     does not matter, only their order among nodes of the same type. *Decided 2026-11-19:* this order-free
     reading is normative, since reading should be more tolerant than writing; a write template (after
     Marquise 1.0) orders only *new* items, edits to existing ones change a field in place and keep the
-    author's order, and reading a compact form derived from a `{% form %}` write template is order-free too.
-    An item model with a `template:` (D8) reads in the template's order instead.
+    author's order, and new items are written in the fields' declared order, each in its matcher's canonical
+    markup (*decided 2026-11-22*). An item model with a `template:` (D8) reads in the template's order instead.
 
 Consequences that follow and are intended: the same input always gives the same fields; matching is
 linear in the number of nodes, safe on untrusted content; one node of lookahead decides everything, so
@@ -272,7 +272,8 @@ term: { match: paragraph, template: "**{name}.** {definition}", name: { as: text
    `\{` and `\[?` escape.
 6. A node that does not fit is `text-mismatch` and is kept; required members it lacks are `content-missing`.
 7. The template is the node's write template: edits change one placeholder's span, new nodes fill it.
-   `{% form %}` write templates serve only compact forms of child shapes.
+   Compact forms of child shapes are templates too (`compact: { item: { template } }`); `{% form %}` blocks
+   are dropped (*decided 2026-11-22*, notes Q8).
 8. A template or parts, never both, in one item model; the analysis checks templates at load.
 9. **The engine is public** in Marquise's API (parse, read, write), for Rivière's file paths and external ids.
 10. **Scope:** heading templates are built and in 1.0; paragraph and item templates are in 1.0 if proven during
@@ -302,8 +303,8 @@ term: { match: paragraph, template: "**{name}.** {definition}", name: { as: text
    not allowed in nested sections, and a finding in strict shapes; kept, reported, for a top-level split in
    lenient shapes.
 2. **Item models are order-free** (D1.10) while write templates for compact forms read in template order.
-   *Answered 2026-11-19 (D1.10):* reading stays order-free, also when derived from a `{% form %}` write
-   template; such templates order only new items. (A `template:` on an item model, D8, reads in its order.)
+   *Answered 2026-11-19 (D1.10):* reading stays order-free; new items are written in declared order.
+   (A `template:` on an item model or compact form, D8, reads and writes in its order.)
 3. **Content checks** (an item model's required fields on a paragraph) make a start set "may match". Is
    that precise enough for D2, or should content checks be part of the overlap computation?
 4. **Insignificant nodes under the cursor.** *Answered 2026-11-19 (D6):* a defect, confirmed by test; the
