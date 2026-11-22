@@ -3893,6 +3893,16 @@ one by one, then the mechanical fixes in one pass)
   **Added by the user:** (7) **the mechanism behind a seam:** a front end is reader, locator and printer; the
   two writers are syntax-neutral; verification sits outside the front end; the interface stays internal until
   a second implementation (another locator, or Comark's with `remark-mdc`) exists. Answers X5a.
+  *Spike run 2026-11-22* (`spike/markdoc-locator/FINDINGS.md`): micromark extension (~150 lines) and
+  Markdoc's `tag.pegjs` recompiled with peggy for value offsets; **99.4% agreement** over 1,474 files (97.1%
+  against plain `Markdoc.parse`, 99.0% with refrakt's `escapeFenceTags`), the nine left being eight unclosed
+  inline tags in prose and one `|` in a code span in a table cell, both refused; no indentation shim needed;
+  **11/11 edits verified, 2/2 disagreements refused;** ~5 ms a file (5.5x Markdoc). Consequences: the reader
+  includes the fence escape (Markdoc processes tags in fences by default, and plain Markdoc renders the rest
+  of a page inside the `<pre>` after an unclosed tag in a code example); frontmatter through `yaml`'s CST API,
+  not its document API; the printer keeps the author's spelling (markdown-it percent-encodes destinations);
+  one parser later only after matching markdown-it's tolerance of malformed content. Refrakt content found
+  invalid: a bare `each` attribute in `site/staged-runes/steps.md` and the composed-storytelling fixtures.
 
 **The outside review** (section 21)
 
