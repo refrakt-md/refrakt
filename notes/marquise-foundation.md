@@ -3936,6 +3936,24 @@ one by one, then the mechanical fixes in one pass)
   **`rebase(result, newSource)` in Marquise:** untouched spans move, changed ones re-resolved by address or
   refused; (7) **`AbortSignal` on every producing operation,** progress for bulk ones; (8) **review
   suggestions as a sink** in `@riviere-md/github`, later. Streaming validation stays open.
+- Q12. A database instead of files and git (asked by the user: a site builder like a hosted website creator).
+  *Decided 2026-11-22* (Rivière's `corpus.md`, "Stores"; `scope.md`): Marquise fits unchanged (storage-free,
+  untrusted by default, customer-defined blocks safe as data, kits, forms, the write path). For Rivière:
+  (1) **Markdown source as the stored truth,** records a derived projection; (2) **paths are document keys,**
+  so globs, templates, path-derived ids and folder parents work on any store, a move re-keying; (3) **sources
+  declare capabilities** (`versions`, `history`, `dates`, `watch`), missing ones giving findings; (4) **store
+  sinks apply in one transaction** with compare-and-swap on expected hashes, the lock and journal only for
+  files; (5) **sinks may maintain a records projection** on apply; (6) **the in-memory source and sink
+  first-party in the first release,** through the same suite as files; a SQL source and sink later. Written as
+  the fifth worked domain, **`site-builder-as-shapes.md`**: tables (documents, revisions, records, drafts),
+  a customer-designed block, one corpus per site with configuration as JSON, the editor through a working copy,
+  persisted drafts rebased on reopening, publishing as a saved write under the workflow plugin, a published
+  version served beside the current one. Its to-do list: (S1) named versions as a source capability,
+  generalising baselines beyond git refs; (S2) shapes from a store (strings or precompiled) for
+  `createMarquise`; (S3) **configuration as plain data throughout,** code only by registered names; (S4)
+  customers renaming fields in their blocks need migrations sooner than after 1.0; (S5) many sites per process:
+  eviction and cross-instance invalidation; (S6) a helper for persisted drafts, open. Also aligned:
+  `transitions` under the workflow plugin's `workflow:` key.
 
 **The outside review** (section 21)
 
