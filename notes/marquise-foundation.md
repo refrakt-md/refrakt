@@ -3883,6 +3883,16 @@ one by one, then the mechanical fixes in one pass)
   only where the model leaves a choice; (6) **two writers** (the content-model writer, the template engine)
   beside the attribute tokenizer and value formatters, tested by one round-trip property over every example.
   Answers F4, F5 and F6. Not simplified: source positions, the next topic.
+- Q9. Source positions for the write path (X5a). *Decided 2026-11-22* (Marquise's `syntax.md`, "Reader,
+  locator, printer"; `writing.md`; `findings.md`): (1) Markdoc stays the only reader; (2) the first locator is
+  micromark with a Markdoc-syntax extension, indented code and raw HTML switched off, and attribute values
+  located by Markdoc's own `tag.pegjs` compiled with locations; (3) structural matching, `write-unlocatable`
+  on any disagreement, every write verified by re-reading (`write-unverified`); (4) frontmatter through a YAML
+  CST; (5) a second spike decides it, measuring agreement over refrakt's corpus and an extended edit suite;
+  (6) one parser later only if the measurement supports it, upstream positions offered not depended on.
+  **Added by the user:** (7) **the mechanism behind a seam:** a front end is reader, locator and printer; the
+  two writers are syntax-neutral; verification sits outside the front end; the interface stays internal until
+  a second implementation (another locator, or Comark's with `remark-mdc`) exists. Answers X5a.
 
 **The outside review** (section 21)
 
