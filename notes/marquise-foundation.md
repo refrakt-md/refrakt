@@ -3993,6 +3993,26 @@ one by one, then the mechanical fixes in one pass)
   no regular expressions; (6) expiry by `removeAfter` or **`until: unused`** (`migration-unused`); (7)
   dimension migrations reach everything in `appliesTo` and documents; (8) the declarative read half in 1.0 if
   proven, refrakt's deprecations the test. Answers Z2c (moving between kits: a package of migration files).
+- Q16. Reusing vocabulary: structured data, variants and `extends`. *Decided 2026-11-23* (Marquise's
+  `shapes.md` "Extending a shape", `rendering.md` "Structured data", `selectors.md`, `records.md`,
+  `extending.md`, `commands.md`, `findings.md`, `scope.md`, glossary; Rivière's `corpus.md`, `queries.md`,
+  `plugins.md`): (1) **schema.org mappings declared on fields,** in the schema satellite's namespace, type and
+  nested types once per shape, property paths (`author.name`, `recipeInstructions[].text`); asked by the user,
+  who questioned a separate mapper; (2) child shapes map themselves, the parent says where they go
+  (`items: { property: hasPart }`); (3) `schema="none"` per instance; no ontology validation, the resolved
+  mapping shown by `reference` and `explain`; (4) **no roles:** abstract bases serve as interfaces; (5) **no
+  variants and no conditional mappings:** a value that changes meaning makes a different shape, one that
+  changes look is a dimension or attribute; refrakt's playlist becomes a family (`album`, `mix`, `podcast`,
+  `audiobook`, `series`; `track`, `episode`, `chapter`) with a migration from `playlist type=…`; reached after
+  the user asked whether playlist's conditional types fit, then whether overlays should be general, then
+  suggested separate shapes; (6) **`extends`:** one base, `abstract: true`; (7) **add and narrow only,**
+  `extends-widens` otherwise; dropping refused at the user's prompting (factor into an abstract base, or copy);
+  (8) chains flattened at load, analysed flattened (`extends-cycle`, `extends-unknown`, `shape-abstract`);
+  (9) bases stand for descendants in content models, bindings (most specific wins), collections, selectors
+  (`$shapes`) and generated types; (10) a base's migrations apply to descendants; (11) extend to stay
+  connected, copy to own (`marquise add`, `marquise flatten`); a project may replace a kit's shape only by
+  extending it; (12) in 1.0 if proven, refrakt's playlist family and plan's corpus the tests. Still open from
+  the reusability brainstorm: fragments, and whether presentation roles are needed.
 
 **The outside review** (section 21)
 
