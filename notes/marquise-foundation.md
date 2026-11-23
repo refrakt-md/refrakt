@@ -3302,7 +3302,7 @@ time.
 - Z2b. `removeAfter` for third-party libraries: Marquise enforces expiry in its own tests, but a
   kit's is the kit's choice. Is a warning to the kit author enough?
 - Z2c. Moving between kits with different shapes: a migration too (a mapping file between kits), or
-  out of scope?
+  out of scope? *Answered 2026-11-23 (Q15): a package of migration files.*
 - Z3a. Raw HTML in untrusted mode: off entirely, or a small allowlist (`kbd`, `sup`, `sub`,
   `details`)?
 - Z3b. One default everywhere (untrusted), or by context (trusted for build-time sites, untrusted for
@@ -3979,6 +3979,20 @@ one by one, then the mechanical fixes in one pass)
   working copies (the site builder's default, per-page publishing free), or named versions for whole releases,
   staging and rollback. First release: the model, aliases, `--against`, the diff, the in-memory source's full
   support; moving names through git and store sinks later.
+- Q15. Migrations (S4, with SPEC-189 revisited). *Decided 2026-11-23* (Marquise's `extending.md`,
+  "Migrations"; `shapes.md`, `scope.md`, `commands.md`, `findings.md`; Rivière's site-builder page; SPEC-189
+  revision note): (1) **declarative and structural tiers;** declarative soon (tag, attribute, value, slot and
+  frontmatter-key renames, value maps to patches), structural with `compose`, lookups as registered code;
+  renaming a content field needs no migration (fields match by position); (2) **placement by identity:** a
+  shape's or dimension's own `migrations:` when it keeps its identity (a tag renamed onto it included); a
+  migration file (shape-file format, old form in frontmatter, `compose` template body when structural) when
+  the old form has no owner left (structural changes, merges, splits, retired dimensions, kit-to-kit
+  mappings); asked by the user, who also asked about dimensions; (3) **`migration-applied` findings whose
+  fixes write the new form;** old content keeps reading; (4) **the codemod is applying those fixes** through
+  the write path (one document, `riviere fix`, a store transaction); (5) CEL for values, templates for text,
+  no regular expressions; (6) expiry by `removeAfter` or **`until: unused`** (`migration-unused`); (7)
+  dimension migrations reach everything in `appliesTo` and documents; (8) the declarative read half in 1.0 if
+  proven, refrakt's deprecations the test. Answers Z2c (moving between kits: a package of migration files).
 
 **The outside review** (section 21)
 

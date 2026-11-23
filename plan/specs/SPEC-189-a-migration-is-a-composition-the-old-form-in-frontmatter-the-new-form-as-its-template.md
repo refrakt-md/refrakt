@@ -63,6 +63,15 @@ is new is the rule for when a migration applies, and writing an expansion back t
 
 ## Decisions
 
+> **Revised for Marquise, 2026-11-23** (`notes/marquise-foundation.md`, Q15; Marquise's `extending.md`,
+> "Migrations"). Kept: one migration, four uses; applying only where the current form rejects an instance;
+> chains and refused cycles; validating the result; dropping nothing (D6); expiry by `removeAfter` (D8).
+> Changed: **declarative migrations live in the shape or dimension file** (`migrations:`), and migration files
+> (D1) only hold changes whose old form has no owner left (structural changes, merges and splits, retired
+> dimensions, kit-to-kit mappings); **text is read with templates, not `pattern`** (D4); **values with CEL, not
+> `replace()`** (D5); **the codemod is applying `migration-applied` findings' fixes through the write path**
+> (replacing D7's own writer); expiry may also be `until: unused`. Refrakt follows when it builds migrations.
+
 ### D1 — a migration is a file beside the runes it changes
 
 Migrations live in a `migrations/` folder inside the rune directory that owns the rune:
