@@ -3966,6 +3966,19 @@ one by one, then the mechanical fixes in one pass)
   keyed maps merged by key with the project winning, lists replaced; (6) no interpolation; Rivière's file names
   Marquise's. Also answers S2: shapes may be paths, strings or (later) precompiled. Refrakt's own
   `refrakt.config.json` was the precedent.
+- Q14. Named versions (S1). *Decided 2026-11-23* (Rivière's `corpus.md`, "Versions", replacing "Baselines";
+  `findings.md`, `scope.md`, `plugins.md`): (1) **a version is an immutable identifier** a source loads at
+  (commit, revision, snapshot id); snapshots carry it and are cached by it forever; (2) **a named version is
+  a mutable pointer** the source resolves (`head`, `published`, a branch or tag), with configuration aliases
+  (`"versions": {…}`) replacing the trace plugin's `baselines`; (3) **`rv.moveVersion(name, version, {
+  expected })`** through the sink, compare-and-swap, `version-moved` on failure, `version-unknown` for what
+  cannot be resolved; (4) **a `versions` capability** (list and resolve names, load at, move, common ancestor);
+  **`--against` source-neutral,** through the common ancestor when offered; (5) **the structural diff in core**
+  (`c.diff`, `diff.toChangeset()` for revert, sync and review, `riviere diff`), the trace plugin keeping
+  fingerprints, suspect links and change reports; (6) **two publishing models:** head is live with drafts as
+  working copies (the site builder's default, per-page publishing free), or named versions for whole releases,
+  staging and rollback. First release: the model, aliases, `--against`, the diff, the in-memory source's full
+  support; moving names through git and store sinks later.
 
 **The outside review** (section 21)
 
