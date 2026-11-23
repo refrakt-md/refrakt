@@ -278,6 +278,9 @@ term: { match: paragraph, template: "**{name}.** {definition}", name: { as: text
 9. **The engine is public** in Marquise's API (parse, read, write), for Rivière's file paths and external ids.
 10. **Scope:** heading templates are built and in 1.0; paragraph and item templates are in 1.0 if proven during
     0.x, otherwise additive.
+11. **The engine is ours** (*decided 2026-11-23*): no library matches over Markdown's inline nodes with typed
+    consumption and no regular expressions (RFC 6570, ICU MessageFormat, path-to-regexp and Python's `parse`
+    were compared). It borrows `{name}` and `{name:format}`; only `[? … ]` is new; escapes are Markdown's.
 
 ## Acceptance criteria
 
