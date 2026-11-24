@@ -4163,6 +4163,18 @@ one by one, then the mechanical fixes in one pass)
   fingerprints over mapped values; (4) reference fallback on an external kind, in Rivière's namespace on the
   attribute (`riviere: { else: npm }`), in the first release, so Marquise's shape file does not grow; (5) the rest
   when a consumer asks. The user noted CEL's new role as a data mapper strengthens the case for `computes`.
+- Q29. CEL for write values and bindings as data. *Decided 2026-11-24* (Rivière's `queries.md`, `findings.md`,
+  `scope.md`, `configuration.md`; Marquise's `rendering.md`, `extending.md`, `syntax.md`, `configuration.md`,
+  `api.md`, `commands.md`, glossary, READMEs): from a brainstorm of CEL's uses after foreign maps. (1) write
+  values: data, or `{ cel }` reading `self`, `actor`, `now`, `today`, `input`; `$` shorthands kept;
+  `write-value-type` at load, `write-value-error` refusing the write; second release; (2) computed defaults are
+  creation-time writes (`create: { set }` on a collection), Marquise's `default` stays a read-time literal, since
+  a clock in a default would break determinism; (3) bindings are data files: a path, a value map or `{ cel }` per
+  prop, components named and registered per renderer, checked when the kit loads, CEL loaded only if used,
+  `defineBindings` the escape hatch, usable from untrusted sources (the site builder); after 1.0 with kits;
+  (4) "host bindings" renamed **host code** (`createMarquise(config, host)`), so "bindings" means only
+  shape-to-component mapping; (5) CEL's role stated once: the value language of configuration, never choosing,
+  never in content.
 
 **The outside review** (section 21)
 
