@@ -4185,6 +4185,13 @@ one by one, then the mechanical fixes in one pass)
   boolean, so neither is absent; (4) under `extends`, outcomes apply only to values the descendant allows, and a
   descendant may add a map where its base has none; (5) rules reading them are `riviere: rules`
   (`resolution-not-done` moved); (6) plan's `progress` rewritten over entities without `has()`.
+- Q31. Unknown values wherever a selector reads one (the fifth review's third point). *Decided 2026-11-24*
+  (Marquise's `selectors.md`, `validation.md`, `extending.md`, `findings.md`; Rivière's `writing.md`, `queries.md`):
+  (1) a clause reading a failed computed value is unknown, and so is its negation; absent values stay two-valued;
+  (2) unknown never grants anything and is always reported: rules at their own severity (so CI fails on an error
+  rule that cannot evaluate), views and filters leave the entity out, writes and selections skip it, the write
+  policy fails closed (allow skipped, deny and confirm applied), migration cases do not match; (3)
+  `selector-inconclusive` replaces `rule-inconclusive`, naming the context and the value.
 
 **The outside review** (section 21)
 
