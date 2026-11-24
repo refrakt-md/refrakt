@@ -4026,6 +4026,17 @@ one by one, then the mechanical fixes in one pass)
   as maps; optionals for absent attributes only; (6) integer and number strict; (7) evaluation errors are
   findings with the value absent; (8) the profile's conformance subset in CI with known deviations listed and
   fixed upstream; (9) synchronous functions only.
+- Q18. Untrusted shapes (the fourth review's first point). *Decided 2026-11-24* (Marquise's `trust.md`,
+  "Untrusted shapes"; `findings.md`, `scope.md`, `syntax.md`; Rivière's site-builder and context-bundles pages):
+  the trust model treated shapes as code, while the site builder stores customers' shapes and the CEL limits
+  assumed untrusted ones. (1) a trust level per shape source, apart from content's; an untrusted shape's
+  instances are always untrusted content; `untrusted: true` on the site-builder page replaced; (2) untrusted
+  shapes are data that narrows: no code the host has not listed, no `requires: trusted`, only listed
+  namespaces; (3) `plain.element` from an inert allowlist; (4) host-set size ceilings with defaults; (5) may
+  extend a trusted shape, never replace one; migrations only onto its own shapes; (6) text escaped for people
+  and marked as untrusted for agents (a prompt-injection path through `description`, found while listing what
+  a shape reaches); (7) findings `shape-untrusted-code`, `shape-untrusted-element`, `shape-too-large`,
+  `shape-untrusted-replaces`, `shape-untrusted-namespace`; (8) after 1.0, additive, arriving with stores.
 
 **The outside review** (section 21)
 
