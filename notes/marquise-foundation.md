@@ -4073,6 +4073,24 @@ one by one, then the mechanical fixes in one pass)
   `pattern`, counted in the size budget (D-4); (8) a `timezone` configuration key, UTC by default (D-5);
   (9) optional values out of the CEL profile until cel-js passes their tests (D-6). The user's trade-off accepted:
   rules are a separate install in 1.0, since they bring the whole selector grammar.
+- Q22. The fourth review's mechanical fixes. *Done 2026-11-24* (both repositories): stale text (git as the only
+  storage, references "open", "Rivière owns" the grammar, spikes already run); `--against` source-neutral; a
+  snapshot cached by version, clock and overlays; one name each (`riviere fix --finding <id>` with scoped rule
+  ids, `nextAfter`, `term.name`); `namespace-unknown` info; traceability (`workflow:`, `trace:`) and the site
+  builder (plugins by package, no `tone`, post id `{title:slug}`) loading as written; selector lexical rules (a
+  bare value one token; shifts only after a `$` built-in or a right-hand path; each hyphenated part of a name
+  starts with a letter; third-party names prefixed with `-`); seven rows in the `extends` table, records not
+  source, compact forms only for the named shape, kits' bases under semver; `deferred` and `rebase` in the
+  capability table, moving names a sink capability; plugin finding ids prefixed by plugin; the locator caveat;
+  27 prose findings given ids; size tables regenerated; README tables; glossary gaps. **Left for decisions:**
+  Rivière's first-release breadth (D-8); a new entity's id when ids come from paths; `migration-unused` where
+  instances cannot be written; sink capabilities for `push`, `confirm`, binary files; merging `plugins` and
+  `riviere:` under a corpus definition's `extends`; rule ids under `extends` and `flatten`, and where an abstract
+  base's examples live; an abstract `plan-item` base; literals outside `matches`; kebab-case values naming fields;
+  plan's codemod; whether an optional group makes its members optional; paths in `summary`; one reserved-name
+  list (rich-text members, CEL reserved words); where template formats live; what names the record in CEL;
+  where `items: { property }` sits; the registered-check key; how core registers `fingerprint` before a value-type
+  registry exists.
 
 **The outside review** (section 21)
 
