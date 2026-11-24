@@ -4105,6 +4105,23 @@ one by one, then the mechanical fixes in one pass)
   context bundles, moving versions, the serialisable snapshot…); (4) `tree` the one plugin in the first release,
   `workflow` in the second; (5) the site lives in Marquise's repository (`site/`), its exit test today's concept
   docs, every link that resolves on GitHub resolving on the site.
+- Q24. The fourth review's smaller design questions. *Decided 2026-11-24* (both repositories): (1) a collection's
+  id template over fields (`id: '{title:slug}'`) gives a new entity its id, otherwise `create` is given one or
+  refused (`create-needs-id`); (2) instances that cannot be written keep a migration in use, `riviere fix` skips
+  and reports them; (3) sinks declare capabilities (`atomic`, `commit`, `push`, `propose`, `binary`, `versions`),
+  `capability-unavailable` for a missing one, `confirm` proposing where it can and asking the caller otherwise;
+  (4) rule ids keep the declaring shape (`audio-item/x`), `flatten` renames and prints them; (5) abstract bases
+  have no examples; (6) a corpus definition's `plugins` is a union, `riviere:` keys add and narrow under
+  `extends`; (7) plan's page gains an abstract `plan-item` base for `work` and `bug` (bugs gain `source`'s and
+  Blocked by's context settings and the deprecated alias in the process); (8) a literal outside every applicable
+  shape's `matches` is `selector-value-unknown`; (9) values naming fields are kebab-case; (10) members of an
+  optional group are optional; (11) `summary` takes paths within the record; (12) one reserved-name list in
+  Marquise's `shapes.md`, rich-text members reserved as shape names; (13) the record is `self` in CEL,
+  reserved-word fields as `self["package"]`; (14) core template formats `slug`, `path`, `date`, `lower`, `upper`,
+  more through `registerFormat` (Rivière registers `year`, `month`); (15) `items: { property }` removed, a list
+  field's own `schema:` places its children; (16) registered checks named with a `checks:` key, in 1.0;
+  (17) `fingerprint` waits for Marquise's value-type registry, the fixture's `reviewed` a string until then;
+  (18) plan's codemod a one-off script. Left open: a CLI flag and MCP argument for a `create` id.
 
 **The outside review** (section 21)
 
