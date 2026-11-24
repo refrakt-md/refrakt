@@ -4122,6 +4122,17 @@ one by one, then the mechanical fixes in one pass)
   field's own `schema:` places its children; (16) registered checks named with a `checks:` key, in 1.0;
   (17) `fingerprint` waits for Marquise's value-type registry, the fixture's `reviewed` a string until then;
   (18) plan's codemod a one-off script. Left open: a CLI flag and MCP argument for a `create` id.
+- Q25. Selectors over computed values. *Decided 2026-11-24* (Marquise's `selectors.md`, `syntax.md`,
+  `validation.md`, `shapes.md`, `findings.md`; Rivière's `references.md`): the user asked whether a selector can
+  target `computes` results, prompted by a brainstorm of a design-corpus domain (kept as a brainstorm, not
+  written up). Rivière's computed values were already fields in `links`; Marquise's were implied, never stated.
+  (1) computed values are fields to selectors and rules, read-only, typed by CEL's checker; (2) one dependency
+  graph across both languages: literal selectors inside `selects()` join it, cycles are `computes-order`;
+  (3) `rule-inconclusive` for a record whose read value failed to compute, since two-valued logic would make
+  its negation true; (4) `capability-unavailable` for rules and views reading computed values without the
+  evaluator; (5) computed strings with declared values checked by `selector-value-unknown`; (6) `name-collision`
+  covers fields and both layers' computed values; writes to them are `write-read-only`, a saved write's
+  `require` may read them.
 
 **The outside review** (section 21)
 
