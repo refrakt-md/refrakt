@@ -4059,6 +4059,20 @@ one by one, then the mechanical fixes in one pass)
   description (kind, address, id) is frozen and its operations are not; maps only, CEL once `@marquise-md/cel`
   graduates; (5) results and changesets carry the shapes' hash, and `rebase` maps addresses through declarative
   migrations or refuses with `rebase-shapes-changed`.
+- Q21. Is Marquise 1.0 still small? (the fourth review's D-1). *Decided 2026-11-24* (Marquise's `scope.md`,
+  `api.md`, `extending.md`, `selectors.md`, `validation.md`, `shapes.md`, `content-models.md`, `commands.md`,
+  `findings.md`, `trust.md`, `configuration.md`, `syntax.md`, README; Rivière's `scope.md`; SPEC-199): 1.0 had
+  gained four "if proven" items in four days and would have frozen four languages besides Markdoc. (1) 1.0 freezes
+  Markdoc, the shape file and the content model (with heading, paragraph and item templates) and nothing else;
+  (2) rules with selectors and the vocabulary API, `extends`/`abstract`/`flatten`, and the migrations read half
+  ship beside 1.0 as 0.x capabilities installed into the instance (`@marquise-md/selectors`, `extends`,
+  `migrations`), graduating in 1.x minors; (3) core gains shape-loading and resolution hooks, used by those
+  capabilities like anyone else's; (4) `capability-unavailable` replaces `computes-unavailable`; (5) "if proven" has
+  a cut-off (when every other exit test passes), defaults to out, and only templates keep it, with an exit-test row;
+  (6) `template(source)` reads and fills plain text in 1.0; (7) `@bufbuild/re2` named as core's engine for
+  `pattern`, counted in the size budget (D-4); (8) a `timezone` configuration key, UTC by default (D-5);
+  (9) optional values out of the CEL profile until cel-js passes their tests (D-6). The user's trade-off accepted:
+  rules are a separate install in 1.0, since they bring the whole selector grammar.
 
 **The outside review** (section 21)
 

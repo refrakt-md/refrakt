@@ -121,7 +121,7 @@ with the content-model revision built in refrakt first, so 1.0 ships the revised
 | Document shapes, minimal (notes Y4): a shape applied to a whole document; frontmatter as its attributes, undeclared keys passed to the host, `shape`, `id` and `lang` reserved | to be built and used during 0.x, through plan's rebuild |
 | The revised content model (notes, section 17): groups and `position: last`, `as: block \| inline \| text` and value types, item models with task lists and inline matchers, sections found by heading (nested) with heading templates, lists of references (`items: { as: ref }`), counts, `tag:` matches for explicit child shapes; matching and analysis per {% ref "SPEC-201" /%} D1–D8 | to be built in refrakt first, compiling down to the existing resolver; {% ref "SPEC-200" /%}, draft |
 | Paragraph and item templates (`template:`, SPEC-201 D8), if proven during 0.x | to be built and used during 0.x; additive otherwise |
-| Rules a shape declares, with `@marquise-md/selectors` (the grammar and its public vocabulary API), if proven (notes Y17, Q3, Q4) | to be built and used during 0.x through plan's rebuild; additive otherwise |
+| `template(source)` for plain text (reading and filling); `pattern` on a named linear-time engine (`@bufbuild/re2`); the shape-loading and resolution hooks (notes Q21) | new, small |
 | `marquise explain` and inlay hints (notes Y16) | to be built with the content-model revision |
 | `marquise check`, `marquise schema`, the published finding catalogue | partly built (`refrakt validate`, `refrakt contracts`) |
 | Attribute and content validation, with finding ids and addresses | in use (`refrakt validate`); addresses new (notes, section 19) |
@@ -129,13 +129,20 @@ with the content-model revision built in refrakt first, so 1.0 ships the revised
 | The preprocess hook, with provenance and declared dependencies | SPEC-141, shipped (the hook); `include` itself is a satellite (below) |
 | The shape node, the generic renderers, components | ADR-049, proposed: **the one new piece**, and the product itself |
 | The plain presentation | new, small |
-| `validate`, `types`, `extract`, `format`, `reference`, the language server; the template engine in the public API | exist except `extract`, to be split from refrakt |
+| `validate`, `types`, `extract`, `format`, `reference`, the language server | exist except `extract`, to be split from refrakt |
 | `@marquise-md/schema` and `@marquise-md/include`, first-party satellites | SPEC-130, SPEC-141, shipped |
 
 **A definition's body holds only examples in 1.0** (*revised 2026-11-19*, notes Y5; earlier it had to be
 empty): `{% example %}` blocks, per SPEC-197 D2, built during 0.x by moving refrakt's fixtures into its
 definitions (SPEC-197 D6). Other body blocks stay additive; write templates are not among them, since compact
 forms are `template:` in frontmatter (notes Q8).
+
+*Updated 2026-11-24* (notes Q21, after the fourth review): **1.0 freezes one language besides Markdoc, the shape
+file and its content model.** Designed later, these ship beside 1.0 as 0.x capabilities installed into the
+instance (`capability-unavailable` without them), each graduating in a 1.x minor: rules with the selector grammar
+and vocabulary API (`@marquise-md/selectors`), `extends` and `abstract` (`@marquise-md/extends`), and the
+migrations read half (`@marquise-md/migrations`). "If proven" has a cut-off (when every other exit test passes)
+and defaults to out; only paragraph and item templates keep it.
 
 ### After 1.0, each as a minor release once it graduates
 
@@ -152,7 +159,7 @@ instance (`createMarquise({ writer, computes })`; notes Q10).
 | `source()` | SPEC-198 |
 | Deferred shapes (definitions); dimensions on documents, `fills`, folder defaults | refrakt's pipeline and Rivière using them |
 | Kits, dimensions, presets, bindings, middleware | a design language built on them, refrakt's first |
-| Migrations | SPEC-189 |
+| Migrations (the read half beside 1.0 in `@marquise-md/migrations`; applying fixes with the write path) | SPEC-189 |
 | MCP | the table of operations (notes A4) |
 | Comark accepted as an input syntax (parsed, validated, rendered; no tooling of its own) | users asking for it (notes Y8: Markdoc is the syntax) |
 | `@marquise-md/compose` | SPEC-168, SPEC-177 accepted and implemented |
