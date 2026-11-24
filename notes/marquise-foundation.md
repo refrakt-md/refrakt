@@ -4175,6 +4175,16 @@ one by one, then the mechanical fixes in one pass)
   (4) "host bindings" renamed **host code** (`createMarquise(config, host)`), so "bindings" means only
   shape-to-component mapping; (5) CEL's role stated once: the value language of configuration, never choosing,
   never in content.
+- Q30. Terminal states, revised (the fifth review's second point). *Decided 2026-11-24* (Rivière's `references.md`,
+  `plugins.md`, `findings.md`, `queries.md`, `scope.md`, the plan, traceability and site-builder pages): Q26 tied
+  "terminal" to "no way out", which failed without a map, with reopening, and with different maps for `work` and
+  `bug`. (1) workflows per field (`workflow: { status: { transitions, outcomes } }`), outcomes on one field per
+  shape (`workflow-outcomes-ambiguous`); (2) terminal means having an outcome, declared; transitions may leave it
+  (reopening); a dead end without an outcome is `workflow-outcome-missing`; `workflow-outcome-not-terminal`
+  withdrawn; (3) outcomes fixed as `achieved`, `retired`; `$outcome` is `open` before either, `$terminal` always a
+  boolean, so neither is absent; (4) under `extends`, outcomes apply only to values the descendant allows, and a
+  descendant may add a map where its base has none; (5) rules reading them are `riviere: rules`
+  (`resolution-not-done` moved); (6) plan's `progress` rewritten over entities without `has()`.
 
 **The outside review** (section 21)
 
