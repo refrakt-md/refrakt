@@ -537,15 +537,16 @@ stability with real consumers.
    config, theme or engine. If it is not compelling, stop here.
 5. **A parser and positions spike** (notes X5) before anything writes: one inline value changed through
    each candidate parser.
-6. **Rivière in its own repository, as 0.x, with plan rebuilt on it** in refrakt. Plan writes as much as it
-   reads, so this also designs the write path against a real user before it is frozen.
+6. **Rivière in its own repository, as 0.x:** its first release builds Marquise's documentation site on the
+   Astro loader (read only); its second rebuilds plan in refrakt (*revised 2026-11-24*, notes Q23). Plan writes
+   as much as it reads, so the write path is still designed against a real user before it is frozen.
 7. **Marquise 1.0, the read path** (notes X1: records included; the write path, body blocks, kits,
    dimensions, bindings, middleware, deferred shapes, migrations and a second syntax after; minimal document
    shapes are in 1.0),
    once its API has been stable for refrakt and the proof project for a period. The docs site is built with
    Astro (*decided 2026-11-13*).
-8. **Minor releases as features graduate,** including the write path; **Rivière 1.0** once it has a
-   consumer unlike plan.
+8. **Minor releases as features graduate,** including the write path; **Rivière 1.0** once plan's rebuild is
+   complete and Marquise's site, the consumer unlike plan, runs on it.
 
 ## Risks
 

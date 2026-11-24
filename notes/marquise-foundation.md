@@ -4091,6 +4091,20 @@ one by one, then the mechanical fixes in one pass)
   list (rich-text members, CEL reserved words); where template formats live; what names the record in CEL;
   where `items: { property }` sits; the registered-check key; how core registers `fingerprint` before a value-type
   registry exists.
+- Q23. Rivière's first-release breadth (the fourth review's D-8). *Decided 2026-11-24* (Rivière's `scope.md`,
+  `plugins.md`, `writing.md`, `corpus.md`, `references.md`, `queries.md`, `context-bundles.md`, the five worked
+  pages, README; Marquise's `scope.md`; SPEC-199's Order): the first release had grown to nearly everything
+  designed. I proposed plan's rebuild as the first release; **the user proposed a docs site on the Astro loader
+  first, for its value and to build Marquise's own website,** and that order is better for another reason: a docs
+  site only reads, so Rivière's first release no longer waits on Marquise's write path. (1) first release:
+  Marquise's documentation site, read only (collections, references, mentions, many entities per file, YAML and
+  JSON data files, deferred shapes, `tree`, projections and grouping, rules, the Astro loader, read commands);
+  (2) second release: plan's rebuild, still the 1.0 acceptance test (changesets and the write policy, `--against`
+  and versions, rules with fixes, saved writes, `workflow`, MCP tools); (3) everything else when a consumer asks,
+  each naming the worked domain that will ask (the working copy, links with data, `fingerprint`, `formats`,
+  context bundles, moving versions, the serialisable snapshot…); (4) `tree` the one plugin in the first release,
+  `workflow` in the second; (5) the site lives in Marquise's repository (`site/`), its exit test today's concept
+  docs, every link that resolves on GitHub resolving on the site.
 
 **The outside review** (section 21)
 
