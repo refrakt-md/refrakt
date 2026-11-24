@@ -4133,6 +4133,16 @@ one by one, then the mechanical fixes in one pass)
   evaluator; (5) computed strings with declared values checked by `selector-value-unknown`; (6) `name-collision`
   covers fields and both layers' computed values; writes to them are `write-read-only`, a saved write's
   `require` may read them.
+- Q26. Terminal states, and computed values earlier. *Decided 2026-11-24* (Rivière's `references.md`,
+  `queries.md`, `plugins.md`, `findings.md`, `scope.md`, `plan-as-shapes.md`; Marquise's `scope.md`): from a
+  brainstorm of uses for Q25, which found plan repeating six terminal statuses in five rules and its `next` view.
+  (1) terminal states derived from transitions (no way out); with outcomes but no transitions yet, the outcomes'
+  states; (2) `outcomes` (`achieved`, `retired`) on terminal states, since retiring is not completing;
+  `workflow-outcome-missing`, `workflow-outcome-not-terminal`; (3) the workflow plugin derives `$terminal` and
+  `$outcome`, `terminal`/`outcome` in CEL; (4) outcomes add and narrow under `extends`; (5) Rivière's computed
+  values across entities move to the second release, with `@marquise-md/cel` from 0.x, measured by the benchmark;
+  (6) plan's page: outcomes on `plan-item`, `$terminal` in the rules and `next`, milestones' `progress`, and
+  `milestone-complete-with-open-work` as `status:complete progress:<100`.
 
 **The outside review** (section 21)
 
