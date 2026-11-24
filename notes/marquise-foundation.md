@@ -4013,6 +4013,19 @@ one by one, then the mechanical fixes in one pass)
   connected, copy to own (`marquise add`, `marquise flatten`); a project may replace a kit's shape only by
   extending it; (12) in 1.0 if proven, refrakt's playlist family and plan's corpus the tests. Still open from
   the reusability brainstorm: fragments, and whether presentation roles are needed.
+- Q17. CEL's implementation, after the spike. *Decided 2026-11-24* (refrakt's `spike/marquise-cel/FINDINGS.md`;
+  Marquise's `syntax.md`, `scope.md`, `findings.md`; Rivière's `references.md`; SPEC-195's D1 note): measured on
+  `@marcbachmann/cel-js` 8.0.0 and `@bufbuild/cel` 0.6.2: checker 18/18 against a stub (calls, fields and
+  comprehensions throw), conformance 73% against 84% in plain-value terms, 21 and 19 of 25 worked cases,
+  23 kB against 68 kB gzipped, compiling ~10× faster; cel-js's `matches()` backtracks (10 s on 29 characters)
+  and cannot be overridden; `@bufbuild/cel` has no optionals and reads `timestamp(int)` as milliseconds.
+  Decided: (1) cel-js inside `@marquise-md/cel`, `@bufbuild/cel` revisited once its checker ships; (2) no
+  `matches()` in `computes`, lifted by an RE2 option in cel-js; (3) no macro inside a macro, chained allowed;
+  (4) the profile as Marquise's own AST walk, findings `computes-not-in-profile`, `computes-order`,
+  `computes-type`, `computes-error`; (5) `first`, `round`, `clamp` kept, `days` and `nextAfter` added, amounts
+  as maps; optionals for absent attributes only; (6) integer and number strict; (7) evaluation errors are
+  findings with the value absent; (8) the profile's conformance subset in CI with known deviations listed and
+  fixed upstream; (9) synchronous functions only.
 
 **The outside review** (section 21)
 

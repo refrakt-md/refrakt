@@ -78,6 +78,15 @@ reductions and comparisons (D4's value and reduction rows) need it.
 > grammar (D5), the fan-out rule (D6), queries keeping their grammar (D7) and the guardrails (D9).
 > Markdoc functions stay for display in refrakt's templates and pages. Nothing of `computes` is built, so
 > refrakt follows when it builds it, after a spike on CEL's JavaScript implementations.
+>
+> **The spike, 2026-11-24** (`spike/marquise-cel/FINDINGS.md`): `@marcbachmann/cel-js` is the evaluator (the
+> one with a working checker). For this spec's vocabulary: `first`, `round` and `clamp` stay registered
+> functions (no math extension in either implementation; optional values mean present, not non-empty); `days`
+> and `nextAfter` join; `add`, `subtract`, `multiply`, `divide`, `mod`, `if`, `and`, `or`, `not`, `equals`,
+> `count` and `split` become CEL's operators, `size()` and `split()`; amounts are maps with functions until money
+> is designed. `matches()` is renamed `selects()`, since CEL's `matches` is a regular expression, and the
+> profile refuses CEL's `matches` in `computes`. Dividing by zero is an evaluation error, reported as a finding
+> with the value absent, rather than `undefined`.
 
 Every operation is one registered function with one implementation:
 
