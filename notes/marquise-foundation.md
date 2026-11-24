@@ -4037,6 +4037,16 @@ one by one, then the mechanical fixes in one pass)
   and marked as untrusted for agents (a prompt-injection path through `description`, found while listing what
   a shape reaches); (7) findings `shape-untrusted-code`, `shape-untrusted-element`, `shape-too-large`,
   `shape-untrusted-replaces`, `shape-untrusted-namespace`; (8) after 1.0, additive, arriving with stores.
+- Q19. Async and sync, by cause (the fourth review's third point). *Decided 2026-11-24* (Marquise's `api.md`,
+  "The instance" and design point 2; `commands.md`, `configuration.md`, `getting-started.md`, `findings.md`;
+  Rivière's `writing.md`, `corpus.md`, site-builder page): the review found three holes (shapes read through
+  `files` by a never-awaited `createMarquise`, with no home for shape findings; a synchronous `c.with`; records
+  "on demand" from a serialised snapshot under synchronous queries). (1) the rule restated: async exactly where a
+  host callback may be called, lazy computation synchronous; (2) `createMarquise` async, the instance an
+  immutable value with `mq.findings`, `mq.reload(changed)` giving a new one; (3) shape problems findings, never a
+  rejection; a shape with errors left out, its tags `shape-invalid`; (4) `c.with` async, no sync variant;
+  (5) serialised documents and snapshots store the host's answers beside the source, so `mq.restore`,
+  `restoreMarquise` and `loadSnapshot` are synchronous; (6) docs updated.
 
 **The outside review** (section 21)
 
