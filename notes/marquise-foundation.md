@@ -4192,6 +4192,14 @@ one by one, then the mechanical fixes in one pass)
   rule that cannot evaluate), views and filters leave the entity out, writes and selections skip it, the write
   policy fails closed (allow skipped, deny and confirm applied), migration cases do not match; (3)
   `selector-inconclusive` replaces `rule-inconclusive`, naming the context and the value.
+- Q32. Rivière's second release, trimmed (the fifth review's fifth point). *Decided 2026-11-24* (Rivière's
+  `scope.md`, `plugins.md`, `queries.md`, and tier phrases across the pages; Marquise's `scope.md`): the second
+  release keeps only what plan uses (changesets and the policy, `--against` and versions, rules with fixes, saved
+  writes with the `$` shorthands, `workflow`, computed values across entities, plan's one corpus definition, MCP
+  tools); combining several definitions, computed write values and creation values move to "when a consumer asks";
+  the tier drift fixed with it (`history` counted in the first release, `into`'s write placement, the docs-site
+  page's writes from the second, `$this`/`$root` beside Marquise 1.0, every "after the first release" now "when a
+  consumer asks").
 
 **The outside review** (section 21)
 
