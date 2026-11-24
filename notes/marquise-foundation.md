@@ -4153,6 +4153,16 @@ one by one, then the mechanical fixes in one pass)
   never for winning; (5) a definition's policy scoped to its own collections and writes, plugins a union,
   project-wide keys the project's alone (`definition-key-not-allowed`); (6) in the second release, with plan's
   definition.
+- Q28. Foreign files (data files whose format someone else owns). *Decided 2026-11-24* (Rivière's `corpus.md`,
+  `references.md`, `plugins.md`, `findings.md`, `scope.md`): `package.json`, Changesets' files, generated reports.
+  Rivière's, not Marquise's (data files already are); the user asked core or add-on, which split it.
+  (1) core collection keys `readOnly` (writes, create, move, delete refused) and `generated` (absence
+  `data-file-missing`, left out of `--against` and the diff), `maxSize`, `node_modules` excluded unless included;
+  (2) dialects (`jsonc`, `yaml-1.1`) in `formats`; (3) a plugin, `@riviere-md/foreign`, with `map`: CEL over the raw
+  file (`frontmatter` and `body` for Markdown), absent source keys giving absent fields without a finding,
+  fingerprints over mapped values; (4) reference fallback on an external kind, in Rivière's namespace on the
+  attribute (`riviere: { else: npm }`), in the first release, so Marquise's shape file does not grow; (5) the rest
+  when a consumer asks. The user noted CEL's new role as a data mapper strengthens the case for `computes`.
 
 **The outside review** (section 21)
 
