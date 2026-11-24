@@ -4200,6 +4200,17 @@ one by one, then the mechanical fixes in one pass)
   the tier drift fixed with it (`history` counted in the first release, `into`'s write placement, the docs-site
   page's writes from the second, `$this`/`$root` beside Marquise 1.0, every "after the first release" now "when a
   consumer asks").
+- Q33. CEL's boundary, stated (the fifth review's fourth point and its risks). *Decided 2026-11-24* (Marquise's
+  `syntax.md`, `configuration.md`, `findings.md`; Rivière's `configuration.md`, `corpus.md`): (1) foreign maps
+  reshape one level into a shape's input; deeper restructuring is a registered format reader; JSONata stays
+  rejected (it was rejected as Turing-complete, untyped and JSON-only, not for reshaping, and CEL's limits matter
+  most on outside files); (2) a map's syntax, profile and functions are checked at load, its result per file,
+  and a format may later declare a schema for raw files to type maps fully; (3) two kinds of key, marked in the
+  schemas: expression keys (`computes`, `map`, binding props) take CEL as a bare string, a path being the smallest
+  expression and loading no evaluator; value keys (`set`, `create`, `default`, migration values) take literals
+  and `{ cel }`; (4) "no interpolation, no expressions" replaced: nothing reads the host's environment, and
+  expressions appear only in expression keys and `{ cel }` values; (5) the profile's limits and `computes-*`
+  findings apply to every expression, the ids unchanged.
 
 **The outside review** (section 21)
 
