@@ -4211,6 +4211,24 @@ one by one, then the mechanical fixes in one pass)
   and `{ cel }`; (4) "no interpolation, no expressions" replaced: nothing reads the host's environment, and
   expressions appear only in expression keys and `{ cel }` values; (5) the profile's limits and `computes-*`
   findings apply to every expression, the ids unchanged.
+- Q34. The fifth review's mechanical fixes. *Done 2026-11-24* (both repositories): YAML descriptions quoted;
+  `riviere: { context }` noted as the satellite's, `plugin-not-installed` until it ships; bindings as data carried
+  into `trust.md` and the glossary ("Binding" and "Host code" separate), `has(self.icon)`; CEL's names (`self`,
+  `actor`, `now`, `today`, `input`, `terminal`, `outcome`, `links`) reserved; `await createMarquise` everywhere;
+  `field-derived` distinct from `write-read-only`. Small decisions given to the agent: `exclude` takes shape names
+  and takes their collections, the excluded definition's CEL and selectors checked against the replacement;
+  renaming an entity a `readOnly` file references is refused unless the collection has former ids; creation values
+  are computed before the id template reads them, with no `self`; `rv.findings` for the corpus's configuration
+  findings; an untrusted shape's names never make a trusted migration ambiguous (reported on the untrusted shape).
+  New ids for catalogue gaps: `selector-invalid`, `selector-field-unknown`, `attribute-missing`, `content-count`.
+  Size and package tables updated (`@riviere-md/foreign` among them); tier wording; glossary gaps. **Left for
+  decisions:** relative dates beyond `$today`; what links with data still wait for; plan's git-history to-do item;
+  CEL names for `$depth`, `$modified`, `$container`; the key naming a folder's allowed shapes; a load-time finding
+  for writes on read-only collections; whether a customer's binding needs the evaluator and which components it
+  may name; whether `create.set` overrides the caller's value; components and collections for untrusted
+  extensions; the hooks freezing before their users; who owns the policy; ids for a configuration file failing its
+  schema and a `limit` over its ceiling; `history-unavailable`'s severity; Markdoc slot stability; keys for the
+  declarative migration tier.
 
 **The outside review** (section 21)
 
