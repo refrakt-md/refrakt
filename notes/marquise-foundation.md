@@ -4143,6 +4143,16 @@ one by one, then the mechanical fixes in one pass)
   values across entities move to the second release, with `@marquise-md/cel` from 0.x, measured by the benchmark;
   (6) plan's page: outcomes on `plan-item`, `$terminal` in the rules and `next`, milestones' `progress`, and
   `milestone-complete-with-open-work` as `status:complete progress:<100`.
+- Q27. Combining corpus definitions. *Decided 2026-11-24* (Rivière's `plugins.md`, `configuration.md`,
+  `findings.md`, `scope.md`, glossary): from a brainstorm of project-maintenance corpora (releases, packages,
+  public contracts, dependencies, risks, docs-to-code; kept as a brainstorm), which all want several definitions
+  in one project. (1) one owner per name across definitions and the project, `definition-conflict`, never
+  last-one-wins; (2) `exclude` on an `extends` entry resolves a conflict, the excluded definition's uses checked
+  against the replacement (`definition-unsatisfied`); (3) `requires` to build on another definition and extend its
+  shapes (`definition-missing`), abstract bases for independent definitions; (4) `extends` ordered for reading,
+  never for winning; (5) a definition's policy scoped to its own collections and writes, plugins a union,
+  project-wide keys the project's alone (`definition-key-not-allowed`); (6) in the second release, with plan's
+  definition.
 
 **The outside review** (section 21)
 
