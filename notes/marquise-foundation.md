@@ -4047,6 +4047,18 @@ one by one, then the mechanical fixes in one pass)
   rejection; a shape with errors left out, its tags `shape-invalid`; (4) `c.with` async, no sync variant;
   (5) serialised documents and snapshots store the host's answers beside the source, so `mq.restore`,
   `restoreMarquise` and `loadSnapshot` are synchronous; (6) docs updated.
+- Q20. Migrations against `extends`, document shapes and the write path (the fourth review's fourth point).
+  *Decided 2026-11-24* (Marquise's `extending.md` "Migrations", `shapes.md`, `validation.md`, `api.md`,
+  `findings.md`; Rivière's site-builder page): "apply only where the current form rejects" depended on what else a
+  shape accepts, so reused names, optional frontmatter keys and still-allowed values slipped through. (1) a
+  migration matches its own old form; an old form the current shapes also accept is `migration-ambiguous` at load
+  (covers the review's M-1c and D-3); (2) splits and merges in migration files with ordered `cases` (`when` a
+  selector, `to` a tag or `{ from: attribute }`, `children` renaming child tags), `migration-unmatched`; the
+  `from: { tag, if }` form removed; (3) with `extends`: no abstract target, `migration-incomplete` catalogued,
+  `until: unused` for a project's own shapes only, `flatten` copies the base's migrations; (4) in 1.0 a fix's
+  description (kind, address, id) is frozen and its operations are not; maps only, CEL once `@marquise-md/cel`
+  graduates; (5) results and changesets carry the shapes' hash, and `rebase` maps addresses through declarative
+  migrations or refuses with `rebase-shapes-changed`.
 
 **The outside review** (section 21)
 
