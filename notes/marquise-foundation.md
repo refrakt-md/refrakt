@@ -4274,6 +4274,15 @@ one by one, then the mechanical fixes in one pass)
   (nearest enclosing entity as `within.<collection>`; also teams and docs sections), with `$dir` readable in
   foreign maps; (8) generated collections move into the first release with the `files` generator; other
   generators, `encloses` and directories when a consumer asks.
+- Q38. URLs read back, and "link" meaning only a Markdown link. *Decided 2026-11-25* (Rivière's `references.md`,
+  `configuration.md`, `findings.md`, `scope.md`, glossary, prior art, the traceability page; Belvédère; Marquise's
+  `content-models.md`): (1) the leaning decided: a URL an external kind's `url` template reads back is a mention of
+  that node; (2) `repository` in the configuration (`url`, `file`, `directory` templates, any host) turns links to
+  the repository's own files into mentions of file entities: branch URLs ordinary mentions, commit URLs permalinks
+  recording their version and never flagged stale, line fragments coordinates; only this repository's address
+  matches; (3) the same templates render "view source" links at the snapshot's version; (4) "links with data"
+  renamed **references with data**, suspect links **suspect references** (crediting Doorstop's term), and
+  `trace-link-suspect` **`trace-reference-suspect`**, so "link" means only a Markdown link.
 
 **The outside review** (section 21)
 
