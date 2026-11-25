@@ -4242,6 +4242,23 @@ one by one, then the mechanical fixes in one pass)
   (5) SPEC-136's edge classes become Belvédère's citation kinds; (6) refrakt's `snippet` and `file-ref` keep using
   Marquise's preprocess hook, Rivière's `local-file` resolver gains anchored references
   (`repo-file:path#Symbol`); extracted when that resolver needs anchors, likely Rivière's first release.
+- Q36. Code spans, mentions and code as a collection. *Decided 2026-11-25* (Rivière's `references.md`,
+  `corpus.md`, `plugins.md`, `findings.md`, `scope.md`, glossary; Belvédère's `docs/concept.md`): (1) code spans
+  are inferred mentions, opted into per collection (`mentions: { code: true }`), in eight classes (paths, file
+  names, symbols, qualified names, calls with a signature claim, packages, contracts, nothing), fenced blocks
+  excluded, only unique resolutions counting, generic names weighed down, each class measured by base rate first
+  (SPEC-136's method); (2) unresolved inferred candidates are silent, ambiguous ones `mention-ambiguous` (info, off by
+  default); explicit `ref` keeps its strictness; (3) mentions gain a class (`ref`, `link`, `code`, `declared`) and
+  the passage address; (4) **code is a collection**: generated collections (`generate:`) are a core concept, and
+  `@riviere-md/code` makes symbols entities, with a two-level index (names for all included files, regions and
+  hashes on demand) cached by git blob ids, measured on refrakt at 560 ms cold, 65 ms warm, 2–3 ms for 20 changed
+  files; top-level declarations only, exported or all per collection; (5) `documents:` is a typed field (an edge,
+  SPEC-136 D13) with a `documentedBy` inverse; (6) inferred mentions start "probably stale" from region dates (the
+  git source's history), a "still true" records the review hash (in `trace`), kept in a `reviewed:` frontmatter
+  map keyed by target; (7) renames are former ids found by matching hashes, rewriting spans through
+  `ref-former-id`; (8) call sites are anchored regions, never entities; callers come from an optional
+  code-intelligence reader (a language service, or SCIP) as a derived member. The user asked about generation cost
+  and call sites, which produced the two-level index, the measurement and point 8.
 
 **The outside review** (section 21)
 
