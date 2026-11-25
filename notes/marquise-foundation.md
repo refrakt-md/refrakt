@@ -4259,6 +4259,21 @@ one by one, then the mechanical fixes in one pass)
   `ref-former-id`; (8) call sites are anchored regions, never entities; callers come from an optional
   code-intelligence reader (a language service, or SCIP) as a derived member. The user asked about generation cost
   and call sites, which produced the two-level index, the measurement and point 8.
+- Q37. Files as entities; links to files; `encloses`. *Decided 2026-11-25* (Rivière's `corpus.md`,
+  `references.md`, `findings.md`, `scope.md`, `plugins.md`, glossary, the docs-site page; Belvédère's concept): from
+  the user's question about links and mentions, which exposed that a Markdown link to a source file was not a
+  mention (Belvédère's page had said it was). (1) files are a generated collection from a built-in `files`
+  generator (the source lists them, git or a store), with only universal facts: path as id, base name as `name`,
+  extension, language, content hash, git dates; (2) a file held by a document collection is that collection's
+  entity; (3) a moved file records its old path as a former id from git's rename detection; (4) directories
+  optional, a tree through `tree`; (5) this supersedes the `repo-file:` kind and the built-in `local-file`
+  resolver: references `to: [file]`, `external-missing` only for external resolvers; (6) links to repository files
+  are mentions of the file, or of a symbol a fragment names; line ranges are coordinates (`link-coordinate`,
+  info); (7) the user objected to a `package` field as Node-specific, so packages, crates and modules belong to
+  ecosystem corpus definitions mapping manifests as foreign files, related to files by a generic **`encloses`**
+  (nearest enclosing entity as `within.<collection>`; also teams and docs sections), with `$dir` readable in
+  foreign maps; (8) generated collections move into the first release with the `files` generator; other
+  generators, `encloses` and directories when a consumer asks.
 
 **The outside review** (section 21)
 
