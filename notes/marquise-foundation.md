@@ -4229,6 +4229,19 @@ one by one, then the mechanical fixes in one pass)
   extensions; the hooks freezing before their users; who owns the policy; ids for a configuration file failing its
   schema and a `limit` over its ceiling; `history-unavailable`'s severity; Markdoc slot stability; keys for the
   declarative migration tier.
+- Q35. Source anchoring shared across refrakt, Rivière and Belvédère. *Decided 2026-11-25* (Rivière's
+  `references.md`, `plugins.md`; Belvédère's `docs/concept.md`): Belvédère (a new private repository,
+  `marquise-md/belvedere`, holding the knowledge-layer and oversight brainstorm) needs citations to code and
+  symbol-level fingerprints; the user noticed the overlap with `snippet`, and refrakt already ships the foundation:
+  SPEC-131 (anchors by name, table-driven extents, refusal), SPEC-134 (review hashes, `reviewed=`), SPEC-136 (edges
+  and git-ranked staleness, `refrakt.stale`). (1) extract anchoring, the language table, masking and review hashes
+  into a shared, dependency-free package (working name `@marquise-md/anchors`), reading through the host's `files`;
+  (2) one fingerprint format, SPEC-134's hashes, for entity fields and anchored code; the word stays `reviewed`;
+  (3) table-driven anchoring is the default for every language, language services optional precision plugins
+  (reversing a TypeScript-first suggestion); (4) two tiers: git-ranked edges "probably stale", hashes "suspect";
+  (5) SPEC-136's edge classes become Belvédère's citation kinds; (6) refrakt's `snippet` and `file-ref` keep using
+  Marquise's preprocess hook, Rivière's `local-file` resolver gains anchored references
+  (`repo-file:path#Symbol`); extracted when that resolver needs anchors, likely Rivière's first release.
 
 **The outside review** (section 21)
 
