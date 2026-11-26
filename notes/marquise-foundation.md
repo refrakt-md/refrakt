@@ -4326,6 +4326,14 @@ one by one, then the mechanical fixes in one pass)
   a base one a collection's shape extends; (7) when a consumer asks, likely Marquise's docs site. Tried on refrakt:
   9 environment variables (3 undocumented), 26 command names (several subcommands, showing patterns are the
   project's to make precise).
+- Q43. Mentions and declared subjects. *Decided 2026-11-26* (Rivière's `references.md`; Belvédère's concept): the
+  user asked whether the first patterns example's `documents: [SITE_URL, …]` was needed, and what happens when it
+  drifts from the content. It was not: the page named both in backticks, so the declaration duplicated mentions and
+  could drift either way. (1) mentions count as documentation, coverage rules checking `documented-by` or
+  `mentionedBy`; (2) `documents:` is for subjects the prose does not name (SPEC-136's 209 of 237 pages); a declared
+  subject the page also mentions is `page/documents-redundant` (info, off by default); (3) the drift no text check
+  can see (a page no longer about its subject) is caught by suspect references, since a declared subject is a
+  reference.
 
 **The outside review** (section 21)
 
