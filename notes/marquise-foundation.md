@@ -4305,6 +4305,15 @@ one by one, then the mechanical fixes in one pass)
   offline, the outside world being overlays; (6) ids derived from inputs, continuity matched by `sameAs` under
   `--against`; (7) output validated (`generator-invalid`) and bounded (`generator-limit`); (8) registered host code
   only, registered by plugins; foreign files are the declarative generator.
+- Q41. Structured attributes and data shapes. *Decided 2026-11-26* (Marquise's `shapes.md`, `schema.md`,
+  `scope.md`, glossary): while unpacking the patterns generator's base shape, the user asked whether its content
+  model applied to JSON. It did not: data never goes through a content model, only the input schema, and the
+  example used content-model syntax only because attributes could not declare structure. (1) attributes may be
+  structured, `fields:` for an object, with `list: true` a list of them; (2) valid wherever attributes are written:
+  Markdoc's arrays and hashes on tags (its tag grammar has them), Comark's `:`-prefixed JSON or YAML props block (as
+  refrakt's Comark spike showed), frontmatter, data files, generated input; I first proposed refusing them on tags,
+  and the user's question showed both syntaxes support them; (3) a shape with only attributes is a **data shape**,
+  for data-only and generated collections, so the content model keeps one job, how Markdown maps onto fields.
 
 **The outside review** (section 21)
 
