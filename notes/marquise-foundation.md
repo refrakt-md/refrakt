@@ -4334,6 +4334,15 @@ one by one, then the mechanical fixes in one pass)
   subject the page also mentions is `page/documents-redundant` (info, off by default); (3) the drift no text check
   can see (a page no longer about its subject) is caught by suspect references, since a declared subject is a
   reference.
+- Q44. Git history as a generator. *Decided 2026-11-26* (Rivière's `corpus.md`, `references.md`, `plugins.md`,
+  `scope.md`): (1) `@riviere-md/git`: commits as entities by hash (subject, body, author name, date, parents, merge,
+  trailers as a structured attribute, files at the detail level), tags with `kind: tags`; (2) the contract gains
+  non-file inputs, the source's history with a range, read through the source's capability; (3) cached by hash
+  forever, only new commits read; (4) at a version, the reachable commits within the range, and under `--against`
+  the pull request's commits; (5) a range is required; (6) shallow history keeps what is present, reports
+  `history-unavailable`, and leaves dependent rules unknown; (7) bare ids as mentions in plain text, opt-in,
+  matching only distinct-prefix id patterns; (8) when a consumer asks, plan and Belvédère. Measured on this
+  session's shallow checkout of refrakt: 181 commits in 12 ms.
 
 **The outside review** (section 21)
 
