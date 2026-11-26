@@ -4442,6 +4442,12 @@ one by one, then the mechanical fixes in one pass)
   (3) a fragment is a symbol where a collection holds one, else a region of the file, both reviewable alike;
   (4) moving a path-id file renames it: `riviere move` rewrites references, links, refs and code spans and records
   the former id; outside moves are caught by history once committed, by blob id under `--against` before.
+- Q55. `built`, not `generated`, for build output. *Decided 2026-11-26* (Rivière's `corpus.md`, `scope.md`,
+  `findings.md`, glossary), from the sixth review's G24: a foreign collection's `generated: true` becomes
+  `built: true`, so "generated" means only entities a generator makes (compared under `--against`), while built
+  files are read as usual, read-only, readable by rules, and left out of `--against` since history lacks them
+  (my proposal to compare them by blob id was withdrawn for that reason); Q46's "generated foreign collections"
+  reads "built"; the glossary sets the two side by side. G23 was settled by Q49.
 
 **The outside review** (section 21)
 
