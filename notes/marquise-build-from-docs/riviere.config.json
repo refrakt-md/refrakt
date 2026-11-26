@@ -1,0 +1,7 @@
+{
+  "marquise": "./marquise.config.json",
+  "collections": {
+    "tasks":  { "shape": "task",   "include": "content/tasks/*.md", "id": "TASK-{n}", "formerIds": "formerly" },
+    "people": { "shape": "person", "include": "team/*.yaml", "id": { "from": "name" }, "names": ["name"] }
+  }
+}

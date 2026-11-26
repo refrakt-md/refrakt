@@ -1,0 +1,64 @@
+== 1. Marquise: shape findings (mq.findings)
+shapes/note.md:1                   warning name-camelcase           note.Kind: note: `Kind` is camelCase
+shapes/note.md:1                   error   shape-key-unknown        note.Kind: note.Kind: unknown type `strng`  {"type":"strng"}
+shapes/note.md:1                   error   field-shadowed           note.lede: note.lede: takes what `rest` could start with; acknowledge with shadows: [rest] or use an explicit slot  {"field":"lede","shadowed":"rest"}
+shapes/task.md:1                   info    field-shadowed           task.summary: task.summary shadows notes (acknowledged)  {"field":"summary","shadowed":"notes"}
+
+== 1. Marquise: one document, fixtures/v1/content/tasks/sprint.md
+records:
+  {"shape":"task","id":"TASK-1","address":"#TASK-1","status":"open","priority":"medium","owner":"ada-lovelace","blockedBy":["TASK-2"],"title":{"markdown":"Write the loader","syntax":"markdoc","text":"Write the loader","shapes":[]},"summary":{"markdown":"Reads every file *once*.","syntax":"markdoc","text":"Reads every file once.","shapes":[]},"notes":{"markdown":"- cache by content hash\n- report findings","syntax":"markdoc","text":"cache by content hash report findings","shapes":[]}}
+  {"shape":"task","id":"TASK-2","address":"#TASK-2","status":"doing","priority":"high","owner":"Grace Hopper","title":{"markdown":"Ship the CLI","syntax":"markdoc","text":"Ship the CLI","shapes":[]}}
+  {"shape":"task","id":"TASK-3","address":"#TASK-3","status":"open","priority":"medium","owner":"ghost","title":{"markdown":"Owner does not exist","syntax":"markdoc","text":"Owner does not exist","shapes":[]}}
+  {"shape":"task","id":"TASK-4","address":"#TASK-4","priority":"medium","title":{"markdown":"Not an allowed status, and an unknown attribute","syntax":"markdoc","text":"Not an allowed status, and an unknown attribute","shapes":[]}}
+  {"shape":"task","id":"TASK-5","address":"#TASK-5","priority":"medium","summary":{"markdown":"A paragraph where the heading should be.","syntax":"markdoc","text":"A paragraph where the heading should be.","shapes":[]}}
+findings:
+content/tasks/sprint.md:20         error   attribute-type-invalid   #TASK-4.status: task.status: must be one of open, doing, done (got "blocked")  {"attribute":"status","got":"blocked","allowed":["open","doing","done"]}
+content/tasks/sprint.md:20         error   attribute-unknown        #TASK-4: task: unknown attribute `size`  {"attribute":"size"}
+content/tasks/sprint.md:24         error   attribute-missing        #TASK-5.status: task: missing required attribute `status`  {"attribute":"status"}
+content/tasks/sprint.md:25         error   content-missing          #TASK-5.title: task.title: needs a heading  {"field":"title","match":"heading"}
+content/tasks/sprint.md:28         error   shape-invalid            note: shape `note` has error findings and was left out
+
+== 2. Rivière: snapshot of fixtures/v1
+entities:
+  tasks:TASK-1  @content/tasks/sprint.md#TASK-1  former=[]  links={}
+  tasks:TASK-2  @content/tasks/sprint.md#TASK-2  former=[]  links={}
+  tasks:TASK-3  @content/tasks/sprint.md#TASK-3  former=[]  links={}
+  tasks:TASK-4  @content/tasks/sprint.md#TASK-4  former=[]  links={}
+  tasks:TASK-5  @content/tasks/sprint.md#TASK-5  former=[]  links={}
+  people:ada-lovelace  @team/ada.yaml#ada-lovelace  former=[]  links={"tasks":["TASK-1"]}
+  people:edsger-dijkstra  @team/edsger.yaml#edsger-dijkstra  former=[]  links={"tasks":[]}
+  people:grace-hopper  @team/grace.yaml#grace-hopper  former=[]  links={"tasks":["TASK-2"]}
+  people:linus  @team/linus.yaml#linus  former=[]  links={"tasks":[]}
+edges:
+  TASK-1.owner "ada-lovelace" -> people:ada-lovelace
+  TASK-1.blockedBy "TASK-2" -> tasks:TASK-2
+  TASK-2.owner "Grace Hopper" -> people:grace-hopper
+  TASK-3.owner "ghost" -> (unresolved)
+corpus findings (Rivière-level only; Marquise document findings were printed above):
+team/linus.yaml:2                  error   attribute-type-invalid   team/linus.yaml#linus.role: person.role: must be one of engineer, designer, intern (got "wizard")  {"attribute":"role","got":"wizard","allowed":["engineer","designer","intern"]}
+team/linus.yaml:3                  error   attribute-type-invalid   team/linus.yaml#linus.skills: person.skills: must be a list (got "kernels, git")  {"attribute":"skills","got":"kernels, git"}
+content/tasks/sprint.md:16         error   ref-unresolved           #TASK-3.owner: tasks:TASK-3.owner: no entity `ghost` in person  {"written":"ghost","to":["person"]}
+content/tasks/sprint.md:12         warning task/high-for-intern     #TASK-2: A high-priority task is assigned to an intern  {"rule":"high-for-intern","shape":"task"}
+team/edsger.yaml:1                 warning person/engineer-idle     #edsger-dijkstra: An engineer with no task assigned  {"rule":"engineer-idle","shape":"person"}
+
+== 2. Query: c.find('tasks', 'status:open,doing owner.role:engineer,intern')
+  TASK-1  Write the loader
+  TASK-2  Ship the CLI
+== 2. Query: c.find('people', '-has:tasks')
+  edsger-dijkstra
+  linus
+
+== 3. riviere validate --against v1 (head = fixtures/v2)
+content/tasks/sprint.md:20         warning id-changed               #TASK-40: tasks:TASK-4 became TASK-40 by hand; record the former id  {"from":"TASK-4","to":"TASK-40"}  fix={"kind":"set","address":"#TASK-40.formerly","value":["TASK-4"]}
+content/tasks/sprint.md:3          info    ref-former-id            #TASK-1.blockedBy[0]: (new on this branch) `TASK-2` is a former id of TASK-20  {"written":"TASK-2","current":"TASK-20"}  fix={"kind":"set","address":"#TASK-1.blockedBy[0]","value":"TASK-20"}
+content/tasks/sprint.md:28         error   ref-unresolved           #TASK-6.blockedBy[1]: (new on this branch) tasks:TASK-6.blockedBy: no entity `TASK-99` in task  {"written":"TASK-99","to":["task"]}
+
+== 3b. fixtures/v3 = v2 plus a new TASK-2 (a former id of TASK-20): snapshot findings
+content/tasks/sprint.md:32         error   id-reused                #TASK-2: tasks:TASK-2 is a former id of TASK-20  {"id":"TASK-2","formerOf":"TASK-20"}
+content/tasks/sprint.md:16         error   ref-unresolved           #TASK-3.owner: tasks:TASK-3.owner: no entity `ghost` in person  {"written":"ghost","to":["person"]}
+content/tasks/sprint.md:28         error   ref-unresolved           #TASK-6.blockedBy[1]: tasks:TASK-6.blockedBy: no entity `TASK-99` in task  {"written":"TASK-99","to":["task"]}
+   TASK-1.blockedBy now resolves to: TASK-2 (Someone took the next free-looking number)
+== 3b. validate --against v1 (head = fixtures/v3)
+content/tasks/sprint.md:20         warning id-changed               #TASK-40: tasks:TASK-4 became TASK-40 by hand; record the former id  {"from":"TASK-4","to":"TASK-40"}  fix={"kind":"set","address":"#TASK-40.formerly","value":["TASK-4"]}
+content/tasks/sprint.md:32         error   id-reused                #TASK-2: (new on this branch) tasks:TASK-2 is a former id of TASK-20  {"id":"TASK-2","formerOf":"TASK-20"}
+content/tasks/sprint.md:28         error   ref-unresolved           #TASK-6.blockedBy[1]: (new on this branch) tasks:TASK-6.blockedBy: no entity `TASK-99` in task  {"written":"TASK-99","to":["task"]}
