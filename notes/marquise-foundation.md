@@ -4314,6 +4314,18 @@ one by one, then the mechanical fixes in one pass)
   refrakt's Comark spike showed), frontmatter, data files, generated input; I first proposed refusing them on tags,
   and the user's question showed both syntaxes support them; (3) a shape with only attributes is a **data shape**,
   for data-only and generated collections, so the content model keeps one job, how Markdown maps onto fields.
+- Q42. The patterns generator, and two contract additions. *Decided 2026-11-26* (Rivière's `corpus.md`,
+  `plugins.md`, `findings.md`, `scope.md`): chosen as the most useful first generator, since it covers several
+  candidates at once and replaces the finding-id check we scripted in three review rounds. (1) `@riviere-md/patterns`:
+  identifiers code uses as entities, identity the captured string, occurrences as `sites`, fields from captures
+  typed by the shape, comments skipped, strings kept, dynamic uses recorded as uncapturable; (2) a base data shape,
+  `identifier`, extended by projects; (3) patterns, ignore lists and globs in corpus definitions; (4) single-source
+  registries recommended (`defineFinding`), the catalogue a view over generated entities, Marquise and Rivière
+  adopting it for finding ids; (5) contract: entries with one id merge across files, lists concatenating, scalars
+  agreeing or `generator-conflict`, per-field merges declarable; (6) contract: a generator ships a concrete shape or
+  a base one a collection's shape extends; (7) when a consumer asks, likely Marquise's docs site. Tried on refrakt:
+  9 environment variables (3 undocumented), 26 command names (several subcommands, showing patterns are the
+  project's to make precise).
 
 **The outside review** (section 21)
 
