@@ -4492,6 +4492,14 @@ one by one, then the mechanical fixes in one pass)
   that shape name within its container (top level or a field); `hero` is `hero[0]`, printed with `[0]` unless
   alone; a document shape is its own root; `#id` resolves at any depth; (4) `file` and `address` are separate in
   every finding; the joined cross-file string is always id-rooted, a positional one uses `{ file, address }`.
+- Q61. The resolution rule: scope, then match. *Decided 2026-11-26* (Rivière's `corpus.md`, `references.md`,
+  `findings.md`), from the build-from-docs review (GAP-26, 27, 29, 30, 40): (1) scope is the qualified collection,
+  else `to`'s collections, else every collection; matching tiers id, former id, name, the first tier with a match
+  stopping, several matches `ref-ambiguous`; corpus-unique collections need no step of their own; (2)
+  `ref-wrong-target` when nothing within `to` matches but the whole corpus does (or a qualified id is outside
+  `to`), still unresolved; (3) `id-reused` is on the newcomer, naming the former holder, and while it stands
+  references to the id are ambiguous, never re-pointed; (4) `ref-by-name` (info, off by default) on typed
+  references resolved by name; mentions by name stay silent.
 
 **The outside review** (section 21)
 
