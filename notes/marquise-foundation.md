@@ -4406,6 +4406,16 @@ one by one, then the mechanical fixes in one pass)
   follow SPEC-134 (comments in, loose hash proves formatting, never stamped in bulk, one item per fix); (5) the
   page-level date is renamed `checked` on the docs-site and traceability shapes; (6) Belvédère's agent verdict
   proposes a marker rather than writing a provisional hash, pending finding 3.
+- Q51. Belvédère's pull request surface and agent clearances. *Decided 2026-11-26* (Belvédère's `docs/concept.md`;
+  Rivière's `references.md`, `findings.md`), from the sixth review's third finding. (1) the pull request report only
+  reads and comes first; acting comes second, through the editor or terminal (`belvedere review`, one item at a
+  time, Rivière's fix), GitHub suggested changes when the passage is in the diff, or a reply command handled by a
+  workflow committing for the commenter (`Reviewed-by:`); (2) the fingerprint row follows SPEC-134: comments count,
+  formatting proven by the loose hash, moves found by name; (3) an agent's "unaffected" is an honest marker,
+  `{% reviewed "…" by="agent" /%}`, written by the agent that made the change in its own session; CI triage only
+  reports and never pushes; no bulk accept, agent-cleared items need nothing from a person; (4) Rivière's marker
+  takes a generic `by` (an actor kind, omitted for a person), `trace: { require: { by: person } }` where a person
+  is demanded; (5) `belvedere/marker-misattributed` for a person marker added in an agent session's commit.
 
 **The outside review** (section 21)
 
