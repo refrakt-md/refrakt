@@ -4361,6 +4361,15 @@ one by one, then the mechanical fixes in one pass)
   entities by path and to symbols by region; committed runs as collections, a CI service's history as an overlay.
   To refine: recording versions across tools and providers, several tools in one job, per-test coverage, flaky
   tests.
+- Q47. Adapters: rendering foreign shapes as one's own. *Decided 2026-11-26* (Marquise's `rendering.md`,
+  `extending.md`, glossary; Rivière's `shapes.md`): the user asked about shapes from other packages (kits,
+  generators, corpus definitions) transformed by composition templates into shapes that have framework components.
+  (1) an adapter is a binding whose target is a shape, with the same three field forms (path, value map, `{ cel }`),
+  validated against the target when it loads; (2) paths carry rich text and slots, maps and CEL values only;
+  (3) rendering order: the instance's own binding or component, an adapter to a shape that has one, the plain
+  presentation; (4) `as=<shape>` on `collection`, `ref`, `expand`; (5) restructuring is a `compose` template, the
+  second tier, as for migrations; (6) all-path adapters are invertible for editing, other fields read-only;
+  (7) kits may ship adapters, untrusted sources within the limits; after Marquise 1.0, with bindings.
 
 **The outside review** (section 21)
 
