@@ -4394,6 +4394,18 @@ one by one, then the mechanical fixes in one pass)
   reserve nothing; (7) output is `{ entries, notes }`, notes reported as `generator-note`; (8) a table states each
   generator's input, mode, merging, location and continuity. `marquise` under `--against` has a base side only
   when the host supplies that version's instance.
+- Q50. Review state for mentions. *Decided 2026-11-26* (Rivière's `references.md`, `findings.md`, glossary, the
+  docs-site and traceability pages, `queries.md`, `corpus.md`; Belvédère's `docs/concept.md`), from the sixth
+  review's fourth finding: Q36 (6)'s frontmatter `reviewed:` map keyed by target was never written into Rivière, and
+  is the sidecar SPEC-134 D4 rejected. (1) a review sits inline, a `{% reviewed "…" /%}` marker directly after the
+  mention (code span, link or `ref`, which also takes `reviewed=`), its position its key; `reviewed-detached`;
+  a reviewed inferred mention is explicit, so `ref-unresolved` when it stops resolving; the map is dropped;
+  (2) typed fields record it per item in a structured form (`{ to, reviewed }`), body lists through templates;
+  (3) states untracked (silent, replacing "suspect from the start"), reviewed, suspect, broken; `trace: { require:
+  true }` gives `trace-reference-unreviewed`; "probably stale" is a view hint, never a finding; (4) fingerprints
+  follow SPEC-134 (comments in, loose hash proves formatting, never stamped in bulk, one item per fix); (5) the
+  page-level date is renamed `checked` on the docs-site and traceability shapes; (6) Belvédère's agent verdict
+  proposes a marker rather than writing a provisional hash, pending finding 3.
 
 **The outside review** (section 21)
 
