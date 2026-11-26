@@ -4416,6 +4416,19 @@ one by one, then the mechanical fixes in one pass)
   reports and never pushes; no bulk accept, agent-cleared items need nothing from a person; (4) Rivière's marker
   takes a generic `by` (an actor kind, omitted for a person), `trace: { require: { by: person } }` where a person
   is demanded; (5) `belvedere/marker-misattributed` for a person marker added in an agent session's commit.
+- Q52. One mapping vocabulary; templates are refrakt's. *Decided 2026-11-26* (Marquise's `extending.md`,
+  `rendering.md`, `trust.md`, `findings.md`, `scope.md`, `shapes.md`, `content-models.md`, README), from the sixth
+  review's fifth finding. (1) every declarative tier is keyed by what it writes, values as a path, a value map
+  (`from`, `map`, `default`) or `{ cel }`: bindings `props`/`slots`, adapters and migrations `attributes`/`fields`,
+  migrations adding `remove:` and `rename:` (child tags); migrations move from source-keyed (`author: { to: name }`)
+  to `name: author`; `to:` is one shape for a declarative tier, a list for a template; (2) the user asked whether
+  refrakt's template tag fits: it does, so templates follow SPEC-145, SPEC-168 D9 and SPEC-197 D1 unchanged
+  (`{% template %}`, `{% fragment #id %}`, `{% example %}` body blocks; `$attrs`, `slot`, `slot … each` with
+  `$each`; `$each`, `$item`, `$row` kept apart), my `{% compose %}` tag and `$self`/`$item` renames withdrawn;
+  variants select on an attribute of the shape being read, so a structural migration's cases are
+  `{% template type="podcast" %}`; one extension, `slot … each` over a structured list attribute, to be proposed
+  as a SPEC-145 amendment; (3) `@marquise-md/compose` is after 1.0 everywhere; (4) `adapter-ambiguous` is
+  reported when a renderer is set up; (5) adapters get a trust row: never adapting a trusted shape for everyone.
 
 **The outside review** (section 21)
 
