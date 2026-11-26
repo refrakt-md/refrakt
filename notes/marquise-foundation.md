@@ -4465,6 +4465,14 @@ one by one, then the mechanical fixes in one pass)
   each item parsed by its type; structured forms pass through; structured attributes take only the structured
   form; data never takes the shorthand; no escaping (an item with a comma needs an array); items are located for
   surgical edits, and the printer keeps the author's form.
+- Q58. The sixth review's mechanical batch, and four calls. *Decided 2026-11-26* (all three repositories): the
+  batch applied C1–C17's remaining fixes, generator details, scope tables, catalogues, the `$` names and glossaries.
+  The user decided: (1) `site` is not in Rivière's first release for now ("when a consumer asks", refrakt), revising
+  Q39's tier, so the first release ships `tree` and `marquise`; (2) structured attributes and data shapes are in
+  Marquise 1.0; (3) the `reviewed` marker is the `trace` plugin's, its finding `trace-reviewed-detached`; (4)
+  Marquise's and Rivière's docs do not name Belvédère; consumers are described generically ("an agent-session
+  ledger", "a knowledge layer over code"). `report-stale` became `reports-stale`; `page/documents-redundant` is a
+  docs corpus definition's rule, outside the catalogue.
 
 **The outside review** (section 21)
 
