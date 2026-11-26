@@ -4429,6 +4429,12 @@ one by one, then the mechanical fixes in one pass)
   `{% template type="podcast" %}`; one extension, `slot … each` over a structured list attribute, to be proposed
   as a SPEC-145 amendment; (3) `@marquise-md/compose` is after 1.0 everywhere; (4) `adapter-ambiguous` is
   reported when a renderer is set up; (5) adapters get a trust row: never adapting a trusted shape for everyone.
+- Q53. Mention classes and what inferred mentions resolve against. *Decided 2026-11-26* (Rivière's `references.md`,
+  glossary, `scope.md`), from the sixth review's C5: (1) classes are `ref`, `link`, `code` and `id` (bare ids,
+  which had none); `declared` is dropped, declared subjects staying typed fields; (2) code spans resolve against the
+  collections named: `code: true` every generated collection (so `` `SITE_URL` `` reaches `patterns`' env vars),
+  `code: { to: [...] }` narrowing, unknown names reported at load; "collections that hold code" removed; (3) `ids`
+  takes the same `true` or `{ to }` form.
 
 **The outside review** (section 21)
 
