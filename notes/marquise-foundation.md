@@ -4456,6 +4456,15 @@ one by one, then the mechanical fixes in one pass)
   renames nothing; (3) `$release` dropped: comparing `remove-after` waits for a `semver` value type, expiry stays
   `migration-expired`; (4) `migration-unused` becomes the plugin's `marquise-migration-unused` (hyphen prefix, the
   catalogue's convention); `instances` is a list of addresses, countable, not traversable. G19 was settled by Q49.
+- Q57. Data shapes in the plain presentation; lists written as text. *Decided 2026-11-26* (Marquise's
+  `rendering.md`, `records.md`), from the sixth review's C11 and C12. (1) scalar attributes stay `data-*`;
+  structured attributes render as content, a `data-attr` wrapper with a `dl` or a `ul` of them; a data shape also
+  renders its scalars as a `dl`, refs as links where resolved; (2) the user asked whether comma strings belong at
+  transform time: they are a value parse in core, syntax-neutral, never Markdoc's attribute transform nor the
+  content model; the string form (Markdoc attribute, plain Comark prop, frontmatter scalar) is split on commas and
+  each item parsed by its type; structured forms pass through; structured attributes take only the structured
+  form; data never takes the shorthand; no escaping (an item with a comma needs an array); items are located for
+  surgical edits, and the printer keeps the author's form.
 
 **The outside review** (section 21)
 
