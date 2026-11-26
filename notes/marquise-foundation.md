@@ -4296,6 +4296,15 @@ one by one, then the mechanical fixes in one pass)
   plugin (nearest, or `chain: true`), revising Q37; (4) conventions (`_layout.md`, prefix stripping, index pages,
   `slug`, the `route` format) live in a refrakt site corpus definition; (5) refrakt keeps `router.ts` and
   `layout.ts` until it converges by adopting the plugin with its own definition.
+- Q40. The generator contract. *Decided 2026-11-26* (Rivière's `corpus.md`, `plugins.md`, `findings.md`; approved
+  before Q39 and recorded after it): (1) `name`, `version`, shipped `shapes`, an `options` schema, declared `inputs`,
+  `perFile` or `whole` for the index, optional `detail` and `sameAs`; (2) declared inputs enforced
+  (`generator-undeclared-input`); (3) caching and incrementality are Rivière's, per file by blob id or by all inputs,
+  keyed with version and options; (4) details computed during load for mentioned or referenced entities and for
+  collections whose rules and views read detail fields, so reading stays synchronous; (5) pure, deterministic,
+  offline, the outside world being overlays; (6) ids derived from inputs, continuity matched by `sameAs` under
+  `--against`; (7) output validated (`generator-invalid`) and bounded (`generator-limit`); (8) registered host code
+  only, registered by plugins; foreign files are the declarative generator.
 
 **The outside review** (section 21)
 
