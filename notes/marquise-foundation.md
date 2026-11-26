@@ -4473,6 +4473,16 @@ one by one, then the mechanical fixes in one pass)
   Marquise's and Rivière's docs do not name Belvédère; consumers are described generically ("an agent-session
   ledger", "a knowledge layer over code"). `report-stale` became `reports-stale`; `page/documents-redundant` is a
   docs corpus definition's rule, outside the catalogue.
+- Q59. Records and invalid values. *Decided 2026-11-26* (Marquise's `records.md`, `selectors.md`, `shapes.md`,
+  `content-models.md`; Rivière's `corpus.md`), from the build-from-docs review (GAP-9, 11, 13, 15, 16, 17, 25, 39),
+  after the architecture review and the build test both pointed at an under-specified core: (1) an invalid value is
+  left out of the record, never kept raw or defaulted; defaults apply only when absent; the record is never
+  dropped; (2) `invalid` lists the addresses with error findings, reserved beside `shape`, `id`, `address` (on
+  every record); `Invalid<T>` in types, `records({ valid: true })`; (3) selectors read a refused value as unknown,
+  extending the failed-computation rule; (4) a reference in a record is the string as written (`Ref<…>`, branded);
+  Rivière adds `entity.refs` and an export's `$refs` beside it; (5) `repeat` needs one node unless `optional`; a
+  repeating block field is one rich-text value; an inline heading's `markdown` is its content; empty comma items
+  dropped; data files use camelCase names only.
 
 **The outside review** (section 21)
 
