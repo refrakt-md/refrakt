@@ -4435,6 +4435,13 @@ one by one, then the mechanical fixes in one pass)
   collections named: `code: true` every generated collection (so `` `SITE_URL` `` reaches `patterns`' env vars),
   `code: { to: [...] }` narrowing, unknown names reported at load; "collections that hold code" removed; (3) `ids`
   takes the same `true` or `{ to }` form.
+- Q54. Files as link targets. *Decided 2026-11-26* (Rivière's `corpus.md`, `references.md`, `writing.md`), from
+  the sixth review's G2, G3, G8, C8: (1) every tracked file is a file entity with a derived `holds`, replacing
+  "covers what no other collection holds"; (2) a typed field resolves to the collection it names (`to: [file]`
+  reaches a Markdown page), a mention to the most specific target (the one held entity, else the file);
+  (3) a fragment is a symbol where a collection holds one, else a region of the file, both reviewable alike;
+  (4) moving a path-id file renames it: `riviere move` rewrites references, links, refs and code spans and records
+  the former id; outside moves are caught by history once committed, by blob id under `--against` before.
 
 **The outside review** (section 21)
 
