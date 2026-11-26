@@ -4283,6 +4283,19 @@ one by one, then the mechanical fixes in one pass)
   matches; (3) the same templates render "view source" links at the snapshot's version; (4) "links with data"
   renamed **references with data**, suspect links **suspect references** (crediting Doorstop's term), and
   `trace-link-suspect` **`trace-reference-suspect`**, so "link" means only a Markdown link.
+- Q39. Routing on Rivière, without making it a framework. *Decided 2026-11-26* (Rivière's `plugins.md`,
+  `corpus.md`, `scope.md`, `findings.md`, `references.md`, `overview.md`, glossary; Belvédère's concept): the user
+  asked whether refrakt's file-based routing and `_layout.md` cascade could rest on Rivière's entities; it
+  decomposes into a route template per collection (refrakt's `entityRoutes` generalised: an entity with a route is a
+  page, written, foreign or generated, hand-written pages preferred), layouts related to pages by a chain of
+  enclosing directories, the tree, and former ids as redirects. **The user worried `route` and `encloses` in core
+  would make Rivière an opinionated framework**, and the plugins test agreed (not every corpus needs them; both
+  build on the public API). (1) three layers stated in `plugins.md`: core holds mechanism, plugins a domain's
+  mechanism, corpus definitions opinions; (2) `@riviere-md/site`: `site: { route }`, redirects, the layout chain,
+  `site-route-collision`, `site-redirect-missing`, in the first release; (3) `encloses` moves from core into the `tree`
+  plugin (nearest, or `chain: true`), revising Q37; (4) conventions (`_layout.md`, prefix stripping, index pages,
+  `slug`, the `route` format) live in a refrakt site corpus definition; (5) refrakt keeps `router.ts` and
+  `layout.ts` until it converges by adopting the plugin with its own definition.
 
 **The outside review** (section 21)
 
