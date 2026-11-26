@@ -4380,6 +4380,20 @@ one by one, then the mechanical fixes in one pass)
   iterates structured attribute lists; (4) checks: output limited to `to:` and fields read must exist at load,
   instances validated when rendering (`adapter-invalid`), `as=` or the renderer's components choose between
   adapters, a remaining tie `adapter-ambiguous`.
+- Q49. The generator contract, per kind of input. *Decided 2026-11-26* (Rivière's `corpus.md`, `findings.md`),
+  from the sixth review's first finding (`notes/marquise-review-2026-11-26.md`, G1–G24): the contract was written
+  for `code` and did not fit the others. (1) inputs are typed, `files`, `listing`, `history` or `schema`; the kinds
+  are a closed list Rivière reads itself and can name by a content id, generators are open, and a new kind is a
+  core change (the user asked whether it scales; every candidate fits, network data stays an overlay); (2) one
+  caching rule, every input unit keyed by a content id (blob id or content hash, tree id, commit hash, shape hash),
+  moving pointers resolved at load; (3) `$created`, `$modified`, `$authors` are the source's members on any entity
+  with a location, so `files` is pure; (4) a generated entity may have a location, the one file it came from;
+  (5) duplicates are `generator-duplicate` unless the generator declares `merge`, `generator-conflict` in one file
+  or several, `code` merges a name's declarations; (6) continuity is former ids from history (files, any load) or
+  `sameAs` under `--against` (symbols, rewrite offered in the pull request), and generated entities' former ids
+  reserve nothing; (7) output is `{ entries, notes }`, notes reported as `generator-note`; (8) a table states each
+  generator's input, mode, merging, location and continuity. `marquise` under `--against` has a base side only
+  when the host supplies that version's instance.
 
 **The outside review** (section 21)
 
