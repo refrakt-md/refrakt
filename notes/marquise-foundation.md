@@ -4353,6 +4353,14 @@ one by one, then the mechanical fixes in one pass)
   cycle; the user's question how to check whether a shape's migrations still apply produced points 4 and 5;
   (6) a shape renamed by a migration has the old name as a former id; (7) Marquise's catalogue page is a view over
   `findings`; (8) in Rivière's first release, for Marquise's docs site, making three first-party plugins there.
+- Q46. Tools' output, explored. *Leaning, 2026-11-26, needs refining* (Rivière's `corpus.md`): the user raised test
+  reports and coverage; recorded as a possibility, not a decision. Format readers (`@riviere-md/reports`: JUnit XML,
+  lcov, Istanbul, Cobertura, SARIF, size-limit) plus `generated: true` foreign collections, no new mechanism; a
+  report counts only for the version it was produced for (a `run.json` sidecar or the tool's record), otherwise
+  `report-stale` with dependent rules unknown; runs and results as traceability's `run` entities; links to file
+  entities by path and to symbols by region; committed runs as collections, a CI service's history as an overlay.
+  To refine: recording versions across tools and providers, several tools in one job, per-test coverage, flaky
+  tests.
 
 **The outside review** (section 21)
 
