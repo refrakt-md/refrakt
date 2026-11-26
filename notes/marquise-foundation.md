@@ -4483,6 +4483,15 @@ one by one, then the mechanical fixes in one pass)
   Rivière adds `entity.refs` and an export's `$refs` beside it; (5) `repeat` needs one node unless `optional`; a
   repeating block field is one rich-text value; an inline heading's `markdown` is its content; empty comma items
   dropped; data files use camelCase names only.
+- Q60. Addresses and finding parameters. *Decided 2026-11-26* (Marquise's `validation.md`, `findings.md`,
+  `writing.md`, `getting-started.md`; Rivière's `corpus.md`), from the build-from-docs review (GAP-1, 10, 14, 28):
+  (1) a finding is a frozen object (`id`, `severity`, `file`, `address`, `range`, `message`, `params`, `fixes`);
+  parameters share a vocabulary (`name`, `value`, `expected`, `allowed`, `shape`, `target`, `count`/`min`/`max`,
+  `other`), are listed per entry as its example lands, and only grow; (2) `attribute-type-invalid` (wrong type)
+  splits from `attribute-value-invalid` (not allowed; the close-match fix); (3) an address step counts instances of
+  that shape name within its container (top level or a field); `hero` is `hero[0]`, printed with `[0]` unless
+  alone; a document shape is its own root; `#id` resolves at any depth; (4) `file` and `address` are separate in
+  every finding; the joined cross-file string is always id-rooted, a positional one uses `{ file, address }`.
 
 **The outside review** (section 21)
 
