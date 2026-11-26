@@ -4448,6 +4448,14 @@ one by one, then the mechanical fixes in one pass)
   files are read as usual, read-only, readable by rules, and left out of `--against` since history lacks them
   (my proposal to compare them by blob id was withdrawn for that reason); Q46's "generated foreign collections"
   reads "built"; the glossary sets the two side by side. G23 was settled by Q49.
+- Q56. The `marquise` generator and the authoring grammar. *Decided 2026-11-26* (Marquise's `schema.md`,
+  `extending.md`; Rivière's `corpus.md`, `findings.md`, `site-builder-as-shapes.md`, `cli-and-mcp.md`), from the
+  sixth review's C10 and G20–G22: (1) the grammar grows (additive within its major version) to list `abstract`,
+  `extends` declared and resolved, `source`, the schema.org mapping, rule ids, migrations and dimensions, since
+  Marquise's own tools need them too; (2) a kit's shapes are always qualified, a project's bare, so installing a kit
+  renames nothing; (3) `$release` dropped: comparing `remove-after` waits for a `semver` value type, expiry stays
+  `migration-expired`; (4) `migration-unused` becomes the plugin's `marquise-migration-unused` (hyphen prefix, the
+  catalogue's convention); `instances` is a list of addresses, countable, not traversable. G19 was settled by Q49.
 
 **The outside review** (section 21)
 
