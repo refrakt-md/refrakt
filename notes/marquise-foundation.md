@@ -4370,6 +4370,16 @@ one by one, then the mechanical fixes in one pass)
   presentation; (4) `as=<shape>` on `collection`, `ref`, `expand`; (5) restructuring is a `compose` template, the
   second tier, as for migrations; (6) all-path adapters are invertible for editing, other fields read-only;
   (7) kits may ship adapters, untrusted sources within the limits; after Marquise 1.0, with bindings.
+- Q48. Adapter files: one format, three readings. *Decided 2026-11-26* (Marquise's `rendering.md`, `extending.md`,
+  `findings.md`, glossary): the user noted composition templates are always a shape's body, while an adapter
+  transforms one shape into others. (1) a template always reads one shape and writes others: a shape definition
+  reads itself, a migration file an old form (`migrates:`), an **adapter file** a foreign shape (`adapts:`, `to:`);
+  each has a declarative tier in frontmatter and a structural tier as a `compose` template body; (2) adapter files
+  live in `adapters/` in projects and kits, loaded with the shape set, correcting Q47's `bindings/*.yaml` (bindings
+  stay shape to component); (3) in an adapter, `slot` and `$attrs` refer to the adapted shape, and `slot … each`
+  iterates structured attribute lists; (4) checks: output limited to `to:` and fields read must exist at load,
+  instances validated when rendering (`adapter-invalid`), `as=` or the renderer's components choose between
+  adapters, a remaining tie `adapter-ambiguous`.
 
 **The outside review** (section 21)
 
