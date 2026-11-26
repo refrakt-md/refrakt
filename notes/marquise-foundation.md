@@ -4343,6 +4343,16 @@ one by one, then the mechanical fixes in one pass)
   `history-unavailable`, and leaves dependent rules unknown; (7) bare ids as mentions in plain text, opt-in,
   matching only distinct-prefix id patterns; (8) when a consumer asks, plan and Belvédère. Measured on this
   session's shallow checkout of refrakt: 181 commits in 12 ms.
+- Q45. Marquise's schema as entities. *Decided 2026-11-26* (Rivière's `corpus.md`, `plugins.md`, `scope.md`;
+  Marquise's `schema.md`): (1) the contract gains a second non-file input, the instance's published schema, cached
+  by its shape hash; (2) `@riviere-md/marquise` reads only the published authoring grammar, with kinds `shapes`,
+  `findings`, `migrations`, `value-types`, `dimensions`; (3) shape entities carry the resolved shape (chain,
+  structured attributes and fields, examples, rules, schema.org mapping, source); (4) derived members `instances`,
+  `used-by` from the corpus's records, and a migration's `applied`, `applied-in` from its findings; (5) **derived
+  members may read the snapshot's findings**, with a rule reading findings it produces being a `computes-order`
+  cycle; the user's question how to check whether a shape's migrations still apply produced points 4 and 5;
+  (6) a shape renamed by a migration has the old name as a former id; (7) Marquise's catalogue page is a view over
+  `findings`; (8) in Rivière's first release, for Marquise's docs site, making three first-party plugins there.
 
 **The outside review** (section 21)
 
