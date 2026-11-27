@@ -1,0 +1,24 @@
+{
+  "collections": {
+    "work": {
+      "shape": "work",
+      "include": "plan/work/*.md",
+      "path": "plan/work/{title:slug}.md",
+      "id": "WORK-{n}",
+      "formerIds": "formerly",
+      "mentions": {
+        "code": true
+      }
+    },
+    "people": {
+      "shape": "person",
+      "include": "team/*.yaml",
+      "id": {
+        "from": "name"
+      }
+    },
+    "file": {
+      "generate": "files"
+    }
+  }
+}

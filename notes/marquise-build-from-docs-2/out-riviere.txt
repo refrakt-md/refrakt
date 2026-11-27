@@ -1,0 +1,65 @@
+== rv.findings (instance)
+
+== ancestor snapshot findings
+team/merlin.yaml:2  error    attribute-value-invalid   #merlin.role: `wizard` is not an allowed role
+plan/work/wrong.md:1  error    ref-wrong-target          #WORK-2.owner: `WORK-1` is a work, not person
+plan/work/wrong.md:1  error    ref-unresolved            #WORK-2.related[0]: `WORK-9` names no entity
+plan/work/typed-refs.md:13  info     mention-ambiguous         #WORK-1: `util.ts` matches src/a/util.ts, src/b/util.ts
+plan/work/typed-refs.md:13  error    ref-ambiguous             #WORK-1: `util.ts` matches 2 entities
+plan/work/typed-refs.md:13  error    ref-unresolved            #WORK-1: `nobody-at-all` names no entity
+team/grace.yaml:1  warning  person/idle               #grace-hopper: Nobody has given this person any work
+team/merlin.yaml:1  warning  selector-inconclusive     #merlin: rule person/idle could not be decided: it reads a refused value
+
+== entities
+work:WORK-4  work:WORK-3  work:WORK-1  work:WORK-2  people:ada-lovelace  people:grace-hopper  people:merlin  file:plan/work/handedit.md  file:plan/work/renamed.md  file:plan/work/typed-refs.md  file:plan/work/wrong.md  file:shapes/person.md  file:shapes/work.md  file:src/a/util.ts  file:src/b/util.ts  file:src/load.ts  file:team/ada.yaml  file:team/grace.yaml  file:team/merlin.yaml
+
+== mentions
+plan/work/typed-refs.md:10 ref -> people:ada-lovelace
+plan/work/typed-refs.md:10 code -> file:src/load.ts
+plan/work/typed-refs.md:10 link -> file:src/load.ts#build reviewed 1cca298d:29207245: current
+plan/work/typed-refs.md:13 ref -> ?
+plan/work/typed-refs.md:13 ref -> ?
+
+== query: find work "owner.role:engineer"
+[ 'WORK-1' ] inconclusive: []
+== query: find people "-role:engineer"
+[ 'grace-hopper' ] inconclusive (left out, reported once): [ 'merlin' ]
+== query: find people "has:work"
+[ 'ada-lovelace' ]
+
+== export --jsonl
+{"collection":"work","id":"WORK-4","address":"plan/work/handedit.md#WORK-4","record":{"shape":"work","address":"#WORK-4","id":"WORK-4","status":"ready","title":{"markdown":"To be renamed by hand","syntax":"markdoc","text":"To be renamed by hand","shapes":[]}},"links":{},"$refs":{}}
+{"collection":"work","id":"WORK-3","address":"plan/work/renamed.md#WORK-3","record":{"shape":"work","address":"#WORK-3","id":"WORK-3","status":"done","title":{"markdown":"To be renamed, recorded","syntax":"markdoc","text":"To be renamed, recorded","shapes":[]}},"links":{},"$refs":{}}
+{"collection":"work","id":"WORK-1","address":"plan/work/typed-refs.md#WORK-1","record":{"shape":"work","address":"#WORK-1","id":"WORK-1","status":"in-progress","owner":"ada-lovelace","related":["WORK-2"],"title":{"markdown":"Typed references","syntax":"markdoc","text":"Typed references","shapes":[]},"body":{"markdown":"Owned by {% ref \"ada-lovelace\" /%}. The entry point is `src/load.ts`, and\n[the loader](../../src/load.ts#build){% reviewed \"1cca298d:29207245\" /%} reads each file.\n\nHelpers live in `util.ts`, see {% ref \"util.ts\" /%} and {% ref \"nobody-at-all\" /%}.","syntax":"markdoc","text":"Owned by . The entry point is src/load.ts, and the loader reads each file. Helpers live in util.ts, see and .","shapes":[]}},"links":{},"$refs":{"owner":{"collection":"people","id":"ada-lovelace"},"related[0]":{"collection":"work","id":"WORK-2"}}}
+{"collection":"work","id":"WORK-2","address":"plan/work/wrong.md#WORK-2","record":{"shape":"work","address":"#WORK-2","id":"WORK-2","owner":"WORK-1","related":["WORK-9","WORK-3"],"status":"ready","title":{"markdown":"Wrong targets","syntax":"markdoc","text":"Wrong targets","shapes":[]}},"links":{},"$refs":{"owner":null,"related[0]":null,"related[1]":{"collection":"work","id":"WORK-3"}}}
+{"collection":"people","id":"ada-lovelace","address":"team/ada.yaml#ada-lovelace","record":{"shape":"person","address":"#ada-lovelace","name":"Ada Lovelace","role":"engineer","tags":["math"],"id":"ada-lovelace"},"links":{"work":[{"collection":"work","id":"WORK-1"}]},"$refs":{}}
+{"collection":"people","id":"grace-hopper","address":"team/grace.yaml#grace-hopper","record":{"shape":"person","address":"#grace-hopper","name":"Grace Hopper","role":"designer","id":"grace-hopper"},"links":{"work":[]},"$refs":{}}
+{"collection":"people","id":"merlin","address":"team/merlin.yaml#merlin","record":{"shape":"person","address":"#merlin","name":"Merlin","invalid":["role"],"id":"merlin"},"links":{"work":[]},"$refs":{}}
+
+== head snapshot: mentions with markers
+plan/work/typed-refs.md:10 link -> src/load.ts#build reviewed 1cca298d:29207245: formatting-only
+
+== validate --against main (head vs main, merge-base = ancestor)
+new       plan/work/newcomer.md:1  error    id-reused                 #WORK-3: `WORK-3` is a former id of WORK-30
+new       plan/work/wrong.md:1  error    ref-ambiguous             #WORK-2.related[1]: `WORK-3` matches 2 entities
+new       plan/work/handedit.md:1  warning  id-changed                #WORK-40: id changed from WORK-4 by hand; record the former id
+new       plan/work/collide-b.md:1  error    id-collision              #WORK-5: `WORK-5` was also added on the other side, in plan/work/collide-a.md
+(8 existing)
+existing  team/merlin.yaml:2  error    attribute-value-invalid   #merlin.role: `wizard` is not an allowed role
+existing  plan/work/wrong.md:1  error    ref-wrong-target          #WORK-2.owner: `WORK-1` is a work, not person
+existing  plan/work/wrong.md:1  error    ref-unresolved            #WORK-2.related[0]: `WORK-9` names no entity
+existing  plan/work/typed-refs.md:13  info     mention-ambiguous         #WORK-1: `util.ts` matches src/a/util.ts, src/b/util.ts
+existing  plan/work/typed-refs.md:13  error    ref-ambiguous             #WORK-1: `util.ts` matches 2 entities
+existing  plan/work/typed-refs.md:13  error    ref-unresolved            #WORK-1: `nobody-at-all` names no entity
+existing  team/grace.yaml:1  warning  person/idle               #grace-hopper: Nobody has given this person any work
+existing  team/merlin.yaml:1  warning  selector-inconclusive     #merlin: rule person/idle could not be decided: it reads a refused value
+
+== one --against finding object
+{"id":"id-collision","severity":"error","file":"plan/work/collide-b.md","address":"#WORK-5","range":{"start":[1,0],"end":[2,0]},"message":"`WORK-5` was also added on the other side, in plan/work/collide-a.md","params":{"value":"WORK-5","other":{"file":"plan/work/collide-a.md","address":"#WORK-5"}},"baseline":"new"}
+
+== pairing ancestor -> head (work only)
+stage 1: WORK-3 (plan/work/renamed.md) -> WORK-3 (plan/work/newcomer.md)
+stage 1: WORK-1 (plan/work/typed-refs.md) -> WORK-1 (plan/work/typed-refs.md)
+stage 1: WORK-2 (plan/work/wrong.md) -> WORK-2 (plan/work/wrong.md)
+stage 3: WORK-4 (plan/work/handedit.md) -> WORK-40 (plan/work/handedit.md)
+unpaired head: [ 'WORK-5', 'WORK-30' ]

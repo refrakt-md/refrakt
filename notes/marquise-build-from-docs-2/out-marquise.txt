@@ -1,0 +1,151 @@
+== shape analysis (mq.findings)
+shapes/broken.md:1  error    shape-key-unknown         (root): unknown key `sumary` (did you mean `summary`?)
+shapes/broken.md:1  error    shape-key-unknown         title: unknown value type `strng`
+shapes/broken.md:1  error    attribute-type-missing    colour: attribute `colour` declares no type
+shapes/broken.md:1  warning  name-camelcase            mediaPos: `mediaPos` is camelCase; shape files use kebab-case
+shapes/broken.md:15  error    definition-loose-content  (root): content outside `{% example %}` blocks
+shapes/broken.md:1  error    field-shadowed            intro: A paragraph first always becomes `intro`; a `body` that starts with one needs `intro`, or an explicit `#body` slot
+shapes/broken.md:1  error    field-shadowed            intro: A paragraph first always becomes `intro`; a `outro` that starts with one needs `intro`, or an explicit `#outro` slot
+shapes/broken.md:1  error    field-unreachable         outro: `outro` can never take a node: `body` (repeating) takes every paragraph before it
+excluded: [ 'broken' ]
+example snippets#two: ok
+
+== content/page.md findings
+content/page.md:17  error    attribute-type-invalid    snippets[1].title: snippets: `title` must be string (got 5)
+content/page.md:17  error    attribute-unknown         snippets[1].size: snippets: unknown attribute `size`
+content/page.md:17  error    content-missing           snippets[1].panels: snippets.panels: needs a fence
+content/page.md:26  error    text-mismatch             credits.people[2]: item does not fit `{name}[| — | – | - ]{role}`
+content/page.md:29  error    attribute-value-invalid   #ada.role: person: `wizard` is not an allowed role
+content/page.md:31  error    attribute-missing         person[1].name: person: `name` is required
+content/page.md:32  warning  content-unmatched         person[1]: person: a paragraph matches no field and would be dropped
+content/page.md:35  error    shape-invalid             broken: shape `broken` has error findings and was left out
+content/page.md:39  error    shape-unknown             callout: no shape defines `callout`
+
+== records
+[
+ {
+  "shape": "snippets",
+  "address": "snippets[0]",
+  "title": "Install",
+  "intro": {
+   "markdown": "Pick your *package manager*.",
+   "syntax": "markdoc",
+   "text": "Pick your package manager.",
+   "shapes": []
+  },
+  "panels": [
+   {
+    "language": "sh",
+    "label": "npm",
+    "content": "npm i x\n"
+   },
+   {
+    "language": "sh",
+    "content": "yarn add x\n"
+   }
+  ],
+  "notes": {
+   "markdown": "> works offline",
+   "syntax": "markdoc",
+   "text": "works offline",
+   "shapes": []
+  }
+ },
+ {
+  "shape": "snippets",
+  "address": "snippets[1]",
+  "intro": {
+   "markdown": "Just an intro, no fences.",
+   "syntax": "markdoc",
+   "text": "Just an intro, no fences.",
+   "shapes": []
+  },
+  "invalid": [
+   "title",
+   "panels"
+  ]
+ },
+ {
+  "shape": "credits",
+  "address": "credits",
+  "title": {
+   "markdown": "Team",
+   "syntax": "markdoc",
+   "text": "Team",
+   "shapes": []
+  },
+  "people": [
+   {
+    "name": "Ada",
+    "role": "engineer"
+   },
+   {
+    "name": "Grace",
+    "role": "designer"
+   },
+   {}
+  ],
+  "invalid": [
+   "people[2]"
+  ]
+ },
+ {
+  "shape": "person",
+  "address": "#ada",
+  "id": "ada",
+  "name": "Ada Lovelace",
+  "tags": [
+   "math",
+   "poetry"
+  ],
+  "contact": {
+   "email": "ada@example.org"
+  },
+  "invalid": [
+   "role"
+  ]
+ },
+ {
+  "shape": "person",
+  "address": "person[1]",
+  "role": "engineer",
+  "invalid": [
+   "name"
+  ]
+ }
+]
+
+== one finding object
+{
+ "id": "attribute-value-invalid",
+ "severity": "error",
+ "file": "content/page.md",
+ "address": "#ada.role",
+ "range": {
+  "start": [
+   29,
+   0
+  ],
+  "end": [
+   30,
+   0
+  ]
+ },
+ "message": "person: `wizard` is not an allowed role",
+ "params": {
+  "name": "role",
+  "value": "wizard",
+  "allowed": [
+   "engineer",
+   "designer",
+   "manager"
+  ]
+ }
+}
+
+== data file content/grace.yaml
+content/grace.yaml:2  error    attribute-value-invalid   role: `admiral` is not an allowed role
+content/grace.yaml:3  error    attribute-type-invalid    tags: person: `tags` must be a list
+content/grace.yaml:4  error    attribute-unknown         media-pos: person: unknown key `media-pos`
+content/grace.yaml:5  error    attribute-unknown         contact.fax: unknown key `fax`
+{"shape":"person","address":"","name":"Grace Hopper","invalid":["role","tags","contact"]}
