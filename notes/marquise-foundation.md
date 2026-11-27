@@ -4605,6 +4605,18 @@ one by one, then the mechanical fixes in one pass)
   they register, `pluginApi: 1` 0.x until a third party writes one; (4) observability: `c.stats`, `--stats`, cache
   statistics with miss reasons, nothing sent; (5) torn reads restart once, then `snapshot-torn`; watch waits for
   the write lock; requests answered against the snapshot current on arrival.
+- Q72. The second build-from-docs round. *Decided 2026-11-27* (both repositories), from
+  `notes/marquise-review-build-from-docs-2-2026-11-27.md` (48 gaps: 3 blocking, 34 behaviour, 11 cosmetic; 8
+  contradictions; what had been specified held, the new gaps lay in areas the first slice never reached): (B1)
+  pairing checks former ids before identity, fixing a Q61/Q62 contradiction; (B2) a range's column may be `null`
+  until the locator; (B3) shadowing is reported against the nearest overlapping field only; (C1–C7) glossary
+  resolution, names in the first release (unique-only), no envelope on item records, `other` one site or a list,
+  `shape-key-unknown` per Q65, `shapes` paths in configuration against loaded sources in the API, the CLI line
+  form; (1) `shape:` is each file's document shape; (2) `existing` against the merge-base; (3) `ref` (positional
+  `target`) and `trace`'s `reviewed` (positional hash, `by`) published; (4) `mq.validateData`; (5) close match is
+  Damerau–Levenshtein 2 or case and hyphen folding; (6) `text` is prose plus nested shapes' summary fields and rich
+  text plus inline shapes' visible text (my first wording dropped nested rich text and was corrected); (7) the
+  `Versions` interface. Paper rounds stop here: the conformance suite (step 1b) takes the remaining guesses.
 
 **The outside review** (section 21)
 
