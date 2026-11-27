@@ -4538,6 +4538,17 @@ one by one, then the mechanical fixes in one pass)
   `{% ref %}` is `shape-unknown` but accepted in ref-typed fields; `id-pattern-mismatch` (warning); a data shape may
   be a tag, children `content-unmatched`; Rivière's time zone falls back to Marquise's, `timezone-mismatch`
   (warning) when both are set and differ, Rivière's applying.
+- Q66. The plan reordered after the architecture review. *Decided 2026-11-27* (Marquise's `scope.md`, Rivière's
+  `scope.md`), from its first structural finding (the 1.0 gate was circular and the cheapest falsifier third): (1)
+  measure first: each rune's **input** classified against the 1.0 shape file, starting from SPEC-194's "native
+  runes that remain, measured" (127 runes: 3 compositions, 58 planned, 66 native) and the composition specs, as
+  the user pointed out that research exists; the build-from-docs slice becomes the first conformance suite; (2)
+  the outside proof is Marquise's docs site, read-only, first on Marquise alone, with the stop rule there; (3) then
+  the content-model revision and the read-path extraction; (4) a write-path spike measuring refusals across
+  refrakt's whole content before anything builds on writing, strengthening the addresses exit test; (5) plan's
+  rebuild no longer sets 1.0's date; the document-shape test runs on read-only use; (6) 1.0 freezes what the read
+  path proves; "decided" means designed, not committed to build, and Rivière's first release builds only core,
+  `files`, `tree` and `marquise`.
 
 **The outside review** (section 21)
 
