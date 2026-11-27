@@ -4508,6 +4508,14 @@ one by one, then the mechanical fixes in one pass)
   `against-no-ancestor` says they were not checked; (4) findings are marked `baseline: new | existing`, the CLI
   shows new ones and counts the rest, failing on new errors (`--strict` on all); (5) a finding's identity across
   versions is id, paired entity, relative address and rule id, never message, line or value.
+- Q63. Registering extensions; Rivière creates the instance. *Decided 2026-11-27* (Marquise's `extending.md`,
+  `api.md`; Rivière's `plugins.md`, README), from the build-from-docs review (GAP-3): (1) extensions are passed to
+  `createMarquise` (`extensions: [...]`), plain data `{ name, version, schemas }`, nothing registered at import
+  time; (2) Rivière creates the instance from Marquise's options, adding its own extension built from its plugins,
+  exposes `rv.marquise`, and reloads instance and snapshot together; a passed instance is checked for Rivière's
+  extension and plugin set, throwing on a mismatch; (3) plugins add to Rivière's extension, Marquise sees one,
+  `riviere`. Whether extensions can declare CEL names instead of Marquise reserving `terminal`/`outcome` is left
+  for the layering discussion.
 
 **The outside review** (section 21)
 
