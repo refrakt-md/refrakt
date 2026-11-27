@@ -4578,6 +4578,16 @@ one by one, then the mechanical fixes in one pass)
   without aliases), marked its invented syntax (heading `parts` and `level`, image `src`/`alt`, the section compact
   form) *leaning* until a rune uses it, and renamed the satellite `@marquise-md/regex`, away from Rivière's
   unrelated `patterns` generator.
+- Q69. The snapshot promises less; one hash; registration through the host. *Decided 2026-11-27* (Rivière's
+  `corpus.md`; Marquise's `api.md`, `selectors.md`, `commands.md`, `content-models.md`, `scope.md`, glossary), from
+  the architecture review's 1.5, R6 and R7: (1) phase 1 is incremental per file through the cache; phase 2 is
+  recomputed in full every snapshot until measured too slow, "invalidates exactly what depended on it" withdrawn;
+  (2) a spike before the first release on the 10,000-document benchmark (inverses, a closure, a tree, cross-entity
+  computed values) measures phase 2, a one-file update and memory; (3) targets from use, leaning: keystroke under
+  100 ms, warm CLI under 1 s, cold under 10 s, under 500 MB; missing one is a design finding; (4) `mq.hash` and
+  `c.hash` cover everything that changes output, every cache keyed on them; `registerStep`, `registerBuiltin` and
+  `registerFormat` become `step`, `builtin`, `format` entries passed to `createMarquise`; (5) one snapshot per
+  tenant.
 
 **The outside review** (section 21)
 
