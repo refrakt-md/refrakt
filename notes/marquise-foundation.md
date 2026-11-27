@@ -4596,6 +4596,15 @@ one by one, then the mechanical fixes in one pass)
   reach); (4) the fallback if cel-js stalls: Marquise keeps the profile's parser and checker, with CEL's conformance
   tests; `@marquise-md/cel` graduates on full profile conformance, an enforced cost model and two minor releases
   of `computes` in plan's rebuild; (5) a new kind of key taking `{ cel }` needs a consumer paths cannot serve.
+- Q71. The missing chapters. *Decided 2026-11-27* (Marquise's `api.md`, `findings.md`; Rivière's `plugins.md`,
+  `corpus.md`, `writing.md`, `findings.md`), from the architecture review's missing concerns: (1) compatibility:
+  tools check `marquiseSchema`, records carry no version, 0.x minors name tested corpus-layer releases, both run
+  each other's conformance suites, Rivière declares and checks its Marquise peer range; (2) host code: a throw is
+  `host-code-failed`, bounded by `host-code-limit`, `host-code-slow` (info), failures never cached; throwing stays
+  for Marquise's own programming errors; (3) plugins are trusted code, named in configuration, reaching only what
+  they register, `pluginApi: 1` 0.x until a third party writes one; (4) observability: `c.stats`, `--stats`, cache
+  statistics with miss reasons, nothing sent; (5) torn reads restart once, then `snapshot-torn`; watch waits for
+  the write lock; requests answered against the snapshot current on arrival.
 
 **The outside review** (section 21)
 
