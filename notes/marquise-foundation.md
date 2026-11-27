@@ -4574,6 +4574,10 @@ one by one, then the mechanical fixes in one pass)
   `format`, template formats from shape files, `checks` to 0.x with selectors; (5) Rivière: `views` owns `views:` and
   `writes:`; findings renamed `shapes-expand-cycle`, `shapes-relationships-needs-of`, `views-write-require-unmet`.
   Size totals 105; 36; 39. Step 1 of the plan is done.
+  The user confirmed the agent's choices (`dimensions: { exclude }` after 1.0, `checks` with selectors, renamed ids
+  without aliases), marked its invented syntax (heading `parts` and `level`, image `src`/`alt`, the section compact
+  form) *leaning* until a rune uses it, and renamed the satellite `@marquise-md/regex`, away from Rivière's
+  unrelated `patterns` generator.
 
 **The outside review** (section 21)
 
