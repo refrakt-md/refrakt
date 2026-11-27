@@ -4527,6 +4527,17 @@ one by one, then the mechanical fixes in one pass)
   name; (6) JSX follows the code's `javascript` mapping, tag-pairing when a consumer asks; (7) anchoring options
   beyond `symbol` get syntax when a consumer asks. To do: the same treatment for SPEC-145, 168 and 197 (templates)
   when `@marquise-md/compose` is built.
+- Q65. The build test's smaller gaps. *Decided 2026-11-27* (both repositories): the gaps the docs' decisions
+  already settled were written in (attribute `type` names, shape names from file names, `.class`, document record
+  addresses, extension data below the shape level, `id.from` as a path in the record, slug edges, data-file
+  findings, `data-file-invalid`, `collection-shape-unknown`, literals against references, the three
+  contradictions). The user approved ten choices as recommended: unknown top-level key `shape-key-unknown` near a
+  core key, else `namespace-unknown`; `expect` an array of ids with optional `@address`, exact; `example-mismatch`
+  (error) keeps the shape; `type` required (`attribute-type-missing`); a top-level YAML object is one record, a map
+  needs `keyed: true`; rule severity defaults to error, `message` required (`rule-message-missing`); plain
+  `{% ref %}` is `shape-unknown` but accepted in ref-typed fields; `id-pattern-mismatch` (warning); a data shape may
+  be a tag, children `content-unmatched`; Rivière's time zone falls back to Marquise's, `timezone-mismatch`
+  (warning) when both are set and differ, Rivière's applying.
 
 **The outside review** (section 21)
 
