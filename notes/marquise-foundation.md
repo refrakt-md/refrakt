@@ -4634,6 +4634,12 @@ one by one, then the mechanical fixes in one pass)
   `link-anchor-missing`, a missing symbol on a file `ref-unresolved`; a reference value is any non-empty string.
   Suites: Marquise 49 decided, Rivière 36, no guesses. CI runs both on pushes and pull requests; the cross-
   repository jobs wait for a `CROSS_REPO_TOKEN` secret the user creates.
+- Q75. Step 2 split, and what "compelling" means. *Decided 2026-11-27* (Marquise's `scope.md`): rendering needs the
+  read path step 3 extracts, so the proof is split: 2a, authoring now (the site's shapes written cold from the docs,
+  the concept pages converted as copies in `site/content/`, validated through the conformance runner); 2b,
+  rendering once step 3 lands. Compelling is yes to authoring (short shapes, no guessing, useful findings), value
+  (what plain Astro content collections cannot do) and cost (as easy to set up); a no to value stops the project.
+  The user chose this over extracting first or writing a thin read path. 2a started the same day.
 
 **The outside review** (section 21)
 
