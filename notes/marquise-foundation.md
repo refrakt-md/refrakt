@@ -4500,6 +4500,14 @@ one by one, then the mechanical fixes in one pass)
   `to`), still unresolved; (3) `id-reused` is on the newcomer, naming the former holder, and while it stands
   references to the id are ambiguous, never re-pointed; (4) `ref-by-name` (info, off by default) on typed
   references resolved by name; mentions by name stay silent.
+- Q62. Pairing across versions and what `--against` reports. *Decided 2026-11-27* (Rivière's `corpus.md`,
+  `findings.md`, `cli-and-mcp.md`), from the build-from-docs review (GAP-35 to 38), the concept it found hardest:
+  (1) entities pair in stages, identity, former id, location (same file through the source's renames, same shape,
+  same position among the unpaired), generated `sameAs`; no content similarity; `id-changed` fires on stage-3 pairs;
+  (2) a recorded rename gives no finding; (3) collisions need a common ancestor (`id-collision`); without one,
+  `against-no-ancestor` says they were not checked; (4) findings are marked `baseline: new | existing`, the CLI
+  shows new ones and counts the rest, failing on new errors (`--strict` on all); (5) a finding's identity across
+  versions is id, paired entity, relative address and rule id, never message, line or value.
 
 **The outside review** (section 21)
 
