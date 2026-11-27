@@ -4549,6 +4549,19 @@ one by one, then the mechanical fixes in one pass)
   rebuild no longer sets 1.0's date; the document-shape test runs on read-only use; (6) 1.0 freezes what the read
   path proves; "decided" means designed, not committed to build, and Rivière's first release builds only core,
   `files`, `tree` and `marquise`.
+- Q67. Layering by one rule. *Decided 2026-11-27* (Marquise's `principles.md`, `extending.md`, `shapes.md`,
+  `syntax.md`; Rivière's `plugins.md`, `scope.md`, `shapes.md`, `queries.md`, `writing.md`, `cli-and-mcp.md`,
+  `references.md`, `corpus.md`, glossary, README), from the architecture review's section 3, R5 and R9: (1) core
+  holds what every corpus needs and cannot be built on the public API, or what must be the same across every
+  extension; the three-layer table describes where things end up; (2) saved views and writes move to
+  `@riviere-md/views`, the JSONL export to `formats`, `collection`, `aggregate`, `relationships`, `expand` to
+  `@riviere-md/shapes`; `ref` stays core; the first release ships `tree`, `marquise`, `shapes` and `views` (saved
+  views; saved writes in the second); plugin keys counted in the size totals; (3) CEL reads fields only through
+  `self`, extensions declare their CEL names (`cel` in the extension object), the CEL reserved names and Rivière's
+  `entity` reservation removed; other entities' values through declared functions (`entity(v)`, `terminal(e)`,
+  `outcome(e)`), foreign maps read the raw file as `self`, `$dir` is `dir`; 18 examples rewritten; (4) `workflow`'s
+  outcome categories kept as progress arithmetic; (5) the `schema` input kind and files' language explained.
+  Open: `views` owning both `views:` and `writes:`; three moved findings lacking their plugin prefix.
 
 **The outside review** (section 21)
 
