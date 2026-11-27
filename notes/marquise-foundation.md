@@ -4516,6 +4516,17 @@ one by one, then the mechanical fixes in one pass)
   extension and plugin set, throwing on a mismatch; (3) plugins add to Rivière's extension, Marquise sees one,
   `riviere`. Whether extensions can declare CEL names instead of Marquise reserving `terminal`/`outcome` is left
   for the layering discussion.
+- Q64. The normative text moves into its own project. *Decided 2026-11-27* (Marquise's `content-models.md`;
+  Rivière's new `anchoring.md`, `references.md`, `corpus.md`, glossary, README; Belvédère's `docs/concept.md`
+  examples): SPEC-201's analysis and SPEC-131/134's anchoring and review hashes are transcribed, refrakt's specs
+  becoming provenance. The user approved: (1) `field-shadowed` checks later fields up to and including the first
+  required one; (2) Marquise's text stands over SPEC-201's draft status, refrakt to align it; (3) markers carry
+  both halves, 8 hex each (`a3f91c4e:77b0d4e1`), each compared on the length written, so refrakt's 12-character
+  markers still work; (4) a proven formatting-only change stays reviewed and may be refreshed in bulk, the one
+  exception to D8, following SPEC-134 D3; (5) a record fingerprint is RFC 8785 (JCS) over one object keyed by field
+  name; (6) JSX follows the code's `javascript` mapping, tag-pairing when a consumer asks; (7) anchoring options
+  beyond `symbol` get syntax when a consumer asks. To do: the same treatment for SPEC-145, 168 and 197 (templates)
+  when `@marquise-md/compose` is built.
 
 **The outside review** (section 21)
 
