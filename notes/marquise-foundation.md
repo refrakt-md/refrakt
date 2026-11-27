@@ -4617,6 +4617,12 @@ one by one, then the mechanical fixes in one pass)
   Damerau–Levenshtein 2 or case and hyphen folding; (6) `text` is prose plus nested shapes' summary fields and rich
   text plus inline shapes' visible text (my first wording dropped nested rich text and was corrected); (7) the
   `Versions` interface. Paper rounds stop here: the conformance suite (step 1b) takes the remaining guesses.
+- Q73. The conformance suite. *Decided 2026-11-27* (Marquise's `scope.md`): `conformance/` in each project's
+  repository; cases as data (shapes, inputs, `expect/records.json`, `expect/findings.json`), findings compared as
+  the frozen object without `message`; each case links its doc section; status `decided` (must pass) or `guess`
+  (a builder's choice and its question, reported, never failing); a throwaway reference runner from the second
+  slice until the extracted read path; coverage grows with the docs; CI later. The conversion of both slices
+  started the same day.
 
 **The outside review** (section 21)
 
