@@ -4588,6 +4588,14 @@ one by one, then the mechanical fixes in one pass)
   `c.hash` cover everything that changes output, every cache keyed on them; `registerStep`, `registerBuiltin` and
   `registerFormat` become `step`, `builtin`, `format` entries passed to `createMarquise`; (5) one snapshot per
   tenant.
+- Q70. CEL ships for one use first. *Decided 2026-11-27* (Marquise's `syntax.md`; Rivière's `corpus.md`), from the
+  architecture review's R10: (1) CEL is the expression language where one is needed, not "the value language of
+  configuration"; every mapping-style key ships with paths and value maps first, `{ cel }` enabled per key only when
+  a consumer is blocked; (2) `computes` is its first use, for plan's progress in Rivière's second release; (3) a
+  foreign map becomes a mapping key (paths over the raw file, `$dir` in a path, `{ cel }` where a path cannot
+  reach); (4) the fallback if cel-js stalls: Marquise keeps the profile's parser and checker, with CEL's conformance
+  tests; `@marquise-md/cel` graduates on full profile conformance, an enforced cost model and two minor releases
+  of `computes` in plan's rebuild; (5) a new kind of key taking `{ cel }` needs a consumer paths cannot serve.
 
 **The outside review** (section 21)
 
