@@ -4561,7 +4561,19 @@ one by one, then the mechanical fixes in one pass)
   `entity` reservation removed; other entities' values through declared functions (`entity(v)`, `terminal(e)`,
   `outcome(e)`), foreign maps read the raw file as `self`, `$dir` is `dir`; 18 examples rewritten; (4) `workflow`'s
   outcome categories kept as progress arithmetic; (5) the `schema` input kind and files' language explained.
-  Open: `views` owning both `views:` and `writes:`; three moved findings lacking their plugin prefix.
+  Open (settled in Q68): `views` owning both `views:` and `writes:`; three moved findings lacking their plugin prefix.
+- Q68. What the input-fit measurement changed. *Decided 2026-11-27* (Marquise's `scope.md`, `content-models.md`,
+  `shapes.md`, `records.md`, `findings.md` and others; Rivière's `scope.md`, `plugins.md`, `findings.md`), from
+  `notes/marquise-rune-input-fit-2026-11-27.md` (128 runes; 50% of shapes fit 1.0 as written): (1) 1.0 gains the
+  match names `fence` (with members), `blockquote`, `table`, `hr`, bare `tag`, inline `s` and `tag:<name>`;
+  `items:` on any repeating field; template literal alternatives `[| … ]` and `list: true` members; paragraph and
+  item templates unconditionally; `split` by any block match name; heading `parts` and `level`; first-level heading
+  splits at the top level under strict; (2) dimensions' declaration and acceptance, and `compact`'s read half, move
+  into 1.0; (3) recursive item models, raw source, inference from text, attribute-chosen models and shared bases
+  stay code or later; (4) cut from 1.0: `pattern` and RE2 (to a satellite), attribute `as: inline/block`, field
+  `format`, template formats from shape files, `checks` to 0.x with selectors; (5) Rivière: `views` owns `views:` and
+  `writes:`; findings renamed `shapes-expand-cycle`, `shapes-relationships-needs-of`, `views-write-require-unmet`.
+  Size totals 105; 36; 39. Step 1 of the plan is done.
 
 **The outside review** (section 21)
 
