@@ -4623,6 +4623,17 @@ one by one, then the mechanical fixes in one pass)
   (a builder's choice and its question, reported, never failing); a throwaway reference runner from the second
   slice until the extracted read path; coverage grows with the docs; CI later. The conversion of both slices
   started the same day.
+- Q74. The suite's guesses settled; CI. *Decided 2026-11-27* (Marquise's `records.md`, `validation.md`, `findings.md`,
+  `content-models.md`, `api.md`, `writing.md`; Rivière's `corpus.md`, `references.md`, `anchoring.md`,
+  `findings.md`, `queries.md`; both `conformance/`): the 19 guesses became rules, 14 as the builder chose and five
+  changed: only the refused member of a structured attribute is left out (a missing required member drops the
+  object); a shape-file finding carries its declaration's real lines; an unknown value type's `name` is the
+  attribute; `text-mismatch` is the only finding, the item kept as `{}` and listed in `invalid`; an identical
+  addition at the same path on both sides is no collision. Contradictions fixed: a dotted `#id` is a parse finding
+  (`syntax-invalid`, replacing `id-shorthand-dotted`); a missing heading anchor on a page is
+  `link-anchor-missing`, a missing symbol on a file `ref-unresolved`; a reference value is any non-empty string.
+  Suites: Marquise 49 decided, Rivière 36, no guesses. CI runs both on pushes and pull requests; the cross-
+  repository jobs wait for a `CROSS_REPO_TOKEN` secret the user creates.
 
 **The outside review** (section 21)
 
