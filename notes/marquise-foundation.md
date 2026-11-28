@@ -4640,6 +4640,16 @@ one by one, then the mechanical fixes in one pass)
   rendering once step 3 lands. Compelling is yes to authoring (short shapes, no guessing, useful findings), value
   (what plain Astro content collections cannot do) and cost (as easy to set up); a no to value stops the project.
   The user chose this over extracting first or writing a thin read path. 2a started the same day.
+- Q76. What step 2a found, and what changed. *Decided 2026-11-28* (Marquise's `content-models.md`, `shapes.md`,
+  `configuration.md`, `findings.md`, `scope.md`), from `marquise/site/AUTHORING-NOTES.md`: four shapes (108
+  lines) and 24 pages converted cold; authoring mostly yes, cost mixed (about 2,000 lines of docs read to write 108),
+  value no until Rivière gives the catalogue and term backlinks. (1) table rows become records: `items:` on
+  `match: table`, columns by header or position (`column`), cells read like list items, `table-columns-mismatch`;
+  1.0; (2) `frontmatter-key-close` (warning) for a close match, `hostKeys` in configuration making other undeclared
+  keys `frontmatter-key-unknown`; (3) the docs adopt one status form, paragraph or list-item leads (`**Decided**
+  (date).`, `**Leaning.**`, `**Open:**`), the 143 inline markers rewritten; (4) a one-page "Writing your first
+  shapes" section in `getting-started.md`, with the next cold author's reading counted. Fences as checked examples
+  are a 2b host check; the template edge questions become conformance cases.
 
 **The outside review** (section 21)
 
